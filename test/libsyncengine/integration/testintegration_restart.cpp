@@ -286,23 +286,23 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "KeepMe",
+                "name" : "keepme",
                 "content" : [
-                    { "type" : "File", "name" : "F1" }
+                    { "type" : "File", "name" : "f1" }
                 ]
             },
             {
                 "type" : "Directory",
-                "name" : "ExcludeMe",
+                "name" : "excludeme",
                 "content" : [
-                    { "type" : "File", "name" : "F2" }
+                    { "type" : "File", "name" : "f2" }
                 ]
             },
             {
                 "type" : "Directory",
-                "name" : "AlsoKeep",
+                "name" : "alsokeep",
                 "content" : [
-                    { "type" : "File", "name" : "F3" }
+                    { "type" : "File", "name" : "f3" }
                 ]
             }
         ]
@@ -315,9 +315,9 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
 
     const Operations remoteOps{Str2SyncName(R"({
         "operations" : [
-            { "type": "Create", "itemType": "File", "path": "KeepMe", "name": "NewFile", "size": 100 },
-            { "type": "Create", "itemType": "File", "path": "ExcludeMe", "name": "NewFile", "size": 200 },
-            { "type": "Create", "itemType": "File", "path": "AlsoKeep", "name": "NewFile", "size": 300 }
+            { "type": "Create", "itemType": "File", "path": "keepme", "name": "newfile", "size": 100 },
+            { "type": "Create", "itemType": "File", "path": "excludeme", "name": "newfile", "size": 200 },
+            { "type": "Create", "itemType": "File", "path": "alsokeep", "name": "newfile", "size": 300 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOps));
@@ -330,21 +330,26 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
     // First sync should not force a full listing; should continue from snapshot
     // (In a real scenario with a valid backup, this would be 0; in test environment it may vary)
 
-    // (4) Stop sync and simulate blacklist change by adding "ExcludeMe" to blacklist.
+    // (4) Stop sync and simulate blacklist change by adding "excludeme" to blacklist.
     CPPUNIT_ASSERT(testHelper.stopSync());
 
-    // Add "ExcludeMe" folder to the blacklist
-    auto remoteExcludeId = _syncPal->remoteFs()->findRemoteNodeByPath(SyncName{L"ExcludeMe"});
+    // Add "excludeme" folder to the blacklist using the remote snapshot API
     RemoteNodeIdSet newBlackList;
-    if (remoteExcludeId && *remoteExcludeId != INVALID_NODEID) {
-        newBlackList.insert(remoteExcludeId.value());
-        SyncNodeCache::instance()->setSyncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList);
+    auto backup = _syncPal->remoteLiveSnapshotBackup();
+    if (backup.snapshot) {
+        NodeId excludeId{};
+        if (backup.snapshot->getItemId(SyncPath{Str("excludeme")}, excludeId)) {
+            if (excludeId != INVALID_NODEID) {
+                newBlackList.insert(excludeId);
+                (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList);
+            }
+        }
     }
 
     // (5) Make another remote change to the excluded folder.
     const Operations moreRemoteOps{Str2SyncName(R"({
         "operations" : [
-            { "type": "Create", "itemType": "File", "path": "ExcludeMe", "name": "Hidden", "size": 999 }
+            { "type": "Create", "itemType": "File", "path": "excludeme", "name": "hidden", "size": 999 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, moreRemoteOps));
@@ -364,18 +369,18 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "KeepMe",
+                "name" : "keepme",
                 "content" : [
-                    { "type" : "File", "name" : "F1" },
-                    { "type" : "File", "name" : "NewFile", "size" : 100 }
+                    { "type" : "File", "name" : "f1" },
+                    { "type" : "File", "name" : "newfile", "size" : 100 }
                 ]
             },
             {
                 "type" : "Directory",
-                "name" : "AlsoKeep",
+                "name" : "alsokeep",
                 "content" : [
-                    { "type" : "File", "name" : "F3" },
-                    { "type" : "File", "name" : "NewFile", "size" : 300 }
+                    { "type" : "File", "name" : "f3" },
+                    { "type" : "File", "name" : "newfile", "size" : 300 }
                 ]
             }
         ]
@@ -402,10 +407,10 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "DataFolder",
+                "name" : "datafolder",
                 "content" : [
-                    { "type" : "File", "name" : "Document.txt" },
-                    { "type" : "File", "name" : "Report.pdf", "size": 2048 }
+                    { "type" : "File", "name" : "document.txt" },
+                    { "type" : "File", "name" : "report.pdf", "size": 2048 }
                 ]
             }
         ]
@@ -419,7 +424,7 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
 
     const Operations remoteOps{Str2SyncName(R"({
         "operations" : [
-            { "type": "Create", "itemType": "File", "path": "DataFolder", "name": "NewFile.txt", "size": 512 }
+            { "type": "Create", "itemType": "File", "path": "datafolder", "name": "newfile.txt", "size": 512 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOps));
@@ -432,11 +437,11 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "DataFolder",
+                "name" : "datafolder",
                 "content" : [
-                    { "type" : "File", "name" : "Document.txt" },
-                    { "type" : "File", "name" : "Report.pdf", "size": 2048 },
-                    { "type" : "File", "name" : "NewFile.txt", "size": 512 }
+                    { "type" : "File", "name" : "document.txt" },
+                    { "type" : "File", "name" : "report.pdf", "size": 2048 },
+                    { "type" : "File", "name" : "newfile.txt", "size": 512 }
                 ]
             }
         ]
@@ -448,7 +453,7 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
 
     const Operations moreRemoteOps{Str2SyncName(R"({
         "operations" : [
-            { "type": "Create", "itemType": "File", "path": "DataFolder", "name": "Image.jpg", "size": 3072 }
+            { "type": "Create", "itemType": "File", "path": "datafolder", "name": "image.jpg", "size": 3072 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, moreRemoteOps));
@@ -456,7 +461,6 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
     // (5) Restart again. This second sync demonstrates that when a valid backup exists with non-expired cursors,
     // the system can use continue listing. If cursors were to expire (> 3 days), the backup would be invalidated
     // and a full listing would be forced instead.
-    Count firstListingCount = getFullListingCount();
     CPPUNIT_ASSERT(testHelper.startSync());
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
@@ -464,12 +468,12 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "DataFolder",
+                "name" : "datafolder",
                 "content" : [
-                    { "type" : "File", "name" : "Document.txt" },
-                    { "type" : "File", "name" : "Report.pdf", "size": 2048 },
-                    { "type" : "File", "name" : "NewFile.txt", "size": 512 },
-                    { "type" : "File", "name" : "Image.jpg", "size": 3072 }
+                    { "type" : "File", "name" : "document.txt" },
+                    { "type" : "File", "name" : "report.pdf", "size": 2048 },
+                    { "type" : "File", "name" : "newfile.txt", "size": 512 },
+                    { "type" : "File", "name" : "image.jpg", "size": 3072 }
                 ]
             }
         ]
