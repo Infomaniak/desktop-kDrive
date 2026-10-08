@@ -278,8 +278,6 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(
 
     if (!_syncPal->remoteLiveSnapshotBackup().snapshot) return ExitCode::Ok;
     if (_syncPal->remoteLiveSnapshotBackup().blacklist != blackList()) return ExitCode::Ok;
-    if (_syncPal->remoteLiveSnapshotBackup().exclusionTemplates != ExclusionTemplateCache::instance()->exclusionTemplates())
-        return ExitCode::Ok;
 
     std::vector<RemoteNodeId> specialFoldersRemoteIds;
     if (const auto exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
