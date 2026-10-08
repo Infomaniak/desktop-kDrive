@@ -258,6 +258,7 @@ void AddDriveLocalFolderWidget::updateUI() {
     if (_localFolderPath.isEmpty()) return;
 
     const QDir dir(_localFolderPath);
+    _folderNameLabel->setTextFormat(Qt::PlainText);
     _folderNameLabel->setText(dir.dirName());
     _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath));
 
