@@ -521,6 +521,8 @@ IKShadowedWindow {
         id: addAdvancedSyncDialog
 
         controller: root.advancedSyncCreation
+        // The dialog targets the drive of the advanced syncs page.
+        driveColor: root.advancedSyncs.driveColor
         scrimInset: root.effectiveShadowMargin
         scrimRadius: root.surfaceRadius
         onFallbackFocusRequested: {
