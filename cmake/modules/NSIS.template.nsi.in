@@ -741,7 +741,7 @@ Function un.UninstallFct
 				goto loop
 		done:
 
-		; Delete Vfs keys, they should have been cleaned up by the plateform when the extension was uninstalled, but just in case.
+		; Delete Vfs keys, they should have been cleaned up by the platform when the extension was uninstalled, but just in case.
 		StrCpy $0 0
 		loop2:
 			; Look at every registered explorer SyncRootManager for HKLM and check if it was added by our application
