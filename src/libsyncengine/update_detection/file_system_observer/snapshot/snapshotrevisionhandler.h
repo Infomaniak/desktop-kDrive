@@ -25,11 +25,11 @@ namespace KDC {
 class SnapshotRevisionHandler {
     public:
         SnapshotRevisionHandler &operator=(const SnapshotRevisionHandler &other) {
-            const std::scoped_lock lock(_mutex);
+            const std::scoped_lock lock(_mutex, other._mutex);
             _revision = other._revision;
             return *this;
         }
-        const SnapshotRevision &revision() const {
+        SnapshotRevision revision() const {
             const std::scoped_lock lock(_mutex);
             return _revision;
         }
