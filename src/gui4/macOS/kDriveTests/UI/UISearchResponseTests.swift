@@ -21,11 +21,11 @@ import Foundation
 import Testing
 
 struct UISearchResponseTests {
-    private func makeSearchResponse(isAvailableLocally: Bool, isHydrated: Bool) -> UISearchResponse {
+    private func makeSearchResponse(isAvailableLocally: Bool, isHydrated: Bool, type: UINodeType = .file) -> UISearchResponse {
         UISearchResponse(
             id: "1",
             name: "file.txt",
-            type: .file,
+            type: type,
             path: "/test/file.txt",
             modifiedDate: Date(),
             size: 1024,
@@ -35,7 +35,7 @@ struct UISearchResponseTests {
     }
 
     @Test(
-        "Opens locally only when available locally and either hydrated or synchro not paused",
+        "Files open locally only when available locally and either hydrated or synchro not paused",
         arguments: [
             (isAvailableLocally: true, isHydrated: true, isSynchroPaused: false, expected: true),
             (isAvailableLocally: true, isHydrated: true, isSynchroPaused: true, expected: true),
@@ -48,6 +48,12 @@ struct UISearchResponseTests {
     func opensLocally(testCase: (isAvailableLocally: Bool, isHydrated: Bool, isSynchroPaused: Bool, expected: Bool)) {
         let file = makeSearchResponse(isAvailableLocally: testCase.isAvailableLocally, isHydrated: testCase.isHydrated)
         #expect(file.opensLocally(isSynchroPaused: testCase.isSynchroPaused) == testCase.expected)
+    }
+
+    @Test("Available non-hydrated directories open locally while synchro is paused")
+    func nonHydratedDirectoryOpensLocallyWhilePaused() {
+        let directory = makeSearchResponse(isAvailableLocally: true, isHydrated: false, type: .directory)
+        #expect(directory.opensLocally(isSynchroPaused: true))
     }
 
     @Test("Paused synchro statuses", arguments: [
