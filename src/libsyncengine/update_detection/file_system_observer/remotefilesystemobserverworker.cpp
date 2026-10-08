@@ -139,6 +139,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const Remote
             _syncPal->addError(Error(_syncPal->syncDbId(), ERR_ID, longPollJob->exitInfo()));
 
         if (longPollJob->exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::HttpErr)) {
+            invalidateSnapshot();
             (void) clearListingCursor(remoteDirId);
         }
 
