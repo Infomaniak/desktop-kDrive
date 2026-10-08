@@ -27,6 +27,7 @@ IKModal {
     id: root
 
     required property var controller
+    required property color driveColor
     property Item returnFocusItem: null
 
     signal fallbackFocusRequested
@@ -263,7 +264,7 @@ IKModal {
 
                 width: parent.width
                 treeModel: root.controller.pickerModel
-                driveColor: root.controller.driveColor
+                driveColor: root.driveColor
             }
         }
     ]
