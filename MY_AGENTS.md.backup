@@ -1,0 +1,187 @@
+# AGENTS.md - kDrive Desktop Developer Guide
+
+> For use by AI agents and developers working on the kDrive Desktop C++/Qt project.
+
+## Overview
+
+**kDrive Desktop** is a cross-platform C++20/Qt 6 file sync application with virtual file system capabilities. Uses CppUnit for testing, Poco for networking, and log4cplus for logging.
+
+## Quick Commands
+
+### Build & Test
+```bash
+# Build with tests
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_UNIT_TESTS=ON -DQT_QMAKE_EXECUTABLE=<qmake-path>
+cmake --build . --parallel
+
+# Run specific test
+./infomaniak-build-tools/run-test.sh ./build/bin/ kDrive_test_common
+
+# Run directly
+cd build/bin
+./kDrive_test_utility --test=TestUtility::testGetAppSupportDir
+```
+
+### Format & Lint
+```bash
+./run_clang-format.sh  # Apply formatting
+clang-format --dry-run --Werror src/**/*.cpp src/**/*.h  # Check only
+```
+
+## Project Structure
+
+```
+src/
+├── libcommon/       # Utilities, IO, logging (TESTED)
+├── libcommonserver/ # Server utilities (PARTIAL TESTS)
+├── libcommongui/    # GUI utilities (UNTESTED)
+├── libsyncengine/   # Core sync logic (PARTIAL TESTS)
+├── libparms/        # Database (PARTIAL TESTS)
+├── server/          # App server (PARTIAL TESTS)
+├── gui/ & gui4/     # UI code (Qt/Windows)
+└── 3rdparty/        # Dependencies
+
+test/                # CppUnit tests
+extensions/          # macOS system extensions
+```
+
+## Code Conventions
+
+### Naming
+- **Classes**: `PascalCase` (e.g., `JobManager`)
+- **Methods**: `camelCase` (e.g., `queueAsyncJob`)
+- **Private members**: `_underscore` prefix (e.g., `_logger`)
+- **Test methods**: `test<Functionality>` (e.g., `testGetAppSupportDir`)
+- **Namespace**: `KDC`
+
+### Formatting (Google Style + Modifications)
+- **Indent**: 4 spaces, no tabs
+- **Column limit**: 130 chars
+- **Braces**: Same line for functions/classes (via clang-format)
+- **Pointer alignment**: Right (`Type* ptr`)
+- **Include order**: 
+  1. Corresponding header
+  2. Qt headers
+  3. Standard library
+  4. Third-party
+  5. Project headers
+
+### Types
+- `SyncPath` = `std::filesystem::path` for paths
+- `QString` for Qt strings
+- `std::string` for internal logic
+- `std::unique_ptr` for owned resources
+- `std::shared_ptr` for shared objects
+
+## Testing Framework
+
+### CppUnit Structure
+**Header** (`testutility.h`):
+```cpp
+class TestUtility : public CppUnit::TestFixture, public TestBase {
+    CPPUNIT_TEST_SUITE(TestUtility);
+    CPPUNIT_TEST(testGetAppSupportDir);
+    CPPUNIT_TEST_SUITE_END();
+public:
+    void setUp() override;   // Optional setup
+    void testGetAppSupportDir();
+};
+```
+
+**Implementation** (`testutility.cpp`):
+```cpp
+void TestUtility::testGetAppSupportDir() {
+    const SyncPath dir = CommonUtility::getAppSupportDir();
+    CPPUNIT_ASSERT_MESSAGE("Path empty", !dir.empty());
+}
+```
+
+**Registration** (`test.cpp`):
+```cpp
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
+int main(int, char **) {
+    return runTestSuite("_kDriveTest.log");
+}
+```
+
+### Test Utilities
+- `test/test_utility/` contains helpers:
+  - `LocalTemporaryDirectory` - temp dirs
+  - `TimeoutHelper` - async timeouts  
+  - `IOHelperTestUtilities` - fs utilities
+  - `TestHelpers` - platform utilities
+
+## Platform-Specific Code
+
+### Macros
+- `KD_MACOS`, `KD_WINDOWS`, `KD_LINUX` for platform detection
+- Many files have platform variants: `*_mac.cpp`, `*_linux.cpp`, `*_win.cpp`
+
+### Guards
+```cpp
+#if defined(KD_MACOS)
+    // macOS specific code
+#elif defined(KD_WINDOWS)
+    // Windows specific code
+#else
+    // Linux specific code
+#endif
+```
+
+## Error Handling
+
+### Assertions (Tests)
+```cpp
+CPPUNIT_ASSERT(condition);
+CPPUNIT_ASSERT_MESSAGE("failure reason", condition);
+```
+
+### Logging
+```cpp
+LOG_DEBUG(logger, "message");
+LOG_INFO(logger, "message");
+LOG_ERROR(logger, "message");
+```
+
+### Exception Handling
+```cpp
+try {
+    // network operation
+} catch (const Poco::Exception& e) {
+    LOG_ERROR(logger, e.what());
+    sentry::Handler::captureMessage(sentry::Level::Error, "context", e.what());
+}
+```
+
+## Key Environmental Variables
+- `KDRIVE_SENTRY_ENVIRONMENT` - Enable error reporting
+- `KDRIVE_TEST_CI_LOCAL_PATH` - Test directory in CI
+
+## Common Patterns
+
+### Adding New Test
+1. Create header in `test/<lib>/` (e.g., `test/libcommon/utility/testnew.h`)
+2. Create implementation (e.g., `testnew.cpp`)
+3. Register in `test.cpp`: `CPPUNIT_TEST_SUITE_REGISTRATION(TestNew)`
+4. Add to `CMakeLists.txt`
+5. Build & verify: `cmake --build . --target kDrive_test_common`
+
+## Build Configuration
+- **CMake Variable**: `-DBUILD_UNIT_TESTS=ON` to enable tests
+- **Build Type**: Debug for development, Release for distribution
+- **Qt Path**: Set via `-DQT_QMAKE_EXECUTABLE` or `CMAKE_PREFIX_PATH`
+- **Conan**: Migrating to Conan for deps (see `infomaniak-build-tools/conan/`)
+
+## Fortes to Avoid
+- **Untested code**: `libcommongui/` and `src/common/` have NO tests
+- **Partial coverage**: Most other libs have incomplete test coverage
+- **Extensions**: macOS Finder sync/extensions NOT covered here
+- **GUI code**: All UI code NOT covered by unit tests
+
+## Style Enforcement
+Use clang-format with `.clang-format` config. Project uses custom Google style with:
+- Empty line before access modifiers
+- Never wrap constructors to one line
+- Specific pointer alignment rules
+- No include sorting (manual ordering preferred)
