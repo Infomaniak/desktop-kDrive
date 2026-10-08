@@ -292,9 +292,7 @@
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
-  It fetches `AppStateKey::AppUid` after IPC connects and applies it as the `appUUID` tag alongside Linux/Qt runtime
-  tags; the tag is reapplied after Sentry initialization or reinitialization. Events sent before the IPC response may
-  not have this tag because the UUID is not locally cached.
+  Once IPC is connected, it tags events with the server `AppUid` as `appUUID`; earlier events have no such tag.
 - `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It references
   category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
   presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
@@ -503,9 +501,7 @@
   confirmation.
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. It reconciles cached and server-confirmed consent,
   publishes normalized Linux/Qt runtime tags after the GUI application exists, and refreshes the distribution channel
-  from the confirmed `ParametersStore` snapshot. It fetches the app UUID from the server's `AppUid` state after IPC
-  connects, then sets the Sentry `appUUID` tag immediately if initialized and again on subsequent initialization.
-  Events sent before the IPC response may not have the tag because the UUID is not locally cached.
+  from the confirmed `ParametersStore` snapshot.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`. `addDriveSync` is the only sender of `SYNC_ADD`:
   onboarding and Settings must never call `CommService::requestSyncAdd` directly, otherwise two windows can create two

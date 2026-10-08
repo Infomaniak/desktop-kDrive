@@ -52,8 +52,8 @@ class SentryService final : public QObject {
 
         [[nodiscard]] static std::optional<bool> readCachedConsent();
         static void writeCachedConsent(bool enabled);
-        static void initializeFromCachedConsent(const QString &appUid = {});
-        static void initializeWithLinuxConfig(const QString &appUid = {});
+        static void initializeFromCachedConsent();
+        static void initializeWithLinuxConfig();
         static void shutdown();
         [[nodiscard]] static bool isInitialized();
 
@@ -68,7 +68,8 @@ class SentryService final : public QObject {
         void fetchAppUid();
 
     private:
-        static void updateLinuxRuntimeTags(const QString &appUid = {});
+        static void updateLinuxRuntimeTags();
+        void applyAppUidTag() const;
         void reconcileConsentWithParametersStore();
         void applyConsent(bool enabled) const;
 
@@ -79,7 +80,6 @@ class SentryService final : public QObject {
         QString _appUid;
         std::optional<bool> _appliedConsent;
         std::optional<DistributionChannel> _appliedDistributionChannel;
-        bool _appUidRequested{false};
 };
 
 } // namespace KDC
