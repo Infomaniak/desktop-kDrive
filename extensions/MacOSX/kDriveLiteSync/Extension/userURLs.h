@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2026 Infomaniak Network SA
  *
@@ -15,25 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using Infomaniak.kDrive.Types;
-using Infomaniak.kDrive.ViewModels;
-using Microsoft.UI.Xaml.Controls;
 
-namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
-{
-    [ErrorMetadata(
-        Levels = new[] { ErrorLevel.Node },
-        NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        ExitCodes = new[] { ExitCode.SystemError},
-        ExitCauses = new[] { ExitCause.HardlinkNotSupported }
-    )]
-    public sealed partial class HardlinkError : UserControl
-    {
-        private Error Error { get; init; }
-        public HardlinkError(Error error)
-        {
-            this.InitializeComponent();
-            Error = error;
-        }
-    }
-}
+#pragma once
+
+#import <Foundation/Foundation.h>
+
+@interface UserURLs : NSObject
+
+@property (nonatomic, strong) NSURL *homeURL;
+@property (nonatomic, strong) NSURL *homeVolumeURL;
+@property (nonatomic, strong) NSURL *mainTrashURL;
+
+- (NSURL *)trashURLForVolume:(NSURL *)volumeURL;
+- (void)setTrashURL:(NSURL *)trashURL forVolume:(NSURL *)volumeURL;
+
+@end
+
