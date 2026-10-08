@@ -53,8 +53,8 @@
 
 namespace KDC {
 
-// Cursor validity window: cursors older than this many days will not be reused
-static constexpr int CURSOR_VALIDITY_DAYS = 3;
+// Cursor validity window: listing cursors older than this many days will not be reused
+static constexpr int32_t CURSOR_VALIDITY_DAYS = 3;
 
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                const std::string &shortName) :
