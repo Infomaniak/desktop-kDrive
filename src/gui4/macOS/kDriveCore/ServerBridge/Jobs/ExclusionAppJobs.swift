@@ -26,7 +26,6 @@ public struct ExclusionAppJobs: Sendable {
     public init() {}
 
     public func getExclusionAppList(default: Bool) async throws -> [ExclusionAppInfo] {
-        IKLogger.data.log("Query for exclusionAppList")
         let query = ExclusionAppGetListQuery(default: `default`)
         let request = await RequestMessage<ExclusionAppGetListQuery>(
             num: RequestNum.EXCLAPP_GETLIST,
@@ -42,7 +41,6 @@ public struct ExclusionAppJobs: Sendable {
     }
 
     public func getFetchingAppList() async throws -> [String: String] {
-        IKLogger.data.log("Query for fetchingAppList")
         let request = await RequestMessage<EmptyQuery>(
             num: RequestNum.EXCLAPP_GET_FETCHING_APP_LIST,
             body: EmptyQuery()
@@ -57,7 +55,6 @@ public struct ExclusionAppJobs: Sendable {
     }
 
     public func setExclusionAppList(default: Bool, applicationList: [ExclusionAppInfo]) async throws {
-        IKLogger.data.log("Set exclusionAppList")
         let responses = applicationList
             .map { ExclusionAppInfoExchange(appId: $0.appId, description: $0.description, def: $0.def) }
         let query = ExclusionAppSetListQuery(default: `default`, applicationList: responses)

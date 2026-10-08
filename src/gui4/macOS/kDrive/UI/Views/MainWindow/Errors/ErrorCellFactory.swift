@@ -17,7 +17,9 @@
  */
 
 import Foundation
+import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
@@ -37,6 +39,8 @@ extension SynchroError {
 }
 
 struct ErrorCellFactory {
+    @InjectService private var matomo: MatomoUtils
+
     func make(error: SynchroError, isAdmin: Bool, manager: SynchroErrorManager) -> AnyView {
         guard let cell = generateCellForErrorKind(error, isAdmin: isAdmin, manager: manager) else {
             return AnyView(UnknownErrorCellView(error: error, manager: manager))
@@ -56,7 +60,19 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.conflictErrorTitle,
                 description: KDriveLocalizable.conflictErrorDescription,
-                action: .init(title: KDriveLocalizable.conflictErrorAction) { manager.handleConflicts([error]) }
+                action: .init(title: KDriveLocalizable.conflictErrorAction) {
+                    matomo.track(eventWithCategory: .errors, name: "manageSingleConflict")
+                    manager.handleConflicts([error])
+                }
+            )
+        case .caseError:
+            return makeCell(
+                error: error,
+                title: KDriveLocalizable.errCaseTitle,
+                description: KDriveLocalizable.errCaseDescription(error.nodeLabel, error.nodeLabel),
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
+                    await manager.openItemRemotely(error)
+                }
             )
         case .createCancel:
             return makeCell(
@@ -96,7 +112,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errFileRescuedTitle,
                 description: KDriveLocalizable.errFileRescuedDescription,
-                action: .init(title: KDriveLocalizable.buttonOpenFolder) { manager.openFolder(error) }
+                action: .init(title: KDriveLocalizable.buttonOpenFolder) {
+                    matomo.track(eventWithCategory: .errors, name: "manageRescuedFile")
+                    await manager.openRescueFolder(error)
+                }
             )
         case .fileTooBig:
             return makeCell(
@@ -111,56 +130,80 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errEndWithSpaceTitle(error.nodeLabel),
                 description: KDriveLocalizable.errEndWithSpaceDescription(error.nodeLabel, error.nodeLabel),
-                action: .renameItem(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
+                    matomo.track(eventWithCategory: .errors, name: "manageEndsWithSpace")
+                    await manager.renameItem(error)
+                }
             )
         case .forbiddenChar:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errForbiddenCharTitle,
                 description: KDriveLocalizable.errForbiddenCharDescription(error.nodeLabel, error.nodeLabel),
-                action: .renameItem(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
+                    matomo.track(eventWithCategory: .errors, name: "manageUnsupportedChar")
+                    await manager.renameItem(error)
+                }
             )
         case .forbiddenCharOnlySpaces:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errForbiddenCharOnlySpacesTitle,
                 description: KDriveLocalizable.errForbiddenCharOnlySpacesDescription(error.nodeLabel),
-                action: .renameItem(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
+                    matomo.track(eventWithCategory: .errors, name: "manageSpaceOnly")
+                    await manager.renameItem(error)
+                }
             )
         case .nameLength:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errNameLengthTitle(error.nodeLabel),
                 description: KDriveLocalizable.errNameLengthDescription(error.nodeLabel),
-                action: .renameItem(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
+                    matomo.track(eventWithCategory: .errors, name: "manageFileNameTooLong")
+                    await manager.renameItem(error)
+                }
             )
         case .pathLength:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errPathLengthTitle(error.nodeLabel),
                 description: KDriveLocalizable.errPathLengthDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonOpenParentFolder) { manager.openParentFolder(error) }
+                action: .init(title: KDriveLocalizable.buttonOpenParentFolder) {
+                    matomo.track(eventWithCategory: .errors, name: "managePathTooLong")
+                    manager.openParentFolder(error)
+                }
             )
         case .notEnoughDiskSpace:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errNotEnoughDiskSpaceTitle,
                 description: KDriveLocalizable.errNotEnoughDiskSpaceDescription,
-                action: .manageDiskSpace(manager: manager)
+                action: .init(title: KDriveLocalizable.buttonManageDiskSpace) {
+                    matomo.track(eventWithCategory: .errors, name: "manageNotEnoughDiskSpace")
+                    manager.openPreferencesSystemStorage()
+                }
             )
         case .quotaExceeded:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errQuotaExceededTitle,
                 description: KDriveLocalizable.errQuotaExceededDescription(error.nodeLabel),
-                action: !isAdmin ? nil : .init(title: KDriveLocalizable.buttonManageStorage) { await manager.openShopURL(error) }
+                action: !isAdmin ? nil : .init(title: KDriveLocalizable.buttonManageStorage) {
+                    matomo.track(eventWithCategory: .errors, name: "manageQuotaExceeded")
+                    await manager.openShopURL(error)
+                }
             )
         case .reservedName:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errReservedNameTitle(error.nodeLabel),
                 description: KDriveLocalizable.errReservedNameDescription(error.nodeLabel),
-                action: .renameItem(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
+                    matomo.track(eventWithCategory: .errors, name: "manageFileNameReserved")
+                    await manager.renameItem(error)
+                }
             )
         case .temporaryBlacklisted:
             return makeCell(
@@ -173,21 +216,30 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.driveAccessDeniedErrorTitle,
                 description: KDriveLocalizable.driveAccessDeniedErrorDescription,
-                action: .init(title: KDriveLocalizable.buttonRetry) { await manager.tryToRestartSynchro(error) }
+                action: .init(title: KDriveLocalizable.buttonRetry) {
+                    matomo.track(eventWithCategory: .errors, name: "manageDriveAccessDenied")
+                    await manager.tryToRestartSynchro(error)
+                }
             )
         case .backErrorDriveAsleep:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.driveAsleepErrorTitle,
                 description: KDriveLocalizable.backErrorDriveAsleepDescription,
-                action: .init(title: KDriveLocalizable.buttonWakeUp) { await manager.openWebPageDrive(error) }
+                action: .init(title: KDriveLocalizable.buttonWakeUp) {
+                    matomo.track(eventWithCategory: .errors, name: "manageDriveAsleep")
+                    await manager.openWebPageDrive(error)
+                }
             )
         case .backErrorDriveMaintenance:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errDriveMaintenanceTitle,
                 description: KDriveLocalizable.errDriveMaintenanceDescription,
-                action: .init(title: KDriveLocalizable.buttonRefresh) { await manager.refreshErrors(error) }
+                action: .init(title: KDriveLocalizable.buttonRefresh) {
+                    matomo.track(eventWithCategory: .errors, name: "manageDriveInMaintenance")
+                    await manager.refreshErrors(error)
+                }
             )
         case .backErrorDriveNotRenew:
             if isAdmin {
@@ -195,14 +247,19 @@ struct ErrorCellFactory {
                     error: error,
                     title: KDriveLocalizable.driveLockedErrorTitle,
                     description: KDriveLocalizable.driveLockedAdminErrorDescription,
-                    action: .init(title: KDriveLocalizable.buttonUpdateSubscription) { await manager.openShopURL(error) }
+                    action: .init(title: KDriveLocalizable.buttonUpdateSubscription) {
+                        matomo.track(eventWithCategory: .errors, name: "manageDriveNotRenew")
+                        await manager.openShopURL(error)
+                    }
                 )
             } else {
                 return makeCell(
                     error: error,
                     title: KDriveLocalizable.driveLockedErrorTitle,
                     description: KDriveLocalizable.driveLockedErrorDescription,
-                    action: .init(title: KDriveLocalizable.buttonRefresh) { await manager.tryToRestartSynchro(error) }
+                    action: .init(title: KDriveLocalizable.buttonRefresh) {
+                        await manager.tryToRestartSynchro(error)
+                    }
                 )
             }
         case .invalidSyncDirAccess:
@@ -210,7 +267,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errInvalidSyncSyncDirAccessTitle,
                 description: KDriveLocalizable.errInvalidSyncSyncDirAccessDescription,
-                action: .errorResolutionTip(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirAccessError")
+                    manager.showResolutionTipsSheet(error)
+                }
             )
         case .invalidSyncDirNesting:
             return makeCell(
@@ -223,7 +283,9 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.driveLoggingErrorTitle,
                 description: KDriveLocalizable.driveLoggingErrorDescription,
-                action: .init(title: KDriveLocalizable.buttonConnectAccount) { manager.navigateToLoginPage() }
+                action: .init(title: KDriveLocalizable.buttonConnectAccount) {
+                    manager.navigateToLoginPage()
+                }
             )
         case .networkOther:
             return makeCell(
@@ -239,18 +301,24 @@ struct ErrorCellFactory {
                 action: .manageDiskSpace(manager: manager)
             )
         case .systemSyncDirAccess:
-            return makeCell(
+            return makeSynchroRootCell(
                 error: error,
                 title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
                 description: KDriveLocalizable.errSystemErrorSyncDirAccessErrorDescription,
-                action: .errorResolutionTip(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirAccessError")
+                    manager.showResolutionTipsSheet(error)
+                }
             )
         case .systemSyncDirDiskMissing:
-            return makeCell(
+            return makeSynchroRootCell(
                 error: error,
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirDiskMissingDescription,
-                action: .errorResolutionTip(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirDiskMissing")
+                    manager.showResolutionTipsSheet(error)
+                }
             )
         case .systemUnableToStartVFS:
             return makeCell(
@@ -258,6 +326,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errSystemUnableToStartVfsTitle,
                 description: KDriveLocalizable.errSystemUnableToStartVfsDescription,
                 action: .init(title: KDriveLocalizable.buttonActivateOfflineSync) {
+                    matomo.track(eventWithCategory: .errors, name: "manageLiteSyncError")
                     manager.showActivateOfflineSynchroSheet(error)
                 }
             )
@@ -273,7 +342,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errExcludedByTemplateTitle,
                 description: KDriveLocalizable.errExcludedByTemplateDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonOpenSyncExclusionRules) { manager.navigateToExclusionRules() }
+                action: .init(title: KDriveLocalizable.buttonOpenSyncExclusionRules) {
+                    matomo.track(eventWithCategory: .errors, name: "manageExcludedFile")
+                    manager.navigateToExclusionRules()
+                }
             )
         case .genericErrForbidden:
             return makeCell(
@@ -287,26 +359,41 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errHardlinkTitle,
                 description: KDriveLocalizable.errHardlinkDescription
             )
+        case .invalidLinkTarget:
+            return makeCell(
+                error: error,
+                title: KDriveLocalizable.errInvalidLinkTargetTitle,
+                description: KDriveLocalizable.errInvalidLinkTargetDescription
+            )
         case .localAccess:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errLocalFileAccessTitle(error.nodeLabel),
                 description: KDriveLocalizable.errLocalFileAccessDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonManage) { manager.showLocalAccessSheet(error) }
+                action: .init(title: KDriveLocalizable.buttonManage) {
+                    matomo.track(eventWithCategory: .errors, name: "manageFileAccessError")
+                    manager.showLocalAccessSheet(error)
+                }
             )
         case .dataSyncDirChanged:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirChanged,
-                action: .errorResolutionTip(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirChanged")
+                    manager.showResolutionTipsSheet(error)
+                }
             )
         case .temporaryDirAccess:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.informationBlockTmpDirAccessErrorTitle,
                 description: KDriveLocalizable.informationBlockTmpDirAccessErrorSubtitle,
-                action: .init(title: KDriveLocalizable.buttonClose) { await manager.closeApp() }
+                action: .init(title: KDriveLocalizable.buttonClose) {
+                    matomo.track(eventWithCategory: .errors, name: "manageTmpDirError")
+                    await manager.closeApp()
+                }
             )
         case .unknown:
             return nil
@@ -328,24 +415,52 @@ struct ErrorCellFactory {
             )
         )
     }
+
+    private func makeSynchroRootCell(
+        error: SynchroError,
+        title: String,
+        description: String,
+        action: ErrorCellView.Action? = nil
+    ) -> AnyView {
+        return AnyView(
+            SynchroRootErrorCellView(
+                error: error,
+                title: title,
+                description: description,
+                action: action
+            )
+        )
+    }
+}
+
+private struct SynchroRootErrorCellView: View {
+    @State private var pathInfo: ErrorCellView.PathInfo?
+
+    let error: SynchroError
+    let title: String
+    let description: String
+    let action: ErrorCellView.Action?
+
+    var body: some View {
+        ErrorCellView(title: title, description: description, pathInfo: pathInfo, action: action)
+            .task(id: error.metadata.synchroDbId) {
+                @InjectService var cache: CoherentCache
+                guard let localPath = await SynchroErrorManager.synchroLocalPath(
+                    synchroDbId: error.metadata.synchroDbId,
+                    cache: cache
+                ) else {
+                    return
+                }
+
+                pathInfo = ErrorCellView.PathInfo(path: localPath, nodeType: .directory)
+            }
+    }
 }
 
 extension ErrorCellView.Action {
-    static func renameItem(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
-        return ErrorCellView.Action(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
-            await manager.renameItem(error)
-        }
-    }
-
     static func manageDiskSpace(manager: SynchroErrorManager) -> Self {
         return ErrorCellView.Action(title: KDriveLocalizable.buttonManageDiskSpace) {
             manager.openPreferencesSystemStorage()
-        }
-    }
-
-    static func errorResolutionTip(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
-        return ErrorCellView.Action(title: KDriveLocalizable.buttonErrorResolutionTip) {
-            manager.showResolutionTipsSheet(error)
         }
     }
 }

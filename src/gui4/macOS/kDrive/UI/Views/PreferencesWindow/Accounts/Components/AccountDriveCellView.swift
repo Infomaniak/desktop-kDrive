@@ -28,23 +28,33 @@ struct AccountDriveCellView: View {
 
     let userDbId: Int
     let drive: any UIDriveRepresentation
+    let organizationName: String?
     let isSynchronized: Bool
 
     private var synchroConfiguration: SynchroConfiguration {
-        return SynchroConfiguration(drive: drive, localFolder: .init(), blackList: [])
+        return SynchroConfiguration(drive: drive, localFolder: .init(), blackList: [], useLightSync: true)
     }
 
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
             BadgeView(
-                image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
                 color: drive.color ?? ColorToken.Drive.defaultColor.asColor
             )
 
-            Text(drive.name)
-                .font(.Tokens.body)
-                .foregroundStyle(ColorToken.Text.primary.asColor)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(drive.name)
+                    .font(.Tokens.body)
+                    .foregroundStyle(ColorToken.Text.primary.asColor)
+
+                if let organizationName {
+                    Text(organizationName)
+                        .font(.Tokens.subheadline)
+                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                }
+            }
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             if isSynchronized {
                 Text(KDriveLocalizable.syncedDrive)
@@ -75,10 +85,13 @@ struct AccountDriveCellView: View {
     }
 
     private func manageSynchronizedDrive() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .accountsSettingsPage, name: "openDriveSettings")
+
         guard let drive = drive as? UIDrive else { return }
 
         @InjectService var router: PreferencesViewRouter
-        router.append(.syncedKDrive(drive))
+        router.append(.syncedKDrive(drive, userDbId: userDbId))
     }
 
     private func showSynchronizeDriveSheet() {
@@ -111,7 +124,8 @@ struct AccountDriveCellView: View {
             origin: .availableDrive(drive),
             remoteFolder: .kDriveRoot,
             localFolder: configuration.localFolder.url,
-            blackList: configuration.blackList
+            blackList: configuration.blackList,
+            useLightSync: configuration.useLightSync
         )
 
         try await SyncCreationService().create(from: syncCandidate)
@@ -119,5 +133,10 @@ struct AccountDriveCellView: View {
 }
 
 #Preview {
-    AccountDriveCellView(userDbId: PreviewHelper.user.id, drive: PreviewHelper.drive1, isSynchronized: true)
+    AccountDriveCellView(
+        userDbId: PreviewHelper.user.id,
+        drive: PreviewHelper.drive1,
+        organizationName: PreviewHelper.account.name,
+        isSynchronized: true
+    )
 }

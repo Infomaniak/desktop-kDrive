@@ -34,9 +34,9 @@ final class OnboardingViewController: NSViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
-    init(user: UIUser?, steps: [OnboardingStep]?, initialStep: OnboardingStep?) {
+    init(user: UIUser?, steps: [OnboardingStep]?, initialStep: OnboardingStep?, onFinish: (@MainActor () -> Void)? = nil) {
         shouldGuessInitialStep = initialStep == nil
-        flowCoordinator = OnboardingFlowCoordinator(user: user, steps: steps, initialStep: initialStep)
+        flowCoordinator = OnboardingFlowCoordinator(user: user, steps: steps, initialStep: initialStep, onFinish: onFinish)
 
         contentView = NSView()
         animationsView = OnboardingAnimationsView(flowCoordinator: flowCoordinator)

@@ -32,8 +32,10 @@ public struct LoadingButton<Content: View>: View {
 
     public var body: some View {
         Button {
+            guard !isLoading else { return }
+            isLoading = true
+
             Task {
-                isLoading = true
                 await action()
                 isLoading = false
             }

@@ -72,6 +72,15 @@ enum DataManagementItem: String, Sendable, Identifiable, CaseIterable {
             return \.isSentryEnabled
         }
     }
+
+    var matomoName: String {
+        switch self {
+        case .matomo:
+            return "changeMatomoSettings"
+        case .sentry:
+            return "changeSentrySettings"
+        }
+    }
 }
 
 struct DataManagementPreferencesView: View {

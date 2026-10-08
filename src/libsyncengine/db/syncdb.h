@@ -117,6 +117,7 @@ class SyncDb : public Db {
         bool tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath);
 
         bool revertAllLocalDeletes();
+
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
 

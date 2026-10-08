@@ -125,7 +125,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool versionAsked() { return _versionAsked; }
         inline bool clearSyncNodesAsked() { return _clearSyncNodesAsked; }
         inline bool settingsAsked() { return _settingsAsked; }
+        inline void clearSettingsAsked() { _settingsAsked = false; }
         inline bool synthesisAsked() { return _synthesisAsked; }
+        inline void clearSynthesisAsked() { _synthesisAsked = false; }
         inline bool authorizationCodeReceived() { return !_authorizationCodeStr.isEmpty(); }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
         inline qint64 runningServerPid() const { return _runningServerPid; }
@@ -147,7 +149,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void stopAllVfs();
 
         ExitInfo stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
-                              const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
+                                  const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
 
         void addError(const Error &error) const;
         void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
@@ -246,6 +248,14 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 
         [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
+
+#if defined(KD_MACOS)
+        //! Install the Vfs Mac extension.
+        /*!
+          \return The exit code of the operation.
+        */
+        [[nodiscard]] ExitInfo installVfs();
+#endif
 
     protected:
         // ServerRequests methods are accessible through std::function pointers in order to be mocked in tests

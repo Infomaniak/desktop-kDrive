@@ -29,6 +29,11 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
     case doNotJoin
     case beta
     case `internal`
+    case test
+
+    static func availableOptions(containsStaffUser: Bool) -> [BetaOption] {
+        containsStaffUser ? [.doNotJoin, .beta, .internal, .test] : [.doNotJoin, .beta]
+    }
 
     var description: String {
         switch self {
@@ -38,6 +43,8 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
             KDriveLocalizable.releaseChannelBeta
         case .internal:
             KDriveLocalizable.releaseChannelInternal
+        case .test:
+            KDriveLocalizable.releaseChannelTest
         }
     }
 
@@ -49,6 +56,8 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
             return KDriveLocalizable.releaseChannelBeta
         case .internal:
             return KDriveLocalizable.releaseChannelInternal
+        case .test:
+            return KDriveLocalizable.releaseChannelTest
         }
     }
 
@@ -65,7 +74,7 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
         case .legacy:
             self = .doNotJoin
         case .test:
-            self = .doNotJoin
+            self = .test
         }
     }
 }
@@ -82,8 +91,8 @@ struct GeneralPreferencesVersionSection: View {
         Section {
             VersionManagementView(repository: repository)
 
-            // TODO: Automatic update is not available yet
-            Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
+            // TODO: Automatic update is not available yet, hidden until implemented
+            // Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
 
             IKLabeledContent(KDriveLocalizable.releaseChannelBeta) {
                 HStack {
@@ -98,7 +107,7 @@ struct GeneralPreferencesVersionSection: View {
 
             IKLabeledContent(KDriveLocalizable.aboutKDrive) {
                 InformationButton {
-                    NSApplication.shared.orderFrontStandardAboutPanel(nil)
+                    (NSApp.delegate as? AppDelegate)?.showAboutPanel()
                 }
             }
         }

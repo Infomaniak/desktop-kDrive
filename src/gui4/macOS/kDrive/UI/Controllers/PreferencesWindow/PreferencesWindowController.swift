@@ -39,7 +39,7 @@ final class PreferencesWindowController: NSWindowController {
         window.maxSize = NSSize(width: 1000, height: 1000)
         window.isReleasedWhenClosed = true
 
-        window.collectionBehavior.insert(.fullScreenNone)
+        window.collectionBehavior = [.managed, .moveToActiveSpace, .fullScreenNone]
 
         preferencesViewController = PreferencesSplitViewController()
         window.contentView = preferencesViewController.view

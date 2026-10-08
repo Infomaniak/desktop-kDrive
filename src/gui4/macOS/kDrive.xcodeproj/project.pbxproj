@@ -7,14 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */; };
 		37A1C4452E546A9600596DBB /* kDriveCoreUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; };
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
 		37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7A3127512FED6AE00053CDDE /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A31274F2FED6AC70053CDDE /* libz.tbd */; };
+		7A3127532FED6AFE0053CDDE /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A31274F2FED6AC70053CDDE /* libz.tbd */; };
 		7A43F1862F7590CA00A44D08 /* InfomaniakDI in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F97805BD2E97E3AF00BC146C /* InfomaniakDI */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7A9074A52F59D1350089E4F1 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = 7A9074A42F59D1350089E4F1 /* InfomaniakDI */; };
 		7A97962C2F0EB51100E36DDE /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 7A97962B2F0EB51100E36DDE /* Collections */; };
 		7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */; };
+		A21547ED30091405009CCB6A /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = A21547EC30091405009CCB6A /* MatomoTracker */; };
+		A21DC5C4300EDEED00D5257F /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A21DC5C3300EDEED00D5257F /* CoreServices.framework */; };
 		A7776BCA2FE519E400989B60 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = A7776BC92FE519E400989B60 /* InfomaniakDI */; };
 		A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
@@ -65,13 +70,6 @@
 			remoteGlobalIDString = F967009D2E95352C00EDD4D7;
 			remoteInfo = kDriveResources;
 		};
-		F97269752E98EFAF002EA08D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 37A1C41E2E546A5200596DBB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F97269622E98EC15002EA08D;
-			remoteInfo = kDriveLogin;
-		};
 		F9A927CB2ECF6BF400B09ABA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 37A1C41E2E546A5200596DBB /* Project object */;
@@ -109,10 +107,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/PreferencesRepositoryTests.swift; sourceTree = SOURCE_ROOT; };
 		37A1C4262E546A5200596DBB /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCoreUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C45A2E546CB600596DBB /* kDriveCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A31274F2FED6AC70053CDDE /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		7A3127522FED6AED0053CDDE /* libz.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.tbd; path = usr/lib/libz.1.tbd; sourceTree = SDKROOT; };
 		7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A21DC5C3300EDEED00D5257F /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		F967009E2E95352C00EDD4D7 /* kDriveResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9ACC5372E5DF50B0081E80B /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -128,9 +130,9 @@
 				Cache/CoherentCacheTests/CoherentCacheErrorTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheSynchroTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheUserTests.swift,
-				Cache/LogUploadStatusCacheTests.swift,
 				Cache/DTOs/SynchroTests.swift,
 				Cache/DTOs/UserUpdateTests.swift,
+				Cache/LogUploadStatusCacheTests.swift,
 				Cache/Observation/helpers/ObservableData.swift,
 				Cache/Observation/helpers/ObservedAccount.swift,
 				Cache/Observation/helpers/ObservedAvailableDrives.swift,
@@ -141,7 +143,14 @@
 				Cache/Observation/helpers/ObservedSynchros.swift,
 				Cache/Observation/helpers/ObservedUpdater.swift,
 				Cache/Observation/helpers/ObservedUser.swift,
+				Cache/SettingsCacheTests.swift,
+				Cache/VFSConversionCacheTests.swift,
 				Jobs/LoginJobTests.swift,
+				Jobs/SyncRestartAfterLoginTests.swift,
+				Logging/GzipCompressorTests.swift,
+				Logging/LogServiceTests.swift,
+				Logging/XPCDiagnosticsTests.swift,
+				Onboarding/OnboardingFlowCoordinatorTests.swift,
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,
 				Parsing/HexColorTests.swift,
@@ -184,11 +193,13 @@
 				Parsing/Jobs/JSON/UPDATER_VERSION_INFO.json,
 				"Parsing/Jobs/JSON/UTILITY_ACTIVATELOADINFO-success.json",
 				Parsing/Jobs/JSON/UTILITY_BESTVFSAVAILABLEMODE.json,
+				Parsing/Jobs/JSON/UTILITY_CHECK_MACOS_PERMISSIONS.json,
 				Parsing/Jobs/JSON/UTILITY_CHECKCOMMSTATUS.json,
 				"Parsing/Jobs/JSON/UTILITY_FINDGOODPATHFORNEWSYNC-error.json",
 				"Parsing/Jobs/JSON/UTILITY_FINDGOODPATHFORNEWSYNC-success.json",
 				Parsing/Jobs/JSON/UTILITY_HASLAUNCHONSTARTUP.json,
 				Parsing/Jobs/JSON/UTILITY_HASSYSTEMLAUNCHONSTARTUP.json,
+				Parsing/Jobs/JSON/UTILITY_INSTALL_MAC_LITESYNC_EXT.json,
 				Parsing/Jobs/JSON/UTILITY_ISPATHVALIDFORNEWSYNC.json,
 				Parsing/Jobs/NodeConflictInfoTest.swift,
 				Parsing/Jobs/NodeCreateMissingFolders.swift,
@@ -204,27 +215,39 @@
 				Parsing/Jobs/UtilityActivateLoadInfoTest.swift,
 				Parsing/Jobs/UtilityBestVFSTest.swift,
 				Parsing/Jobs/UtilityCheckCommStatusTest.swift,
+				Parsing/Jobs/UtilityCheckMacOsPermissionsTest.swift,
 				Parsing/Jobs/UtilityFindPathTest.swift,
 				Parsing/Jobs/UtilityHasLaunchOnStartupTest.swift,
 				Parsing/Jobs/UtilityHasSystemLaunchOnStartupTest.swift,
+				Parsing/Jobs/UtilityInstallMacLiteSyncExtTest.swift,
 				Parsing/Jobs/UtilityIsValidPathNewSyncTest.swift,
 				Parsing/SignalMessageTests.swift,
 				Parsing/Signals/JSON/SYNC_COMPLETEDITEM.json,
-				Parsing/Signals/JSON/SYNC_VFS_CONVERSION_COMPLETED.json,
+				Parsing/Signals/JSON/UPDATER_SHOW_DIALOG.json,
 				Parsing/Signals/JSON/USER_ADDED.json,
 				Parsing/Signals/JSON/UTILITY_ERROR_ADDED.json,
 				Parsing/Signals/JSON/UTILITY_LOG_UPLOAD_STATUS_UPDATED.json,
 				Parsing/Signals/JSON/UTILITY_SHOW_NOTIFICATION.json,
 				Parsing/Signals/LogUploadStatusUpdatedParsingTest.swift,
 				Parsing/Signals/SyncCompletedItemParsingTest.swift,
+				Parsing/Signals/UpdaterShowDialogTest.swift,
 				Parsing/Signals/UserAddedParsingTest.swift,
 				Parsing/Signals/UtilityErrorAddedTest.swift,
 				Parsing/Signals/UtilityShowNotificationTest.swift,
-				Parsing/Signals/VfsConversionCompletedParsingTest.swift,
 				Router/MainViewRouterTests.swift,
+				Signal/SignalProcessorTests.swift,
+				SynchroErrors/SynchroErrorKindTests.swift,
+				UI/BetaOptionTests.swift,
+				UI/FileTree/FileTreeSelectionStateTests.swift,
+				UI/LogUploadSessionTrackerTests.swift,
+				UI/MainViewModelTests.swift,
+				UI/SynchroErrorManagerTests.swift,
 				UI/UISynchroNodeTests.swift,
+				Utils/FinderSidebarFavoritesTests.swift,
+				Utils/MacOSPermissionHandlerTests.swift,
 				XPC/JSON/AnyValidJobResponse.json,
 				XPC/JSON/ParsingError.json,
+				XPC/XPCContinuationTests.swift,
 				XPC/XPCQueryFetcherTest.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
@@ -314,6 +337,7 @@
 			files = (
 				F9A927C92ECF6BF400B09ABA /* kDriveCore.framework in Frameworks */,
 				A7776BCA2FE519E400989B60 /* InfomaniakDI in Frameworks */,
+				A21547ED30091405009CCB6A /* MatomoTracker in Frameworks */,
 				F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -322,7 +346,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A21DC5C4300EDEED00D5257F /* CoreServices.framework in Frameworks */,
 				F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */,
+				7A3127512FED6AE00053CDDE /* libz.tbd in Frameworks */,
 				7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */,
 				7A97962C2F0EB51100E36DDE /* Collections in Frameworks */,
 				F97590BC2ECC7A8A002CC428 /* Sentry in Frameworks */,
@@ -335,6 +361,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7A9074A52F59D1350089E4F1 /* InfomaniakDI in Frameworks */,
+				7A3127532FED6AFE0053CDDE /* libz.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -377,6 +404,9 @@
 		F967014F2E953CF600EDD4D7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A21DC5C3300EDEED00D5257F /* CoreServices.framework */,
+				7A3127522FED6AED0053CDDE /* libz.1.tbd */,
+				7A31274F2FED6AC70053CDDE /* libz.tbd */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -424,7 +454,6 @@
 				37A1C4442E546A9600596DBB /* PBXTargetDependency */,
 				37A1C45F2E546CB700596DBB /* PBXTargetDependency */,
 				F96700A32E95352C00EDD4D7 /* PBXTargetDependency */,
-				F97269762E98EFAF002EA08D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				37A1C4282E546A5200596DBB /* kDrive */,
@@ -461,6 +490,7 @@
 			name = kDriveCoreUI;
 			packageProductDependencies = (
 				A7776BC92FE519E400989B60 /* InfomaniakDI */,
+				A21547EC30091405009CCB6A /* MatomoTracker */,
 			);
 			productName = kDriveCoreUI;
 			productReference = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */;
@@ -579,6 +609,14 @@
 				de,
 				it,
 				Base,
+				pt,
+				sv,
+				nb,
+				da,
+				nl,
+				pl,
+				fi,
+				el,
 			);
 			mainGroup = 37A1C41D2E546A5200596DBB;
 			minimizedProjectReferenceProxies = 1;
@@ -590,6 +628,7 @@
 				F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				7A97962A2F0EB51100E36DDE /* XCRemoteSwiftPackageReference "swift-collections" */,
 				A7DC29A62F3C94BF00879B3D /* XCRemoteSwiftPackageReference "swift-foundation" */,
+				A221F1B0300912900061C832 /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37A1C4272E546A5200596DBB /* Products */;
@@ -692,6 +731,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -729,10 +769,6 @@
 			isa = PBXTargetDependency;
 			target = F967009D2E95352C00EDD4D7 /* kDriveResources */;
 			targetProxy = F96701522E953CF600EDD4D7 /* PBXContainerItemProxy */;
-		};
-		F97269762E98EFAF002EA08D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			targetProxy = F97269752E98EFAF002EA08D /* PBXContainerItemProxy */;
 		};
 		F9A927CC2ECF6BF400B09ABA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1315,6 +1351,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		A221F1B0300912900061C832 /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/matomo-org/matomo-sdk-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.8.0;
+			};
+		};
 		A7DC29A62F3C94BF00879B3D /* XCRemoteSwiftPackageReference "swift-foundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Infomaniak/swift-foundation.git";
@@ -1351,8 +1395,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Infomaniak/ios-login.git";
 			requirement = {
-				branch = "chore/swift-5.10";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.9.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1372,6 +1416,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */;
 			productName = InfomaniakConcurrency;
+		};
+		A21547EC30091405009CCB6A /* MatomoTracker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A221F1B0300912900061C832 /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */;
+			productName = MatomoTracker;
 		};
 		A7776BC92FE519E400989B60 /* InfomaniakDI */ = {
 			isa = XCSwiftPackageProductDependency;

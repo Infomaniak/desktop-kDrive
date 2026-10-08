@@ -62,6 +62,8 @@ struct StateIndicator: StatusIndicator {
 }
 
 struct ActivitiesTableStatusView: View {
+    @InjectService private var matomo: MatomoUtils
+
     let context: UISynchroNodeContext
 
     private var direction: DirectionIndicator {
@@ -106,7 +108,12 @@ struct ActivitiesTableStatusView: View {
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
             StatusIndicatorView(indicator: direction)
-            StatusIndicatorView(indicator: status)
+
+            if status == .inProgress, let progress = context.node.progress {
+                ProgressIndicatorView(progress: progress)
+            } else {
+                StatusIndicatorView(indicator: status)
+            }
 
             if shouldDisplayOptionButton {
                 Menu {
@@ -116,7 +123,7 @@ struct ActivitiesTableStatusView: View {
                         Text(KDriveLocalizable.buttonShowOption)
                     } icon: {
                         KDriveResources.dotsVertical.swiftUIImage
-                            .resizable(at: AppIconSize.iconSize12)
+                            .resizable(at: AppIconSize.iconSize16)
                     }
                     .labelStyle(.iconOnly)
                     .tint(ColorToken.Text.primary.asColor)
@@ -155,6 +162,7 @@ struct ActivitiesTableStatusView: View {
 
     private func openInFinder() {
         @InjectService var nodeURLGenerator: NodeURLGenerator
+        matomo.track(eventWithCategory: .activityPage, name: "openItem")
         let pathToLink = context.node.type == .directory ? context.node.path : context.node.parentFolder
         let url = nodeURLGenerator.localURL(for: pathToLink.path, synchroPath: context.synchro.localPath)
 
@@ -162,6 +170,7 @@ struct ActivitiesTableStatusView: View {
     }
 
     private func openInBrowser() {
+        matomo.track(eventWithCategory: .activityPage, name: "openItemWeb")
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.remoteURL(for: context.node.remoteID, driveId: context.drive.driveId)
 
@@ -169,6 +178,7 @@ struct ActivitiesTableStatusView: View {
     }
 
     private func copyShareLink() {
+        matomo.track(eventWithCategory: .activityPage, name: "copyItemWebLink")
         @InjectService var loadingIndicatorShower: SidebarNotificationPresenting
         loadingIndicatorShower.show(SidebarNotificationState(text: .init(text: KDriveLocalizable.copyingLink), showLoader: true))
 
@@ -191,7 +201,12 @@ struct ActivitiesTableStatusView: View {
         }
     }
 
-    private func navigateToErrorsView() {}
+    private func navigateToErrorsView() {
+        matomo.track(eventWithCategory: .activityPage, name: "openErrors")
+        @InjectService var router: MainViewRouter
+        router.setCurrentTab(.activities)
+        router.append(.errors)
+    }
 }
 
 #Preview {

@@ -112,6 +112,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSignalUtilityQuitJob);
         CPPUNIT_TEST(testUtilityCheckCommStatusJob);
         CPPUNIT_TEST(testUtilityHasSystemLaunchOnStartupJob);
+#if defined(KD_MACOS)
+        CPPUNIT_TEST(testUtilityCheckMacOsPermissionsJob);
+#endif
         CPPUNIT_TEST(testUtilityQuitJob);
         CPPUNIT_TEST(testUtilitySendAppStartTraceJob);
         CPPUNIT_TEST(testUtilityGetAppStateJob);
@@ -119,6 +122,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
         CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
         CPPUNIT_TEST(testUtilitySendLogToSupportJob);
+#if defined(KD_MACOS)
+        CPPUNIT_TEST(testUtilityInstallMacLiteSyncExtJob);
+#endif
         CPPUNIT_TEST(testUpdaterVersionInfoJob);
         CPPUNIT_TEST(testUpdaterStateJob);
         CPPUNIT_TEST(testUpdaterStartInstallerJob);
@@ -192,6 +198,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityActivateLoadInfoJob();
         void testUtilityCheckCommStatusJob();
         void testUtilityHasSystemLaunchOnStartupJob();
+#if defined(KD_MACOS)
+        void testUtilityCheckMacOsPermissionsJob();
+#endif
         void testUtilityQuitJob();
         void testUtilitySendAppStartTraceJob();
         void testUtilityGetAppStateJob();
@@ -199,6 +208,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityCancelLogToSupportJob();
         void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
+#if defined(KD_MACOS)
+        void testUtilityInstallMacLiteSyncExtJob();
+#endif
         void testUpdaterVersionInfoJob();
         void testUpdaterStateJob();
         void testUpdaterStartInstallerJob();

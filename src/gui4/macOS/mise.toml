@@ -4,4 +4,4 @@ swiftlint = { version = "0.63.0", os = ["macos", "linux"] }
 swiftgen = { version = "6.6.3", os = ["macos"] }
 periphery = { version = "3.4.0", os = ["macos"] }
 pipx = "1.8.0"
-"pipx:infomaniak/importloco" = "2.1.1"
+"pipx:infomaniak/importloco" = "2.3.0"

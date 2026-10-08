@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import kDriveResources
 import UniformTypeIdentifiers
 
 public enum UINodeType: Sendable {
@@ -38,12 +39,31 @@ public enum UISynchroFileStatus: Sendable {
 
 public enum UISynchroFileInstruction: Sendable {
     case update
-    case updateMetadata
+    case renamed
     case remove
     case move
     case get
     case put
     case ignore
+
+    public var label: String {
+        switch self {
+        case .update:
+            return KDriveLocalizable.activityInstructionUpdateLabel
+        case .renamed:
+            return KDriveLocalizable.activityInstructionRenameLabel
+        case .remove:
+            return KDriveLocalizable.activityInstructionRemoveLabel
+        case .move:
+            return KDriveLocalizable.activityInstructionMoveLabel
+        case .get:
+            return KDriveLocalizable.activityInstructionGetLabel
+        case .put:
+            return KDriveLocalizable.activityInstructionPutLabel
+        case .ignore:
+            return KDriveLocalizable.activityInstructionIgnoreLabel
+        }
+    }
 }
 
 public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
@@ -58,7 +78,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     public let status: UISynchroFileStatus?
     public let instruction: UISynchroFileInstruction?
     public let size: Int64
-    public let progress: Int32
+    public let progress: Int?
     public let syncDate: Date
 
     public var relevantPath: URL {
@@ -69,15 +89,12 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         return relevantPath.deletingLastPathComponent()
     }
 
-    public var fileType: UTType? {
-        return UTType(filenameExtension: relevantPath.pathExtension)
-    }
-
     public var fileTypeRepresentation: FileTypeRepresentation {
-        guard let fileType else {
-            return .unknown
+        if type == .directory {
+            return .folder
         }
-        return FileTypeRepresentation(utType: fileType)
+
+        return FileTypeRepresentation(filenameExtension: relevantPath.pathExtension)
     }
 
     public init(
@@ -90,7 +107,7 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         status: UISynchroFileStatus?,
         instruction: UISynchroFileInstruction?,
         size: Int64,
-        progress: Int32,
+        progress: Int,
         syncDate: Date
     ) {
         self.id = id
@@ -102,12 +119,8 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         self.status = status
         self.instruction = instruction
         self.size = size
-        self.progress = min(max(progress, 0), 100)
+        self.progress = progress < 0 ? nil : min(max(progress, 0), 100)
         self.syncDate = syncDate
-    }
-
-    public static func == (lhs: UISynchroNode, rhs: UISynchroNode) -> Bool {
-        return lhs.id == rhs.id
     }
 
     public func hash(into hasher: inout Hasher) {

@@ -39,7 +39,7 @@ struct SynchroSelectorView: View {
             } label: {
                 HStack {
                     if let selectedItem = viewModel.selectedItem {
-                        SynchroLabelView(item: selectedItem)
+                        SynchroLabelView(item: selectedItem, showErrorDot: viewModel.hasOtherSynchroWithError)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
@@ -50,7 +50,10 @@ struct SynchroSelectorView: View {
                 .padding(.horizontal, AppPadding.padding12)
                 .padding(.vertical, AppPadding.padding8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Material.regular, in: .rect(cornerRadius: AppRadius.radius8))
+                .background(
+                    Color(nsColor: .unemphasizedSelectedContentBackgroundColor),
+                    in: .rect(cornerRadius: AppRadius.radius8)
+                )
             }
             .buttonStyle(.plain)
             .popover(isPresented: $isShowingPicker, arrowEdge: .bottom) {

@@ -25,6 +25,7 @@ enum WindowRoute: Sendable, Equatable {
     case onboarding(UIUser? = nil, [OnboardingStep]? = nil, OnboardingStep? = nil)
     case mainWindow(MainViewTab? = nil)
     case updateRequired
+    case enableBackgroundActivity
 }
 
 final class MainWindowRouter {

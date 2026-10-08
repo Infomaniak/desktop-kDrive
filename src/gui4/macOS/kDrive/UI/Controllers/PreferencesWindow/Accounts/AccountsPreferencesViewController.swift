@@ -17,11 +17,17 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import SwiftUI
 
 class AccountsPreferencesViewController: TitledViewController<AccountsView> {
     convenience init(viewModel: PreferencesViewModel) {
-        self.init(toolbarTitle: SidebarItem.accounts.title, contentView: AccountsView(viewModel: viewModel))
+        @InjectService var router: PreferencesViewRouter
+        self.init(
+            toolbarTitle: SidebarItem.accounts.title,
+            navigableRouter: router,
+            contentView: AccountsView(viewModel: viewModel)
+        )
     }
 }

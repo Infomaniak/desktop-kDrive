@@ -90,6 +90,7 @@ struct DriveListResponse: Codable, Sendable {
 
 public struct AvailableDriveResponse: Codable, Sendable {
     let accountId: Int32
+    @Base64CodedString var accountName: String
     let driveId: Int32
     let userDbId: Int32
     let userId: Int32
@@ -101,6 +102,7 @@ public extension AvailableDriveResponse {
     var asAvailableDrive: AvailableDrive {
         AvailableDrive(driveId: driveId,
                        accountId: accountId,
+                       accountName: accountName,
                        userDbId: userDbId,
                        userId: userId,
                        name: name,

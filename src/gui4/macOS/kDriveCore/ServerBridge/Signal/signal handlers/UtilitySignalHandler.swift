@@ -36,15 +36,29 @@ struct UtilitySignalHandler {
 
         let requestId = "kdrive_notification_\(notificationSignal.num)_\(notificationSignal.id)"
         let request = UNNotificationRequest(identifier: requestId, content: content, trigger: nil)
-        try? await UNUserNotificationCenter.current().add(request)
+        do {
+            try await UNUserNotificationCenter.current().add(request)
+        } catch {
+            IKLogger.xpc.error("[KD] Failed to post user notification: \(error)")
+        }
     }
 
     func handleError(_ signal: Data) async throws {
-        guard let errorInfoSignal = try? decoder.decode(SignalMessage<ErrorInfoSignal>.self, from: signal) else {
+        let errorInfoSignal: SignalMessage<ErrorInfoSignal>
+        do {
+            errorInfoSignal = try decoder.decode(SignalMessage<ErrorInfoSignal>.self, from: signal)
+        } catch {
+            IKLogger.xpc.error("[KD] Failed to decode error-added signal: \(error)")
             throw SignalError.unableToGetErrorInfoFromSignal
         }
 
-        let errorInfo = ErrorInfo(errorInfoMetadata: errorInfoSignal.body.errorInfo)
+        let errorMetadata = errorInfoSignal.body.errorInfo
+        IKLogger.xpc.info(
+            "[KD] [Signal ←] #\(errorInfoSignal.id) error added: syncDbId=\(errorMetadata.syncDbId) " +
+                "level=\(errorMetadata.level) code=\(errorMetadata.exitCode) cause=\(errorMetadata.exitCause)"
+        )
+
+        let errorInfo = ErrorInfo(errorInfoMetadata: errorMetadata)
         try await coherentCache.addOrUpdateError(errorInfo)
     }
 
@@ -67,8 +81,28 @@ struct UtilitySignalHandler {
         }
 
         let status = LogUploadStatus(signal: statusSignal.body)
-        IKLogger.xpc.log("[KD] Log upload status changed: \(status.state.rawValue) (\(status.percentage)%)")
+        let message = "[KD] Log upload status changed: \(status.state.rawValue) (\(status.percentage)%)"
+        switch status.state {
+        case .Failed:
+            IKLogger.xpc.error(message)
+        case .Success, .Canceled:
+            IKLogger.xpc.info(message)
+        default:
+            IKLogger.xpc.debug(message)
+        }
 
         await logUploadStatusCache.setLogUploadStatus(status)
+    }
+
+    func handleShowSynthesis() async throws {
+        await MainActor.run {
+            NotificationCenter.default.post(name: .bringAllWindowsToFront, object: nil)
+        }
+    }
+
+    func handleShowSettings() async throws {
+        await MainActor.run {
+            NotificationCenter.default.post(name: .bringSettingsToFront, object: nil)
+        }
     }
 }

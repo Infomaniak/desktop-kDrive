@@ -22,16 +22,42 @@ enum NSXPCConnectionError: Error {
     case failedToCastProxy(_: String)
 }
 
-public extension NSXPCConnection {
-    func proxy<Interface>(
-        from connection: NSXPCConnection,
+extension NSXPCConnection {
+    func proxy<Interface: AnyObject>(
+        errorHandler: @escaping (Error) -> Void,
         type: Interface.Type
-    ) throws -> Interface where Interface: AnyObject {
-        let proxy = connection.remoteObjectProxy
+    ) throws -> Interface {
+        let proxy = remoteObjectProxyWithErrorHandler(errorHandler)
         guard let typedProxy = proxy as? Interface else {
             throw NSXPCConnectionError.failedToCastProxy(String(describing: Interface.self))
         }
 
         return typedProxy
+    }
+}
+
+final class XPCContinuation<Value>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Value, Error>?
+
+    init(_ continuation: CheckedContinuation<Value, Error>) {
+        self.continuation = continuation
+    }
+
+    func resume(returning value: Value) {
+        takeContinuation()?.resume(returning: value)
+    }
+
+    func resume(throwing error: Error) {
+        takeContinuation()?.resume(throwing: error)
+    }
+
+    private func takeContinuation() -> CheckedContinuation<Value, Error>? {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let continuation = continuation
+        self.continuation = nil
+        return continuation
     }
 }

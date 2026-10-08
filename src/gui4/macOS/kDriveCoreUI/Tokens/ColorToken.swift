@@ -40,8 +40,8 @@ public struct ColorToken {
     // MARK: - Semantic tokens (T2)
 
     public enum Accent {
-        public static let primary = ColorToken(light: KDriveColors.blue600, dark: KDriveColors.blue400)
-        public static let secondary = ColorToken(light: KDriveColors.kDrive500, dark: KDriveColors.kDrive600)
+        public static let primary = ColorToken(light: KDriveColors.blue600, dark: KDriveColors.blue600)
+        public static let secondary = ColorToken(light: KDriveColors.kDrive500, dark: KDriveColors.kDrive500)
     }
 
     public enum Action {

@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -60,6 +61,8 @@ struct RemoveSynchroConfirmationView: View {
     }
 
     private func removeSynchro() async {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .driveManagementPage, name: "delete")
         do {
             try await SyncJobs().syncDelete(syncDbId: Int32(synchroDbId))
 

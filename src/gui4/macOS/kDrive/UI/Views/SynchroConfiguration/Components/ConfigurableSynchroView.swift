@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -33,7 +34,7 @@ struct ConfigurableSynchroView: View {
             folderPath = KDriveLocalizable.syncFolderDefaultLocation
         }
 
-        var label = AttributedString(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionLocation(folderPath))
+        var label = AttributedString(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionLocationMac(folderPath))
         label.font = .Tokens.subheadline
         label.foregroundColor = ColorToken.Text.tertiary.asColor
 
@@ -52,7 +53,7 @@ struct ConfigurableSynchroView: View {
             synchronizedFolders = KDriveLocalizable.onboardingExclusionSummarySome
         }
 
-        var label = AttributedString(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionExclusion(synchronizedFolders))
+        var label = AttributedString(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionExclusionMac(synchronizedFolders))
         label.font = .Tokens.subheadline
         label.foregroundColor = ColorToken.Text.tertiary.asColor
 
@@ -67,7 +68,7 @@ struct ConfigurableSynchroView: View {
         HStack {
             HStack(alignment: .top) {
                 BadgeView(
-                    image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                    image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
                     color: configuration.drive.color ?? ColorToken.Drive.defaultColor.asColor
                 )
 
@@ -87,6 +88,8 @@ struct ConfigurableSynchroView: View {
             }
 
             Button(KDriveLocalizable.buttonConfigure) {
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .driveSetupDialog, name: "configureSync")
                 viewModel.navigate(to: .configureSynchro(configuration))
             }
         }
@@ -94,6 +97,6 @@ struct ConfigurableSynchroView: View {
 }
 
 #Preview {
-    ConfigurableSynchroView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []))
+    ConfigurableSynchroView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, blackList: [], useLightSync: true))
         .padding()
 }

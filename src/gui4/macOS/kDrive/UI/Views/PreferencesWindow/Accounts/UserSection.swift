@@ -16,12 +16,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct UserSection: View {
+    @InjectService private var matomo: MatomoUtils
+
     @State private var isShowingDisconnectUserAlert = false
 
     @State private var isShowingErrorAlert = false
@@ -29,7 +32,7 @@ struct UserSection: View {
 
     let user: UIUser
 
-    let synchronizedDrives: [UIDrive]
+    let synchronizedDrives: [UIDriveContext]
     let availableDrives: [UIAvailableDrive]
 
     enum DomainError: LocalizedError {
@@ -47,22 +50,36 @@ struct UserSection: View {
         Section {
             UserHeaderCellView(avatar: user.avatar, name: user.name, email: user.email)
 
-            ForEach(synchronizedDrives) { drive in
-                AccountDriveCellView(userDbId: user.dbId, drive: drive, isSynchronized: true)
+            ForEach(synchronizedDrives) { driveContext in
+                AccountDriveCellView(
+                    userDbId: user.dbId,
+                    drive: driveContext.drive,
+                    organizationName: driveContext.account.name,
+                    isSynchronized: true
+                )
             }
 
-            ForEach(availableDrives) { drive in
-                AccountDriveCellView(userDbId: user.dbId, drive: drive, isSynchronized: false)
+            ForEach(availableDrives) { availableDrive in
+                AccountDriveCellView(
+                    userDbId: user.dbId,
+                    drive: availableDrive,
+                    organizationName: availableDrive.accountName,
+                    isSynchronized: false
+                )
             }
 
             Button(KDriveLocalizable.buttonDisconnectAccount, role: .destructive) {
+                matomo.track(eventWithCategory: .accountsSettingsPage, name: "disconnect")
                 isShowingDisconnectUserAlert = true
             }
             .buttonStyle(.borderless)
             .tint(.red)
             .alert(KDriveLocalizable.dialogRemoveAccountTitle, isPresented: $isShowingDisconnectUserAlert) {
-                Button(KDriveLocalizable.buttonKeepAccount, role: .cancel) {}
+                Button(KDriveLocalizable.buttonKeepAccount, role: .cancel) {
+                    matomo.track(eventWithCategory: .accountsSettingsPage, name: "cancelDisconnect")
+                }
                 Button(KDriveLocalizable.buttonLogOut, role: .destructive) {
+                    matomo.track(eventWithCategory: .accountsSettingsPage, name: "confirmDisconnect")
                     logOutAccount()
                 }
             } message: {
@@ -87,7 +104,7 @@ struct UserSection: View {
 #Preview {
     UserSection(
         user: PreviewHelper.user,
-        synchronizedDrives: [PreviewHelper.drive1],
+        synchronizedDrives: [PreviewHelper.driveContext1],
         availableDrives: [PreviewHelper.availableDrive1]
     )
 }

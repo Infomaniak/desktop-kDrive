@@ -30,7 +30,6 @@ struct MainViewRouterTests {
         // THEN
         #expect(router.currentPath.mainTab == .home)
         #expect(router.currentPath.details == [.home])
-        #expect(router.currentModal == nil)
     }
 
     @Test()
@@ -196,29 +195,5 @@ struct MainViewRouterTests {
 
         // THEN
         #expect(router.currentPath.details == [.home, .errors])
-    }
-
-    @Test()
-    func setCurrentModalToValue() async {
-        // GIVEN
-        let router = MainViewRouter(defaultTab: .home)
-
-        // WHEN - ModalPath has no cases yet; verify setter is safe with nil
-        await router.setCurrentModal(nil)
-
-        // THEN
-        #expect(router.currentModal == nil)
-    }
-
-    @Test()
-    func switchingTabsDoesNotAffectModal() async {
-        // GIVEN
-        let router = MainViewRouter(defaultTab: .home)
-
-        // WHEN
-        await router.setCurrentTab(.activities)
-
-        // THEN - modal should remain nil regardless of tab switches
-        #expect(router.currentModal == nil)
     }
 }

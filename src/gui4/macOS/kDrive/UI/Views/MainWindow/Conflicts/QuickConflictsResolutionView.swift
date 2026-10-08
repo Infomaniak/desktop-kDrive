@@ -66,6 +66,17 @@ enum UIConflictResolutionStrategy: String, Identifiable, CaseIterable {
             return KDriveLocalizable.labelConflictStrategyKeepLocalDescription(count)
         }
     }
+
+    var matomoName: String {
+        switch self {
+        case .keepMostRecent:
+            return "keepMostRecent"
+        case .keepRemote:
+            return "keepRemote"
+        case .keepLocal:
+            return "keepLocal"
+        }
+    }
 }
 
 struct StrategyView: View {
@@ -101,6 +112,8 @@ struct StrategyView: View {
 }
 
 struct QuickConflictsResolutionView: View {
+    @LazyInjectService private var matomo: MatomoUtils
+
     @State private var isShowingGenericError = false
     @State private var isLoadingButton = false
 
@@ -138,6 +151,9 @@ struct QuickConflictsResolutionView: View {
                 }
                 .labelsHidden()
                 .pickerStyle(.inline)
+                .onChange(of: selectedStrategy) { newValue in
+                    matomo.track(eventWithCategory: .batchConflictResolutionPage, name: newValue.matomoName)
+                }
 
                 HStack {
                     LoadingButton(isLoading: $isLoadingButton, action: applyQuickChange) {
@@ -155,6 +171,7 @@ struct QuickConflictsResolutionView: View {
     }
 
     private func applyQuickChange() {
+        matomo.track(eventWithCategory: .batchConflictResolutionPage, name: "apply")
         Task {
             isLoadingButton = true
 
@@ -169,12 +186,16 @@ struct QuickConflictsResolutionView: View {
                     strategy = .KeepRemote
                 }
                 let errorDbIds = errors.map { Int32($0.metadata.dbId) }
-
+                IKLogger.general.info(
+                    "[KD] Batch conflict resolution requested strategy=\(strategy.rawValue) count=\(errorDbIds.count)"
+                )
                 try await ErrorJobs().resolveConflictsQuick(errorDbIds: errorDbIds, strategy: strategy)
+                IKLogger.general.info("[KD] Batch conflict resolution accepted count=\(errorDbIds.count)")
 
                 @InjectService var router: MainViewRouter
                 router.removeLast()
             } catch {
+                IKLogger.general.warning("[KD] Batch conflict resolution failed count=\(errors.count)")
                 isShowingGenericError = true
                 SentrySDK.capture(error: error)
             }
@@ -184,6 +205,7 @@ struct QuickConflictsResolutionView: View {
     }
 
     private func navigateToConflictList() {
+        matomo.track(eventWithCategory: .batchConflictResolutionPage, name: "openIndividualResolution")
         @InjectService var router: MainViewRouter
         router.append(.conflictsList)
     }

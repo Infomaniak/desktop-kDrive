@@ -33,7 +33,7 @@ struct SynchroConfigurationView: View {
             Section {
                 HStack {
                     BadgeView(
-                        image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                        image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
                         color: configuration.drive.color ?? ColorToken.Drive.defaultColor.asColor
                     )
 
@@ -50,6 +50,8 @@ struct SynchroConfigurationView: View {
             SynchroFolderSelectionSection(configuration: configuration)
 
             FolderFoldersSelectionSection(configuration: configuration)
+
+            LightSyncSelectionSection(configuration: configuration)
         }
         .groupedFormatStyle()
         .toolbar {
@@ -75,7 +77,8 @@ struct SynchroConfigurationView: View {
     SynchroConfigurationView(configuration: SynchroConfiguration(
         drive: PreviewHelper.drive1,
         localFolder: .init(),
-        blackList: []
+        blackList: [],
+        useLightSync: true
     ))
     .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil))
 }

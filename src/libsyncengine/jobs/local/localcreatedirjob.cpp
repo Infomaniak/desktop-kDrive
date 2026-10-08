@@ -69,7 +69,8 @@ ExitInfo LocalCreateDirJob::runJob() {
     }
 
     FileStat filestat;
-    if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive) || ioError != IoError::Success) {
+    if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
         return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }

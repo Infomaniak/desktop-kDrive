@@ -73,6 +73,8 @@ struct LocalAccessErrorSheet: View {
     }
 
     private func openParentFolder() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errors, name: "fileAccessErrorOpenFolder")
         synchroErrorManager.openParentFolder(error)
         dismiss()
     }

@@ -14,7 +14,7 @@ open src/gui4/macOS/kDrive.xcodeproj
 cd src/gui4/macOS && xcodebuild -scheme kDrive -destination "platform=macOS,arch=arm64" build-for-testing
 
 # Run tests (all)
-xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDriveTests
+xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDrive -destination "platform=macOS"
 
 # Run SwiftLint
 cd src/gui4/macOS && swiftlint lint
@@ -22,6 +22,8 @@ cd src/gui4/macOS && swiftlint lint
 # Run SwiftLint auto-correct
 cd src/gui4/macOS && swiftlint --fix
 ```
+
+Requires an Xcode shipping Swift tools >= 6.2 (pinned `swift-foundation` 0.1.0 fails to resolve otherwise). If the selected toolchain is older, prefix commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` instead of changing `xcode-select`. The `Swiftlint` build phase runs through `mise` and fails if the project's `mise.toml` files are untrusted — run `mise trust <path-to-mise.toml>` once.
 
 ## Architecture (3 targets)
 
@@ -72,6 +74,13 @@ let synchro = await coherentCache.getSynchro(synchroDbId: id)
 @InjectService var service: MyService                          // immediate, used in functions
 ```
 Services are registered at app startup. Check `AppDelegate` or the DI setup file for registration.
+- Prefer `@LazyInjectService` and `@InjectService` over constructor injection, including for coherent-cache cleanup.
+- Register caches through separate lifecycle and observation protocols.
+
+### Tests
+- Use native Swift Testing (`import Testing`, `@Test`, `#expect`) instead of XCTest.
+- Override and restore shared DI factories and cached instances directly; avoid test-only production initializers.
+- Isolate shared-DI tests: `.serialized` does not serialize unrelated suites.
 
 ### ViewModels & Views
 - ViewModels are `@MainActor final class` conforming to `ObservableObject`
@@ -132,9 +141,24 @@ Strings live in `kDriveResources/Localizable/<lang>.lproj/`.
 NSLocalizedString("key", bundle: .kDriveResources, comment: "")
 ```
 
+### Logging file rotation
+The app writes to an active `<date>_kDrive_client.log` in `~/Library/Logs/kDrive` (real home, matching
+the C++ server's `CommonUtility::logDirectoryPath`). `<date>` is the session creation time
+(`yyyyMMdd_HHmm`, matching the server's `LOGFILE_TIME_FORMAT` and `<date>_kDrive.log` naming).
+`LogFileWriter` rolls it by size, mirroring the C++ `CustomRollingFileAppender`:
+- Rotates when the active file grows past `maxFileSize` (500 MiB, `CommonUtility::logMaxSize`).
+- On rotation the active file becomes `<date>_kDrive_client.log.0.gz` and existing backups shift up
+  (`.0` → `.1`, …). Backups beyond `maxBackupIndex` (4, i.e. `.0`…`.4`) are deleted.
+- Backups are gzip-compressed via `GzipCompressor`, which streams through the system `zlib`
+  (`import zlib`; the `kDriveCore` target links `libz.tbd`). Output is `gunzip`-compatible.
+- Keep the active file's `.log` extension — `LogUploadJob` keys on it to include the live log in
+  non-archived uploads.
+
 ## Key Files
 - XPC query entry point: `kDriveCore/ServerBridge/XPC/XPCQueryFetcher.swift`
 - XPC connection: `kDriveCore/ServerBridge/XPC/XPCConnectionManager.swift`
+- Logging facade/service: `kDriveCore/Utils/IKLogger.swift`, `kDriveCore/Logging/LogService.swift`
+- Log file rotation + gzip: `kDriveCore/Logging/LogFileWriter.swift`, `kDriveCore/Logging/GzipCompressor.swift`
 - Cache protocol: `kDriveCore/ServerBridge/Cache/CoherentCache.swift`
 - Cache (server impl): `kDriveCore/ServerBridge/Cache/ServerCoherentCache.swift`
 - Color tokens: `kDriveCoreUI/Tokens/ColorToken.swift`
@@ -167,6 +191,9 @@ rg -n "RequestNum\." src/gui4/macOS/kDriveCore/
 rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 ```
 
+## Local norms
+- Keep the possible server-crash notion in server connection-loss diagnostics; connection loss is a useful crash indicator.
+
 ## Common Gotchas
 - `@MainActor` is required on all ViewModels — missing it causes runtime warnings in Swift 6 strict concurrency.
 - Signal handlers update the cache; the cache then publishes via Combine. Never update UI directly from a signal handler.
@@ -174,6 +201,7 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 - XPC data is base64-encoded for binary payloads — use `@Base64Coded*` property wrappers (in `XPC/DTOs/PropertyWrappers/`) for `URL`, `String`, `Data`, `NSColor`.
 - AppKit views (`NSView`) needing SwiftUI content: wrap with `NSHostingView<ContentView>`.
 - SwiftLint's `unused_import` analyzer rule is active — remove unused imports before committing.
+- The project has a `kDrive` scheme that runs `kDriveTests`; there is no separate `kDriveTests` scheme.
 
 ## Pre-PR Checks
 ```bash
@@ -181,5 +209,5 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 cd src/gui4/macOS && swiftlint lint
 
 # Build + test
-xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDriveTests -destination 'platform=macOS'
+xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDrive -destination 'platform=macOS'
 ```

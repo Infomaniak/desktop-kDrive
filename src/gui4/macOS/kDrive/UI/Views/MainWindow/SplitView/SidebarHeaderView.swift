@@ -49,7 +49,7 @@ final class SidebarHeaderView: NSView {
             imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
             imageView.topAnchor.constraint(equalTo: topAnchor),
             imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            imageView.widthAnchor.constraint(equalToConstant: 24),
+            imageView.widthAnchor.constraint(equalToConstant: 32),
             imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor),
             textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: AppPadding.padding8),
             textField.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),

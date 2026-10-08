@@ -17,11 +17,17 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import SwiftUI
 
 class StorageViewController: TitledViewController<StorageView> {
     init(mainViewModel: MainViewModel) {
-        super.init(toolbarTitle: SidebarItem.storage.title, contentView: StorageView(mainViewModel: mainViewModel))
+        @InjectService var router: MainViewRouter
+        super.init(
+            toolbarTitle: SidebarItem.storage.title,
+            navigableRouter: router,
+            contentView: StorageView(mainViewModel: mainViewModel)
+        )
     }
 }

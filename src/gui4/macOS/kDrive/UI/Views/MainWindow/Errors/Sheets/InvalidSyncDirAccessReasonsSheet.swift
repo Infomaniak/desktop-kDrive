@@ -93,6 +93,8 @@ struct InvalidSyncDirAccessReasonsSheet: View {
     }
 
     private func navigateToSyncCreation() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errors, name: "liteSyncErrorSwitchMode")
         synchroErrorManager.navigateToSynchroCreation()
         dismiss()
     }

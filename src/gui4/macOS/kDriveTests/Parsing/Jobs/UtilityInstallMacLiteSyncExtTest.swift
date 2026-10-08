@@ -20,16 +20,16 @@ import Foundation
 @testable import kDriveCore
 import Testing
 
-@Suite("VfsConversionCompleted Signal Parsing Test")
-struct VfsConversionCompletedParsingTest {
+@Suite("UtilityInstallMacLiteSyncExt Job Parsing Test")
+struct UtilityInstallMacLiteSyncExtTest {
     private let decoder = JSONDecoder()
 
     // MARK: - Test Data
 
-    var validSignalData: Data {
+    var validJobCallbackData: Data {
         let bundle = Bundle(for: TestBundleMarker.self)
 
-        guard let url = bundle.url(forResource: "SYNC_VFS_CONVERSION_COMPLETED", withExtension: "json") else {
+        guard let url = bundle.url(forResource: "UTILITY_INSTALL_MAC_LITESYNC_EXT", withExtension: "json") else {
             fatalError("Unable to find specified JSON file")
         }
 
@@ -38,17 +38,17 @@ struct VfsConversionCompletedParsingTest {
 
     // MARK: - Parsing Test
 
-    @Test("Successfully parses a valid SYNC_VFS_CONVERSION_COMPLETED.json")
-    func parseValidSignal() throws {
+    @Test("Successfully parses a valid UTILITY_INSTALL_MAC_LITESYNC_EXT.json")
+    func parseValidJobCallback() throws {
         // GIVEN
-        let signalData = validSignalData
+        let callbackData = validJobCallbackData
 
         // WHEN
-        let signal = try decoder.decode(SignalMessage<SyncVfsConversionCompletedSignal>.self, from: signalData)
+        let response = try decoder.decode(CallbackMessage<EmptyResponse>.self, from: callbackData)
 
         // THEN
-        #expect(signal.id == 16968)
-        #expect(signal.num == SignalNum.SYNC_VFS_CONVERSION_COMPLETED)
-        #expect(signal.body.syncDbId == 1)
+        #expect(response.id == 1)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
     }
 }

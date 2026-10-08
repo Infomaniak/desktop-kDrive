@@ -81,7 +81,7 @@ public struct InformationBlockContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            HStack(spacing: AppPadding.padding8) {
+            VStack {
                 if let button {
                     Button(button.title, action: button.action)
                         .buttonStyle(.borderedProminent)
@@ -90,12 +90,8 @@ public struct InformationBlockContentView: View {
                 if let dismissHandler {
                     Button(action: dismissHandler) {
                         Label { Text(KDriveLocalizable.buttonClose) } icon: { Image(systemName: "xmark") }
-                            .labelStyle(.iconOnly)
+                            .labelStyle(.titleOnly)
                             .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                            .padding(AppPadding.padding4)
-                            .frame(maxHeight: .infinity)
-                            .aspectRatio(1, contentMode: .fit)
-                            .background(ColorToken.Surface.tertiary.asColor, in: .circle)
                     }
                     .buttonStyle(.plain)
                 }

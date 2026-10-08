@@ -53,6 +53,7 @@ struct ParametersInfoTest {
 
         let parametersInfo = response.body.parametersInfo
         #expect(parametersInfo.autoStart == true)
+        #expect(parametersInfo.askBeforeDelete == true)
         #expect(parametersInfo.darkTheme == false)
         #expect(parametersInfo.distributionChannel == .Prod)
         #expect(parametersInfo.extendedLog == false)

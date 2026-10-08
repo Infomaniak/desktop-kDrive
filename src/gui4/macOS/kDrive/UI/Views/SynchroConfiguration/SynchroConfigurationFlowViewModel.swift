@@ -43,11 +43,13 @@ struct SynchroConfiguration: Sendable, Identifiable {
 
     var localFolder: LocalFolder
     var blackList: [String]
+    var useLightSync: Bool
 
-    init(drive: any UIDriveRepresentation, localFolder: LocalFolder = LocalFolder(), blackList: [String]) {
+    init(drive: any UIDriveRepresentation, localFolder: LocalFolder = LocalFolder(), blackList: [String], useLightSync: Bool) {
         self.drive = drive
         self.localFolder = localFolder
         self.blackList = blackList
+        self.useLightSync = useLightSync
     }
 }
 
@@ -77,7 +79,8 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
     func updateConfiguration(
         _ id: SynchroConfiguration.ID,
         localFolder: SynchroConfiguration.LocalFolder? = nil,
-        blackList: [String]? = nil
+        blackList: [String]? = nil,
+        useLightSync: Bool? = nil
     ) {
         guard let configuration = configurations[id] else {
             return
@@ -86,7 +89,8 @@ final class SynchroConfigurationFlowViewModel: ObservableObject {
         let updatedConfiguration = SynchroConfiguration(
             drive: configuration.drive,
             localFolder: localFolder ?? configuration.localFolder,
-            blackList: blackList ?? configuration.blackList
+            blackList: blackList ?? configuration.blackList,
+            useLightSync: useLightSync ?? configuration.useLightSync
         )
         configurations[configuration.id] = updatedConfiguration
     }

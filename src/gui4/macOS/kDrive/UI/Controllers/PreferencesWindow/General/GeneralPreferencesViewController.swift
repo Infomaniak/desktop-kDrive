@@ -17,13 +17,16 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import SwiftUI
 
 class GeneralPreferencesViewController: TitledViewController<GeneralPreferencesView> {
     convenience init(repository: PreferencesRepository, viewModel: PreferencesViewModel) {
+        @InjectService var router: PreferencesViewRouter
         self.init(
             toolbarTitle: SidebarItem.general.title,
+            navigableRouter: router,
             contentView: GeneralPreferencesView(repository: repository, viewModel: viewModel)
         )
     }

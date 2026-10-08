@@ -39,6 +39,7 @@ public struct ParametersInfo: Codable, Sendable {
     public let distributionChannel: KDC.DistributionChannel
     public let sentryEnabled: Bool
     public let matomoEnabled: Bool
+    public let askBeforeDelete: Bool
 
     public init(
         language: KDC.Language,
@@ -55,7 +56,8 @@ public struct ParametersInfo: Codable, Sendable {
         maxAllowedCpu: Int32,
         distributionChannel: KDC.DistributionChannel,
         sentryEnabled: Bool,
-        matomoEnabled: Bool
+        matomoEnabled: Bool,
+        askBeforeDelete: Bool
     ) {
         self.language = language
         self.monoIcons = monoIcons
@@ -72,6 +74,7 @@ public struct ParametersInfo: Codable, Sendable {
         self.distributionChannel = distributionChannel
         self.sentryEnabled = sentryEnabled
         self.matomoEnabled = matomoEnabled
+        self.askBeforeDelete = askBeforeDelete
     }
 }
 

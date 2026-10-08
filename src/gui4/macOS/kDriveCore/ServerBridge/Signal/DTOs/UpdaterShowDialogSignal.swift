@@ -19,5 +19,5 @@
 import Foundation
 
 struct UpdaterShowDialogSignal: Codable, Sendable {
-    let versionInfo: VersionInfo
+    let versionInfo: VersionInfoResponse
 }

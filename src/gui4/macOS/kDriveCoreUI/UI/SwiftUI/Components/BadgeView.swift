@@ -26,6 +26,7 @@ public struct BadgeView: View {
     let iconSize: CGFloat
     let squareSize: CGFloat
     let radius: CGFloat
+    let showErrorDot: Bool
 
     private var padding: CGFloat {
         return (squareSize - iconSize) / 2
@@ -36,7 +37,8 @@ public struct BadgeView: View {
         color: Color,
         iconSize: CGFloat = 12,
         squareSize: CGFloat = 20,
-        radius: CGFloat = AppRadius.radius4
+        radius: CGFloat = AppRadius.radius4,
+        showErrorDot: Bool = false
     ) {
         self.image = image
         self.color = color
@@ -44,18 +46,27 @@ public struct BadgeView: View {
         self.iconSize = iconSize
         self.squareSize = squareSize
         self.radius = radius
+        self.showErrorDot = showErrorDot
     }
 
     public var body: some View {
-        if #available(macOS 26.0, *) {
-            icon
-                .padding(padding)
-                .glassEffect(.regular.tint(color), in: .rect(cornerRadius: radius))
-        } else {
-            RoundedRectangle(cornerRadius: radius)
-                .fill(color)
-                .frame(width: squareSize, height: squareSize)
-                .overlay { icon }
+        ZStack(alignment: .topTrailing) {
+            if #available(macOS 26.0, *) {
+                icon
+                    .padding(padding)
+                    .glassEffect(.regular.tint(color), in: .rect(cornerRadius: radius))
+            } else {
+                RoundedRectangle(cornerRadius: radius)
+                    .fill(color)
+                    .frame(width: squareSize, height: squareSize)
+                    .overlay { icon }
+            }
+            if showErrorDot {
+                Circle()
+                    .fill(ColorToken.Status.Medium.warning.asColor)
+                    .frame(width: 8, height: 8)
+                    .offset(x: -1, y: 2)
+            }
         }
     }
 

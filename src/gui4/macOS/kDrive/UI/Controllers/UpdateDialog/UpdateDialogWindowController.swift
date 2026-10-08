@@ -55,7 +55,7 @@ final class UpdateDialogWindowController: NSWindowController, NSWindowDelegate {
     }
 
     func present() {
-        NSApp.activate(ignoringOtherApps: true)
+        (NSApp.delegate as? AppDelegate)?.dockIconManager?.showDockIconAndActivate()
         window?.makeKeyAndOrderFront(nil)
     }
 

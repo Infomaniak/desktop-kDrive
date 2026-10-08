@@ -68,6 +68,7 @@ public struct AvailableDrive: DriveRepresentation {
 
     public let driveId: Int32
     public let accountId: Int32
+    public let accountName: String
     public let userDbId: Int32
     public let userId: Int32
     public let name: String

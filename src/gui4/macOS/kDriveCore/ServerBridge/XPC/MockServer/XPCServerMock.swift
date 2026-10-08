@@ -37,6 +37,11 @@ public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvide
 
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
+    public var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState = .connected
+
+    public var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> =
+        Just(.connected).eraseToAnyPublisher()
+
     @InjectService var signalHandler: XPCSignalHandlerProtocol
 
     let encoder = JSONEncoder()
@@ -49,9 +54,11 @@ public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvide
         case unsupported
     }
 
-    public var guiConnection: XPCGuiProtocol {
-        self
+    public func sendQuery(_ requestData: Data) async throws -> Data {
+        await sendQueryAsync(requestData)
     }
+
+    public func reconnectToLoginAgent() async {}
 
     public init() {}
 

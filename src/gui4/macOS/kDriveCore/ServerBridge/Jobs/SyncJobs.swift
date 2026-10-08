@@ -60,14 +60,13 @@ public struct NewSyncMetadata: Sendable {
 
 public struct SyncJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCache
-    @LazyInjectService private var vfsConversionStore: VFSConversionStoring
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
+    @LazyInjectService private var vfsConversionCache: VFSConversionCaching
 
     public init() {}
 
     @discardableResult
     public func availableSync() async throws -> [SyncInfo] {
-        IKLogger.data.log("Query for availableSync list")
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.SYNC_INFOLIST, body: query)
 
@@ -80,7 +79,7 @@ public struct SyncJobs: Sendable {
     }
 
     public func startSync(syncDbId: Int32) async throws {
-        IKLogger.data.log("Query to startSync")
+        IKLogger.general.info("[KD] Sync start requested syncDbId=\(syncDbId)")
         let previousProgress = await setSyncStatusOptimistically(syncDbId: syncDbId, status: .Starting)
 
         let query = SyncQuery(syncDbId: syncDbId)
@@ -88,14 +87,18 @@ public struct SyncJobs: Sendable {
 
         do {
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+            IKLogger.general.info("[KD] Sync start accepted syncDbId=\(syncDbId) requestId=\(request.id)")
         } catch {
+            IKLogger.general.warning(
+                "[KD] Sync start failed syncDbId=\(syncDbId) requestId=\(request.id) revertingOptimisticStatus=true"
+            )
             await revertSyncStatus(syncDbId: syncDbId, to: previousProgress)
             throw error
         }
     }
 
     public func stopSync(syncDbId: Int32) async throws {
-        IKLogger.data.log("Query to stopSync")
+        IKLogger.general.info("[KD] Sync stop requested syncDbId=\(syncDbId)")
         let previousProgress = await setSyncStatusOptimistically(syncDbId: syncDbId, status: .StopAsked)
 
         let query = SyncQuery(syncDbId: syncDbId)
@@ -103,14 +106,17 @@ public struct SyncJobs: Sendable {
 
         do {
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+            IKLogger.general.info("[KD] Sync stop accepted syncDbId=\(syncDbId) requestId=\(request.id)")
         } catch {
+            IKLogger.general.warning(
+                "[KD] Sync stop failed syncDbId=\(syncDbId) requestId=\(request.id) revertingOptimisticStatus=true"
+            )
             await revertSyncStatus(syncDbId: syncDbId, to: previousProgress)
             throw error
         }
     }
 
     public func syncStatus(syncDbId: Int32) async throws -> KDC.SyncFileStatus {
-        IKLogger.data.log("Query for syncStatus")
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_STATUS, body: query)
 
@@ -120,8 +126,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func addSync(identifier: NewSyncParentIdentifier, metadata: NewSyncMetadata) async throws -> SyncInfo {
-        IKLogger.data.log("Query to addSync")
-
         switch identifier {
         case .transitive(let userDbId, let accountId, let driveId):
             let newSyncQuery = NewSyncQuery(userDbId: userDbId,
@@ -152,7 +156,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func syncStartAfterLoginJob(userDbId: Int32) async throws {
-        IKLogger.data.log("Query for userDelete")
         let query = UserQuery(userDbId: userDbId)
         let request = await RequestMessage<UserQuery>(num: RequestNum.SYNC_START_AFTER_LOGIN, body: query)
 
@@ -160,18 +163,21 @@ public struct SyncJobs: Sendable {
     }
 
     public func syncDelete(syncDbId: Int32) async throws {
-        IKLogger.data.log("Query to syncDelete")
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_DELETE, body: query)
 
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
+        IKLogger.general.info("[KD] Sync deletion requested syncDbId=\(syncDbId) requestId=\(request.id)")
+        do {
+            try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        } catch {
+            IKLogger.general.warning("[KD] Sync deletion failed syncDbId=\(syncDbId) requestId=\(request.id)")
+            throw error
+        }
+        IKLogger.general.info("[KD] Sync deletion accepted syncDbId=\(syncDbId) requestId=\(request.id)")
         try? await coherentCache.removeSynchro(synchroDbId: syncDbId)
-        await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
-        IKLogger.data.log("Query to syncGetPublicLinkUrl")
         let query = LinkQuery(driveDbId: driveDbId, nodeId: nodeId)
         let request = await RequestMessage<LinkQuery>(num: RequestNum.SYNC_GETPUBLICLINKURL, body: query)
 
@@ -180,7 +186,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func getPrivateLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
-        IKLogger.data.log("Query to syncGetPrivateLinkUrl")
         let query = LinkQuery(driveDbId: driveDbId, nodeId: nodeId)
         let request = await RequestMessage<LinkQuery>(num: RequestNum.SYNC_GETPRIVATELINKURL, body: query)
 
@@ -189,7 +194,6 @@ public struct SyncJobs: Sendable {
     }
 
     public func triggerSyncProgressUpdate() async throws {
-        IKLogger.data.log("Query to triggerSyncProgressUpdate")
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.SYNC_TRIGGER_PROGRESS_UPDATE, body: query)
 
@@ -197,7 +201,8 @@ public struct SyncJobs: Sendable {
     }
 
     public func setSupportsVirtualFiles(syncDbId: Int32, value: Bool) async throws {
-        IKLogger.data.log("Query to setSupportsVirtualFiles")
+        IKLogger.general.info("[KD] Sync mode change requested syncDbId=\(syncDbId) supportVfs=\(value)")
+        let token = await vfsConversionCache.beginConversion(synchroDbId: syncDbId)
         let query = SetSupportsVirtualFilesQuery(syncDbId: syncDbId, value: value)
         let request = await RequestMessage<SetSupportsVirtualFilesQuery>(
             num: RequestNum.SYNC_SETSUPPORTSVIRTUALFILES,
@@ -205,16 +210,29 @@ public struct SyncJobs: Sendable {
         )
 
         do {
-            await vfsConversionStore.conversionStarted(synchroDbId: syncDbId)
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
         } catch {
-            await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
+            IKLogger.general.warning(
+                "[KD] Sync mode change failed syncDbId=\(syncDbId) supportVfs=\(value) requestId=\(request.id)"
+            )
+            await vfsConversionCache.finishConversion(synchroDbId: syncDbId, token: token)
             throw error
         }
+        await vfsConversionCache.finishConversion(synchroDbId: syncDbId, token: token)
+        IKLogger.general.info("[KD] Sync mode change accepted syncDbId=\(syncDbId) supportVfs=\(value) requestId=\(request.id)")
+    }
+
+    public func acknowledgeManyDeletes(syncDbId: Int32, userChoice: KDC.TooManyDeletesUserChoice) async throws {
+        let query = AcknowledgeManyDeletesQuery(syncDbId: syncDbId, userChoice: userChoice)
+        let request = await RequestMessage<AcknowledgeManyDeletesQuery>(
+            num: RequestNum.SYNC_ACKNOWLEDGE_MANY_DELETES,
+            body: query
+        )
+
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     public func getOfflineFilesSize(syncDbId: Int32) async throws -> UInt64 {
-        IKLogger.data.log("Query for offlineFilesSize")
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_OFFLINE_FILES_SIZE, body: query)
 
@@ -237,7 +255,7 @@ public struct SyncJobs: Sendable {
         do {
             try await coherentCache.updateSynchro(synchro)
         } catch {
-            IKLogger.data.error("Failed to apply optimistic sync status update: \(error)")
+            IKLogger.cache.warning("[KD] Optimistic sync status update failed syncDbId=\(syncDbId) status=\(status.rawValue)")
         }
 
         return previousProgress
@@ -250,7 +268,7 @@ public struct SyncJobs: Sendable {
         do {
             try await coherentCache.updateSynchro(synchro)
         } catch {
-            IKLogger.data.error("Failed to revert optimistic sync status: \(error)")
+            IKLogger.cache.warning("[KD] Sync status rollback failed syncDbId=\(syncDbId)")
         }
     }
 }

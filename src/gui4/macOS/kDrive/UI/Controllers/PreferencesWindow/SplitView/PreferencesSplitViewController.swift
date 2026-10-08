@@ -55,10 +55,6 @@ final class PreferencesSplitViewController: IKSplitViewController {
             .receiveOnMain(store: &bindStore) { [weak self] newPath in
                 self?.onPathChange(newPath)
             }
-        router.$currentModal
-            .receiveOnMain(store: &bindStore) { [weak self] newPath in
-                self?.onModalPathChange(newPath)
-            }
     }
 
     private func setupSplitView() {
@@ -68,6 +64,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
         let sidebarViewController = PreferencesSidebarViewController()
         sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
+        sidebarItem.canCollapse = false
         sidebarItem.minimumThickness = Self.sidebarWidth
         sidebarItem.maximumThickness = Self.sidebarWidth
         addSplitViewItem(sidebarItem)
@@ -75,14 +72,6 @@ final class PreferencesSplitViewController: IKSplitViewController {
         let generalViewController = NSViewController()
         let contentItem = NSSplitViewItem(viewController: generalViewController)
         addSplitViewItem(contentItem)
-    }
-
-    func onModalPathChange(_ modalPath: ModalPath?) {
-        if let modalPath {
-            // TODO: Present some modal view controller based on modalPath
-        } else if let presentedViewController = presentedViewControllers?.first {
-            dismiss(presentedViewController)
-        }
     }
 
     func onPathChange(_ path: PreferencesViewRouter.RouterPath) {
@@ -96,8 +85,8 @@ final class PreferencesSplitViewController: IKSplitViewController {
             contentViewController = AdvancedPreferencesViewController()
         case .network:
             contentViewController = AdvancedPreferencesNetworkViewController(repository: repository)
-        case .syncedKDrive(let drive):
-            contentViewController = SyncedKDrivePreferencesViewController(drive: drive)
+        case .syncedKDrive(let drive, let userDbId):
+            contentViewController = SyncedKDrivePreferencesViewController(drive: drive, userDbId: userDbId)
         case .advancedSynchros(let drive):
             contentViewController = AdvancedSynchroPreferencesViewController(drive: drive)
         case .debug:
@@ -139,6 +128,6 @@ extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate
             return
         }
 
-        router.setCurrentTab(preferencesViewTab)
+        router.setCurrentTabIfNecessary(preferencesViewTab)
     }
 }

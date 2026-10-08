@@ -88,6 +88,7 @@
         _loginItemAgentConnection = [[NSXPCConnection alloc] initWithLoginItemName:loginItemAgentMachName error:&error];
         if (_loginItemAgentConnection == nil) {
             NSLog(@"[KD] Failed to connect to login item agent: %@", [error description]);
+            [self scheduleRetryToConnectToLoginAgent];
             return;
         }
     } else {

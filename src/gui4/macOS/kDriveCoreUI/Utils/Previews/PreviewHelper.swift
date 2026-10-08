@@ -60,6 +60,11 @@ public enum PreviewHelper {
         name: "Tim Cook"
     )
 
+    public static let driveContext1 = UIDriveContext(
+        drive: PreviewHelper.drive1,
+        account: PreviewHelper.account
+    )
+
     public static let drive1 = UIDrive(
         dbId: 1,
         driveId: 1,
@@ -78,12 +83,14 @@ public enum PreviewHelper {
     public static let availableDrive1 = UIAvailableDrive(
         driveId: 1,
         userDbId: 1,
+        accountName: "Tim Cook",
         name: "Tim Drive",
         hexColor: UIHexColor(red: 0, green: 0, blue: 255)
     )
     public static let availableDrive2 = UIAvailableDrive(
         driveId: 2,
         userDbId: 1,
+        accountName: "Tim Cook",
         name: "Drive Pro Max",
         hexColor: UIHexColor(red: 255, green: 0, blue: 0)
     )
@@ -162,8 +169,9 @@ public enum PreviewHelper {
         channel: KDC.DistributionChannel.Beta,
         tag: "3.8.4",
         buildVersion: 2,
-        buildMinOsVersion: "26",
         downloadUrl: "",
-        checksum: ""
+        checksum: "",
+        minOsVersion: "26",
+        minAppVersion: ""
     )
 }

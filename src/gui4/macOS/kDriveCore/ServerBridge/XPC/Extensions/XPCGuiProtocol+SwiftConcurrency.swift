@@ -20,7 +20,7 @@ import Foundation
 
 extension XPCGuiProtocol {
     /// Async/Await wrapping of sendQuery(data:)
-    func sendQueryAsync(_ requestData: Data) async -> Data? {
+    func sendQueryAsync(_ requestData: Data) async -> Data {
         await withCheckedContinuation { continuation in
             self.processQuery(requestData) { data in
                 // IKLogger.xpc.log("[KD] recv raw callback string: \(String(data: data, encoding: .utf8))")

@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -123,6 +124,8 @@ struct AdvancedPreferencesNetworkView: View {
     }
 
     private func saveHTTPProxyChanges() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeProxySettings")
         isLoadingSaveButton = true
         defer { isLoadingSaveButton = false }
 

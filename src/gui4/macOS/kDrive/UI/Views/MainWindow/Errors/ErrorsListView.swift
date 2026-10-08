@@ -63,8 +63,8 @@ struct ErrorsListView: View {
                 InvalidSyncDirAccessReasonsSheet(synchroErrorManager: synchroErrorManager, error: error)
             case .systemSyncDirAccess(let error):
                 SystemSyncDirAccessReasonsSheet(synchroErrorManager: synchroErrorManager, error: error)
-            case .systemSyncDirDiskMissing:
-                SystemSyncDirDiskMissingReasonsSheet()
+            case .systemSyncDirDiskMissing(let error):
+                SystemSyncDirDiskMissingReasonsSheet(synchroErrorManager: synchroErrorManager, error: error)
             case .dataSyncDirChanged:
                 DataSyncDirChangedReasonsSheet(synchroErrorManager: synchroErrorManager)
             }

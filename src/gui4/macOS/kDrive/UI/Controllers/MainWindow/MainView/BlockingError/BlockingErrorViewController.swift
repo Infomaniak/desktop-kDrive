@@ -18,13 +18,16 @@
 
 import Cocoa
 import Foundation
+import InfomaniakDI
 import kDriveCoreUI
 import SwiftUI
 
 final class BlockingErrorViewController: TitledViewController<BlockingErrorView> {
     init(blockingError: UIBlockingError) {
+        @InjectService var router: MainViewRouter
         super.init(
             toolbarTitle: SidebarItem.home.title,
+            navigableRouter: router,
             contentView: BlockingErrorView(blockingError: blockingError)
         )
     }
