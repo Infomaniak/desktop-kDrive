@@ -25,10 +25,14 @@
 #include <QApplication>
 #include <QIcon>
 #include <QLoggingCategory>
+#include <QStyleHints>
 #include <QWindow>
 #include <QTimer>
 
 #include <algorithm>
+#include <optional>
+
+using namespace Qt::StringLiterals;
 
 namespace KDC {
 
@@ -64,22 +68,81 @@ QString toQString(const TrayIconState state) {
     return "Unknown";
 }
 
-QString trayIconPath(const TrayIconState state) {
+QString toQString(const TrayIconVariant variant) {
+    switch (variant) {
+        using enum TrayIconVariant;
+        case White:
+            return u"white"_s;
+        case Black:
+            return u"black"_s;
+    }
+
+    return u"white"_s;
+}
+
+QString trayIconName(const TrayIconState state) {
     switch (state) {
         using enum TrayIconState;
         case Neutral:
-            return ":/assets/tray/neutral.svg";
+            return u"neutral"_s;
         case Error:
-            return ":/assets/tray/error.svg";
+            return u"error"_s;
         case Notification:
-            return ":/assets/tray/notif.svg";
+            return u"notif"_s;
         case Pause:
-            return ":/assets/tray/pause.svg";
+            return u"pause"_s;
         case Sync:
-            return ":/assets/tray/sync.svg";
+            return u"sync"_s;
     }
 
-    return ":/assets/tray/error.svg";
+    return u"error"_s;
+}
+
+QString trayIconPath(const TrayIconState state, const TrayIconVariant variant) {
+    return u":/assets/tray/%1/%2.svg"_s.arg(toQString(variant), trayIconName(state));
+}
+
+// Reads the `KDRIVE_TRAY_ICONS` override (`white` or `black`) for panels the automatic choice gets wrong.
+std::optional<TrayIconVariant> readTrayIconVariantOverride() {
+    const QString value = qEnvironmentVariable("KDRIVE_TRAY_ICONS").trimmed().toLower();
+    if (value.isEmpty()) {
+        return std::nullopt;
+    }
+
+    if (value == u"white"_s) {
+        return TrayIconVariant::White;
+    }
+
+    if (value == u"black"_s) {
+        return TrayIconVariant::Black;
+    }
+
+    qCWarning(lcSystemTrayController) << "Ignoring invalid KDRIVE_TRAY_ICONS value | value:" << value
+                                      << "| expected: white or black";
+    return std::nullopt;
+}
+
+// Linux exposes no panel background color, so the choice relies on the desktop and the system color scheme.
+TrayIconVariant resolveAutomaticTrayIconVariant(QString &source) {
+    // The GNOME top bar stays dark whatever the color scheme.
+    if (qEnvironmentVariable("XDG_CURRENT_DESKTOP").contains(u"GNOME"_s, Qt::CaseInsensitive)) {
+        source = u"GNOME top bar"_s;
+        return TrayIconVariant::White;
+    }
+
+    switch (QGuiApplication::styleHints()->colorScheme()) {
+        case Qt::ColorScheme::Light:
+            source = u"system color scheme"_s;
+            return TrayIconVariant::Black;
+        case Qt::ColorScheme::Dark:
+            source = u"system color scheme"_s;
+            return TrayIconVariant::White;
+        case Qt::ColorScheme::Unknown:
+            break;
+    }
+
+    source = u"default"_s;
+    return TrayIconVariant::White;
 }
 
 bool isPauseStatus(const SyncStatus status) {
@@ -116,9 +179,10 @@ void SystemTrayController::initialize() {
     _isTrayAvailable = QSystemTrayIcon::isSystemTrayAvailable();
 #endif
     qCInfo(lcSystemTrayController) << "Initializing system tray | available:" << _isTrayAvailable
-                                   << "| state:" << toQString(_iconState) << "| icon:" << trayIconPath(_iconState);
+                                   << "| state:" << toQString(_iconState);
 
-    _trayIcon.setIcon(QIcon(trayIconPath(_iconState)));
+    initializeIconVariant();
+    _trayIcon.setIcon(QIcon(trayIconPath(_iconState, _iconVariant)));
     _trayIcon.setToolTip(QStringLiteral("kDrive"));
 
     _openAction = _trayMenu.addAction(qtTrId("statusBarOpenApp"));
@@ -225,14 +289,45 @@ void SystemTrayController::setIconState(const TrayIconState state) {
     }
 
     qCInfo(lcSystemTrayController) << "System tray icon state changed | from:" << toQString(_iconState)
-                                   << "| to:" << toQString(state) << "| icon:" << trayIconPath(state);
+                                   << "| to:" << toQString(state) << "| icon:" << trayIconPath(state, _iconVariant);
     _iconState = state;
 
     if (!_isInitialized) {
         return;
     }
 
-    _trayIcon.setIcon(QIcon(trayIconPath(_iconState)));
+    _trayIcon.setIcon(QIcon(trayIconPath(_iconState, _iconVariant)));
+}
+
+// The environment override wins; otherwise the variant follows the system color scheme changes.
+void SystemTrayController::initializeIconVariant() {
+    if (const auto variantOverride = readTrayIconVariantOverride(); variantOverride.has_value()) {
+        _iconVariant = variantOverride.value();
+        qCInfo(lcSystemTrayController) << "System tray icon variant selected | variant:" << toQString(_iconVariant)
+                                       << "| source: KDRIVE_TRAY_ICONS";
+        return;
+    }
+
+    QString source;
+    _iconVariant = resolveAutomaticTrayIconVariant(source);
+    qCInfo(lcSystemTrayController) << "System tray icon variant selected | variant:" << toQString(_iconVariant)
+                                   << "| source:" << source;
+
+    (void) connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this,
+                   &SystemTrayController::updateAutomaticIconVariant);
+}
+
+void SystemTrayController::updateAutomaticIconVariant() {
+    QString source;
+    const TrayIconVariant variant = resolveAutomaticTrayIconVariant(source);
+    if (variant == _iconVariant) {
+        return;
+    }
+
+    qCInfo(lcSystemTrayController) << "System tray icon variant changed | from:" << toQString(_iconVariant)
+                                   << "| to:" << toQString(variant) << "| source:" << source;
+    _iconVariant = variant;
+    _trayIcon.setIcon(QIcon(trayIconPath(_iconState, _iconVariant)));
 }
 
 void SystemTrayController::showMainWindow() const {
