@@ -329,7 +329,7 @@ void LiveSnapshot::restoreFromBackup(const ConstSnapshot &backupSnapshot) {
     const std::scoped_lock lock(_mutex, backupSnapshot._mutex);
 
     if (backupSnapshot._items.empty()) {
-        LOG_WARN(_logger, "Cannot restore from empty backup snapshot");
+        LOG_WARN(Log::instance()->getLogger(), "Cannot restore from empty backup snapshot.");
         return;
     }
 
