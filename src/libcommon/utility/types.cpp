@@ -253,6 +253,8 @@ std::string toString(const ExitCause e) {
             return "MoveThroughSymlink";
         case ExitCause::FileNameTooLong:
             return "FileNameTooLong";
+        case ExitCause::HardlinkNotSupported:
+            return "HardlinkNotSupported";
         default:
             return noConversionStr;
     }
@@ -747,6 +749,8 @@ std::string toString(const IoError e) {
             return "TooManySymbolicLinkLevels";
         case IoError::MoveThroughSymlink:
             return "MoveThroughSymlink";
+        case IoError::HardlinkNotSupported:
+            return "HardlinkNotSupported";
         case IoError::Unknown:
             return "Unknown";
         default:

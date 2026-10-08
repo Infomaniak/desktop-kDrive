@@ -92,10 +92,12 @@ namespace Infomaniak.kDrive.CustomControls
                     sync.RemotePath = initialSync.RemotePath;
                     sync.LocalPath = initialSync.LocalPath;
                     sync.SyncType = initialSync.SyncType;
+                    sync.SupportsLiteSync = initialSync.SupportsLiteSync;
                     sync.RemoteNodeId = initialSync.RemoteNodeId;
                     sync.ExcludedNodeIds.Clear();
                     sync.ExcludedNodeIds.AddRange(initialSync.ExcludedNodeIds);
-                    await sync.SelectBestVfsMode();
+                    if (sync.SyncType == Types.SyncType.Online)
+                        await sync.SelectBestVfsMode();
                 }
                 else
                 {
@@ -112,10 +114,12 @@ namespace Infomaniak.kDrive.CustomControls
                 CurrentSync.RemotePath = PreviousCurrentSyncState.RemotePath;
                 CurrentSync.LocalPath = PreviousCurrentSyncState.LocalPath;
                 CurrentSync.SyncType = PreviousCurrentSyncState.SyncType;
+                CurrentSync.SupportsLiteSync = PreviousCurrentSyncState.SupportsLiteSync;
                 CurrentSync.RemoteNodeId = PreviousCurrentSyncState.RemoteNodeId;
                 CurrentSync.ExcludedNodeIds.Clear();
                 CurrentSync.ExcludedNodeIds.AddRange(PreviousCurrentSyncState.ExcludedNodeIds);
-                await CurrentSync.SelectBestVfsMode();
+                if (CurrentSync.SyncType == Types.SyncType.Online)
+                    await CurrentSync.SelectBestVfsMode();
             }
             else
             {
