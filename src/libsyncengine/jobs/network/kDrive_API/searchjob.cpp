@@ -127,7 +127,7 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         } else {
             localProperties.isAvailableLocally = ioError != IoError::NoSuchFileOrDirectory;
-            localProperties.isHydrated = !isDehydrated;
+            localProperties.isHydrated = localProperties.isAvailableLocally && !isDehydrated;
         }
     }
 
