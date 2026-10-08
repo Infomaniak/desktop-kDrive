@@ -736,6 +736,9 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Sembra che non riusciamo a caricare l’applicazione…";
 
+/* loco:6ac60bf864441a81870fc9d2 */
+"errorCopyingShareLink" = "Si è verificato un errore durante la copia del link.";
+
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Si è verificato un errore durante la cancellazione dell’account.";
 
