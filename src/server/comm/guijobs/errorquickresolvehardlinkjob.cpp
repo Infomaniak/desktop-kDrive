@@ -311,7 +311,24 @@ ExitInfo ErrorQuickResolveHardlinkJob::removeLinks(const std::shared_ptr<SyncPal
     // Check whether the local file is in sync with the database. This must be done before removing the node from the database,
     // as the check requires the node to be present. A seed path found by node id that is not located at the path stored in the
     // database is considered as not in sync: a copy of the file is then saved into the rescue folder.
-    if (!syncPal->isLocalItemInSyncWithDb(seedPath)) {
+    bool inSync = syncPal->isLocalItemInSyncWithDb(seedPath);
+    if (inSync) {
+        // On Windows, the check relies on the size and the dates cached in the directory entry of the seed path, which NTFS
+        // does not update when the file is modified through another hardlink. The file is considered as not in sync if these
+        // values are outdated, or if this cannot be checked.
+        bool upToDate = false;
+        IoError ioError = IoError::Success;
+        if (!IoHelper::checkIfFileStatIsUpToDate(seedPath, upToDate, ioError) || ioError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileStatIsUpToDate: " << Utility::formatIoError(seedPath, ioError));
+        }
+        if (!upToDate) {
+            LOGW_INFO(_logger, L"The file status may be outdated, the file is considered as not in sync: "
+                                       << Utility::formatSyncPath(seedPath));
+            inSync = false;
+        }
+    }
+
+    if (!inSync) {
         // The file content may differ from the remote version: save a copy into the rescue folder before removing the
         // hardlinks, so that the user does not lose any data.
         if (ExitInfo exitInfo = rescueFile(syncPal, dbNode, seedPath); !exitInfo) {

@@ -145,6 +145,23 @@ struct IoHelper {
         // file status. This is a convenience function to be used in tests only.
         static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, PathCheckOption option);
 
+        //! Checks whether the size and the dates returned by getFileStat for the item indicated by path are up to date.
+        /*!
+          On Windows, getFileStat reads the metadata cached in the directory entry of the item. NTFS only updates the size and
+          the dates cached in the directory entry of the link through which a file has been modified: the directory entries of
+          the other hardlinks of the file may hold outdated values. The metadata returned by getFileStat are then compared with
+          the current ones, read from an open handle on the item. On other systems, getFileStat reads the metadata of the inode
+          shared by all the links of the item, which are always up to date. Symbolic links (and junctions on Windows) are not
+          followed.
+          \param path is a file system path to a directory entry (we also call it an item).
+          \param upToDate is set with true if the item exists and the size and the dates returned by getFileStat are up to date,
+          false otherwise.
+          \param ioError holds the error returned when an underlying OS API call fails. It is set with
+          IoError::NoSuchFileOrDirectory if the item indicated by path does not exist.
+          \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool checkIfFileStatIsUpToDate(const SyncPath &path, bool &upToDate, IoError &ioError) noexcept;
+
         //! Get the checksum of the file indicated by `path`.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).

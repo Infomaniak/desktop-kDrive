@@ -232,8 +232,7 @@ void TestErrorQuickResolveHardlinkJob::testModifiedFile() {
     CPPUNIT_ASSERT_MESSAGE("The hardlink has not been deleted", !pathExists(_localTempDir.path() / linkName));
 
     // The file content may differ from the remote version: a copy must have been saved into the rescue folder.
-    const SyncPath rescueFilePath =
-            _localTempDir.path() / FileRescuer::rescueFolderName() / fileName;
+    const SyncPath rescueFilePath = _localTempDir.path() / FileRescuer::rescueFolderName() / fileName;
     CPPUNIT_ASSERT_MESSAGE("The file has not been rescued", pathExists(rescueFilePath));
 
     std::ifstream rescueFile(rescueFilePath, std::ios::binary);
@@ -377,11 +376,45 @@ void TestErrorQuickResolveHardlinkJob::testLinkOutsideSyncRoot() {
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
-    CPPUNIT_ASSERT_MESSAGE("The hardlink under the sync root has not been deleted",
-                           !pathExists(_localTempDir.path() / linkName));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink under the sync root has not been deleted", !pathExists(_localTempDir.path() / linkName));
     CPPUNIT_ASSERT_MESSAGE("The hardlink outside of the sync root has been deleted", pathExists(outsideLinkPath));
     CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
                            !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
+}
+
+void TestErrorQuickResolveHardlinkJob::testModifiedThroughOtherLink() {
+    const SyncName fileName = Str("file1.txt");
+    const std::string content("Hello, World!");
+    const NodeId nodeId = createFileAndDbNode(fileName, content);
+
+    // Modify the file through a hardlink located outside of the sync root. On Windows, NTFS does not update the size and the
+    // dates cached in the directory entry of the link located under the sync root.
+    const SyncPath outsideLinkPath = _localOtherDir.path() / Str("link_outside.txt");
+    std::error_code ec;
+    std::filesystem::create_hard_link(_localTempDir.path() / fileName, outsideLinkPath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink outside of the sync root: " + ec.message(), !ec);
+
+    const std::string modifiedContent("Hello, World! Modified through the hardlink located outside of the sync root.");
+    {
+        std::ofstream file(outsideLinkPath, std::ios::binary | std::ios::trunc);
+        file.write(modifiedContent.data(), static_cast<std::streamsize>(modifiedContent.size()));
+        CPPUNIT_ASSERT_MESSAGE("Failed to modify the file through the hardlink", file.good());
+    }
+
+    runQuickResolve(nodeId, SyncPath(fileName));
+
+    CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink outside of the sync root has been deleted", pathExists(outsideLinkPath));
+
+    // The file is not in sync with the database anymore: a copy of the modified file must have been saved into the rescue
+    // folder.
+    const SyncPath rescueFilePath = _localTempDir.path() / FileRescuer::rescueFolderName() / fileName;
+    CPPUNIT_ASSERT_MESSAGE("The file has not been rescued", pathExists(rescueFilePath));
+
+    std::ifstream rescueFile(rescueFilePath, std::ios::binary);
+    const std::string rescuedContent((std::istreambuf_iterator<char>(rescueFile)), std::istreambuf_iterator<char>());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("The rescued file content does not match", modifiedContent, rescuedContent);
 }
 
 void TestErrorQuickResolveHardlinkJob::testRescueFilenameCollision() {

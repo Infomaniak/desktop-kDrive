@@ -42,6 +42,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCreateSymlink);
         CPPUNIT_TEST(testGetNodeId);
         CPPUNIT_TEST(testGetFileStat);
+        CPPUNIT_TEST(testCheckIfFileStatIsUpToDate);
         CPPUNIT_TEST(testGetFileChecksum);
         CPPUNIT_TEST(testGetCanonicalPath);
         CPPUNIT_TEST(testGetRights);
@@ -96,6 +97,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCreateDirectory(void);
         void testCreateSymlink(void);
         void testGetFileStat(void);
+        void testCheckIfFileStatIsUpToDate();
         void testGetFileChecksum(void);
         void testGetCanonicalPath(void);
         void testGetRights(void);

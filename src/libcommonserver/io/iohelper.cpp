@@ -806,6 +806,18 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
 
     return true;
 }
+
+bool IoHelper::checkIfFileStatIsUpToDate(const SyncPath &path, bool &upToDate, IoError &ioError) noexcept {
+    upToDate = false;
+
+    // The file status returned by getFileStat is read from the inode shared by all the links of the item: it is always up to
+    // date.
+    FileStat fileStat;
+    if (!getFileStat(path, &fileStat, ioError, PathCheckOption::Insensitive)) return false;
+
+    upToDate = ioError == IoError::Success;
+    return true;
+}
 #endif
 
 bool IoHelper::getFileStat(const SyncPath &path, FileStat *const filestat, IoError &ioError, PathCheckOption option) noexcept {

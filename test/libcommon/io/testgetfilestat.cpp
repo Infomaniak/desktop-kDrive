@@ -21,6 +21,7 @@
 #include "libcommonserver/io/filestat.h"
 
 #include <filesystem>
+#include <fstream>
 
 using namespace CppUnit;
 
@@ -640,6 +641,73 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
 #endif
+    }
+}
+
+void TestIo::testCheckIfFileStatIsUpToDate() {
+    // A regular file: its file status is up to date.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
+        {
+            std::ofstream ofs(path, std::ios::binary);
+            ofs << "Some content.";
+        }
+
+        bool upToDate = false;
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::checkIfFileStatIsUpToDate(path, upToDate, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(upToDate);
+    }
+
+    // A hardlinked file modified through a link located in another directory. On Windows, the directory entry of the other
+    // link may hold outdated values, which are then reported as such: the file status is only reported as up to date if
+    // getFileStat returns the size of the modified file.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory otherTemporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
+        {
+            std::ofstream ofs(path, std::ios::binary);
+            ofs << "Some content.";
+        }
+
+        const SyncPath linkPath = otherTemporaryDirectory.path() / "link.txt";
+        std::error_code ec;
+        std::filesystem::create_hard_link(path, linkPath, ec);
+        CPPUNIT_ASSERT_MESSAGE(ec.message(), !ec);
+
+        const std::string modifiedContent("Some content, modified through another link.");
+        {
+            std::ofstream ofs(linkPath, std::ios::binary | std::ios::trunc);
+            ofs << modifiedContent;
+        }
+
+        bool upToDate = false;
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::checkIfFileStatIsUpToDate(path, upToDate, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+#if !defined(KD_WINDOWS)
+        CPPUNIT_ASSERT(upToDate);
+#endif
+        if (upToDate) {
+            FileStat fileStat;
+            CPPUNIT_ASSERT(IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+            CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(modifiedContent.size()), fileStat.size);
+        }
+    }
+
+    // A non-existing file.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        bool upToDate = true;
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(
+                IoHelper::checkIfFileStatIsUpToDate(temporaryDirectory.path() / "non_existing_file.txt", upToDate, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+        CPPUNIT_ASSERT(!upToDate);
     }
 }
 

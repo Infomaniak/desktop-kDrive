@@ -41,6 +41,7 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         CPPUNIT_TEST(testMovedFile);
         CPPUNIT_TEST(testLinkSearchFailure);
         CPPUNIT_TEST(testLinkOutsideSyncRoot);
+        CPPUNIT_TEST(testModifiedThroughOtherLink);
         CPPUNIT_TEST(testRescueFilenameCollision);
         CPPUNIT_TEST(testUnknownNode);
         CPPUNIT_TEST(testInvalidPath);
@@ -83,6 +84,11 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
 
         /// A hardlink located outside of the sync root is kept, the links under the sync root are removed.
         void testLinkOutsideSyncRoot();
+
+        /// A file in sync with the database, then modified through a hardlink located outside of the sync root: a copy of the
+        /// modified file is saved into the rescue folder before removing the link under the sync root, even if the metadata
+        /// cached in the directory entry of this link are outdated (Windows).
+        void testModifiedThroughOtherLink();
 
         /// A file whose rescue copy name is already used in the rescue folder: the existing rescue copy is preserved and
         /// the file is saved with a suffixed name.
