@@ -18,7 +18,6 @@
 
 #include "advancedsynccreationcontroller.h"
 
-#include "app/appconstants.h"
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 #include "app/services/syncservice.h"
@@ -67,7 +66,7 @@ QString AdvancedSyncCreationController::localPath() const {
 }
 
 bool AdvancedSyncCreationController::canSubmit() const {
-    return _state == State::Editing && !_locationPickerOpen && hasLocalFolder() && hasRemoteFolder();
+    return _state == State::Editing && !_locationPickerOpen && !_localPath.isEmpty() && !_remoteNodeId.isEmpty();
 }
 
 bool AdvancedSyncCreationController::canConfirmLocation() const {
@@ -81,19 +80,12 @@ void AdvancedSyncCreationController::open(const qint64 driveDbId) {
 
     ++_requestGeneration;
     _driveDbId = static_cast<DriveDbId>(driveDbId);
-    const auto context = _appCache.driveContext(_driveDbId);
-    if (!context) {
+    if (!targetStillExists()) {
         qCWarning(lcAdvancedSyncCreationController) << "Advanced sync creation ignored: unknown drive | driveDbId:" << _driveDbId;
         close();
         return;
     }
 
-    _userDbId = context->userDisplayInfo.dbId();
-    _accountId = context->accountInfo.accountId();
-    _driveId = context->drive.driveId();
-    _driveName = QString::fromStdString(context->drive.name());
-    const QColor driveColor{QString::fromStdString(context->drive.color())};
-    _driveColor = driveColor.isValid() ? driveColor : AppConstants::Drive::defaultColor();
     qCInfo(lcAdvancedSyncCreationController) << "Opening advanced sync creation | driveDbId:" << _driveDbId;
 
     setState(State::Editing);
@@ -168,6 +160,11 @@ void AdvancedSyncCreationController::openLocationPicker() {
     }
 
     if (!_pickerConfigured) {
+        const auto context = _appCache.driveContext(_driveDbId);
+        if (!context) {
+            return;
+        }
+
         // Folders already targeted by a synchronization of the drive cannot be chosen again.
         NodeSet unavailableNodeIds;
         for (const auto &syncInfo: _appCache.syncsForDrive(_driveDbId)) {
@@ -176,7 +173,8 @@ void AdvancedSyncCreationController::openLocationPicker() {
             }
         }
 
-        _pickerModel.configure(_userDbId, _driveId, _driveName, unavailableNodeIds);
+        _pickerModel.configure(context->userDisplayInfo.dbId(), context->drive.driveId(),
+                               QString::fromStdString(context->drive.name()), unavailableNodeIds);
         _pickerConfigured = true;
     }
 
@@ -200,14 +198,19 @@ void AdvancedSyncCreationController::confirmLocation() {
 }
 
 void AdvancedSyncCreationController::submit() {
-    if (!canSubmit() || !targetStillExists()) {
+    if (!canSubmit()) {
+        return;
+    }
+
+    const auto context = _appCache.driveContext(_driveDbId);
+    if (!context) {
         return;
     }
 
     SyncAddRequest request;
-    request.userDbId = _userDbId;
-    request.accountId = _accountId;
-    request.driveId = _driveId;
+    request.userDbId = context->userDisplayInfo.dbId();
+    request.accountId = context->accountInfo.accountId();
+    request.driveId = context->drive.driveId();
     request.localFolderPath = QStr2Path(_localPath);
     request.serverFolderPath = QStr2Path(_remotePath);
     request.serverFolderNodeId = QStr2Str(_remoteNodeId);
@@ -273,11 +276,6 @@ void AdvancedSyncCreationController::close() {
     ++_requestGeneration;
     _state = State::Closed;
     _driveDbId = 0;
-    _userDbId = 0;
-    _accountId = 0;
-    _driveId = 0;
-    _driveName.clear();
-    _driveColor = AppConstants::Drive::defaultColor();
     _localPath.clear();
     _remoteNodeId.clear();
     _remoteFolderName.clear();
