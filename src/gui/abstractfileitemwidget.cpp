@@ -132,7 +132,7 @@ void AbstractFileItemWidget::setPathAndName(const QString &filePath, NodeType ty
 
 void AbstractFileItemWidget::setName(const QString &path, const NodeType type) {
     setFileTypeIcon(CommonUtility::getFileIconPathFromFileName(path, type));
-    _filenameLabel->setText(QFileInfo(path).fileName());
+    _filenameLabel->setText(QFileInfo(path).fileName().toHtmlEscaped());
 }
 
 void AbstractFileItemWidget::setPath(const QString &path) const {

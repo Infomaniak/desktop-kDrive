@@ -181,11 +181,12 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
         setExpandButton();
         QString name = syncInfoClient->name();
         GuiUtility::makePrintablePath(name);
-        _nameLabel->setText(name);
+        _nameLabel->setText(name.toHtmlEscaped());
 
         QString path = Path2QStr(syncInfoClient->localPath());
         GuiUtility::makePrintablePath(path);
-        _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
+        _synchroLabel->setText(
+                tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path.toHtmlEscaped()));
     }
 }
 
@@ -473,7 +474,8 @@ void FolderItemWidget::retranslateUi() {
 
     QString path = Path2QStr(syncInfoClient->localPath());
     GuiUtility::makePrintablePath(path);
-    _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
+    _synchroLabel->setText(
+            tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path.toHtmlEscaped()));
 
     if (ParametersCache::instance()->parameters().moveToTrash()) {
         if (_liteSyncActivated) {
