@@ -150,7 +150,7 @@ class AppClientLinux : public QApplication {
         ServiceEventBus _serviceEventBus{this};
         ExclusionTemplateService _exclusionTemplateService{_serverCommService, _serviceEventBus, this};
         ActivityService _activityService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
-        SentryService _sentryService{_parametersService, _appCache, _parametersStore, this};
+        SentryService _sentryService{_parametersService, _appCache, _parametersStore, _serverCommService, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, _parametersStore, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _appCache, _cachePopulator, _serviceActionTracker, _serviceEventBus, this};
