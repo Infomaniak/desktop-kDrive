@@ -234,6 +234,18 @@ void TestSearchJob::testHandleResponseIsHydratedWithVfsOn() {
         CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
         CPPUNIT_ASSERT(!results.front().isHydrated());
     }
+
+    // No local file corresponds to the result. The search succeeds and the result is neither available locally nor hydrated.
+    {
+        SearchJob job(_driveDbId, _syncWithVfsOnDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/missing_file.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT(!results.front().isAvailableLocally());
+        CPPUNIT_ASSERT(!results.front().isHydrated());
+    }
 }
 #endif
 } // namespace KDC
