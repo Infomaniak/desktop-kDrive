@@ -22,7 +22,8 @@ import QtQuick
 import kDrive.UI
 
 // "Sync a folder with kDrive" dialog: a form with the local folder and its kDrive location, whose second page picks that
-// location in the remote folder tree.
+// location in the remote folder tree. Created for one session of its controller, it reports its closing so that the
+// session can be released.
 IKModal {
     id: root
 
@@ -31,6 +32,7 @@ IKModal {
     property Item returnFocusItem: null
 
     signal fallbackFocusRequested
+    signal released
 
     // One section of the form: a title, a description, the button choosing the folder, and the chosen folder.
     component FolderSection: Rectangle {
@@ -167,7 +169,7 @@ IKModal {
 
     preferredWidth: IKSyncConfiguration.modalWidth
     escapeDismissible: !root.controller.busy
-    visible: root.controller.visible
+    visible: root.controller.active
     title: root.controller.locationPickerOpen ? qsTrId("addAdvancedSyncRemoteFolderPageTitle")
                                               : qsTrId("addAdvancedSyncDialogTitle")
     initialFocusItem: localSection.button
@@ -179,6 +181,7 @@ IKModal {
             root.fallbackFocusRequested();
         }
         root.returnFocusItem = null;
+        root.released();
     }
 
     Connections {
