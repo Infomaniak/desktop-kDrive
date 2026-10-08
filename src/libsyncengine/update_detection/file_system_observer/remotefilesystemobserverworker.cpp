@@ -454,7 +454,7 @@ ExitInfo RemoteFileSystemObserverWorker::runListingContinueJob(const RemoteNodeI
     if (cursorData.cursor.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Cursor is empty for driveDbId=" << _driveDbId << " and remoteDirId=" << remoteDirId
                                                                    << ", invalidating remote snapshot.");
-        tryToInvalidateSnapshot();
+        invalidateSnapshot();
 
         return ExitCode::DataError;
     }
@@ -602,7 +602,7 @@ ExitInfo RemoteFileSystemObserverWorker::updateSpecialFolderItem(const RemoteNod
     if (!_liveSnapshot.updateItem(remoteSnapshotItem)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncName(remoteSnapshotItem.name()) << L" ("
                                                               << CommonUtility::s2ws(remoteSnapshotItem.id()) << L")");
-        tryToInvalidateSnapshot();
+        invalidateSnapshot();
         return ExitCode::DataError;
     }
 
