@@ -626,14 +626,24 @@ ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 
 bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(absoluteFilepath) << L" - status = " << status);
-    if (std::error_code ec; !std::filesystem::exists(absoluteFilepath, ec)) {
-        if (ec && !utility_base::isLikeTooManySymbolicLinkLevelsError(ec)) {
-            LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatStdError(absoluteFilepath, ec));
-            return false;
-        }
+
+    bool exists = false;
+    auto ioError = IoError::Unknown;
+    if (!IoHelper::checkIfPathExists(absoluteFilepath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteFilepath, ioError));
+        return false;
+    }
+
+    if (ioError == IoError::AccessDenied) {
+        LOGW_DEBUG(logger(), L"Item misses search permission: " << Utility::formatSyncPath(absoluteFilepath));
+        return true;
+    }
+
+    if (!exists) {
         // New file
         return true;
     }
+
     SyncPath relativeFilePath = CommonUtility::relativePath(_vfsSetupParams.localPath, absoluteFilepath);
 
     if (status == SyncFileStatus::Ignored) {

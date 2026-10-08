@@ -473,12 +473,7 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
             return false;
         }
 
-        if (ioError == IoError::Success || ioError == IoError::TooManySymbolicLinkLevels) {
-            if (ioError == IoError::TooManySymbolicLinkLevels) {
-                LOGW_DEBUG(logger(), L"Invalid symbolic link with "
-                                             << Utility::formatSyncPath(dirEntry.path())
-                                             << L" is managed although it has too many levels of indirection.");
-            }
+        if (ioError == IoError::Success) {
             isManaged = true;
             return true;
         } else if (IoHelper::isExpectedError(ioError)) {
