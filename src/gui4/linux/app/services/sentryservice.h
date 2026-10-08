@@ -30,6 +30,7 @@
 namespace KDC {
 
 class AppCache;
+class CommService;
 class ParametersService;
 class ParametersStore;
 
@@ -47,7 +48,7 @@ class SentryService final : public QObject {
         using ConsentCallback = std::function<void(const ExitInfo &)>;
 
         explicit SentryService(ParametersService &parametersService, AppCache &appCache, ParametersStore &parametersStore,
-                               QObject *parent = nullptr);
+                               const CommService &commService, QObject *parent = nullptr);
 
         [[nodiscard]] static std::optional<bool> readCachedConsent();
         static void writeCachedConsent(bool enabled);
@@ -64,15 +65,19 @@ class SentryService final : public QObject {
 
         void setConsent(bool enabled, const ConsentCallback &callback = {}) const;
         void updateAuthenticatedUser() const;
+        void fetchAppUid();
 
     private:
         static void updateLinuxRuntimeTags();
+        void applyAppUidTag() const;
         void reconcileConsentWithParametersStore();
         void applyConsent(bool enabled) const;
 
         ParametersService &_parametersService;
         AppCache &_appCache;
         ParametersStore &_parametersStore;
+        const CommService &_commService;
+        QString _appUid;
         std::optional<bool> _appliedConsent;
         std::optional<DistributionChannel> _appliedDistributionChannel;
 };
