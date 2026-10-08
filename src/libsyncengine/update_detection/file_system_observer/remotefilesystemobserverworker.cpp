@@ -53,6 +53,9 @@
 
 namespace KDC {
 
+// Cursor validity window: cursors older than this many days will not be reused
+static constexpr int CURSOR_VALIDITY_DAYS = 3;
+
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                const std::string &shortName) :
     FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote),
@@ -297,7 +300,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(
         }
 
         const auto timeStamp = cursorData.timestamp;
-        const auto days = std::chrono::days(3);
+        const auto days = std::chrono::days(CURSOR_VALIDITY_DAYS);
         const SyncTime offset = std::chrono::duration_cast<std::chrono::seconds>(days).count();
         if (CommonUtility::getCurrentSyncTime() > timeStamp + offset) {
             LOG_SYNCPAL_DEBUG(_logger, "Listing cursor for special folder remote ID: "
