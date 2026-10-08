@@ -286,21 +286,21 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "keepme",
+                "name" : "keepMe",
                 "content" : [
                     { "type" : "File", "name" : "f1" }
                 ]
             },
             {
                 "type" : "Directory",
-                "name" : "excludeme",
+                "name" : "excludeMe",
                 "content" : [
                     { "type" : "File", "name" : "f2" }
                 ]
             },
             {
                 "type" : "Directory",
-                "name" : "alsokeep",
+                "name" : "alsoKeep",
                 "content" : [
                     { "type" : "File", "name" : "f3" }
                 ]
@@ -315,9 +315,9 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
 
     const Operations remoteOps{Str2SyncName(R"({
         "operations" : [
-            { "type": "Create", "itemType": "File", "path": "keepme", "name": "newfile", "size": 100 },
-            { "type": "Create", "itemType": "File", "path": "excludeme", "name": "newfile", "size": 200 },
-            { "type": "Create", "itemType": "File", "path": "alsokeep", "name": "newfile", "size": 300 }
+            { "type": "Create", "itemType": "File", "path": "keepMe", "name": "newFile", "size": 100 },
+            { "type": "Create", "itemType": "File", "path": "excludeMe", "name": "newFile", "size": 200 },
+            { "type": "Create", "itemType": "File", "path": "alsoKeep", "name": "newFile", "size": 300 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOps));
@@ -330,26 +330,24 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
     // First sync should not force a full listing; should continue from snapshot
     // (In a real scenario with a valid backup, this would be 0; in test environment it may vary)
 
-    // (4) Stop sync and simulate blacklist change by adding "excludeme" to blacklist.
+    // (4) Stop sync and simulate blacklist change by adding "excludeMe" to blacklist.
     CPPUNIT_ASSERT(testHelper.stopSync());
 
-    // Add "excludeme" folder to the blacklist using the remote snapshot API
+    // Add "excludeMe" folder to the blacklist using the remote snapshot API
     RemoteNodeIdSet newBlackList;
-    auto backup = _syncPal->remoteLiveSnapshotBackup();
-    if (backup.snapshot) {
+    if (const auto backup = _syncPal->remoteLiveSnapshotBackup(); backup.snapshot) {
         NodeId excludeId{};
-        if (backup.snapshot->getItemId(SyncPath{Str("excludeme")}, excludeId)) {
-            if (excludeId != INVALID_NODEID) {
-                newBlackList.insert(excludeId);
-                (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList);
-            }
+        if (backup.snapshot->getItemId(SyncPath{Str("excludeMe")}, excludeId)) {
+            CPPUNIT_ASSERT(!excludeId.empty());
+            newBlackList.insert(excludeId);
+            (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList);
         }
     }
 
     // (5) Make another remote change to the excluded folder.
     const Operations moreRemoteOps{Str2SyncName(R"({
         "operations" : [
-            { "type": "Create", "itemType": "File", "path": "excludeme", "name": "hidden", "size": 999 }
+            { "type": "Create", "itemType": "File", "path": "excludeMe", "name": "hidden", "size": 999 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, moreRemoteOps));
@@ -369,18 +367,18 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "keepme",
+                "name" : "keepMe",
                 "content" : [
                     { "type" : "File", "name" : "f1" },
-                    { "type" : "File", "name" : "newfile", "size" : 100 }
+                    { "type" : "File", "name" : "newFile", "size" : 100 }
                 ]
             },
             {
                 "type" : "Directory",
-                "name" : "alsokeep",
+                "name" : "alsoKeep",
                 "content" : [
                     { "type" : "File", "name" : "f3" },
-                    { "type" : "File", "name" : "newfile", "size" : 300 }
+                    { "type" : "File", "name" : "newFile", "size" : 300 }
                 ]
             }
         ]
@@ -407,7 +405,7 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "datafolder",
+                "name" : "dataFolder",
                 "content" : [
                     { "type" : "File", "name" : "document.txt" },
                     { "type" : "File", "name" : "report.pdf", "size": 2048 }
@@ -418,13 +416,12 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
     CPPUNIT_ASSERT(testHelper.setInitialSituation(initialSituation, initialSituation));
     CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(initialSituation, initialSituation));
 
-    // (2) Stop sync and make remote changes. When we restart, a valid backup with fresh cursors would allow
-    // continue listing. But we'll simulate the scenario where the backup becomes invalid due to stale cursors.
+    // (2) Stop sync and make remote changes.
     CPPUNIT_ASSERT(testHelper.stopSync());
 
     const Operations remoteOps{Str2SyncName(R"({
         "operations" : [
-            { "type": "Create", "itemType": "File", "path": "datafolder", "name": "newfile.txt", "size": 512 }
+            { "type": "Create", "itemType": "File", "path": "dataFolder", "name": "newFile.txt", "size": 512 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOps));
@@ -437,42 +434,60 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "datafolder",
+                "name" : "dataFolder",
                 "content" : [
                     { "type" : "File", "name" : "document.txt" },
                     { "type" : "File", "name" : "report.pdf", "size": 2048 },
-                    { "type" : "File", "name" : "newfile.txt", "size": 512 }
+                    { "type" : "File", "name" : "newFile.txt", "size": 512 }
                 ]
             }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(firstSyncSituation, firstSyncSituation));
 
-    // (4) Stop sync and make more remote changes.
+    Count firstListingCount = getFullListingCount();
+
+    // (4) Stop sync and simulate cursor expiry by setting old cursor timestamps.
+    // The backup validation checks if cursors are older than 3 days (259200 seconds).
+    // We artificially age the cursors by subtracting 4 days worth of seconds from the current timestamp.
     CPPUNIT_ASSERT(testHelper.stopSync());
 
+    const auto CURSOR_VALIDITY_SECONDS = 3 * 24 * 60 * 60; // 3 days in seconds
+    const auto EXPIRY_OFFSET = CURSOR_VALIDITY_SECONDS + 1000; // Make cursor older than 3 days
+
+    // Get current cursor and age it
+    CursorData oldCursor;
+    CPPUNIT_ASSERT(_syncPal->getFolderCursor(SpecialRemoteFolder::Private, oldCursor));
+    // Set timestamp to 4 days ago
+    oldCursor.timestamp = CommonUtility::getCurrentSyncTime() - EXPIRY_OFFSET;
+    CPPUNIT_ASSERT(_syncPal->setFolderCursor(SpecialRemoteFolder::Private, oldCursor));
+
+    // (5) Make more remote changes while cursors are stale.
     const Operations moreRemoteOps{Str2SyncName(R"({
         "operations" : [
-            { "type": "Create", "itemType": "File", "path": "datafolder", "name": "image.jpg", "size": 3072 }
+            { "type": "Create", "itemType": "File", "path": "dataFolder", "name": "image.jpg", "size": 3072 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, moreRemoteOps));
 
-    // (5) Restart again. This second sync demonstrates that when a valid backup exists with non-expired cursors,
-    // the system can use continue listing. If cursors were to expire (> 3 days), the backup would be invalidated
-    // and a full listing would be forced instead.
+    // (6) Restart with stale cursors. The backup should be invalidated and a full listing should be forced.
     CPPUNIT_ASSERT(testHelper.startSync());
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
+    // Verify the stale backup was detected and full listing was triggered
+    Count secondListingCount = getFullListingCount();
+    CPPUNIT_ASSERT_MESSAGE("Stale cursor backup should cause full listing", secondListingCount > firstListingCount);
+
+    // Verify all files are correctly synchronized despite the backup invalidation
     const Situation finalSituation{Str2SyncName(R"({
         "content" : [
             {
                 "type" : "Directory",
-                "name" : "datafolder",
+                "name" : "dataFolder",
                 "content" : [
                     { "type" : "File", "name" : "document.txt" },
                     { "type" : "File", "name" : "report.pdf", "size": 2048 },
-                    { "type" : "File", "name" : "newfile.txt", "size": 512 },
+                    { "type" : "File", "name" : "newFile.txt", "size": 512 },
                     { "type" : "File", "name" : "image.jpg", "size": 3072 }
                 ]
             }
@@ -480,7 +495,6 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
     })")};
     CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(finalSituation, finalSituation));
 
-    // Verify state is correctly restored
     logStep("testSyncRestartWithInvalidatedBackup");
 }
 
