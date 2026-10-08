@@ -23,6 +23,7 @@
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include <Poco/JSON/Object.h>
+#include <atomic>
 
 namespace KDC {
 
@@ -46,7 +47,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         // - does set the updating flag to `true` in order to trigger the `longpoll` and `listing/continue` requests.
         void resume() override;
 
-        Count listingFullCount() const { return _listingFullCount; };
+        Count listingFullCount() const { return _listingFullCount.load(std::memory_order_acquire); };
         RemoteNodeIdSet blackList() const;
         void setBlackList(RemoteNodeIdSet blackList);
 
@@ -146,7 +147,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
         mutable std::mutex _blackListMutex; // Mutex to protect access to the _blackList member variable.
-        Count _listingFullCount = 0;
+        std::atomic<Count> _listingFullCount{0}; // Thread-safe counter for full listing requests
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
         [[nodiscard]] bool syncIsAdvancedWithNonRootFolder() const;

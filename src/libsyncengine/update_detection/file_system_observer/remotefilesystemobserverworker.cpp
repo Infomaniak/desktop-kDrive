@@ -1405,7 +1405,7 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     const auto listingFullTimerEnd = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
     bool resetTimer = elapsedTime.count() > 3600; // 1h
-    if (_listingFullCount > 60) {
+    if (listingFullCount() > 60) {
         // If there is more than 1 listing/full request per minute for
         // an hour -> send a sentry
         sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::countListingRequests",
@@ -1414,11 +1414,11 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     }
 
     if (resetTimer) {
-        _listingFullCount = 0;
+        _listingFullCount.store(0, std::memory_order_release);
         _listingFullTimer = listingFullTimerEnd;
     }
 
-    _listingFullCount++;
+    _listingFullCount.fetch_add(1, std::memory_order_release);
 }
 
 void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &remotePath) {
