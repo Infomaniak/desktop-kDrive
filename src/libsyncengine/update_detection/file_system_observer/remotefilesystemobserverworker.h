@@ -47,7 +47,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         void resume() override;
 
         Count listingFullCount() const { return _listingFullCount; };
-        const RemoteNodeIdSet &blackList() const;
+        RemoteNodeIdSet blackList() const;
         void setBlackList(RemoteNodeIdSet blackList);
 
     protected:
