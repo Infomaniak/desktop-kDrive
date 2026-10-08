@@ -375,6 +375,7 @@ namespace Infomaniak.kDrive.TrayIcon
 
         public void Dispose()
         {
+            StopToolTipCycle();
             _appModel.SelectedSyncChanged -= AppModel_SelectedSyncChanged;
             foreach (var subscription in _subscriptions)
             {
