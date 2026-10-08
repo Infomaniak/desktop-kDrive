@@ -42,6 +42,12 @@ enum class TrayIconState {
     Sync,
 };
 
+/** Tray icon set, named after the glyph color: white for dark panels, black for light panels. */
+enum class TrayIconVariant {
+    White,
+    Black,
+};
+
 /**
  * Owns the Linux v4 system tray entry and window visibility actions.
  *
@@ -86,6 +92,8 @@ class SystemTrayController final : public QObject {
         void attemptTrayActivation();
         void activateTrayMode();
         void refreshIconState();
+        void initializeIconVariant();
+        void updateAutomaticIconVariant();
         void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
         AppCache *_appCache = nullptr;
@@ -97,6 +105,7 @@ class SystemTrayController final : public QObject {
         QAction *_quitAction = nullptr;
         bool _hasSyncErrors = false;
         TrayIconState _iconState = TrayIconState::Neutral;
+        TrayIconVariant _iconVariant = TrayIconVariant::White;
         QTimer _trayAvailabilityRetryTimer;
         uint8_t _trayAvailabilityRetryCount = 0;
         bool _isProductStateInitialized = false;
