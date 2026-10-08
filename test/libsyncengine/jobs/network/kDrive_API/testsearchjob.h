@@ -38,6 +38,9 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testHandleResponseIsHydratedWithVfsOn);
 #endif
         CPPUNIT_TEST(testHandleResponseIsHydratedWithVfsOff);
+        CPPUNIT_TEST(testHandleResponseAdvancedSync);
+        CPPUNIT_TEST(testHandleResponseTwice);
+        CPPUNIT_TEST(testSetQueryParameters);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -53,11 +56,15 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         void testHandleResponseIsHydratedWithVfsOn();
 #endif
         void testHandleResponseIsHydratedWithVfsOff();
+        void testHandleResponseAdvancedSync();
+        void testHandleResponseTwice();
+        void testSetQueryParameters();
 
     private:
         const DriveDbId _driveDbId = 1;
         const SyncDbId _syncWithVfsOnDbId = 1;
         const SyncDbId _syncWithVfsOffDbId = 2;
+        const SyncDbId _advancedSyncDbId = 3;
         LocalTemporaryDirectory _localTempDir{"testSearchJob"};
 };
 
