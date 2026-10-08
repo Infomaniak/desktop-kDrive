@@ -265,7 +265,8 @@
   read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
-  tray availability, and main QML window show/hide behavior.
+  tray availability, and main QML window show/hide behavior. Linux exposes no panel color, so it picks the white or black
+  icon set from `KDRIVE_TRAY_ICONS` (`white`/`black`), else white on GNOME, else the system color scheme, else white.
 - `communicationlayer/ipcclient.*`: TLS-over-loopback JSON transport (`QSslSocket`), request/reply correlation,
   reconnect-before-first-connect logic, and pinned self-signed certificate verification. The pinned CA certificate is
   loaded once from the OS keychain via `CertReader` and set as the socket's only CA; the peer is verified against
