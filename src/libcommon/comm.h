@@ -160,6 +160,8 @@ inline std::string toString(RequestNum e) {
             return "DRIVE_UPDATE";
         case RequestNum::DRIVE_DELETE:
             return "DRIVE_DELETE";
+        case RequestNum::DRIVE_SEARCH:
+            return "DRIVE_SEARCH";
         case RequestNum::SYNC_INFOLIST:
             return "SYNC_INFOLIST";
         case RequestNum::SYNC_START:
