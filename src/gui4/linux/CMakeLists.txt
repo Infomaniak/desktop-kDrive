@@ -387,11 +387,16 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
-        ui/assets/tray/error.svg
-        ui/assets/tray/neutral.svg
-        ui/assets/tray/notif.svg
-        ui/assets/tray/pause.svg
-        ui/assets/tray/sync.svg
+        ui/assets/tray/black/error.svg
+        ui/assets/tray/black/neutral.svg
+        ui/assets/tray/black/notif.svg
+        ui/assets/tray/black/pause.svg
+        ui/assets/tray/black/sync.svg
+        ui/assets/tray/white/error.svg
+        ui/assets/tray/white/neutral.svg
+        ui/assets/tray/white/notif.svg
+        ui/assets/tray/white/pause.svg
+        ui/assets/tray/white/sync.svg
 )
 
 
