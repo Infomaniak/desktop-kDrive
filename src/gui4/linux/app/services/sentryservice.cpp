@@ -110,23 +110,23 @@ void SentryService::writeCachedConsent(const bool enabled) {
     qCInfo(lcSentryService) << "Sentry cached consent persisted | enabled:" << enabled;
 }
 
-void SentryService::initializeFromCachedConsent(const QString &appUid) {
+void SentryService::initializeFromCachedConsent() {
     const auto cachedConsent = readCachedConsent();
     qCInfo(lcSentryService) << "Sentry cached consent read | known:" << cachedConsent.has_value()
                             << "/ enabled:" << cachedConsent.value_or(false);
     if (cachedConsent.value_or(false)) {
-        initializeWithLinuxConfig(appUid);
+        initializeWithLinuxConfig();
         return;
     }
 
     qCInfo(lcSentryService) << "Sentry early init skipped because cached consent is not enabled";
 }
 
-void SentryService::initializeWithLinuxConfig(const QString &appUid) {
+void SentryService::initializeWithLinuxConfig() {
     if (sentry::Handler::isInitialized()) {
         qCInfo(lcSentryService) << "Sentry already initialized; activating handler";
         sentry::Handler::instance()->setIsSentryActivated(true);
-        updateLinuxRuntimeTags(appUid);
+        updateLinuxRuntimeTags();
         return;
     }
 
@@ -140,11 +140,11 @@ void SentryService::initializeWithLinuxConfig(const QString &appUid) {
 
     sentry::Handler::instance()->setGlobalConfidentialityLevel(sentry::ConfidentialityLevel::Authenticated);
     sentry::Handler::instance()->setIsSentryActivated(true);
-    updateLinuxRuntimeTags(appUid);
+    updateLinuxRuntimeTags();
     qCInfo(lcSentryService) << "Sentry initialized and activated";
 }
 
-void SentryService::updateLinuxRuntimeTags(const QString &appUid) {
+void SentryService::updateLinuxRuntimeTags() {
     if (!isInitialized() || qobject_cast<QGuiApplication *>(QCoreApplication::instance()) == nullptr) {
         return;
     }
@@ -159,17 +159,22 @@ void SentryService::updateLinuxRuntimeTags(const QString &appUid) {
     handler->setTag("os.packaging", qEnvironmentVariable("APPIMAGE").isEmpty() ? "other" : "appimage");
     handler->setTag("qt.version", qVersion());
     handler->setTag("qt.platform_plugin", platformPlugin.toStdString());
+}
 
-    if (!appUid.isEmpty()) {
-        handler->setAppUUID(appUid.toStdString());
+// Tags the client events with the server's app UID, so they can be matched with the server events of the same
+// installation. A Sentry reinitialization drops the tag, so it must be applied again afterwards.
+void SentryService::applyAppUidTag() const {
+    if (!isInitialized() || _appUid.isEmpty()) {
+        return;
     }
+
+    sentry::Handler::instance()->setAppUUID(_appUid.toStdString());
 }
 
 void SentryService::fetchAppUid() {
-    if (_appUidRequested) {
+    if (!_appUid.isEmpty()) {
         return;
     }
-    _appUidRequested = true;
 
     _commService.requestGetAppState(AppStateKey::AppUid, [self = QPointer(this)](const ExitInfo &exitInfo, const QString &value) {
         if (!self) {
@@ -183,9 +188,7 @@ void SentryService::fetchAppUid() {
         }
 
         self->_appUid = value;
-        if (isInitialized()) {
-            updateLinuxRuntimeTags(self->_appUid);
-        }
+        self->applyAppUidTag();
     });
 }
 
@@ -279,12 +282,14 @@ void SentryService::applyConsent(const bool enabled) const {
     qCInfo(lcSentryService) << "Applying Sentry consent | enabled:" << enabled << "/ initialized:" << initialized;
     if (enabled) {
         if (!initialized) {
-            initializeWithLinuxConfig(_appUid);
+            initializeWithLinuxConfig();
             const bool initializedAfterInit = isInitialized();
             qCInfo(lcSentryService) << "Sentry deferred initialization result | initialized:" << initializedAfterInit;
             if (!initializedAfterInit) {
                 return;
             }
+
+            applyAppUidTag();
         } else {
             sentry::Handler::instance()->setIsSentryActivated(true);
             qCInfo(lcSentryService) << "Sentry handler activated after consent update";
