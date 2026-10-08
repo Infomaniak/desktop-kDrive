@@ -67,7 +67,7 @@ ExitInfo ExclTemplSetUserListJob::process() {
     }
 
     for (auto syncPal: syncPalList) {
-        syncPal->invalidateSnapshots();
+        syncPal->forceInvalidateSnapshots();
         _commManager->appServer().unregisterSync(syncPal);
 
         if (const auto exitInfo = syncPal->propagateExcludeListChange(); !exitInfo) {
