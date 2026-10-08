@@ -30,7 +30,6 @@
 #include "reconciliation/conflict_finder/conflict.h"
 #include "reconciliation/syncoperation.h"
 
-#include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/utility/types.h"
 
 #include "libcommonserver/log/log.h"
@@ -385,6 +384,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
         [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath);
 
+        void clearRemoteLiveSnapshotBackup() {
+            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+            _remoteLiveSnapshotBackup.clear();
+        }
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -486,28 +490,22 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         struct RemoteLiveSnapshotBackup {
                 std::shared_ptr<ConstSnapshot> snapshot;
                 RemoteNodeIdSet blacklist;
-                std::vector<ExclusionTemplate> exclusionTemplates;
                 void clear() {
                     snapshot.reset();
                     blacklist.clear();
-                    exclusionTemplates.clear();
                 }
         };
 
         RemoteLiveSnapshotBackup remoteLiveSnapshotBackup() const {
             const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+
             return _remoteLiveSnapshotBackup;
         }
-        void clearRemoteLiveSnapshotBackup() {
-            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
-            _remoteLiveSnapshotBackup.clear();
-        }
-        void setRemoteLiveSnapshotBackup(const std::shared_ptr<ConstSnapshot> &snapshot, const RemoteNodeIdSet &blacklist,
-                                         const std::vector<ExclusionTemplate> &exclusionTemplates) {
+
+        void setRemoteLiveSnapshotBackup(const std::shared_ptr<ConstSnapshot> &snapshot, const RemoteNodeIdSet &blacklist) {
             const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
             _remoteLiveSnapshotBackup.snapshot = snapshot;
             _remoteLiveSnapshotBackup.blacklist = blacklist;
-            _remoteLiveSnapshotBackup.exclusionTemplates = exclusionTemplates;
         }
 
     private:
@@ -531,7 +529,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         mutable std::mutex _progressInfoMutex;
         mutable std::mutex _remoteLiveSnapshotBackupMutex;
 
-        RemoteLiveSnapshotBackup _remoteLiveSnapshotBackup{nullptr, RemoteNodeIdSet{}, {}};
+        RemoteLiveSnapshotBackup _remoteLiveSnapshotBackup{nullptr, RemoteNodeIdSet{}};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
