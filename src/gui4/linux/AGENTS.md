@@ -292,6 +292,7 @@
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
+  Once IPC is connected, it tags events with the server `AppUid` as `appUUID`; earlier events have no such tag.
 - `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It references
   category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
   presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
