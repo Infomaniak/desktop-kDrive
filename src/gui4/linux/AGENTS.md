@@ -323,16 +323,23 @@
   synchronization at a time. The model updates rows in place, so a card keeps its collapsed state when another
   synchronization is added or removed. Leaving a drive that has no synchronization left stays the drive management
   page's job, which remains below it in the navigation stack. "Manage" pushes the shared excluded folders page with the
-  advanced `SyncDbId`; closing it reloads that synchronization's summary.
-- `app/settings/advancedsynccreationcontroller.*`: process-long transactional editor of the "Sync a folder with kDrive"
-  dialog (`ui/windows/settings/AddAdvancedSyncDialog.qml`), passed to `SettingsWindow` as its `advancedSyncCreation`
-  initial property. There is no default kDrive location: Validate requires a local folder, accepted by
-  `UTILITY_ISPATHVALIDFORNEWSYNC` with `SyncConfiguration::Advanced` (a refused folder keeps the previous one), and a
-  remote folder confirmed in the picker page of the same `IKModal`. Cancelling the picker drops its selection. The
-  picker tree (`RemoteFolderPickerModel` + `ui/features/syncconfiguration/RemoteFolderPicker.qml`) is loaded on its
-  first opening and kept until the dialog closes. Choosing a row that cannot be selected, such as the drive root, clears
-  the selection. The submission sends `SYNC_ADD` with both `serverFolderPath` and `serverFolderNodeId`, then closes the
-  dialog; the page lists the synchronization once its `SYNC_ADDED` push arrives.
+  advanced `SyncDbId`; closing it reloads that synchronization's summary. The controller also owns the "Sync a folder
+  with kDrive" session (`creation`, `openCreation()`, `releaseCreation()`), released with its target or once the drive
+  is gone.
+- `app/settings/advancedsynccreationcontroller.*`: transactional editor of the "Sync a folder with kDrive" dialog
+  (`ui/windows/settings/AddAdvancedSyncDialog.qml`), created for one session only. `AdvancedSyncsController` creates it
+  for its target drive; `SettingsWindow` then creates one dialog with the controller as an initial property, never a
+  binding. Cancelling or creating the synchronization turns `active` off: the dialog plays its closing transition, then
+  emits `released()` and Settings calls `releaseCreation()`, which destroys the dialog before its controller. Closing
+  Settings or losing the drive releases the session at once. A response received after the release reaches a destroyed
+  controller and is dropped by its `QPointer`, so there is no request generation. There is no default kDrive location:
+  Validate requires a local folder, accepted by `UTILITY_ISPATHVALIDFORNEWSYNC` with `SyncConfiguration::Advanced` (a
+  refused folder keeps the previous one), and a remote folder confirmed in the picker page of the same `IKModal`.
+  Cancelling the picker drops its selection. The picker tree (`RemoteFolderPickerModel` +
+  `ui/features/syncconfiguration/RemoteFolderPicker.qml`) is loaded on its first opening and kept for the session.
+  Choosing a row that cannot be selected, such as the drive root, clears the selection. The submission sends `SYNC_ADD`
+  with both `serverFolderPath` and `serverFolderNodeId`, then closes the dialog; the page lists the synchronization
+  once its `SYNC_ADDED` push arrives.
 - `ui/windows/settings/SyncSelectionRow.qml`: shared "Synchronization" row (custom-selection summary, Manage, Retry) of
   the drive management page and of each advanced synchronization card. `DeleteSyncDialog.qml` is owner-agnostic: its
   owner binds `busy`, deletes on `deleteConfirmed`, and closes it or sets `failed`.
@@ -675,6 +682,10 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Keep app-global modals in `GlobalModalHost` so they survive route loader changes. Contextual onboarding/settings
   modals should instantiate `IKModal` in their owning window or view instead of moving their workflow into the global
   host.
+- A one-off transactional dialog gets a controller created for its session by the controller of its page, as
+  `AdvancedSyncsController` does with `AdvancedSyncCreationController`, rather than a process-long member of
+  `AppClientLinux` reset on close. Pass that controller to the dialog as an initial property and release it after the
+  closing transition: a late async response then reaches a destroyed object, so no request generation is needed.
 
 ## IPC And Error Handling
 
