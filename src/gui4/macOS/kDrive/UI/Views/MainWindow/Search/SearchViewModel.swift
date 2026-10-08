@@ -89,7 +89,13 @@ final class SearchViewModel: ObservableObject {
 
     func openFile(_ file: UISearchResponse) {
         @InjectService var matomo: MatomoUtils
-        if opensLocally(file) {
+        let shouldOpenLocally = opensLocally(file)
+        IKLogger.general.info(
+            "[KD] [Search] Open result syncDbId=\(syncDbId) fileId=\(file.id) " +
+                "isAvailableLocally=\(file.isAvailableLocally) isHydrated=\(file.isHydrated) " +
+                "isSynchroPaused=\(isSynchroPaused) opensLocally=\(shouldOpenLocally)"
+        )
+        if shouldOpenLocally {
             matomo.track(eventWithCategory: .search, name: "openItem")
             openInFinder(file: file)
         } else {
@@ -101,13 +107,26 @@ final class SearchViewModel: ObservableObject {
     private func openInFinder(file: UISearchResponse) {
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: file.path, synchroPath: synchroLocalPath)
-        NSWorkspace.shared.open(url)
+        let didOpen = NSWorkspace.shared.open(url)
+        if didOpen {
+            IKLogger.general.info("[KD] [Search] Local open accepted syncDbId=\(syncDbId) fileId=\(file.id)")
+        } else {
+            IKLogger.general.error("[KD] [Search] Local open failed syncDbId=\(syncDbId) fileId=\(file.id)")
+        }
     }
 
     private func openInBrowser(file: UISearchResponse) {
         @InjectService var nodeURLGenerator: NodeURLGenerator
-        guard let url = nodeURLGenerator.redirectURL(forDriveId: driveId, fileId: file.id) else { return }
-        NSWorkspace.shared.open(url)
+        guard let url = nodeURLGenerator.redirectURL(forDriveId: driveId, fileId: file.id) else {
+            IKLogger.general.error("[KD] [Search] Invalid browser URL driveId=\(driveId) fileId=\(file.id)")
+            return
+        }
+        let didOpen = NSWorkspace.shared.open(url)
+        if didOpen {
+            IKLogger.general.info("[KD] [Search] Browser open accepted driveId=\(driveId) fileId=\(file.id)")
+        } else {
+            IKLogger.general.error("[KD] [Search] Browser open failed driveId=\(driveId) fileId=\(file.id)")
+        }
     }
 
     private func setupSearchSubscription() {
