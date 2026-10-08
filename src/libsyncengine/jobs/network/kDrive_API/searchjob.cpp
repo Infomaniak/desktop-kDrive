@@ -195,6 +195,8 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
+    ExitInfo exitInfo = ExitCode::Ok;
+
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
         RemoteNodeId nodeId;
@@ -227,13 +229,15 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         }
 
         LocalProperties localProperties;
-        if (const auto exitInfo = getLocalProperties(path, localProperties); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in getLocalProperties: " << Utility::formatExitInfo(path, exitInfo));
-        }
-
+        const auto itemExitInfo = getLocalProperties(path, localProperties);
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File,
                                            localProperties.path, modifiedTime, size, localProperties.isAvailableLocally,
                                            localProperties.isHydrated);
+
+        if (!itemExitInfo) {
+            LOGW_WARN(_logger, L"Error in getLocalProperties: " << Utility::formatExitInfo(path, exitInfo));
+            exitInfo = itemExitInfo; // Stores only the last error for the final return value.}
+        }
     }
 
     // Only a local metadata failure reaches this point: sending the request again would fail the same way.
