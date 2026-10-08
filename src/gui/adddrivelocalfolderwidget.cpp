@@ -262,8 +262,7 @@ void AddDriveLocalFolderWidget::updateUI() {
     _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath));
 
     if (_localFolderPath != _defaultLocalFolderPath) {
-        _infoLabel->setTextFormat(Qt::PlainText);
-        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
+        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName().toHtmlEscaped()));
         _infoWidget->setVisible(true);
     } else {
         _infoWidget->setVisible(false);

@@ -151,7 +151,7 @@ void AbstractFileItemWidget::setPath(const QString &path) const {
                                     .arg(CommonUtility::linkStyle, path.toHtmlEscaped(), printablePath.toHtmlEscaped());
 
     _pathLabel->setText(pathStr);
-    _pathLabel->setToolTip(path.toHtmlEscaped());
+    _pathLabel->setToolTip(Qt::convertFromPlainText(path));
 }
 
 void AbstractFileItemWidget::setDriveName(const QString &driveName, const QString &localPath) {
