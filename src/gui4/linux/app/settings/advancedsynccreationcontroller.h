@@ -40,10 +40,13 @@ class SyncService;
  * Role: keep the draft of a local folder, validated by the server as an advanced synchronization folder, and of a remote
  * destination chosen in `RemoteFolderPickerModel`. Only the final submission sends SYNC_ADD; the dialog then closes and
  * the new synchronization reaches the advanced sync page through the SYNC_ADDED push.
+ *
+ * Lifetime: one instance per dialog session, created and released by `AdvancedSyncsController`. A response received
+ * after the release reaches a destroyed instance and is dropped.
  */
 class AdvancedSyncCreationController final : public QObject {
         Q_OBJECT
-        Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
+        Q_PROPERTY(bool active READ active NOTIFY activeChanged)
         Q_PROPERTY(bool locationPickerOpen READ locationPickerOpen NOTIFY presentationChanged)
         Q_PROPERTY(bool busy READ busy NOTIFY presentationChanged)
         Q_PROPERTY(bool checkingLocalFolder READ checkingLocalFolder NOTIFY presentationChanged)
@@ -60,9 +63,10 @@ class AdvancedSyncCreationController final : public QObject {
 
     public:
         AdvancedSyncCreationController(AppCache &appCache, CommService &commService, SyncService &syncService,
-                                       QObject *parent = nullptr);
+                                       DriveDbId driveDbId, QObject *parent = nullptr);
 
-        [[nodiscard]] bool visible() const { return _state != State::Closed; }
+        // False once the session is over: the dialog closes, then its host releases this instance.
+        [[nodiscard]] bool active() const { return _state != State::Finished; }
         [[nodiscard]] bool locationPickerOpen() const { return _locationPickerOpen; }
         // A request the user cannot interrupt is running: the dialog cannot be cancelled meanwhile.
         [[nodiscard]] bool busy() const;
@@ -78,11 +82,8 @@ class AdvancedSyncCreationController final : public QObject {
         [[nodiscard]] bool canConfirmLocation() const;
         [[nodiscard]] RemoteFolderPickerModel *pickerModel() { return &_pickerModel; }
 
-        Q_INVOKABLE void open(qint64 driveDbId);
-        /// Leaves the location picker for the form, or closes the dialog from the form.
+        /// Leaves the location picker for the form, or ends the session from the form.
         Q_INVOKABLE void cancelCurrentPage();
-        /// Closes the dialog when its host window closes; a submitted synchronization is not abandoned.
-        Q_INVOKABLE void dismissFromHostWindow();
 
         Q_INVOKABLE void requestLocalFolder();
         Q_INVOKABLE void notifyLocalFolderDialogClosed();
@@ -94,39 +95,35 @@ class AdvancedSyncCreationController final : public QObject {
         Q_INVOKABLE void submit();
 
     signals:
-        void visibleChanged();
+        void activeChanged();
         void presentationChanged();
         void localFolderRequested(const QUrl &initialFolder);
         void localFolderDialogClosed();
 
     private:
         enum class State : uint8_t {
-            Closed, // No target.
             Editing, // Waiting for the user.
             CheckingLocalFolder, // Local folder validation in flight.
             Submitting, // SYNC_ADD in flight.
+            Finished, // Cancelled or created, waiting for its release.
         };
 
-        [[nodiscard]] bool targetStillExists() const;
-        void handleTargetStateChanged();
         void setState(State state);
-        void close();
+        void finish();
 
         AppCache &_appCache;
         CommService &_commService;
         SyncService &_syncService;
         CommRemoteFolderProvider _folderProvider;
         RemoteFolderPickerModel _pickerModel;
-        DriveDbId _driveDbId{0};
+        const DriveDbId _driveDbId;
         QString _localPath;
         QString _remoteNodeId;
         QString _remoteFolderName;
         QString _remotePath;
-        State _state{State::Closed};
-        // Invalidates the response of a superseded local folder validation or submission, or of a previous target.
-        uint64_t _requestGeneration{0};
+        State _state{State::Editing};
         bool _locationPickerOpen{false};
-        // The picker tree is loaded on its first opening, then kept for the lifetime of the dialog.
+        // The picker tree is loaded on its first opening, then kept for the session.
         bool _pickerConfigured{false};
         bool _localFolderInvalid{false};
         bool _submitFailed{false};
