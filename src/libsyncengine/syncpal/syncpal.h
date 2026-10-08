@@ -494,8 +494,21 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                 }
         };
 
-        RemoteLiveSnapshotBackup remoteLiveSnapshotBackup() const { return _remoteLiveSnapshotBackup; }
-        void clearRemoteLiveSnapshotBackup() { _remoteLiveSnapshotBackup.clear(); }
+        RemoteLiveSnapshotBackup remoteLiveSnapshotBackup() const {
+            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+            return _remoteLiveSnapshotBackup;
+        }
+        void clearRemoteLiveSnapshotBackup() {
+            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+            _remoteLiveSnapshotBackup.clear();
+        }
+        void setRemoteLiveSnapshotBackup(const std::shared_ptr<ConstSnapshot> &snapshot, const RemoteNodeIdSet &blacklist,
+                                         const std::vector<ExclusionTemplate> &exclusionTemplates) {
+            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+            _remoteLiveSnapshotBackup.snapshot = snapshot;
+            _remoteLiveSnapshotBackup.blacklist = blacklist;
+            _remoteLiveSnapshotBackup.exclusionTemplates = exclusionTemplates;
+        }
 
     private:
         // Finalize the pin/hydration state of a direct download job and stop tracking it.
@@ -516,6 +529,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
 
         mutable std::mutex _progressInfoMutex;
+        mutable std::mutex _remoteLiveSnapshotBackupMutex;
 
         RemoteLiveSnapshotBackup _remoteLiveSnapshotBackup{nullptr, RemoteNodeIdSet{}, {}};
 
