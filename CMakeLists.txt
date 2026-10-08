@@ -108,7 +108,10 @@ include(GenerateExportHeader)
 add_definitions(
         -DQT_USE_QSTRINGBUILDER
         -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
-        -DQT_DEPRECATED_WARNINGS
+        # QT_WARN_DEPRECATED_UP_TO caps the Qt version for which deprecated annotations are emitted.
+        # Capped at 6.12.0 (0x060C00) to avoid Qt 6.13+ deprecation markers that GCC 11 cannot parse
+        # when they appear before [[nodiscard]] inside class definitions.
+        -DQT_WARN_DEPRECATED_UP_TO=0x060C00
 )
 
 if(APPLE)
@@ -377,8 +380,8 @@ if(UNIX AND NOT APPLE)
         # Copy .so files to the conan dependency directory
         find_package(log4cplus 2.1.2 REQUIRED)
         find_package(xxHash 0.8.2 REQUIRED)
-        find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
-        find_package(Poco 1.13.3 REQUIRED)
+        find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
+        find_package(Poco 1.15.2 REQUIRED)
         find_package(sentry REQUIRED)
 
         # Normalize Conan variables to be build-type agnostic

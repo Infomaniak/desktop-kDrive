@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
-find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
+find_package(Poco 1.15.2 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
 
