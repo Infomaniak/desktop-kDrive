@@ -512,6 +512,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         // processed.
         if (const auto exitInfo = saveListingCursor(remoteDirId, cursorData_); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: " << exitInfo);
+            tryToInvalidateSnapshot();
 
             return exitInfo;
         }
