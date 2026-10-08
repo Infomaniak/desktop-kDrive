@@ -639,6 +639,11 @@ bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus 
         return true;
     }
 
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"IoError in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteFilepath, ioError));
+        return false;
+    }
+
     if (!exists) {
         // New file
         return true;
