@@ -327,6 +327,12 @@ void LiveSnapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem>
 
 void LiveSnapshot::restoreFromBackup(const ConstSnapshot &backupSnapshot) {
     const std::scoped_lock lock(_mutex, backupSnapshot._mutex);
+
+    if (backupSnapshot._items.empty()) {
+        LOG_WARN(_logger, "Cannot restore from empty backup snapshot");
+        return;
+    }
+
     startUpdate();
 
     _items.clear();
