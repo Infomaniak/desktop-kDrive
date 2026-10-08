@@ -100,7 +100,11 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
     SyncpalTestHelper testHelper(_syncPal);
 
     const auto getFullListingCount = [this]() {
-        return std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker)->listingFullCount();
+        const auto worker =
+                std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+        CPPUNIT_ASSERT_MESSAGE("Expected _remoteFSObserverWorker to be a RemoteFileSystemObserverWorker in this test",
+                               worker);
+        return worker->listingFullCount();
     };
 
     // (1) Generate an initial situation and let the synchronization complete.
