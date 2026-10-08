@@ -18,11 +18,13 @@
 
 #pragma once
 
+#include "app/settings/advancedsynccreationcontroller.h"
 #include "app/settings/advancedsynclistmodel.h"
 #include "libcommon/utility/types.h"
 
 #include <QColor>
 #include <QObject>
+#include <QPointer>
 
 #include <cstdint>
 
@@ -38,7 +40,8 @@ class SyncService;
  * Role: project the drive's advanced synchronizations from AppCache into `AdvancedSyncListModel`, load each blacklist to
  * present a custom selection, open their local and remote folders, and delete them. Like the drive management page, it
  * targets a DriveDbId, so another user's synchronizations of the same backend drive are never presented. Leaving the
- * drive once it has no synchronization left is up to the drive management page, which stays below this one.
+ * drive once it has no synchronization left is up to the drive management page, which stays below this one. The page
+ * also owns the "Sync a folder with kDrive" session, released with the target or once the drive is gone.
  */
 class AdvancedSyncsController final : public QObject {
         Q_OBJECT
@@ -46,6 +49,7 @@ class AdvancedSyncsController final : public QObject {
         Q_PROPERTY(QColor driveColor READ driveColor NOTIFY presentationChanged)
         Q_PROPERTY(bool empty READ empty NOTIFY presentationChanged)
         Q_PROPERTY(bool deletePending READ deletePending NOTIFY presentationChanged)
+        Q_PROPERTY(AdvancedSyncCreationController *creation READ creation NOTIFY creationChanged)
 
     public:
         AdvancedSyncsController(AppCache &appCache, CommService &commService, SyncService &syncService,
@@ -56,6 +60,8 @@ class AdvancedSyncsController final : public QObject {
         [[nodiscard]] bool empty() const { return _model.rows().empty(); }
         // A deletion requested from this page is waiting for its response.
         [[nodiscard]] bool deletePending() const { return _deletingSyncDbId != 0; }
+        // Null when no "Sync a folder with kDrive" session is running.
+        [[nodiscard]] AdvancedSyncCreationController *creation() const { return _creation; }
 
         Q_INVOKABLE void open(qint64 driveDbId);
         /// Releases the target only when it is still the given drive, so a closing page cannot reset its successor.
@@ -65,11 +71,16 @@ class AdvancedSyncsController final : public QObject {
         Q_INVOKABLE void openLocalFolder(qint64 syncDbId) const;
         Q_INVOKABLE void openRemoteFolder(qint64 syncDbId);
         Q_INVOKABLE void deleteSync(qint64 syncDbId);
+        /// Starts a "Sync a folder with kDrive" session for the target drive, unless one is already running.
+        Q_INVOKABLE void openCreation();
+        /// Ends the running session, once its dialog closed or when its host window closes.
+        Q_INVOKABLE void releaseCreation();
 
     signals:
         void presentationChanged();
         void deleteSucceeded(qint64 syncDbId);
         void deleteFailed(qint64 syncDbId);
+        void creationChanged();
 
     private:
         [[nodiscard]] bool hasTarget() const { return _driveDbId != 0; }
@@ -88,6 +99,7 @@ class AdvancedSyncsController final : public QObject {
         // Deleted synchronization awaiting its response; it may already have left the cache through SYNC_REMOVED.
         SyncDbId _deletingSyncDbId{0};
         uint64_t _targetGeneration{0};
+        QPointer<AdvancedSyncCreationController> _creation;
 };
 
 } // namespace KDC

@@ -36,10 +36,12 @@ IKShadowedWindow {
     required property var users
     required property var excludedFolders
     required property var advancedSyncs
-    required property var advancedSyncCreation
     property int selectedCategory: SettingsWindow.Category.General
     property Item accountConnectionTrigger: null
     property bool restoreAccountConnectionFocus: false
+    // Dialog of the running "Sync a folder with kDrive" session, created for that session only.
+    property AddAdvancedSyncDialog addAdvancedSyncDialog: null
+    property Item advancedSyncCreationTrigger: null
 
     function selectGeneral() {
         accountsPane.reset(accountsRootComponent);
@@ -293,8 +295,8 @@ IKShadowedWindow {
                 advancedSyncDeleteDialog.showFrom(trigger);
             }
             onAddSyncRequested: trigger => {
-                addAdvancedSyncDialog.returnFocusItem = trigger;
-                root.advancedSyncCreation.open(advancedSyncsView.driveDbId);
+                root.advancedSyncCreationTrigger = trigger;
+                root.advancedSyncs.openCreation();
             }
         }
     }
@@ -517,17 +519,19 @@ IKShadowedWindow {
         }
     }
 
-    AddAdvancedSyncDialog {
-        id: addAdvancedSyncDialog
+    Component {
+        id: addAdvancedSyncDialogComponent
 
-        controller: root.advancedSyncCreation
-        // The dialog targets the drive of the advanced syncs page.
-        driveColor: root.advancedSyncs.driveColor
-        scrimInset: root.effectiveShadowMargin
-        scrimRadius: root.surfaceRadius
-        onFallbackFocusRequested: {
-            if (accountsPane.currentItem) {
-                accountsPane.currentItem.forceActiveFocus(Qt.BacktabFocusReason);
+        AddAdvancedSyncDialog {
+            // The dialog targets the drive of the advanced syncs page.
+            driveColor: root.advancedSyncs.driveColor
+            scrimInset: root.effectiveShadowMargin
+            scrimRadius: root.surfaceRadius
+            onReleased: root.advancedSyncs.releaseCreation()
+            onFallbackFocusRequested: {
+                if (accountsPane.currentItem) {
+                    accountsPane.currentItem.forceActiveFocus(Qt.BacktabFocusReason);
+                }
             }
         }
     }
@@ -537,24 +541,40 @@ IKShadowedWindow {
 
         title: qsTrId("buttonSelectFolder")
         onAccepted: {
-            root.advancedSyncCreation.applyLocalFolder(selectedFolder);
-            root.advancedSyncCreation.notifyLocalFolderDialogClosed();
+            root.advancedSyncs.creation?.applyLocalFolder(selectedFolder);
+            root.advancedSyncs.creation?.notifyLocalFolderDialogClosed();
         }
-        onRejected: root.advancedSyncCreation.notifyLocalFolderDialogClosed()
+        onRejected: root.advancedSyncs.creation?.notifyLocalFolderDialogClosed()
     }
 
     Connections {
-        target: root.advancedSyncCreation
+        target: root.advancedSyncs
+
+        // The controller is an initial property, not a binding: the dialog never sees it turn null.
+        function onCreationChanged() {
+            const creation = root.advancedSyncs.creation;
+            if (creation) {
+                root.addAdvancedSyncDialog = addAdvancedSyncDialogComponent.createObject(root, {
+                    "controller": creation,
+                    "returnFocusItem": root.advancedSyncCreationTrigger
+                });
+            } else {
+                advancedSyncLocalFolderDialog.close();
+                if (root.addAdvancedSyncDialog) {
+                    root.addAdvancedSyncDialog.destroy();
+                    root.addAdvancedSyncDialog = null;
+                }
+            }
+            root.advancedSyncCreationTrigger = null;
+        }
+    }
+
+    Connections {
+        target: root.advancedSyncs.creation
 
         function onLocalFolderRequested(initialFolder) {
             advancedSyncLocalFolderDialog.currentFolder = initialFolder;
             advancedSyncLocalFolderDialog.open();
-        }
-
-        function onVisibleChanged() {
-            if (!root.advancedSyncCreation.visible) {
-                advancedSyncLocalFolderDialog.close();
-            }
         }
     }
 
@@ -647,7 +667,7 @@ IKShadowedWindow {
         advancedSyncDeleteDialog.close();
         localFolderDialog.close();
         advancedSyncLocalFolderDialog.close();
-        root.advancedSyncCreation.dismissFromHostWindow();
+        root.advancedSyncs.releaseCreation();
         root.controller.syncActivation.dismissFromHostWindow();
         releaseDialog.close();
         aboutDialog.close();
