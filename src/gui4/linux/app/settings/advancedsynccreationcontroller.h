@@ -22,7 +22,6 @@
 #include "app/syncconfiguration/remotefolderprovider.h"
 #include "libcommon/utility/types.h"
 
-#include <QColor>
 #include <QObject>
 #include <QString>
 #include <QUrl>
@@ -49,17 +48,14 @@ class AdvancedSyncCreationController final : public QObject {
         Q_PROPERTY(bool busy READ busy NOTIFY presentationChanged)
         Q_PROPERTY(bool checkingLocalFolder READ checkingLocalFolder NOTIFY presentationChanged)
         Q_PROPERTY(bool submitting READ submitting NOTIFY presentationChanged)
-        Q_PROPERTY(bool hasLocalFolder READ hasLocalFolder NOTIFY presentationChanged)
         Q_PROPERTY(QString localFolderName READ localFolderName NOTIFY presentationChanged)
         Q_PROPERTY(QString localPath READ localPath NOTIFY presentationChanged)
         Q_PROPERTY(bool localFolderInvalid READ localFolderInvalid NOTIFY presentationChanged)
-        Q_PROPERTY(bool hasRemoteFolder READ hasRemoteFolder NOTIFY presentationChanged)
         Q_PROPERTY(QString remoteFolderName READ remoteFolderName NOTIFY presentationChanged)
         Q_PROPERTY(QString remotePath READ remotePath NOTIFY presentationChanged)
         Q_PROPERTY(bool canSubmit READ canSubmit NOTIFY presentationChanged)
         Q_PROPERTY(bool submitFailed READ submitFailed NOTIFY presentationChanged)
         Q_PROPERTY(bool canConfirmLocation READ canConfirmLocation NOTIFY presentationChanged)
-        Q_PROPERTY(QColor driveColor READ driveColor NOTIFY presentationChanged)
         Q_PROPERTY(RemoteFolderPickerModel *pickerModel READ pickerModel CONSTANT)
 
     public:
@@ -72,17 +68,14 @@ class AdvancedSyncCreationController final : public QObject {
         [[nodiscard]] bool busy() const;
         [[nodiscard]] bool checkingLocalFolder() const { return _state == State::CheckingLocalFolder; }
         [[nodiscard]] bool submitting() const { return _state == State::Submitting; }
-        [[nodiscard]] bool hasLocalFolder() const { return !_localPath.isEmpty(); }
         [[nodiscard]] QString localFolderName() const;
         [[nodiscard]] QString localPath() const;
         [[nodiscard]] bool localFolderInvalid() const { return _localFolderInvalid; }
-        [[nodiscard]] bool hasRemoteFolder() const { return !_remoteNodeId.isEmpty(); }
         [[nodiscard]] QString remoteFolderName() const { return _remoteFolderName; }
         [[nodiscard]] QString remotePath() const { return _remotePath; }
         [[nodiscard]] bool canSubmit() const;
         [[nodiscard]] bool submitFailed() const { return _submitFailed; }
         [[nodiscard]] bool canConfirmLocation() const;
-        [[nodiscard]] QColor driveColor() const { return _driveColor; }
         [[nodiscard]] RemoteFolderPickerModel *pickerModel() { return &_pickerModel; }
 
         Q_INVOKABLE void open(qint64 driveDbId);
@@ -125,11 +118,6 @@ class AdvancedSyncCreationController final : public QObject {
         CommRemoteFolderProvider _folderProvider;
         RemoteFolderPickerModel _pickerModel;
         DriveDbId _driveDbId{0};
-        UserDbId _userDbId{0};
-        AccountId _accountId{0};
-        DriveId _driveId{0};
-        QString _driveName;
-        QColor _driveColor;
         QString _localPath;
         QString _remoteNodeId;
         QString _remoteFolderName;
