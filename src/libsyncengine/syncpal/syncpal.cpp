@@ -542,8 +542,7 @@ void SyncPal::freeWorkers() {
     if (_remoteFSObserverWorker && _remoteFSObserverWorker->liveSnapshot().isValid()) {
         setRemoteLiveSnapshotBackup(
                 std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot()),
-                std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker)->blackList(),
-                ExclusionTemplateCache::instance()->exclusionTemplates());
+                std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker)->blackList());
     } else
         clearRemoteLiveSnapshotBackup();
 
