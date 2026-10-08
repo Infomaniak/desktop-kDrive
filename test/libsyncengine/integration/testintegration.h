@@ -52,6 +52,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncRestartWithLocalChanges);
         CPPUNIT_TEST(testSyncRestartWithRemoteChanges);
         CPPUNIT_TEST(testSyncRestartWithLocalThenRemoteChanges);
+        CPPUNIT_TEST(testSyncRestartWithBlacklistChange);
+        CPPUNIT_TEST(testSyncRestartWithInvalidatedBackup);
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
@@ -81,6 +83,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testSyncRestartWithLocalChanges();
         void testSyncRestartWithRemoteChanges();
         void testSyncRestartWithLocalThenRemoteChanges();
+        void testSyncRestartWithBlacklistChange();
+        void testSyncRestartWithInvalidatedBackup();
 
         void inconsistencyTests();
 
