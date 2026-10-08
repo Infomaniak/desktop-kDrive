@@ -25,6 +25,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
+#include "requests/exclusiontemplatecache.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "utility/kdexception.h"
 #if defined(KD_WINDOWS)
@@ -542,6 +543,7 @@ void SyncPal::freeWorkers() {
         _remoteLiveSnapshotBackup.snapshot = std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
         _remoteLiveSnapshotBackup.blacklist =
                 std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker)->blackList();
+        _remoteLiveSnapshotBackup.exclusionTemplates = ExclusionTemplateCache::instance()->exclusionTemplates();
     } else
         clearRemoteLiveSnapshotBackup();
 
