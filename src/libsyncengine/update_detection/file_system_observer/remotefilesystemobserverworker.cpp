@@ -440,7 +440,7 @@ ExitInfo RemoteFileSystemObserverWorker::processListingContinueResponse(const Re
     // Look for new actions
     if (const auto exitInfo = processActions(dataObj->getArray(actionsKey), dataObj->getArray(actionsFilesKey)); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processActions: " << exitInfo);
-        tryToInvalidateSnapshot();
+        invalidateSnapshot();
 
         return exitInfo;
     }
