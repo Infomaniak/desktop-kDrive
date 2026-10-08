@@ -202,7 +202,7 @@ namespace Infomaniak.kDrive.TrayIcon
             var selectedSync = _appModel.SelectedSync is { } selected && syncs.Contains(selected) ? selected : syncs[0];
             var otherSyncs = syncs.Where(sync => !ReferenceEquals(sync, selectedSync)).ToList();
 
-            GetToolTipTextForSync(selectedSync, out string selectedLine);
+            GetToolTipTextForSync(selectedSync, 1, 1, out string selectedLine);
             selectedLine = $"{selectedLine}";
 
             if (otherSyncs.Count == 0)
@@ -212,14 +212,11 @@ namespace Infomaniak.kDrive.TrayIcon
             }
 
             var index = (int)((uint)Volatile.Read(ref _toolTipCycleIndex) % (uint)otherSyncs.Count);
-            GetToolTipTextForSync(otherSyncs[index], out string otherLine);
-            otherLine = otherSyncs.Count > 1
-                ? $"{otherLine} ({index + 1}/{otherSyncs.Count})"
-                : $"{otherLine}";
+            GetToolTipTextForSync(otherSyncs[index], index, otherSyncs.Count, out string otherLine);
 
             // Keep both lines within the system tooltip limit, giving priority to the selected sync
             selectedLine = Truncate(selectedLine, ToolTipMaxLength / 2);
-            otherLine = Truncate(otherLine, ToolTipMaxLength - selectedLine.Length - 1);
+            otherLine = Truncate(otherLine, ToolTipMaxLength - selectedLine.Length - 2);
 
             _trayIcon.ToolTipText = $"{selectedLine}\n\n{otherLine}";
         }
@@ -231,10 +228,15 @@ namespace Infomaniak.kDrive.TrayIcon
             return string.Concat(text.AsSpan(0, Math.Max(0, maxLength - 1)), "\u2026");
         }
 
-        private void GetToolTipTextForSync(Sync sync, out string tooltipText)
+        private void GetToolTipTextForSync(Sync sync, int index, int total, out string tooltipText)
         {
 
             tooltipText = $"{Path.GetFileName(sync.LocalPath)}";
+            if (total > 1)
+            {
+                tooltipText = $"{tooltipText} ({index + 1}/{total})";
+            }
+
             switch (sync.SyncStatus)
             {
                 case SyncStatus.Running:
@@ -242,6 +244,7 @@ namespace Infomaniak.kDrive.TrayIcon
                     break;
                 case SyncStatus.Stopped:
                 case SyncStatus.Paused:
+                case SyncStatus.Error:
                     tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitlePause")}";
                     break;
                 case SyncStatus.Offline:
