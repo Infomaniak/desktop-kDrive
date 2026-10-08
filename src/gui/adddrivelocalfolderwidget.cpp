@@ -62,7 +62,8 @@ AddDriveLocalFolderWidget::AddDriveLocalFolderWidget(std::shared_ptr<ClientGui> 
 }
 
 void AddDriveLocalFolderWidget::setDrive(const QString &driveName) {
-    _titleLabel->setText(tr("Location of your %1 kDrive").arg(driveName.toHtmlEscaped()));
+    _titleLabel->setTextFormat(Qt::PlainText);
+    _titleLabel->setText(tr("Location of your %1 kDrive").arg(driveName));
 }
 
 void AddDriveLocalFolderWidget::setLocalFolderPath(const QString &path) {
@@ -258,10 +259,11 @@ void AddDriveLocalFolderWidget::updateUI() {
 
     const QDir dir(_localFolderPath);
     _folderNameLabel->setText(dir.dirName());
-    _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath.toHtmlEscaped()));
+    _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath));
 
     if (_localFolderPath != _defaultLocalFolderPath) {
-        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName().toHtmlEscaped()));
+        _infoLabel->setTextFormat(Qt::PlainText);
+        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
         _infoWidget->setVisible(true);
     } else {
         _infoWidget->setVisible(false);

@@ -67,6 +67,7 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) :
     _filenameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _filenameLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     _filenameLabel->setMinimumHeight(16);
+    _filenameLabel->setTextFormat(Qt::PlainText);
     _topLayout->addWidget(_filenameLabel);
 
     _topLayout->addStretch();
@@ -132,7 +133,7 @@ void AbstractFileItemWidget::setPathAndName(const QString &filePath, NodeType ty
 
 void AbstractFileItemWidget::setName(const QString &path, const NodeType type) {
     setFileTypeIcon(CommonUtility::getFileIconPathFromFileName(path, type));
-    _filenameLabel->setText(QFileInfo(path).fileName().toHtmlEscaped());
+    _filenameLabel->setText(QFileInfo(path).fileName());
 }
 
 void AbstractFileItemWidget::setPath(const QString &path) const {
@@ -150,7 +151,7 @@ void AbstractFileItemWidget::setPath(const QString &path) const {
                                     .arg(CommonUtility::linkStyle, path.toHtmlEscaped(), printablePath.toHtmlEscaped());
 
     _pathLabel->setText(pathStr);
-    _pathLabel->setToolTip(path);
+    _pathLabel->setToolTip(path.toHtmlEscaped());
 }
 
 void AbstractFileItemWidget::setDriveName(const QString &driveName, const QString &localPath) {

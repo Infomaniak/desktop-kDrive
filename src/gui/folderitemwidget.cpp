@@ -181,7 +181,8 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
         setExpandButton();
         QString name = syncInfoClient->name();
         GuiUtility::makePrintablePath(name);
-        _nameLabel->setText(name.toHtmlEscaped());
+        _nameLabel->setTextFormat(Qt::PlainText);
+        _nameLabel->setText(name);
 
         QString path = Path2QStr(syncInfoClient->localPath());
         GuiUtility::makePrintablePath(path);
