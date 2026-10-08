@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.TrayIcon
         private UISettings? _uiSettings;
         private readonly AppModel _appModel;
         private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
-        private readonly Timer _toolTipCycleTimer;
+        private readonly DispatcherTimer _toolTipCycleTimer;
         private int _toolTipCycleIndex;
 
         private const int ToolTipMaxLength = 127;
@@ -125,7 +125,21 @@ namespace Infomaniak.kDrive.TrayIcon
 
             _appModel.SelectedSyncChanged += AppModel_SelectedSyncChanged;
 
-            _toolTipCycleTimer = new Timer(ToolTipCycleTimer_Tick, null, ToolTipCycleInterval, ToolTipCycleInterval);
+            _toolTipCycleTimer = new DispatcherTimer();
+            _toolTipCycleTimer.Interval = ToolTipCycleInterval;
+            _toolTipCycleTimer.Tick += ToolTipCycleTimer_Tick;
+        }
+
+        private void StartToolTipCycle()
+        {
+            if (_toolTipCycleTimer.IsEnabled) return;
+            _toolTipCycleTimer.Start();
+        }
+
+        private void StopToolTipCycle()
+        {
+            if (!_toolTipCycleTimer.IsEnabled) return;
+            _toolTipCycleTimer.Stop();
         }
 
         private void AppModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
@@ -134,7 +148,7 @@ namespace Infomaniak.kDrive.TrayIcon
             _ = Utility.RunOnUIThread(() => UpdateToolTip());
         }
 
-        private void ToolTipCycleTimer_Tick(object? state)
+        private void ToolTipCycleTimer_Tick(object? sender, object e)
         {
             Interlocked.Increment(ref _toolTipCycleIndex);
             _ = Utility.RunOnUIThread(() => UpdateToolTip());
@@ -208,8 +222,14 @@ namespace Infomaniak.kDrive.TrayIcon
             if (otherSyncs.Count == 0)
             {
                 _trayIcon.ToolTipText = Truncate(selectedLine, ToolTipMaxLength);
+                StopToolTipCycle();
                 return;
             }
+
+            if (otherSyncs.Count < 2)
+                StopToolTipCycle();
+            else
+                StartToolTipCycle();
 
             var index = (int)((uint)Volatile.Read(ref _toolTipCycleIndex) % (uint)otherSyncs.Count);
             GetToolTipTextForSync(otherSyncs[index], index, otherSyncs.Count, out string otherLine);
@@ -355,7 +375,6 @@ namespace Infomaniak.kDrive.TrayIcon
 
         public void Dispose()
         {
-            _toolTipCycleTimer.Dispose();
             _appModel.SelectedSyncChanged -= AppModel_SelectedSyncChanged;
             foreach (var subscription in _subscriptions)
             {
