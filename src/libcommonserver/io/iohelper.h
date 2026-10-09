@@ -89,7 +89,8 @@ struct IoHelper {
             EnumEnd
         };
 
-        static ExitInfo toExitInfo(const IoError ioError, const ExitInfo &defaultExitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
+        static ExitInfo toExitInfo(const IoError ioError,
+                                   const ExitInfo &defaultExitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
 
         static PathCheckOption getDefaultPathCheckOption() noexcept {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
@@ -256,7 +257,8 @@ struct IoHelper {
         //! all the hardlinks of the item identified by nodeId located under searchRoot.
         /*!
           searchRoot is recursively iterated over and the node identifier of each regular file found, as returned by
-          getFileStat, is compared with nodeId. Symbolic links (and junctions on Windows) are neither followed nor selected.
+          getFileStat, is compared with nodeId. Symbolic links (and junctions on Windows) are neither followed nor selected,
+          and the filesystems mounted under searchRoot are not traversed.
           Unlike getHardlinkPaths, no existing path of the item is required: the links are found even if the item has been
           moved or if some of its links have been removed.
           \param searchRoot is the directory recursively searched.
@@ -689,11 +691,14 @@ struct IoHelper {
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
         //! Invokes visit for each regular file entry of the directory tree rooted at searchRoot, except the entry indicated
-        //! by seedPath. Symbolic links (and junctions on Windows) are neither followed nor visited.
+        //! by seedPath. Symbolic links (and junctions on Windows) are neither followed nor visited, and the filesystems
+        //! mounted under searchRoot are not traversed.
         /*!
           \param seedPath is the path of the item being processed. The corresponding entry is skipped. No entry is skipped if
           seedPath is empty.
-          \param searchRoot is the directory recursively searched. When it is not provided, visit is never invoked.
+          \param searchRoot is the directory recursively searched. When it is not provided, visit is never invoked. On POSIX,
+          the directories located on another filesystem than searchRoot (e.g. a mounted filesystem) are not traversed, as the
+          inode numbers of unrelated items located there may collide with the inode of the searched item.
           \param visit is the function invoked for each candidate entry. It returns IoError::Success to continue the
           enumeration, or the error that stops it.
           \param ioError holds the error returned when the directory iteration or visit fails.

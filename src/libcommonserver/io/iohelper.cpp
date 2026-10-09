@@ -689,6 +689,19 @@ bool IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::option
     ioError = IoError::Success;
     if (!searchRoot) return true;
 
+#if !defined(KD_WINDOWS)
+    // Inode numbers are unique within a filesystem only, and the hardlinks of an item are necessarily located on the same
+    // filesystem as the item itself: the filesystems mounted under searchRoot must not be traversed, as unrelated items
+    // sharing the inode of the searched item could be returned instead of its links.
+    struct stat rootInfo;
+    if (::stat(searchRoot->string().c_str(), &rootInfo) != 0) {
+        ioError = posixError2ioError(errno);
+        LOGW_WARN(logger(), L"Error in IoHelper::stat for " << Utility::formatSyncPath(*searchRoot) << L": "
+                                                            << Utility::formatIoError(ioError));
+        return false;
+    }
+#endif
+
     // Any error fails the enumeration, including the access denied errors: an incomplete list of links must not be returned.
     std::error_code ec;
     std::filesystem::recursive_directory_iterator it(*searchRoot, std::filesystem::directory_options::none, ec);
@@ -704,6 +717,24 @@ bool IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::option
             ec = entryEc;
             break;
         }
+
+        if (std::filesystem::is_directory(entryStatus)) {
+#if !defined(KD_WINDOWS)
+            // On Windows, the iterator does not follow junctions and therefore cannot leave the filesystem of searchRoot.
+            struct stat entryInfo;
+            if (::lstat(entryPath.string().c_str(), &entryInfo) != 0) {
+                const IoError entryIoError = posixError2ioError(errno);
+                if (entryIoError == IoError::NoSuchFileOrDirectory) continue; // The entry has been removed meanwhile.
+                ioError = entryIoError;
+                LOGW_WARN(logger(), L"Error in IoHelper::lstat for " << Utility::formatSyncPath(entryPath) << L": "
+                                                                     << Utility::formatIoError(ioError));
+                return false;
+            }
+            if (entryInfo.st_dev != rootInfo.st_dev) it.disable_recursion_pending();
+#endif
+            continue;
+        }
+
         if (!std::filesystem::is_regular_file(entryStatus)) continue;
 
         if (const IoError visitIoError = visit(*it); visitIoError != IoError::Success) {
@@ -731,7 +762,8 @@ bool IoHelper::getPathsWithNodeId(const SyncPath &searchRoot, const NodeId &node
 
     try {
         // The node identifier of an item is the one computed by the sync engine from its file status: the inode on POSIX
-        // systems, the file identifier on Windows. No entry is skipped, as there is no seed path.
+        // systems, the file identifier on Windows. No entry is skipped, as there is no seed path, but the filesystems mounted
+        // under searchRoot are not traversed: see _forEachLinkCandidate.
         if (!_forEachLinkCandidate(
                     SyncPath(), searchRoot,
                     [&nodeId, &paths](const std::filesystem::directory_entry &entry) -> IoError {
