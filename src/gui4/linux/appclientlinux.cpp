@@ -71,7 +71,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
 
 void AppClientLinux::setupSystemTray() {
     _systemTrayController.initialize();
-    _systemTrayController.observe(_appCache);
+    _systemTrayController.observe(_appCache, _syncErrorsProjection);
 }
 
 void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
