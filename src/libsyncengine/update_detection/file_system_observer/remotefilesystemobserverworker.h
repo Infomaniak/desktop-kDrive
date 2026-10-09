@@ -165,8 +165,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         [[nodiscard]] ExitInfo createLongPollJob(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob);
 
-        [[nodiscard]] virtual ExitInfo updateLongPollJobs(const RemoteNodeId &remoteDirId,
-                                                          std::shared_ptr<LongPollJob> &longPollJob);
+        [[nodiscard]] virtual ExitInfo updateLongPollJob(const RemoteNodeId &remoteDirId,
+                                                         std::shared_ptr<LongPollJob> &longPollJob);
         [[nodiscard]] ExitInfo processEvents(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob);
 
         [[nodiscard]] ExitInfo processListingContinueResponse(const RemoteNodeId &remoteDirId,
@@ -180,7 +180,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] ExitInfo handleRemoteSnapshotValidity(bool &remoteSnapshotCanBeReused);
         [[nodiscard]] ExitInfo checkIfRemoteSnapshotCanBeReused();
 
-        void abortAndClearLongPollJobs(std::shared_ptr<LongPollJob> &longPollJob);
+        void abortAndClearLongPollJob(std::shared_ptr<LongPollJob> &longPollJob);
 
         ExitInfo setBlackList(bool &blackListChanged);
 

@@ -66,15 +66,15 @@ RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
 }
 
 
-void RemoteFileSystemObserverWorker::abortAndClearLongPollJobs(std::shared_ptr<LongPollJob> &longPollJob) {
+void RemoteFileSystemObserverWorker::abortAndClearLongPollJob(std::shared_ptr<LongPollJob> &longPollJob) {
     if (longPollJob) longPollJob->abort();
     longPollJob = nullptr;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::updateLongPollJobs(const RemoteNodeId &remoteDirId,
-                                                            std::shared_ptr<LongPollJob> &longPollJob) {
+ExitInfo RemoteFileSystemObserverWorker::updateLongPollJob(const RemoteNodeId &remoteDirId,
+                                                           std::shared_ptr<LongPollJob> &longPollJob) {
     if (stopAsked() || initializing() || updating()) {
-        abortAndClearLongPollJobs(longPollJob);
+        abortAndClearLongPollJob(longPollJob);
 
         return ExitCode::Ok;
     }
@@ -179,7 +179,6 @@ void RemoteFileSystemObserverWorker::execute() {
         const std::scoped_lock lock(_listingCursorCacheMutex);
         _listingCursorCache.reset();
     }
-<<<<<<< HEAD
 
     // Check if the current remote snapshot can be reused (i.e. if it is still valid and if the listing cursors are not too old).
     // If not, invalidate it and clear all the listing cursors from the database.
@@ -192,10 +191,7 @@ void RemoteFileSystemObserverWorker::execute() {
         return;
     }
 
-    LongPollJobMap longPollJobs;
-=======
     std::shared_ptr<LongPollJob> longPollJob;
->>>>>>> d6253b2908 (feat(remote-file-system-observer): Use longpoll and listing/continue requests only with the scope of the drive root folder (regular sync) or the target folder (advanced sync))
 
     // We never pause this thread, but we stop it as soon as the synchronization leaves its Idle state, or if stop is asked.
     // The Remote File System Observer worker is restarted when the synchronization reaches the Done state.
@@ -220,7 +216,7 @@ void RemoteFileSystemObserverWorker::execute() {
             break;
         }
 
-        exitInfo = updateLongPollJobs(watchedFolderRemoteId, longPollJob);
+        exitInfo = updateLongPollJob(watchedFolderRemoteId, longPollJob);
         if (!exitInfo) break;
 
         if (stopAsked()) {
@@ -238,36 +234,17 @@ void RemoteFileSystemObserverWorker::execute() {
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
-    abortAndClearLongPollJobs(longPollJob);
+    abortAndClearLongPollJob(longPollJob);
     setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
 }
 
-ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
-    std::vector<RemoteNodeId> specialFoldersRemoteIds;
-    if (const auto exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in getSpecialFoldersRemoteIds: " << exitInfo);
 
-        return exitInfo;
-    }
+ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const {
+    validSnapshotBackupExists = false;
 
-    ExitInfo clearCursorExitInfo = ExitCode::Ok;
-    const std::scoped_lock lock(_listingCursorCacheMutex);
-    for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
-        clearCursorExitInfo = clearListingCursor(specialFolderRemoteId);
-        if (!clearCursorExitInfo) {
-            LOG_WARN(_logger, "Error in RemoteFileSystemObserverWorker::clearListingCursor: " << clearCursorExitInfo);
-            break; // Stop on first error to report it to caller
-        }
-    }
-
-    _listingCursorCache.clear();
-
-    return clearCursorExitInfo;
-}
-
-ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &validListingCursorsExist) const {
-    validListingCursorsExist = false;
+    // Check if a valid remote snapshot backup exists.
+    if (!_syncPal->isRemoteSnapshotBackupValid(blackList())) return ExitCode::Ok;
 
     CursorData cursorData;
     if (const auto exitInfo = getListingCursor(cursorData); !exitInfo) {
@@ -283,10 +260,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &v
 
     const auto timeStamp = cursorData.timestamp;
     const auto days = std::chrono::days(CURSOR_VALIDITY_DAYS);
-    const SyncTime offset = std::chrono::duration_cast<std::chrono::seconds>(days).count();
-    if (CommonUtility::getCurrentSyncTime() > timeStamp + offset) {
-        LOG_SYNCPAL_DEBUG(_logger, "Listing cursor for special folder remote ID: " << specialFolderRemoteId
-                                                                                   << " is too old. Timestamp: " << timeStamp);
+    if (const SyncTime offset = std::chrono::duration_cast<std::chrono::seconds>(days).count();
+        CommonUtility::getCurrentSyncTime() > timeStamp + offset) {
+        LOG_SYNCPAL_DEBUG(_logger, "Listing cursor is too old. Timestamp: " << timeStamp);
 
         return ExitCode::Ok;
     }
@@ -335,8 +311,13 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteSnapshotCanBeReused() {
         LOG_SYNCPAL_DEBUG(_logger, "A valid remote snapshot backup exists. No need to generate a new one.");
 
         return ExitCode::Ok;
-    } else
-        clearRemoteSnapshotData();
+
+    }
+
+    LOG_SYNCPAL_DEBUG(_logger, "No valid remote snapshot backup exists. Clearing all listing cursors from database.");
+
+    (void) clearListingCursor();
+    invalidateSnapshot();
 
     return ExitCode::Ok;
 }
@@ -524,7 +505,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         // Clear the cursor if the listing request is invalid to avoid being stuck with a broken cursor.
         if (exitInfo == ExitInfo{ExitCode::BackError, ExitCause::HttpErr}) {
             invalidateSnapshot();
-            (void) clearListingCursor(remoteDirId);
+            (void) clearListingCursor();
         }
         return exitInfo;
     }
