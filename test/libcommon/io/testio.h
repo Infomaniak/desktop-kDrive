@@ -79,6 +79,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCopyFileOrDirectory);
         CPPUNIT_TEST(testGetPathWithCanonicalParent);
         CPPUNIT_TEST(testGetPathsWithNodeId);
+        CPPUNIT_TEST(testLinkSearchDoesNotFollowDirectoryLinks);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -123,6 +124,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCopyFileOrDirectory();
         void testGetPathWithCanonicalParent();
         void testGetPathsWithNodeId();
+        void testLinkSearchDoesNotFollowDirectoryLinks();
 
     private:
         void testGetItemTypeSimpleCases();
