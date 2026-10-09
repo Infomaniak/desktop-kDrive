@@ -1092,8 +1092,11 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
             return false;
         }
 
-        hardlinkPaths.push_back(seedPath);
-        if (!std::filesystem::is_regular_file(seedStatus) || !searchRoot) return true;
+        if (!std::filesystem::is_regular_file(seedStatus) || !searchRoot) {
+            // No enumeration runs: the seed path is the only link returned.
+            hardlinkPaths.push_back(seedPath);
+            return true;
+        }
 
         // Enumerate all the names of the seed item on its volume with FindFirstFileNameW. The returned names are rooted at the
         // root of the volume, and include the seed path itself. An item can only be linked within its own volume, and the
