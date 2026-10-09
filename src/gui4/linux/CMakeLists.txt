@@ -323,6 +323,7 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/settings/accounts.svg
         ui/assets/settings/advanced.svg
+        ui/assets/settings/folder-circle-plus.svg
         ui/assets/settings/chevron-left.svg
         ui/assets/settings/chevron-right.svg
         ui/assets/settings/general.svg

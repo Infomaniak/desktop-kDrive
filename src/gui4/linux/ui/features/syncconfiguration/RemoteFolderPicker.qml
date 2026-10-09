@@ -23,11 +23,13 @@ import QtQuick.Controls
 import QtQml.Models
 import kDrive.UI
 
-// Remote destination picker: a lazy folder tree with a single selection, rooted at the drive. The model owns the
-// selection.
+// Remote destination picker: a lazy folder tree with a single selection, rooted at the drive, where a folder can be
+// created below any folder that accepts one. The model owns the selection and the editing row; the controller creates
+// the folder.
 Rectangle {
     id: root
 
+    required property var controller
     required property var treeModel
     required property color driveColor
 
@@ -38,6 +40,8 @@ Rectangle {
     // Folder under the keyboard cursor. The cursor is drawn from this id rather than from the delegates' `current`, which
     // TreeView does not refresh when rows are inserted or removed above the current index: two rows then look current.
     property string cursorNodeId: ""
+    // Name typed in the editing row, kept here since the view can pool the row's delegate while it is scrolled out.
+    property string folderNameDraft: ""
 
     implicitHeight: IKSyncConfiguration.treeHeight
     radius: IKSyncConfiguration.treeRadius
@@ -52,6 +56,33 @@ Rectangle {
         function onModelReset() {
             root.rootExpanded = false;
             root.cursorNodeId = "";
+        }
+
+        // Each creation starts from an empty name. This handler runs before the delegates' own, connected later.
+        // The editing row can land in a collapsed folder or outside the viewport: it is shown before it takes the focus.
+        function onFolderCreationStarted(parentIndex) {
+            root.folderNameDraft = "";
+            const parentRow = treeView.rowAtIndex(parentIndex);
+            if (parentRow >= 0) {
+                treeView.expand(parentRow);
+            }
+            Qt.callLater(function() {
+                const editingRow = treeView.rowAtIndex(root.treeModel.index(0, 0, parentIndex));
+                if (editingRow >= 0) {
+                    treeView.positionViewAtRow(editingRow, TableView.Contain);
+                }
+            });
+        }
+
+        // The created folder is sorted among its siblings, possibly outside the viewport: the cursor follows it.
+        function onFolderCreated(index) {
+            Qt.callLater(function() {
+                const createdRow = treeView.rowAtIndex(index);
+                if (createdRow >= 0) {
+                    treeView.forceActiveFocus();
+                    treeView.moveCurrentToRow(createdRow);
+                }
+            });
         }
     }
 
@@ -109,6 +140,13 @@ Rectangle {
             }
         }
 
+        // Keyboard path to the row's new-folder button, which never takes the focus.
+        function beginFolderCreationAtCursor(): void {
+            if (treeView.cursorRow() >= 0) {
+                root.controller.beginFolderCreation(treeSelection.currentIndex);
+            }
+        }
+
         function expandDriveRoot(): void {
             if (!root.rootExpanded && treeView.rows > 0) {
                 root.rootExpanded = true;
@@ -137,6 +175,14 @@ Rectangle {
             treeView.placeInitialCurrentRow();
         }
 
+        // Ctrl+Shift+N, the file managers' new-folder shortcut. Ignored when it comes up from the name field.
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_N && event.modifiers === (Qt.ControlModifier | Qt.ShiftModifier)
+                    && treeView.Window.activeFocusItem === treeView) {
+                event.accepted = true;
+                treeView.beginFolderCreationAtCursor();
+            }
+        }
         Keys.onUpPressed: treeView.moveCurrentToRow(treeView.cursorRow() - 1)
         Keys.onDownPressed: treeView.moveCurrentToRow(treeView.cursorRow() + 1)
         Keys.onLeftPressed: {
@@ -183,14 +229,17 @@ Rectangle {
             required property string folderName
             required property bool driveRoot
             required property bool selectable
+            required property bool canCreateFolder
             required property bool unavailable
             required property bool accessDenied
             required property bool folderSelected
             required property bool childrenLoading
             required property bool childrenLoadFailed
+            required property bool nameEditing
             readonly property bool isCursor: folderRow.nodeId !== "" && folderRow.nodeId === root.cursorNodeId
 
             readonly property bool dimmed: folderRow.unavailable || folderRow.accessDenied
+            readonly property bool creationPending: folderRow.nameEditing && root.treeModel.folderCreationPending
             // Folder reported visible to the model, empty while the row is pooled.
             property string registeredNodeId: ""
             // Set while the view keeps the delegate aside for reuse.
@@ -215,9 +264,23 @@ Rectangle {
                 folderRow.registeredNodeId = "";
             }
 
+            // Choosing another folder abandons a folder creation that was not sent yet, including one still waiting for its
+            // parent's listing, which has no editing row yet. The selection is made first, while the row still designates
+            // this folder, since dropping the editing row can shift the rows below it.
             function requestSelection(): void {
                 treeView.moveCurrentToRow(folderRow.row);
                 root.treeModel.select(folderRow.currentTreeIndex());
+                if (!root.treeModel.folderCreationPending) {
+                    root.controller.cancelFolderCreation();
+                }
+            }
+
+            // Also runs when the editing row's delegate is created or reused: it takes back the draft.
+            function focusNameField(): void {
+                if (folderRow.nameEditing) {
+                    nameField.text = root.folderNameDraft;
+                    nameField.forceActiveFocus();
+                }
             }
 
             implicitWidth: folderRow.treeView.width
@@ -232,7 +295,10 @@ Rectangle {
             Accessible.readOnly: !folderRow.selectable
             Accessible.onPressAction: folderRow.requestSelection()
 
-            Component.onCompleted: folderRow.registerVisibleNode()
+            Component.onCompleted: {
+                folderRow.registerVisibleNode();
+                folderRow.focusNameField();
+            }
             Component.onDestruction: folderRow.unregisterVisibleNode()
             TableView.onPooled: {
                 folderRow.pooled = true;
@@ -241,6 +307,17 @@ Rectangle {
             TableView.onReused: {
                 folderRow.pooled = false;
                 folderRow.registerVisibleNode();
+                folderRow.focusNameField();
+            }
+            onNameEditingChanged: folderRow.focusNameField()
+
+            // A delegate can stay on the editing row from one creation to the next: it takes the draft reset by the picker.
+            Connections {
+                target: root.treeModel
+
+                function onFolderCreationStarted() {
+                    folderRow.focusNameField();
+                }
             }
             onNodeIdChanged: {
                 if (folderRow.registeredNodeId === "") {
@@ -276,6 +353,7 @@ Rectangle {
             }
 
             TapHandler {
+                enabled: !folderRow.nameEditing
                 onTapped: folderRow.requestSelection()
             }
 
@@ -290,7 +368,7 @@ Rectangle {
 
                 IKLoadingSpinner {
                     anchors.centerIn: parent
-                    visible: folderRow.childrenLoading
+                    visible: folderRow.childrenLoading || folderRow.creationPending
                     width: IKSyncConfiguration.treeSpinnerSize
                     height: width
                     strokeWidth: 2
@@ -361,9 +439,10 @@ Rectangle {
 
                 anchors.left: folderIcon.right
                 anchors.leftMargin: IKSyncConfiguration.treeRowSpacing
-                anchors.right: parent.right
-                anchors.rightMargin: IKSyncConfiguration.treeStateSpacing
+                anchors.right: createFolderButton.left
+                anchors.rightMargin: IKSyncConfiguration.treeRowSpacing
                 anchors.verticalCenter: parent.verticalCenter
+                visible: !folderRow.nameEditing
                 text: folderRow.folderName
                 textFormat: Text.PlainText
                 color: folderRow.dimmed ? IKColors.actionDisabled : IKColors.textPrimary
@@ -375,6 +454,84 @@ Rectangle {
                     showRequested: rowHover.hovered && (folderRow.unavailable || folderNameText.truncated)
                     text: folderRow.unavailable ? qsTrId("errorSelectedFolderIncorrect") : folderRow.folderName
                     maximumTextWidth: IKSyncConfiguration.tooltipMaximumWidth
+                }
+            }
+
+            TextField {
+                id: nameField
+
+                anchors.left: folderIcon.right
+                anchors.leftMargin: IKSyncConfiguration.treeRowSpacing
+                anchors.right: createFolderButton.left
+                anchors.rightMargin: IKSyncConfiguration.treeRowSpacing
+                anchors.verticalCenter: parent.verticalCenter
+                height: folderRow.height - 2 * IKSpacing.s4
+                visible: folderRow.nameEditing
+                readOnly: folderRow.creationPending
+                placeholderText: qsTrId("labelNewFolder")
+                color: IKColors.textPrimary
+                placeholderTextColor: IKColors.textTertiary
+                font.pixelSize: IKFonts.bodySize
+                selectByMouse: true
+                leftPadding: IKSpacing.s8
+                rightPadding: IKSpacing.s8
+                topPadding: 0
+                bottomPadding: 0
+                verticalAlignment: TextInput.AlignVCenter
+                Accessible.name: qsTrId("labelNewFolder")
+                onTextEdited: root.folderNameDraft = nameField.text
+                Keys.onReturnPressed: root.controller.commitFolderCreation(nameField.text)
+                Keys.onEnterPressed: root.controller.commitFolderCreation(nameField.text)
+                Keys.onEscapePressed: event => {
+                    event.accepted = true;
+                    root.controller.cancelFolderCreation();
+                    treeView.forceActiveFocus();
+                }
+
+                background: Rectangle {
+                    radius: IKRadius.r6
+                    color: IKColors.surfacePrimary
+                    border.width: nameField.activeFocus ? 2 : 1
+                    border.color: nameField.activeFocus ? IKColors.accentPrimary : IKColors.settingsDivider
+                }
+            }
+
+            AbstractButton {
+                id: createFolderButton
+
+                anchors.right: parent.right
+                anchors.rightMargin: IKSyncConfiguration.treeStateSpacing
+                anchors.verticalCenter: parent.verticalCenter
+                width: IKSyncConfiguration.treeDisclosureSize
+                height: width
+                // Shown on the hovered or current row, as in the reference design.
+                opacity: folderRow.canCreateFolder && !root.treeModel.folderCreationPending
+                         && (rowHover.hovered || (folderRow.isCursor && folderRow.treeView.activeFocus)) ? 1 : 0
+                enabled: opacity > 0
+                focusPolicy: Qt.NoFocus
+                hoverEnabled: true
+                text: qsTrId("labelNewFolder")
+                Accessible.name: text + " " + folderRow.folderName
+                onClicked: {
+                    treeView.moveCurrentToRow(folderRow.row);
+                    root.controller.beginFolderCreation(folderRow.currentTreeIndex());
+                }
+
+                contentItem: Item {
+                    IKTintedIcon {
+                        anchors.centerIn: parent
+                        width: IKSyncConfiguration.treeRowIconSize
+                        height: width
+                        source: "qrc:/assets/settings/folder-circle-plus.svg"
+                        color: IKColors.remoteFolderPickerCreateIcon
+                    }
+                }
+
+                background: null
+
+                IKToolTip {
+                    targetButton: createFolderButton
+                    text: createFolderButton.text
                 }
             }
         }
