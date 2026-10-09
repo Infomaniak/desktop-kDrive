@@ -136,6 +136,13 @@ Rectangle {
             }
         }
 
+        // Keyboard path to the row's new-folder button, which never takes the focus.
+        function beginFolderCreationAtCursor(): void {
+            if (treeView.cursorRow() >= 0) {
+                root.controller.beginFolderCreation(treeSelection.currentIndex);
+            }
+        }
+
         function expandDriveRoot(): void {
             if (!root.rootExpanded && treeView.rows > 0) {
                 root.rootExpanded = true;
@@ -164,6 +171,14 @@ Rectangle {
             treeView.placeInitialCurrentRow();
         }
 
+        // Ctrl+Shift+N, the file managers' new-folder shortcut. Ignored when it comes up from the name field.
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_N && event.modifiers === (Qt.ControlModifier | Qt.ShiftModifier)
+                    && treeView.Window.activeFocusItem === treeView) {
+                event.accepted = true;
+                treeView.beginFolderCreationAtCursor();
+            }
+        }
         Keys.onUpPressed: treeView.moveCurrentToRow(treeView.cursorRow() - 1)
         Keys.onDownPressed: treeView.moveCurrentToRow(treeView.cursorRow() + 1)
         Keys.onLeftPressed: {
