@@ -541,11 +541,13 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
     setUpdateFlagValue(false);
 
-    // Log diagnostic message if we hit the listing page limit
-    if (pageCount >= maxListingPageCount) {
+// Stop instead of treating a truncated or non-progressing listing as complete.
+    if (hasMore && pageCount >= maxListingPageCount) {
         LOG_SYNCPAL_WARN(_logger, "Reached maximum listing page count ("
                                           << maxListingPageCount << ") for remoteDirId=" << remoteDirId
                                           << ". This may indicate excessive pagination or an issue with cursor progression.");
+        invalidateSnapshot();
+        return ExitCode::DataError;
     }
 
     if (!exitInfo) {
