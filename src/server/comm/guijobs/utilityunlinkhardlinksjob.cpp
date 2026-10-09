@@ -25,7 +25,6 @@
 #include "libcommonserver/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "libsyncengine/db/dbnode.h"
-#include "libsyncengine/jobs/local/genericlocaldeletejob.h"
 #include "libsyncengine/jobs/local/localcopyjob.h"
 #include "libsyncengine/jobs/local/localcreatedirjob.h"
 #include "libsyncengine/propagation/executor/filerescuer.h"
@@ -398,8 +397,9 @@ ExitInfo UtilityUnlinkHardlinksJob::deleteLinks(const std::shared_ptr<SyncPal> &
             continue;
         }
 
-        GenericLocalDeleteJob deleteJob(path, syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes);
-        if (ExitInfo exitInfo = deleteJob.runSynchronously(); !exitInfo) {
+        // The node id is checked again after the item has been moved into the cache directory: if the item is replaced in
+        // between, the moved item is restored instead of being deleted.
+        if (const ExitInfo exitInfo = IoHelper::deleteItemAtomically(path, syncPal->cacheDirectory(), linkNodeId); !exitInfo) {
             LOGW_WARN(_logger, L"Failed to delete " << Utility::formatSyncPath(path) << L": " << exitInfo);
             return exitInfo;
         }

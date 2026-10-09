@@ -985,7 +985,8 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     return ioError == IoError::Success;
 }
 
-ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory) noexcept {
+ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                        const std::optional<NodeId> &expectedNodeId) noexcept {
     SyncPath cacheDirectoryPath;
     if (!cacheDirectory) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
@@ -1033,6 +1034,39 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     }
 
     if (ioError == IoError::Success) {
+        if (expectedNodeId) {
+            // The item has been moved into the cache directory: check that it is still the expected one, so that a replacement
+            // of the item under `path` after the caller's identity check cannot lead to the deletion of an unrelated item.
+            NodeId movedNodeId;
+            if (!IoHelper::getNodeId(destPath, movedNodeId) || movedNodeId != *expectedNodeId) {
+                LOGW_WARN(logger(), L"The item moved to the cache directory does not match the expected node id: source "
+                                            << Utility::formatSyncPath(path));
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+                const auto checkOption = PathCheckOption::Insensitive;
+#elif defined(KD_LINUX)
+                const auto checkOption = PathCheckOption::Sensitive;
+#endif
+                bool itemExists = true;
+                if (auto checkIfPathExistsError = IoError::Success;
+                    checkIfPathExists(path, itemExists, checkIfPathExistsError, checkOption) && !itemExists) {
+                    // No item has been created under the original path since the move: the moved item is restored to it.
+                    auto restoreError = IoError::Success;
+                    if (!IoHelper::renameItem(destPath, path, restoreError) || restoreError != IoError::Success) {
+                        LOGW_WARN(logger(),
+                                  L"Error in IoHelper::renameItem while restoring the item: source "
+                                          << Utility::formatSyncPath(destPath) << L", destination "
+                                          << Utility::formatSyncPath(path) << L", error: " << Utility::formatIoError(restoreError)
+                                          << L". The item will be deleted later by the cache directory cleanup process.");
+                    }
+                } else {
+                    LOGW_WARN(logger(), L"Cannot restore the item, an item exists under the original path or the path cannot "
+                                                << L"be checked: source " << Utility::formatSyncPath(path)
+                                                << L". The moved item will be deleted later by the cache directory cleanup "
+                                                   L"process.");
+                }
+                return {ExitCode::SystemError, ExitCause::ItemChanged};
+            }
+        }
         if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
             LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
                                          << Utility::formatIoError(destPath, ioError)

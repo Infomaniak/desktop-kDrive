@@ -387,9 +387,12 @@ struct IoHelper {
          \param path is the file system path of the item to remove.
          \param cacheDirectory holds the cache directory pointer. The item to delete is first moved to the cache directory before
          being deleted.
+         \param expectedNodeId is the expected node id of the item to remove. If it is set and the item moved into the cache
+         directory does not match it, the moved item is restored to its original path and a failing ExitInfo is returned.
          \return ExitInfo.
          */
-        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory) noexcept;
+        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory,
+                                             const std::optional<NodeId> &expectedNodeId = std::nullopt) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.
