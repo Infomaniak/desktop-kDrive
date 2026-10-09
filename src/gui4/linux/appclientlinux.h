@@ -42,6 +42,7 @@
 #include "app/services/settingsuserservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
+#include "app/services/syncerrorservice.h"
 #include "app/services/syncservice.h"
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
@@ -155,6 +156,7 @@ class AppClientLinux : public QApplication {
         CachePopulator _cachePopulator{_serverCommService, _appCache, _parametersStore, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _appCache, _cachePopulator, _serviceActionTracker, _serviceEventBus, this};
+        SyncErrorService _syncErrorService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SettingsUserService _settingsUserService{_appCache, _userService, this};
         OnboardingSessionManager _onboardingSessionManager{
                 _cachePopulator, _appCache, _serverCommService, _userService, _syncService, _serviceEventBus, this};
