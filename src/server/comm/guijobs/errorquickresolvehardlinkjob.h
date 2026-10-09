@@ -52,6 +52,10 @@ class ErrorQuickResolveHardlinkJob : public AbstractGuiJob {
 
         ExitInfo quickResolve(const std::shared_ptr<SyncPal> &syncPal) const;
 
+        // Removes all the links of the reported file located under the sync root, then the node of the file from the sync
+        // database. The links are searched from the reported path, or by node id if the reported path does not exist anymore.
+        ExitInfo removeLinksAndNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const;
+
         // Checks that the reported error exists in the parameters database and is the hardlink error of the reported sync, node
         // and path.
         ExitInfo checkParmsDbError() const;

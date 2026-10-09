@@ -109,43 +109,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
     }
 
     if (nodeFound) {
-        SyncPath seedPath;
-        if (ExitInfo exitInfo = getSeedPath(syncPal->localPath(), seedPath); !exitInfo) {
-            return exitInfo;
-        }
-
-        bool seedExists = false;
-        if (ExitInfo exitInfo = checkSeedItem(seedPath, seedExists); !exitInfo) {
-            return exitInfo;
-        }
-
-        std::vector<SyncPath> linkPaths;
-        if (seedExists) {
-            if (ExitInfo exitInfo = getLinkPathsUnderSyncRoot(syncPal->localPath(), seedPath, linkPaths); !exitInfo) {
-                return exitInfo;
-            }
-        } else {
-            // The reported path does not exist anymore, but the file may still have links under the sync root, e.g. if the
-            // reported link has been removed or if the file has been moved: search them by node id and use one of them as the
-            // seed path.
-            if (ExitInfo exitInfo = findLinkPathsByNodeId(syncPal->localPath(), linkPaths); !exitInfo) {
-                return exitInfo;
-            }
-            if (!linkPaths.empty()) {
-                seedPath = linkPaths.front();
-                LOGW_INFO(_logger, L"Link of the reported node found at " << Utility::formatSyncPath(seedPath));
-            }
-        }
-
-        // If the file has no link left under the sync root, only remove the node from the database so that the file is
-        // downloaded again.
-        if (!linkPaths.empty()) {
-            if (ExitInfo exitInfo = removeLinks(syncPal, dbNode, seedPath, linkPaths); !exitInfo) {
-                return exitInfo;
-            }
-        }
-
-        if (ExitInfo exitInfo = deleteDbNode(syncPal, dbNode); !exitInfo) {
+        if (ExitInfo exitInfo = removeLinksAndNode(syncPal, dbNode); !exitInfo) {
             return exitInfo;
         }
     } else {
@@ -172,6 +136,50 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
              "Hardlink quick resolve done for syncDbId=" << _syncDbId << ", errorDbId=" << _errorDbId << ", nodeId=" << _nodeId);
 
     return ExitCode::Ok;
+}
+
+ExitInfo ErrorQuickResolveHardlinkJob::removeLinksAndNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const {
+    SyncPath seedPath;
+    if (ExitInfo exitInfo = getSeedPath(syncPal->localPath(), seedPath); !exitInfo) {
+        return exitInfo;
+    }
+
+    bool seedExists = false;
+    if (ExitInfo exitInfo = checkSeedItem(seedPath, seedExists); !exitInfo) {
+        return exitInfo;
+    }
+
+    std::vector<SyncPath> linkPaths;
+    if (seedExists) {
+        if (ExitInfo exitInfo = getLinkPathsUnderSyncRoot(syncPal->localPath(), seedPath, linkPaths); !exitInfo) {
+            return exitInfo;
+        }
+    } else {
+        // The reported path does not exist anymore, but the file may still have links under the sync root, e.g. if the
+        // reported link has been removed or if the file has been moved: search them by node id and use one of them as the
+        // seed path.
+        if (ExitInfo exitInfo = findLinkPathsByNodeId(syncPal->localPath(), linkPaths); !exitInfo) {
+            return exitInfo;
+        }
+        if (!linkPaths.empty()) {
+            seedPath = linkPaths.front();
+            LOGW_INFO(_logger, L"Link of the reported node found at " << Utility::formatSyncPath(seedPath));
+        }
+    }
+
+    // If the file has no link left under the sync root, only remove the node from the database so that the file is
+    // downloaded again.
+    if (!linkPaths.empty()) {
+        if (ExitInfo exitInfo = removeLinks(syncPal, dbNode, seedPath, linkPaths); !exitInfo) {
+            return exitInfo;
+        }
+    }
+
+    if (ExitInfo exitInfo = deleteDbNode(syncPal, dbNode); !exitInfo) {
+        return exitInfo;
+    }
+
+    return ExitInfo(ExitCode::Ok);
 }
 
 ExitInfo ErrorQuickResolveHardlinkJob::checkParmsDbError() const {
