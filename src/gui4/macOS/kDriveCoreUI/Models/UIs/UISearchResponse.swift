@@ -49,9 +49,9 @@ public struct UISearchResponse: Sendable, Identifiable {
         self.isHydrated = isHydrated
     }
 
-    /// Available directories open locally; dehydrated files must open remotely while the synchro is paused.
-    public func opensLocally(isSynchroPaused: Bool) -> Bool {
-        isAvailableLocally && (type == .directory || isHydrated || !isSynchroPaused)
+    /// Available directories and hydrated files open locally; dehydrated files require a confirmed unpaused synchro.
+    public func opensLocally(isSynchroPaused: Bool?) -> Bool {
+        isAvailableLocally && (type == .directory || isHydrated || isSynchroPaused == false)
     }
 
     public var parentFolderName: String {

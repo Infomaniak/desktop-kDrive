@@ -26,7 +26,7 @@ import kDriveCoreUI
 final class SearchViewModel: ObservableObject {
     @Published var searchText = ""
     @Published private(set) var searchResults: [UISearchResponse] = []
-    @Published private(set) var isSynchroPaused = false
+    @Published private(set) var isSynchroPaused: Bool?
 
     @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
 
@@ -93,7 +93,7 @@ final class SearchViewModel: ObservableObject {
         IKLogger.general.info(
             "[KD] [Search] Open result syncDbId=\(syncDbId) fileId=\(file.id) " +
                 "isAvailableLocally=\(file.isAvailableLocally) isHydrated=\(file.isHydrated) " +
-                "isSynchroPaused=\(isSynchroPaused) opensLocally=\(shouldOpenLocally)"
+                "isSynchroPaused=\(isSynchroPaused.map { String($0) } ?? "unknown") opensLocally=\(shouldOpenLocally)"
         )
         if shouldOpenLocally {
             matomo.track(eventWithCategory: .search, name: "openItem")
@@ -139,14 +139,19 @@ final class SearchViewModel: ObservableObject {
     }
 
     private func setupSynchroStateSubscription() {
-        isSynchroPaused = synchroStateObserver.synchroState.status.isPaused
+        isSynchroPaused = pausedState(from: synchroStateObserver.synchroState)
 
         synchroStateObserver.synchroStatePublisher
-            .map(\.status.isPaused)
+            .map { [weak self] in self?.pausedState(from: $0) }
             .removeDuplicates()
             .receiveOnMain(store: &bindStore) { [weak self] isPaused in
                 self?.isSynchroPaused = isPaused
             }
+    }
+
+    private func pausedState(from state: UISynchroState) -> Bool? {
+        guard state.syncDbId == syncDbId, state.isStatusKnown else { return nil }
+        return state.status.isPaused
     }
 
     private func performSearch(query: String) {
