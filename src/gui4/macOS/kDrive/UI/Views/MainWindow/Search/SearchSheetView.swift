@@ -36,7 +36,11 @@ struct SearchSheetView: View {
                 Button {
                     viewModel.openFile(file)
                 } label: {
-                    SearchResultRowView(file: file, opensLocally: viewModel.opensLocally(file))
+                    SearchResultRowView(
+                        file: file,
+                        opensLocally: viewModel.opensLocally(file),
+                        isSynchroPaused: viewModel.isSynchroPaused
+                    )
                 }
                 .buttonStyle(.plain)
                 .listRowInsets(

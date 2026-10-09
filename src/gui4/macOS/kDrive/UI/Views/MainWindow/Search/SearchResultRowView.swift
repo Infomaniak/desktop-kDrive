@@ -23,14 +23,17 @@ import SwiftUI
 struct SearchResultRowView: View {
     let file: UISearchResponse
     let opensLocally: Bool
+    let isSynchroPaused: Bool?
 
     @State private var isHovered = false
 
     private var openInBrowserTooltip: String {
-        // A file available locally only opens remotely when it is dehydrated while sync is paused.
-        file.isAvailableLocally
+        guard file.isAvailableLocally else {
+            return KDriveLocalizable.searchResultOpenInBrowserTooltip
+        }
+        return isSynchroPaused == true
             ? KDriveLocalizable.searchResultOpenInBrowserSyncPausedTooltip
-            : KDriveLocalizable.searchResultOpenInBrowserTooltip
+            : KDriveLocalizable.buttonOpenInBrowser
     }
 
     var body: some View {
@@ -97,7 +100,8 @@ struct SearchResultRowView: View {
             isAvailableLocally: true,
             isHydrated: true
         ),
-        opensLocally: true
+        opensLocally: true,
+        isSynchroPaused: false
     )
 }
 
@@ -113,7 +117,8 @@ struct SearchResultRowView: View {
             isAvailableLocally: false,
             isHydrated: false
         ),
-        opensLocally: false
+        opensLocally: false,
+        isSynchroPaused: nil
     )
 }
 
@@ -129,6 +134,7 @@ struct SearchResultRowView: View {
             isAvailableLocally: true,
             isHydrated: false
         ),
-        opensLocally: false
+        opensLocally: false,
+        isSynchroPaused: true
     )
 }
