@@ -1818,12 +1818,13 @@ void SyncPal::forceInvalidateSnapshots() {
     else
         LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for local snapshot, but local FS observer worker is not available.");
 
+    clearRemoteLiveSnapshotBackup();
+
     if (_remoteFSObserverWorker) {
         _remoteFSObserverWorker->forceUpdate();
         _remoteFSObserverWorker->invalidateSnapshot();
     } else {
         LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for remote snapshot, but remote FS observer worker is not available.");
-        clearRemoteLiveSnapshotBackup();
     }
 }
 
