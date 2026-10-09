@@ -18,30 +18,36 @@
 
 #include "driveuploadsession.h"
 
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "io/filestat.h"
 #include "jobs/network/kDrive_API/upload/uploadhelpers.h"
 #include "utility/utility.h"
 
 namespace KDC {
 
-DriveUploadSession::DriveUploadSession(const DriveDbId driveDbId,
-                                       const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
-                                       const NodeId &remoteParentDirId, const SyncTime creationTime,
+DriveUploadSession::DriveUploadSession(const DriveDbId driveDbId, const std::shared_ptr<SyncDb> syncDb, const SyncPath &filePath,
+                                       const SyncName &filename, RemoteNodeId remoteParentDirId, const SyncTime creationTime,
                                        const SyncTime modificationTime, const uint64_t nbParallelThread) :
-    AbstractUploadSession(filepath, filename, nbParallelThread),
+    AbstractUploadSession(filePath, filename, nbParallelThread),
     _driveDbId(driveDbId),
     _syncDb(syncDb),
     _creationTimeIn(creationTime),
     _modificationTimeIn(modificationTime),
     _remoteParentDirId(remoteParentDirId) {
     _uploadSessionType = UploadSessionType::Drive;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(_driveDbId, _remoteParentDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in DriveUploadSession::DriveUploadSession.");
+    }
 }
 
-DriveUploadSession::DriveUploadSession(const DriveDbId driveDbId,
-                                       const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
-                                       const SyncTime modificationTime, const uint64_t nbParallelThread,
-                                       const int64_t remoteSize /*= -1*/) :
-    DriveUploadSession(driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, nbParallelThread) {
+DriveUploadSession::DriveUploadSession(const DriveDbId driveDbId, const std::shared_ptr<SyncDb> syncDb, const SyncPath &filePath,
+                                       const RemoteNodeId &fileId, const SyncTime modificationTime,
+                                       const uint64_t nbParallelThread, const int64_t remoteSize /*= -1*/) :
+    DriveUploadSession(driveDbId, syncDb, filePath, SyncName(), fileId, 0, modificationTime, nbParallelThread) {
     _fileId = fileId;
     _remoteSize = remoteSize;
 
@@ -49,9 +55,9 @@ DriveUploadSession::DriveUploadSession(const DriveDbId driveDbId,
     FileStat fileStat;
 
     if (auto ioError = IoError::Unknown;
-        !IoHelper::getFileStat(filepath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        !IoHelper::getFileStat(filePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
-        LOGW_WARN(getLogger(), L"Failed to get FileStat for " << Utility::formatSyncPath(filepath) << L": " << ioError);
+        LOGW_WARN(getLogger(), L"Failed to get FileStat for " << Utility::formatSyncPath(filePath) << L": " << ioError);
     }
     _creationTimeIn = fileStat.creationTime;
 }
@@ -88,12 +94,12 @@ std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
 
 std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
-    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
+    return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionInfo(),
                                                    chunkContent, chunkNb, actualChunkSize, jobId());
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
-    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
+    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionInfo().token,
                                                     getTotalChunkHash(), getTotalChunks(), _creationTimeIn, _modificationTimeIn);
 }
 

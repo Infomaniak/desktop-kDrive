@@ -17,6 +17,10 @@
  */
 
 #include "createdirjob.h"
+
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
@@ -24,25 +28,28 @@
 
 namespace KDC {
 
-CreateDirJob::CreateDirJob(const DriveDbId driveDbId, const SyncPath &filepath,
-                           const NodeId &parentId, const SyncName &name, const std::string &color /*= ""*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _filePath(filepath),
-    _parentDirId(parentId),
-    _name(name),
-    _color(color) {
+CreateDirJob::CreateDirJob(const DriveDbId driveDbId, SyncPath filepath, RemoteNodeId parentId, SyncName name,
+                           std::string color /*= ""*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _filePath(std::move(filepath)),
+    _parentDirId(std::move(parentId)),
+    _name(std::move(name)),
+    _color(std::move(color)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _parentDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in CreateDirJob::CreateDirJob.");
+    }
 }
 
-CreateDirJob::CreateDirJob(const DriveDbId driveDbId, const NodeId &parentId,
-                           const SyncName &name) :
-    CreateDirJob(driveDbId, "", parentId, name) {}
+CreateDirJob::CreateDirJob(const DriveDbId driveDbId, RemoteNodeId parentId, SyncName name) :
+    CreateDirJob(driveDbId, SyncPath{}, std::move(parentId), std::move(name)) {}
 
-CreateDirJob::CreateDirJob(const UserDbId userDbId, const DriveId driveId, const NodeId &parentId,
-                           const SyncName &name) :
-    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
-    _parentDirId(parentId),
-    _name(name) {
+CreateDirJob::CreateDirJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId parentId, SyncName name) :
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
+    _parentDirId(std::move(parentId)),
+    _name(std::move(name)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
@@ -51,25 +58,34 @@ std::string CreateDirJob::getSpecificUrl() {
     str += "/files/";
     str += _parentDirId;
     str += "/directory";
+
     return str;
 }
 
 ExitInfo CreateDirJob::setData() {
     Poco::JSON::Object json;
-    json.set("name", _name);
+    (void) json.set("name", _name);
     if (!_color.empty()) {
-        json.set("color", _color);
+        (void) json.set("color", _color);
     }
 
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
+
     return ExitCode::Ok;
 }
 
 ExitInfo CreateDirJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
-        return exitInfo;
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
+
+    if (!jsonRes()) return ExitCode::Ok;
+
+    if (const auto dataObj = jsonRes()->getObject(dataKey); dataObj) {
+        if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+        if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (jsonRes()) {

@@ -33,7 +33,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
         struct FileDownloadInfo {
                 const DriveDbId driveDbId = 0;
                 const NodeId remoteFileId;
-                const SyncPath localpath;
+                const SyncPath localPath;
                 const int64_t expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
                 const SyncTime creationTime = 0;
                 SyncTime modificationTime = 0;
@@ -52,14 +52,13 @@ class DownloadJob : public AbstractTokenNetworkJob {
                     const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy);
         ~DownloadJob() override;
 
-        const NodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
-        const SyncPath &localPath() const { return _fileDownloadInfo.localpath; }
+        const RemoteNodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
+        const SyncPath &localPath() const { return _fileDownloadInfo.localPath; }
 
         const NodeId &localNodeId() const { return _localNodeId; }
         SyncTime creationTime() const { return _creationTimeOut; }
         SyncTime modificationTime() const { return _modificationTimeOut; }
         [[nodiscard]] int64_t size() const { return _sizeOut; }
-
         [[nodiscard]] int64_t expectedSize() const { return _fileDownloadInfo.expectedSize; }
         [[nodiscard]] bool shouldDownload() const { return _shouldDownload; }
 
@@ -74,6 +73,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
         ExitInfo resolveDownloadNeed();
 
         ExitInfo createLink(const std::string &mimeType, const std::string &data);
+        void handleCreation(bool &fetchFinished, bool &fetchCanceled, bool &fetchError, bool &writeError);
+        ExitInfo createFile(std::istream &is, bool &fetchedCanceled);
         bool removeTmpFile();
         ExitInfo moveTmpFile();
         //! Create a tmp file from a std::istream or a std::string

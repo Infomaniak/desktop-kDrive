@@ -23,26 +23,20 @@
 
 namespace KDC {
 
-FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, NodeId fileId,
+FileListJob::FileListJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId remoteDirId,
                          const TranslationMode translationMode /* TranslationMode::None */) :
     _userDbId{userDbId},
     _driveId{driveId},
-    _fileId(std::move(fileId)),
+    _remoteDirId(std::move(remoteDirId)),
     _translationMode(translationMode) {
     assert(_userDbId > 0 && "Invalid user DB ID.");
     assert(_driveId > 0 && "Invalid drive ID.");
-    if (const auto exitInfo = ApiTranslator::getDriveDbId(_driveId, _driveDbId); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in FileListJob::FileListJob: " << exitInfo);
-        const auto errorMsg = "Error in ApiTranslator::getDriveDbId: driveId=" + std::to_string(_driveId);
-        throw DbError(errorMsg);
-    }
-    assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
 
-FileListJob::FileListJob(const DriveDbId driveDbId, NodeId fileId,
+FileListJob::FileListJob(const DriveDbId driveDbId, RemoteNodeId remoteDirId,
                          const TranslationMode translationMode /* TranslationMode::None */) :
     _driveDbId{driveDbId},
-    _fileId(std::move(fileId)),
+    _remoteDirId(std::move(remoteDirId)),
     _translationMode(translationMode) {
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 }
@@ -59,17 +53,17 @@ std::string FileListJob::createLogMessage(const std::string &coreMsg) const {
     return ss.str();
 }
 
-std::string FileListJob::getConstructorFailureLogMessage(const std::exception &e) const {
+std::string FileListJob::getConstructorFailureLogMessage(const JobException &e) const {
     return createLogMessage(getConstructorFailureCoreMsg()) + " error=" + e.what();
 }
 
 std::string FileListJob::getRunSynchronouslyFailureLogMessage(const ExitInfo &exitInfo) const {
-    return createLogMessage(getRunSynchronouslyFailureCoreMsg()) + " exitInfo:" + toString(exitInfo);
+    return createLogMessage(getRunSynchronouslyFailureCoreMsg()) + " exitInfo: " + toString(exitInfo);
 }
 
 ExitInfo FileListJob::v2RemoteNodeInfoList(RemoteNodeInfoList &remoteNodeInfoList) const {
     remoteNodeInfoList = _remoteNodeInfoList;
-    return ApiTranslator::translateV3ToV2(_driveDbId, remoteNodeInfoList);
+    return ApiTranslator::translateV3ToV2(_userDbId, _driveId, remoteNodeInfoList);
 }
 
 } // namespace KDC

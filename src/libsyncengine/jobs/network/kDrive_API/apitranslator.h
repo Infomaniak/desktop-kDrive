@@ -27,34 +27,34 @@ class ApiTranslator {
         ApiTranslator() = default;
         ~ApiTranslator() = default;
 
-        static ExitInfo translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
+        [[nodiscard]] static ExitInfo translateV2ToV3(UserDbId userDbId, DriveId driveId, RemoteNodeId &remoteDirectoryId);
+        [[nodiscard]] static ExitInfo translateV2ToV3(DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId);
         static void translateV3ToV2(SyncPath &remotePath);
-        static ExitInfo translateV3ToV2(DriveDbId driveDbId, NodeId &remoteNodeId);
-        static ExitInfo translateV3ToV2(DriveDbId driveDbId, RemoteNodeInfoList &v3RemoteNodeInfoList);
+        [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
+        [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId,
+                                                      RemoteNodeInfoList &v3RemoteNodeInfoList);
 
-        enum class SpecialFolder {
-            CommonDocuments = 0,
-            Private = 1,
-            Shared = 2
+        [[nodiscard]] static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId,
+                                                               SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId);
+        [[nodiscard]] static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
+        [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
+
+        static void clearSharedCache(const DriveId driveId) {
+            const std::scoped_lock lock(_mutex);
+            (void) _specialFolderRemoteIdsCache[SpecialRemoteFolder::Shared].erase(driveId);
         };
-        static ExitInfo getSpecialFolderRemoteId(DriveDbId driveDbId, SpecialFolder specialFolder, RemoteNodeId &folderRemoteId);
 
-        static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
-
-        static RemoteNodeId v2RootFolderRemoteId();
-
-        using SpecialFolderNames = std::unordered_map<SpecialFolder, std::string>;
         static const SpecialFolderNames v3SpecialFolderNames;
 
     private:
-        static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
-        static ExitInfo updateCache(DriveDbId driveDbId);
+        [[nodiscard]] static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
+        [[nodiscard]] static ExitInfo updateCache(UserDbId userDbId, DriveId driveId);
 
-        using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, RemoteNodeId>;
-        using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialFolder, RemoteNodeIdCacheMap>;
+        using RemoteNodeIdCacheMap = std::unordered_map<DriveId, RemoteNodeId>;
+        using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialRemoteFolder, RemoteNodeIdCacheMap>;
         static RemoteSpecialFoldersCacheMap _specialFolderRemoteIdsCache;
 
-        static RemoteNodeId getValue(DriveDbId driveDbId, const RemoteNodeIdCacheMap &cache);
+        [[nodiscard]] static RemoteNodeId getValue(DriveId driveId, const RemoteNodeIdCacheMap &cache);
 
         static std::mutex _mutex;
 };

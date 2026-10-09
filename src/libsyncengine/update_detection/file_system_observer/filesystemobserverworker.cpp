@@ -60,15 +60,30 @@ void FileSystemObserverWorker::tryToInvalidateSnapshot() {
 }
 
 void FileSystemObserverWorker::forceUpdate() {
-    const std::scoped_lock lock(_mutex);
-    _updating = true;
+    setUpdateFlagValue(true);
 }
 
 void FileSystemObserverWorker::init() {
     ISyncWorker::init();
-    _updating = false;
-    _initializing = true;
+    setUpdateFlagValue(false);
+    setInitFlagValue(true);
     invalidateSnapshot();
+}
+
+bool FileSystemObserverWorker::initializing() const {
+    return _initializing.load();
+}
+
+void FileSystemObserverWorker::setInitFlagValue(const bool value) {
+    _initializing.store(value);
+}
+
+bool FileSystemObserverWorker::updating() const {
+    return _updating.load();
+}
+
+void FileSystemObserverWorker::setUpdateFlagValue(const bool value) {
+    _updating.store(value);
 }
 
 } // namespace KDC
