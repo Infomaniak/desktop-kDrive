@@ -25,6 +25,7 @@
 
 #include <log4cplus/loggingmacros.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <string>
 
@@ -161,6 +162,22 @@ bool getRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
 
     nodeId = std::to_string(computeNodeId(info));
     (void) CloseHandle(hRoot);
+    return true;
+}
+
+// Windows resolves paths case-insensitively: the item names returned by the system may differ from the search root by their
+// character casing only and must not be filtered out.
+bool isCaseInsensitiveDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
+    auto it = potentialDescendant.begin();
+    auto it2 = path.begin();
+    for (; it2 != path.end(); ++it, ++it2) {
+        if (it == potentialDescendant.end()) {
+            // potentialDescendant is shorter than path: it cannot be a descendant of path.
+            return false;
+        }
+        if (_wcsicmp(it->c_str(), it2->c_str()) != 0) return false;
+    }
+    // path is exhausted: potentialDescendant is equal to path or is located under it.
     return true;
 }
 
@@ -1138,7 +1155,8 @@ bool IoHelper::getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId
         // Enumerate all the names of the item on its volume with FindFirstFileNameW, starting from the resolved path. The
         // returned names are rooted at the root of the volume, and include the resolved path itself. An item can only be
         // linked within its own volume, and the links located outside of the sync root are never reachable through a path
-        // under the sync root: only the names located under the search root are kept.
+        // under the sync root: only the names located under the search root are kept. The enumeration may return the same
+        // name several times: the duplicates are discarded.
         const std::wstring anyPathWStr = Path2WStr(anyPath);
         const std::wstring volumeRootName = anyPath.root_name().native();
         std::wstring linkName(512, L'\0');
@@ -1160,8 +1178,15 @@ bool IoHelper::getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId
         bool searchSucceeded = true;
         for (;;) {
             const SyncPath linkPath = SyncPath(volumeRootName) / SyncPath(linkName.c_str());
-            if (CommonUtility::isDescendantOrEqual(linkPath, searchRoot)) {
-                hardlinkPaths.push_back(linkPath);
+            if (isCaseInsensitiveDescendantOrEqual(linkPath, searchRoot)) {
+                const auto alreadyCollected = [&linkPath](const SyncPath &collectedLinkPath) {
+                    return _wcsicmp(collectedLinkPath.c_str(), linkPath.c_str()) == 0;
+                };
+                if (std::find_if(hardlinkPaths.begin(), hardlinkPaths.end(), alreadyCollected) != hardlinkPaths.end()) {
+                    LOGW_DEBUG(logger(), L"Link already collected, skipping duplicate: " << Utility::formatSyncPath(linkPath));
+                } else {
+                    hardlinkPaths.push_back(linkPath);
+                }
             } else {
                 LOGW_DEBUG(logger(), L"Link located outside of the search root, skipping: " << Utility::formatSyncPath(linkPath));
             }

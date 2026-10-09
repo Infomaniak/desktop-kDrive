@@ -64,6 +64,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCreateJunction);
         CPPUNIT_TEST(testGetLongPathName);
         CPPUNIT_TEST(testGetShortPathName);
+        CPPUNIT_TEST(testLinkSearchWithDifferentRootCasing);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
         CPPUNIT_TEST(testAccessDeniedOnLockedFiles);
@@ -123,6 +124,9 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCopyFileOrDirectory();
         void testGetPathWithCanonicalParent();
         void testLinkSearchDoesNotFollowDirectoryLinks();
+#if defined(KD_WINDOWS)
+        void testLinkSearchWithDifferentRootCasing();
+#endif
 
     private:
         void testGetItemTypeSimpleCases();

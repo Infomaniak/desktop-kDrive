@@ -21,6 +21,7 @@
 #include "libcommonserver/io/filestat.h"
 
 #include <algorithm>
+#include <cwctype>
 #include <filesystem>
 #include <fstream>
 
@@ -105,5 +106,40 @@ void TestIo::testLinkSearchDoesNotFollowDirectoryLinks() {
     CPPUNIT_ASSERT(hardlinkPaths.empty());
 #endif
 }
+
+#if defined(KD_WINDOWS)
+// On Windows, paths are resolved case-insensitively: a search root whose character casing differs from the on-disk one must
+// not prevent the links located under it from being returned.
+void TestIo::testLinkSearchWithDifferentRootCasing() {
+    const LocalTemporaryDirectory temporaryDirectory;
+    const auto rootPath = temporaryDirectory.path();
+    const SyncName rootDirName = rootPath.filename().native();
+
+    // Build a search root with the casing of the first alphabetic character of the root directory name swapped.
+    SyncName searchRootDirName = rootDirName;
+    const auto it = std::find_if(searchRootDirName.begin(), searchRootDirName.end(), [](wchar_t c) { return iswalpha(c); });
+    CPPUNIT_ASSERT_MESSAGE("No alphabetic character in the temporary directory name", it != searchRootDirName.end());
+    *it = iswupper(*it) ? towlower(*it) : towupper(*it);
+    const auto searchRootPath = rootPath.parent_path() / searchRootDirName;
+    CPPUNIT_ASSERT_MESSAGE("The search root must differ from the root path by its casing only", searchRootPath != rootPath);
+
+    const auto filePath = rootPath / "file.txt";
+    createFile(filePath, "content");
+    const NodeId nodeId = nodeIdOf(filePath);
+
+    const auto linkPath = rootPath / "link.txt";
+    std::error_code ec;
+    std::filesystem::create_hard_link(filePath, linkPath, ec);
+    CPPUNIT_ASSERT_MESSAGE(ec.message(), ec.value() == 0);
+
+    std::vector<SyncPath> hardlinkPaths;
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getHardlinkPaths(searchRootPath, nodeId, hardlinkPaths, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), hardlinkPaths.size());
+    CPPUNIT_ASSERT(contains(hardlinkPaths, filePath));
+    CPPUNIT_ASSERT(contains(hardlinkPaths, linkPath));
+}
+#endif
 
 } // namespace KDC
