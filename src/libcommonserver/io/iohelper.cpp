@@ -794,49 +794,14 @@ bool IoHelper::getPathsWithNodeId(const SyncPath &searchRoot, const NodeId &node
 #if !defined(KD_WINDOWS)
 bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
                                 const std::optional<SyncPath> &searchRoot) noexcept {
+    (void) seedPath;
+    (void) searchRoot;
     hardlinkPaths.clear();
-    ioError = IoError::Success;
-
-    try {
-        // Symbolic links are not followed.
-        struct stat info;
-        if (::lstat(seedPath.string().c_str(), &info) != 0) {
-            ioError = posixError2ioError(errno);
-            LOGW_WARN(logger(), L"Error in IoHelper::lstat for " << Utility::formatSyncPath(seedPath) << L": "
-                                                                 << Utility::formatIoError(ioError));
-            return false;
-        }
-
-        hardlinkPaths.push_back(seedPath);
-        // Only regular files can have hardlinks. If the item has a single link, there is nothing else to search.
-        if (!S_ISREG(info.st_mode) || info.st_nlink == 1 || !searchRoot) return true;
-
-        // There is no system API to enumerate the links of an item on POSIX systems: search for the items sharing the
-        // same inode while recursively iterating over the search root directory.
-        if (!_forEachLinkCandidate(
-                    seedPath, searchRoot,
-                    [&info, &hardlinkPaths](const std::filesystem::directory_entry &entry) -> IoError {
-                        struct stat entryInfo;
-                        if (::lstat(entry.path().string().c_str(), &entryInfo) != 0) {
-                            const IoError entryIoError = posixError2ioError(errno);
-                            // An entry removed meanwhile is not a link of the item anymore.
-                            return entryIoError == IoError::NoSuchFileOrDirectory ? IoError::Success : entryIoError;
-                        }
-                        if (entryInfo.st_dev == info.st_dev && entryInfo.st_ino == info.st_ino) {
-                            hardlinkPaths.push_back(entry.path());
-                        }
-                        return IoError::Success;
-                    },
-                    ioError)) {
-            return false;
-        }
-    } catch (const std::exception &e) {
-        ioError = IoError::Unknown;
-        LOG_WARN(logger(), "Exception in IoHelper::getHardlinkPaths: error=" << e.what());
-        return false;
-    }
-
-    return true;
+    // The links of an item can only be enumerated with FindFirstFileNameW, which is only available on Windows. On this
+    // platform, the links of a file are searched by node id with getPathsWithNodeId.
+    ioError = IoError::FunctionNotSupported;
+    LOGW_WARN(logger(), L"IoHelper::getHardlinkPaths is not supported on this platform");
+    return false;
 }
 
 bool IoHelper::checkIfFileStatIsUpToDate(const SyncPath &path, bool &upToDate, IoError &ioError) noexcept {

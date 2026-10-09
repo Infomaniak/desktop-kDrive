@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// The behavior tests rely on IoHelper::getHardlinkPaths to locate the links of an item, which is only available on Windows.
+#if defined(KD_WINDOWS)
+
 #include "testutilityunlinkhardlinksjob.h"
 
 #include "libcommon/utility/types.h"
@@ -791,3 +794,5 @@ void TestUtilityUnlinkHardlinksJob::testSymlinkSeed() {
 }
 
 } // namespace KDC
+
+#endif

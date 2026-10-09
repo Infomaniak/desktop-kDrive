@@ -88,6 +88,7 @@ void TestIo::testLinkSearchDoesNotFollowDirectoryLinks() {
 #endif
 
     std::vector<SyncPath> hardlinkPaths;
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::getHardlinkPaths(filePath, hardlinkPaths, ioError, syncRootPath));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(size_t(2), hardlinkPaths.size());
@@ -95,6 +96,12 @@ void TestIo::testLinkSearchDoesNotFollowDirectoryLinks() {
     CPPUNIT_ASSERT(contains(hardlinkPaths, linkPath));
     CPPUNIT_ASSERT_MESSAGE("A link located outside of the search root has been returned",
                            !contains(hardlinkPaths, outsideLinkPath));
+#else
+    // The hardlink enumeration is only available on Windows.
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), !IoHelper::getHardlinkPaths(filePath, hardlinkPaths, ioError, syncRootPath));
+    CPPUNIT_ASSERT_EQUAL(IoError::FunctionNotSupported, ioError);
+    CPPUNIT_ASSERT(hardlinkPaths.empty());
+#endif
 
     std::vector<SyncPath> paths;
     ioError = IoError::Unknown;

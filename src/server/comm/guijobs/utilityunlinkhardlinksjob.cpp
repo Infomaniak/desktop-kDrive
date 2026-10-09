@@ -408,22 +408,13 @@ ExitInfo UtilityUnlinkHardlinksJob::getLinkPathsUnderSyncRoot(const SyncPath &lo
                                                               std::vector<SyncPath> &linkPaths) const {
     linkPaths.clear();
 
-    // Enumerate all the existing paths of the file, starting from the path reported in the error. Any error fails the job, as
-    // an incomplete list would leave links behind once the node is removed from the database.
-    std::vector<SyncPath> hardlinkPaths;
+    // Enumerate all the existing paths of the file located under the sync root, starting from the path reported in the error.
+    // Any error fails the job, as an incomplete list would leave links behind once the node is removed from the database.
     IoError ioError = IoError::Success;
-    if (!IoHelper::getHardlinkPaths(seedPath, hardlinkPaths, ioError, localPath)) {
+    if (!IoHelper::getHardlinkPaths(seedPath, linkPaths, ioError, localPath)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getHardlinkPaths: " << Utility::formatIoError(seedPath, ioError));
+        linkPaths.clear();
         return ExitCode::SystemError;
-    }
-
-    // Keep only the links located under the sync root.
-    for (const auto &path: hardlinkPaths) {
-        if (CommonUtility::isDescendantOrEqual(path, localPath)) {
-            linkPaths.push_back(path);
-        } else {
-            LOGW_DEBUG(_logger, L"Link located outside of the sync root, skipping: " << Utility::formatSyncPath(path));
-        }
     }
 
     return ExitCode::Ok;

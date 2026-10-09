@@ -236,16 +236,16 @@ struct IoHelper {
 
         //! Get all the existing paths pointing to the item indicated by the seed path, including the seed path itself.
         /*!
-          The hardlinks are searched by recursively iterating over searchRoot and comparing the identifier of the found regular
-          files with the one of the seed item: the items sharing the same device and inode on POSIX systems, the same file
-          identifier on Windows, are selected. Symbolic links (and junctions on Windows) are never followed: if the seed item
-          is a symbolic link, only the seed path is returned, and the symbolic links found during the search are ignored. When
-          searchRoot is not provided, only the seed path is returned.
+          On Windows, the links are enumerated with FindFirstFileNameW, which returns all the names of the item on its volume.
+          On the other platforms, this function is not supported and fails with IoError::FunctionNotSupported: the links of a
+          file are searched by node id with getPathsWithNodeId instead.
+          Only the links located under searchRoot are returned. Symbolic links (and junctions on Windows) are never followed:
+          if the seed item is a symbolic link, only the seed path is returned. When searchRoot is not provided, only the seed
+          path is returned.
           \param seedPath is the file system path of an existing item, used as the starting point of the enumeration.
           \param hardlinkPaths is set with the absolute paths of all the links pointing to the same item, including seedPath.
           \param ioError holds the error returned when an underlying OS API call fails.
-          \param searchRoot is the directory recursively searched for additional links. When it is not provided, no search
-          is performed.
+          \param searchRoot is the directory the links are searched under. When it is not provided, no search is performed.
           \return true if no unexpected error occurred, false otherwise. If the item indicated by seedPath does not exist,
          ioError is set with IoError::NoSuchFileOrDirectory. Any error occurring during the search, including an access denied
          error, fails the search: when false is returned, hardlinkPaths may be incomplete and must not be used.

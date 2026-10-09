@@ -18,6 +18,9 @@
 
 #pragma once
 
+// The behavior tests rely on IoHelper::getHardlinkPaths to locate the links of an item, which is only available on Windows.
+#if defined(KD_WINDOWS)
+
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 
@@ -191,3 +194,5 @@ class TestUtilityUnlinkHardlinksJob : public CppUnit::TestFixture, public TestBa
 };
 
 } // namespace KDC
+
+#endif

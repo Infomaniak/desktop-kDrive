@@ -1095,26 +1095,55 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
         hardlinkPaths.push_back(seedPath);
         if (!std::filesystem::is_regular_file(seedStatus) || !searchRoot) return true;
 
-        // There is no reliable system API to enumerate the links of an item on Windows: search for the items sharing the
-        // file identifier of the seed item while recursively iterating over the search root directory. The size and the
-        // modification time cached in the directory entries cannot be used to skip candidates, as NTFS only updates them at
-        // the link through which the file has been modified.
-        if (!_forEachLinkCandidate(
-                    seedPath, searchRoot,
-                    [&seedFileStat, &hardlinkPaths](const std::filesystem::directory_entry &entry) -> IoError {
-                        FileStat entryFileStat;
-                        IoError entryIoError = IoError::Success;
-                        if (!getFileStat(entry.path(), &entryFileStat, entryIoError, PathCheckOption::Insensitive)) {
-                            return entryIoError != IoError::Success ? entryIoError : IoError::Unknown;
-                        }
-                        // An entry removed meanwhile is not a link of the item anymore.
-                        if (entryIoError == IoError::NoSuchFileOrDirectory) return IoError::Success;
-                        if (entryIoError != IoError::Success) return entryIoError;
+        // Enumerate all the names of the seed item on its volume with FindFirstFileNameW. The returned names are rooted at the
+        // root of the volume, and include the seed path itself. An item can only be linked within its own volume, and the
+        // links located outside of the search root are never reachable through a path under the search root: only the names
+        // located under the search root are kept.
+        const std::wstring seedPathWStr = Path2WStr(seedPath);
+        const std::wstring volumeRootName = seedPath.root_name().native();
+        std::wstring linkName(512, L'\0');
+        DWORD linkNameLength = static_cast<DWORD>(linkName.size());
+        HANDLE findHandle = FindFirstFileNameW(seedPathWStr.c_str(), 0, &linkNameLength, linkName.data());
+        while (findHandle == INVALID_HANDLE_VALUE) {
+            const DWORD lastError = GetLastError();
+            if (lastError != ERROR_MORE_DATA) {
+                ioError = dWordError2ioError(lastError, logger());
+                LOGW_WARN(logger(), L"Error in FindFirstFileNameW: " << Utility::formatIoError(seedPath, ioError));
+                return false;
+            }
+            // The link name buffer is too small: retry with the required size.
+            linkName.resize(linkNameLength);
+            linkNameLength = static_cast<DWORD>(linkName.size());
+            findHandle = FindFirstFileNameW(seedPathWStr.c_str(), 0, &linkNameLength, linkName.data());
+        }
 
-                        if (entryFileStat.inode == seedFileStat.inode) hardlinkPaths.push_back(entry.path());
-                        return IoError::Success;
-                    },
-                    ioError)) {
+        bool searchSucceeded = true;
+        for (;;) {
+            const SyncPath linkPath = SyncPath(volumeRootName) / SyncPath(linkName.c_str());
+            if (CommonUtility::isDescendantOrEqual(linkPath, *searchRoot)) {
+                hardlinkPaths.push_back(linkPath);
+            } else {
+                LOGW_DEBUG(logger(), L"Link located outside of the search root, skipping: " << Utility::formatSyncPath(linkPath));
+            }
+
+            if (FindNextFileNameW(findHandle, &linkNameLength, linkName.data())) continue;
+            const DWORD lastError = GetLastError();
+            if (lastError == ERROR_HANDLE_EOF) break; // All the link names have been enumerated.
+            if (lastError == ERROR_MORE_DATA) {
+                // The link name buffer is too small for the next link name: retry with the required size.
+                linkName.resize(linkNameLength);
+                linkNameLength = static_cast<DWORD>(linkName.size());
+                continue;
+            }
+            ioError = dWordError2ioError(lastError, logger());
+            LOGW_WARN(logger(), L"Error in FindNextFileNameW: " << Utility::formatIoError(seedPath, ioError));
+            searchSucceeded = false;
+            break;
+        }
+        (void) FindClose(findHandle);
+        if (!searchSucceeded) {
+            // The list is incomplete and must not be used.
+            hardlinkPaths.clear();
             return false;
         }
     } catch (const std::exception &e) {
