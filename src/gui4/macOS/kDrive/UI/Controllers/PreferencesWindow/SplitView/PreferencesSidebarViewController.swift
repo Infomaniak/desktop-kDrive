@@ -62,6 +62,8 @@ class PreferencesSidebarViewController: NSViewController {
         outlineView.rowSizeStyle = .medium
         outlineView.headerView = nil
         outlineView.style = .sourceList
+        outlineView.target = self
+        outlineView.action = #selector(didClickOutlineView)
 
         let singleColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
         singleColumn.isEditable = false
@@ -134,7 +136,14 @@ extension PreferencesSidebarViewController: NSOutlineViewDelegate {
     }
 
     func outlineViewSelectionDidChange(_ notification: Notification) {
-        guard let item = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem else { return }
+        guard NSApp.currentEvent?.type != .leftMouseDown,
+              let item = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem else { return }
+        delegate?.sidebarViewController(self, didSelectItem: item)
+    }
+
+    @objc private func didClickOutlineView() {
+        guard outlineView.clickedRow != -1, outlineView.clickedRow == outlineView.selectedRow,
+              let item = outlineView.item(atRow: outlineView.clickedRow) as? SidebarItem else { return }
         delegate?.sidebarViewController(self, didSelectItem: item)
     }
 }
