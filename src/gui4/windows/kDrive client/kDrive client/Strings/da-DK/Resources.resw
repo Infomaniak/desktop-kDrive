@@ -6,7 +6,7 @@
   Locale: da, Danish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Alle aktiviteter</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Kun min aktivitet</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Aktiviteter fra denne computer</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importeret</value> 
@@ -134,7 +134,7 @@
     <value>Omdøbt</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Omdøbt til %@</value> 
+    <value>Omdøbt %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Ændret</value> 
@@ -177,7 +177,7 @@ Du kan få adgang til dine avancerede synkroniseringer fra drevvælgeren på sta
     <value>Anvender ændring…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Sletter logfiler ældre end 7 dage for at spare diskplads.</value> 
+    <value>Sletter logfiler ældre end 31 dage for at spare diskplads.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatisk oprydning</value> 
@@ -744,7 +744,7 @@ Kontakt din administrator for at øge filstørrelsesgrænsen.</value>
     <value>Adgang forbudt</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Navnet på dette %@ indeholder et eller flere tegn, der ikke understøttes af kDrive Windows-programmet. Omdøb %@ fra kDrive online.</value> 
+    <value>Navnet på denne %@ indeholder et eller flere tegn, som ikke understøttes af kDrive-applikationen. Omdøb %@ via kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Dette navn indeholder kun mellemrum og kan ikke bruges. Omdøb %@ fra kDrive online.</value> 
@@ -761,6 +761,9 @@ Anmod om adgang fra ejeren eller administratoren.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Adgang forbudt</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konverter til almindelig fil</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Denne fil er et hardlink, der ikke kan synkroniseres.</value> 

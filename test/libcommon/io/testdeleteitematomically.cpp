@@ -106,43 +106,4 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
     CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 #endif
 }
-
-void TestDeleteItemAtomically::testDeleteRegularFileWithExpectedNodeId() {
-    const LocalTemporaryDirectory temporaryDirectory("testDeleteItemAtomically_expectedNodeId");
-    const auto cacheDirectory = std::make_shared<CacheDirectory>(temporaryDirectory.path());
-    SyncPath cacheDirectoryPath;
-    CPPUNIT_ASSERT(cacheDirectory->path(cacheDirectoryPath));
-
-    // A regular file matching the expected node id is first atomically moved to the cache directory and is then deleted
-    // from it.
-    const SyncPath filePath = temporaryDirectory.path() / "test_file.txt";
-    { std::ofstream ofs(filePath); }
-    NodeId nodeId;
-    CPPUNIT_ASSERT(IoHelper::getNodeId(filePath, nodeId));
-
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(filePath, cacheDirectory, nodeId));
-    CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
-    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
-}
-
-void TestDeleteItemAtomically::testDeleteRegularFileWithUnexpectedNodeId() {
-    const LocalTemporaryDirectory temporaryDirectory("testDeleteItemAtomically_unexpectedNodeId");
-    const auto cacheDirectory = std::make_shared<CacheDirectory>(temporaryDirectory.path());
-    SyncPath cacheDirectoryPath;
-    CPPUNIT_ASSERT(cacheDirectory->path(cacheDirectoryPath));
-
-    // If the item moved into the cache directory does not match the expected node id, it is restored to its original path
-    // and the deletion fails.
-    const SyncPath filePath = temporaryDirectory.path() / "test_file.txt";
-    { std::ofstream ofs(filePath); }
-    NodeId nodeId;
-    CPPUNIT_ASSERT(IoHelper::getNodeId(filePath, nodeId));
-    const NodeId wrongNodeId = nodeId + "0";
-
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::ItemChanged),
-                         IoHelper::deleteItemAtomically(filePath, cacheDirectory, wrongNodeId));
-    CPPUNIT_ASSERT(std::filesystem::exists(filePath));
-    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
-}
-
 } // namespace KDC

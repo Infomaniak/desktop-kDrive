@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Tutte le attività</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Solo la mia attività</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Attività di questo computer</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importato</value> 
@@ -177,7 +177,7 @@ Puoi accedere alle sincronizzazioni avanzate dal selettore di unità nella pagin
     <value>Applicazione della modifica…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Elimina i log più vecchi di 7 giorni per risparmiare spazio su disco.</value> 
+    <value>Elimina i log più vecchi di 31 giorni per risparmiare spazio su disco.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Pulizia automatica</value> 
@@ -744,7 +744,7 @@ Contatta il tuo amministratore per aumentare il limite di dimensione del file.</
     <value>Accesso vietato</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Il nome di questo %@ contiene uno o più caratteri non supportati dall’applicazione kDrive per Windows. Rinomina il %@ da kDrive online.</value> 
+    <value>Il nome di questo %@ contiene uno o più caratteri non supportati dall’applicazione kDrive. Rinomina il %@ da kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Questo nome contiene solo spazi e non può essere utilizzato. Rinomina il %@ da kDrive online.</value> 
@@ -761,6 +761,9 @@ Richiedi l’accesso al proprietario o all’amministratore.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Accesso vietato</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Converti in file normale</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Questo file è un hard link e non può essere sincronizzato.</value> 

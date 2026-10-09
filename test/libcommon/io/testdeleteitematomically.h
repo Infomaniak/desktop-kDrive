@@ -29,8 +29,6 @@ class TestDeleteItemAtomically final : public CppUnit::TestFixture, public TestB
         CPPUNIT_TEST(testDeleteDirectory);
         CPPUNIT_TEST(testDeleteNonExistingItem);
         CPPUNIT_TEST(testDeleteItemWithoutRights);
-        CPPUNIT_TEST(testDeleteRegularFileWithExpectedNodeId);
-        CPPUNIT_TEST(testDeleteRegularFileWithUnexpectedNodeId);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -42,8 +40,6 @@ class TestDeleteItemAtomically final : public CppUnit::TestFixture, public TestB
         void testDeleteDirectory();
         void testDeleteNonExistingItem();
         void testDeleteItemWithoutRights();
-        void testDeleteRegularFileWithExpectedNodeId();
-        void testDeleteRegularFileWithUnexpectedNodeId();
 };
 
 

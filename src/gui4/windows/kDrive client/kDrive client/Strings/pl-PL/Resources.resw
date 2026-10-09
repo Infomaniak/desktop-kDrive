@@ -6,7 +6,7 @@
   Locale: pl, Polish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Wszystkie aktywności</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Tylko moja aktywność</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Aktywności tego komputera</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Zaimportowany</value> 
@@ -134,7 +134,7 @@
     <value>Zmieniono nazwę</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Przemianowany na %@</value> 
+    <value>Zmieniono nazwę %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Zmodyfikowany</value> 
@@ -177,7 +177,7 @@ Dostęp do zaawansowanych synchronizacji można uzyskać za pomocą selektora dy
     <value>Stosowanie zmiany…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Usuwa dzienniki starsze niż 7 dni, aby zaoszczędzić miejsce na dysku.</value> 
+    <value>Usuwa dzienniki starsze niż 31 dni, aby zaoszczędzić miejsce na dysku.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatyczne czyszczenie</value> 
@@ -744,7 +744,7 @@ Skontaktuj się z administratorem, aby zwiększyć limit rozmiaru pliku.</value>
     <value>Dostęp zabroniony</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Nazwa tego %@ zawiera jeden lub więcej znaków nieobsługiwanych przez aplikację kDrive dla systemu Windows. Zmień nazwę %@ w kDrive online.</value> 
+    <value>Nazwa tego %@ zawiera jeden lub więcej znaków, które nie są obsługiwane przez aplikację kDrive. Zmień nazwę %@ w kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Ta nazwa zawiera tylko spacje i nie może być używana. Zmień nazwę %@ w kDrive online.</value> 
@@ -761,6 +761,9 @@ Poproś właściciela lub administratora o dostęp.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Dostęp zabroniony</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konwertuj na zwykły plik</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Ten plik jest twardym dowiązaniem (hard link), które nie może być synchronizowane.</value> 

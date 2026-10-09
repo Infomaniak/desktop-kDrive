@@ -253,8 +253,6 @@ std::string toString(const ExitCause e) {
             return "MoveThroughSymlink";
         case ExitCause::HardlinkNotSupported:
             return "HardlinkNotSupported";
-        case ExitCause::ItemChanged:
-            return "ItemChanged";
         default:
             return noConversionStr;
     }

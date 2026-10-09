@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Kaikki toiminnot</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Vain oma toimintani</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Tämän tietokoneen toiminnot</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Tuotu</value> 
@@ -134,7 +134,7 @@
     <value>Nimetty uudelleen</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Uudelleennimetty %@</value> 
+    <value>Nimetty uudelleen %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Muokattu</value> 
@@ -177,7 +177,7 @@ Voit käyttää kehittyneitä synkronointejasi kotisivun asemavalikosta.</value>
     <value>Muutosta sovelletaan…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Poistaa yli 7 päivää vanhat lokit levytilan säästämiseksi.</value> 
+    <value>Poistaa yli 31 päivää vanhat lokit levytilan säästämiseksi.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automaattinen siivous</value> 
@@ -744,7 +744,7 @@ Ota yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.</value
     <value>Pääsy kielletty</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Tämän %@ nimi sisältää yhden tai useamman merkin, joita kDriven Windows-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
+    <value>Tämän %@:n nimessä on yksi tai useampi merkki, joita kDrive-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelussa.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Tämä nimi sisältää vain välilyöntejä eikä sitä voi käyttää. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
@@ -761,6 +761,9 @@ Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Pääsy kielletty</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Muunna tavalliseksi tiedostoksi</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Tämä tiedosto on kiintolinkkitiedosto, jota ei voi synkronoida.</value> 

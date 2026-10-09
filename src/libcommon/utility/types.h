@@ -282,8 +282,8 @@ enum class IoError {
     TooManySymbolicLinkLevels,
     MoveThroughSymlink, // The local move is forbidden because an intermediate component of the path is a symbolic link
     HardlinkNotSupported,
-    Unknown,
     FunctionNotSupported, // The function is not supported on this platform
+    Unknown,
     EnumEnd
 };
 

@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Todas las actividades</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Solo mi actividad</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Actividades de este ordenador</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importado</value> 
@@ -177,7 +177,7 @@ Puedes acceder a tus sincronizaciones avanzadas desde el selector de unidades en
     <value>Aplicando cambio…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Elimina los registros de más de 7 días para ahorrar espacio en disco.</value> 
+    <value>Elimina los registros de más de 31 días para ahorrar espacio en disco.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Limpieza automática</value> 
@@ -744,7 +744,7 @@ Contacta con tu administrador para aumentar el límite de tamaño de archivo.</v
     <value>Acceso prohibido</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>El nombre de este %@ contiene uno o más caracteres no admitidos por la aplicación kDrive Windows. Cambia el nombre del %@ desde kDrive en línea.</value> 
+    <value>El nombre de este %@ contiene uno o varios caracteres que la aplicación kDrive no admite. Cambia el nombre de %@ desde kDrive en línea.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Este nombre contiene solo espacios y no se puede usar. Cambia el nombre del %@ desde kDrive en línea.</value> 
@@ -761,6 +761,9 @@ Solicita acceso al propietario o al administrador.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Acceso prohibido</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Convertir en un archivo normal</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Este archivo es un enlace físico que no puede sincronizarse.</value> 

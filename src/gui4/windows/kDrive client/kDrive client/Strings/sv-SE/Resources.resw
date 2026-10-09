@@ -6,7 +6,7 @@
   Locale: sv, Swedish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,14 +100,14 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Alla aktiviteter</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Endast min aktivitet</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Aktiviteter från den här datorn</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importerad</value> 
   </data> 
   <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Importerat %@</value> 
+    <value>Importerad %@</value> 
   </data> 
   <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
     <value>Ignorerad</value> 
@@ -134,7 +134,7 @@
     <value>Bytt namn</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Omdöpt till %@</value> 
+    <value>Bytt namn %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Ändrad</value> 
@@ -177,7 +177,7 @@ Du kan komma åt dina avancerade synkroniseringar från enhetsväljaren på star
     <value>Tillämpar ändring…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Tar bort loggar äldre än 7 dagar för att spara diskutrymme.</value> 
+    <value>Tar bort loggar äldre än 31 dagar för att spara diskutrymme.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatisk rensning</value> 
@@ -744,7 +744,7 @@ Kontakta din administratör för att öka filstorleksgränsen.</value>
     <value>Åtkomst förbjuden</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Namnet på denna %@ innehåller ett eller flera tecken som inte stöds av kDrive Windows-programmet. Byt namn på %@ från kDrive online.</value> 
+    <value>Namnet på denna %@ innehåller ett eller flera tecken som inte stöds av appen kDrive. Byt namn på %@ via kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Det här namnet innehåller bara mellanslag och kan inte användas. Byt namn på %@ från kDrive online.</value> 
@@ -761,6 +761,9 @@ Begär åtkomst från ägaren eller administratören.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Åtkomst förbjuden</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konvertera till vanlig fil</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Den här filen är en hård länk som inte kan synkroniseras.</value> 

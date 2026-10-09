@@ -174,7 +174,6 @@ enum class ExitCause {
     MoveThroughSymlink, // The local move is forbidden because an intermediate component of the path is a symbolic link
     HardlinkNotSupported, // Some operations are not supported on hard links in Windows LiteSync when two hard links point to
                           // different LiteSync roots.
-    ItemChanged, // The item has been modified by another process during the operation
     EnumEnd
 };
 

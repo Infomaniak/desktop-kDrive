@@ -217,27 +217,7 @@ struct IoHelper {
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
                                                     NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
-        //! Get the paths of all the links of the item identified by nodeId that are located under searchRoot.
-        /*!
-          The item is identified by its node id, so the links are found even if the item has been moved or if the path
-          reported in the error is not the path of an existing link anymore.
-          On Windows, one of the existing paths of the item is resolved with OpenFileById, then all the names of the item
-          are enumerated with FindFirstFileNameW. On the other platforms, this function is not supported and fails with
-          IoError::FunctionNotSupported.
-          Only the links located under searchRoot are returned. Symbolic links (and junctions on Windows) are never
-          followed: if the item is a symbolic link, no link is returned.
-          \param searchRoot is the directory the links are searched under. It must be an existing directory located on the
-          same volume as the searched item.
-          \param nodeId is the node identifier of the searched item, as returned by getFileStat on Windows.
-          \param hardlinkPaths is set with the absolute paths of all the links of the item located under searchRoot. It is
-          empty if the item does not exist anymore or if it has no link under searchRoot.
-          \param ioError holds the error returned when an underlying OS API call fails. It is set with
-          IoError::NoSuchFileOrDirectory if the item does not exist anymore, and with IoError::FunctionNotSupported on the
-          platforms where the enumeration is not supported.
-          \return true if the enumeration completed, false otherwise. Any error occurring during the enumeration, including
-          an access denied error, fails the enumeration: when false is returned, hardlinkPaths may be incomplete and must
-          not be used.
-          */
+        // Get the paths of all the links of the item identified by nodeId that are located under searchRoot.
         static bool getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &hardlinkPaths,
                                      IoError &ioError) noexcept;
 
@@ -370,12 +350,9 @@ struct IoHelper {
          \param path is the file system path of the item to remove.
          \param cacheDirectory holds the cache directory pointer. The item to delete is first moved to the cache directory before
          being deleted.
-         \param expectedNodeId is the expected node id of the item to remove. If it is set and the item moved into the cache
-         directory does not match it, the moved item is restored to its original path and a failing ExitInfo is returned.
          \return ExitInfo.
          */
-        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory,
-                                             const std::optional<NodeId> &expectedNodeId = std::nullopt) noexcept;
+        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.

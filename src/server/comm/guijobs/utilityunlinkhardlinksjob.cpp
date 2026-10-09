@@ -382,11 +382,14 @@ ExitInfo UtilityUnlinkHardlinksJob::deleteLinks(const std::shared_ptr<SyncPal> &
             continue;
         }
 
-        // The node id is checked again after the item has been moved into the cache directory: if the item is replaced in
-        // between, the moved item is restored instead of being deleted.
-        if (const ExitInfo exitInfo = IoHelper::deleteItemAtomically(path, syncPal->cacheDirectory(), linkNodeId); !exitInfo) {
-            LOGW_WARN(_logger, L"Failed to delete " << Utility::formatSyncPath(path) << L": " << exitInfo);
-            return exitInfo;
+
+        std::error_code ec;
+        std::filesystem::remove(path, ec);
+        IoError ioError = IoHelper::stdError2ioError(ec);
+
+        if (ioError != IoError::Success) { // A stuck hardlink cannot be moved, we have to hard delete it
+            LOGW_WARN(_logger, L"Failed to delete " << Utility::formatSyncPath(path) << L": " << IoHelper::toExitInfo(ioError));
+            return IoHelper::toExitInfo(ioError);
         }
     }
 

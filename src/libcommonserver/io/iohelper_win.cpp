@@ -165,22 +165,6 @@ bool getRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
     return true;
 }
 
-// Windows resolves paths case-insensitively: the item names returned by the system may differ from the search root by their
-// character casing only and must not be filtered out.
-bool isCaseInsensitiveDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
-    auto it = potentialDescendant.begin();
-    auto it2 = path.begin();
-    for (; it2 != path.end(); ++it, ++it2) {
-        if (it == potentialDescendant.end()) {
-            // potentialDescendant is shorter than path: it cannot be a descendant of path.
-            return false;
-        }
-        if (_wcsicmp(it->c_str(), it2->c_str()) != 0) return false;
-    }
-    // path is exhausted: potentialDescendant is equal to path or is located under it.
-    return true;
-}
-
 } // namespace
 
 int IoHelper::_getAndSetRightsMethod = -1; // -1: not initialized, 0: Windows API, 1: std::filesystem
@@ -1178,7 +1162,7 @@ bool IoHelper::getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId
         bool searchSucceeded = true;
         for (;;) {
             const SyncPath linkPath = SyncPath(volumeRootName) / SyncPath(linkName.c_str());
-            if (isCaseInsensitiveDescendantOrEqual(linkPath, searchRoot)) {
+            if (CommonUtility::isDescendantOrEqual(linkPath, searchRoot)) {
                 const auto alreadyCollected = [&linkPath](const SyncPath &collectedLinkPath) {
                     return _wcsicmp(collectedLinkPath.c_str(), linkPath.c_str()) == 0;
                 };
