@@ -2171,6 +2171,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExclusionTemplate::updateList(exclusionTemplateList);
 
+            // Invalidate snapshots of all syncs. We don't want the new exclusion templates to be applied to snapshots that were
+            // created with the previous templates.
+            {
+                const std::scoped_lock lock(syncPalMapMutex);
+                for (const auto &[_, syncPal]: syncPalMap) {
+                    if (syncPal) syncPal->forceInvalidateSnapshots();
+                }
+            }
 
             const auto exitInfo = ServerRequests::setUserExclusionTemplateList(exclusionTemplateList);
             if (!exitInfo) {
@@ -2962,11 +2970,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
