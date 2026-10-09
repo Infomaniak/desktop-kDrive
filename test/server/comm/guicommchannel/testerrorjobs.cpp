@@ -279,8 +279,6 @@ void TestGuiCommChannel::testUtilityUnlinkHardlinksJob() {
     std::string b64str;
     CommonUtility::convertToBase64Str("local1", b64str);
     (void) queryParamsObj.set("nodeId", b64str);
-    CommonUtility::convertToBase64Str("path1", b64str);
-    (void) queryParamsObj.set("path", b64str);
     (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);
@@ -295,7 +293,6 @@ void TestGuiCommChannel::testUtilityUnlinkHardlinksJob() {
         CPPUNIT_ASSERT_EQUAL(SyncDbId{10}, unlinkHardlinksJob->_syncDbId);
         CPPUNIT_ASSERT_EQUAL(ErrorDbId{42}, unlinkHardlinksJob->_errorDbId);
         CPPUNIT_ASSERT_EQUAL(std::string("local1"), unlinkHardlinksJob->_nodeId);
-        CPPUNIT_ASSERT_EQUAL(SyncPath("path1"), unlinkHardlinksJob->_relativeLocalPath);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
