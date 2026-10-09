@@ -75,8 +75,11 @@ Rectangle {
         }
 
         // The created folder is sorted among its siblings, possibly outside the viewport: the cursor follows it.
+        // Its parent may have been collapsed while the request was pending: the path is expanded first.
         function onFolderCreated(index) {
             Qt.callLater(function() {
+                treeView.expandToIndex(index);
+                treeView.forceLayout();
                 const createdRow = treeView.rowAtIndex(index);
                 if (createdRow >= 0) {
                     treeView.forceActiveFocus();
