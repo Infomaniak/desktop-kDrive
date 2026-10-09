@@ -362,8 +362,8 @@ ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::checkIfRemoteDir
     return ExitCode::Ok;
 }
 
-ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::updateLongPollJobs(const RemoteNodeId &,
-                                                                                   std::shared_ptr<LongPollJob> &) {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::updateLongPollJob(const RemoteNodeId &,
+                                                                                  std::shared_ptr<LongPollJob> &) {
     if (!_networkAvailable) return ExitCode::NetworkError;
 
     return ExitCode::Ok;
