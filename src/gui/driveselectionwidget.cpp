@@ -99,6 +99,7 @@ void DriveSelectionWidget::selectDrive(const DriveDbId driveDbId) {
     GuiUtility::makePrintablePath(driveName, driveNameMaxSize);
 
     _currentDriveDbId = driveDbId;
+    _driveTextLabel->setTextFormat(Qt::PlainText);
     _driveTextLabel->setText(driveName);
     _downIconLabel->setVisible(true);
     setDriveIcon();
