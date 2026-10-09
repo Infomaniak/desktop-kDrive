@@ -385,7 +385,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath);
 
         void clearRemoteLiveSnapshotBackup() {
-            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+
             _remoteLiveSnapshotBackup.clear();
         }
 
@@ -490,22 +491,32 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         struct RemoteLiveSnapshotBackup {
                 std::shared_ptr<ConstSnapshot> snapshot;
                 RemoteNodeIdSet blacklist;
+
                 void clear() {
                     snapshot.reset();
                     blacklist.clear();
                 }
         };
 
+        mutable std::recursive_mutex remoteLiveSnapshotBackupMutex;
+
         RemoteLiveSnapshotBackup remoteLiveSnapshotBackup() const {
-            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
 
             return _remoteLiveSnapshotBackup;
         }
 
         void setRemoteLiveSnapshotBackup(const std::shared_ptr<ConstSnapshot> &snapshot, const RemoteNodeIdSet &blacklist) {
-            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+
             _remoteLiveSnapshotBackup.snapshot = snapshot;
             _remoteLiveSnapshotBackup.blacklist = blacklist;
+        }
+
+        bool isRemoteSnapshotBackupValid(const RemoteNodeIdSet &blackList) const {
+            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+
+            return _remoteLiveSnapshotBackup.snapshot != nullptr && _remoteLiveSnapshotBackup.blacklist == blackList;
         }
 
     private:
@@ -527,7 +538,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
 
         mutable std::mutex _progressInfoMutex;
-        mutable std::mutex _remoteLiveSnapshotBackupMutex;
 
         RemoteLiveSnapshotBackup _remoteLiveSnapshotBackup{nullptr, RemoteNodeIdSet{}};
 

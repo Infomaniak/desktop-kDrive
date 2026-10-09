@@ -274,9 +274,10 @@ ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
 ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const {
     validSnapshotBackupExists = false;
 
-    if (!_syncPal->remoteLiveSnapshotBackup().snapshot) return ExitCode::Ok;
-    if (_syncPal->remoteLiveSnapshotBackup().blacklist != blackList()) return ExitCode::Ok;
+    // Check if a valid remote snapshot backup exists.
+    if (!_syncPal->isRemoteSnapshotBackupValid(blackList())) return ExitCode::Ok;
 
+    // Check if the listing cursors for the special folders are still valid (not too old).
     std::vector<RemoteNodeId> specialFoldersRemoteIds;
     if (const auto exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in getSpecialFoldersRemoteIds: " << exitInfo);
@@ -312,10 +313,14 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(
 }
 
 ExitInfo RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup() {
-    if (!_syncPal->remoteLiveSnapshotBackup().snapshot) return {ExitCode::LogicError, ExitCause::Unknown};
+    const std::scoped_lock lock(_syncPal->remoteLiveSnapshotBackupMutex);
 
-    _liveSnapshot.restoreFromBackup(*_syncPal->remoteLiveSnapshotBackup().snapshot);
+    const auto &backup = _syncPal->remoteLiveSnapshotBackup();
+    if (!backup.snapshot) return {ExitCode::LogicError, ExitCause::Unknown};
+
+    _liveSnapshot.restoreFromBackup(*backup.snapshot);
     _liveSnapshot.setValid(true);
+
     _syncPal->clearRemoteLiveSnapshotBackup();
 
     return ExitCode::Ok;
@@ -339,6 +344,8 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validS
     LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
                                                                                                  << _syncPal->syncDbId() << ".");
     validSnapshotBackupExists = false;
+
+    std::scoped_lock lock(_syncPal->remoteLiveSnapshotBackupMutex);
     if (const auto validBackupExitInfo = checkIfValidRemoteSnapshotBackupExists(validSnapshotBackupExists);
         !validBackupExitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists: "
