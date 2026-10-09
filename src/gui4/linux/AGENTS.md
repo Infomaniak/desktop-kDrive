@@ -48,6 +48,8 @@
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - In new Linux v4 C++ code, import `Qt::StringLiterals` in the implementation and use `u"..."_s` instead of
   `QStringLiteral(...)`.
+- When adding a string literal within an existing uniformly styled block, preserve that block's convention, including
+  `QStringLiteral`. Do not convert an isolated entry to `u"..."_s`.
 - Use the domain aliases from `libcommon/utility/types.h` whenever they match the represented concept. Keep `int` and Qt
   numeric types when required by an overridden Qt API or a QML boundary, and make that constraint explicit when unclear.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
