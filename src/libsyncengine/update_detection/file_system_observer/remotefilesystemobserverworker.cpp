@@ -1412,11 +1412,11 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     }
 
     if (resetTimer) {
-        _listingFullCount.store(0, std::memory_order_release);
+        _listingFullCount.store(0);
         _listingFullTimer = listingFullTimerEnd;
     }
 
-    _listingFullCount.fetch_add(1, std::memory_order_release);
+    (void) _listingFullCount.fetch_add(1);
 }
 
 void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &remotePath) {
