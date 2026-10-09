@@ -45,6 +45,9 @@ ItemDelegate {
     Accessible.description: root.availableLocally ? root.subtitleText
                                                   : root.subtitleText + ". " + qsTrId("searchResultOpenInBrowserTooltip")
 
+    // Accessible presses use the delegate's inherited clicked signal.
+    onClicked: root.activated(false)
+
     background: Rectangle {
         radius: IKSearch.rowRadius
         color: root.hovered || root.current ? IKColors.surfaceSecondary : "transparent"
@@ -111,8 +114,8 @@ ItemDelegate {
         }
     }
 
-    // `clicked` does not carry keyboard modifiers, so the click is handled here. Hover stays with the delegate, as this
-    // area does not accept hover events.
+    // Pointer clicks are handled here to preserve Ctrl modifiers. Hover stays with the delegate, as this area does not
+    // accept hover events.
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton
