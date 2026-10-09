@@ -344,6 +344,11 @@ namespace Infomaniak.kDrive.ViewModels
             return await commService.ResolveConflictsQuick(conflictsToResolve, resolutionStrategy, CancellationToken.None);
         }
 
+        public Uri GetWebUri()
+        {
+            return IsAdvanced ? App.Constants.Drive.itemUri(Drive.DriveId, RemoteNodeId) : Drive.GetWebUri();
+        }
+
         public async Task<List<NodeId>?> GetExcludedNodeIds()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();

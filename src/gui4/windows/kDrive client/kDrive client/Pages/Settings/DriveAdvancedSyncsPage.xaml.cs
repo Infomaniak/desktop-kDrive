@@ -119,7 +119,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        Uri remoteFolderWebUri = App.Constants.Drive.itemUri(sync.Drive.DriveId, sync.RemoteNodeId);
+        Uri remoteFolderWebUri = sync.GetWebUri();
         await Windows.System.Launcher.LaunchUriAsync(remoteFolderWebUri);
     }
 
