@@ -40,6 +40,8 @@ Rectangle {
     // Folder under the keyboard cursor. The cursor is drawn from this id rather than from the delegates' `current`, which
     // TreeView does not refresh when rows are inserted or removed above the current index: two rows then look current.
     property string cursorNodeId: ""
+    // Name typed in the editing row, kept here since the view can pool the row's delegate while it is scrolled out.
+    property string folderNameDraft: ""
 
     implicitHeight: IKSyncConfiguration.treeHeight
     radius: IKSyncConfiguration.treeRadius
@@ -56,8 +58,10 @@ Rectangle {
             root.cursorNodeId = "";
         }
 
+        // Each creation starts from an empty name. This handler runs before the delegates' own, connected later.
         // The editing row can land in a collapsed folder or outside the viewport: it is shown before it takes the focus.
         function onFolderCreationStarted(parentIndex) {
+            root.folderNameDraft = "";
             const parentRow = treeView.rowAtIndex(parentIndex);
             if (parentRow >= 0) {
                 treeView.expand(parentRow);
@@ -271,9 +275,10 @@ Rectangle {
                 }
             }
 
+            // Also runs when the editing row's delegate is created or reused: it takes back the draft.
             function focusNameField(): void {
                 if (folderRow.nameEditing) {
-                    nameField.text = "";
+                    nameField.text = root.folderNameDraft;
                     nameField.forceActiveFocus();
                 }
             }
@@ -304,7 +309,7 @@ Rectangle {
             }
             onNameEditingChanged: folderRow.focusNameField()
 
-            // A delegate can stay on the editing row from one creation to the next: each one starts from an empty name.
+            // A delegate can stay on the editing row from one creation to the next: it takes the draft reset by the picker.
             Connections {
                 target: root.treeModel
 
@@ -472,6 +477,7 @@ Rectangle {
                 bottomPadding: 0
                 verticalAlignment: TextInput.AlignVCenter
                 Accessible.name: qsTrId("labelNewFolder")
+                onTextEdited: root.folderNameDraft = nameField.text
                 Keys.onReturnPressed: root.controller.commitFolderCreation(nameField.text)
                 Keys.onEnterPressed: root.controller.commitFolderCreation(nameField.text)
                 Keys.onEscapePressed: event => {
