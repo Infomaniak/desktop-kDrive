@@ -456,10 +456,10 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
 
     // Get current cursor and age it
     CursorData oldCursor;
-    CPPUNIT_ASSERT(_syncPal->getFolderCursor(SpecialRemoteFolder::Private, oldCursor));
+    CPPUNIT_ASSERT(_syncPal->getRootFolderCursor(oldCursor));
     // Set timestamp to 4 days ago
     oldCursor.timestamp = CommonUtility::getCurrentSyncTime() - EXPIRY_OFFSET;
-    CPPUNIT_ASSERT(_syncPal->setFolderCursor(SpecialRemoteFolder::Private, oldCursor));
+    CPPUNIT_ASSERT(_syncPal->setRootFolderCursor(oldCursor));
 
     // (5) Make more remote changes while cursors are stale.
     const Operations moreRemoteOps{Str2SyncName(R"({
