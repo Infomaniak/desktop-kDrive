@@ -225,6 +225,8 @@ Rectangle {
 
             Accessible.role: Accessible.TreeItem
             Accessible.name: folderRow.folderName
+            // The hover tooltip's explanation, for users who never point at the row.
+            Accessible.description: folderRow.unavailable ? qsTrId("errorSelectedFolderIncorrect") : ""
             Accessible.selectable: folderRow.selectable
             Accessible.selected: folderRow.folderSelected
             Accessible.readOnly: !folderRow.selectable
