@@ -683,6 +683,20 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
+#if !defined(KD_WINDOWS)
+bool IoHelper::getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &hardlinkPaths,
+                                IoError &ioError) noexcept {
+    (void) searchRoot;
+    (void) nodeId;
+    hardlinkPaths.clear();
+    // The links of an item can only be enumerated with FindFirstFileNameW and OpenFileById, which are only available on
+    // Windows. On this platform, the unlink hardlinks action fails with IoError::FunctionNotSupported.
+    ioError = IoError::FunctionNotSupported;
+    LOGW_WARN(logger(), L"IoHelper::getHardlinkPaths is not supported on this platform");
+    return false;
+}
+#endif
+
 bool IoHelper::getFileStat(const SyncPath &path, FileStat *const filestat, IoError &ioError, PathCheckOption option) noexcept {
     ioError = IoError::Success;
 

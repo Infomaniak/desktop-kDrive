@@ -21,6 +21,7 @@
 #include "libcommonserver/io/filestat.h"
 
 #include <filesystem>
+#include <fstream>
 
 using namespace CppUnit;
 

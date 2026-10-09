@@ -89,7 +89,8 @@ struct IoHelper {
             EnumEnd
         };
 
-        static ExitInfo toExitInfo(const IoError ioError, const ExitInfo &defaultExitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
+        static ExitInfo toExitInfo(const IoError ioError,
+                                   const ExitInfo &defaultExitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
 
         static PathCheckOption getDefaultPathCheckOption() noexcept {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
@@ -215,6 +216,10 @@ struct IoHelper {
          */
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
                                                     NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
+
+        // Get the paths of all the links of the item identified by nodeId that are located under searchRoot.
+        static bool getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &hardlinkPaths,
+                                     IoError &ioError) noexcept;
 
         //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path is a link that
         //! the operating system follows during path resolution: a symbolic link, or a junction on Windows.

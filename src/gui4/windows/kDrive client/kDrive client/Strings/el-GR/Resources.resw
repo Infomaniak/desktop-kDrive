@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,14 +100,14 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Όλες οι δραστηριότητες</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Μόνο η δική μου δραστηριότητα</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Δραστηριότητες από αυτόν τον υπολογιστή</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Εισήχθη</value> 
   </data> 
   <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Εισαγωγή %@</value> 
+    <value>Εισήχθη %@</value> 
   </data> 
   <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
     <value>Αγνοημένος</value> 
@@ -134,7 +134,7 @@
     <value>Μετονομάστηκε</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Μετονομάστηκε σε %@</value> 
+    <value>Μετονομάστηκε %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Τροποποιημένο</value> 
@@ -177,7 +177,7 @@
     <value>Εφαρμογή αλλαγής…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Διαγράφει αρχεία καταγραφής παλαιότερα από 7 ημέρες για εξοικονόμηση χώρου στο δίσκο.</value> 
+    <value>Διαγράφει αρχεία καταγραφής παλαιότερα από 31 ημέρες για εξοικονόμηση χώρου στο δίσκο.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Αυτόματη εκκαθάριση</value> 
@@ -744,7 +744,7 @@
     <value>Απαγορευμένη πρόσβαση</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Το όνομα αυτού του %@ περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive Windows. Μετονομάστε το %@ από το kDrive online.</value> 
+    <value>Το όνομα αυτού του %@ περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive. Μετονομάστε το %@ μέσω του kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Αυτό το όνομα περιέχει μόνο κενά και δεν μπορεί να χρησιμοποιηθεί. Μετονομάστε το %@ από το kDrive online.</value> 
@@ -761,6 +761,9 @@
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Απαγορευμένη πρόσβαση</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Μετατροπή σε κανονικό αρχείο</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Αυτό το αρχείο είναι σκληρός σύνδεσμος (hard link) που δεν μπορεί να συγχρονιστεί.</value> 

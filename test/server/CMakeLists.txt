@@ -90,6 +90,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityunlinkhardlinksjob.h ${server_srcs_path}/comm/guijobs/utilityunlinkhardlinksjob.cpp
     ${server_srcs_path}/comm/guijobs/updaterversioninfojob.h ${server_srcs_path}/comm/guijobs/updaterversioninfojob.cpp
     ${server_srcs_path}/comm/guijobs/utilityquitjob.h ${server_srcs_path}/comm/guijobs/utilityquitjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysendappstarttracejob.h ${server_srcs_path}/comm/guijobs/utilitysendappstarttracejob.cpp
@@ -223,6 +224,7 @@ set(testserver_SRCS
     comm/guicommchannel/testsignaljobs.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
+    comm/guijobs/testutilityunlinkhardlinksjob.h comm/guijobs/testutilityunlinkhardlinksjob.cpp
     comm/testguijobpriority.h comm/testguijobpriority.cpp
 )
 

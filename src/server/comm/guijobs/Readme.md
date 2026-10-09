@@ -160,6 +160,7 @@ Each request includes a **unique `id`** for correlation.
 | Request                                 | Description                                                       |
 | --------------------------------------- | ----------------------------------------------------------------- |
 | [LoginRequestToken](#loginrequesttoken) | Add a user via OAuth2 token (emits `UserAdded` or `UserUpdated`). |
+| [UtilityUnlinkHardlinks](#utilityunlinkhardlinks) | Remove all the hardlinks of a file under the sync root to resolve a `HardlinkNotSupportedError`. |
 
 ---
 
@@ -257,6 +258,53 @@ Retrieves database IDs of all users.
   "params": {
     "userDbIdList": [] // Empty list on failure
   }
+}
+```
+
+</details>
+---
+<details id="utilityunlinkhardlinks">
+<summary><b>UtilityUnlinkHardlinks</b> — Unlink the hardlinks of a file reported with a HardlinkNotSupportedError</summary>
+
+**Description:**
+Saves a copy of the errored file into the rescue folder if the local file is not in sync with the database, hard removes all
+the links of the file located under the sync root, then removes the node of the file from the sync database and the error
+from the parameters database. The next synchronization will see the remote file as a new item and will download it again as
+a standard file. The links of the file are searched under the sync root by node id, and the first link found that still
+refers to the reported node is used as the reference path to check whether the file is in sync with the database. Before the
+links are removed, the reference path is verified again and replaced by another link of the file if it has been replaced
+meanwhile, and the items blacklisted by the sync engine are removed from the temporary blacklist only once the node has been
+removed from the sync database, so that the deletion of the links cannot propagate to the remote replica. If no link is
+left, only the node and the error are removed. If the links cannot be searched (e.g. on the platforms where the hardlinks of
+a file cannot be enumerated), the request fails without any database change. If the node is not present in the sync database
+anymore (e.g. a previous run of the action has failed during its final cleanup step), the request only completes the cleanup
+by removing the error. The request is rejected before any change if the error does not exist or is not the `SystemError` /
+`HardlinkNotSupported` error of the given sync and node, or if the node is not a file of the sync database.
+Emits `ErrorRemoved` upon success.
+
+#### Request
+
+```json
+{
+  "type": 1,
+  "id": 42,
+  "num": (int)RequestNum.UtilityUnlinkHardlinks,
+  "params": {
+    "syncDbId": 10,
+    "errorDbId": 123,
+    "nodeId": "<local node id of the errored file>"
+  }
+}
+```
+
+#### Successful Response
+
+```json
+{
+  "type": 1,
+  "id": 42,
+  "num": (int)RequestNum.UtilityUnlinkHardlinks,
+  "params": {}
 }
 ```
 

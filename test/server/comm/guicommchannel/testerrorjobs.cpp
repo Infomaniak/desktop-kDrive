@@ -20,6 +20,7 @@
 #include "../testcommhelpers.h"
 #include "comm/guijobs/errordeletejob.h"
 #include "comm/guijobs/errorlistjob.h"
+#include "comm/guijobs/utilityunlinkhardlinksjob.h"
 #include "comm/guijobs/errorresolveconflictsjob.h"
 #include "comm/guijobs/errorresolveconflictsquickjob.h"
 #include "comm/guijobs/errorsyncrefreshjob.h"
@@ -255,6 +256,43 @@ void TestGuiCommChannel::testErrorDeleteJob() {
         const auto deleteJob = std::dynamic_pointer_cast<ErrorDeleteJob>(job);
         CPPUNIT_ASSERT(deleteJob);
         CPPUNIT_ASSERT_EQUAL(ErrorDbId{42}, deleteJob->_errorDbId);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testUtilityUnlinkHardlinksJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_UNLINK_HARDLINKS));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 10);
+    (void) queryParamsObj.set("errorDbId", 42);
+    std::string b64str;
+    CommonUtility::convertToBase64Str("local1", b64str);
+    (void) queryParamsObj.set("nodeId", b64str);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer (no output parameters)
+    const auto [answerObj, answerObjWithNumAndType] = createSimpleAnswers(RequestNum::UTILITY_UNLINK_HARDLINKS);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto unlinkHardlinksJob = std::dynamic_pointer_cast<UtilityUnlinkHardlinksJob>(job);
+        CPPUNIT_ASSERT(unlinkHardlinksJob);
+        CPPUNIT_ASSERT_EQUAL(SyncDbId{10}, unlinkHardlinksJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{42}, unlinkHardlinksJob->_errorDbId);
+        CPPUNIT_ASSERT_EQUAL(std::string("local1"), unlinkHardlinksJob->_nodeId);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

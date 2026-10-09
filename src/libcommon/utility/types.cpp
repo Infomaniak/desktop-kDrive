@@ -751,6 +751,8 @@ std::string toString(const IoError e) {
             return "HardlinkNotSupported";
         case IoError::Unknown:
             return "Unknown";
+        case IoError::FunctionNotSupported:
+            return "FunctionNotSupported";
         default:
             return noConversionStr;
     }

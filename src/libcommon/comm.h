@@ -137,6 +137,7 @@ enum class RequestNum {
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
+    UTILITY_UNLINK_HARDLINKS,
     EnumEnd
 };
 
@@ -276,6 +277,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY:
             return "UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY";
+        case RequestNum::UTILITY_UNLINK_HARDLINKS:
+            return "UTILITY_UNLINK_HARDLINKS";
         case RequestNum::UTILITY_CRASH:
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:

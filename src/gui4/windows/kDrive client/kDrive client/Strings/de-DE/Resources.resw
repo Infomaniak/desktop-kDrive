@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Alle Aktivitäten</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Nur meine Aktivitäten</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Aktivitäten dieses Computers</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importiert</value> 
@@ -122,7 +122,7 @@
     <value>Hinzugefügt</value> 
   </data> 
   <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>%@ hinzugefügt</value> 
+    <value>Hinzugefügt %@</value> 
   </data> 
   <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
     <value>In den Papierkorb verschoben</value> 
@@ -134,7 +134,7 @@
     <value>Umbenannt</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Umbenannt in %@</value> 
+    <value>Umbenannt %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Geändert</value> 
@@ -177,7 +177,7 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerksauswahl a
     <value>Änderung wird angewendet…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Löscht Protokolle, die älter als 7 Tage sind, um Speicherplatz zu sparen.</value> 
+    <value>Löscht Protokolle, die älter als 31 Tage sind, um Speicherplatz zu sparen.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatische Bereinigung</value> 
@@ -744,7 +744,7 @@ Wenden Sie sich an Ihren Administrator, um das Dateigrössenlimit zu erhöhen.</
     <value>Zugriff verboten</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Der Name dieses %@ enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden. Benennen Sie %@ über kDrive online um.</value> 
+    <value>Der Name dieses %@ enthält ein oder mehrere Zeichen, die von der kDrive-Anwendung nicht unterstützt werden. Benennen Sie das %@ über kDrive online um.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Dieser Name enthält nur Leerzeichen und kann nicht verwendet werden. Benennen Sie %@ über kDrive online um.</value> 
@@ -761,6 +761,9 @@ Fordern Sie den Zugriff beim Eigentümer oder Administrator an.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Zugriff verboten</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>In eine normale Datei umwandeln</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Diese Datei ist ein Hardlink, der nicht synchronisiert werden kann.</value> 

@@ -32,7 +32,8 @@ set(testcommon_SRCS
         io/testmoveitemtotrash.cpp io/testispathonmounteddisk.cpp
         io/testcachedirectory.h io/testcachedirectory.cpp io/testdeleteitematomically.h io/testdeleteitematomically.cpp
         io/testgetfilechecksum.cpp io/testcopyfileordirectory.cpp io/testcheckifpathtraverseslink.cpp io/testgetpathwithcanonicalparent.cpp
-        io/testsetlastmodifiedtime.cpp)
+        io/testsetlastmodifiedtime.cpp
+        io/testlinksearchdoesnotfollowdirectorylinks.cpp)
 
 if(APPLE)
     list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testreadalias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)

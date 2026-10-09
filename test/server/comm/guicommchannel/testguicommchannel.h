@@ -90,6 +90,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testErrorDeleteJob);
         CPPUNIT_TEST(testErrorResolveConflictsJob);
         CPPUNIT_TEST(testErrorResolveConflictsQuickJob);
+        CPPUNIT_TEST(testUtilityUnlinkHardlinksJob);
         CPPUNIT_TEST(testErrorSyncRefreshJob);
         CPPUNIT_TEST(testExclTemplGetExcludedJob);
         CPPUNIT_TEST(testExclTemplGetListJob);
@@ -177,6 +178,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testErrorDeleteJob();
         void testErrorResolveConflictsJob();
         void testErrorResolveConflictsQuickJob();
+        void testUtilityUnlinkHardlinksJob();
         void testErrorSyncRefreshJob();
         void testExclTemplGetExcludedJob();
         void testExclTemplGetListJob();

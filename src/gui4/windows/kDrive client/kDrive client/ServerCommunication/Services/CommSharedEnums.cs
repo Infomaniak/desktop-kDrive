@@ -123,7 +123,8 @@ namespace Infomaniak.kDrive.Types
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
         UPDATER_START_INSTALLER,
-        UPDATER_SKIP_VERSION
+        UPDATER_SKIP_VERSION,
+        UTILITY_UNLINK_HARDLINKS
     };
 
     public enum SignalNum

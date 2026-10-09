@@ -42,6 +42,9 @@ extern "C" {
 #include "comm/testpipecomm.h"
 #endif
 #include "comm/guijobs/testabstractguijob.h"
+#if defined(KD_WINDOWS)
+#include "comm/guijobs/testutilityunlinkhardlinksjob.h"
+#endif
 #include "comm/testguijobpriority.h"
 
 namespace KDC {
@@ -64,6 +67,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
+#if defined(KD_WINDOWS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUtilityUnlinkHardlinksJob); // The behavior tests require the Windows hardlink enumeration.
+#endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiJobPriority);
 } // namespace KDC
 

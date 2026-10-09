@@ -6,7 +6,7 @@
   Locale: nl, Dutch; Flemish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported at: Fri, 09 Oct 2026 16:01:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Alle activiteiten</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Alleen mijn activiteit</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Activiteiten van deze computer</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Geïmporteerd</value> 
@@ -134,7 +134,7 @@
     <value>Hernoemd</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Hernoemd naar %@</value> 
+    <value>Hernoemd %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Gewijzigd</value> 
@@ -177,7 +177,7 @@ U kunt uw geavanceerde synchronisaties openen via de schijfkiezer op de startpag
     <value>Wijziging toepassen…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Verwijdert logboeken ouder dan 7 dagen om schijfruimte te besparen.</value> 
+    <value>Verwijdert logboeken ouder dan 31 dagen om schijfruimte te besparen.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatisch opruimen</value> 
@@ -744,7 +744,7 @@ Neem contact op met uw beheerder om de bestandsgroottelimiet te verhogen.</value
     <value>Toegang geweigerd</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>De naam van dit %@ bevat een of meer tekens die niet worden ondersteund door de kDrive Windows-applicatie. Hernoem de %@ vanuit kDrive online.</value> 
+    <value>De naam van dit %@ bevat een of meer tekens die niet worden ondersteund door de kDrive-app. Hernoem het %@ via kDrive Online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Deze naam bevat alleen spaties en kan niet worden gebruikt. Hernoem de %@ vanuit kDrive online.</value> 
@@ -761,6 +761,9 @@ Vraag toegang aan bij de eigenaar of beheerder.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Toegang geweigerd</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Omzetten naar een gewoon bestand</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Dit bestand is een harde koppeling (hard link) die niet kan worden gesynchroniseerd.</value> 

@@ -106,5 +106,4 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
     CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 #endif
 }
-
 } // namespace KDC

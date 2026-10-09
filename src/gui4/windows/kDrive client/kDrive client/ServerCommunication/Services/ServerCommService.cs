@@ -1515,6 +1515,18 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
+        public async Task<bool> UnlinkHardlinks(DbId syncDbId, DbId errorDbId, NodeId localNodeId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.ErrorDbId] = errorDbId,
+                [JsonKeys.NodeId] = Utility.ToBase64String(localNodeId)
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_UNLINK_HARDLINKS, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
         public async Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken)
         {
             var parms = new JsonObject

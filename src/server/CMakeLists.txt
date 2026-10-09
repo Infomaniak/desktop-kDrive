@@ -112,6 +112,7 @@ set(server_SRCS
     comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    comm/guijobs/utilityunlinkhardlinksjob.h comm/guijobs/utilityunlinkhardlinksjob.cpp
     comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
     comm/guijobs/utilitysendappstarttracejob.h comm/guijobs/utilitysendappstarttracejob.cpp
 
