@@ -245,12 +245,13 @@ Rectangle {
                 folderRow.registeredNodeId = "";
             }
 
-            // Choosing another folder abandons a folder creation that was not sent yet. The selection is made first, while
-            // the row still designates this folder, since dropping the editing row can shift the rows below it.
+            // Choosing another folder abandons a folder creation that was not sent yet, including one still waiting for its
+            // parent's listing, which has no editing row yet. The selection is made first, while the row still designates
+            // this folder, since dropping the editing row can shift the rows below it.
             function requestSelection(): void {
                 treeView.moveCurrentToRow(folderRow.row);
                 root.treeModel.select(folderRow.currentTreeIndex());
-                if (root.treeModel.folderCreationActive && !root.treeModel.folderCreationPending) {
+                if (!root.treeModel.folderCreationPending) {
                     root.controller.cancelFolderCreation();
                 }
             }
