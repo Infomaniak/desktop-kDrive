@@ -1823,6 +1823,7 @@ void SyncPal::forceInvalidateSnapshots() {
         _remoteFSObserverWorker->invalidateSnapshot();
     } else {
         LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for remote snapshot, but remote FS observer worker is not available.");
+        clearRemoteLiveSnapshotBackup();
     }
 }
 
