@@ -1813,9 +1813,17 @@ void SyncPal::tryToInvalidateSnapshots() {
 }
 
 void SyncPal::forceInvalidateSnapshots() {
-    _localFSObserverWorker->invalidateSnapshot();
-    _remoteFSObserverWorker->forceUpdate();
-    _remoteFSObserverWorker->invalidateSnapshot();
+    if (_localFSObserverWorker)
+        _localFSObserverWorker->invalidateSnapshot();
+    else
+        LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for local snapshot, but local FS observer worker is not available.");
+
+    if (_remoteFSObserverWorker) {
+        _remoteFSObserverWorker->forceUpdate();
+        _remoteFSObserverWorker->invalidateSnapshot();
+    } else {
+        LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for remote snapshot, but remote FS observer worker is not available.");
+    }
 }
 
 } // namespace KDC
