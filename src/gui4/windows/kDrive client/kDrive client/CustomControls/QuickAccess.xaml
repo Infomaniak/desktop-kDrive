@@ -205,7 +205,7 @@
 
                     <Button HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
-                            Click="OpenDriveOnlineButton_Click">
+                            Click="OpenSyncOnlineButton_Click">
                         <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />

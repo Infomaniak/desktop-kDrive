@@ -82,14 +82,14 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private async void OpenDriveOnlineButton_Click(object sender, RoutedEventArgs e)
+        private async void OpenSyncOnlineButton_Click(object sender, RoutedEventArgs e)
         {
-            Uri? onlineDriveUrl = ViewModel.SelectedSync?.Drive.GetWebUri();
-            if (onlineDriveUrl != null)
+            Uri? onlineSyncUrl = ViewModel.SelectedSync?.GetWebUri();
+            if (onlineSyncUrl != null)
             {
-                Logger.LogDebug($"Launching URL: {onlineDriveUrl}");
+                Logger.LogDebug($"Launching URL: {onlineSyncUrl}");
                 _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenKDriveWeb);
-                await Windows.System.Launcher.LaunchUriAsync(onlineDriveUrl);
+                await Windows.System.Launcher.LaunchUriAsync(onlineSyncUrl);
             }
             else
             {
