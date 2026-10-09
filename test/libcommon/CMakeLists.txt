@@ -32,7 +32,7 @@ set(testcommon_SRCS
         io/testmoveitemtotrash.cpp io/testispathonmounteddisk.cpp
         io/testcachedirectory.h io/testcachedirectory.cpp io/testdeleteitematomically.h io/testdeleteitematomically.cpp
         io/testgetfilechecksum.cpp io/testcopyfileordirectory.cpp io/testcheckifpathtraverseslink.cpp io/testgetpathwithcanonicalparent.cpp
-        io/testsetlastmodifiedtime.cpp io/testgetpathswithnodeid.cpp
+        io/testsetlastmodifiedtime.cpp
         io/testlinksearchdoesnotfollowdirectorylinks.cpp)
 
 if(APPLE)

@@ -683,122 +683,14 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
-bool IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
-                                     const std::function<IoError(const std::filesystem::directory_entry &entry)> &visit,
-                                     IoError &ioError) {
-    ioError = IoError::Success;
-    if (!searchRoot) return true;
-
 #if !defined(KD_WINDOWS)
-    // Inode numbers are unique within a filesystem only, and the hardlinks of an item are necessarily located on the same
-    // filesystem as the item itself: the filesystems mounted under searchRoot must not be traversed, as unrelated items
-    // sharing the inode of the searched item could be returned instead of its links.
-    struct stat rootInfo;
-    if (::stat(searchRoot->string().c_str(), &rootInfo) != 0) {
-        ioError = posixError2ioError(errno);
-        LOGW_WARN(logger(), L"Error in IoHelper::stat for " << Utility::formatSyncPath(*searchRoot) << L": "
-                                                            << Utility::formatIoError(ioError));
-        return false;
-    }
-#endif
-
-    // Any error fails the enumeration, including the access denied errors: an incomplete list of links must not be returned.
-    std::error_code ec;
-    std::filesystem::recursive_directory_iterator it(*searchRoot, std::filesystem::directory_options::none, ec);
-    for (const auto end = std::filesystem::recursive_directory_iterator(); !ec && it != end; it.increment(ec)) {
-        const SyncPath entryPath = it->path();
-        if (entryPath == seedPath) continue;
-
-        // Symbolic links (and junctions on Windows) are neither followed nor visited.
-        std::error_code entryEc;
-        const auto entryStatus = it->symlink_status(entryEc);
-        if (entryEc) {
-            if (stdError2ioError(entryEc) == IoError::NoSuchFileOrDirectory) continue; // The entry has been removed meanwhile.
-            ec = entryEc;
-            break;
-        }
-
-        if (std::filesystem::is_directory(entryStatus)) {
-#if !defined(KD_WINDOWS)
-            // On Windows, the iterator does not follow junctions and therefore cannot leave the filesystem of searchRoot.
-            struct stat entryInfo;
-            if (::lstat(entryPath.string().c_str(), &entryInfo) != 0) {
-                const IoError entryIoError = posixError2ioError(errno);
-                if (entryIoError == IoError::NoSuchFileOrDirectory) continue; // The entry has been removed meanwhile.
-                ioError = entryIoError;
-                LOGW_WARN(logger(), L"Error in IoHelper::lstat for " << Utility::formatSyncPath(entryPath) << L": "
-                                                                     << Utility::formatIoError(ioError));
-                return false;
-            }
-            if (entryInfo.st_dev != rootInfo.st_dev) it.disable_recursion_pending();
-#endif
-            continue;
-        }
-
-        if (!std::filesystem::is_regular_file(entryStatus)) continue;
-
-        if (const IoError visitIoError = visit(*it); visitIoError != IoError::Success) {
-            ioError = visitIoError;
-            LOGW_WARN(logger(), L"Error while inspecting " << Utility::formatIoError(entryPath, ioError));
-            return false;
-        }
-    }
-
-    if (ec) {
-        // The iterator is the end iterator after a failed increment: the enumeration is incomplete.
-        ioError = stdError2ioError(ec);
-        LOGW_WARN(logger(),
-                  L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": " << Utility::formatStdError(ec));
-        return false;
-    }
-
-    return true;
-}
-
-bool IoHelper::getPathsWithNodeId(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &paths,
-                                  IoError &ioError) noexcept {
-    paths.clear();
-    ioError = IoError::Success;
-
-    try {
-        // The node identifier of an item is the one computed by the sync engine from its file status: the inode on POSIX
-        // systems, the file identifier on Windows. No entry is skipped, as there is no seed path, but the filesystems mounted
-        // under searchRoot are not traversed: see _forEachLinkCandidate.
-        if (!_forEachLinkCandidate(
-                    SyncPath(), searchRoot,
-                    [&nodeId, &paths](const std::filesystem::directory_entry &entry) -> IoError {
-                        FileStat entryFileStat;
-                        IoError entryIoError = IoError::Success;
-                        if (!getFileStat(entry.path(), &entryFileStat, entryIoError, PathCheckOption::Insensitive)) {
-                            return entryIoError != IoError::Success ? entryIoError : IoError::Unknown;
-                        }
-                        // An entry removed meanwhile does not refer to the item anymore.
-                        if (entryIoError == IoError::NoSuchFileOrDirectory) return IoError::Success;
-                        if (entryIoError != IoError::Success) return entryIoError;
-
-                        if (std::to_string(entryFileStat.inode) == nodeId) paths.push_back(entry.path());
-                        return IoError::Success;
-                    },
-                    ioError)) {
-            return false;
-        }
-    } catch (const std::exception &e) {
-        ioError = IoError::Unknown;
-        LOG_WARN(logger(), "Exception in IoHelper::getPathsWithNodeId: error=" << e.what());
-        return false;
-    }
-
-    return true;
-}
-
-#if !defined(KD_WINDOWS)
-bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
-                                const std::optional<SyncPath> &searchRoot) noexcept {
-    (void) seedPath;
+bool IoHelper::getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &hardlinkPaths,
+                                IoError &ioError) noexcept {
     (void) searchRoot;
+    (void) nodeId;
     hardlinkPaths.clear();
-    // The links of an item can only be enumerated with FindFirstFileNameW, which is only available on Windows. On this
-    // platform, the links of a file are searched by node id with getPathsWithNodeId.
+    // The links of an item can only be enumerated with FindFirstFileNameW and OpenFileById, which are only available on
+    // Windows. On this platform, the unlink hardlinks action fails with IoError::FunctionNotSupported.
     ioError = IoError::FunctionNotSupported;
     LOGW_WARN(logger(), L"IoHelper::getHardlinkPaths is not supported on this platform");
     return false;

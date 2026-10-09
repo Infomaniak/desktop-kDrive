@@ -1068,62 +1068,99 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     return true;
 }
 
-bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
-                                const std::optional<SyncPath> &searchRoot) noexcept {
+bool IoHelper::getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &hardlinkPaths,
+                                IoError &ioError) noexcept {
     hardlinkPaths.clear();
     ioError = IoError::Success;
 
     try {
-        // All the links of an item share its file identifier.
-        FileStat seedFileStat;
-        if (!getFileStat(seedPath, &seedFileStat, ioError, PathCheckOption::Insensitive)) {
-            if (ioError == IoError::Success) ioError = IoError::Unknown;
-            LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(seedPath, ioError));
-            return false;
-        }
-        if (ioError != IoError::Success) return false; // The item does not exist or cannot be accessed.
-
-        // Only regular files can have hardlinks. Symbolic links and junctions are not followed.
-        std::error_code ec;
-        const auto seedStatus = std::filesystem::symlink_status(seedPath, ec);
-        if (ec) {
-            ioError = stdError2ioError(ec);
-            LOGW_WARN(logger(), L"Error in std::filesystem::symlink_status: " << Utility::formatStdError(seedPath, ec));
+        // OpenFileById requires a handle to any file located on the volume of the searched item: the sync root is located on
+        // the same volume as its items.
+        const HANDLE hVolumeHint = CreateFileW(Path2WStr(searchRoot).c_str(), FILE_READ_ATTRIBUTES,
+                                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+                                               FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+        if (hVolumeHint == INVALID_HANDLE_VALUE) {
+            ioError = dWordError2ioError(GetLastError(), logger());
+            LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatIoError(searchRoot, ioError));
             return false;
         }
 
-        if (!std::filesystem::is_regular_file(seedStatus) || !searchRoot) {
-            // No enumeration runs: the seed path is the only link returned.
-            hardlinkPaths.push_back(seedPath);
-            return true;
+        // The node identifier of an item is its file identifier (see getFileStat).
+        FILE_ID_DESCRIPTOR fileIdDescriptor{};
+        fileIdDescriptor.dwSize = sizeof(FILE_ID_DESCRIPTOR);
+        fileIdDescriptor.Type = FileIdType;
+        fileIdDescriptor.FileId.QuadPart = static_cast<LONGLONG>(std::stoull(nodeId));
+        const HANDLE hFile = OpenFileById(hVolumeHint, &fileIdDescriptor, FILE_READ_ATTRIBUTES,
+                                          FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, 0);
+        (void) CloseHandle(hVolumeHint);
+        if (hFile == INVALID_HANDLE_VALUE) {
+            const DWORD lastError = GetLastError();
+            if (lastError == ERROR_NOT_FOUND) {
+                // The item does not exist anymore: there is nothing to enumerate.
+                LOGW_INFO(logger(), L"The item with file id " << CommonUtility::s2ws(nodeId) << L" does not exist anymore");
+                ioError = IoError::NoSuchFileOrDirectory;
+                return true;
+            }
+            ioError = dWordError2ioError(lastError, logger());
+            LOGW_WARN(logger(), L"Error in OpenFileById for the item with file id " << CommonUtility::s2ws(nodeId) << L": "
+                                                                                    << Utility::formatIoError(ioError));
+            return false;
         }
 
-        // Enumerate all the names of the seed item on its volume with FindFirstFileNameW. The returned names are rooted at the
-        // root of the volume, and include the seed path itself. An item can only be linked within its own volume, and the
-        // links located outside of the search root are never reachable through a path under the search root: only the names
-        // located under the search root are kept.
-        const std::wstring seedPathWStr = Path2WStr(seedPath);
-        const std::wstring volumeRootName = seedPath.root_name().native();
+        // Read one of the existing paths of the item from the open handle, to be used as the starting point of the
+        // enumeration. The returned name is rooted at the root of the volume: prefix it with the drive of the search root.
+        // Symbolic links are not followed: the handle refers to the item itself.
+        SyncPath anyPath;
+        {
+            std::vector<char> nameBuffer(sizeof(FILE_NAME_INFO) + 512 * sizeof(WCHAR));
+            bool nameRead = false;
+            while (true) {
+                if (GetFileInformationByHandleEx(hFile, FileNameInfo, nameBuffer.data(), static_cast<DWORD>(nameBuffer.size()))) {
+                    nameRead = true;
+                    break;
+                }
+                if (const DWORD lastError = GetLastError(); lastError != ERROR_MORE_DATA) {
+                    ioError = dWordError2ioError(lastError, logger());
+                    LOGW_WARN(logger(), L"Error in GetFileInformationByHandleEx: " << Utility::formatIoError(ioError));
+                    break;
+                }
+                // The name buffer is too small: retry with a larger buffer.
+                nameBuffer.resize(nameBuffer.size() * 2);
+            }
+            (void) CloseHandle(hFile);
+            if (!nameRead) return false;
+
+            const auto *nameInfo = reinterpret_cast<const FILE_NAME_INFO *>(nameBuffer.data());
+            const std::wstring itemName(nameInfo->FileName, nameInfo->FileNameLength / sizeof(WCHAR));
+            anyPath = searchRoot.root_name() / SyncPath(itemName);
+        }
+
+        // Enumerate all the names of the item on its volume with FindFirstFileNameW, starting from the resolved path. The
+        // returned names are rooted at the root of the volume, and include the resolved path itself. An item can only be
+        // linked within its own volume, and the links located outside of the sync root are never reachable through a path
+        // under the sync root: only the names located under the search root are kept.
+        const std::wstring anyPathWStr = Path2WStr(anyPath);
+        const std::wstring volumeRootName = anyPath.root_name().native();
         std::wstring linkName(512, L'\0');
         DWORD linkNameLength = static_cast<DWORD>(linkName.size());
-        HANDLE findHandle = FindFirstFileNameW(seedPathWStr.c_str(), 0, &linkNameLength, linkName.data());
+        HANDLE findHandle = FindFirstFileNameW(anyPathWStr.c_str(), 0, &linkNameLength, linkName.data());
         while (findHandle == INVALID_HANDLE_VALUE) {
             const DWORD lastError = GetLastError();
             if (lastError != ERROR_MORE_DATA) {
                 ioError = dWordError2ioError(lastError, logger());
-                LOGW_WARN(logger(), L"Error in FindFirstFileNameW: " << Utility::formatIoError(seedPath, ioError));
+                LOGW_WARN(logger(), L"Error in FindFirstFileNameW: " << Utility::formatIoError(anyPath, ioError));
                 return false;
             }
             // The link name buffer is too small: retry with the required size.
             linkName.resize(linkNameLength);
             linkNameLength = static_cast<DWORD>(linkName.size());
-            findHandle = FindFirstFileNameW(seedPathWStr.c_str(), 0, &linkNameLength, linkName.data());
+            findHandle = FindFirstFileNameW(anyPathWStr.c_str(), 0, &linkNameLength, linkName.data());
         }
 
         bool searchSucceeded = true;
         for (;;) {
             const SyncPath linkPath = SyncPath(volumeRootName) / SyncPath(linkName.c_str());
-            if (CommonUtility::isDescendantOrEqual(linkPath, *searchRoot)) {
+            if (CommonUtility::isDescendantOrEqual(linkPath, searchRoot)) {
                 hardlinkPaths.push_back(linkPath);
             } else {
                 LOGW_DEBUG(logger(), L"Link located outside of the search root, skipping: " << Utility::formatSyncPath(linkPath));
@@ -1139,7 +1176,7 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
                 continue;
             }
             ioError = dWordError2ioError(lastError, logger());
-            LOGW_WARN(logger(), L"Error in FindNextFileNameW: " << Utility::formatIoError(seedPath, ioError));
+            LOGW_WARN(logger(), L"Error in FindNextFileNameW: " << Utility::formatIoError(anyPath, ioError));
             searchSucceeded = false;
             break;
         }

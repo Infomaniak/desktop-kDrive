@@ -234,44 +234,29 @@ struct IoHelper {
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
                                                     NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
-        //! Get all the existing paths pointing to the item indicated by the seed path, including the seed path itself.
+        //! Get the paths of all the links of the item identified by nodeId that are located under searchRoot.
         /*!
-          On Windows, the links are enumerated with FindFirstFileNameW, which returns all the names of the item on its volume.
-          On the other platforms, this function is not supported and fails with IoError::FunctionNotSupported: the links of a
-          file are searched by node id with getPathsWithNodeId instead.
-          Only the links located under searchRoot are returned. Symbolic links (and junctions on Windows) are never followed:
-          if the seed item is a symbolic link, only the seed path is returned. When searchRoot is not provided, only the seed
-          path is returned.
-          \param seedPath is the file system path of an existing item, used as the starting point of the enumeration.
-          \param hardlinkPaths is set with the absolute paths of all the links pointing to the same item, including seedPath.
-          \param ioError holds the error returned when an underlying OS API call fails.
-          \param searchRoot is the directory the links are searched under. When it is not provided, no search is performed.
-          \return true if no unexpected error occurred, false otherwise. If the item indicated by seedPath does not exist,
-         ioError is set with IoError::NoSuchFileOrDirectory. Any error occurring during the search, including an access denied
-         error, fails the search: when false is returned, hardlinkPaths may be incomplete and must not be used.
-         */
-        static bool getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
-                                     const std::optional<SyncPath> &searchRoot = std::nullopt) noexcept;
-
-        //! Get the paths of all the regular files located under searchRoot whose node identifier is nodeId, i.e. the paths of
-        //! all the hardlinks of the item identified by nodeId located under searchRoot.
-        /*!
-          searchRoot is recursively iterated over and the node identifier of each regular file found, as returned by
-          getFileStat, is compared with nodeId. Symbolic links (and junctions on Windows) are neither followed nor selected,
-          and the filesystems mounted under searchRoot are not traversed.
-          Unlike getHardlinkPaths, no existing path of the item is required: the links are found even if the item has been
-          moved or if some of its links have been removed.
-          \param searchRoot is the directory recursively searched.
-          \param nodeId is the node identifier of the searched item.
-          \param paths is set with the absolute paths of the regular files whose node identifier is nodeId. It is empty if
-          there is no such file under searchRoot.
-          \param ioError holds the error returned when an underlying OS API call fails.
-          \return true if no unexpected error occurred, false otherwise. Any error occurring during the search, including an
-         access denied error or a missing searchRoot, fails the search: when false is returned, paths may be incomplete and must
-         not be used.
-         */
-        static bool getPathsWithNodeId(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &paths,
-                                       IoError &ioError) noexcept;
+          The item is identified by its node id, so the links are found even if the item has been moved or if the path
+          reported in the error is not the path of an existing link anymore.
+          On Windows, one of the existing paths of the item is resolved with OpenFileById, then all the names of the item
+          are enumerated with FindFirstFileNameW. On the other platforms, this function is not supported and fails with
+          IoError::FunctionNotSupported.
+          Only the links located under searchRoot are returned. Symbolic links (and junctions on Windows) are never
+          followed: if the item is a symbolic link, no link is returned.
+          \param searchRoot is the directory the links are searched under. It must be an existing directory located on the
+          same volume as the searched item.
+          \param nodeId is the node identifier of the searched item, as returned by getFileStat on Windows.
+          \param hardlinkPaths is set with the absolute paths of all the links of the item located under searchRoot. It is
+          empty if the item does not exist anymore or if it has no link under searchRoot.
+          \param ioError holds the error returned when an underlying OS API call fails. It is set with
+          IoError::NoSuchFileOrDirectory if the item does not exist anymore, and with IoError::FunctionNotSupported on the
+          platforms where the enumeration is not supported.
+          \return true if the enumeration completed, false otherwise. Any error occurring during the enumeration, including
+          an access denied error, fails the enumeration: when false is returned, hardlinkPaths may be incomplete and must
+          not be used.
+          */
+        static bool getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &hardlinkPaths,
+                                     IoError &ioError) noexcept;
 
         //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path is a link that
         //! the operating system follows during path resolution: a symbolic link, or a junction on Windows.
@@ -689,25 +674,6 @@ struct IoHelper {
     private:
         static log4cplus::Logger _logger;
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
-
-        //! Invokes visit for each regular file entry of the directory tree rooted at searchRoot, except the entry indicated
-        //! by seedPath. Symbolic links (and junctions on Windows) are neither followed nor visited, and the filesystems
-        //! mounted under searchRoot are not traversed.
-        /*!
-          \param seedPath is the path of the item being processed. The corresponding entry is skipped. No entry is skipped if
-          seedPath is empty.
-          \param searchRoot is the directory recursively searched. When it is not provided, visit is never invoked. On POSIX,
-          the directories located on another filesystem than searchRoot (e.g. a mounted filesystem) are not traversed, as the
-          inode numbers of unrelated items located there may collide with the inode of the searched item.
-          \param visit is the function invoked for each candidate entry. It returns IoError::Success to continue the
-          enumeration, or the error that stops it.
-          \param ioError holds the error returned when the directory iteration or visit fails.
-          \return true if the enumeration completed, false if an error occurred, including an access denied error, in which
-          case ioError is set with the error and visit may have been invoked for only part of the entries.
-         */
-        static bool _forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
-                                          const std::function<IoError(const std::filesystem::directory_entry &entry)> &visit,
-                                          IoError &ioError);
 
 #if defined(KD_MACOS)
         static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
