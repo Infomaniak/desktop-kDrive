@@ -32,6 +32,7 @@ class QWindow;
 namespace KDC {
 
 class AppCache;
+class SyncErrorsProjection;
 enum class UpdateState;
 
 enum class TrayIconState {
@@ -62,7 +63,7 @@ class SystemTrayController final : public QObject {
         explicit SystemTrayController(QObject *const parent = nullptr);
 
         void initialize();
-        void observe(AppCache &appCache);
+        void observe(AppCache &appCache, const SyncErrorsProjection &syncErrorsProjection);
         void setMainWindow(QWindow *const window);
         void setProductStateInitialized(bool initialized);
         void handleUpdateStateChanged(UpdateState state);
@@ -97,13 +98,13 @@ class SystemTrayController final : public QObject {
         void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
         AppCache *_appCache = nullptr;
+        const SyncErrorsProjection *_syncErrorsProjection = nullptr;
         QPointer<QWindow> _mainWindow;
         QSystemTrayIcon _trayIcon;
         QMenu _trayMenu;
         QAction *_openAction = nullptr;
         QAction *_settingsAction = nullptr;
         QAction *_quitAction = nullptr;
-        bool _hasSyncErrors = false;
         TrayIconState _iconState = TrayIconState::Neutral;
         TrayIconVariant _iconVariant = TrayIconVariant::White;
         QTimer _trayAvailabilityRetryTimer;

@@ -19,6 +19,7 @@
 #include "systraycontroller.h"
 
 #include "app/cache/appcache.h"
+#include "app/cache/syncerrorsprojection.h"
 #include "libcommon/utility/cstypes.h"
 
 #include <QAction>
@@ -206,18 +207,18 @@ void SystemTrayController::initialize() {
     _isInitialized = true;
 }
 
-void SystemTrayController::observe(AppCache &appCache) {
+void SystemTrayController::observe(AppCache &appCache, const SyncErrorsProjection &syncErrorsProjection) {
     _appCache = &appCache;
-    _hasSyncErrors = !_appCache->syncErrors().empty();
+    _syncErrorsProjection = &syncErrorsProjection;
 
     (void) connect(&appCache, &AppCache::syncsChanged, this, [this] {
         qCDebug(lcSystemTrayController) << "Sync cache changed, refreshing tray icon state";
         refreshIconState();
     });
     (void) connect(&appCache, &AppCache::syncStatusChanged, this, [this](const SyncDbId) { refreshIconState(); });
-    (void) connect(&appCache, &AppCache::syncErrorsChanged, this, [this] {
-        qCDebug(lcSystemTrayController) << "Sync errors changed, refreshing tray icon state";
-        _hasSyncErrors = !_appCache->syncErrors().empty();
+    // Only the error kinds relevant to the tray turn the icon to its error state.
+    (void) connect(&syncErrorsProjection, &SyncErrorsProjection::trayRelevanceChanged, this, [this] {
+        qCDebug(lcSystemTrayController) << "Tray-relevant sync errors changed, refreshing tray icon state";
         refreshIconState();
     });
 
@@ -474,7 +475,7 @@ void SystemTrayController::refreshIconState() {
         return;
     }
 
-    if (_hasSyncErrors) {
+    if (_syncErrorsProjection && _syncErrorsProjection->hasTrayRelevantError()) {
         setIconState(TrayIconState::Error);
         return;
     }
