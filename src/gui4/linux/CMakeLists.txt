@@ -42,6 +42,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/cache/parametersstore.cpp
         app/cache/parametersstore.h
+        app/cache/syncerrorsprojection.cpp
+        app/cache/syncerrorsprojection.h
         app/dialogs/manydeletescontroller.cpp
         app/dialogs/manydeletescontroller.h
         app/errors/blockingerrorresolver.cpp
