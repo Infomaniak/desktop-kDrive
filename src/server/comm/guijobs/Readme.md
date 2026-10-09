@@ -270,20 +270,16 @@ Retrieves database IDs of all users.
 Saves a copy of the errored file into the rescue folder if the local file is not in sync with the database, hard removes all
 the links of the file located under the sync root, then removes the node of the file from the sync database and the error
 from the parameters database. The next synchronization will see the remote file as a new item and will download it again as
-a standard file. If the given path does not exist anymore (e.g. the reported link has been removed or the file has been
-moved), the links of the file are searched under the sync root by node id, and one of them is used instead of the given path
-to check whether the file is in sync with the database. Before the links are removed, the item used for this check is
-verified again and replaced by another link of the file if it has been replaced meanwhile, and the items blacklisted by the
-sync engine are removed from the temporary blacklist only once the node has been removed from the sync database, so that the
-deletion of the links cannot propagate to the remote replica. On Windows, the size and the dates cached in the directory
-entry of the link used for this check are compared with the current ones, as NTFS does not update them when the file is
-modified through another link: if they are outdated, or if this cannot be checked, the file is considered as not in sync. If
-no link is left, only the node and the error are removed. If the links cannot be searched, the request fails without any
-database change. If the node is not present in the sync database anymore (e.g. a previous run of the action has failed
-during its final cleanup step), the request only completes the cleanup by removing the error. The request is rejected before
-any change if the error does not exist or is not the `SystemError` / `HardlinkNotSupported` error of the given sync, node
-and path, if the node is not a file of the sync database, if the path is empty, absolute, located outside of the sync root
-or a link (symbolic link, junction or alias), or if it does not refer to the node.
+a standard file. The links of the file are searched under the sync root by node id, and the first link found that still
+refers to the reported node is used as the reference path to check whether the file is in sync with the database. Before the
+links are removed, the reference path is verified again and replaced by another link of the file if it has been replaced
+meanwhile, and the items blacklisted by the sync engine are removed from the temporary blacklist only once the node has been
+removed from the sync database, so that the deletion of the links cannot propagate to the remote replica. If no link is
+left, only the node and the error are removed. If the links cannot be searched (e.g. on the platforms where the hardlinks of
+a file cannot be enumerated), the request fails without any database change. If the node is not present in the sync database
+anymore (e.g. a previous run of the action has failed during its final cleanup step), the request only completes the cleanup
+by removing the error. The request is rejected before any change if the error does not exist or is not the `SystemError` /
+`HardlinkNotSupported` error of the given sync and node, or if the node is not a file of the sync database.
 Emits `ErrorRemoved` upon success.
 
 #### Request
@@ -296,8 +292,7 @@ Emits `ErrorRemoved` upon success.
   "params": {
     "syncDbId": 10,
     "errorDbId": 123,
-    "nodeId": "<local node id of the errored file>",
-    "path": "<relative local path of the errored file>"
+    "nodeId": "<local node id of the errored file>"
   }
 }
 ```
