@@ -27,6 +27,9 @@
 #include <cstdint>
 
 namespace {
+
+Q_LOGGING_CATEGORY(lcCommService, "gui.v4.commservice", QtInfoMsg)
+
 constexpr KDC::Count maxErrorsToLoad = 1000;
 constexpr char userInfoAvatar[] = "avatar";
 
@@ -54,8 +57,6 @@ KDC::UserDisplayInfo userDisplayInfoFromDynamicStruct(const Poco::DynamicStruct 
 } // namespace
 
 namespace KDC {
-
-Q_LOGGING_CATEGORY(lcCommService, "gui.v4.commservice", QtInfoMsg)
 
 CommService::CommService(IpcClient &client, SignalDispatcher &dispatcher, QObject *parent) :
     QObject(parent),
@@ -586,6 +587,13 @@ void CommService::requestErrorDelete(const ErrorDbId errorDbId, const VoidCallba
     Poco::DynamicStruct params;
     CommonUtility::writeValueToStruct(params, msgParamErrorDbId, errorDbId);
     _ipcClient.sendRequest(RequestNum::ERROR_DELETE, params,
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
+}
+
+void CommService::requestErrorSyncRefresh(const SyncDbId syncDbId, const VoidCallback &callback) const {
+    Poco::DynamicStruct params;
+    CommonUtility::writeValueToStruct(params, msgParamSyncDbId, syncDbId);
+    _ipcClient.sendRequest(RequestNum::ERROR_SYNC_REFRESH, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
