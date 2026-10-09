@@ -52,7 +52,6 @@ env:
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
-  QT_INSTALLER_JWT_TOKEN: ${{ secrets.QT_INSTALLER_JWT_TOKEN }}
   QT_QPA_PLATFORM: offscreen
 
 jobs:
@@ -207,6 +206,8 @@ jobs:
         id: build-windows-step
         uses: ./.github/actions/build_windows
         with:
+          qt_account_email: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
           ksp_host: ${{ secrets.WINDOWS_KSP_HOST }}
           ksp_api_key: ${{ secrets.WINDOWS_KSP_API_KEY }}
           ksp_client_cert: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_FILE_B64 }}
@@ -231,6 +232,8 @@ jobs:
       - name: Build Linux
         uses: ./.github/actions/build_linux_amd
         with:
+          qt_account_email: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
           release_build: true
 
   build-Linux-arm:
@@ -245,6 +248,8 @@ jobs:
       - name: Build Linux
         uses: ./.github/actions/build_linux_arm
         with:
+          qt_account_email: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
           release_build: true
 
   build-MacOS:
@@ -259,6 +264,8 @@ jobs:
       - name: Build macOS
         uses: ./.github/actions/build_macos
         with:  
+          qt_account_email: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
           release_build: true    
           release_build_altool_username: ${{ secrets.ALTOOL_USERNAME }}

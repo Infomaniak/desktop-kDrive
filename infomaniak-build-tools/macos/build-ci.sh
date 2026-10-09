@@ -27,11 +27,24 @@ export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2Q
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
 
-export MACOSX_DEPLOYMENT_TARGET="10.15"
+export MACOSX_DEPLOYMENT_TARGET="12.4"
 export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 src_dir="${1-$PWD}"
 app_name="kDrive"
 
+# Use the repository's Python environment and the operator-selected Xcode.
+if [ ! -f "$src_dir/.venv/bin/activate" ]; then
+	echo "Missing Python environment: $src_dir/.venv/bin/activate" >&2
+	exit 1
+fi
+source "$src_dir/.venv/bin/activate"
+CC="$(xcrun --find clang)"
+CXX="$(xcrun --find clang++)"
+SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+export CC CXX SDKROOT
+xcodebuild -version
+"$CC" --version
+conan --version
 
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
@@ -53,7 +66,7 @@ if [ -d "$install_dir/$app_name-old.app" ]; then
 fi
 
 if [ -d "$install_dir/$app_name.app" ]; then
-	cp -a "$install_dir/$app_name.app" "$install_dir/$app_name-old.app"
+	mv "$install_dir/$app_name.app" "$install_dir/$app_name-old.app"
 fi
 
 # Prepare additional cmake arguments
@@ -63,7 +76,7 @@ fi
 
 build_type="Release"
 
-bash infomaniak-build-tools/conan/build_dependencies.sh "$build_type" "--output-dir=$conan_folder" --clean-cache
+bash infomaniak-build-tools/conan/build_dependencies.sh "$build_type" "--output-dir=$conan_folder" --make-release --clean-cache
 
 conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 if [ ! -f "$conan_toolchain_file" ]; then
@@ -75,19 +88,23 @@ conan_build_folder="$(dirname "$conan_toolchain_file")"
 source "./infomaniak-build-tools/conan/common-utils.sh"
 QTDIR="$(find_qt_conan_path "$conan_build_folder")"
 export QTDIR
-export PATH=/usr/local/bin:"$QTDIR/bin:$PATH"
+export PATH="$QTDIR/bin:$PATH:/usr/local/bin"
 
-source "$conan_build_folder/conanrun.sh" # Load conan build script
+source "$conan_build_folder/conanbuild.sh"
+source "$conan_build_folder/conanrun.sh"
 # Configure
 pushd "$build_dir"
 
 # Configure infomaniakdrive
 cmake \
+	--fresh \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$install_dir" \
 	-DCMAKE_BUILD_TYPE="$build_type" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
 	-DBUILD_UNIT_TESTS=1 \
+	-DBUILD_GUI=ON \
+	-DBUILD_GUI_LEGACY=OFF \
 	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
 	"$src_dir"

@@ -59,6 +59,9 @@ Once installed, run the following command :
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
 
+CI and release scripts use your `xcode-select` selection or explicit `DEVELOPER_DIR`.
+They activate `.venv/bin/activate` (install Conan there) and require CMake >= 3.24 for `--fresh`.
+
 
 ## CPPUnit
 
@@ -180,6 +183,7 @@ Conan version 2.x.x
    ```ini
    [settings]
    os=Macos
+   os.version=12.4
    arch=armv8|x86_64
    compiler=apple-clang
    compiler.version=16
@@ -218,15 +222,18 @@ The project requires additional CMake variables for a correct build. To inject t
     cat << EOF > ~/.conan2/profiles/infomaniak_release
     [settings]
     os=Macos
+    os.version=12.4
     arch=armv8|x86_64
     compiler=apple-clang
     compiler.cppstd=gnu20
     compiler.libcxx=libc++
-    compiler.version=16
+    compiler.version=21
     build_type=Release
    EOF
     ```
-   You can adjust the `compiler` settings if needed.
+   macOS v4 requires macOS 12.4 or later. CI and release builds use this profile.
+   Match `compiler.version` to `xcrun clang --version`
+   on local machines and runners (Apple Clang 21 for Xcode 26.5).
 
 ---
 

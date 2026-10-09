@@ -30,10 +30,23 @@ export INSTALLER_SIGN_IDENTITY="Developer ID Installer: Infomaniak Network SA (8
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
 
-export MACOSX_DEPLOYMENT_TARGET="10.15"
+export MACOSX_DEPLOYMENT_TARGET="12.4"
 export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 src_dir="${1-$PWD}"
 app_name="kDrive"
+
+# Use the repository's Python environment and the operator-selected Xcode.
+if [ ! -f "$src_dir/.venv/bin/activate" ]; then
+	echo "Missing Python environment: $src_dir/.venv/bin/activate" >&2
+	exit 1
+fi
+source "$src_dir/.venv/bin/activate"
+export CC="$(xcrun --find clang)"
+export CXX="$(xcrun --find clang++)"
+export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+xcodebuild -version
+"$CC" --version
+conan --version
 
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
@@ -59,7 +72,7 @@ if [ -d "$install_dir/$app_name-old.app" ]; then
 fi
 
 if [ -d "$install_dir/$app_name.app" ]; then
-	cp -a "$install_dir/$app_name.app" "$install_dir/$app_name-old.app"
+	mv "$install_dir/$app_name.app" "$install_dir/$app_name-old.app"
 fi
 
 if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$SIGN_IDENTITY" ]; then
@@ -88,11 +101,14 @@ source "$conan_build_folder/conanbuild.sh"
 pushd "$build_dir"
 
 cmake \
+	--fresh \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$install_dir" \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DSPARKLE_LIBRARY="$sparkle_dir/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
+	-DBUILD_GUI=ON \
+	-DBUILD_GUI_LEGACY=OFF \
 	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
 	"$src_dir"
@@ -102,7 +118,7 @@ make -j6 all install
 
 # Generate Debug Symbol files
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM
-dsymutil ./bin/kDrive_client -o ./install/kDrive_client.dSYM
+dsymutil ./install/kDrive.app/Contents/MacOS/kDrive.app/Contents/MacOS/kDrive.gui -o ./install/kDrive_client.dSYM
 
 # Verify that no dylib targets a macOS version higher than expected.
 # Each architecture slice is checked independently: arm64 requires at least 11.0,
@@ -191,4 +207,11 @@ if [ -n "$sign_files" ]; then
 			"$install_dir/InfomaniakDrive.zip" \
 			--progress --wait
 	fi
+fi
+
+# Generate Sparkle auto-update files (signed archive + appcast).
+# Runs last so it archives the signed app and references the freshly built .pkg.
+# Set SKIP_SPARKLE=1 to skip this step (e.g. for local/unsigned builds).
+if [ -z "$SKIP_SPARKLE" ]; then
+	INSTALL_DIR="$install_dir" bash "$src_dir/infomaniak-build-tools/macos/generate-sparkle.sh"
 fi
