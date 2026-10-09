@@ -45,7 +45,6 @@ class UtilityUnlinkHardlinksJob : public AbstractGuiJob {
         SyncDbId _syncDbId = 0;
         ErrorDbId _errorDbId = 0;
         NodeId _nodeId;
-        SyncPath _relativeLocalPath;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
@@ -54,20 +53,15 @@ class UtilityUnlinkHardlinksJob : public AbstractGuiJob {
         ExitInfo unlinkHardlinks(const std::shared_ptr<SyncPal> &syncPal) const;
 
         // Removes all the links of the reported file located under the sync root, then the node of the file from the sync
-        // database. The links are searched from the reported path, or by node id if the reported path does not exist anymore.
+        // database. The links are searched by node id.
         ExitInfo removeLinksAndNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const;
 
-        // Checks that the reported error exists in the parameters database and is the hardlink error of the reported sync, node
-        // and path.
+        // Checks that the reported error exists in the parameters database and is the hardlink error of the reported sync and
+        // node.
         ExitInfo checkParmsDbError() const;
         // Fetches the reported node from the sync database. Only the file nodes are accepted. nodeFound is set to false if the
         // node is not present in the sync database anymore, in which case the caller only completes the cleanup.
         ExitInfo fetchFileDbNode(const std::shared_ptr<SyncPal> &syncPal, DbNode &dbNode, bool &nodeFound) const;
-        // Builds the absolute path of the reported item and checks that it is located under the sync root.
-        ExitInfo getSeedPath(const SyncPath &localPath, SyncPath &seedPath) const;
-        // Checks that the reported item is a regular file referring to the reported node. seedExists is set to false if the item
-        // does not exist anymore.
-        ExitInfo checkSeedItem(const SyncPath &seedPath, bool &seedExists) const;
         // Retrieves the local node id of the item located at path, without following symbolic links. nodeId is set to
         // std::nullopt if the item does not exist.
         ExitInfo getLocalNodeId(const SyncPath &path, std::optional<NodeId> &nodeId) const;
@@ -80,12 +74,9 @@ class UtilityUnlinkHardlinksJob : public AbstractGuiJob {
         // still refers to the reported node, if the item located at the given seed path has been replaced.
         ExitInfo removeLinks(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode, SyncPath &seedPath,
                              const std::vector<SyncPath> &linkPaths) const;
-        // Retrieves all the links of the reported file located under the sync root, including the seed path.
-        ExitInfo getLinkPathsUnderSyncRoot(const SyncPath &localPath, const SyncPath &seedPath,
-                                           std::vector<SyncPath> &linkPaths) const;
-        // Retrieves all the links of the reported file located under the sync root by searching its node id, when the reported
-        // path does not exist anymore. linkPaths is empty if the file has no link left under the sync root.
-        ExitInfo findLinkPathsByNodeId(const SyncPath &localPath, std::vector<SyncPath> &linkPaths) const;
+        // Retrieves all the links of the reported file located under the sync root, searched by node id. linkPaths is empty if
+        // the file does not exist anymore or has no link left under the sync root.
+        ExitInfo getLinkPathsUnderSyncRoot(const SyncPath &localPath, std::vector<SyncPath> &linkPaths) const;
         // Saves a copy of the reported file into the rescue folder.
         ExitInfo rescueFile(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode, const SyncPath &seedPath) const;
         // Hard removes the links that still refer to the reported node, the seed path last.

@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             try
             {
                 var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                bool success = await commService.UnlinkHardlinks(Error.Sync.DbId, Error.DbId, Error.LocalNodeId, Error.Path, CancellationToken.None);
+                bool success = await commService.UnlinkHardlinks(Error.Sync.DbId, Error.DbId, Error.LocalNodeId, CancellationToken.None);
                 if (!success)
                 {
                     Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}",

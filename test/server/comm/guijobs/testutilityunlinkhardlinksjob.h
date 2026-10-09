@@ -47,15 +47,12 @@ class TestUtilityUnlinkHardlinksJob : public CppUnit::TestFixture, public TestBa
         CPPUNIT_TEST(testModifiedThroughOtherLink);
         CPPUNIT_TEST(testRescueFilenameCollision);
         CPPUNIT_TEST(testUnknownNode);
-        CPPUNIT_TEST(testInvalidPath);
-        CPPUNIT_TEST(testNodeIdMismatch);
         CPPUNIT_TEST(testSeedSelection);
         CPPUNIT_TEST(testErrorRemoval);
         CPPUNIT_TEST(testErrorMismatch);
         CPPUNIT_TEST(testTmpBlacklistRemoval);
         CPPUNIT_TEST(testDirectoryNode);
         CPPUNIT_TEST(testSymlinkKept);
-        CPPUNIT_TEST(testSymlinkSeed);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -83,8 +80,8 @@ class TestUtilityUnlinkHardlinksJob : public CppUnit::TestFixture, public TestBa
         /// saving a copy of the file into the rescue folder.
         void testMovedFile();
 
-        /// The reported path does not exist anymore and the links of the file cannot be searched, e.g. because the sync root is
-        /// not accessible: the job must fail without deleting the node and the error, as links of the file may remain.
+        /// The sync root is not accessible, so the links of the file cannot be enumerated: the job must fail without deleting
+        /// the node and the error, as links of the file may remain.
         void testLinkSearchFailure();
 
         /// A hardlink located outside of the sync root is kept, the links under the sync root are removed.
@@ -103,14 +100,6 @@ class TestUtilityUnlinkHardlinksJob : public CppUnit::TestFixture, public TestBa
         /// job only completes the cleanup by removing the reported error.
         void testUnknownNode();
 
-        /// An absolute path or a path escaping the sync root: the job must reject the request without touching the file
-        /// system.
-        void testInvalidPath();
-
-        /// The item located at the reported path refers to another node than the reported node id: the job must reject the
-        /// request without touching the file system.
-        void testNodeIdMismatch();
-
         /// The item located at the seed path has been replaced by another file: another link of the reported node is selected
         /// as the seed path, or nothing is removed when no link refers to the reported node anymore.
         void testSeedSelection();
@@ -119,7 +108,7 @@ class TestUtilityUnlinkHardlinksJob : public CppUnit::TestFixture, public TestBa
         /// kept.
         void testErrorRemoval();
 
-        /// The reported error does not exist, or is not the hardlink error of the reported sync, node and path: the job must
+        /// The reported error does not exist, or is not the hardlink error of the reported sync and node: the job must
         /// reject the request without touching the file system and the databases.
         void testErrorMismatch();
 
@@ -133,10 +122,6 @@ class TestUtilityUnlinkHardlinksJob : public CppUnit::TestFixture, public TestBa
 
         /// A symbolic link targeting a hardlinked file is not a link of the file: it is kept while the hardlinks are removed.
         void testSymlinkKept();
-
-        /// The reported item is a symbolic link: the job must reject the request without touching the file system, as symbolic
-        /// links are never followed.
-        void testSymlinkSeed();
 
     private:
         /// An error database id that is not present in the parameters database.
@@ -164,18 +149,17 @@ class TestUtilityUnlinkHardlinksJob : public CppUnit::TestFixture, public TestBa
         /// Inserts the given error into the parameters database and returns its database id.
         static ErrorDbId insertParmsDbError(Error &error);
 
-        /// Inserts a hardlink error reported for the given node into the parameters database and returns its database id.
-        ErrorDbId insertHardlinkError(const NodeId &nodeId, const SyncPath &relativePath);
+        /// Inserts a hardlink error reported for the given node into the parameters database and returns its database id. The
+        /// path of the error is not used by the job, which only checks the sync and the node id: a generic one is stored.
+        ErrorDbId insertHardlinkError(const NodeId &nodeId);
 
         /// Runs UtilityUnlinkHardlinksJob::unlinkHardlinks on the current syncPal and returns its exit info. If errorDbId is not
         /// set, a hardlink error matching the request is inserted into the parameters database and reported.
-        ExitInfo runUnlinkExpect(const NodeId &nodeId, const SyncPath &relativePath,
-                                 const std::optional<ErrorDbId> &errorDbId = std::nullopt);
+        ExitInfo runUnlinkExpect(const NodeId &nodeId, const std::optional<ErrorDbId> &errorDbId = std::nullopt);
 
         /// Runs UtilityUnlinkHardlinksJob::unlinkHardlinks on the current syncPal and asserts that it succeeds. If errorDbId is
         /// not set, a hardlink error matching the request is inserted into the parameters database and reported.
-        void runUnlink(const NodeId &nodeId, const SyncPath &relativePath,
-                       const std::optional<ErrorDbId> &errorDbId = std::nullopt);
+        void runUnlink(const NodeId &nodeId, const std::optional<ErrorDbId> &errorDbId = std::nullopt);
 
         /// Returns true if the node with the given local node id exists in the sync database.
         [[nodiscard]] bool nodeExistsInDb(const NodeId &nodeId) const;

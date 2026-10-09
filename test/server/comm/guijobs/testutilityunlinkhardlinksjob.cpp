@@ -152,25 +152,23 @@ ErrorDbId TestUtilityUnlinkHardlinksJob::insertParmsDbError(Error &error) {
     return error.dbId();
 }
 
-ErrorDbId TestUtilityUnlinkHardlinksJob::insertHardlinkError(const NodeId &nodeId, const SyncPath &relativePath) {
-    Error error = makeHardlinkError(nodeId, relativePath);
+ErrorDbId TestUtilityUnlinkHardlinksJob::insertHardlinkError(const NodeId &nodeId) {
+    // The path of the error is not used by the job, which only checks the sync and the node id: a generic one is stored.
+    Error error = makeHardlinkError(nodeId, SyncPath(Str("file.txt")));
     return insertParmsDbError(error);
 }
 
-ExitInfo TestUtilityUnlinkHardlinksJob::runUnlinkExpect(const NodeId &nodeId, const SyncPath &relativePath,
-                                                        const std::optional<ErrorDbId> &errorDbId) {
+ExitInfo TestUtilityUnlinkHardlinksJob::runUnlinkExpect(const NodeId &nodeId, const std::optional<ErrorDbId> &errorDbId) {
     UtilityUnlinkHardlinksJob job(nullptr, 1, Poco::DynamicStruct(), nullptr);
     job._syncDbId = _syncPal->syncDbId();
-    job._errorDbId = errorDbId ? *errorDbId : insertHardlinkError(nodeId, relativePath);
+    job._errorDbId = errorDbId ? *errorDbId : insertHardlinkError(nodeId);
     job._nodeId = nodeId;
-    job._relativeLocalPath = relativePath;
 
     return job.unlinkHardlinks(_syncPal);
 }
 
-void TestUtilityUnlinkHardlinksJob::runUnlink(const NodeId &nodeId, const SyncPath &relativePath,
-                                              const std::optional<ErrorDbId> &errorDbId) {
-    const ExitInfo exitInfo = runUnlinkExpect(nodeId, relativePath, errorDbId);
+void TestUtilityUnlinkHardlinksJob::runUnlink(const NodeId &nodeId, const std::optional<ErrorDbId> &errorDbId) {
+    const ExitInfo exitInfo = runUnlinkExpect(nodeId, errorDbId);
     CPPUNIT_ASSERT_MESSAGE("unlinkHardlinks failed: " + std::string(exitInfo), exitInfo.code() == ExitCode::Ok);
 }
 
@@ -220,7 +218,7 @@ void TestUtilityUnlinkHardlinksJob::testInSyncFile() {
     CPPUNIT_ASSERT(pathExists(_localTempDir.path() / fileName));
     CPPUNIT_ASSERT(pathExists(_localTempDir.path() / linkName));
 
-    runUnlink(nodeId, SyncPath(fileName));
+    runUnlink(nodeId);
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
@@ -236,7 +234,7 @@ void TestUtilityUnlinkHardlinksJob::testModifiedFile() {
     // Make the size stored in the database differ from the actual file size: the file is not in sync with the database.
     const NodeId nodeId = createFileAndDbNode(fileName, content, linkName, 1);
 
-    runUnlink(nodeId, SyncPath(fileName));
+    runUnlink(nodeId);
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
@@ -268,7 +266,7 @@ void TestUtilityUnlinkHardlinksJob::testMissingFile() {
 
     CPPUNIT_ASSERT(nodeExistsInDb(nodeId));
 
-    runUnlink(nodeId, SyncPath(fileName));
+    runUnlink(nodeId);
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
@@ -300,8 +298,8 @@ void TestUtilityUnlinkHardlinksJob::testRemovedReportedLink() {
     const bool removed = std::filesystem::remove(filePath, ec);
     CPPUNIT_ASSERT_MESSAGE("Failed to remove the reported link: " + ec.message(), removed && !ec);
 
-    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(fileName));
-    runUnlink(nodeId, SyncPath(fileName), errorDbId);
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId);
+    runUnlink(nodeId, errorDbId);
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The error has not been deleted from the parameters database", !errorExistsInDb(errorDbId));
@@ -336,8 +334,8 @@ void TestUtilityUnlinkHardlinksJob::testMovedFile() {
     CPPUNIT_ASSERT_MESSAGE("Failed to move the file: " + ec.message(), !ec);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("The moved file must keep its node id", nodeId, localNodeId(movedFilePath));
 
-    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(fileName));
-    runUnlink(nodeId, SyncPath(fileName), errorDbId);
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId);
+    runUnlink(nodeId, errorDbId);
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The error has not been deleted from the parameters database", !errorExistsInDb(errorDbId));
@@ -356,14 +354,14 @@ void TestUtilityUnlinkHardlinksJob::testLinkSearchFailure() {
     const SyncName fileName = Str("file1.txt");
     const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!");
 
-    // Remove the sync root, as if it was not accessible anymore: the reported path is missing and the sync root cannot be
-    // searched.
+    // Remove the sync root, as if it was not accessible anymore: the item cannot be resolved by node id and the sync root
+    // cannot be searched.
     std::error_code ec;
     (void) std::filesystem::remove_all(_localTempDir.path(), ec);
     CPPUNIT_ASSERT_MESSAGE("Failed to remove the sync root: " + ec.message(), !ec);
 
-    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(fileName));
-    const ExitInfo exitInfo = runUnlinkExpect(nodeId, SyncPath(fileName), errorDbId);
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId);
+    const ExitInfo exitInfo = runUnlinkExpect(nodeId, errorDbId);
     CPPUNIT_ASSERT_MESSAGE("The job must fail if the links of the file cannot be searched",
                            exitInfo.code() == ExitCode::SystemError);
     CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
@@ -383,7 +381,7 @@ void TestUtilityUnlinkHardlinksJob::testLinkOutsideSyncRoot() {
     std::filesystem::create_hard_link(_localTempDir.path() / fileName, outsideLinkPath, ec);
     CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink outside of the sync root: " + ec.message(), !ec);
 
-    runUnlink(nodeId, SyncPath(fileName));
+    runUnlink(nodeId);
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
@@ -412,7 +410,7 @@ void TestUtilityUnlinkHardlinksJob::testModifiedThroughOtherLink() {
         CPPUNIT_ASSERT_MESSAGE("Failed to modify the file through the hardlink", file.good());
     }
 
-    runUnlink(nodeId, SyncPath(fileName));
+    runUnlink(nodeId);
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
@@ -448,7 +446,7 @@ void TestUtilityUnlinkHardlinksJob::testRescueFilenameCollision() {
         CPPUNIT_ASSERT_MESSAGE("Failed to create the existing rescue copy", file.good());
     }
 
-    runUnlink(nodeId, SyncPath(fileName));
+    runUnlink(nodeId);
 
     CPPUNIT_ASSERT_MESSAGE("The existing rescue copy has been overwritten", pathExists(existingRescueFilePath));
     std::ifstream existingRescueFile(existingRescueFilePath, std::ios::binary);
@@ -474,70 +472,13 @@ void TestUtilityUnlinkHardlinksJob::testUnknownNode() {
     const NodeId nodeId("999999");
     CPPUNIT_ASSERT_MESSAGE("The node should not be in the database", !nodeExistsInDb(nodeId));
 
-    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(Str("file1.txt")));
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId);
 
     // A node that is no longer in the sync database cannot be resolved by the action, but the reported error is removed so
     // that the card does not remain displayed forever. This is the path followed when retrying a resolution whose final
     // cleanup step failed.
-    runUnlink(nodeId, SyncPath(Str("file1.txt")), errorDbId);
+    runUnlink(nodeId, errorDbId);
     CPPUNIT_ASSERT_MESSAGE("The error has not been deleted from the parameters database", !errorExistsInDb(errorDbId));
-}
-
-void TestUtilityUnlinkHardlinksJob::testInvalidPath() {
-    const SyncName fileName = Str("file1.txt");
-    const SyncName linkName = Str("link1.txt");
-    const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
-
-    // An absolute path must be rejected.
-    ExitInfo exitInfo = runUnlinkExpect(nodeId, _localTempDir.path() / fileName);
-    CPPUNIT_ASSERT_MESSAGE("The job must reject an absolute path", exitInfo.code() == ExitCode::InvalidOperation);
-
-    // A path escaping the sync root must be rejected.
-    exitInfo = runUnlinkExpect(nodeId, SyncPath(Str("..")) / Str("escaped.txt"));
-    CPPUNIT_ASSERT_MESSAGE("The job must reject a path escaping the sync root", exitInfo.code() == ExitCode::InvalidOperation);
-
-    CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
-    CPPUNIT_ASSERT_MESSAGE("The file has been deleted", pathExists(_localTempDir.path() / fileName));
-    CPPUNIT_ASSERT_MESSAGE("The hardlink has been deleted", pathExists(_localTempDir.path() / linkName));
-    CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
-                           !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
-}
-
-void TestUtilityUnlinkHardlinksJob::testNodeIdMismatch() {
-    const SyncName fileName = Str("file1.txt");
-    const SyncName linkName = Str("link1.txt");
-    const std::string content("Hello, World!");
-    const SyncPath filePath = _localTempDir.path() / fileName;
-    {
-        std::ofstream file(filePath, std::ios::binary);
-        file << content;
-        CPPUNIT_ASSERT_MESSAGE("Failed to create the file", file.good());
-    }
-    std::error_code ec;
-    std::filesystem::create_hard_link(filePath, _localTempDir.path() / linkName, ec);
-    CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink: " + ec.message(), !ec);
-
-    // Insert a node referencing an inode that is not the one of the file located at the reported path.
-    bool found = false;
-    DbNodeId rootDbNodeId = 0;
-    CPPUNIT_ASSERT(_syncPal->syncDb()->dbId(ReplicaSide::Local, NodeId("1"), rootDbNodeId, found));
-    CPPUNIT_ASSERT(found);
-    const NodeId nodeId("999999");
-    DbNode fileDbNode(0, rootDbNodeId, fileName, fileName, nodeId, "r_file1", std::nullopt, 123, 123, NodeType::File, 10);
-    bool constraintError = false;
-    DbNodeId fileDbNodeId = 0;
-    CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(fileDbNode, fileDbNodeId, constraintError));
-    CPPUNIT_ASSERT(!constraintError);
-
-    const ExitInfo exitInfo = runUnlinkExpect(nodeId, SyncPath(fileName));
-    CPPUNIT_ASSERT_MESSAGE("The job must reject a seed path that does not refer to the reported node",
-                           exitInfo.code() == ExitCode::InvalidOperation);
-
-    CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
-    CPPUNIT_ASSERT_MESSAGE("The file has been deleted", pathExists(filePath));
-    CPPUNIT_ASSERT_MESSAGE("The hardlink has been deleted", pathExists(_localTempDir.path() / linkName));
-    CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
-                           !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
 }
 
 void TestUtilityUnlinkHardlinksJob::testSeedSelection() {
@@ -590,21 +531,20 @@ void TestUtilityUnlinkHardlinksJob::testErrorRemoval() {
     const SyncName linkName = Str("link1.txt");
     const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
 
-    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(fileName));
-    const ErrorDbId otherErrorDbId = insertHardlinkError(NodeId("999999"), SyncPath(Str("other.txt")));
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId);
+    const ErrorDbId otherErrorDbId = insertHardlinkError(NodeId("999999"));
     CPPUNIT_ASSERT(errorExistsInDb(errorDbId));
     CPPUNIT_ASSERT(errorExistsInDb(otherErrorDbId));
 
-    // A request rejected after the validation of the reported error keeps the error.
-    const SyncPath absolutePath = _localTempDir.path() / fileName;
-    const ErrorDbId absolutePathErrorDbId = insertHardlinkError(nodeId, absolutePath);
-    const ExitInfo exitInfo = runUnlinkExpect(nodeId, absolutePath, absolutePathErrorDbId);
-    CPPUNIT_ASSERT_MESSAGE("The job must reject an absolute path", exitInfo.code() == ExitCode::InvalidOperation);
-    CPPUNIT_ASSERT_MESSAGE("The error has been deleted from the parameters database", errorExistsInDb(absolutePathErrorDbId));
+    // A request rejected by the validation of the reported error keeps the error.
+    const ExitInfo exitInfo = runUnlinkExpect(NodeId("888888"), otherErrorDbId);
+    CPPUNIT_ASSERT_MESSAGE("The job must reject a request that does not match the reported node",
+                           exitInfo.code() == ExitCode::InvalidOperation);
+    CPPUNIT_ASSERT_MESSAGE("The error has been deleted from the parameters database", errorExistsInDb(otherErrorDbId));
     CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
 
     // A successful request removes the reported error only.
-    runUnlink(nodeId, SyncPath(fileName), errorDbId);
+    runUnlink(nodeId, errorDbId);
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The error has not been deleted from the parameters database", !errorExistsInDb(errorDbId));
     CPPUNIT_ASSERT_MESSAGE("Another error has been deleted from the parameters database", errorExistsInDb(otherErrorDbId));
@@ -617,7 +557,7 @@ void TestUtilityUnlinkHardlinksJob::testErrorMismatch() {
     const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
 
     const auto checkRejected = [&](const ErrorDbId errorDbId, const std::string &message) {
-        const ExitInfo exitInfo = runUnlinkExpect(nodeId, relativePath, errorDbId);
+        const ExitInfo exitInfo = runUnlinkExpect(nodeId, errorDbId);
         CPPUNIT_ASSERT_MESSAGE(message, exitInfo.code() == ExitCode::InvalidOperation);
     };
 
@@ -628,12 +568,8 @@ void TestUtilityUnlinkHardlinksJob::testErrorMismatch() {
     std::vector<ErrorDbId> errorDbIds;
 
     // An error reported for another node.
-    errorDbIds.push_back(insertHardlinkError(NodeId("999999"), relativePath));
+    errorDbIds.push_back(insertHardlinkError(NodeId("999999")));
     checkRejected(errorDbIds.back(), "The job must reject an error reported for another node");
-
-    // An error reported for another path.
-    errorDbIds.push_back(insertHardlinkError(nodeId, SyncPath(Str("other.txt"))));
-    checkRejected(errorDbIds.back(), "The job must reject an error reported for another path");
 
     // An error reported for another sync.
     Sync otherSync(2, 1, _localOtherDir.path(), "", "/remote2");
@@ -671,7 +607,7 @@ void TestUtilityUnlinkHardlinksJob::testErrorMismatch() {
     }
 
     // The same request is accepted with the matching error.
-    runUnlink(nodeId, relativePath);
+    runUnlink(nodeId);
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
     CPPUNIT_ASSERT_MESSAGE("The hardlink has not been deleted", !pathExists(_localTempDir.path() / linkName));
@@ -682,7 +618,7 @@ void TestUtilityUnlinkHardlinksJob::testTmpBlacklistRemoval() {
     const SyncName linkName = Str("link1.txt");
     const SyncPath relativePath(fileName);
     const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
-    const ErrorDbId errorDbId = insertHardlinkError(nodeId, relativePath);
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId);
 
     // Create the sync workers so that the temporary blacklist manager used by the sync engine is available, then blacklist the
     // item on both sides, as the sync engine does when an operation on the item has failed.
@@ -694,7 +630,7 @@ void TestUtilityUnlinkHardlinksJob::testTmpBlacklistRemoval() {
     CPPUNIT_ASSERT_MESSAGE("The item is not blacklisted on the remote side",
                            _syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Remote));
 
-    runUnlink(nodeId, relativePath, errorDbId);
+    runUnlink(nodeId, errorDbId);
 
     // The items have been removed from the temporary blacklist only once the node has been removed from the sync database, so
     // that the deletion of the links cannot propagate to the remote replica instead of triggering a new download.
@@ -723,7 +659,7 @@ void TestUtilityUnlinkHardlinksJob::testDirectoryNode() {
     const NodeId dirNodeId = localNodeId(dirPath);
     insertDbNode(dirName, dirNodeId, NodeType::Directory);
 
-    ExitInfo exitInfo = runUnlinkExpect(dirNodeId, SyncPath(dirName));
+    ExitInfo exitInfo = runUnlinkExpect(dirNodeId);
     CPPUNIT_ASSERT_MESSAGE("The job must reject a directory node", exitInfo.code() == ExitCode::InvalidOperation);
 
     // A file node whose reported item is a directory.
@@ -734,7 +670,7 @@ void TestUtilityUnlinkHardlinksJob::testDirectoryNode() {
     const NodeId otherDirNodeId = localNodeId(otherDirPath);
     insertDbNode(otherDirName, otherDirNodeId, NodeType::File);
 
-    exitInfo = runUnlinkExpect(otherDirNodeId, SyncPath(otherDirName));
+    exitInfo = runUnlinkExpect(otherDirNodeId);
     CPPUNIT_ASSERT_MESSAGE("The job must reject a reported item that is a directory",
                            exitInfo.code() == ExitCode::InvalidOperation);
 
@@ -756,39 +692,12 @@ void TestUtilityUnlinkHardlinksJob::testSymlinkKept() {
     const bool created = IoHelper::createSymlink(_localTempDir.path() / fileName, symlinkPath, false, ioError);
     CPPUNIT_ASSERT_MESSAGE("Failed to create the symbolic link: " + toString(ioError), created);
 
-    runUnlink(nodeId, SyncPath(fileName));
+    runUnlink(nodeId);
 
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
     CPPUNIT_ASSERT_MESSAGE("The hardlink has not been deleted", !pathExists(_localTempDir.path() / linkName));
     CPPUNIT_ASSERT_MESSAGE("The symbolic link has been deleted", isSymlink(symlinkPath));
-    CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
-                           !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
-}
-
-void TestUtilityUnlinkHardlinksJob::testSymlinkSeed() {
-    const SyncName fileName = Str("file1.txt");
-    const SyncName linkName = Str("link1.txt");
-    const SyncName symlinkName = Str("symlink1.txt");
-    const NodeId fileNodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
-
-    // Report the symbolic link itself, with its own node id: its target and the links of the target must not be removed.
-    const SyncPath symlinkPath = _localTempDir.path() / symlinkName;
-    IoError ioError = IoError::Success;
-    const bool created = IoHelper::createSymlink(_localTempDir.path() / fileName, symlinkPath, false, ioError);
-    CPPUNIT_ASSERT_MESSAGE("Failed to create the symbolic link: " + toString(ioError), created);
-    const NodeId symlinkNodeId = localNodeId(symlinkPath);
-    CPPUNIT_ASSERT_MESSAGE("The symbolic link must have its own node id", symlinkNodeId != fileNodeId);
-    insertDbNode(symlinkName, symlinkNodeId, NodeType::File);
-
-    const ExitInfo exitInfo = runUnlinkExpect(symlinkNodeId, SyncPath(symlinkName));
-    CPPUNIT_ASSERT_MESSAGE("The job must reject a symbolic link", exitInfo.code() == ExitCode::InvalidOperation);
-
-    CPPUNIT_ASSERT_MESSAGE("The symbolic link node has been deleted from the database", nodeExistsInDb(symlinkNodeId));
-    CPPUNIT_ASSERT_MESSAGE("The file node has been deleted from the database", nodeExistsInDb(fileNodeId));
-    CPPUNIT_ASSERT_MESSAGE("The symbolic link has been deleted", isSymlink(symlinkPath));
-    CPPUNIT_ASSERT_MESSAGE("The file has been deleted", pathExists(_localTempDir.path() / fileName));
-    CPPUNIT_ASSERT_MESSAGE("The hardlink has been deleted", pathExists(_localTempDir.path() / linkName));
     CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
                            !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
 }

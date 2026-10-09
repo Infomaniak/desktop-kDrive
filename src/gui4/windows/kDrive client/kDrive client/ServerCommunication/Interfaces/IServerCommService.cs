@@ -150,7 +150,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken);
         Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken);
 
-        Task<bool> UnlinkHardlinks(DbId syncDbId, DbId errorDbId, NodeId localNodeId, string path, CancellationToken cancellationToken);
+        Task<bool> UnlinkHardlinks(DbId syncDbId, DbId errorDbId, NodeId localNodeId, CancellationToken cancellationToken);
 
         // Acknowledges the "too many deletes" notification for a sync, telling the server whether to continue or revert.
         Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken);

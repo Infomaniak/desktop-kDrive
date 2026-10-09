@@ -40,7 +40,6 @@
 static const auto inParamsSyncDbId = "syncDbId";
 static const auto inParamsErrorDbId = "errorDbId";
 static const auto inParamsNodeId = "nodeId";
-static const auto inParamsPath = "path";
 
 namespace KDC {
 
@@ -56,10 +55,6 @@ ExitInfo UtilityUnlinkHardlinksJob::deserializeInputParms() {
         readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsErrorDbId, _errorDbId);
         readParamValue(inParamsNodeId, _nodeId);
-
-        CommString path;
-        readParamValue(inParamsPath, path);
-        _relativeLocalPath = CommonUtility::commString2SyncPath(path);
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in UtilityUnlinkHardlinksJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
@@ -139,32 +134,15 @@ ExitInfo UtilityUnlinkHardlinksJob::unlinkHardlinks(const std::shared_ptr<SyncPa
 }
 
 ExitInfo UtilityUnlinkHardlinksJob::removeLinksAndNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const {
-    SyncPath seedPath;
-    if (ExitInfo exitInfo = getSeedPath(syncPal->localPath(), seedPath); !exitInfo) {
-        return exitInfo;
-    }
-
-    bool seedExists = false;
-    if (ExitInfo exitInfo = checkSeedItem(seedPath, seedExists); !exitInfo) {
-        return exitInfo;
-    }
-
+    // Search the links of the reported file under the sync root by node id. The seed path used for the consistency check and
+    // the rescue copy is the first link found by the enumeration.
     std::vector<SyncPath> linkPaths;
-    if (seedExists) {
-        if (ExitInfo exitInfo = getLinkPathsUnderSyncRoot(syncPal->localPath(), seedPath, linkPaths); !exitInfo) {
-            return exitInfo;
-        }
-    } else {
-        // The reported path does not exist anymore, but the file may still have links under the sync root, e.g. if the
-        // reported link has been removed or if the file has been moved: search them by node id and use one of them as the
-        // seed path.
-        if (ExitInfo exitInfo = findLinkPathsByNodeId(syncPal->localPath(), linkPaths); !exitInfo) {
-            return exitInfo;
-        }
-        if (!linkPaths.empty()) {
-            seedPath = linkPaths.front();
-            LOGW_INFO(_logger, L"Link of the reported node found at " << Utility::formatSyncPath(seedPath));
-        }
+    if (ExitInfo exitInfo = getLinkPathsUnderSyncRoot(syncPal->localPath(), linkPaths); !exitInfo) {
+        return exitInfo;
+    }
+    SyncPath seedPath;
+    if (!linkPaths.empty()) {
+        seedPath = linkPaths.front();
     }
 
     // If the file has no link left under the sync root, only remove the node from the database so that the file is
@@ -202,13 +180,10 @@ ExitInfo UtilityUnlinkHardlinksJob::checkParmsDbError() const {
         return ExitCode::InvalidOperation;
     }
 
-    // Paths are compared element by element, so the result does not depend on the directory separator used by the GUI.
-    if (error.syncDbId() != _syncDbId || _nodeId.empty() || error.localNodeId() != _nodeId ||
-        error.path() != _relativeLocalPath) {
+    if (error.syncDbId() != _syncDbId || _nodeId.empty() || error.localNodeId() != _nodeId) {
         LOGW_WARN(_logger, L"The error with errorDbId=" << _errorDbId << L" does not match the reported item: syncDbId="
                                                         << error.syncDbId() << L", nodeId="
-                                                        << CommonUtility::s2ws(error.localNodeId()) << L", path="
-                                                        << Utility::formatSyncPath(error.path()));
+                                                        << CommonUtility::s2ws(error.localNodeId()));
         return ExitCode::InvalidOperation;
     }
 
@@ -236,80 +211,6 @@ ExitInfo UtilityUnlinkHardlinksJob::fetchFileDbNode(const std::shared_ptr<SyncPa
     }
 
     nodeFound = true;
-    return ExitCode::Ok;
-}
-
-ExitInfo UtilityUnlinkHardlinksJob::getSeedPath(const SyncPath &localPath, SyncPath &seedPath) const {
-    // The path is provided by the GUI: reject any empty, absolute or escaping path before any file system operation.
-    if (_relativeLocalPath.empty() || _relativeLocalPath.is_absolute()) {
-        LOGW_WARN(_logger, L"The reported path is empty or absolute: " << Utility::formatSyncPath(_relativeLocalPath));
-        return ExitCode::InvalidOperation;
-    }
-
-    seedPath = localPath / _relativeLocalPath;
-    SyncPath canonicalSeedPath;
-    if (const IoError ioError = IoHelper::getWeakCanonicalPath(seedPath, canonicalSeedPath); ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getWeakCanonicalPath: " << Utility::formatIoError(seedPath, ioError));
-        return ExitCode::SystemError;
-    }
-    SyncPath canonicalLocalPath;
-    if (const IoError ioError = IoHelper::getWeakCanonicalPath(localPath, canonicalLocalPath); ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getWeakCanonicalPath: " << Utility::formatIoError(localPath, ioError));
-        return ExitCode::SystemError;
-    }
-    if (!CommonUtility::isDescendantOrEqual(canonicalSeedPath, canonicalLocalPath)) {
-        LOGW_WARN(_logger, L"The reported path is located outside of the sync root: " << Utility::formatSyncPath(seedPath));
-        return ExitCode::InvalidOperation;
-    }
-
-    return ExitCode::Ok;
-}
-
-ExitInfo UtilityUnlinkHardlinksJob::checkSeedItem(const SyncPath &seedPath, bool &seedExists) const {
-    seedExists = false;
-
-    ItemType itemType;
-    if (!IoHelper::getItemType(seedPath, itemType)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(seedPath, itemType.ioError));
-        return ExitCode::SystemError;
-    }
-    // Symbolic links, junctions and aliases are never followed: only the regular file reported in the error can be removed.
-    // This check comes first, as the ioError of a symbolic link whose target does not exist is IoError::NoSuchFileOrDirectory.
-    if (itemType.linkType != LinkType::None) {
-        LOGW_WARN(_logger, L"The reported path is a link: " << Utility::formatSyncPath(seedPath));
-        return ExitCode::InvalidOperation;
-    }
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(_logger, L"The file does not exist anymore: " << Utility::formatSyncPath(seedPath));
-        return ExitCode::Ok;
-    }
-    if (itemType.ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(seedPath, itemType.ioError));
-        return ExitCode::SystemError;
-    }
-    if (itemType.nodeType != NodeType::File) {
-        // Never remove a directory, as its whole content would be removed.
-        LOGW_WARN(_logger, L"The reported path is not a file: " << Utility::formatSyncPath(seedPath));
-        return ExitCode::InvalidOperation;
-    }
-
-    // The seed path still exists: check that it refers to the node reported in the error, so that no other item can be removed
-    // by mistake.
-    std::optional<NodeId> seedNodeId;
-    if (ExitInfo exitInfo = getLocalNodeId(seedPath, seedNodeId); !exitInfo) {
-        return exitInfo;
-    }
-    if (!seedNodeId) {
-        LOGW_WARN(_logger, L"The file does not exist anymore: " << Utility::formatSyncPath(seedPath));
-        return ExitCode::Ok;
-    }
-    if (*seedNodeId != _nodeId) {
-        LOGW_WARN(_logger, L"The item located at " << Utility::formatSyncPath(seedPath)
-                                                   << L" does not refer to the reported node " << CommonUtility::s2ws(_nodeId));
-        return ExitCode::InvalidOperation;
-    }
-
-    seedExists = true;
     return ExitCode::Ok;
 }
 
@@ -404,29 +305,18 @@ ExitInfo UtilityUnlinkHardlinksJob::removeLinks(const std::shared_ptr<SyncPal> &
     return deleteLinks(syncPal, linkPaths, seedPath);
 }
 
-ExitInfo UtilityUnlinkHardlinksJob::getLinkPathsUnderSyncRoot(const SyncPath &localPath, const SyncPath &seedPath,
-                                                              std::vector<SyncPath> &linkPaths) const {
+ExitInfo UtilityUnlinkHardlinksJob::getLinkPathsUnderSyncRoot(const SyncPath &localPath, std::vector<SyncPath> &linkPaths) const {
     linkPaths.clear();
 
-    // Enumerate all the existing paths of the file located under the sync root, starting from the path reported in the error.
-    // Any error fails the job, as an incomplete list would leave links behind once the node is removed from the database.
+    // Enumerate all the existing paths of the file located under the sync root, searched by node id. If the file does not
+    // exist anymore, there is nothing to enumerate: the caller removes the node from the database so that the file is
+    // downloaded again. Any other error fails the job, as an incomplete list would leave links behind once the node is
+    // removed from the database.
     IoError ioError = IoError::Success;
-    if (!IoHelper::getHardlinkPaths(seedPath, linkPaths, ioError, localPath)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getHardlinkPaths: " << Utility::formatIoError(seedPath, ioError));
-        linkPaths.clear();
-        return ExitCode::SystemError;
-    }
-
-    return ExitCode::Ok;
-}
-
-ExitInfo UtilityUnlinkHardlinksJob::findLinkPathsByNodeId(const SyncPath &localPath, std::vector<SyncPath> &linkPaths) const {
-    linkPaths.clear();
-
-    // Any error fails the job, as an incomplete list would leave links behind once the node is removed from the database.
-    IoError ioError = IoError::Success;
-    if (!IoHelper::getPathsWithNodeId(localPath, _nodeId, linkPaths, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getPathsWithNodeId: " << Utility::formatIoError(localPath, ioError));
+    if (!IoHelper::getHardlinkPaths(localPath, _nodeId, linkPaths, ioError)) {
+        // This includes IoError::FunctionNotSupported on the platforms where the links cannot be enumerated: the action
+        // cannot be performed.
+        LOGW_WARN(_logger, L"Error in IoHelper::getHardlinkPaths: " << Utility::formatIoError(localPath, ioError));
         linkPaths.clear();
         return ExitCode::SystemError;
     }
@@ -476,8 +366,10 @@ ExitInfo UtilityUnlinkHardlinksJob::rescueFile(const std::shared_ptr<SyncPal> &s
         return copyExitInfo;
     }
 
+    // The path stored in the error is relative to the sync root, as expected by the GUI.
+    const SyncPath relativeSeedPath = seedPath.lexically_relative(syncPal->localPath());
     const Error error(_syncDbId, _nodeId, dbNode.hasRemoteNodeId() ? dbNode.nodeIdRemote().value() : NodeId(), dbNode.type(),
-                      _relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::FileRescued,
+                      relativeSeedPath, ConflictType::None, InconsistencyType::None, CancelType::FileRescued,
                       relativeDestinationPath);
     syncPal->addError(error);
 
