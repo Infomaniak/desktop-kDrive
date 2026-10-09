@@ -1220,46 +1220,6 @@ bool IoHelper::getHardlinkPaths(const SyncPath &searchRoot, const NodeId &nodeId
     return true;
 }
 
-bool IoHelper::checkIfFileStatIsUpToDate(const SyncPath &path, bool &upToDate, IoError &ioError) noexcept {
-    upToDate = false;
-
-    // The file status returned by getFileStat is read from the directory entry of the item.
-    FileStat fileStat;
-    if (!getFileStat(path, &fileStat, ioError, PathCheckOption::Insensitive)) return false;
-    if (ioError != IoError::Success) return true; // The item does not exist or cannot be accessed.
-
-    // Read the current metadata of the item from an open handle. Symbolic links and junctions are not followed.
-    const HANDLE hFile =
-            CreateFileW(Path2WStr(path).c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
-    if (hFile == INVALID_HANDLE_VALUE) {
-        const DWORD dwError = GetLastError();
-        ioError = utility_base::isLikeFileNotFoundError(dwError) ? IoError::NoSuchFileOrDirectory
-                                                                 : dWordError2ioError(dwError, logger());
-        if (isExpectedError(ioError)) return true;
-
-        LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatIoError(path, ioError));
-        return false;
-    }
-
-    BY_HANDLE_FILE_INFORMATION info{};
-    const bool infoRetrieved = GetFileInformationByHandle(hFile, &info) != 0;
-    const DWORD dwError = infoRetrieved ? ERROR_SUCCESS : GetLastError();
-    (void) CloseHandle(hFile);
-    if (!infoRetrieved) {
-        ioError = dWordError2ioError(dwError, logger());
-        LOGW_WARN(logger(), L"Error in GetFileInformationByHandle: " << Utility::formatIoError(path, ioError));
-        return isExpectedError(ioError);
-    }
-
-    const auto size = (static_cast<int64_t>(info.nFileSizeHigh) << 32) + static_cast<int64_t>(info.nFileSizeLow);
-    DWORD rem = 0;
-    upToDate = size == fileStat.size && FileTimeToUnixTime(&info.ftLastWriteTime, &rem) == fileStat.modificationTime &&
-               FileTimeToUnixTime(&info.ftCreationTime, &rem) == fileStat.creationTime;
-
-    return true;
-}
-
 bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError) {
     shortPathName.clear();
     ioError = IoError::Success;
