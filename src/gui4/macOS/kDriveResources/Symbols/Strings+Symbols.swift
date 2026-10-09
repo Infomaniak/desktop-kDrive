@@ -1063,7 +1063,10 @@ public enum KDriveLocalizable {
   public static let releaseChannelTest = KDriveLocalizable.tr("Localizable", "releaseChannelTest", fallback: "Test")
   /// loco:69eb8137c1ea8e116a0ba282
   ///  * Search field placeholder in SearchSheetView.
-  public static let searchPlaceholder = KDriveLocalizable.tr("Localizable", "searchPlaceholder", fallback: "Search…")
+  public static let searchPlaceholder = KDriveLocalizable.tr("Localizable", "searchPlaceholder", fallback: "Search...")
+  /// loco:6ac604dd665bcc5b3402f332
+  ///  * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online.
+  public static let searchResultOpenInBrowserSyncPausedTooltip = KDriveLocalizable.tr("Localizable", "searchResultOpenInBrowserSyncPausedTooltip", fallback: "Synchronization paused.\nThis file will open in kDrive online.")
   /// loco:69eb8290d3fa21c4fb096d82
   ///  * Tooltip shown on search results when file is not available locally and will open in browser.
   public static let searchResultOpenInBrowserTooltip = KDriveLocalizable.tr("Localizable", "searchResultOpenInBrowserTooltip", fallback: "This item is not available on this device. It will open in kDrive online.")

@@ -26,6 +26,9 @@ import kDriveCoreUI
 final class SearchViewModel: ObservableObject {
     @Published var searchText = ""
     @Published private(set) var searchResults: [UISearchResponse] = []
+    @Published private(set) var isSynchroPaused: Bool?
+
+    @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
 
     var isSearching: Bool {
         currentSearchTask != nil
@@ -61,7 +64,8 @@ final class SearchViewModel: ObservableObject {
             path: "/Placeholder/Path",
             modifiedDate: Date(),
             size: 1024,
-            isAvailableLocally: true
+            isAvailableLocally: true,
+            isHydrated: true
         )
     }
 
@@ -76,11 +80,22 @@ final class SearchViewModel: ObservableObject {
         self.driveId = driveId
         self.synchroLocalPath = synchroLocalPath
         setupSearchSubscription()
+        setupSynchroStateSubscription()
+    }
+
+    func opensLocally(_ file: UISearchResponse) -> Bool {
+        file.opensLocally(isSynchroPaused: isSynchroPaused)
     }
 
     func openFile(_ file: UISearchResponse) {
         @InjectService var matomo: MatomoUtils
-        if file.isAvailableLocally {
+        let shouldOpenLocally = opensLocally(file)
+        IKLogger.general.info(
+            "[KD] [Search] Open result syncDbId=\(syncDbId) fileId=\(file.id) " +
+                "isAvailableLocally=\(file.isAvailableLocally) isHydrated=\(file.isHydrated) " +
+                "isSynchroPaused=\(isSynchroPaused.map { String($0) } ?? "unknown") opensLocally=\(shouldOpenLocally)"
+        )
+        if shouldOpenLocally {
             matomo.track(eventWithCategory: .search, name: "openItem")
             openInFinder(file: file)
         } else {
@@ -92,13 +107,26 @@ final class SearchViewModel: ObservableObject {
     private func openInFinder(file: UISearchResponse) {
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: file.path, synchroPath: synchroLocalPath)
-        NSWorkspace.shared.open(url)
+        let didOpen = NSWorkspace.shared.open(url)
+        if didOpen {
+            IKLogger.general.info("[KD] [Search] Local open accepted syncDbId=\(syncDbId) fileId=\(file.id)")
+        } else {
+            IKLogger.general.error("[KD] [Search] Local open failed syncDbId=\(syncDbId) fileId=\(file.id)")
+        }
     }
 
     private func openInBrowser(file: UISearchResponse) {
         @InjectService var nodeURLGenerator: NodeURLGenerator
-        guard let url = nodeURLGenerator.redirectURL(forDriveId: driveId, fileId: file.id) else { return }
-        NSWorkspace.shared.open(url)
+        guard let url = nodeURLGenerator.redirectURL(forDriveId: driveId, fileId: file.id) else {
+            IKLogger.general.error("[KD] [Search] Invalid browser URL driveId=\(driveId) fileId=\(file.id)")
+            return
+        }
+        let didOpen = NSWorkspace.shared.open(url)
+        if didOpen {
+            IKLogger.general.info("[KD] [Search] Browser open accepted driveId=\(driveId) fileId=\(file.id)")
+        } else {
+            IKLogger.general.error("[KD] [Search] Browser open failed driveId=\(driveId) fileId=\(file.id)")
+        }
     }
 
     private func setupSearchSubscription() {
@@ -108,6 +136,22 @@ final class SearchViewModel: ObservableObject {
                 self?.performSearch(query: query)
             }
             .store(in: &bindStore)
+    }
+
+    private func setupSynchroStateSubscription() {
+        isSynchroPaused = pausedState(from: synchroStateObserver.synchroState)
+
+        synchroStateObserver.synchroStatePublisher
+            .map { [weak self] in self?.pausedState(from: $0) }
+            .removeDuplicates()
+            .receiveOnMain(store: &bindStore) { [weak self] isPaused in
+                self?.isSynchroPaused = isPaused
+            }
+    }
+
+    private func pausedState(from state: UISynchroState) -> Bool? {
+        guard state.syncDbId == syncDbId, state.isStatusKnown else { return nil }
+        return state.status.isPaused
     }
 
     private func performSearch(query: String) {

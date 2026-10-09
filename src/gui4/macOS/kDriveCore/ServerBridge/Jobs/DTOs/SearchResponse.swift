@@ -31,4 +31,5 @@ public struct SearchResponse: Codable, Sendable {
     public let modifiedTime: Int64
     public let size: Int64
     public let isAvailableLocally: Bool
+    public let isHydrated: Bool
 }

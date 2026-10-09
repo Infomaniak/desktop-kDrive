@@ -1437,6 +1437,10 @@
  * Search field placeholder in SearchSheetView. */
 "searchPlaceholder" = "Rechercher…";
 
+/* loco:6ac604dd665bcc5b3402f332
+ * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online. */
+"searchResultOpenInBrowserSyncPausedTooltip" = "Synchronisation en pause.\nCe fichier s’ouvrira dans kDrive en ligne.";
+
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
 "searchResultOpenInBrowserTooltip" = "Cet élément n’est pas disponible sur cet appareil.  Il s’ouvrira dans kDrive en ligne.";
