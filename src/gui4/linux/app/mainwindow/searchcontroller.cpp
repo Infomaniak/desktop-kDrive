@@ -64,6 +64,15 @@ void SearchController::setQuery(const QString &query) {
     }
 
     _query = query;
+
+    // Keep the displayed rows, but reject old responses and stop their pagination during the debounce delay.
+    ++_requestGeneration;
+    _hasMore = false;
+    _cursor.clear();
+    _loadingMore = false;
+    _nextPageFailed = false;
+    emit paginationChanged();
+
     emit queryChanged();
 
     if (_query.trimmed().isEmpty()) {
