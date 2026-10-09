@@ -2165,12 +2165,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> list;
 
             std::vector<ExclusionTemplate> exclusionTemplateList;
-            (void) std::for_each(list.begin(), list.end(), [&exclusionTemplateList](const ExclusionTemplate &templateInfo) {
+            (void) std::ranges::for_each(list, [&exclusionTemplateList](const ExclusionTemplate &templateInfo) {
                 exclusionTemplateList.push_back(templateInfo);
             });
 
             ExclusionTemplate::updateList(exclusionTemplateList);
-
 
             const auto exitInfo = ServerRequests::setUserExclusionTemplateList(exclusionTemplateList);
             if (!exitInfo) {
@@ -2178,6 +2177,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(ERR_ID, exitInfo, ExitCause::Unknown));
                 resultStream << toInt(exitInfo.code());
                 break;
+            }
+
+            // Invalidate snapshots of all syncs. We do not want the new exclusion templates to be applied to snapshots that were
+            // created with the previous templates.
+            {
+                const std::scoped_lock lock(syncPalMapMutex);
+                for (const auto &[_, syncPal]: syncPalMap) {
+                    if (syncPal) syncPal->forceInvalidateSnapshots();
+                }
             }
 
             resultStream << toInt(exitInfo.code());
@@ -2962,11 +2970,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 

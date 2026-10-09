@@ -325,4 +325,39 @@ void LiveSnapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem>
     }
 }
 
+void LiveSnapshot::restoreFromBackup(const ConstSnapshot &backupSnapshot) {
+    const std::scoped_lock lock(_mutex, backupSnapshot._mutex);
+
+    if (backupSnapshot._items.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "Cannot restore from empty backup snapshot.");
+        return;
+    }
+
+    startUpdate();
+
+    _items.clear();
+    _revisionHandlder->setRevision(backupSnapshot.revision());
+
+    for (const auto &[id, item]: backupSnapshot._items) {
+        auto newItemPtr = std::make_shared<SnapshotItem>(*item);
+        newItemPtr->setSnapshotRevisionDataFromBackup(_revisionHandlder, item->lastChangeRevision());
+        (void) _items.try_emplace(id, newItemPtr);
+    }
+
+    // Update each child list with the new snapshot item pointers
+    for (const auto &[_, item]: _items) {
+        NodeSet childIds;
+        for (const auto &child: item->children()) {
+            (void) childIds.insert(child->id());
+        }
+        item->removeAllChildren();
+
+        for (const auto &childId: childIds) {
+            if (const auto childIt = _items.find(childId); childIt != _items.end()) {
+                item->addChild(childIt->second);
+            }
+        }
+    }
+}
+
 } // namespace KDC

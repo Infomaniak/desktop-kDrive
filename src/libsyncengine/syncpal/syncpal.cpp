@@ -25,6 +25,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
+#include "requests/exclusiontemplatecache.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "utility/kdexception.h"
 #if defined(KD_WINDOWS)
@@ -537,7 +538,16 @@ void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
 void SyncPal::freeWorkers() {
     LOG_SYNCPAL_DEBUG(_logger, "Free workers");
     _localFSObserverWorker.reset();
+
+    if (_remoteFSObserverWorker && _remoteFSObserverWorker->liveSnapshot().isValid()) {
+        setRemoteLiveSnapshotBackup(
+                std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot()),
+                std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker)->blackList());
+    } else
+        clearRemoteLiveSnapshotBackup();
+
     _remoteFSObserverWorker.reset();
+
     _computeFSOperationsWorker.reset();
     _localUpdateTreeWorker.reset();
     _remoteUpdateTreeWorker.reset();
@@ -1803,9 +1813,19 @@ void SyncPal::tryToInvalidateSnapshots() {
 }
 
 void SyncPal::forceInvalidateSnapshots() {
-    _localFSObserverWorker->invalidateSnapshot();
-    _remoteFSObserverWorker->forceUpdate();
-    _remoteFSObserverWorker->invalidateSnapshot();
+    if (_localFSObserverWorker)
+        _localFSObserverWorker->invalidateSnapshot();
+    else
+        LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for local snapshot, but local FS observer worker is not available.");
+
+    clearRemoteLiveSnapshotBackup();
+
+    if (_remoteFSObserverWorker) {
+        _remoteFSObserverWorker->forceUpdate();
+        _remoteFSObserverWorker->invalidateSnapshot();
+    } else {
+        LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for remote snapshot, but remote FS observer worker is not available.");
+    }
 }
 
 } // namespace KDC

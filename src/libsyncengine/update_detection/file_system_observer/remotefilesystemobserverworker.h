@@ -23,9 +23,11 @@
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include <Poco/JSON/Object.h>
+#include <atomic>
 
 namespace KDC {
 
+class ContinueFileListWithCursorJob;
 class CsvFullFileListWithCursorJob;
 class LongPollJob;
 
@@ -45,6 +47,10 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         // - does set the updating flag to `true` in order to trigger the `longpoll` and `listing/continue` requests.
         void resume() override;
 
+        Count listingFullCount() const { return _listingFullCount.load(); };
+        RemoteNodeIdSet blackList() const;
+        void setBlackList(RemoteNodeIdSet blackList);
+
     protected:
         void execute() override;
         ExitInfo generateInitialSnapshot() override;
@@ -63,6 +69,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo initWithCursor();
         ExitInfo exploreDirectory(const NodeId &nodeId);
+        [[nodiscard]] ExitInfo restoreRemoteSnapshotBackup();
+        [[nodiscard]] ExitInfo checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const;
 
         struct ParsingIterationState {
                 bool error{false};
@@ -119,19 +127,33 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         DriveDbId _driveDbId = -1;
 
         using CursorMap = std::unordered_map<RemoteNodeId, CursorData, StringHashFunction, std::equal_to<>>;
-        // Map tracking the cursors of the listing requests made for folders specified by their remote IDs.
-        CursorMap _listingCursorMap;
-        [[nodiscard]] ExitInfo getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData);
+        // Cache map tracking the cursors of the listing requests made for folders specified by their remote IDs.
+        mutable CursorMap _listingCursorCache;
+        mutable std::recursive_mutex _listingCursorCacheMutex;
+        [[nodiscard]] ExitInfo getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData) const;
         [[nodiscard]] ExitInfo saveListingCursor(const RemoteNodeId &remoteDirId, const CursorData &cursorData);
+        [[nodiscard]] ExitInfo clearListingCursor(const RemoteNodeId &remoteDirId);
+
+        /**
+         * @brief Clears all listing cursors.
+         *
+         * This function resets the state of all listing cursors, effectively removing
+         * any previously saved cursor data for remote directories. It ensures that
+         * subsequent listing operations start without relying on outdated cursor data.
+         *
+         * @return ExitInfo indicating the success or failure of the operation.
+         */
+        [[nodiscard]] ExitInfo clearListingCursors();
 
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
-        int _listingFullCounter = 0;
+        mutable std::mutex _blackListMutex; // Mutex to protect access to the _blackList member variable.
+        std::atomic<Count> _listingFullCount{0}; // Thread-safe counter for full listing requests
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
         [[nodiscard]] bool syncIsAdvancedWithNonRootFolder() const;
         [[nodiscard]] RemoteNodeId rootFolderRemoteId() const;
         [[nodiscard]] ExitInfo updateSpecialFolderItem(const RemoteNodeId &remoteNodeId);
-        [[nodiscard]] ExitInfo getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
+        [[nodiscard]] ExitInfo getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) const;
 
         [[nodiscard]] ExitInfo parseCsvReply(CursorPersistence cursorPersistence,
                                              std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);
@@ -146,6 +168,16 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                                           LongPollJobMap &longPollJobs);
         [[nodiscard]] ExitInfo processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                              LongPollJobMap &longPollJobs);
+
+        [[nodiscard]] ExitInfo processListingContinueResponse(const RemoteNodeId &remoteDirId,
+                                                              std::shared_ptr<ContinueFileListWithCursorJob> &job,
+                                                              CursorData &cursorData, bool &hasMore);
+
+        [[nodiscard]] ExitInfo runListingContinueJob(const RemoteNodeId &remoteDirId,
+                                                     std::shared_ptr<ContinueFileListWithCursorJob> &job,
+                                                     const CursorData &cursorData);
+
+        [[nodiscard]] ExitInfo handleRemoteSnapshotBackup(bool &validSnapshotBackupExists);
 
         void abortAndClearLongPollJobs(LongPollJobMap &longPollJobs);
 

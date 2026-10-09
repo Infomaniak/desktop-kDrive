@@ -384,6 +384,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
         [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath);
 
+        void clearRemoteLiveSnapshotBackup() {
+            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+
+            _remoteLiveSnapshotBackup.clear();
+        }
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -482,6 +488,37 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
 
+        struct RemoteLiveSnapshotBackup {
+                std::shared_ptr<ConstSnapshot> snapshot;
+                RemoteNodeIdSet blacklist;
+
+                void clear() {
+                    snapshot.reset();
+                    blacklist.clear();
+                }
+        };
+
+        mutable std::recursive_mutex remoteLiveSnapshotBackupMutex;
+
+        RemoteLiveSnapshotBackup remoteLiveSnapshotBackup() const {
+            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+
+            return _remoteLiveSnapshotBackup;
+        }
+
+        void setRemoteLiveSnapshotBackup(const std::shared_ptr<ConstSnapshot> &snapshot, const RemoteNodeIdSet &blacklist) {
+            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+
+            _remoteLiveSnapshotBackup.snapshot = snapshot;
+            _remoteLiveSnapshotBackup.blacklist = blacklist;
+        }
+
+        bool isRemoteSnapshotBackupValid(const RemoteNodeIdSet &blackList) const {
+            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+
+            return _remoteLiveSnapshotBackup.snapshot != nullptr && _remoteLiveSnapshotBackup.blacklist == blackList;
+        }
+
     private:
         // Finalize the pin/hydration state of a direct download job and stop tracking it.
         // _directDownloadJobsMapMutex must be locked by the caller.
@@ -501,6 +538,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
 
         mutable std::mutex _progressInfoMutex;
+
+        RemoteLiveSnapshotBackup _remoteLiveSnapshotBackup{nullptr, RemoteNodeIdSet{}};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
