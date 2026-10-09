@@ -259,8 +259,6 @@ ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
     ExitInfo clearCursorExitInfo = ExitCode::Ok;
     const std::scoped_lock lock(_listingCursorCacheMutex);
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
-        if (!_listingCursorCache.contains(specialFolderRemoteId) || _listingCursorCache.at(specialFolderRemoteId).cursor.empty())
-            continue;
         clearCursorExitInfo = clearListingCursor(specialFolderRemoteId);
         if (!clearCursorExitInfo) {
             LOG_WARN(_logger, "Error in RemoteFileSystemObserverWorker::clearListingCursor: " << clearCursorExitInfo);
