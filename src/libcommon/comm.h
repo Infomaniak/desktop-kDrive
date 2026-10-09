@@ -129,7 +129,6 @@ enum class RequestNum {
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
     UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, // Not used anymore but kept for backward compatibility
-    UTILITY_UNLINK_HARDLINKS,
     UTILITY_CRASH,
     UTILITY_QUIT,
     UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
@@ -138,6 +137,7 @@ enum class RequestNum {
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
+    UTILITY_UNLINK_HARDLINKS,
     EnumEnd
 };
 

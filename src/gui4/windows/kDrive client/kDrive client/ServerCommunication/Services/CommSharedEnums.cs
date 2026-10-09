@@ -116,7 +116,6 @@ namespace Infomaniak.kDrive.Types
         UTILITY_SEND_LOG_TO_SUPPORT,
         UTILITY_CANCEL_LOG_TO_SUPPORT,
         UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, // Not used anymore but kept for backward compatibility
-        UTILITY_UNLINK_HARDLINKS,
         UTILITY_CRASH,
         UTILITY_QUIT,
         UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
@@ -125,8 +124,7 @@ namespace Infomaniak.kDrive.Types
         UPDATER_STATE,
         UPDATER_START_INSTALLER,
         UPDATER_SKIP_VERSION,
-
-        // Appended to the end of the enum: the request numbers are serialized as ordinals and must match the C++ enum.
+        UTILITY_UNLINK_HARDLINKS
     };
 
     public enum SignalNum
