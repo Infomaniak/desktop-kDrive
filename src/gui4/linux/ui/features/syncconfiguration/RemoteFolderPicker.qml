@@ -480,6 +480,8 @@ Rectangle {
                 onTextEdited: root.folderNameDraft = nameField.text
                 Keys.onReturnPressed: root.controller.commitFolderCreation(nameField.text)
                 Keys.onEnterPressed: root.controller.commitFolderCreation(nameField.text)
+                // Escape cancels the creation only: the modal's Escape shortcut must not take it first.
+                Keys.onShortcutOverride: event => event.accepted = (event.key === Qt.Key_Escape)
                 Keys.onEscapePressed: event => {
                     event.accepted = true;
                     root.controller.cancelFolderCreation();
