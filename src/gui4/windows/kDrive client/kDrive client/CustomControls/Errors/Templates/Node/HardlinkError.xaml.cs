@@ -29,7 +29,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
-        NodeTypes = new[] { NodeType.File, NodeType.Directory },
+        NodeTypes = new[] { NodeType.File },
         ExitCodes = new[] { ExitCode.SystemError },
         ExitCauses = new[] { ExitCause.HardlinkNotSupported }
     )]
