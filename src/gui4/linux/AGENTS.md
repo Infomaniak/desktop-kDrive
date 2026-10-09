@@ -340,9 +340,11 @@
   Choosing a row that cannot be selected, such as the drive root, clears the selection. The submission sends `SYNC_ADD`
   with both `serverFolderPath` and `serverFolderNodeId`, then closes the dialog; the page lists the synchronization
   once its `SYNC_ADDED` push arrives.
-  An inline folder creation is committed with Enter only; Escape, choosing another folder, or starting another creation
-  drops it. The name is trimmed, an empty one cancels, a `/` is refused locally, and the created folder is selected,
-  scrolled into view, and stays on kDrive even if the dialog is cancelled.
+  An inline folder creation starts from the row's button or Ctrl+Shift+N on the tree's current row, and is committed
+  with Enter only; Escape, choosing another folder, or starting another creation drops it, even while the parent's
+  children are still loading. The name is trimmed, an empty one cancels, a `/` is refused locally, and the created
+  folder is selected, scrolled into view, and stays on kDrive even if the dialog is cancelled. The typed name survives
+  the editing row being scrolled out.
 - `ui/windows/settings/SyncSelectionRow.qml`: shared "Synchronization" row (custom-selection summary, Manage, Retry) of
   the drive management page and of each advanced synchronization card. `DeleteSyncDialog.qml` is owner-agnostic: its
   owner binds `busy`, deletes on `deleteConfirmed`, and closes it or sets `failed`.
