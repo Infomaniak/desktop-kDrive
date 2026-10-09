@@ -395,11 +395,15 @@ void CommService::requestDriveDelete(const DriveDbId driveDbId, const VoidCallba
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void CommService::requestDriveSearch(const SyncDbId syncDbId, const QString &searchString,
+void CommService::requestDriveSearch(const SyncDbId syncDbId, const QString &searchString, const std::string &cursor,
                                      const DriveSearchCallback &callback) const {
     Poco::DynamicStruct params;
     CommonUtility::writeValueToStruct(params, msgParamSyncDbId, syncDbId);
     CommonUtility::writeValueToStruct(params, msgParamSearchString, CommonUtility::qStr2CommString(searchString));
+    if (!cursor.empty()) {
+        CommonUtility::writeValueToStruct(params, msgParamCursor, CommonUtility::str2CommString(cursor));
+    }
+
     _ipcClient.sendRequest(
             RequestNum::DRIVE_SEARCH, params, [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                 DriveSearchResult searchResult;
@@ -407,6 +411,9 @@ void CommService::requestDriveSearch(const SyncDbId syncDbId, const QString &sea
                     CommonUtility::readValuesFromStruct(result, msgParamSearchInfoList, searchResult.searchInfoList,
                                                         dynamicVar2Struct<SearchInfo>);
                     CommonUtility::readValueFromStruct(result, msgParamHasMore, searchResult.hasMore);
+                    CommString cursor;
+                    CommonUtility::readValueFromStruct(result, msgParamCursor, cursor);
+                    searchResult.cursor = CommonUtility::commString2Str(cursor);
                 }
                 callback(exitInfo, searchResult);
             });

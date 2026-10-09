@@ -17,6 +17,7 @@
  */
 
 #include "app/mainwindow/activitiescontroller.h"
+#include "app/syncconfiguration/localpaths.h"
 
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -196,30 +197,18 @@ void ActivitiesController::openLocalPath(const QString &rowId, const bool openDi
         return;
     }
 
-    const SyncPath rootPath = context->syncInfo.localPath().lexically_normal();
-    const QFileInfo rootInfo{Path2QStr(rootPath)};
     const SyncPath requestedRelativePath = openDisplayedFolder ? relativePath->parent_path() : *relativePath;
-    const SyncPath targetPath = (rootPath / requestedRelativePath).lexically_normal();
-    const QFileInfo targetInfo{Path2QStr(targetPath)};
-    if (!rootInfo.exists() || !rootInfo.isDir() || !targetInfo.exists()) {
+    const auto canonicalTargetPath = resolveExistingPathBelowSyncRoot(context->syncInfo.localPath(), requestedRelativePath);
+    if (!canonicalTargetPath.has_value()) {
         qCWarning(lcActivitiesController) << "Local activity target is missing or outside the synchronization root"
-                                          << "| rowId:" << rowId << "| target:" << Path2QStr(targetPath);
+                                          << "| rowId:" << rowId << "| path:" << Path2QStr(requestedRelativePath);
         emit actionFailed(rowId);
         return;
     }
 
-    const auto canonicalRootPath = QStr2Path(rootInfo.canonicalFilePath());
-    const auto canonicalTargetPath = QStr2Path(targetInfo.canonicalFilePath());
-    if (canonicalRootPath.empty() || canonicalTargetPath.empty() ||
-        !CommonUtility::isSubDir(canonicalRootPath, canonicalTargetPath)) {
-        qCWarning(lcActivitiesController) << "Local activity target resolves outside the synchronization root"
-                                          << "| rowId:" << rowId << "| target:" << Path2QStr(targetPath);
-        emit actionFailed(rowId);
-        return;
-    }
-
+    const bool targetIsDir = QFileInfo{Path2QStr(canonicalTargetPath.value())}.isDir();
     if (const SyncPath folderToOpen =
-                openDisplayedFolder || targetInfo.isDir() ? canonicalTargetPath : canonicalTargetPath.parent_path();
+                openDisplayedFolder || targetIsDir ? *canonicalTargetPath : canonicalTargetPath->parent_path();
         folderToOpen.empty() || !QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(folderToOpen)))) {
         qCWarning(lcActivitiesController) << "Desktop service failed to open local activity folder"
                                           << "| rowId:" << rowId << "| folder:" << Path2QStr(folderToOpen);

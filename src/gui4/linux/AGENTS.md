@@ -48,6 +48,8 @@
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
 - In new Linux v4 C++ code, import `Qt::StringLiterals` in the implementation and use `u"..."_s` instead of
   `QStringLiteral(...)`.
+- When adding a string literal within an existing uniformly styled block, preserve that block's convention, including
+  `QStringLiteral`. Do not convert an isolated entry to `u"..."_s`.
 - Use the domain aliases from `libcommon/utility/types.h` whenever they match the represented concept. Keep `int` and Qt
   numeric types when required by an overridden Qt API or a QML boundary, and make that constraint explicit when unclear.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
@@ -159,9 +161,14 @@
   and spacing, containing two independent 28 x 28 circular hover surfaces.
 - Use the same resting surface for the main-toolbar Support and Pause/Settings controls, and the same stronger hover
   surface for all three buttons.
-- Render the future main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
+- Render the main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
   and center its 16 px magnifier with 10 px between the SVG and each horizontal edge. Reuse the Support button component
   so both outer circles remain identical.
+- Search has no Figma: copy the macOS gui4 search sheet (`src/gui4/macOS/kDrive/UI/Views/MainWindow/Search/`) for its
+  geometry, states, and wording. Keep the API result order (relevance); never re-sort results on the client.
+- Render text that comes from the server or the filesystem (file, folder, drive, or user names, paths) with
+  `textFormat: Text.PlainText`: the default `AutoText` interprets a name such as `<b>x</b>` as markup. `IKToolTip`
+  already forces plain text.
 - Use `IKToolTip` for every Linux v4 tooltip so controls share the rounded, theme-aware drive-name tooltip presentation;
   do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
 - Let `IKToolTip` own `visible`: buttons set `targetButton` for its default hover/keyboard-focus trigger; other items
@@ -258,6 +265,7 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
+- `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
 - `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
@@ -400,6 +408,14 @@
   as on macOS, instead of an empty loading state.
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
   reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
+- `app/mainwindow/searchcontroller.*`: QML-facing state of the search dialog for the drive of the selected
+  synchronization. Query edits immediately invalidate outstanding requests and pagination while preserving displayed
+  rows during the debounce delay. It drops every response whose request generation is outdated (an IPC request
+  cannot be cancelled), and pages with the cursor returned by `DRIVE_SEARCH`, repeating the frozen query of the first
+  page. A local result opens with the desktop services after `resolveExistingPathBelowSyncRoot`, or its parent folder
+  with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
+- `app/mainwindow/searchresultmodel.*`: search results, page after page. `appendPage` inserts rows without a reset and
+  skips nodes already listed; node ids and paths stay internal.
 - `app/mainwindow/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-sync snapshot cache. It
   starts cancellable local scans only while Storage is visible, keeps the last resolved presentation during refresh, and
   refreshes once an active synchronization leaves `Starting`, `Running`, `PauseAsked`, or `StopAsked` for any non-active
@@ -462,8 +478,10 @@
   children, and sizes. The production adapter uses `CommService`; tests and future settings integration can provide the
   same contract without onboarding dependencies.
 - `app/syncconfiguration/localpaths.*`: local synchronization-folder rules shared by onboarding and future settings
-  work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, and the free-folder
-  derivation that appends the attempt count without a separator, as the server does.
+  work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, the free-folder
+  derivation that appends the attempt count without a separator, as the server does, and
+  `resolveExistingPathBelowSyncRoot`, which every "open locally" action uses so that a path never escapes the
+  synchronization root.
 - `app/syncconfiguration/remotefoldertreemodel.*`: reusable lazy `QAbstractItemModel` for selective synchronization. It
   owns canonical blacklist editing, tri-state propagation, access-denied rows, retryable child loads, and visible-row
   size loading. It must remain independent from onboarding state and synchronization database ids. A folder is included
@@ -525,6 +543,9 @@
       presentation, and empty state. Size and status columns have fixed widths; only the name/folder boundary is
       draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
       history.
+    - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
+      the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
+      with Down on the last row. It consumes `SearchController`; it must not call IPC.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
       status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
