@@ -541,7 +541,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
     setUpdateFlagValue(false);
 
-// Stop instead of treating a truncated or non-progressing listing as complete.
+    // Stop instead of treating a truncated or non-progressing listing as complete.
     if (hasMore && pageCount >= maxListingPageCount) {
         LOG_SYNCPAL_WARN(_logger, "Reached maximum listing page count ("
                                           << maxListingPageCount << ") for remoteDirId=" << remoteDirId
@@ -642,9 +642,13 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
 }
 
 ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const RemoteNodeId &nodeId) {
-    if (stopAsked()) return ExitCode::Ok;
+    const auto exitInfo = getItemsInRemoteDir(nodeId, CursorPersistence::None);
 
-    return getItemsInRemoteDir(nodeId, CursorPersistence::None);
+    // Directory exploration is done while processing the response of a continue listing request.
+    // If this worker is stopped while processing the response, we need to invalidate the snapshot to avoid inconsistencies.
+    if (stopAsked()) invalidateSnapshot();
+
+    return exitInfo;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::insertItemInRemoteSnapshot(const RemoteSnapshotItem &item, SyncNameSet &existingFiles) {
@@ -766,9 +770,7 @@ ExitInfo RemoteFileSystemObserverWorker::deleteOrphans() {
 ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence cursorPersistence,
                                                        std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob) {
     LOG_SYNCPAL_DEBUG(_logger,
-                      "Start parsing of the CSV reply for directory "
-                      "with remote id="
-                              << csvFullListingJob->remoteDirId() << ".");
+                      "Start parsing of the CSV reply for directory with remote id=" << csvFullListingJob->remoteDirId() << ".");
     const TimerUtility timer;
     RemoteSnapshotItem item;
     SyncNameSet existingFiles;
@@ -790,7 +792,7 @@ ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence c
     if (!iterationState.eof) {
         constexpr auto msg = "Failed to parse CSV reply: missing EOF delimiter";
         LOG_SYNCPAL_WARN(_logger, msg);
-        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::getItemsInRemoteDir", msg);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::parseCsvReply", msg);
 
         return {ExitCode::NetworkError, ExitCause::FullListParsingError};
     }
@@ -1043,10 +1045,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
     for (auto &actionInfo: actionInfoList) {
         sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
         if (const auto exitInfo = processAction(actionInfo, movedItems); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger,
-                             "Error in "
-                             "RemoteFileSystemObserverWorker::processAction: "
-                                     << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processAction: " << exitInfo);
             return exitInfo;
         }
     }
