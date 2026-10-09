@@ -29,15 +29,16 @@ namespace KDC {
 class DbNode;
 class SyncPal;
 
-// This job is used to quickly resolve a HardlinkNotSupportedError. Such errors occur on Windows when a file is hardlinked into
+// This job is used to unlink the hardlinks of a file reported with a HardlinkNotSupportedError. Such errors occur on Windows
+// when a file is hardlinked into
 // another sync root (e.g. OneDrive) as the sync engine does not support hardlinks shared between two sync roots.
 // The job removes the node from the sync database, saves a copy of the file into the rescue folder if the local file is not in
 // sync with the database, and hard removes all the links of the file located under the sync root. The next synchronization will
 // see the remote file as a new item and will download it again as a standard file.
-class ErrorQuickResolveHardlinkJob : public AbstractGuiJob {
+class UtilityUnlinkHardlinksJob : public AbstractGuiJob {
     public:
-        ErrorQuickResolveHardlinkJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
-                                     const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+        UtilityUnlinkHardlinksJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
+                                  const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
@@ -50,7 +51,7 @@ class ErrorQuickResolveHardlinkJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
         ExitInfo process() override;
 
-        ExitInfo quickResolve(const std::shared_ptr<SyncPal> &syncPal) const;
+        ExitInfo unlinkHardlinks(const std::shared_ptr<SyncPal> &syncPal) const;
 
         // Removes all the links of the reported file located under the sync root, then the node of the file from the sync
         // database. The links are searched from the reported path, or by node id if the reported path does not exist anymore.
@@ -96,7 +97,7 @@ class ErrorQuickResolveHardlinkJob : public AbstractGuiJob {
         ExitInfo deleteParmsDbError() const;
 
         friend class TestGuiCommChannel;
-        friend class TestErrorQuickResolveHardlinkJob;
+        friend class TestUtilityUnlinkHardlinksJob;
 };
 
 } // namespace KDC

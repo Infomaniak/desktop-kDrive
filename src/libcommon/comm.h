@@ -129,6 +129,7 @@ enum class RequestNum {
     UTILITY_SEND_LOG_TO_SUPPORT,
     UTILITY_CANCEL_LOG_TO_SUPPORT,
     UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, // Not used anymore but kept for backward compatibility
+    UTILITY_UNLINK_HARDLINKS,
     UTILITY_CRASH,
     UTILITY_QUIT,
     UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
@@ -136,9 +137,7 @@ enum class RequestNum {
     UPDATER_VERSION_INFO,
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
-    UPDATER_SKIP_VERSION,
-    ERROR_QUICK_RESOLVE_HARDLINK, // Appended to the end of the enum: the request numbers are serialized and must not be
-                                  // renumbered by an insertion in the middle of the enum.
+    UPDATER_SKIP_VERSION
     EnumEnd
 };
 
@@ -278,6 +277,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CANCEL_LOG_TO_SUPPORT";
         case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY:
             return "UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY";
+        case RequestNum::UTILITY_UNLINK_HARDLINKS:
+            return "UTILITY_UNLINK_HARDLINKS";
         case RequestNum::UTILITY_CRASH:
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
@@ -292,8 +293,6 @@ inline std::string toString(RequestNum e) {
             return "UPDATER_START_INSTALLER";
         case RequestNum::UPDATER_SKIP_VERSION:
             return "UPDATER_SKIP_VERSION";
-        case RequestNum::ERROR_QUICK_RESOLVE_HARDLINK:
-            return "ERROR_QUICK_RESOLVE_HARDLINK";
         default:
             return "No conversion to string available";
     }

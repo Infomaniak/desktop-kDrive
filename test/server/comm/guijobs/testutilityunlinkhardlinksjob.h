@@ -30,10 +30,10 @@ namespace KDC {
 class Error;
 class SyncPal;
 
-/// Tests the behavior of ErrorQuickResolveHardlinkJob::quickResolve: validation of the reported error, database cleanup,
+/// Tests the behavior of UtilityUnlinkHardlinksJob::unlinkHardlinks: validation of the reported error, database cleanup,
 /// hardlink removal under the sync root and rescue copy of items that are not in sync with the database.
-class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestErrorQuickResolveHardlinkJob);
+class TestUtilityUnlinkHardlinksJob : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestUtilityUnlinkHardlinksJob);
         CPPUNIT_TEST(testInSyncFile);
         CPPUNIT_TEST(testModifiedFile);
         CPPUNIT_TEST(testMissingFile);
@@ -142,9 +142,9 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 
-        LocalTemporaryDirectory _localTempDir{"testErrorQuickResolveHardlinkJob"};
-        LocalTemporaryDirectory _localOtherDir{"testErrorQuickResolveHardlinkJobOther"};
-        LocalTemporaryDirectory _localParmsDbTempDir{"testErrorQuickResolveHardlinkJobParmsDb"};
+        LocalTemporaryDirectory _localTempDir{"testUtilityUnlinkHardlinksJob"};
+        LocalTemporaryDirectory _localOtherDir{"testUtilityUnlinkHardlinksJobOther"};
+        LocalTemporaryDirectory _localParmsDbTempDir{"testUtilityUnlinkHardlinksJobParmsDb"};
 
         /// Creates a file in the sync root, inserts the corresponding node into the sync database and, if linkName is not empty,
         /// creates a hardlink of the file with the given name. Returns the local node id (i.e. the file inode) of the created
@@ -164,15 +164,15 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// Inserts a hardlink error reported for the given node into the parameters database and returns its database id.
         ErrorDbId insertHardlinkError(const NodeId &nodeId, const SyncPath &relativePath);
 
-        /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and returns its exit info. If errorDbId is not
+        /// Runs UtilityUnlinkHardlinksJob::unlinkHardlinks on the current syncPal and returns its exit info. If errorDbId is not
         /// set, a hardlink error matching the request is inserted into the parameters database and reported.
-        ExitInfo runQuickResolveExpect(const NodeId &nodeId, const SyncPath &relativePath,
-                                       const std::optional<ErrorDbId> &errorDbId = std::nullopt);
+        ExitInfo runUnlinkExpect(const NodeId &nodeId, const SyncPath &relativePath,
+                                 const std::optional<ErrorDbId> &errorDbId = std::nullopt);
 
-        /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and asserts that it succeeds. If errorDbId is
+        /// Runs UtilityUnlinkHardlinksJob::unlinkHardlinks on the current syncPal and asserts that it succeeds. If errorDbId is
         /// not set, a hardlink error matching the request is inserted into the parameters database and reported.
-        void runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath,
-                             const std::optional<ErrorDbId> &errorDbId = std::nullopt);
+        void runUnlink(const NodeId &nodeId, const SyncPath &relativePath,
+                       const std::optional<ErrorDbId> &errorDbId = std::nullopt);
 
         /// Returns true if the node with the given local node id exists in the sync database.
         [[nodiscard]] bool nodeExistsInDb(const NodeId &nodeId) const;

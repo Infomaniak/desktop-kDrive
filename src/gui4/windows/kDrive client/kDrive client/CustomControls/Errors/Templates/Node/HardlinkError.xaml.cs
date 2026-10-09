@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        ExitCodes = new[] { ExitCode.SystemError},
+        ExitCodes = new[] { ExitCode.SystemError },
         ExitCauses = new[] { ExitCause.HardlinkNotSupported }
     )]
     public sealed partial class HardlinkError : UserControl
@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             try
             {
                 var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                bool success = await commService.QuickResolveHardlink(Error.Sync.DbId, Error.DbId, Error.LocalNodeId, Error.Path, CancellationToken.None);
+                bool success = await commService.UnlinkHardlinks(Error.Sync.DbId, Error.DbId, Error.LocalNodeId, Error.Path, CancellationToken.None);
                 if (!success)
                 {
                     Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}",

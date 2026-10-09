@@ -42,7 +42,7 @@ extern "C" {
 #include "comm/testpipecomm.h"
 #endif
 #include "comm/guijobs/testabstractguijob.h"
-#include "comm/guijobs/testerrorquickresolvehardlinkjob.h"
+#include "comm/guijobs/testutilityunlinkhardlinksjob.h"
 #include "comm/testguijobpriority.h"
 
 namespace KDC {
@@ -65,7 +65,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestErrorQuickResolveHardlinkJob);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUtilityUnlinkHardlinksJob);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiJobPriority);
 } // namespace KDC
 

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "errorquickresolvehardlinkjob.h"
+#include "utilityunlinkhardlinksjob.h"
 
 #include "libcommon/comm.h"
 #include "libcommonserver/io/filestat.h"
@@ -44,14 +44,14 @@ static const auto inParamsPath = "path";
 
 namespace KDC {
 
-ErrorQuickResolveHardlinkJob::ErrorQuickResolveHardlinkJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
-                                                           const Poco::DynamicStruct &inParams,
-                                                           std::shared_ptr<AbstractCommChannel> channel) :
+UtilityUnlinkHardlinksJob::UtilityUnlinkHardlinksJob(std::shared_ptr<CommManager> commManager, int32_t requestId,
+                                                     const Poco::DynamicStruct &inParams,
+                                                     std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::ERROR_QUICK_RESOLVE_HARDLINK;
+    _requestNum = RequestNum::UTILITY_UNLINK_HARDLINKS;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::deserializeInputParms() {
+ExitInfo UtilityUnlinkHardlinksJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsErrorDbId, _errorDbId);
@@ -61,14 +61,14 @@ ExitInfo ErrorQuickResolveHardlinkJob::deserializeInputParms() {
         readParamValue(inParamsPath, path);
         _relativeLocalPath = CommonUtility::commString2SyncPath(path);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in ErrorQuickResolveHardlinkJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in UtilityUnlinkHardlinksJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::process() {
+ExitInfo UtilityUnlinkHardlinksJob::process() {
     std::shared_ptr<SyncPal> syncPal;
     if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
         return exitInfo;
@@ -77,11 +77,11 @@ ExitInfo ErrorQuickResolveHardlinkJob::process() {
     UserActionScopedLock lock;
     if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
         LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
-                                  << _syncDbId << ". Another user action is running. Aborting ErrorQuickResolveHardlinkJob.");
+                                  << _syncDbId << ". Another user action is running. Aborting UtilityUnlinkHardlinksJob.");
         return ExitCode::OperationCanceled;
     }
 
-    if (ExitInfo exitInfo = quickResolve(syncPal); !exitInfo) {
+    if (ExitInfo exitInfo = unlinkHardlinks(syncPal); !exitInfo) {
         return exitInfo;
     }
 
@@ -93,7 +93,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::process() {
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPal> &syncPal) const {
+ExitInfo UtilityUnlinkHardlinksJob::unlinkHardlinks(const std::shared_ptr<SyncPal> &syncPal) const {
     // Reject an outdated or inconsistent request before any change, so that the error removed at the end is the one of the
     // processed node.
     if (ExitInfo exitInfo = checkParmsDbError(); !exitInfo) {
@@ -133,12 +133,12 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
     }
 
     LOG_INFO(_logger,
-             "Hardlink quick resolve done for syncDbId=" << _syncDbId << ", errorDbId=" << _errorDbId << ", nodeId=" << _nodeId);
+             "Unlink hardlinks done for syncDbId=" << _syncDbId << ", errorDbId=" << _errorDbId << ", nodeId=" << _nodeId);
 
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::removeLinksAndNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const {
+ExitInfo UtilityUnlinkHardlinksJob::removeLinksAndNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const {
     SyncPath seedPath;
     if (ExitInfo exitInfo = getSeedPath(syncPal->localPath(), seedPath); !exitInfo) {
         return exitInfo;
@@ -182,7 +182,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::removeLinksAndNode(const std::shared_ptr<
     return ExitInfo(ExitCode::Ok);
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::checkParmsDbError() const {
+ExitInfo UtilityUnlinkHardlinksJob::checkParmsDbError() const {
     Error error;
     bool errorFound = false;
     if (!ParmsDb::instance()->selectError(_errorDbId, error, errorFound)) {
@@ -215,8 +215,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::checkParmsDbError() const {
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::fetchFileDbNode(const std::shared_ptr<SyncPal> &syncPal, DbNode &dbNode,
-                                                       bool &nodeFound) const {
+ExitInfo UtilityUnlinkHardlinksJob::fetchFileDbNode(const std::shared_ptr<SyncPal> &syncPal, DbNode &dbNode,
+                                                    bool &nodeFound) const {
     nodeFound = false;
 
     bool found = false;
@@ -239,7 +239,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::fetchFileDbNode(const std::shared_ptr<Syn
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::getSeedPath(const SyncPath &localPath, SyncPath &seedPath) const {
+ExitInfo UtilityUnlinkHardlinksJob::getSeedPath(const SyncPath &localPath, SyncPath &seedPath) const {
     // The path is provided by the GUI: reject any empty, absolute or escaping path before any file system operation.
     if (_relativeLocalPath.empty() || _relativeLocalPath.is_absolute()) {
         LOGW_WARN(_logger, L"The reported path is empty or absolute: " << Utility::formatSyncPath(_relativeLocalPath));
@@ -265,7 +265,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::getSeedPath(const SyncPath &localPath, Sy
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::checkSeedItem(const SyncPath &seedPath, bool &seedExists) const {
+ExitInfo UtilityUnlinkHardlinksJob::checkSeedItem(const SyncPath &seedPath, bool &seedExists) const {
     seedExists = false;
 
     ItemType itemType;
@@ -313,7 +313,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::checkSeedItem(const SyncPath &seedPath, b
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::getLocalNodeId(const SyncPath &path, std::optional<NodeId> &nodeId) const {
+ExitInfo UtilityUnlinkHardlinksJob::getLocalNodeId(const SyncPath &path, std::optional<NodeId> &nodeId) const {
     nodeId = std::nullopt;
 
     // The file status of a symbolic link is the one of the link itself: the link target is not taken into account.
@@ -335,8 +335,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::getLocalNodeId(const SyncPath &path, std:
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::selectSeedPath(const std::vector<SyncPath> &linkPaths, SyncPath &seedPath,
-                                                      bool &seedFound) const {
+ExitInfo UtilityUnlinkHardlinksJob::selectSeedPath(const std::vector<SyncPath> &linkPaths, SyncPath &seedPath,
+                                                   bool &seedFound) const {
     // Use the current seed path as long as it still refers to the reported node, or the first link that does.
     seedFound = false;
     for (const auto &path: linkPaths) {
@@ -359,8 +359,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::selectSeedPath(const std::vector<SyncPath
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::removeLinks(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode,
-                                                   SyncPath &seedPath, const std::vector<SyncPath> &linkPaths) const {
+ExitInfo UtilityUnlinkHardlinksJob::removeLinks(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode, SyncPath &seedPath,
+                                                const std::vector<SyncPath> &linkPaths) const {
     // The directory entry of the seed path may have been replaced since the item has been checked: only a link that still
     // refers to the reported node can be used for the consistency check and the rescue copy. If no link refers to it anymore,
     // there is nothing left to remove: the caller removes the node from the database so that the file is downloaded again.
@@ -404,8 +404,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::removeLinks(const std::shared_ptr<SyncPal
     return deleteLinks(syncPal, linkPaths, seedPath);
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::getLinkPathsUnderSyncRoot(const SyncPath &localPath, const SyncPath &seedPath,
-                                                                 std::vector<SyncPath> &linkPaths) const {
+ExitInfo UtilityUnlinkHardlinksJob::getLinkPathsUnderSyncRoot(const SyncPath &localPath, const SyncPath &seedPath,
+                                                              std::vector<SyncPath> &linkPaths) const {
     linkPaths.clear();
 
     // Enumerate all the existing paths of the file, starting from the path reported in the error. Any error fails the job, as
@@ -429,7 +429,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::getLinkPathsUnderSyncRoot(const SyncPath 
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::findLinkPathsByNodeId(const SyncPath &localPath, std::vector<SyncPath> &linkPaths) const {
+ExitInfo UtilityUnlinkHardlinksJob::findLinkPathsByNodeId(const SyncPath &localPath, std::vector<SyncPath> &linkPaths) const {
     linkPaths.clear();
 
     // Any error fails the job, as an incomplete list would leave links behind once the node is removed from the database.
@@ -443,8 +443,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::findLinkPathsByNodeId(const SyncPath &loc
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::rescueFile(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode,
-                                                  const SyncPath &seedPath) const {
+ExitInfo UtilityUnlinkHardlinksJob::rescueFile(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode,
+                                               const SyncPath &seedPath) const {
     const SyncPath rescueFolderPath = syncPal->localPath() / FileRescuer::rescueFolderName();
 
     bool rescueFolderExists = false;
@@ -493,8 +493,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::rescueFile(const std::shared_ptr<SyncPal>
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::deleteLinks(const std::shared_ptr<SyncPal> &syncPal,
-                                                   const std::vector<SyncPath> &linkPaths, const SyncPath &seedPath) const {
+ExitInfo UtilityUnlinkHardlinksJob::deleteLinks(const std::shared_ptr<SyncPal> &syncPal, const std::vector<SyncPath> &linkPaths,
+                                                const SyncPath &seedPath) const {
     // Delete the seed path last: if the deletion of another link fails, the seed path still refers to the file when the job is
     // retried.
     std::vector<SyncPath> pathsToDelete = linkPaths;
@@ -525,7 +525,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::deleteLinks(const std::shared_ptr<SyncPal
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::deleteDbNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const {
+ExitInfo UtilityUnlinkHardlinksJob::deleteDbNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const {
     bool nodeFound = false;
     if (!syncPal->syncDb()->deleteNode(dbNode.nodeId(), nodeFound)) {
         LOGW_WARN(_logger, L"Error in SyncDb::deleteNode for DB node ID=" << dbNode.nodeId());
@@ -538,7 +538,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::deleteDbNode(const std::shared_ptr<SyncPa
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::deleteParmsDbError() const {
+ExitInfo UtilityUnlinkHardlinksJob::deleteParmsDbError() const {
     // Remove the reported error from the parameters database, otherwise the GUI would keep displaying the error card after a
     // restart (see ErrorDeleteJob). The error has been checked by checkParmsDbError.
     bool errorFound = false;

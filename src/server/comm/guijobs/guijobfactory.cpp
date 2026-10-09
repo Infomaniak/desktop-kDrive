@@ -53,7 +53,6 @@
 #include "errorlistjob.h"
 #include "errorresolveconflictsjob.h"
 #include "errorresolveconflictsquickjob.h"
-#include "errorquickresolvehardlinkjob.h"
 #include "errordeletejob.h"
 #include "errorsyncrefreshjob.h"
 #if defined(KD_MACOS)
@@ -79,6 +78,7 @@
 #include "utilitysendlogtosupportjob.h"
 #include "utilitycancellogtosupportjob.h"
 #include "utilitygetlogestimatedsizejob.h"
+#include "utilityunlinkhardlinksjob.h"
 #include "utilityquitjob.h"
 #include "utilitysendappstarttracejob.h"
 
@@ -127,7 +127,6 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::ERROR_INFOLIST, makeShared<ErrorListJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS, makeShared<ErrorResolveConflictsJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK, makeShared<ErrorResolveConflictsQuickJob>},
-                {RequestNum::ERROR_QUICK_RESOLVE_HARDLINK, makeShared<ErrorQuickResolveHardlinkJob>},
                 {RequestNum::ERROR_DELETE, makeShared<ErrorDeleteJob>},
                 {RequestNum::ERROR_SYNC_REFRESH, makeShared<ErrorSyncRefreshJob>},
 #if defined(KD_MACOS)
@@ -151,6 +150,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
                 {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
                 {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, makeShared<UtilityGetLogEstimatedSizeJob>},
+                {RequestNum::UTILITY_UNLINK_HARDLINKS, makeShared<UtilityUnlinkHardlinksJob>},
                 {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},
                 {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilitySendAppStartTraceJob>},
                 {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},

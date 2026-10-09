@@ -160,7 +160,7 @@ Each request includes a **unique `id`** for correlation.
 | Request                                 | Description                                                       |
 | --------------------------------------- | ----------------------------------------------------------------- |
 | [LoginRequestToken](#loginrequesttoken) | Add a user via OAuth2 token (emits `UserAdded` or `UserUpdated`). |
-| [ErrorQuickResolveHardlink](#errorquickresolvehardlink) | Remove all the hardlinks of a file under the sync root to quickly resolve a `HardlinkNotSupportedError`. |
+| [UtilityUnlinkHardlinks](#utilityunlinkhardlinks) | Remove all the hardlinks of a file under the sync root to resolve a `HardlinkNotSupportedError`. |
 
 ---
 
@@ -263,8 +263,8 @@ Retrieves database IDs of all users.
 
 </details>
 ---
-<details id="errorquickresolvehardlink">
-<summary><b>ErrorQuickResolveHardlink</b> — Quickly resolve a HardlinkNotSupportedError</summary>
+<details id="utilityunlinkhardlinks">
+<summary><b>UtilityUnlinkHardlinks</b> — Unlink the hardlinks of a file reported with a HardlinkNotSupportedError</summary>
 
 **Description:**
 Saves a copy of the errored file into the rescue folder if the local file is not in sync with the database, hard removes all
@@ -292,7 +292,7 @@ Emits `ErrorRemoved` upon success.
 {
   "type": 1,
   "id": 42,
-  "num": (int)RequestNum.ErrorQuickResolveHardlink,
+  "num": (int)RequestNum.UtilityUnlinkHardlinks,
   "params": {
     "syncDbId": 10,
     "errorDbId": 123,
@@ -308,7 +308,7 @@ Emits `ErrorRemoved` upon success.
 {
   "type": 1,
   "id": 42,
-  "num": (int)RequestNum.ErrorQuickResolveHardlink,
+  "num": (int)RequestNum.UtilityUnlinkHardlinks,
   "params": {}
 }
 ```

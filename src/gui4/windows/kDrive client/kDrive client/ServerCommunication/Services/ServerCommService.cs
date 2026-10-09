@@ -1515,7 +1515,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
-        public async Task<bool> QuickResolveHardlink(DbId syncDbId, DbId errorDbId, NodeId localNodeId, string path, CancellationToken cancellationToken)
+        public async Task<bool> UnlinkHardlinks(DbId syncDbId, DbId errorDbId, NodeId localNodeId, string path, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
@@ -1524,7 +1524,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeId] = Utility.ToBase64String(localNodeId),
                 [JsonKeys.Path] = Utility.ToBase64String(path)
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_QUICK_RESOLVE_HARDLINK, parms, cancellationToken).ConfigureAwait(false);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_UNLINK_HARDLINKS, parms, cancellationToken).ConfigureAwait(false);
             return CheckJobResultAndLogIfError(data, parms);
         }
 
