@@ -47,7 +47,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         // - does set the updating flag to `true` in order to trigger the `longpoll` and `listing/continue` requests.
         void resume() override;
 
-        Count listingFullCount() const { return _listingFullCount.load(std::memory_order_acquire); };
+        Count listingFullCount() const { return _listingFullCount.load(); };
         RemoteNodeIdSet blackList() const;
         void setBlackList(RemoteNodeIdSet blackList);
 
