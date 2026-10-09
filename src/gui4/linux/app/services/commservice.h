@@ -179,6 +179,9 @@ class CommService : public QObject {
         // --- Error ---
         void requestErrorList(const ErrorListCallback &callback) const;
         void requestErrorDelete(ErrorDbId errorDbId, const VoidCallback &callback) const;
+        // Deletes the synchronization errors and replies once the synchronization has detected the remaining ones again,
+        // which can take up to 30 s. The errors are removed and added back through push signals.
+        void requestErrorSyncRefresh(SyncDbId syncDbId, const VoidCallback &callback) const;
         void requestErrorResolveConflicts(const std::vector<ErrorDbId> &keepLocalList,
                                           const std::vector<ErrorDbId> &keepRemoteList, const VoidCallback &callback) const;
         void requestErrorResolveConflictsQuick(const std::vector<ErrorDbId> &errorDbIdList, ConflictResolutionStrategy strategy,
