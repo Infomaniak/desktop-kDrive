@@ -263,6 +263,15 @@
 - `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
   same-sync severity escalation, hard-warning acknowledgement, soft-warning opt-out (`AppStateKey::NotifyBeforeDelete`,
   read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
+- `app/errors/*`: pure sync error domain, without QObject, IPC or cache access. `classifySyncError` maps a raw `Error` to
+  a `SyncErrorKind` through an ordered matcher table that mirrors the macOS `SynchroErrorKind` matcher (first match
+  wins), plus the Linux-only `NotEnoughINotifyWatches`; LiteSync and VFS kinds are absent and fall back to `Unknown`.
+  `syncerrorcatalog.*` gives each kind its errors-page section, row variant, explanation dialog, system tray relevance
+  (Windows `ShowInSystemTray` list), action and texts, with admin variants resolved by `describeSyncError`. Texts are
+  translation ids with their node-label placeholder count, translated in QML with `qsTrId`, never in C++.
+  A user-resolvable conflict (node-level create/create or edit/edit) is always a version conflict. `resolveBlockingError`
+  keeps the oldest blocking error of a synchronization and reports `LoggedOut` for a disconnected user even without an
+  `InvalidToken` error; `isUpdateRequired` detects an `UpdateRequired` error of any level.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
   tray availability, and main QML window show/hide behavior.

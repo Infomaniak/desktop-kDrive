@@ -42,6 +42,13 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/parametersstore.h
         app/dialogs/manydeletescontroller.cpp
         app/dialogs/manydeletescontroller.h
+        app/errors/blockingerrorresolver.cpp
+        app/errors/blockingerrorresolver.h
+        app/errors/syncerrorcatalog.cpp
+        app/errors/syncerrorcatalog.h
+        app/errors/syncerrorclassifier.cpp
+        app/errors/syncerrorclassifier.h
+        app/errors/syncerrorkind.h
         app/mainwindow/mainsidebarcontroller.cpp
         app/mainwindow/mainsidebarcontroller.h
         app/mainwindow/activitiescontroller.cpp
