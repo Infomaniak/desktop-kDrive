@@ -407,7 +407,8 @@
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
   reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
 - `app/mainwindow/searchcontroller.*`: QML-facing state of the search dialog for the drive of the selected
-  synchronization. It debounces typing, drops every response whose request generation is outdated (an IPC request
+  synchronization. Query edits immediately invalidate outstanding requests and pagination while preserving displayed
+  rows during the debounce delay. It drops every response whose request generation is outdated (an IPC request
   cannot be cancelled), and pages with the cursor returned by `DRIVE_SEARCH`, repeating the frozen query of the first
   page. A local result opens with the desktop services after `resolveExistingPathBelowSyncRoot`, or its parent folder
   with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
