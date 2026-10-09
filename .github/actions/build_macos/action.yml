@@ -68,7 +68,7 @@ runs:
           ALTOOL_USERNAME: ${{ inputs.release_build_altool_username }}
         run : |
             if [ "${{ inputs.release_build }}" = "true" ]; then
-                ./infomaniak-build-tools/macos/build-release.sh
+                SKIP_SPARKLE=1 ./infomaniak-build-tools/macos/build-release.sh
             else
                 ./infomaniak-build-tools/macos/build-ci.sh
             fi
