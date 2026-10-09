@@ -63,7 +63,6 @@ codesign -s "$identity" --force --verbose=4 --options=runtime "$client_app/Conte
 
 echo "Signing kDrive.app client"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$client_app"
-codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive4.entitlements "$client_app"
 
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive.entitlements "$src_app"
