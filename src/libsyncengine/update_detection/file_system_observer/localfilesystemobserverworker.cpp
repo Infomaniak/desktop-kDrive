@@ -185,7 +185,8 @@ ExitInfo LocalFileSystemObserverWorker::processDetectedChanges(const std::list<s
         if (!IoHelper::getItemType(absolutePath, itemType)) {
             LOGW_SYNCPAL_WARN(_logger,
                               L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, itemType.ioError));
-            return ExitCode::SystemError;
+            sendAccessUnknownError(relativePath);
+            continue;
         }
 
         if (itemType.ioError != IoError::Success) {
@@ -674,6 +675,15 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &relati
     }
 }
 
+void LocalFileSystemObserverWorker::sendAccessUnknownError(const SyncPath &relativePath) {
+    if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
+        return;
+    }
+    if (const auto exitInfo = _syncPal->handleAccessUnknownErrorItem(relativePath, true); !exitInfo) {
+        // Do nothing, can happen if the sync is restarting
+    }
+}
+
 ExitInfo LocalFileSystemObserverWorker::handleIoError(const SyncPath &relativePath, IoError ioError) {
     if (ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_DEBUG(_logger, L"Item misses search permission: " << Utility::formatSyncPath(relativePath));
@@ -763,6 +773,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, itemType.ioError));
             dirIt.disableRecursionPending();
+            sendAccessUnknownError(relativePath);
             continue;
         }
 
@@ -859,7 +870,8 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                IoHelper::PathCheckOption::Insensitive)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                                    << Utility::formatIoError(absolutePath.parent_path(), entryIoError));
-                        return {ExitCode::SystemError, ExitCause::FileAccessError};
+                        dirIt.disableRecursionPending();
+                        continue;
                     }
 
                     if (entryIoError == IoError::NoSuchFileOrDirectory) {

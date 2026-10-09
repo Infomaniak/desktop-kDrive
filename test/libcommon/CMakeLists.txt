@@ -35,7 +35,7 @@ set(testcommon_SRCS
         io/testsetlastmodifiedtime.cpp)
 
 if(APPLE)
-    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testreadalias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testreadalias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp io/testcheckforcorruptedalias.cpp)
 elseif (WIN32)
     list(APPEND testcommon_SRCS ../test_utility/testhelpers_win.cpp io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
 else ()

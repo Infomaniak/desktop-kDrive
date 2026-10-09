@@ -210,6 +210,63 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     return true;
 }
 
+bool IoHelper::checkForCorruptedAlias(const SyncPath &path, bool &isCorruptedAlias, IoError &ioError) noexcept {
+    isCorruptedAlias = false;
+    ioError = IoError::Unknown;
+
+    // Check whether the item indicated by `path` is a symbolic link.
+    std::error_code ec;
+    const bool isSymlink = _isSymlink(path, ec);
+
+    ioError = stdError2ioError(ec);
+    const bool fsSupportsSymlinks =
+            ioError != IoError::InvalidArgument; // If true, we assume that the file system in use does support symlinks.
+
+    if (!isSymlink && ioError != IoError::Success && fsSupportsSymlinks) {
+        if (isExpectedError(ioError)) {
+            return true;
+        }
+        LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(path, ec));
+        return false;
+    }
+
+    if (isSymlink) {
+        isCorruptedAlias = false;
+        ioError = IoError::Success;
+        return true;
+    }
+
+    // Check whether the item indicated by `path` is an alias.
+    bool isAlias = false;
+    if (!_checkIfItemIsSymLinkOrAlias(path, isAlias, ioError)) {
+        LOGW_WARN(logger(), L"Failed to check if the item is an alias: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    if (ioError != IoError::Success) {
+        return isExpectedError(ioError);
+    }
+
+    if (isAlias) {
+        SyncPath targetPath;
+        auto readAliasIoError = IoError::Unknown;
+        if (!_readAlias(path, targetPath, readAliasIoError)) {
+            LOGW_WARN(logger(),
+                      L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, readAliasIoError));
+            isCorruptedAlias = true;
+            ioError = IoError::Success;
+            return true;
+        }
+
+        if (readAliasIoError != IoError::Success) {
+            ioError = readAliasIoError;
+            return isExpectedError(ioError);
+        }
+    }
+
+    return true;
+}
+
 bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept {
     ioError = IoError::Success;
 

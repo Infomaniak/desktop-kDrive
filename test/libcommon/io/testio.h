@@ -59,6 +59,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCreateAlias);
         CPPUNIT_TEST(testReadAlias);
         CPPUNIT_TEST(testCheckIfItemIsSymLinkOrAlias);
+        CPPUNIT_TEST(testCheckForCorruptedAlias);
 #endif
 #if defined(KD_WINDOWS)
         CPPUNIT_TEST(testCreateJunction);
@@ -110,6 +111,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCreateAlias(void);
         void testReadAlias();
         void testCheckIfItemIsSymLinkOrAlias(void);
+        void testCheckForCorruptedAlias(void);
 #elif defined(KD_WINDOWS)
         void testCreateJunction();
         void testGetLongPathName();

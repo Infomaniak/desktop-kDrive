@@ -75,6 +75,7 @@ void TestSyncPal::setUp() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(vfs, sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->setLocalPath(_localPath.lexically_normal());
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
@@ -541,4 +542,133 @@ void TestSyncPal::testWipeVirtualFiles() {
     CPPUNIT_ASSERT(!std::filesystem::exists(localFilePath, ec));
     CPPUNIT_ASSERT(!ec);
 }
+
+void TestSyncPal::testHandleAccessUnknownErrorItem() {
+    // A regular file.
+    {
+        const SyncPath path = _syncPal->localPath() / "regular_file.txt";
+        {
+            std::ofstream ofs(path);
+            ofs << "Some content.\n";
+        }
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
+
+        SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), path);
+
+        CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(
+                DbNode(_syncPal->syncDb()->rootNode().nodeId(), path.filename(), path.filename(), nodeId, nodeId,
+                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0)));
+
+        _syncPal->clearTmpBlacklist();
+
+        CPPUNIT_ASSERT(_syncPal->handleAccessUnknownErrorItem(relativePath, true));
+
+        // The file should still exist
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::exists(path, ec));
+        CPPUNIT_ASSERT(!ec);
+
+        // The file should be blacklisted
+        CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local));
+
+        // The file node should still exist in the DB
+        std::optional<NodeId> tmpNodeId;
+        auto found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->id(ReplicaSide::Local, relativePath, tmpNodeId, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(nodeId, *tmpNodeId);
+    }
+
+    // A MacOSX Finder alias.
+    {
+        const SyncPath path = _syncPal->localPath() / "regular_alias.txt";
+        const SyncPath targetPath = _syncPal->localPath() / "dummy.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+        }
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
+
+        SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), path);
+
+        CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(
+                DbNode(_syncPal->syncDb()->rootNode().nodeId(), path.filename(), path.filename(), nodeId, nodeId,
+                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0)));
+
+        _syncPal->clearTmpBlacklist();
+
+        CPPUNIT_ASSERT(_syncPal->handleAccessUnknownErrorItem(relativePath, true));
+
+        // The alias should still exist
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::exists(path, ec));
+        CPPUNIT_ASSERT(!ec);
+
+        // The alias should be blacklisted
+        CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local));
+
+        // The alias node should still exist in the DB
+        std::optional<NodeId> tmpNodeId;
+        auto found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->id(ReplicaSide::Local, relativePath, tmpNodeId, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(nodeId, *tmpNodeId);
+    }
+
+    // A corrupted MacOSX Finder alias.
+    {
+        const SyncPath path = _syncPal->localPath() / "corrupted_alias.txt";
+        const SyncPath targetPath = _syncPal->localPath() / "dummy.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+        }
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        // Corrupt the alias
+        {
+            std::ofstream ofs(path);
+            ofs << "qwertz";
+        }
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
+
+        SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), path);
+
+        _syncPal->clearTmpBlacklist();
+
+        CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(
+                DbNode(_syncPal->syncDb()->rootNode().nodeId(), path.filename(), path.filename(), nodeId, nodeId,
+                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0)));
+
+        CPPUNIT_ASSERT(_syncPal->handleAccessUnknownErrorItem(relativePath, true));
+
+        // The alias should have been deleted
+        std::error_code ec;
+        CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
+        CPPUNIT_ASSERT(!ec);
+
+        // The alias should NOT be blacklisted
+        CPPUNIT_ASSERT(!_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local));
+
+        // The alias node should have been deleted from the DB
+        std::optional<NodeId> tmpNodeId;
+        auto found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->id(ReplicaSide::Local, relativePath, tmpNodeId, found));
+        CPPUNIT_ASSERT(!found);
+    }
+}
+
 } // namespace KDC

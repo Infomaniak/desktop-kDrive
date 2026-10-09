@@ -290,6 +290,15 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool readAlias(const SyncPath &aliasPath, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept;
+
+        //! Check if a file is a Finder corrupted alias.
+        /*!
+         \param path is the file system location of the file to read.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \param isCorruptedAlias is True for a corrupted alias.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool checkForCorruptedAlias(const SyncPath &path, bool &isCorruptedAlias, IoError &ioError) noexcept;
 #endif
 
         //! Check if the item indicated by `path` is a directory.
