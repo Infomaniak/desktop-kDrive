@@ -102,10 +102,8 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
     SyncpalTestHelper testHelper(_syncPal);
 
     const auto getFullListingCount = [this]() {
-        const auto worker =
-                std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
-        CPPUNIT_ASSERT_MESSAGE("Expected _remoteFSObserverWorker to be a RemoteFileSystemObserverWorker in this test",
-                               worker);
+        const auto worker = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+        CPPUNIT_ASSERT_MESSAGE("Expected _remoteFSObserverWorker to be a RemoteFileSystemObserverWorker in this test", worker);
         return worker->listingFullCount();
     };
 
@@ -339,8 +337,9 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
         NodeId excludeId{};
         if (backup.snapshot->getItemId(SyncPath{Str("excludeMe")}, excludeId)) {
             CPPUNIT_ASSERT(!excludeId.empty());
-            newBlackList.insert(excludeId);
-            (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList);
+            (void) newBlackList.insert(excludeId);
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                                 SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList));
         }
     }
 
