@@ -46,8 +46,10 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         CPPUNIT_TEST(testUnknownNode);
         CPPUNIT_TEST(testInvalidPath);
         CPPUNIT_TEST(testNodeIdMismatch);
+        CPPUNIT_TEST(testSeedSelection);
         CPPUNIT_TEST(testErrorRemoval);
         CPPUNIT_TEST(testErrorMismatch);
+        CPPUNIT_TEST(testTmpBlacklistRemoval);
         CPPUNIT_TEST(testDirectoryNode);
         CPPUNIT_TEST(testSymlinkKept);
         CPPUNIT_TEST(testSymlinkSeed);
@@ -94,8 +96,8 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// the file is saved with a suffixed name.
         void testRescueFilenameCollision();
 
-        /// A node id that is not present in the sync database: the job must reject the request without touching the file
-        /// system.
+        /// A node id that is not present in the sync database, e.g. after a resolution whose final cleanup step failed: the
+        /// job only completes the cleanup by removing the reported error.
         void testUnknownNode();
 
         /// An absolute path or a path escaping the sync root: the job must reject the request without touching the file
@@ -106,6 +108,10 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// request without touching the file system.
         void testNodeIdMismatch();
 
+        /// The item located at the seed path has been replaced by another file: another link of the reported node is selected
+        /// as the seed path, or nothing is removed when no link refers to the reported node anymore.
+        void testSeedSelection();
+
         /// The reported error is removed from the parameters database only when the job succeeds, and the other errors are
         /// kept.
         void testErrorRemoval();
@@ -113,6 +119,10 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// The reported error does not exist, or is not the hardlink error of the reported sync, node and path: the job must
         /// reject the request without touching the file system and the databases.
         void testErrorMismatch();
+
+        /// Items blacklisted by the sync engine are removed from the temporary blacklist only once the node has been removed
+        /// from the sync database, so that the deletion of the links cannot propagate to the remote replica.
+        void testTmpBlacklistRemoval();
 
         /// A directory node, or a file node whose reported item is a directory: the job must reject the request without
         /// touching the file system, as the whole content of the directory would be removed.

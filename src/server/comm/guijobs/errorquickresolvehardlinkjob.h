@@ -55,8 +55,9 @@ class ErrorQuickResolveHardlinkJob : public AbstractGuiJob {
         // Checks that the reported error exists in the parameters database and is the hardlink error of the reported sync, node
         // and path.
         ExitInfo checkParmsDbError() const;
-        // Fetches the reported node from the sync database. Only the file nodes are accepted.
-        ExitInfo fetchFileDbNode(const std::shared_ptr<SyncPal> &syncPal, DbNode &dbNode) const;
+        // Fetches the reported node from the sync database. Only the file nodes are accepted. nodeFound is set to false if the
+        // node is not present in the sync database anymore, in which case the caller only completes the cleanup.
+        ExitInfo fetchFileDbNode(const std::shared_ptr<SyncPal> &syncPal, DbNode &dbNode, bool &nodeFound) const;
         // Builds the absolute path of the reported item and checks that it is located under the sync root.
         ExitInfo getSeedPath(const SyncPath &localPath, SyncPath &seedPath) const;
         // Checks that the reported item is a regular file referring to the reported node. seedExists is set to false if the item
@@ -65,9 +66,14 @@ class ErrorQuickResolveHardlinkJob : public AbstractGuiJob {
         // Retrieves the local node id of the item located at path, without following symbolic links. nodeId is set to
         // std::nullopt if the item does not exist.
         ExitInfo getLocalNodeId(const SyncPath &path, std::optional<NodeId> &nodeId) const;
+        // Selects the link to use as the seed path among the given links: the current seed path if it still refers to the
+        // reported node, or the first link that does. seedFound is set to false if none of the links refers to the reported
+        // node anymore.
+        ExitInfo selectSeedPath(const std::vector<SyncPath> &linkPaths, SyncPath &seedPath, bool &seedFound) const;
         // Hard removes all the given links of the reported file located under the sync root, after saving a copy of the file into
-        // the rescue folder if it is not in sync with the database. seedPath is one of the links.
-        ExitInfo removeLinks(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode, const SyncPath &seedPath,
+        // the rescue folder if it is not in sync with the database. seedPath is one of the links and is updated with a link that
+        // still refers to the reported node, if the item located at the given seed path has been replaced.
+        ExitInfo removeLinks(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode, SyncPath &seedPath,
                              const std::vector<SyncPath> &linkPaths) const;
         // Retrieves all the links of the reported file located under the sync root, including the seed path.
         ExitInfo getLinkPathsUnderSyncRoot(const SyncPath &localPath, const SyncPath &seedPath,

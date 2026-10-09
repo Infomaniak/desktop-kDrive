@@ -37,6 +37,14 @@
 
 namespace KDC {
 
+// Exposes SyncPal::createWorkers so that the tests can create the sync workers, in particular the temporary blacklist manager
+// used by the sync engine, without starting a full synchronization.
+class TestSyncPal : public SyncPal {
+    public:
+        using SyncPal::createWorkers;
+        using SyncPal::SyncPal;
+};
+
 void TestErrorQuickResolveHardlinkJob::setUp() {
     TestBase::start();
 
@@ -61,8 +69,8 @@ void TestErrorQuickResolveHardlinkJob::setUp() {
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), 1,
-                                         KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<TestSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), 1,
+                                             KDRIVE_VERSION_STRING);
 }
 
 void TestErrorQuickResolveHardlinkJob::tearDown() {
@@ -463,9 +471,13 @@ void TestErrorQuickResolveHardlinkJob::testUnknownNode() {
     const NodeId nodeId("999999");
     CPPUNIT_ASSERT_MESSAGE("The node should not be in the database", !nodeExistsInDb(nodeId));
 
-    const ExitInfo exitInfo = runQuickResolveExpect(nodeId, SyncPath(Str("file1.txt")));
-    CPPUNIT_ASSERT_MESSAGE("The job must reject a node that is not present in the sync database",
-                           exitInfo.code() == ExitCode::InvalidOperation);
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(Str("file1.txt")));
+
+    // A node that is no longer in the sync database cannot be resolved by the action, but the reported error is removed so
+    // that the card does not remain displayed forever. This is the path followed when retrying a resolution whose final
+    // cleanup step failed.
+    runQuickResolve(nodeId, SyncPath(Str("file1.txt")), errorDbId);
+    CPPUNIT_ASSERT_MESSAGE("The error has not been deleted from the parameters database", !errorExistsInDb(errorDbId));
 }
 
 void TestErrorQuickResolveHardlinkJob::testInvalidPath() {
@@ -523,6 +535,51 @@ void TestErrorQuickResolveHardlinkJob::testNodeIdMismatch() {
     CPPUNIT_ASSERT_MESSAGE("The hardlink has been deleted", pathExists(_localTempDir.path() / linkName));
     CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
                            !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
+}
+
+void TestErrorQuickResolveHardlinkJob::testSeedSelection() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const SyncName otherLinkName = Str("link2.txt");
+    const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
+    std::error_code ec;
+    std::filesystem::create_hard_link(_localTempDir.path() / fileName, _localTempDir.path() / otherLinkName, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink: " + ec.message(), !ec);
+
+    ErrorQuickResolveHardlinkJob job(nullptr, 1, Poco::DynamicStruct(), nullptr);
+    job._nodeId = nodeId;
+
+    const SyncPath filePath = _localTempDir.path() / fileName;
+    const SyncPath linkPath = _localTempDir.path() / linkName;
+    const SyncPath otherLinkPath = _localTempDir.path() / otherLinkName;
+
+    bool seedFound = false;
+    SyncPath seedPath = filePath;
+    CPPUNIT_ASSERT_MESSAGE("selectSeedPath failed", job.selectSeedPath({filePath, linkPath, otherLinkPath}, seedPath, seedFound));
+    CPPUNIT_ASSERT_MESSAGE("The current seed path should have been kept", seedFound && seedPath == filePath);
+
+    // The item located at the seed path is replaced by another file: another link of the reported node is selected, so that the
+    // consistency check and the rescue copy are done on the file reported by the error.
+    std::filesystem::remove(filePath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to remove the file: " + ec.message(), !ec);
+    {
+        std::ofstream replacedFile(filePath, std::ios::binary);
+        replacedFile << "Replaced";
+        CPPUNIT_ASSERT_MESSAGE("Failed to create the replacement file", replacedFile.good());
+    }
+
+    seedPath = filePath;
+    CPPUNIT_ASSERT_MESSAGE("selectSeedPath failed", job.selectSeedPath({filePath, linkPath, otherLinkPath}, seedPath, seedFound));
+    CPPUNIT_ASSERT_MESSAGE("A link of the reported node should have been selected", seedFound && seedPath == linkPath);
+
+    // When no link refers to the reported node anymore, nothing can be selected: the caller removes the node from the database
+    // so that the file is downloaded again.
+    std::filesystem::remove(linkPath, ec);
+    std::filesystem::remove(otherLinkPath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to remove the links: " + ec.message(), !ec);
+
+    CPPUNIT_ASSERT_MESSAGE("selectSeedPath failed", job.selectSeedPath({filePath}, seedPath, seedFound));
+    CPPUNIT_ASSERT_MESSAGE("No seed path should have been found", !seedFound);
 }
 
 void TestErrorQuickResolveHardlinkJob::testErrorRemoval() {
@@ -612,6 +669,36 @@ void TestErrorQuickResolveHardlinkJob::testErrorMismatch() {
 
     // The same request is accepted with the matching error.
     runQuickResolve(nodeId, relativePath);
+    CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink has not been deleted", !pathExists(_localTempDir.path() / linkName));
+}
+
+void TestErrorQuickResolveHardlinkJob::testTmpBlacklistRemoval() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const SyncPath relativePath(fileName);
+    const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId, relativePath);
+
+    // Create the sync workers so that the temporary blacklist manager used by the sync engine is available, then blacklist the
+    // item on both sides, as the sync engine does when an operation on the item has failed.
+    static_cast<TestSyncPal *>(_syncPal.get())->createWorkers();
+    _syncPal->blacklistTemporarily(nodeId, relativePath, ReplicaSide::Local);
+    _syncPal->blacklistTemporarily(std::string("r_") + nodeId, relativePath, ReplicaSide::Remote);
+    CPPUNIT_ASSERT_MESSAGE("The item is not blacklisted on the local side",
+                           _syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local));
+    CPPUNIT_ASSERT_MESSAGE("The item is not blacklisted on the remote side",
+                           _syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Remote));
+
+    runQuickResolve(nodeId, relativePath, errorDbId);
+
+    // The items have been removed from the temporary blacklist only once the node has been removed from the sync database, so
+    // that the deletion of the links cannot propagate to the remote replica instead of triggering a new download.
+    CPPUNIT_ASSERT_MESSAGE("The item is still blacklisted on the local side",
+                           !_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local));
+    CPPUNIT_ASSERT_MESSAGE("The item is still blacklisted on the remote side",
+                           !_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Remote));
     CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
     CPPUNIT_ASSERT_MESSAGE("The hardlink has not been deleted", !pathExists(_localTempDir.path() / linkName));

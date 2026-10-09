@@ -103,47 +103,65 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
     // Fetch the corresponding node in the sync database. Deleting this node removes both replicas, so the next synchronization
     // will see the remote file as a new item and will download it again as a standard file.
     DbNode dbNode;
-    if (ExitInfo exitInfo = fetchFileDbNode(syncPal, dbNode); !exitInfo) {
+    bool nodeFound = false;
+    if (ExitInfo exitInfo = fetchFileDbNode(syncPal, dbNode, nodeFound); !exitInfo) {
         return exitInfo;
     }
 
-    SyncPath seedPath;
-    if (ExitInfo exitInfo = getSeedPath(syncPal->localPath(), seedPath); !exitInfo) {
-        return exitInfo;
-    }
+    if (nodeFound) {
+        SyncPath seedPath;
+        if (ExitInfo exitInfo = getSeedPath(syncPal->localPath(), seedPath); !exitInfo) {
+            return exitInfo;
+        }
 
-    bool seedExists = false;
-    if (ExitInfo exitInfo = checkSeedItem(seedPath, seedExists); !exitInfo) {
-        return exitInfo;
-    }
+        bool seedExists = false;
+        if (ExitInfo exitInfo = checkSeedItem(seedPath, seedExists); !exitInfo) {
+            return exitInfo;
+        }
 
-    std::vector<SyncPath> linkPaths;
-    if (seedExists) {
-        if (ExitInfo exitInfo = getLinkPathsUnderSyncRoot(syncPal->localPath(), seedPath, linkPaths); !exitInfo) {
+        std::vector<SyncPath> linkPaths;
+        if (seedExists) {
+            if (ExitInfo exitInfo = getLinkPathsUnderSyncRoot(syncPal->localPath(), seedPath, linkPaths); !exitInfo) {
+                return exitInfo;
+            }
+        } else {
+            // The reported path does not exist anymore, but the file may still have links under the sync root, e.g. if the
+            // reported link has been removed or if the file has been moved: search them by node id and use one of them as the
+            // seed path.
+            if (ExitInfo exitInfo = findLinkPathsByNodeId(syncPal->localPath(), linkPaths); !exitInfo) {
+                return exitInfo;
+            }
+            if (!linkPaths.empty()) {
+                seedPath = linkPaths.front();
+                LOGW_INFO(_logger, L"Link of the reported node found at " << Utility::formatSyncPath(seedPath));
+            }
+        }
+
+        // If the file has no link left under the sync root, only remove the node from the database so that the file is
+        // downloaded again.
+        if (!linkPaths.empty()) {
+            if (ExitInfo exitInfo = removeLinks(syncPal, dbNode, seedPath, linkPaths); !exitInfo) {
+                return exitInfo;
+            }
+        }
+
+        if (ExitInfo exitInfo = deleteDbNode(syncPal, dbNode); !exitInfo) {
             return exitInfo;
         }
     } else {
-        // The reported path does not exist anymore, but the file may still have links under the sync root, e.g. if the reported
-        // link has been removed or if the file has been moved: search them by node id and use one of them as the seed path.
-        if (ExitInfo exitInfo = findLinkPathsByNodeId(syncPal->localPath(), linkPaths); !exitInfo) {
-            return exitInfo;
-        }
-        if (!linkPaths.empty()) {
-            seedPath = linkPaths.front();
-            LOGW_INFO(_logger, L"Link of the reported node found at " << Utility::formatSyncPath(seedPath));
-        }
+        // The node is no longer in the sync database: either a previous run of this action has already removed it (its last
+        // cleanup step failed) or a synchronization has already handled the item. There is nothing left to remove on the file
+        // system: only complete the cleanup, so that a failed resolution can be retried and the error card removed.
+        LOGW_INFO(_logger, L"Node not found in the sync database for node id " << CommonUtility::s2ws(_nodeId));
     }
 
-    // If the file has no link left under the sync root, only remove the node from the database so that the file is downloaded
+    // Remove the items from the temporary blacklist, if any, only now that the node is no longer in the sync database: while it
+    // is still present, the blacklist prevents the file system observer from generating a delete operation for the removed
+    // links, which would propagate the deletion to the remote replica instead of allowing the remote file to be downloaded
     // again.
-    if (!linkPaths.empty()) {
-        if (ExitInfo exitInfo = removeLinks(syncPal, dbNode, seedPath, linkPaths); !exitInfo) {
-            return exitInfo;
-        }
-    }
-
-    if (ExitInfo exitInfo = deleteDbNode(syncPal, dbNode); !exitInfo) {
-        return exitInfo;
+    syncPal->removeItemFromTmpBlacklist(_nodeId, ReplicaSide::Local);
+    if (dbNode.hasRemoteNodeId()) {
+        syncPal->removeItemFromTmpBlacklist(dbNode.nodeIdRemote().value(), ReplicaSide::Remote);
     }
 
     if (ExitInfo exitInfo = deleteParmsDbError(); !exitInfo) {
@@ -189,17 +207,19 @@ ExitInfo ErrorQuickResolveHardlinkJob::checkParmsDbError() const {
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorQuickResolveHardlinkJob::fetchFileDbNode(const std::shared_ptr<SyncPal> &syncPal, DbNode &dbNode) const {
-    bool nodeFound = false;
-    if (!syncPal->syncDb()->node(ReplicaSide::Local, _nodeId, dbNode, nodeFound)) {
+ExitInfo ErrorQuickResolveHardlinkJob::fetchFileDbNode(const std::shared_ptr<SyncPal> &syncPal, DbNode &dbNode,
+                                                       bool &nodeFound) const {
+    nodeFound = false;
+
+    bool found = false;
+    if (!syncPal->syncDb()->node(ReplicaSide::Local, _nodeId, dbNode, found)) {
         LOGW_WARN(_logger, L"Error in SyncDb::node for node id " << CommonUtility::s2ws(_nodeId));
         return ExitCode::DbError;
     }
-    if (!nodeFound) {
-        // The node is no longer in the sync database: reject the request before any file system operation, as the next
-        // synchronization already handles the item.
-        LOGW_WARN(_logger, L"Node not found in the sync database for node id " << CommonUtility::s2ws(_nodeId));
-        return ExitCode::InvalidOperation;
+    if (!found) {
+        // The node is no longer in the sync database: the caller only completes the cleanup, so that a resolution whose final
+        // cleanup step failed can be retried.
+        return ExitCode::Ok;
     }
     if (dbNode.type() != NodeType::File) {
         // Only files can have hardlinks: never remove a directory, as its whole content would be removed.
@@ -207,6 +227,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::fetchFileDbNode(const std::shared_ptr<Syn
         return ExitCode::InvalidOperation;
     }
 
+    nodeFound = true;
     return ExitCode::Ok;
 }
 
@@ -306,8 +327,44 @@ ExitInfo ErrorQuickResolveHardlinkJob::getLocalNodeId(const SyncPath &path, std:
     return ExitCode::Ok;
 }
 
+ExitInfo ErrorQuickResolveHardlinkJob::selectSeedPath(const std::vector<SyncPath> &linkPaths, SyncPath &seedPath,
+                                                      bool &seedFound) const {
+    // Use the current seed path as long as it still refers to the reported node, or the first link that does.
+    seedFound = false;
+    for (const auto &path: linkPaths) {
+        std::optional<NodeId> linkNodeId;
+        if (ExitInfo exitInfo = getLocalNodeId(path, linkNodeId); !exitInfo) {
+            return exitInfo;
+        }
+        if (linkNodeId == _nodeId) {
+            if (path != seedPath) {
+                LOGW_INFO(_logger, L"Link of the reported node found at " << Utility::formatSyncPath(path));
+                seedPath = path;
+            }
+            seedFound = true;
+            break;
+        }
+        LOGW_WARN(_logger, L"Skip " << Utility::formatSyncPath(path) << L" as it does not refer to the reported node "
+                                    << CommonUtility::s2ws(_nodeId));
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo ErrorQuickResolveHardlinkJob::removeLinks(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode,
-                                                   const SyncPath &seedPath, const std::vector<SyncPath> &linkPaths) const {
+                                                   SyncPath &seedPath, const std::vector<SyncPath> &linkPaths) const {
+    // The directory entry of the seed path may have been replaced since the item has been checked: only a link that still
+    // refers to the reported node can be used for the consistency check and the rescue copy. If no link refers to it anymore,
+    // there is nothing left to remove: the caller removes the node from the database so that the file is downloaded again.
+    bool seedFound = false;
+    if (ExitInfo exitInfo = selectSeedPath(linkPaths, seedPath, seedFound); !exitInfo) {
+        return exitInfo;
+    }
+    if (!seedFound) {
+        LOGW_INFO(_logger, L"No link of the reported node is left under the sync root");
+        return ExitCode::Ok;
+    }
+
     // Check whether the local file is in sync with the database. This must be done before removing the node from the database,
     // as the check requires the node to be present. A seed path found by node id that is not located at the path stored in the
     // database is considered as not in sync: a copy of the file is then saved into the rescue folder.
@@ -334,13 +391,6 @@ ExitInfo ErrorQuickResolveHardlinkJob::removeLinks(const std::shared_ptr<SyncPal
         if (ExitInfo exitInfo = rescueFile(syncPal, dbNode, seedPath); !exitInfo) {
             return exitInfo;
         }
-    }
-
-    // Remove the item from the temporary blacklist, if any, so that the file system observer processes the deletion of the
-    // links and the download of the file during the next synchronization.
-    syncPal->removeItemFromTmpBlacklist(_nodeId, ReplicaSide::Local);
-    if (dbNode.hasRemoteNodeId()) {
-        syncPal->removeItemFromTmpBlacklist(dbNode.nodeIdRemote().value(), ReplicaSide::Remote);
     }
 
     return deleteLinks(syncPal, linkPaths, seedPath);
