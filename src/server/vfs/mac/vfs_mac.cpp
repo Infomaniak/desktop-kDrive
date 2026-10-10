@@ -336,17 +336,17 @@ ExitInfo VfsMac::convertToPlaceholder(const SyncPath &absolutePath, const SyncFi
         // If item is a directory, also convert items inside it
         ItemType itemType;
         if (!IoHelper::getItemType(absolutePath, itemType)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatSyncPath(absolutePath).c_str());
             return ExitCode::SystemError;
         }
 
         if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_DEBUG(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(absolutePath).c_str());
             return {ExitCode::SystemError, ExitCause::NotFound};
         }
 
         if (itemType.ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
+            LOGW_DEBUG(logger(), L"Item misses search permission: " << Utility::formatSyncPath(absolutePath).c_str());
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
@@ -626,14 +626,29 @@ ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 
 bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(absoluteFilepath) << L" - status = " << status);
-    if (std::error_code ec; !std::filesystem::exists(absoluteFilepath, ec)) {
-        if (ec && !utility_base::isLikeTooManySymbolicLinkLevelsError(ec)) {
-            LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatStdError(absoluteFilepath, ec));
-            return false;
-        }
+
+    bool exists = false;
+    auto ioError = IoError::Unknown;
+    if (!IoHelper::checkIfPathExists(absoluteFilepath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteFilepath, ioError));
+        return false;
+    }
+
+    if (ioError == IoError::AccessDenied) {
+        LOGW_DEBUG(logger(), L"Item misses search permission: " << Utility::formatSyncPath(absoluteFilepath));
+        return true;
+    }
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"IoError in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteFilepath, ioError));
+        return false;
+    }
+
+    if (!exists) {
         // New file
         return true;
     }
+
     SyncPath relativeFilePath = CommonUtility::relativePath(_vfsSetupParams.localPath, absoluteFilepath);
 
     if (status == SyncFileStatus::Ignored) {
@@ -643,17 +658,17 @@ bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus 
     } else if (status == SyncFileStatus::Syncing) {
         ItemType itemType;
         if (!IoHelper::getItemType(absoluteFilepath, itemType)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absoluteFilepath));
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatSyncPath(absoluteFilepath));
             return false;
         }
 
         if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(absoluteFilepath));
+            LOGW_DEBUG(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteFilepath));
             return true;
         }
 
         if (itemType.ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(absoluteFilepath));
+            LOGW_DEBUG(logger(), L"Item misses search permission: " << Utility::formatSyncPath(absoluteFilepath));
             return true;
         }
 

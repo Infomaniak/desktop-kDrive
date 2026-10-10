@@ -280,7 +280,25 @@ struct IoHelper {
         static bool createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept;
 
         static bool createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError) noexcept;
+
+        //! Read a Finder alias file.
+        /*!
+         \param aliasPath is the file system location of the alias file to read.
+         \param data is set with the alias data read from the alias file.
+         \param targetPath is set with the file system path of the target item.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
         static bool readAlias(const SyncPath &aliasPath, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept;
+
+        //! Check if a file is a Finder corrupted alias.
+        /*!
+         \param path is the file system location of the file to read.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \param isCorruptedAlias is True for a corrupted alias.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool checkForCorruptedAlias(const SyncPath &path, bool &isCorruptedAlias, IoError &ioError) noexcept;
 #endif
 
         //! Check if the item indicated by `path` is a directory.
@@ -634,7 +652,15 @@ struct IoHelper {
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
 #if defined(KD_MACOS)
-        static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
+        /**
+         * @brief Check if a file with a given path is a symlink or an alias. Relies on the file's metadata; does not check if the
+         * alias is valid. To distinguish between the two cases, first test whether the file is a symbolic link.
+         * @param path The absolute path to the file.
+         * @param isLink A boolean value indicating whether the file is a symbolic link or a Finder alias.
+         * @param ioError holds the error returned when an underlying OS API call fails.
+         * @return true if the process succeeds, false otherwise.
+         */
+        static bool _checkIfItemIsSymLinkOrAlias(const SyncPath &path, bool &isLink, IoError &ioError) noexcept;
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
@@ -653,6 +679,8 @@ struct IoHelper {
         static std::mutex _initRightsWindowsApiMutex;
         static void initRightsWindowsApi();
 #endif
+
+        friend class TestIo;
 };
 
 } // namespace KDC

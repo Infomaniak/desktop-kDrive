@@ -312,6 +312,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                                       std::shared_ptr<Node> &localBlacklistedNode,
                                                       std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause);
 
+        //! Handle an access unknown error on an item on the local side.
+        /*!
+         \param relativeLocalPath is the local path of the item.
+         \return The exit info of the function.
+         */
+        [[nodiscard]] ExitInfo handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath, bool deleteNodeLater);
+
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
         virtual void freeSnapshotsCopies();

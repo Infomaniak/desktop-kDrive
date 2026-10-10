@@ -1693,6 +1693,143 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
     return ExitCode::Ok;
 }
 
+ExitInfo SyncPal::handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath, bool deleteNodeLater) {
+    if (relativeLocalPath.empty()) {
+        LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
+        return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
+    }
+
+    // Get the node ids from the DB if possible, otherwise get the local node id from the file system and the remote node id
+    // from the DB
+    NodeId localNodeId;
+    NodeId remoteNodeId;
+    if (_localFSObserverWorker && _remoteFSObserverWorker) {
+        if (const auto exitInfo = liveSnapshot(ReplicaSide::Local).getItemId(relativeLocalPath, localNodeId);
+            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+            return exitInfo;
+        }
+        if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, remoteNodeId);
+            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+            return exitInfo;
+        }
+    }
+
+    const SyncPath absolutePath = localPath() / relativeLocalPath;
+    if (localNodeId.empty()) {
+        if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(absolutePath));
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        }
+    }
+
+    if (auto found = false; remoteNodeId.empty() && !localNodeId.empty() &&
+                            !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+        return {ExitCode::DbError, ExitCause::Unknown};
+    }
+
+    // Check if the file is a corrupted alias
+    bool isCorruptedAlias = false;
+    if (auto ioError = IoError::Unknown; !IoHelper::checkForCorruptedAlias(absolutePath, isCorruptedAlias, ioError)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in checkForCorruptedAlias: " << Utility::formatIoError(relativeLocalPath, ioError));
+        return ExitCode::SystemError;
+    }
+
+    auto tmpBlacklistItem = false;
+    if (isCorruptedAlias) {
+        //
+        // Delete the file & clear the DB to allow the alias to be re-downloaded
+        //
+
+        // Delete the file
+        SyncLocalDeleteJob job(shared_from_this(), absolutePath);
+        job.setBypassCheck(true);
+        job.runSynchronously();
+        if (!job.exitInfo()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item with " << Utility::formatExitInfo(absolutePath, job.exitInfo())
+                                                                      << L" (" << CommonUtility::s2ws(localNodeId)
+                                                                      << L"), it will be temporarily blacklisted.");
+            tmpBlacklistItem = true;
+        } else {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                      << CommonUtility::s2ws(localNodeId) << L") removed from local replica.");
+
+            // Remove the file node from DB
+            DbNodeId dbNodeId = -1;
+            auto found = false;
+            if (!_syncDb->dbId(ReplicaSide::Local, relativeLocalPath, dbNodeId, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+                return {ExitCode::DbError, ExitCause::Unknown};
+            }
+
+            if (found) {
+                if (!_syncDb->deleteNode(dbNodeId, found)) {
+                    LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::deleteNode");
+                    return {ExitCode::DbError, ExitCause::Unknown};
+                }
+
+                LOGW_SYNCPAL_DEBUG(_logger, L"Node with " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                          << CommonUtility::s2ws(localNodeId) << L") removed from DB.");
+            }
+        }
+    } else {
+        tmpBlacklistItem = true;
+    }
+
+    if (tmpBlacklistItem) {
+        //
+        // Notifies the user and tmp blacklists the file
+        //
+
+        const Error error(syncDbId(), localNodeId, remoteNodeId,
+                          NodeType::File, // File type cannot be fetched for an unknown error, using NodeType::File as default.
+                          relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "",
+                          ExitCode::SystemError, ExitCause::Unknown);
+        addError(error);
+
+        // Tmp blacklist the item
+        if (!_tmpBlacklistManager) {
+            // Can happen if the sync is restarting
+            return ExitCode::Ok;
+        }
+
+        if (!localNodeId.empty()) {
+            _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
+        }
+
+        if (!remoteNodeId.empty()) {
+            _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
+        }
+
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
+                                             << CommonUtility::s2ws(localNodeId)
+                                             << L" is blacklisted temporarily because of an unknown error.");
+    }
+
+    // Delete nodes from update trees
+    if (!localNodeId.empty() || !remoteNodeId.empty()) {
+        // Copy the update trees shared ptrs to protect their access
+        auto localUpdateTree = updateTree(ReplicaSide::Local);
+        auto remoteUpdateTree = updateTree(ReplicaSide::Remote);
+        if (!localUpdateTree || !remoteUpdateTree) {
+            // Can happen if the sync is restarting
+            return ExitCode::Ok;
+        }
+
+        // deleteNode can fail if the UpdateTreeWorker has never been launched or the node has been deleted by a concurrent
+        // worker
+        if (!localNodeId.empty()) {
+            (void) localUpdateTree->deleteNode(localNodeId, deleteNodeLater);
+        }
+
+        if (!remoteNodeId.empty()) {
+            (void) remoteUpdateTree->deleteNode(remoteNodeId, deleteNodeLater);
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
 bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath) {
     std::optional<NodeId> localNodeId;
     return isLocalItemInSyncWithDb(localAbsolutePath, localNodeId);

@@ -389,7 +389,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 #if defined(KD_MACOS)
     // Check whether the item indicated by `path` is an alias.
     bool isAlias = false;
-    if (!_checkIfAlias(path, isAlias, itemType.ioError)) {
+    if (!_checkIfItemIsSymLinkOrAlias(path, isAlias, itemType.ioError)) {
         LOGW_WARN(logger(), L"Failed to check if the item is an alias: " << Utility::formatIoError(path, itemType.ioError));
         return false;
     }
@@ -399,11 +399,9 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     }
 
     if (isAlias) {
-        // !!! isAlias is true for a symlink and for a Finder alias !!!
         if (!_readAlias(path, itemType.targetPath, itemType.ioError)) {
             LOGW_WARN(logger(),
                       L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
-
             return false;
         }
 
@@ -411,7 +409,11 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         itemType.linkType = LinkType::FinderAlias;
 
         if (itemType.ioError != IoError::Success) {
-            return isExpectedError(itemType.ioError);
+            const bool success = isExpectedError(itemType.ioError);
+            if (!success) {
+                LOGW_WARN(logger(), L"Failed to read alias: " << Utility::formatStdError(path, ec));
+            }
+            return success;
         }
 
         return _setTargetType(itemType);
@@ -657,7 +659,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #endif
 
-    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
+    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
@@ -735,7 +737,7 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
 
 #if defined(KD_MACOS)
         bool isAlias = false;
-        if (auto aliasError = Success; !IoHelper::_checkIfAlias(path, isAlias, aliasError)) return aliasError;
+        if (auto aliasError = Success; !IoHelper::_checkIfItemIsSymLinkOrAlias(path, isAlias, aliasError)) return aliasError;
         if (isAlias) return InvalidArgument;
 #endif
 
