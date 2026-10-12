@@ -271,8 +271,8 @@ ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
     return clearCursorExitInfo;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &validSnapshotBackupExists) const {
-    validSnapshotBackupExists = false;
+ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &validListingCursorsExist) const {
+    validListingCursorsExist = false;
 
     // Check if the listing cursors for the special folders are still valid (not too old).
     std::vector<RemoteNodeId> specialFoldersRemoteIds;
@@ -304,7 +304,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &v
         }
     }
 
-    validSnapshotBackupExists = true;
+    validListingCursorsExist = true;
 
     return ExitCode::Ok;
 }
