@@ -392,10 +392,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath);
 
         void clearRemoteLiveSnapshotBackup() {
-            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
 
             _remoteLiveSnapshotBackup.clear();
         }
+
+        ExitInfo restoreRemoteLiveSnapshotBackup(const RemoteNodeIdSet &blackList, bool &aValidSnapshotBackupWasRestored);
 
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
@@ -505,24 +507,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                 }
         };
 
-        mutable std::recursive_mutex remoteLiveSnapshotBackupMutex;
-
-        RemoteLiveSnapshotBackup remoteLiveSnapshotBackup() const {
-            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
-
-            return _remoteLiveSnapshotBackup;
-        }
-
         void setRemoteLiveSnapshotBackup(const std::shared_ptr<ConstSnapshot> &snapshot, const RemoteNodeIdSet &blacklist) {
-            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
+            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
 
             _remoteLiveSnapshotBackup.snapshot = snapshot;
             _remoteLiveSnapshotBackup.blacklist = blacklist;
         }
 
         bool isRemoteSnapshotBackupValid(const RemoteNodeIdSet &blackList) const {
-            const std::scoped_lock lock(remoteLiveSnapshotBackupMutex);
-
             return _remoteLiveSnapshotBackup.snapshot != nullptr && _remoteLiveSnapshotBackup.blacklist == blackList;
         }
 
@@ -536,6 +528,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setUpExcludelistPropagator();
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                             const std::vector<Error> &keepRemoteErrorList);
+
         log4cplus::Logger _logger;
 
         int64_t _consecutiveBackErrors{0};
@@ -547,6 +540,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         mutable std::mutex _progressInfoMutex;
 
         RemoteLiveSnapshotBackup _remoteLiveSnapshotBackup{nullptr, RemoteNodeIdSet{}};
+        mutable std::mutex _remoteLiveSnapshotBackupMutex;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
