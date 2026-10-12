@@ -188,6 +188,7 @@ void SystemTrayController::initialize() {
 
     _openAction = _trayMenu.addAction(qtTrId("statusBarOpenApp"));
     _settingsAction = _trayMenu.addAction(qtTrId("statusBarSettings"));
+    _settingsAction->setEnabled(_isSettingsAvailable);
     (void) _trayMenu.addSeparator();
     _quitAction = _trayMenu.addAction(qtTrId("statusBarQuitApp"));
     _trayIcon.setContextMenu(&_trayMenu);
@@ -358,6 +359,18 @@ void SystemTrayController::retranslate() const {
 
     if (_quitAction) {
         _quitAction->setText(qtTrId("statusBarQuitApp"));
+    }
+}
+
+void SystemTrayController::setSettingsAvailable(const bool available) {
+    if (_isSettingsAvailable == available) {
+        return;
+    }
+
+    _isSettingsAvailable = available;
+    qCInfo(lcSystemTrayController) << "Settings menu entry availability changed | available:" << available;
+    if (_settingsAction) {
+        _settingsAction->setEnabled(available);
     }
 }
 
