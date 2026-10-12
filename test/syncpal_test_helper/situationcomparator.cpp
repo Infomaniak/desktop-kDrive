@@ -192,10 +192,7 @@ SituationMap SituationComparator::getRemoteSituation(const NodeId &remoteDirId /
     // listed and compared against the (relative-to-sync-root) expected situation.
     const NodeId dirId = !remoteDirId.empty() ? remoteDirId : _syncPal->syncDb()->rootNode().nodeIdRemote().value_or(NodeId());
 
-    RemoteNodeIdSet blackList;
-    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
-
-    CsvFullFileListWithCursorJob job(_syncPal->driveDbId(), dirId, blackList);
+    CsvFullFileListWithCursorJob job(_syncPal->driveDbId(), dirId);
     if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
         std::ostringstream oss;
         oss << "Error in CsvFullFileListWithCursorJob::runSynchronously: " << exitInfo;
