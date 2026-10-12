@@ -539,12 +539,15 @@ void SyncPal::freeWorkers() {
     LOG_SYNCPAL_DEBUG(_logger, "Free workers");
     _localFSObserverWorker.reset();
 
+    // Handle remote snapshot backup before freeing the remote FS observer worker, as it is used to get the live snapshot and
+    // blacklist.
     if (_remoteFSObserverWorker && _remoteFSObserverWorker->liveSnapshot().isValid()) {
         setRemoteLiveSnapshotBackup(
                 std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot()),
                 std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker)->blackList());
-    } else
+    } else {
         clearRemoteLiveSnapshotBackup();
+    }
 
     _remoteFSObserverWorker.reset();
 
@@ -1967,6 +1970,40 @@ void SyncPal::forceInvalidateSnapshots() {
     } else {
         LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for remote snapshot, but remote FS observer worker is not available.");
     }
+}
+
+ExitInfo SyncPal::restoreRemoteLiveSnapshotBackup(const RemoteNodeIdSet &blackList, bool &aValidSnapshotBackupWasRestored) {
+    aValidSnapshotBackupWasRestored = false;
+
+    auto remoteFSObserverWorker = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker);
+    if (!remoteFSObserverWorker) {
+        LOG_SYNCPAL_WARN(_logger, "Remote FS observer worker is not available or not of the expected type.");
+
+        return {ExitCode::LogicError, ExitCause::Unknown};
+    }
+
+    const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+
+    if (isRemoteSnapshotBackupValid(blackList)) {
+        bool validCursorExists = false;
+        if (const auto exitInfo = remoteFSObserverWorker->checkIfValidRemoteSnapshotBackupExists(validCursorExists); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists: " << exitInfo);
+            return exitInfo;
+        }
+
+        if (validCursorExists) {
+            remoteFSObserverWorker->restoreRemoteSnapshotBackup(*_remoteLiveSnapshotBackup.snapshot);
+            aValidSnapshotBackupWasRestored = true;
+        }
+
+    } else {
+        LOG_SYNCPAL_DEBUG(_logger, "No remote live snapshot backup available to restore.");
+    }
+
+    _remoteLiveSnapshotBackup.clear();
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

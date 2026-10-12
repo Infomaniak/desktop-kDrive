@@ -50,6 +50,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         Count listingFullCount() const { return _listingFullCount.load(); };
         RemoteNodeIdSet blackList() const;
         void setBlackList(RemoteNodeIdSet blackList);
+        void restoreRemoteSnapshotBackup(const ConstSnapshot &snapshotBackup);
+        [[nodiscard]] ExitInfo checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const;
 
     protected:
         void execute() override;
@@ -69,8 +71,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo initWithCursor();
         ExitInfo exploreDirectory(const NodeId &nodeId);
-        [[nodiscard]] ExitInfo restoreRemoteSnapshotBackup();
-        [[nodiscard]] ExitInfo checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const;
 
         struct ParsingIterationState {
                 bool error{false};

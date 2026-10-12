@@ -274,9 +274,6 @@ ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
 ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const {
     validSnapshotBackupExists = false;
 
-    // Check if a valid remote snapshot backup exists.
-    if (!_syncPal->isRemoteSnapshotBackupValid(blackList())) return ExitCode::Ok;
-
     // Check if the listing cursors for the special folders are still valid (not too old).
     std::vector<RemoteNodeId> specialFoldersRemoteIds;
     if (const auto exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
@@ -312,18 +309,13 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup() {
-    const std::scoped_lock lock(_syncPal->remoteLiveSnapshotBackupMutex);
+void RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup(const ConstSnapshot &snapshotBackup) {
+    setUpdateFlagValue(true);
 
-    const auto &backup = _syncPal->remoteLiveSnapshotBackup();
-    if (!backup.snapshot) return {ExitCode::LogicError, ExitCause::Unknown};
-
-    _liveSnapshot.restoreFromBackup(*backup.snapshot);
+    _liveSnapshot.restoreFromBackup(snapshotBackup);
     _liveSnapshot.setValid(true);
 
-    _syncPal->clearRemoteLiveSnapshotBackup();
-
-    return ExitCode::Ok;
+    setUpdateFlagValue(false);
 }
 
 ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validSnapshotBackupExists) {
@@ -342,32 +334,22 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validS
     setBlackList(newBlackList);
 
     LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
-                                                                                                 << _syncPal->syncDbId() << ".");
-    validSnapshotBackupExists = false;
-
-    std::scoped_lock lock(_syncPal->remoteLiveSnapshotBackupMutex);
-    if (const auto validBackupExitInfo = checkIfValidRemoteSnapshotBackupExists(validSnapshotBackupExists);
-        !validBackupExitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists: "
-                                           << validBackupExitInfo);
-        return validBackupExitInfo;
-    }
-
-    if (validSnapshotBackupExists) {
-        LOG_SYNCPAL_DEBUG(_logger, "A valid remote snapshot backup exists. Restoring it.");
-        setUpdateFlagValue(true);
-        const auto exitInfo = restoreRemoteSnapshotBackup();
-        if (!exitInfo) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup: " << exitInfo);
-        }
-        setUpdateFlagValue(false);
+                                                                                                 << _syncPal->syncDbId() << ".")
+    bool aValidSnapshotBackupWasRestored = false;
+    if (const auto exitInfo = _syncPal->restoreRemoteLiveSnapshotBackup(blackList(), aValidSnapshotBackupWasRestored);
+        !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup: " << exitInfo);
 
         return exitInfo;
     }
 
+    if (aValidSnapshotBackupWasRestored) {
+        LOG_SYNCPAL_DEBUG(_logger, "A valid remote snapshot backup was restored.");
+        return ExitCode::Ok;
+    }
+
     LOG_SYNCPAL_DEBUG(_logger, "No valid remote snapshot backup exists. Clearing all listing cursors from database.");
 
-    _syncPal->clearRemoteLiveSnapshotBackup();
     (void) clearListingCursors();
     invalidateSnapshot();
 
