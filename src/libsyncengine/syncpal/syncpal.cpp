@@ -1760,7 +1760,7 @@ ExitInfo SyncPal::handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath
             DbNodeId dbNodeId = -1;
             auto found = false;
             if (!_syncDb->dbId(ReplicaSide::Local, relativeLocalPath, dbNodeId, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
                 return {ExitCode::DbError, ExitCause::Unknown};
             }
 
