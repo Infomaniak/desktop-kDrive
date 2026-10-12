@@ -434,6 +434,12 @@ qt_add_executable(${APPLICATION_CLIENTV4_EXECUTABLE}
         ${GUI_SOURCE_FILES}
 )
 
+# Debug-only error simulator, enabled with KDRIVE_SIMULATE_ERRORS.
+target_sources(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
+        $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/app/devtools/errorsimulator.cpp>
+        $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/app/devtools/errorsimulator.h>
+)
+
 set_target_properties(${APPLICATION_CLIENTV4_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
