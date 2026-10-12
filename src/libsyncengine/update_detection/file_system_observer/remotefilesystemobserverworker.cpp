@@ -318,8 +318,8 @@ void RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup(const ConstSnap
     setUpdateFlagValue(false);
 }
 
-ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validSnapshotBackupExists) {
-    validSnapshotBackupExists = false;
+ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &aValidSnapshotBackupWasRestored) {
+    aValidSnapshotBackupWasRestored = false;
 
     // Retrieve the list of blacklisted folders and check if it has changed.
     RemoteNodeIdSet newBlackList;
@@ -335,7 +335,6 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validS
 
     LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
                                                                                                  << _syncPal->syncDbId() << ".")
-    bool aValidSnapshotBackupWasRestored = false;
     if (const auto exitInfo = _syncPal->restoreRemoteLiveSnapshotBackup(blackList(), aValidSnapshotBackupWasRestored);
         !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup: " << exitInfo);
@@ -359,8 +358,9 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validS
 ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     _liveSnapshot.init();
 
-    bool validSnapshotBackupExists = false;
-    if (const auto exitInfo = handleRemoteSnapshotBackup(validSnapshotBackupExists); !exitInfo || validSnapshotBackupExists) {
+    bool aValidSnapshotBackupWasRestored = false;
+    if (const auto exitInfo = handleRemoteSnapshotBackup(aValidSnapshotBackupWasRestored);
+        !exitInfo || aValidSnapshotBackupWasRestored) {
         return exitInfo;
     }
 
