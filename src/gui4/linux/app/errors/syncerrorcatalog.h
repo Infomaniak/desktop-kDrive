@@ -41,10 +41,10 @@ struct SyncErrorText {
 
 // Texts and action of an error row. A text without id, such as the label of a missing action, is empty.
 struct SyncErrorPresentation {
-        SyncErrorText title;
-        SyncErrorText description;
+        SyncErrorText title{};
+        SyncErrorText description{};
         SyncErrorAction action{SyncErrorAction::None};
-        SyncErrorText actionLabel;
+        SyncErrorText actionLabel{};
 };
 
 [[nodiscard]] SyncErrorTraits syncErrorTraits(SyncErrorKind kind);
