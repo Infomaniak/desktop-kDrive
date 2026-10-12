@@ -75,7 +75,7 @@ void TestSyncPal::setUp() {
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(vfs, sync.dbId(), KDRIVE_VERSION_STRING);
-    _syncPal->setLocalPath(_localPath.lexically_normal());
+    _syncPal->setLocalPath(std::filesystem::weakly_canonical(_localPath));
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
