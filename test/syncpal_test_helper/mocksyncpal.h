@@ -61,6 +61,12 @@ class MockSyncPal : public SyncPal {
             }
         }
 
+        RemoteLiveSnapshotBackup remoteLiveSnapshotBackup() const {
+            const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
+
+            return _remoteLiveSnapshotBackup;
+        }
+
     protected:
         void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0)) override {
             SyncPal::createWorkers(startDelay);
