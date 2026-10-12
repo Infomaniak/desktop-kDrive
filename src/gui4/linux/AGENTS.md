@@ -124,6 +124,8 @@
 - After resolving a rebase conflict that removes or renames a shared model/header, grep Linux v4 for stale includes and
   old type names, then validate at least the `kdrive_qml` target.
 - For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
+- To see sync errors in the UI, run a Debug build with `KDRIVE_SIMULATE_ERRORS=<scenario>` (see
+  `app/devtools/errorsimulator.*`). Give every new `SyncErrorKind` a simulator fixture.
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
 - Give an in-app modal its hosting window's `effectiveShadowMargin` and `surfaceRadius` as `scrimInset`/`scrimRadius`.
   The overlay spans the complete native window, so an un-inset scrim also dims the transparent custom-shadow margin.
@@ -272,6 +274,12 @@
 - `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
+- `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
+  enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), one blocking error (`asleep`,
+  `wakingup`, `maintenance`, `notrenew`, `accessdenied`, `loggedout`) or `update-required`. Once the cache is populated,
+  it dispatches fake `UTILITY_ERROR_ADDED` signals through `SignalDispatcher` on the selected sync, with negative
+  `ErrorDbId` values (real ones are SQLite rowids, always positive). Its fixtures assert that each kind is covered and
+  classified as expected. Requests on fake errors reach the server and fail; a cache reconciliation removes them.
 - `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
   same-sync severity escalation, hard-warning acknowledgement, soft-warning opt-out (`AppStateKey::NotifyBeforeDelete`,
   read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
