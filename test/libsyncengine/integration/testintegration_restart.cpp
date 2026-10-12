@@ -362,7 +362,7 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
                            secondListingCount > firstListingCount);
 
     // Verify the excluded folder is no longer synchronized
-    const Situation expectedSituation{Str2SyncName(R"({
+    const Situation expectedLocalSituation{Str2SyncName(R"({
         "content" : [
             {
                 "type" : "Directory",
@@ -382,7 +382,36 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
             }
         ]
     })")};
-    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(expectedSituation, expectedSituation));
+    const Situation expectedRemoteSituation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "keepMe",
+                "content" : [
+                    { "type" : "File", "name" : "f1" },
+                    { "type" : "File", "name" : "newFile", "size" : 100 }
+                ]
+            },
+            {
+                "type" : "Directory",
+                "name" : "excludeMe",
+                "content" : [
+                    { "type" : "File", "name" : "f2" },
+                    { "type" : "File", "name" : "newFile", "size" : 200 },
+                    { "type" : "File", "name" : "hidden", "size" : 999 }
+                ]
+            },
+            {
+                "type" : "Directory",
+                "name" : "alsoKeep",
+                "content" : [
+                    { "type" : "File", "name" : "f3" },
+                    { "type" : "File", "name" : "newFile", "size" : 300 }
+                ]
+            }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(expectedLocalSituation, expectedRemoteSituation));
 
     logStep("testSyncRestartWithBlacklistChange");
 }
@@ -444,7 +473,7 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
     })")};
     CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(firstSyncSituation, firstSyncSituation));
 
-    Count firstListingCount = getFullListingCount();
+    const Count firstListingCount = getFullListingCount();
 
     // (4) Stop sync and simulate cursor expiry by setting old cursor timestamps.
     // The backup validation checks if cursors are older than 3 days (259200 seconds).
@@ -456,10 +485,10 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
 
     // Get current cursor and age it
     CursorData oldCursor;
-    CPPUNIT_ASSERT(_syncPal->getFolderCursor(SpecialRemoteFolder::Private, oldCursor));
+    CPPUNIT_ASSERT(_syncPal->getFolderCursor(SpecialRemoteFolder::CustomTarget, oldCursor));
     // Set timestamp to 4 days ago
     oldCursor.timestamp = CommonUtility::getCurrentSyncTime() - EXPIRY_OFFSET;
-    CPPUNIT_ASSERT(_syncPal->setFolderCursor(SpecialRemoteFolder::Private, oldCursor));
+    CPPUNIT_ASSERT(_syncPal->setFolderCursor(SpecialRemoteFolder::CustomTarget, oldCursor));
 
     // (5) Make more remote changes while cursors are stale.
     const Operations moreRemoteOps{Str2SyncName(R"({
@@ -474,7 +503,7 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     // Verify the stale backup was detected and full listing was triggered
-    Count secondListingCount = getFullListingCount();
+    const Count secondListingCount = getFullListingCount();
     CPPUNIT_ASSERT_MESSAGE("Stale cursor backup should cause full listing", secondListingCount > firstListingCount);
 
     // Verify all files are correctly synchronized despite the backup invalidation
