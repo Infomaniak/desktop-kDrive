@@ -1738,7 +1738,7 @@ ExitInfo SyncPal::handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath
 #endif
 
     auto tmpBlacklistItem = false;
-    if (isCorruptedAlias) {
+    if (isCorruptedAlias && !remoteNodeId.empty()) {
         //
         // Delete the file & clear the DB to allow the alias to be re-downloaded
         //
