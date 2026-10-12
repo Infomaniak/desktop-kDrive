@@ -515,7 +515,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         bool isRemoteSnapshotBackupValid(const RemoteNodeIdSet &blackList) const {
-            return _remoteLiveSnapshotBackup.snapshot != nullptr && _remoteLiveSnapshotBackup.blacklist == blackList;
+            return !_invalidateRemoteSnapshotBackup && _remoteLiveSnapshotBackup.snapshot != nullptr &&
+                   _remoteLiveSnapshotBackup.blacklist == blackList;
         }
 
     private:
@@ -541,6 +542,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         RemoteLiveSnapshotBackup _remoteLiveSnapshotBackup{nullptr, RemoteNodeIdSet{}};
         mutable std::mutex _remoteLiveSnapshotBackupMutex;
+        std::atomic<bool> _invalidateRemoteSnapshotBackup{false};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
