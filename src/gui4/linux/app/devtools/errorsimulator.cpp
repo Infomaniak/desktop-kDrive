@@ -263,7 +263,7 @@ void injectErrors(const SignalDispatcher &signalDispatcher, const MainSelectionS
 } // namespace
 
 void installErrorSimulator(const CachePopulator &cachePopulator, const SignalDispatcher &signalDispatcher,
-                           const MainSelectionStore &selectionStore, QObject *const context) {
+                           const MainSelectionStore &selectionStore, const QObject *const context) {
     const QString scenario = qEnvironmentVariable("KDRIVE_SIMULATE_ERRORS");
     if (scenario.isEmpty()) {
         return;
