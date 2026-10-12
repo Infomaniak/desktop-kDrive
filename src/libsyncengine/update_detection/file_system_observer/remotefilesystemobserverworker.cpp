@@ -321,7 +321,7 @@ void RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup(const ConstSnap
 ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &aValidSnapshotBackupWasRestored) {
     aValidSnapshotBackupWasRestored = false;
 
-    // Retrieve the list of blacklisted folders and check if it has changed.
+    // Retrieve the list of blacklisted folders.
     RemoteNodeIdSet newBlackList;
     if (const ExitInfo exitInfo =
                 SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList);
@@ -333,6 +333,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &aValid
 
     setBlackList(newBlackList);
 
+    // The restore call checks, among other things, if the blacklist has changed wrt to the last snapshot backup.
     LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
                                                                                                  << _syncPal->syncDbId() << ".")
     if (const auto exitInfo = _syncPal->restoreRemoteLiveSnapshotBackup(blackList(), aValidSnapshotBackupWasRestored);
@@ -414,7 +415,7 @@ ExitInfo RemoteFileSystemObserverWorker::processListingContinueResponse(const Re
     }
 
     Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
-    if (!dataObj) return ExitCode::Ok;
+    if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     Cursor cursor;
     if (!JsonParserUtility::extractValue(resObj, cursorKey, cursor)) return {ExitCode::BackError, ExitCause::MissingReplyData};
