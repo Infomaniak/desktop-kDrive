@@ -135,6 +135,7 @@ class AppClientLinux : public QApplication {
         void openOnboardingLoginFromSettings();
         void restoreSettingsAfterOnboarding();
         void handleConfiguredSyncsChanged();
+        void handleUpdateRequiredChanged();
         [[nodiscard]] bool hasConfiguredSyncs() const { return !_appCache.syncContexts().empty(); }
 
         IpcClient _ipcClient{this};
