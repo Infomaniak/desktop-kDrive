@@ -30,6 +30,6 @@ class SignalDispatcher;
 // once the cache is populated: `all` (every non-blocking kind and 3 conflicts), a blocking error (`asleep`, `wakingup`,
 // `maintenance`, `notrenew`, `accessdenied`, `loggedout`) or `update-required`.
 void installErrorSimulator(const CachePopulator &cachePopulator, const SignalDispatcher &signalDispatcher,
-                           const MainSelectionStore &selectionStore, QObject *context);
+                           const MainSelectionStore &selectionStore, const QObject *context);
 
 } // namespace KDC
