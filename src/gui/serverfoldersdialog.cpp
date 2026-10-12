@@ -76,8 +76,8 @@ void ServerFoldersDialog::initUI() {
     QLabel *titleLabel = new QLabel(this);
     titleLabel->setObjectName("titleLabel");
     titleLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    titleLabel->setText(
-            tr("The <b>%1</b> folder contains subfolders,<br> select the ones you want to synchronize").arg(_serverFolderName));
+    titleLabel->setText(tr("The <b>%1</b> folder contains subfolders,<br> select the ones you want to synchronize")
+                                .arg(_serverFolderName.toHtmlEscaped()));
     mainLayout->addWidget(titleLabel);
     mainLayout->addSpacing(titleBoxVMargin);
 
