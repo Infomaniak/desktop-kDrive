@@ -541,13 +541,15 @@ void SyncPal::freeWorkers() {
 
     // Handle remote snapshot backup before freeing the remote FS observer worker, as it is used to get the live snapshot and
     // blacklist.
-    if (_remoteFSObserverWorker && _remoteFSObserverWorker->liveSnapshot().isValid()) {
+    if (!_invalidateRemoteSnapshotBackup && _remoteFSObserverWorker && _remoteFSObserverWorker->liveSnapshot().isValid()) {
         setRemoteLiveSnapshotBackup(
                 std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot()),
                 std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker)->blackList());
     } else {
         clearRemoteLiveSnapshotBackup();
     }
+
+    _invalidateRemoteSnapshotBackup.store(false);
 
     _remoteFSObserverWorker.reset();
 
@@ -1967,6 +1969,9 @@ void SyncPal::forceInvalidateSnapshots() {
     if (_remoteFSObserverWorker) {
         _remoteFSObserverWorker->forceUpdate();
         _remoteFSObserverWorker->invalidateSnapshot();
+        // Invalidating the remote snapshot will not invalidate its backup if the initial snapshot is being generated. This is why
+        // we use this extra flag.
+        _invalidateRemoteSnapshotBackup.store(true);
     } else {
         LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for remote snapshot, but remote FS observer worker is not available.");
     }
@@ -1986,9 +1991,8 @@ ExitInfo SyncPal::restoreRemoteLiveSnapshotBackup(const RemoteNodeIdSet &blackLi
 
     if (isRemoteSnapshotBackupValid(blackList)) {
         bool validCursorExists = false;
-        if (const auto exitInfo = remoteFSObserverWorker->checkIfValidRemoteSnapshotBackupExists(validCursorExists); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger,
-                             "Error in RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists: " << exitInfo);
+        if (const auto exitInfo = remoteFSObserverWorker->checkIfValidListingCursorsExist(validCursorExists); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist: " << exitInfo);
             return exitInfo;
         }
 
