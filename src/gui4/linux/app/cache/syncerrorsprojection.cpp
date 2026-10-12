@@ -95,7 +95,7 @@ std::vector<ErrorDbId> SyncErrorsProjection::currentConflictIds() const {
         }
     }
 
-    std::ranges::sort(conflictIds);
+    (void) std::ranges::sort(conflictIds);
     return conflictIds;
 }
 
@@ -120,7 +120,7 @@ void SyncErrorsProjection::refreshClassifications(const std::vector<Error> &sync
     presentDbIds.reserve(syncErrors.size());
 
     for (const auto &error: syncErrors) {
-        presentDbIds.insert(error.dbId());
+        (void) presentDbIds.insert(error.dbId());
 
         const auto known = _classifiedByDbId.find(error.dbId());
         if (known != _classifiedByDbId.end() && known->second.error == error) {
@@ -135,10 +135,10 @@ void SyncErrorsProjection::refreshClassifications(const std::vector<Error> &sync
         if (isNewOrReclassified) {
             logClassification(classified);
         }
-        _classifiedByDbId.insert_or_assign(error.dbId(), std::move(classified));
+        (void) _classifiedByDbId.insert_or_assign(error.dbId(), std::move(classified));
     }
 
-    std::erase_if(_classifiedByDbId, [&presentDbIds](const auto &entry) { return !presentDbIds.contains(entry.first); });
+    (void) std::erase_if(_classifiedByDbId, [&presentDbIds](const auto &entry) { return !presentDbIds.contains(entry.first); });
 }
 
 void SyncErrorsProjection::refreshCurrentErrors() {
