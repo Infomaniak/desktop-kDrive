@@ -65,6 +65,13 @@ Matcher nodeWithCancel(const SyncErrorKind kind, const CancelType cancelType) {
     return matcher;
 }
 
+Matcher nodeWithConflict(const SyncErrorKind kind, std::vector<ConflictType> conflictTypes, std::vector<ExitCode> exitCodes) {
+    Matcher matcher = node(kind);
+    matcher.conflictTypes = std::move(conflictTypes);
+    matcher.exitCodes = std::move(exitCodes);
+    return matcher;
+}
+
 Matcher nodeWithInconsistency(const SyncErrorKind kind, std::vector<InconsistencyType> inconsistencyTypes) {
     Matcher matcher = node(kind);
     matcher.inconsistencyTypes = std::move(inconsistencyTypes);
@@ -99,54 +106,48 @@ Matcher syncRoot(const SyncErrorKind kind, const ExitCode exitCode, const ExitCa
 // The first matcher accepting an error gives its kind: the order is part of the contract. It follows the declaration
 // order of `SyncErrorKind`, which is also the macOS `SynchroErrorKind.allCases` order.
 const std::vector<Matcher> &matchers() {
-    static const std::vector<Matcher> table = [] {
-        Matcher conflict = node(SyncErrorKind::Conflict);
-        conflict.conflictTypes = {ConflictType::CreateCreate, ConflictType::EditEdit};
-        conflict.exitCodes = {ExitCode::Unknown, ExitCode::Ok};
-
-        return std::vector<Matcher>{
-                conflict,
-                nodeWithInconsistency(SyncErrorKind::CaseError, {InconsistencyType::Case}),
-                nodeWithCancel(SyncErrorKind::CreateCancel, CancelType::Create),
-                nodeWithCancel(SyncErrorKind::DeleteCancel, CancelType::Delete),
-                nodeWithCancel(SyncErrorKind::EditCancel, CancelType::Edit),
-                nodeWithCancel(SyncErrorKind::MoveCancel, CancelType::Move),
-                nodeWithExit(SyncErrorKind::FileLocked, ExitCode::BackError, ExitCause::FileLocked),
-                nodeWithCancel(SyncErrorKind::FileRescued, CancelType::FileRescued),
-                nodeWithExit(SyncErrorKind::FileTooBig, ExitCode::BackError, ExitCause::FileTooBig),
-                nodeWithInconsistency(SyncErrorKind::ForbiddenCharEndWithSpace, {InconsistencyType::ForbiddenCharEndWithSpace}),
-                nodeWithInconsistency(SyncErrorKind::ForbiddenChar,
-                                      {InconsistencyType::ForbiddenChar, InconsistencyType::NotYetSupportedChar}),
-                nodeWithInconsistency(SyncErrorKind::ForbiddenCharOnlySpaces, {InconsistencyType::ForbiddenCharOnlySpaces}),
-                nodeWithInconsistency(SyncErrorKind::NameLength, {InconsistencyType::NameLength}),
-                nodeWithInconsistency(SyncErrorKind::PathLength, {InconsistencyType::PathLength}),
-                nodeWithExit(SyncErrorKind::NotEnoughDiskSpace, ExitCode::SystemError, ExitCause::NotEnoughDiskSpace),
-                nodeWithExit(SyncErrorKind::QuotaExceeded, ExitCode::BackError, ExitCause::QuotaExceeded),
-                nodeWithInconsistency(SyncErrorKind::ReservedName, {InconsistencyType::ReservedName}),
-                nodeWithCancel(SyncErrorKind::TemporaryBlacklisted, CancelType::TmpBlacklisted),
-                nodeWithCancel(SyncErrorKind::ExcludedByTemplate, CancelType::ExcludedByTemplate),
-                nodeWithExit(SyncErrorKind::GenericErrForbidden, ExitCode::BackError, ExitCause::HttpErrForbidden),
-                nodeWithCancel(SyncErrorKind::HardLink, CancelType::Hardlink),
-                nodeWithCancel(SyncErrorKind::InvalidLinkTarget, CancelType::InvalidLinkTarget),
-                nodeWithExit(SyncErrorKind::LocalAccess, ExitCode::SystemError, ExitCause::FileAccessError),
-                syncPal(SyncErrorKind::BackErrorDriveAccess, ExitCode::BackError, {ExitCause::DriveAccessError}),
-                syncPal(SyncErrorKind::BackErrorDriveAsleep, ExitCode::BackError,
-                        {ExitCause::DriveAsleep, ExitCause::DriveWakingUp}),
-                syncPal(SyncErrorKind::BackErrorDriveMaintenance, ExitCode::BackError, {ExitCause::DriveMaintenance}),
-                syncPal(SyncErrorKind::BackErrorDriveNotRenew, ExitCode::BackError, {ExitCause::DriveNotRenew}),
-                syncPal(SyncErrorKind::InvalidSyncDirAccess, ExitCode::InvalidSync, {ExitCause::SyncDirAccessError}),
-                syncPal(SyncErrorKind::InvalidSyncDirNesting, ExitCode::InvalidSync, {ExitCause::SyncDirNestingError}),
-                syncPal(SyncErrorKind::InvalidToken, ExitCode::InvalidToken, {ExitCause::Unknown}),
-                syncPal(SyncErrorKind::NetworkOther, ExitCode::NetworkError,
-                        {ExitCause::Unknown, ExitCause::SocketsDefuncted, ExitCause::NetworkTimeout}),
-                syncPal(SyncErrorKind::SystemNotEnoughDiskSpace, ExitCode::SystemError, {ExitCause::NotEnoughDiskSpace}),
-                syncRoot(SyncErrorKind::SystemSyncDirAccess, ExitCode::SystemError, ExitCause::SyncDirAccessError),
-                syncRoot(SyncErrorKind::SystemSyncDirDiskMissing, ExitCode::SystemError, ExitCause::SyncDirDiskMissing),
-                syncRoot(SyncErrorKind::DataSyncDirChanged, ExitCode::DataError, ExitCause::SyncDirChanged),
-                syncPal(SyncErrorKind::TemporaryDirAccess, ExitCode::SystemError, {ExitCause::TmpDirAccessError}),
-                syncPal(SyncErrorKind::NotEnoughINotifyWatches, ExitCode::SystemError, {ExitCause::NotEnoughINotifyWatches}),
-        };
-    }();
+    static const std::vector<Matcher> table{
+            nodeWithConflict(SyncErrorKind::Conflict, {ConflictType::CreateCreate, ConflictType::EditEdit},
+                             {ExitCode::Unknown, ExitCode::Ok}),
+            nodeWithInconsistency(SyncErrorKind::CaseError, {InconsistencyType::Case}),
+            nodeWithCancel(SyncErrorKind::CreateCancel, CancelType::Create),
+            nodeWithCancel(SyncErrorKind::DeleteCancel, CancelType::Delete),
+            nodeWithCancel(SyncErrorKind::EditCancel, CancelType::Edit),
+            nodeWithCancel(SyncErrorKind::MoveCancel, CancelType::Move),
+            nodeWithExit(SyncErrorKind::FileLocked, ExitCode::BackError, ExitCause::FileLocked),
+            nodeWithCancel(SyncErrorKind::FileRescued, CancelType::FileRescued),
+            nodeWithExit(SyncErrorKind::FileTooBig, ExitCode::BackError, ExitCause::FileTooBig),
+            nodeWithInconsistency(SyncErrorKind::ForbiddenCharEndWithSpace, {InconsistencyType::ForbiddenCharEndWithSpace}),
+            nodeWithInconsistency(SyncErrorKind::ForbiddenChar,
+                                  {InconsistencyType::ForbiddenChar, InconsistencyType::NotYetSupportedChar}),
+            nodeWithInconsistency(SyncErrorKind::ForbiddenCharOnlySpaces, {InconsistencyType::ForbiddenCharOnlySpaces}),
+            nodeWithInconsistency(SyncErrorKind::NameLength, {InconsistencyType::NameLength}),
+            nodeWithInconsistency(SyncErrorKind::PathLength, {InconsistencyType::PathLength}),
+            nodeWithExit(SyncErrorKind::NotEnoughDiskSpace, ExitCode::SystemError, ExitCause::NotEnoughDiskSpace),
+            nodeWithExit(SyncErrorKind::QuotaExceeded, ExitCode::BackError, ExitCause::QuotaExceeded),
+            nodeWithInconsistency(SyncErrorKind::ReservedName, {InconsistencyType::ReservedName}),
+            nodeWithCancel(SyncErrorKind::TemporaryBlacklisted, CancelType::TmpBlacklisted),
+            nodeWithCancel(SyncErrorKind::ExcludedByTemplate, CancelType::ExcludedByTemplate),
+            nodeWithExit(SyncErrorKind::GenericErrForbidden, ExitCode::BackError, ExitCause::HttpErrForbidden),
+            nodeWithCancel(SyncErrorKind::HardLink, CancelType::Hardlink),
+            nodeWithCancel(SyncErrorKind::InvalidLinkTarget, CancelType::InvalidLinkTarget),
+            nodeWithExit(SyncErrorKind::LocalAccess, ExitCode::SystemError, ExitCause::FileAccessError),
+            syncPal(SyncErrorKind::BackErrorDriveAccess, ExitCode::BackError, {ExitCause::DriveAccessError}),
+            syncPal(SyncErrorKind::BackErrorDriveAsleep, ExitCode::BackError, {ExitCause::DriveAsleep, ExitCause::DriveWakingUp}),
+            syncPal(SyncErrorKind::BackErrorDriveMaintenance, ExitCode::BackError, {ExitCause::DriveMaintenance}),
+            syncPal(SyncErrorKind::BackErrorDriveNotRenew, ExitCode::BackError, {ExitCause::DriveNotRenew}),
+            syncPal(SyncErrorKind::InvalidSyncDirAccess, ExitCode::InvalidSync, {ExitCause::SyncDirAccessError}),
+            syncPal(SyncErrorKind::InvalidSyncDirNesting, ExitCode::InvalidSync, {ExitCause::SyncDirNestingError}),
+            syncPal(SyncErrorKind::InvalidToken, ExitCode::InvalidToken, {ExitCause::Unknown}),
+            syncPal(SyncErrorKind::NetworkOther, ExitCode::NetworkError,
+                    {ExitCause::Unknown, ExitCause::SocketsDefuncted, ExitCause::NetworkTimeout}),
+            syncPal(SyncErrorKind::SystemNotEnoughDiskSpace, ExitCode::SystemError, {ExitCause::NotEnoughDiskSpace}),
+            syncRoot(SyncErrorKind::SystemSyncDirAccess, ExitCode::SystemError, ExitCause::SyncDirAccessError),
+            syncRoot(SyncErrorKind::SystemSyncDirDiskMissing, ExitCode::SystemError, ExitCause::SyncDirDiskMissing),
+            syncRoot(SyncErrorKind::DataSyncDirChanged, ExitCode::DataError, ExitCause::SyncDirChanged),
+            syncPal(SyncErrorKind::TemporaryDirAccess, ExitCode::SystemError, {ExitCause::TmpDirAccessError}),
+            syncPal(SyncErrorKind::NotEnoughINotifyWatches, ExitCode::SystemError, {ExitCause::NotEnoughINotifyWatches}),
+    };
     return table;
 }
 
