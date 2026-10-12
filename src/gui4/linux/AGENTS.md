@@ -166,6 +166,8 @@
   so both outer circles remain identical.
 - Search has no Figma: copy the macOS gui4 search sheet (`src/gui4/macOS/kDrive/UI/Views/MainWindow/Search/`) for its
   geometry, states, and wording. Keep the API result order (relevance); never re-sort results on the client.
+- In Search results, show the external-link glyph for results unavailable locally only while their row is hovered.
+  Keyboard selection alone must not reveal the glyph.
 - Render text that comes from the server or the filesystem (file, folder, drive, or user names, paths) with
   `textFormat: Text.PlainText`: the default `AutoText` interprets a name such as `<b>x</b>` as markup. `IKToolTip`
   already forces plain text.
@@ -184,6 +186,8 @@
 - Preserve the visual aspect ratio of Activities menu icons and center differently sized glyphs in a fixed slot. Add a
   small safety area to SVG view boxes whose paths touch or exceed their bounds, since Qt SVG clips that antialiasing
   even when the asset declares `overflow="visible"`.
+- Preserve the padded view box of `ui/assets/main/folder.svg`; it prevents Qt SVG from clipping the right edge.
+  When aligning its outline to pixels, account for the padding instead of removing it.
 - Rasterize small tintable SVG sources at no less than 3x their logical size before applying `MultiEffect`, while
   constraining only one `sourceSize` dimension so Qt retains the SVG aspect ratio. Do not enable mipmapping for these
   icons. Wrap icons used as a `Control.contentItem` before assigning their intended size because the control owns the
