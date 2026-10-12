@@ -109,7 +109,7 @@ ItemDelegate {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.topMargin: (IKSearch.rowTextLineHeight - height) / 2
-            visible: !root.availableLocally
+            visible: !root.availableLocally && root.hovered
             color: IKColors.textSecondary
         }
     }
