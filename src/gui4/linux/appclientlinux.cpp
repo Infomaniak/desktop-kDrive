@@ -20,6 +20,9 @@
 
 #include "app/appconstants.h"
 #include "app/applicationidentity.h"
+#ifdef QT_DEBUG
+#include "app/devtools/errorsimulator.h"
+#endif
 #include "app/navigation/mainwindowactivationdecision.h"
 #include "app/onboarding/onboardingsyncconfigurationcontroller.h"
 #include "libcommon/utility/utility.h"
@@ -172,6 +175,9 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_sentryService,
                    &SentryService::updateAuthenticatedUser);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, &AppClientLinux::handleBootstrapCompletion);
+#ifdef QT_DEBUG
+    installErrorSimulator(_cachePopulator, _signalDispatcher, _mainSelectionStore, this);
+#endif
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &AppClientLinux::ipcConnected, &_sentryService, &SentryService::fetchAppUid);
     (void) connect(this, &AppClientLinux::ipcConnected, &_updateStatusService, &UpdateStatusService::refresh);
