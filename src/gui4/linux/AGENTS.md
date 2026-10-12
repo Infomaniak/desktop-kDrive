@@ -294,10 +294,10 @@
   `InvalidToken` error; `isUpdateRequired` detects an `UpdateRequired` error of any level.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability (the error state follows `SyncErrorsProjection::hasTrayRelevantError`, so only the error kinds
-  marked `showsInTray` turn the icon to error), GNOME-compatible tray menu actions, fallback-to-window startup
-  behavior, retry loop for late tray availability, and main QML window show/hide behavior. Linux exposes no panel
-  color, so it picks the white or black icon set from `KDRIVE_TRAY_ICONS` (`white`/`black`), else white on GNOME,
-  else the system color scheme, else white.
+  marked `showsInTray` turn the icon to error), GNOME-compatible tray menu actions (the Settings entry is disabled while
+  an update is required), fallback-to-window startup behavior, retry loop for late tray availability, and main QML
+  window show/hide behavior. Linux exposes no panel color, so it picks the white or black icon set from
+  `KDRIVE_TRAY_ICONS` (`white`/`black`), else white on GNOME, else the system color scheme, else white.
 - `communicationlayer/ipcclient.*`: TLS-over-loopback JSON transport (`QSslSocket`), request/reply correlation,
   reconnect-before-first-connect logic, and pinned self-signed certificate verification. The pinned CA certificate is
   loaded once from the OS keychain via `CertReader` and set as the socket's only CA; the peer is verified against
@@ -614,6 +614,14 @@
       status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
+    - `ui/windows/updaterequired/`: update-required screen built on `IKBlockingState`, loaded by `Main.qml` above every
+      other route, onboarding included (the session is hidden, not cancelled), while
+      `SyncErrorsProjection.updateRequired`; the header keeps only the kDrive logo and title. The Linux server has no
+      installer (`LinuxUpdater::startInstaller` is empty): "Download manually" calls
+      `GeneralSettingsController::openDownload`, whose `TODO` marks where to send `UPDATER_START_INSTALLER` once the
+      packaging rework brings one, and "Quit" calls `SystemTrayController::requestApplicationQuit`. Settings cannot be
+      opened meanwhile: `AppClientLinux::openSettingsWindow` refuses, an open Settings window is closed, and the tray
+      entry is disabled.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
       becomes reusable from another product window.
     - `ui/features/syncconfiguration/`: reusable advanced-sync presentation. Model roles consumed by a `TableView` or
@@ -633,6 +641,9 @@
       inline textual action for rows and cards that must not carry a button surface of their own. `IKCheckBox` is the
       shared tri-state indicator: it
       renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
+      `IKBlockingState` is the shared card of full-page blocking states (update required, blocking synchronization
+      errors): visual, title, description and a row of actions; the owner places it and supplies the visual and the
+      actions. Its tokens live in `IKBlockingStateTokens`.
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
