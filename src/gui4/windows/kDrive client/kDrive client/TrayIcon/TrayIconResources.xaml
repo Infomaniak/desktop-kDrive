@@ -30,8 +30,8 @@
                    x:Uid="trayIconButtonCloseKDrive">
     </XamlUICommand>
     <tb:TaskbarIcon x:Key="TrayIcon"
-                    Visibility="Visible"
                     ToolTipText="kDrive"
+                    Visibility="Visible"
                     ContextMenuMode="PopupMenu"
                     LeftClickCommand="{StaticResource ShowWindowCommand}"
                     NoLeftClickDelay="True">
