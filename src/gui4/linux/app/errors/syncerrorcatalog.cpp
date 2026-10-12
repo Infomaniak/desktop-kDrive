@@ -41,156 +41,331 @@ CatalogEntry catalogEntry(const SyncErrorKind kind) {
 
     switch (kind) {
         case Conflict:
-            return {{Category::Conflicts, Variant::Standard, Explanation::None, true},
-                    {{"conflictErrorTitle"}, {"conflictErrorDescription"}, Action::ChooseVersion, {"conflictErrorAction"}}};
+            return {
+                    .traits = {.category = Category::Conflicts, .showsInTray = true},
+                    .presentation = {.title = {"conflictErrorTitle"},
+                                     .description = {"conflictErrorDescription"},
+                                     .action = Action::ChooseVersion,
+                                     .actionLabel = {"conflictErrorAction"}},
+            };
+
         case CaseError:
             // As on macOS, the rename always happens online.
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errCaseTitle"}, {"errCaseDescription", 2}, Action::OpenOnline, kRenameLabel}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errCaseTitle"},
+                                     .description = {"errCaseDescription", 2},
+                                     .action = Action::OpenOnline,
+                                     .actionLabel = kRenameLabel},
+            };
+
         case CreateCancel:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, true},
-                    {{"errForbiddenActionTitle"}, {"errCreateCancelDescription", 1}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .showsInTray = true},
+                    .presentation = {.title = {"errForbiddenActionTitle"}, .description = {"errCreateCancelDescription", 1}},
+            };
+
         case DeleteCancel:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, true},
-                    {{"errForbiddenActionTitle"}, {"errDeleteCancelDescription", 1}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .showsInTray = true},
+                    .presentation = {.title = {"errForbiddenActionTitle"}, .description = {"errDeleteCancelDescription", 1}},
+            };
+
         case EditCancel:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, true},
-                    {{"errForbiddenActionTitle"}, {"errEditCancelDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .showsInTray = true},
+                    .presentation = {.title = {"errForbiddenActionTitle"}, .description = {"errEditCancelDescription"}},
+            };
+
         case MoveCancel:
-            return {{Category::FilesToCheck, Variant::CopyablePath, Explanation::None, true},
-                    {{"errForbiddenActionTitle"}, {"errMoveCancelDescription", 1}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .variant = Variant::CopyablePath, .showsInTray = true},
+                    .presentation = {.title = {"errForbiddenActionTitle"}, .description = {"errMoveCancelDescription", 1}},
+            };
+
         case FileLocked:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errFileLockedTitle"}, {"errFileLockedDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errFileLockedTitle"}, .description = {"errFileLockedDescription"}},
+            };
+
         case FileRescued:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, true},
-                    {{"errFileRescuedTitle"}, {"errFileRescuedDescription"}, Action::OpenRescueFolder, {"buttonOpenFolder"}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .showsInTray = true},
+                    .presentation = {.title = {"errFileRescuedTitle"},
+                                     .description = {"errFileRescuedDescription"},
+                                     .action = Action::OpenRescueFolder,
+                                     .actionLabel = {"buttonOpenFolder"}},
+            };
+
         case FileTooBig:
             // The description depends on the admin rights, see `describeSyncError`.
-            return {{Category::FilesToCheck, Variant::InfoTooltip, Explanation::None, true},
-                    {{"errFileTooBigTitle"}, {"errFileTooBigDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .variant = Variant::InfoTooltip, .showsInTray = true},
+                    .presentation = {.title = {"errFileTooBigTitle"}, .description = {"errFileTooBigDescription"}},
+            };
+
         case ForbiddenCharEndWithSpace:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errEndWithSpaceTitle", 1}, {"errEndWithSpaceDescription", 2}, Action::Rename, kRenameLabel}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errEndWithSpaceTitle", 1},
+                                     .description = {"errEndWithSpaceDescription", 2},
+                                     .action = Action::Rename,
+                                     .actionLabel = kRenameLabel},
+            };
+
         case ForbiddenChar:
             // The shared text names the Windows application: Linux has its own.
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errForbiddenCharTitle"}, {"linuxErrForbiddenCharDescription", 2}, Action::Rename, kRenameLabel}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errForbiddenCharTitle"},
+                                     .description = {"linuxErrForbiddenCharDescription", 2},
+                                     .action = Action::Rename,
+                                     .actionLabel = kRenameLabel},
+            };
+
         case ForbiddenCharOnlySpaces:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errForbiddenCharOnlySpacesTitle"},
-                     {"errForbiddenCharOnlySpacesDescription", 1},
-                     Action::Rename,
-                     kRenameLabel}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errForbiddenCharOnlySpacesTitle"},
+                                     .description = {"errForbiddenCharOnlySpacesDescription", 1},
+                                     .action = Action::Rename,
+                                     .actionLabel = kRenameLabel},
+            };
+
         case NameLength:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errNameLengthTitle", 1}, {"errNameLengthDescription", 1}, Action::Rename, kRenameLabel}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errNameLengthTitle", 1},
+                                     .description = {"errNameLengthDescription", 1},
+                                     .action = Action::Rename,
+                                     .actionLabel = kRenameLabel},
+            };
+
         case PathLength:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errPathLengthTitle", 1},
-                     {"errPathLengthDescription", 1},
-                     Action::OpenParentFolder,
-                     {"buttonOpenParentFolder"}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errPathLengthTitle", 1},
+                                     .description = {"errPathLengthDescription", 1},
+                                     .action = Action::OpenParentFolder,
+                                     .actionLabel = {"buttonOpenParentFolder"}},
+            };
+
         case NotEnoughDiskSpace:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, true},
-                    {{"errNotEnoughDiskSpaceTitle"},
-                     {"errNotEnoughDiskSpaceDescription"},
-                     Action::ManageDiskSpace,
-                     {"buttonManageDiskSpace"}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .showsInTray = true},
+                    .presentation = {.title = {"errNotEnoughDiskSpaceTitle"},
+                                     .description = {"errNotEnoughDiskSpaceDescription"},
+                                     .action = Action::ManageDiskSpace,
+                                     .actionLabel = {"buttonManageDiskSpace"}},
+            };
+
         case QuotaExceeded:
             // Only an admin can manage the storage, see `describeSyncError`.
-            return {{Category::Storage, Variant::Standard, Explanation::None, true},
-                    {{"errQuotaExceededTitle"}, {"errQuotaExceededDescription", 1}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::Storage, .showsInTray = true},
+                    .presentation = {.title = {"errQuotaExceededTitle"}, .description = {"errQuotaExceededDescription", 1}},
+            };
+
         case ReservedName:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errReservedNameTitle", 1}, {"errReservedNameDescription", 1}, Action::Rename, kRenameLabel}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errReservedNameTitle", 1},
+                                     .description = {"errReservedNameDescription", 1},
+                                     .action = Action::Rename,
+                                     .actionLabel = kRenameLabel},
+            };
+
         case TemporaryBlacklisted:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errTmpBlacklistedTitle"}, {"errTmpBlacklistedDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errTmpBlacklistedTitle"}, .description = {"errTmpBlacklistedDescription"}},
+            };
+
         case ExcludedByTemplate:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errExcludedByTemplateTitle"},
-                     {"errExcludedByTemplateDescription", 1},
-                     Action::OpenExclusions,
-                     {"buttonOpenSyncExclusionRules"}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errExcludedByTemplateTitle"},
+                                     .description = {"errExcludedByTemplateDescription", 1},
+                                     .action = Action::OpenExclusions,
+                                     .actionLabel = {"buttonOpenSyncExclusionRules"}},
+            };
+
         case GenericErrForbidden:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, true},
-                    {{"errGenericForbiddenTitle"}, {"errGenericForbiddenDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .showsInTray = true},
+                    .presentation = {.title = {"errGenericForbiddenTitle"}, .description = {"errGenericForbiddenDescription"}},
+            };
+
         case HardLink:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errHardlinkTitle"}, {"errHardlinkDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errHardlinkTitle"}, .description = {"errHardlinkDescription"}},
+            };
+
         case InvalidLinkTarget:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::None, false},
-                    {{"errInvalidLinkTargetTitle"}, {"errInvalidLinkTargetDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::FilesToCheck},
+                    .presentation = {.title = {"errInvalidLinkTargetTitle"}, .description = {"errInvalidLinkTargetDescription"}},
+            };
+
         case LocalAccess:
-            return {{Category::FilesToCheck, Variant::Standard, Explanation::LocalAccess, false},
-                    {{"errLocalFileAccessTitle", 1}, {"errLocalFileAccessDescription", 1}, Action::Explain, kExplainLabel}};
+            return {
+                    .traits = {.category = Category::FilesToCheck, .explanation = Explanation::LocalAccess},
+                    .presentation = {.title = {"errLocalFileAccessTitle", 1},
+                                     .description = {"errLocalFileAccessDescription", 1},
+                                     .action = Action::Explain,
+                                     .actionLabel = kExplainLabel},
+            };
+
         case BackErrorDriveAccess:
-            return {{Category::SystemAndPermissions, Variant::Standard, Explanation::None, true},
-                    {{"driveAccessDeniedErrorTitle"},
-                     {"driveAccessDeniedErrorDescription"},
-                     Action::RestartSync,
-                     {"buttonRetry"}}};
+            return {
+                    .traits = {.category = Category::SystemAndPermissions, .showsInTray = true},
+                    .presentation = {.title = {"driveAccessDeniedErrorTitle"},
+                                     .description = {"driveAccessDeniedErrorDescription"},
+                                     .action = Action::RestartSync,
+                                     .actionLabel = {"buttonRetry"}},
+            };
+
         case BackErrorDriveAsleep:
-            return {{Category::SystemAndPermissions, Variant::Standard, Explanation::None, true},
-                    {{"driveAsleepErrorTitle"}, {"backErrorDriveAsleepDescription"}, Action::WakeUp, {"buttonWakeUp"}}};
+            return {
+                    .traits = {.category = Category::SystemAndPermissions, .showsInTray = true},
+                    .presentation = {.title = {"driveAsleepErrorTitle"},
+                                     .description = {"backErrorDriveAsleepDescription"},
+                                     .action = Action::WakeUp,
+                                     .actionLabel = {"buttonWakeUp"}},
+            };
+
         case BackErrorDriveMaintenance:
-            return {{Category::SystemAndPermissions, Variant::Standard, Explanation::None, true},
-                    {{"errDriveMaintenanceTitle"}, {"errDriveMaintenanceDescription"}, Action::RefreshErrors, {"buttonRefresh"}}};
+            return {
+                    .traits = {.category = Category::SystemAndPermissions, .showsInTray = true},
+                    .presentation = {.title = {"errDriveMaintenanceTitle"},
+                                     .description = {"errDriveMaintenanceDescription"},
+                                     .action = Action::RefreshErrors,
+                                     .actionLabel = {"buttonRefresh"}},
+            };
+
         case BackErrorDriveNotRenew:
             // The description and the action depend on the admin rights, see `describeSyncError`.
-            return {{Category::SystemAndPermissions, Variant::Standard, Explanation::None, true},
-                    {{"driveLockedErrorTitle"}, {"driveLockedErrorDescription"}, Action::RestartSync, {"buttonRefresh"}}};
+            return {
+                    .traits = {.category = Category::SystemAndPermissions, .showsInTray = true},
+                    .presentation = {.title = {"driveLockedErrorTitle"},
+                                     .description = {"driveLockedErrorDescription"},
+                                     .action = Action::RestartSync,
+                                     .actionLabel = {"buttonRefresh"}},
+            };
+
         case InvalidSyncDirAccess:
-            return {{Category::SyncFolders, Variant::SyncRoot, Explanation::SyncDirChangedRemotely, true},
-                    {{"errInvalidSyncSyncDirAccessTitle"},
-                     {"errInvalidSyncSyncDirAccessDescription"},
-                     Action::Explain,
-                     kExplainLabel}};
+            return {
+                    .traits = {.category = Category::SyncFolders,
+                               .variant = Variant::SyncRoot,
+                               .explanation = Explanation::SyncDirChangedRemotely,
+                               .showsInTray = true},
+                    .presentation = {.title = {"errInvalidSyncSyncDirAccessTitle"},
+                                     .description = {"errInvalidSyncSyncDirAccessDescription"},
+                                     .action = Action::Explain,
+                                     .actionLabel = kExplainLabel},
+            };
+
         case InvalidSyncDirNesting:
-            return {{Category::SyncFolders, Variant::Standard, Explanation::None, true},
-                    {{"errInvalidSyncSyncDirNestingTitle"}, {"errInvalidSyncSyncDirNestingDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::SyncFolders, .showsInTray = true},
+                    .presentation = {.title = {"errInvalidSyncSyncDirNestingTitle"},
+                                     .description = {"errInvalidSyncSyncDirNestingDescription"}},
+            };
+
         case InvalidToken:
-            return {{Category::SystemAndPermissions, Variant::Standard, Explanation::None, true},
-                    {{"driveLoggingErrorTitle"}, {"driveLoggingErrorDescription"}, Action::Reconnect, {"buttonConnectAccount"}}};
+            return {
+                    .traits = {.category = Category::SystemAndPermissions, .showsInTray = true},
+                    .presentation = {.title = {"driveLoggingErrorTitle"},
+                                     .description = {"driveLoggingErrorDescription"},
+                                     .action = Action::Reconnect,
+                                     .actionLabel = {"buttonConnectAccount"}},
+            };
+
         case NetworkOther:
-            return {{Category::SystemAndPermissions, Variant::Standard, Explanation::None, false},
-                    {{"errNetworkErrorOtherTitle"}, {"errNetworkErrorOtherDescription"}, Action::None, {}}};
+            return {
+                    .traits = {.category = Category::SystemAndPermissions},
+                    .presentation = {.title = {"errNetworkErrorOtherTitle"}, .description = {"errNetworkErrorOtherDescription"}},
+            };
+
         case SystemNotEnoughDiskSpace:
-            return {{Category::Storage, Variant::Standard, Explanation::None, true},
-                    {{"errSystemNotEnoughDiskSpaceTitle"},
-                     {"errSystemNotEnoughDiskSpaceDescription"},
-                     Action::ManageDiskSpace,
-                     {"buttonManageDiskSpace"}}};
+            return {
+                    .traits = {.category = Category::Storage, .showsInTray = true},
+                    .presentation = {.title = {"errSystemNotEnoughDiskSpaceTitle"},
+                                     .description = {"errSystemNotEnoughDiskSpaceDescription"},
+                                     .action = Action::ManageDiskSpace,
+                                     .actionLabel = {"buttonManageDiskSpace"}},
+            };
+
         case SystemSyncDirAccess:
-            return {{Category::SyncFolders, Variant::SyncRoot, Explanation::SyncDirNotFound, true},
-                    {{"errSystemErrorSyncDirAccessTitle"},
-                     {"errSystemErrorSyncDirAccessErrorDescription"},
-                     Action::Explain,
-                     kExplainLabel}};
+            return {
+                    .traits = {.category = Category::SyncFolders,
+                               .variant = Variant::SyncRoot,
+                               .explanation = Explanation::SyncDirNotFound,
+                               .showsInTray = true},
+                    .presentation = {.title = {"errSystemErrorSyncDirAccessTitle"},
+                                     .description = {"errSystemErrorSyncDirAccessErrorDescription"},
+                                     .action = Action::Explain,
+                                     .actionLabel = kExplainLabel},
+            };
+
         case SystemSyncDirDiskMissing:
-            return {{Category::SyncFolders, Variant::SyncRoot, Explanation::SyncDirDiskMissing, false},
-                    {{"errSystemSyncDirMissingTitle"},
-                     {"errSystemSyncDirDiskMissingDescription"},
-                     Action::Explain,
-                     kExplainLabel}};
+            return {
+                    .traits = {.category = Category::SyncFolders,
+                               .variant = Variant::SyncRoot,
+                               .explanation = Explanation::SyncDirDiskMissing},
+                    .presentation = {.title = {"errSystemSyncDirMissingTitle"},
+                                     .description = {"errSystemSyncDirDiskMissingDescription"},
+                                     .action = Action::Explain,
+                                     .actionLabel = kExplainLabel},
+            };
+
         case DataSyncDirChanged:
-            return {{Category::SyncFolders, Variant::SyncRoot, Explanation::SyncDirChangedLocally, true},
-                    {{"errSystemSyncDirMissingTitle"}, {"errSystemSyncDirChanged"}, Action::Explain, kExplainLabel}};
+            return {
+                    .traits = {.category = Category::SyncFolders,
+                               .variant = Variant::SyncRoot,
+                               .explanation = Explanation::SyncDirChangedLocally,
+                               .showsInTray = true},
+                    .presentation = {.title = {"errSystemSyncDirMissingTitle"},
+                                     .description = {"errSystemSyncDirChanged"},
+                                     .action = Action::Explain,
+                                     .actionLabel = kExplainLabel},
+            };
+
         case TemporaryDirAccess:
             // The cache folder now lives inside the synchronization folder: retrying the synchronization is enough, there is
             // no need to restart the application.
-            return {{Category::SystemAndPermissions, Variant::Standard, Explanation::None, true},
-                    {{"linuxErrTmpDirAccessTitle"}, {"linuxErrTmpDirAccessDescription"}, Action::RestartSync, {"buttonRetry"}}};
+            return {
+                    .traits = {.category = Category::SystemAndPermissions, .showsInTray = true},
+                    .presentation = {.title = {"linuxErrTmpDirAccessTitle"},
+                                     .description = {"linuxErrTmpDirAccessDescription"},
+                                     .action = Action::RestartSync,
+                                     .actionLabel = {"buttonRetry"}},
+            };
+
         case NotEnoughINotifyWatches:
-            return {{Category::SystemAndPermissions, Variant::Standard, Explanation::INotifyWatches, true},
-                    {{"linuxErrINotifyWatchesTitle"}, {"linuxErrINotifyWatchesDescription"}, Action::Explain, kExplainLabel}};
+            return {
+                    .traits = {.category = Category::SystemAndPermissions,
+                               .explanation = Explanation::INotifyWatches,
+                               .showsInTray = true},
+                    .presentation = {.title = {"linuxErrINotifyWatchesTitle"},
+                                     .description = {"linuxErrINotifyWatchesDescription"},
+                                     .action = Action::Explain,
+                                     .actionLabel = kExplainLabel},
+            };
+
         case Unknown:
         case EnumEnd:
             break;
     }
-    return {{Category::SystemAndPermissions, Variant::Technical, Explanation::None, false},
-            {{"defaultErrorTitle"}, {"defaultErrorDescription"}, Action::ContactSupport, {"buttonContactSupport"}}};
+    return {
+            .traits = {.category = Category::SystemAndPermissions, .variant = Variant::Technical},
+            .presentation = {.title = {"defaultErrorTitle"},
+                             .description = {"defaultErrorDescription"},
+                             .action = Action::ContactSupport,
+                             .actionLabel = {"buttonContactSupport"}},
+    };
 }
 
 } // namespace
