@@ -113,13 +113,13 @@ namespace Infomaniak.kDrive.CustomControls
 
             try
             {
-                var result = await commService.SearchItem(ViewModel.SelectedSync, sender.Text, token);
+                var result = await commService.SearchItem(ViewModel.SelectedSync, sender.Text, "", token);
                 if (token.IsCancellationRequested)
                 {
                     return;
                 }
 
-                if (result is null)
+                if (result.Items.Count == 0)
                 {
                     Logger.LogWarning("SearchItem returned null result.");
                     sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
@@ -127,7 +127,8 @@ namespace Infomaniak.kDrive.CustomControls
                     return;
                 }
 
-                if (!result.Any())
+                var resultItems = result.Items;
+                if (!resultItems.Any())
                 {
                     Logger.LogExtended("SearchItem returned empty result.");
                     sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
@@ -135,13 +136,13 @@ namespace Infomaniak.kDrive.CustomControls
                 }
 
                 List<ISearchBoxResultItem> items = [];
-                if (result.Count == 0)
+                if (resultItems.Count == 0)
                 {
                     items.Add(new SearchBoxNotFoundItem());
                 }
                 else
                 {
-                    items.AddRange(result.Select(r => new SearchBoxResultItem(r)));
+                    items.AddRange(resultItems.Select(r => new SearchBoxResultItem(r)));
                 }
 
                 // Move all the unavailable items to the end of the list
