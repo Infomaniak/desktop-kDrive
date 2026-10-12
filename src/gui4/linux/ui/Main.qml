@@ -23,6 +23,7 @@ import kDrive.UI
 import "dialogs"
 import "windows/main"
 import "windows/onboarding"
+import "windows/updaterequired"
 import "windows/waiting"
 
 IKShadowedWindow {
@@ -37,22 +38,27 @@ IKShadowedWindow {
     required property var onboardingSessionManager
     required property var storageController
     required property var searchController
+    required property var syncErrorsProjection
     required property var systemTrayController
 
+    // An update-required server error replaces every route, onboarding included, as on macOS.
+    readonly property bool updateRequiredActive: syncErrorsProjection.updateRequired
     // A session being replaced keeps the onboarding route: no other route may load between the two sessions.
-    readonly property bool onboardingActive: onboardingSessionManager.activeSession !== null
-                                             || onboardingSessionManager.sessionReplacementPending
-    readonly property bool manyDeletesPresentationAllowed: !onboardingActive
-                                                           && appRouter.mainWindowActive
-                                                           && visible
-    readonly property bool waitingActive: !onboardingActive && !appRouter.mainWindowActive
+    readonly property bool onboardingActive: !updateRequiredActive
+                                             && (onboardingSessionManager.activeSession !== null
+                                                 || onboardingSessionManager.sessionReplacementPending)
+    readonly property bool mainContentActive: !updateRequiredActive && !onboardingActive && appRouter.mainWindowActive
+    readonly property bool manyDeletesPresentationAllowed: mainContentActive && visible
+    readonly property bool waitingActive: !updateRequiredActive && !onboardingActive && !appRouter.mainWindowActive
 
     visible: false
     contentWidth: 900
     contentHeight: 600
     minimumContentWidth: 800
     minimumContentHeight: 520
-    title: onboardingSessionManager.activeSession ? onboardingSessionManager.activeSession.flowController.title : "kDrive"
+    // No session while a replacement is pending; the update-required screen keeps the app title.
+    title: onboardingActive && onboardingSessionManager.activeSession
+           ? onboardingSessionManager.activeSession.flowController.title : "kDrive"
     surfaceColor: {
         if (waitingActive) {
             return IKColors.surfaceSecondary;
@@ -73,7 +79,7 @@ IKShadowedWindow {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            visible: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
+            visible: mainWindow.mainContentActive
             width: IKMainWindow.sidebarWidth
             color: IKColors.surfaceSecondary
         }
@@ -90,7 +96,7 @@ IKShadowedWindow {
 
     headerData: Item {
         anchors.fill: parent
-        visible: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
+        visible: mainWindow.mainContentActive || mainWindow.updateRequiredActive
 
         SidebarHeaderView {
             anchors.left: parent.left
@@ -101,6 +107,7 @@ IKShadowedWindow {
         }
 
         MainToolbar {
+            visible: mainWindow.mainContentActive
             onSettingsRequested: mainWindow.settingsController.requestOpen()
             anchors.left: parent.left
             anchors.leftMargin: IKMainWindow.sidebarWidth + IKSpacing.s16
@@ -123,8 +130,7 @@ IKShadowedWindow {
 
     Shortcut {
         sequences: [ StandardKey.Find ]
-        enabled: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
-                 && mainWindow.searchController.available
+        enabled: mainWindow.mainContentActive && mainWindow.searchController.available
         context: Qt.WindowShortcut
         onActivated: mainWindow.openSearch()
     }
@@ -185,6 +191,8 @@ IKShadowedWindow {
         id: onboardingLoader
 
         anchors.fill: parent
+        // Hidden but kept while an update is required: the onboarding session itself is not cancelled.
+        visible: !mainWindow.updateRequiredActive
         active: false
         sourceComponent: onboardingComponent
         property var session: null
@@ -201,8 +209,14 @@ IKShadowedWindow {
         id: mainWindowLoader
 
         anchors.fill: parent
-        active: mainWindow.appRouter.mainWindowActive && !mainWindow.onboardingActive
+        active: mainWindow.mainContentActive
         sourceComponent: mainWindowComponent
+    }
+
+    Loader {
+        anchors.fill: parent
+        active: mainWindow.updateRequiredActive
+        sourceComponent: updateRequiredComponent
     }
 
     Loader {
@@ -243,6 +257,15 @@ IKShadowedWindow {
             homeController: mainWindow.homeController
             mainSidebarController: mainWindow.mainSidebarController
             storageController: mainWindow.storageController
+        }
+    }
+
+    Component {
+        id: updateRequiredComponent
+
+        UpdateRequiredView {
+            onDownloadRequested: mainWindow.settingsController.general.openDownload()
+            onQuitRequested: mainWindow.systemTrayController.requestApplicationQuit()
         }
     }
 

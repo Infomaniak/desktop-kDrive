@@ -125,6 +125,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("searchController"), QVariant::fromValue<QObject *>(&_searchController)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
+            {QStringLiteral("syncErrorsProjection"), QVariant::fromValue<QObject *>(&_syncErrorsProjection)},
     });
     _qmlEngine.loadFromModule(AppConstants::Qml::moduleUri, QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
