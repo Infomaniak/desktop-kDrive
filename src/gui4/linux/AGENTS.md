@@ -276,7 +276,7 @@
   same-sync severity escalation, hard-warning acknowledgement, soft-warning opt-out (`AppStateKey::NotifyBeforeDelete`,
   read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
 - `app/errors/*`: pure sync error domain, without QObject, IPC or cache access. `classifySyncError` maps a raw `Error` to
-  a `SyncErrorKind` through an ordered matcher table that mirrors the macOS `SynchroErrorKind` matcher (first match
+  a `SyncErrorKind` through an ordered matcher table aligned with the macOS and Windows definitions (first match
   wins), plus the Linux-only `NotEnoughINotifyWatches`; LiteSync and VFS kinds are absent and fall back to `Unknown`.
   `syncerrorcatalog.*` gives each kind its errors-page section, row variant, explanation dialog, system tray relevance
   (Windows `ShowInSystemTray` list), action and texts, with admin variants resolved by `describeSyncError`. Texts are
