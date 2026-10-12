@@ -271,7 +271,7 @@ ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
     return clearCursorExitInfo;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const {
+ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &validSnapshotBackupExists) const {
     validSnapshotBackupExists = false;
 
     // Check if the listing cursors for the special folders are still valid (not too old).

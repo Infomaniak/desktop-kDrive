@@ -51,7 +51,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         RemoteNodeIdSet blackList() const;
         void setBlackList(RemoteNodeIdSet blackList);
         void restoreRemoteSnapshotBackup(const ConstSnapshot &snapshotBackup);
-        [[nodiscard]] ExitInfo checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const;
+        [[nodiscard]] ExitInfo checkIfValidListingCursorsExist(bool &validSnapshotBackupExists) const;
 
     protected:
         void execute() override;
