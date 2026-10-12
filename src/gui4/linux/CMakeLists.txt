@@ -204,6 +204,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKSearch.qml
         ui/tokens/IKStorage.qml
         ui/tokens/IKSyncConfiguration.qml
+        ui/tokens/IKBlockingStateTokens.qml
         ui/tokens/IKWaiting.qml
 )
 
@@ -261,6 +262,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKWindowHeader.qml
         ui/chrome/IKWindowResizeHandles.qml
         ui/components/IKBadge.qml
+        ui/components/IKBlockingState.qml
         ui/components/IKAvatar.qml
         ui/components/IKCheckBox.qml
         ui/components/IKConfirmationDialog.qml
