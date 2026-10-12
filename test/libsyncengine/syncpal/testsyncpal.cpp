@@ -581,6 +581,7 @@ void TestSyncPal::testHandleAccessUnknownErrorItem() {
         CPPUNIT_ASSERT_EQUAL(nodeId, *tmpNodeId);
     }
 
+#if defined(KD_MACOS)
     // A MacOSX Finder alias.
     {
         const SyncPath path = _syncPal->localPath() / "regular_alias.txt";
@@ -669,6 +670,7 @@ void TestSyncPal::testHandleAccessUnknownErrorItem() {
         CPPUNIT_ASSERT(_syncPal->syncDb()->id(ReplicaSide::Local, relativePath, tmpNodeId, found));
         CPPUNIT_ASSERT(!found);
     }
+#endif
 }
 
 } // namespace KDC

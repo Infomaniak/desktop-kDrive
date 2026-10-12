@@ -1728,12 +1728,14 @@ ExitInfo SyncPal::handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
-    // Check if the file is a corrupted alias
     bool isCorruptedAlias = false;
+#if defined(KD_MACOS)
+    // Check if the file is a corrupted alias
     if (auto ioError = IoError::Unknown; !IoHelper::checkForCorruptedAlias(absolutePath, isCorruptedAlias, ioError)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in checkForCorruptedAlias: " << Utility::formatIoError(relativeLocalPath, ioError));
         return ExitCode::SystemError;
     }
+#endif
 
     auto tmpBlacklistItem = false;
     if (isCorruptedAlias) {

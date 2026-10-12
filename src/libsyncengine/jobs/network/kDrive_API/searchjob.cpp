@@ -236,7 +236,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
 
         if (!itemExitInfo) {
             LOGW_WARN(_logger, L"Error in getLocalProperties: " << Utility::formatExitInfo(path, itemExitInfo));
-            exitInfo = itemExitInfo; // Stores only the last error for the final return value.}
+            exitInfo = itemExitInfo; // Stores only the last error for the final return value.
         }
     }
 
