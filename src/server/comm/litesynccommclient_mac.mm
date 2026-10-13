@@ -1401,49 +1401,56 @@ bool LiteSyncCommClient::vfsSetStatus(const SyncPath &path, const SyncPath &loca
         roundedProgress = static_cast<int16_t>(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
     }
 
-    if (vfsStatus.isSyncing != currentVfsStatus.isSyncing || roundedProgress != currentVfsStatus.progress ||
-        vfsStatus.isHydrated != currentVfsStatus.isHydrated) {
-        // Set status
-        std::string status = IoHelper::statusXAttr(vfsStatus.isSyncing, roundedProgress, vfsStatus.isHydrated);
-        IoError ioError = IoError::Success;
-        if (!IoHelper::setXAttrValue(path, litesync_attrs::status, status, ioError)) {
-            LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
-            return false;
-        }
+    if (vfsStatus.isHydrated == currentVfsStatus.isHydrated && currentVfsStatus.isHydrated && roundedProgress != 100) {
+        // If the file is already hydrated, we don't need to update the status again (progress is not reported on upload)
+        return true;
+    }
 
-        if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
-            return false;
-        }
+    if (vfsStatus.isSyncing == currentVfsStatus.isSyncing && currentVfsStatus.isSyncing &&
+        roundedProgress == currentVfsStatus.progress) {
+        return true;
+    }
 
-        if (!sendStatusToFinder(path, VfsStatus({.isHydrated = vfsStatus.isHydrated,
-                                                 .isSyncing = vfsStatus.isSyncing,
-                                                 .progress = roundedProgress}))) {
-            LOGW_WARN(_logger, L"Call to sendStatusToFinder failed: " << Utility::formatSyncPath(path));
-            return false;
-        }
+    // Set status
+    std::string status = IoHelper::statusXAttr(vfsStatus.isSyncing, roundedProgress, vfsStatus.isHydrated);
+    IoError ioError = IoError::Success;
+    if (!IoHelper::setXAttrValue(path, litesync_attrs::status, status, ioError)) {
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
 
-        if (vfsStatus.isSyncing != currentVfsStatus.isSyncing || vfsStatus.isHydrated != currentVfsStatus.isHydrated) {
-            // Update parent directory status
-            const SyncPath parentPath = path.parent_path();
-            if (parentPath == localSyncPath) return true;
+    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
+        return false;
+    }
 
-            if (vfsStatus.isSyncing) {
-                {
-                    const std::scoped_lock lock(_mutex);
-                    _syncingFolders[parentPath].insert(path);
-                }
+    if (!sendStatusToFinder(path, VfsStatus({.isHydrated = vfsStatus.isHydrated,
+                                             .isSyncing = vfsStatus.isSyncing,
+                                             .progress = roundedProgress}))) {
+        LOGW_WARN(_logger, L"Call to sendStatusToFinder failed: " << Utility::formatSyncPath(path));
+        return false;
+    }
 
-                vfsSetStatus(parentPath, localSyncPath,
-                             VfsStatus({.isHydrated = vfsStatus.isHydrated, .isSyncing = vfsStatus.isSyncing, .progress = 100}));
-            } else {
-                {
-                    const std::scoped_lock lock(_mutex);
-                    (void) _syncingFolders[parentPath].erase(path);
-                    if (_syncingFolders[parentPath].empty()) {
-                        (void) _syncingFolders.erase(parentPath);
-                        if (!vfsProcessDirStatus(parentPath, localSyncPath)) {
-                            return false;
-                        }
+    if (vfsStatus.isSyncing != currentVfsStatus.isSyncing || vfsStatus.isHydrated != currentVfsStatus.isHydrated) {
+        // Update parent directory status
+        const SyncPath parentPath = path.parent_path();
+        if (parentPath == localSyncPath) return true;
+
+        if (vfsStatus.isSyncing) {
+            {
+                const std::scoped_lock lock(_mutex);
+                _syncingFolders[parentPath].insert(path);
+            }
+
+            vfsSetStatus(parentPath, localSyncPath,
+                         VfsStatus({.isHydrated = vfsStatus.isHydrated, .isSyncing = vfsStatus.isSyncing, .progress = 100}));
+        } else {
+            {
+                const std::scoped_lock lock(_mutex);
+                (void) _syncingFolders[parentPath].erase(path);
+                if (_syncingFolders[parentPath].empty()) {
+                    (void) _syncingFolders.erase(parentPath);
+                    if (!vfsProcessDirStatus(parentPath, localSyncPath)) {
+                        return false;
                     }
                 }
             }
