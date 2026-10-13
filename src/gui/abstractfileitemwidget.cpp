@@ -26,6 +26,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QDir>
+#include <QTextDocument>
 
 #include "utility/utility.h"
 
@@ -67,6 +68,7 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) :
     _filenameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _filenameLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     _filenameLabel->setMinimumHeight(16);
+    _filenameLabel->setTextFormat(Qt::PlainText);
     _topLayout->addWidget(_filenameLabel);
 
     _topLayout->addStretch();
@@ -150,7 +152,7 @@ void AbstractFileItemWidget::setPath(const QString &path) const {
                                     .arg(CommonUtility::linkStyle, path.toHtmlEscaped(), printablePath.toHtmlEscaped());
 
     _pathLabel->setText(pathStr);
-    _pathLabel->setToolTip(path);
+    _pathLabel->setToolTip(Qt::convertFromPlainText(path));
 }
 
 void AbstractFileItemWidget::setDriveName(const QString &driveName, const QString &localPath) {
@@ -176,7 +178,8 @@ void AbstractFileItemWidget::addCustomWidget(QWidget *w) {
 
 void AbstractFileItemWidget::openFolder(const QString &path) {
     if (!KDC::GuiUtility::openFolder(path)) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(path), QMessageBox::Ok, this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(path.toHtmlEscaped()),
+                                QMessageBox::Ok, this);
         msgBox.exec();
     }
 }

@@ -82,7 +82,8 @@ void GenericErrorItemWidget::init() {
 void GenericErrorItemWidget::openFolder(const QString &path) {
     const auto syncInfoMapIt = _gui->syncInfoMap().find(_error.syncDbId());
     if (syncInfoMapIt == _gui->syncInfoMap().end()) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(path), QMessageBox::Ok, this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(path.toHtmlEscaped()),
+                                QMessageBox::Ok, this);
         msgBox.exec();
         return;
     }
