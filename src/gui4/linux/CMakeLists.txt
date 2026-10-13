@@ -157,6 +157,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/settingswindowcontroller.h
         app/settings/settingssyncactivationcontroller.cpp
         app/settings/settingssyncactivationcontroller.h
+        app/settings/advancedsynccreationcontroller.cpp
+        app/settings/advancedsynccreationcontroller.h
         app/settings/advancedsynclistmodel.cpp
         app/settings/advancedsynclistmodel.h
         app/settings/advancedsyncscontroller.cpp
@@ -212,6 +214,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
         ui/windows/settings/AddExclusionRuleDialog.qml
+        ui/windows/settings/AddAdvancedSyncDialog.qml
         ui/windows/settings/AdvancedSyncCard.qml
         ui/windows/settings/AdvancedSyncsView.qml
         ui/windows/settings/DeleteSyncDialog.qml
@@ -261,6 +264,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKExternalLinkIcon.qml
         ui/components/IKErrorBanner.qml
         ui/features/syncconfiguration/RemoteFolderTree.qml
+        ui/features/syncconfiguration/RemoteFolderPicker.qml
         ui/features/syncconfiguration/SyncConfigurationDialog.qml
         ui/features/syncconfiguration/SyncConfigurationDrivePage.qml
         ui/features/syncconfiguration/SyncConfigurationErrorBlock.qml
@@ -331,6 +335,7 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/settings/accounts.svg
         ui/assets/settings/advanced.svg
+        ui/assets/settings/folder-circle-plus.svg
         ui/assets/settings/chevron-left.svg
         ui/assets/settings/chevron-right.svg
         ui/assets/settings/general.svg
