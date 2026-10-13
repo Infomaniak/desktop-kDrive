@@ -110,6 +110,7 @@ Item {
                         width: parent.width
                         height: IKActivities.primaryTextLineHeight
                         text: root.name
+                        textFormat: Text.PlainText
                         color: IKColors.textPrimary
                         font.pixelSize: IKFonts.bodySize
                         font.weight: IKFonts.medium
@@ -133,6 +134,7 @@ Item {
                         height: IKActivities.primaryTextLineHeight
                         visible: root.subtitleText.length > 0
                         text: root.subtitleText
+                        textFormat: Text.PlainText
                         color: IKColors.textSecondary
                         font.pixelSize: IKFonts.subheadlineSize
                         font.weight: IKFonts.regular
@@ -168,6 +170,7 @@ Item {
                 anchors.rightMargin: IKActivities.secondaryCellPadding
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.folder
+                textFormat: Text.PlainText
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 font.weight: IKFonts.medium
