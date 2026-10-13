@@ -54,26 +54,7 @@ void TestGetMySharedFilesJob::setUp() {
     TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestGetMySharedFilesJob");
 
-    // Init in-memory keychain (testing mode, no real OS keychain used)
-    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-
-    ApiToken apiToken;
-    apiToken.setAccessToken("dummy_access_token");
-    const std::string keychainKey("test_get_my_shared_files_job_key");
-    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
-
-    // Init ParmsDb
-    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
-
-    // Insert the minimal User / Account / Drive so GetMySharedFilesJob construction succeeds
-    User user(1, 12345, keychainKey);
-    (void) ParmsDb::instance()->insertUser(user);
-
-    Account account(1, 67890, user.dbId(), "test_account");
-    (void) ParmsDb::instance()->insertAccount(account);
-
-    Drive drive(_driveDbId, 99999, account.dbId(), "test_drive", 0, std::string());
-    (void) ParmsDb::instance()->insertDrive(drive);
+    initParmsDb();
 }
 
 void TestGetMySharedFilesJob::tearDown() {
@@ -156,10 +137,10 @@ void TestGetMySharedFilesJob::testSetQueryParameters() {
     GetMySharedFilesJob firstPageJob(_driveDbId);
     auto parameters = queryParameters(firstPageJob);
     CPPUNIT_ASSERT(!parameters.contains("cursor"));
-    CPPUNIT_ASSERT_EQUAL(std::string("50"), parameters["limit"]);
+    CPPUNIT_ASSERT_EQUAL(std::string("10"), parameters["limit"]);
 
     // A next page is requested with the cursor of the previous one.
-    GetMySharedFilesJob nextPageJob(_driveDbId, "c1");
+    GetMySharedFilesJob nextPageJob(_driveDbId, "c1", 50);
     parameters = queryParameters(nextPageJob);
     CPPUNIT_ASSERT_EQUAL(std::string("c1"), parameters["cursor"]);
     CPPUNIT_ASSERT_EQUAL(std::string("50"), parameters["limit"]);
