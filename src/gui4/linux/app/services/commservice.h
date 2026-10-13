@@ -82,6 +82,8 @@ struct SyncAdd2Request {
 struct DriveSearchResult {
         std::vector<SearchInfo> searchInfoList{};
         bool hasMore{false};
+        // Requests the next page.
+        std::string cursor{};
 };
 
 // ---------------------------------------------------------------------------
@@ -155,7 +157,9 @@ class CommService : public QObject {
         void requestDriveList(const DriveListCallback &callback) const;
         void requestDriveUpdate(const Drive &drive, const VoidCallback &callback) const;
         void requestDriveDelete(DriveDbId driveDbId, const VoidCallback &callback) const;
-        void requestDriveSearch(SyncDbId syncDbId, const QString &searchString, const DriveSearchCallback &callback) const;
+        // An empty cursor requests the first page.
+        void requestDriveSearch(SyncDbId syncDbId, const QString &searchString, const std::string &cursor,
+                                const DriveSearchCallback &callback) const;
 
         // --- Sync ---
         void requestSyncInfoList(const SyncInfoListCallback &callback) const;
