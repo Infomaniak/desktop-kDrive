@@ -70,6 +70,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
         addSplitViewItem(sidebarItem)
 
         let generalViewController = NSViewController()
+        generalViewController.view = NSView()
         let contentItem = NSSplitViewItem(viewController: generalViewController)
         addSplitViewItem(contentItem)
     }
