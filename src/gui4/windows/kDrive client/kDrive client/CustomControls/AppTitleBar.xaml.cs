@@ -34,8 +34,6 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
-        public void FocusOnSearchBox() => SearchBox.Focus();
-
         private Visibility TitleBarContentVisibility(bool isModelInitialized, Sync? selectedSync, bool isUpdateRequired)
         {
             if (!isModelInitialized || isUpdateRequired)

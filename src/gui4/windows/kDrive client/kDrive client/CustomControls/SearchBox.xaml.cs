@@ -46,13 +46,28 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
             TitleBarSearchBox.ItemsSource = _pager.Items;
             _pager.LoaderTransitionStarting += (_, _) => SuppressItemTransitionsForNextLayout();
+            SetupKeyboardAccelerators();
             GotFocus += (_, _) => TitleBarSearchBox.IsSuggestionListOpen = true;
         }
-
-        public void Focus()
+        private void SetupKeyboardAccelerators()
         {
-            if (!TitleBarSearchBox.Focus(FocusState.Programmatic))
-                Logger.LogWarning("Failed to set focus on the search box.");
+            if (Content is UIElement root)
+            {
+                var accelerator = new KeyboardAccelerator
+                {
+                    Key = VirtualKey.F,
+                    Modifiers = VirtualKeyModifiers.Control
+                };
+
+                accelerator.Invoked += (_, args) =>
+                {
+                    if (!(TitleBarSearchBox?.Focus(FocusState.Programmatic) ?? false))
+                        Logger.LogWarning("Failed to set focus on the search box.");
+                    args.Handled = true;
+                };
+
+                root.KeyboardAccelerators.Add(accelerator);
+            }
         }
 
         private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
