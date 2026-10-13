@@ -26,9 +26,11 @@ Rectangle {
     id: root
 
     signal settingsRequested
+    signal searchRequested
 
     required property var appRouter
     required property var controller
+    property bool searchAvailable: false
 
     readonly property int currentTab: root.appRouter.currentMainTabIndex
     readonly property int tabActivities: AppRouter.Activities
@@ -105,11 +107,11 @@ Rectangle {
         }
 
         HeaderIconButton {
+            enabled: root.searchAvailable
             iconSource: "qrc:/assets/main/home/search.svg"
             iconSize: IKMainWindow.toolbarSearchIconSize
             text: qsTrId("buttonSearch")
-            tooltipText: qsTrId("comingSoon")
-            Accessible.description: qsTrId("comingSoon")
+            onClicked: root.searchRequested()
         }
     }
 
