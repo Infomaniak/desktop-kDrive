@@ -10,5 +10,5 @@ if [ -x "$(command -v pluginkit)" ]; then
     pluginkit -e use -i @APPLICATION_REV_DOMAIN@.Extension
 fi
 
-su "$USER" -c "open /Applications/@APPLICATION_EXECUTABLE@/@APPLICATION_EXECUTABLE@.app"
+su "$USER" -c "open /Applications/@APPLICATION_EXECUTABLE@/@APPLICATION_EXECUTABLE@.app --args --synthesis"
 exit 0

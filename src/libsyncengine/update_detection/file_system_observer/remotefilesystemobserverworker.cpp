@@ -433,7 +433,7 @@ ExitInfo RemoteFileSystemObserverWorker::insertItemInSnapshot(const SnapshotItem
 
     if (item.type() == NodeType::File) {
         for (const auto &childItem: item.children()) {
-            logAndSendSentryEvent(item);
+            logAndSendSentryEvent(*childItem);
             (void) _liveSnapshot.removeItem(childItem->id());
         }
     }

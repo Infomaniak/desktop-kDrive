@@ -73,8 +73,8 @@ public struct UIBlockingError: Sendable, Equatable {
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
         case .maintenance:
-            title = KDriveLocalizable.driveMaintenanceErrorTitle
-            subtitle = KDriveLocalizable.driveMaintenanceErrorDescription
+            title = KDriveLocalizable.errDriveMaintenanceTitle
+            subtitle = KDriveLocalizable.errDriveMaintenanceDescription
             actionTitle = KDriveLocalizable.buttonRefresh
             isLoading = false
             badgeIcon = KDriveResources.wrench.swiftUIImage

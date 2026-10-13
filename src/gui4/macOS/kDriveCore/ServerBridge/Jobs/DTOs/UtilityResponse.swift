@@ -58,18 +58,24 @@ struct UtilitySetLaunchOnStartupQuery: Codable, Sendable {
 }
 
 struct UtilitySetAppStateQuery: Codable, Sendable {
-    let key: Int32
-    let value: Int32
+    let key: KDC.AppStateKey
+    @Base64CodedString var value: String
 }
 
 struct UtilityGetAppStateQuery: Codable, Sendable {
-    let key: Int32
+    let key: KDC.AppStateKey
 }
 
 struct UtilityGetAppStateResponse: Codable, Sendable {
-    let value: Int32
+    @Base64CodedString var value: String
 }
 
 struct UtilitySendLogToSupportQuery: Codable, Sendable {
     let includeArchivedLogs: Bool
+}
+
+public struct UtilityCheckMacOsPermissionsResponse: Codable, Sendable {
+    let fullDiskAccess: Bool
+    let liteSyncExtEnabled: Bool
+    let liteSyncExtFullDiskAccess: Bool
 }

@@ -17,11 +17,12 @@
  */
 
 import Foundation
+@testable import kDriveCore
 @testable import kDriveCoreUI
 import Testing
 
 struct UISynchroNodeTests {
-    private func makeNode(progress: Int32) -> UISynchroNode {
+    private func makeNode(progress: Int) -> UISynchroNode {
         UISynchroNode(
             id: 1,
             remoteID: "remote-id",
@@ -37,10 +38,35 @@ struct UISynchroNodeTests {
         )
     }
 
-    @Test("Progress clamps to 0 when given negative value")
+    private func makeSynchroNode(
+        instruction: KDC.SyncFileInstruction,
+        path: String,
+        newPath: String
+    ) -> SynchroNode {
+        SynchroNode(
+            operationId: 1,
+            type: .File,
+            path: path,
+            newPath: newPath,
+            localNodeId: "local-id",
+            remoteNodeId: "remote-id",
+            direction: .Up,
+            instruction: instruction,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(),
+            size: 1024,
+            progress: 100,
+            error: ""
+        )
+    }
+
+    @Test("Progress is nil when given negative value")
     func progressClampsToZero() {
         let node = makeNode(progress: -10)
-        #expect(node.progress == 0)
+        #expect(node.progress == nil)
     }
 
     @Test("Progress clamps to 100 when given value above 100")
@@ -49,21 +75,48 @@ struct UISynchroNodeTests {
         #expect(node.progress == 100)
     }
 
-    @Test("Progress preserves boundary values", arguments: [Int32(0), 50, 100])
-    func progressPreservesBoundaryValues(value: Int32) {
+    @Test("Progress preserves boundary values", arguments: [0, 50, 100])
+    func progressPreservesBoundaryValues(value: Int) {
         let node = makeNode(progress: value)
         #expect(node.progress == value)
     }
 
-    @Test("Progress clamps negative extreme")
-    func progressClampsNegativeExtreme() {
-        let node = makeNode(progress: Int32.min)
-        #expect(node.progress == 0)
-    }
-
     @Test("Progress clamps positive extreme")
     func progressClampsPositiveExtreme() {
-        let node = makeNode(progress: Int32.max)
+        let node = makeNode(progress: Int.max)
         #expect(node.progress == 100)
+    }
+
+    @Test("Update metadata maps to update")
+    func updateMetadataMapsToRenamed() {
+        let node = makeSynchroNode(
+            instruction: .UpdateMetadata,
+            path: "/folder/name.txt",
+            newPath: "/folder/name.txt"
+        )
+
+        #expect(UISynchroNode(synchroNode: node).instruction == .update)
+    }
+
+    @Test("Move within the same parent maps to renamed")
+    func sameParentMoveMapsToRenamed() {
+        let node = makeSynchroNode(
+            instruction: .Move,
+            path: "/folder/old-name.txt",
+            newPath: "/folder/new-name.txt"
+        )
+
+        #expect(UISynchroNode(synchroNode: node).instruction == .renamed)
+    }
+
+    @Test("Move to a different parent remains move")
+    func differentParentMoveRemainsMove() {
+        let node = makeSynchroNode(
+            instruction: .Move,
+            path: "/origin/file.txt",
+            newPath: "/destination/file.txt"
+        )
+
+        #expect(UISynchroNode(synchroNode: node).instruction == .move)
     }
 }

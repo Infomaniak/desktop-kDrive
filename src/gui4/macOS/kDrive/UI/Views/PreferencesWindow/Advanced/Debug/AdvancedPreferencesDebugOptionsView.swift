@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -25,7 +26,7 @@ struct AdvancedPreferencesDebugOptionsView: View {
     @State private var extendedLog = false
     @State private var debugLevel = UILogLevel.debug
 
-    let repository: PreferencesRepository
+    @ObservedObject var repository: PreferencesRepository
 
     var body: some View {
         Section {
@@ -35,6 +36,11 @@ struct AdvancedPreferencesDebugOptionsView: View {
                 helperText: nil,
                 isOn: $automaticCleaning
             )
+            .onChange(of: automaticCleaning) { newValue in
+                guard newValue != repository.parametersInfo.shouldPurgeOldLogs else { return }
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogPurge", value: newValue)
+            }
 
             ToggleView(
                 title: KDriveLocalizable.extendedLogSetting,
@@ -49,7 +55,7 @@ struct AdvancedPreferencesDebugOptionsView: View {
                     description: KDriveLocalizable.debugLevelDescription
                 )
 
-                Picker(KDriveLocalizable.debugLevelSetting, selection: $debugLevel) {
+                Picker(KDriveLocalizable.debugLevelSetting, selection: extendedLog ? .constant(.debug) : $debugLevel) {
                     ForEach(UILogLevel.allCases, id: \.id) { level in
                         Text(level.label).tag(level)
                     }
@@ -66,8 +72,15 @@ struct AdvancedPreferencesDebugOptionsView: View {
         .onChange(of: extendedLog) { newValue in
             updateRepositoryValue(\.$extendedLog, \.isExtendedLogEnabled, newValue: newValue, repository: repository)
         }
+        .onChange(of: repository.parametersInfo.logLevel) { newValue in
+            debugLevel = newValue
+        }
         .onChange(of: debugLevel) { newValue in
             updateRepositoryValue(\.$debugLevel, \.logLevel, newValue: newValue, repository: repository)
+
+            guard newValue != repository.parametersInfo.logLevel else { return }
+            @InjectService var matomo: MatomoUtils
+            matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogVerbosity")
         }
     }
 

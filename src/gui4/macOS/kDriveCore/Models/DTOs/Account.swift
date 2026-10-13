@@ -23,6 +23,7 @@ public typealias IndexedAccounts = OrderedDictionary<Int32, Account>
 
 public struct Account: Identifiable, Hashable, Sendable {
     public let dbId: Int32
+    public let accountId: Int32
     public let userDbId: Int32
     public var name: String
     public var drives: IndexedDrives
@@ -31,8 +32,9 @@ public struct Account: Identifiable, Hashable, Sendable {
         dbId
     }
 
-    public init(dbId: Int32, userDbId: Int32, name: String, drives: IndexedDrives) {
+    public init(dbId: Int32, userDbId: Int32, name: String, drives: IndexedDrives, accountId: Int32 = 0) {
         self.dbId = dbId
+        self.accountId = accountId
         self.userDbId = userDbId
         self.name = name
         self.drives = drives
@@ -41,6 +43,12 @@ public struct Account: Identifiable, Hashable, Sendable {
 
 extension Account {
     init(with accountInfo: AccountInfo) {
-        self.init(dbId: accountInfo.dbId, userDbId: accountInfo.userDbId, name: accountInfo.name, drives: [:])
+        self.init(
+            dbId: accountInfo.dbId,
+            userDbId: accountInfo.userDbId,
+            name: accountInfo.name,
+            drives: [:],
+            accountId: accountInfo.id
+        )
     }
 }

@@ -29,7 +29,8 @@ public extension UISearchResponse {
             path: searchResponse.path,
             modifiedDate: Date(timeIntervalSince1970: TimeInterval(searchResponse.modifiedTime)),
             size: searchResponse.size,
-            isAvailableLocally: searchResponse.isAvailableLocally
+            isAvailableLocally: searchResponse.isAvailableLocally,
+            isHydrated: searchResponse.isHydrated
         )
     }
 }

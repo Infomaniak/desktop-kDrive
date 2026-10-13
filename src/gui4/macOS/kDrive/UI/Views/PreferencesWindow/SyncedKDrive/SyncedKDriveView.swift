@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
@@ -25,23 +26,45 @@ import Sentry
 import SwiftUI
 
 struct SyncedKDriveView: View {
+    @Environment(\.openURL) private var openURL
+    @InjectService private var matomo: MatomoUtils
+    @InjectService private var cacheObservable: CoherentCacheObservable
+    @InjectService private var vfsConversionCache: VFSConversionCacheObservable
+
     let drive: UIDrive
+    let userDbId: Int
 
     @State private var mainSynchro: UISynchro?
     @State private var mainSynchroMode = UISynchroMode.storeOnline
     @State private var committedMainSynchroMode = UISynchroMode.storeOnline
+    @State private var convertingSynchroIds: Set<Int32> = []
 
     @State private var synchroToDelete: UISynchro?
     @State private var isShowingGenericError = false
 
     @State private var blacklistNodes: Set<String>?
 
+    @State private var isShowingSynchronizeDriveView = false
+
+    private var configuration: SynchroConfiguration {
+        SynchroConfiguration(drive: drive, blackList: [], useLightSync: true)
+    }
+
+    private var drivePublisher: AnyPublisher<Drive?, Never> {
+        cacheObservable.usersPublisher.drivePublisher(driveDbId: Int32(drive.dbId))
+    }
+
+    private var isUpdatingMainSynchroMode: Bool {
+        guard let mainSynchro else { return false }
+        return convertingSynchroIds.contains(Int32(mainSynchro.dbId))
+    }
+
     var body: some View {
         Form {
             Section { /* Empty on purpose */ } header: {
                 HStack {
                     BadgeView(
-                        image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                        image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
                         color: drive.color ?? ColorToken.Drive.defaultColor.asColor,
                         iconSize: 16,
                         squareSize: 26,
@@ -53,9 +76,19 @@ struct SyncedKDriveView: View {
 
             if let mainSynchro {
                 Section {
-                    IKLabeledContent(KDriveLocalizable.labelSyncLocation) {
+                    IKLabeledContent(KDriveLocalizable.labelComputerLocation) {
                         Button(mainSynchro.localPath.path) {
+                            matomo.track(eventWithCategory: .driveManagementPage, name: "openSyncDir")
                             NSWorkspace.shared.open(mainSynchro.localPath)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(ColorToken.Action.primary.asColor)
+                    }
+
+                    IKLabeledContent(KDriveLocalizable.labelRemoteLocation) {
+                        Button(drive.name) {
+                            matomo.track(eventWithCategory: .driveManagementPage, name: "openRemoteSyncDir")
+                            openURL(URLConstants.kDrive(for: drive.driveId))
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(ColorToken.Action.primary.asColor)
@@ -76,12 +109,29 @@ struct SyncedKDriveView: View {
                 }
 
                 Section {
-                    SynchroModePicker(synchroDbId: mainSynchro.dbId, synchroMode: $mainSynchroMode)
-                        .disabled(!mainSynchro.supportsVirtualFileSystem)
+                    VStack(alignment: .leading, spacing: AppPadding.padding8) {
+                        SynchroModePicker(
+                            synchroDbId: mainSynchro.dbId,
+                            synchroMode: $mainSynchroMode,
+                            isConverting: isUpdatingMainSynchroMode
+                        )
+                        .disabled(!mainSynchro.supportsVirtualFileSystem || isUpdatingMainSynchroMode)
                         .onChange(of: mainSynchroMode) { newValue in
                             guard newValue != committedMainSynchroMode else { return }
                             switchSynchroMode(mainSynchro, mode: newValue)
                         }
+
+                        if isUpdatingMainSynchroMode {
+                            HStack(spacing: AppPadding.padding8) {
+                                ProgressView()
+                                    .controlSize(.small)
+
+                                Text(KDriveLocalizable.syncModeApplying)
+                                    .font(.Tokens.body)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
                 }
 
                 Section {
@@ -99,12 +149,46 @@ struct SyncedKDriveView: View {
                     }
                     .buttonStyle(.plain)
                 }
+            } else {
+                Section {
+                    HStack(spacing: AppPadding.padding8) {
+                        Text(KDriveLocalizable.labelSynchronisation)
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Text(KDriveLocalizable.notSyncedDrive)
+                            .foregroundStyle(.secondary)
+                        Button(KDriveLocalizable.buttonEnable, action: enableMainSynchro)
+                            .buttonStyle(.bordered)
+                            .sheet(isPresented: $isShowingSynchronizeDriveView) {
+                                SynchroConfigurationFlowView(
+                                    userDbId: userDbId,
+                                    configurations: [configuration],
+                                    onConfirm: configureMainSynchro,
+                                    onCancel: hideSynchronizeDriveSheet
+                                )
+                            }
+                    }
+                }
+
+                Section {
+                    FormNavigationCell(title: KDriveLocalizable.advancedSyncTitle, navigate: navigateToAdvancedSynchro)
+                }
             }
         }
         .groupedFormatStyle()
         .task {
             await fetchSynchros()
+        }
+        .task(id: mainSynchro?.dbId) {
             await fetchBlacklistedNodes()
+        }
+        .onReceive(drivePublisher.receive(on: RunLoop.main)) { cachedDrive in
+            let synchro = cachedDrive?.synchros.values.first { $0.targetNodeId.isEmpty }
+            updateMainSynchro(synchro.map { UISynchro(synchro: $0) })
+        }
+        .onReceive(vfsConversionCache.convertingSynchroIdsPublisher.receive(on: RunLoop.main)) {
+            convertingSynchroIds = $0
         }
         .sheet(item: $synchroToDelete) { synchro in
             RemoveSynchroConfirmationView(synchroDbId: synchro.dbId, completion: handleSynchroIsDeleted)
@@ -113,21 +197,31 @@ struct SyncedKDriveView: View {
     }
 
     private func fetchSynchros() async {
+        @InjectService var vfsConversionCache: VFSConversionCaching
         @InjectService var coherentCache: CoherentCache
-        guard let driveSynchros = await coherentCache.getDrive(driveDbId: Int32(drive.dbId))?.synchros.values else {
+        guard let cachedDrive = await coherentCache.getDrive(driveDbId: Int32(drive.dbId)) else {
             return
         }
 
-        let freshMainSynchro = driveSynchros
-            .map { UISynchro(synchro: $0) }
-            .first { $0.targetNodeId == nil }
+        let synchro = cachedDrive.synchros.values.first { $0.targetNodeId.isEmpty }
+        if let synchro, await vfsConversionCache.isConverting(synchroDbId: synchro.dbId) {
+            convertingSynchroIds.insert(synchro.dbId)
+        }
+        updateMainSynchro(synchro.map { UISynchro(synchro: $0) })
+    }
 
+    private func updateMainSynchro(_ freshMainSynchro: UISynchro?) {
         let fetchedMode: UISynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
         withAnimation {
             mainSynchro = freshMainSynchro
+
+            guard !isUpdatingMainSynchroMode else {
+                return
+            }
+
+            committedMainSynchroMode = fetchedMode
             mainSynchroMode = fetchedMode
         }
-        committedMainSynchroMode = fetchedMode
     }
 
     private func fetchBlacklistedNodes() async {
@@ -144,6 +238,7 @@ struct SyncedKDriveView: View {
     }
 
     private func navigateToManageSynchro() {
+        matomo.track(eventWithCategory: .driveManagementPage, name: "showItemExclusion")
         Task {
             @InjectService var cache: CoherentCache
             guard let mainSynchro, let drive = await cache.getDrive(driveDbId: Int32(drive.dbId)) else {
@@ -168,6 +263,7 @@ struct SyncedKDriveView: View {
     }
 
     private func navigateToAdvancedSynchro() {
+        matomo.track(eventWithCategory: .driveManagementPage, name: "manageAdvancedSync")
         @InjectService var router: PreferencesViewRouter
         router.append(.advancedSynchros(drive))
     }
@@ -181,8 +277,46 @@ struct SyncedKDriveView: View {
         @InjectService var router: PreferencesViewRouter
         router.append(.accounts)
     }
+
+    private func enableMainSynchro() {
+        matomo.track(eventWithCategory: .driveManagementPage, name: "create")
+        isShowingSynchronizeDriveView = true
+    }
+
+    private func configureMainSynchro(_ configurations: [SynchroConfiguration]) async {
+        do {
+            if let configuration = configurations.first {
+                try await synchronizeDrive(from: configuration)
+            }
+            hideSynchronizeDriveSheet()
+        } catch {
+            hideSynchronizeDriveSheet()
+            isShowingGenericError = true
+        }
+    }
+
+    private func synchronizeDrive(from configuration: SynchroConfiguration) async throws {
+        @InjectService var cache: CoherentCache
+        guard let storedDrive = await cache.getDrive(driveDbId: Int32(drive.dbId)) else {
+            throw ServerCoherentCache.CacheError.driveNotFound(Int32(drive.dbId))
+        }
+
+        let syncCandidate = NewSyncCandidate(
+            origin: .storedDrive(storedDrive),
+            remoteFolder: .kDriveRoot,
+            localFolder: configuration.localFolder.url,
+            blackList: configuration.blackList,
+            useLightSync: configuration.useLightSync
+        )
+
+        try await SyncCreationService().create(from: syncCandidate)
+    }
+
+    private func hideSynchronizeDriveSheet() {
+        isShowingSynchronizeDriveView = false
+    }
 }
 
 #Preview {
-    SyncedKDriveView(drive: PreviewHelper.drive1)
+    SyncedKDriveView(drive: PreviewHelper.drive1, userDbId: 0)
 }
