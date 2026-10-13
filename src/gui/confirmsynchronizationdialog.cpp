@@ -115,6 +115,7 @@ void ConfirmSynchronizationDialog::initUI() {
 
     QLabel *localNameLabel = new QLabel(this);
     localNameLabel->setObjectName("foldername");
+    localNameLabel->setTextFormat(Qt::PlainText);
     localNameLabel->setText(_localFolderName);
     localNameLabel->setAlignment(Qt::AlignCenter);
     localNameLabel->setWordWrap(true);
@@ -152,6 +153,7 @@ void ConfirmSynchronizationDialog::initUI() {
 
     QLabel *serverNameLabel = new QLabel(this);
     serverNameLabel->setObjectName("foldername");
+    serverNameLabel->setTextFormat(Qt::PlainText);
     serverNameLabel->setText(_serverFolderName);
     serverNameLabel->setAlignment(Qt::AlignCenter);
     serverNameLabel->setWordWrap(true);

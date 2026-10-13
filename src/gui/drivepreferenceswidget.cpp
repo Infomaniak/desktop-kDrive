@@ -959,8 +959,8 @@ void DrivePreferencesWidget::onSearchItemDoubleClicked(const QModelIndex &index)
     }
 
     if (privateLink.isEmpty()) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Impossible to open item %1").arg(nodeInfo.path()), QMessageBox::Ok,
-                                this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Impossible to open item %1").arg(nodeInfo.path().toHtmlEscaped()),
+                                QMessageBox::Ok, this);
         (void) msgBox.exec();
         return;
     }
