@@ -177,7 +177,8 @@ void AbstractFileItemWidget::addCustomWidget(QWidget *w) {
 
 void AbstractFileItemWidget::openFolder(const QString &path) {
     if (!KDC::GuiUtility::openFolder(path)) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(path), QMessageBox::Ok, this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(path.toHtmlEscaped()),
+                                QMessageBox::Ok, this);
         msgBox.exec();
     }
 }

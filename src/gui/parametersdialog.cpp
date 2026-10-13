@@ -1101,7 +1101,8 @@ void ParametersDialog::onSetStyle(bool darkTheme) {
 
 void ParametersDialog::onOpenFolder(const QString &filePath) {
     if (!KDC::GuiUtility::openFolder(filePath)) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath.toHtmlEscaped()), QMessageBox::Ok, this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath.toHtmlEscaped()),
+                                QMessageBox::Ok, this);
         msgBox.exec();
     }
 }
