@@ -76,8 +76,6 @@ namespace Infomaniak.kDrive.CustomControls
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private CancellationTokenSource? _searchCts;
         private AppModel ViewModel => App.ServiceProvider.GetRequiredService<AppModel>();
-        private const string _privateFolderName = "Private/";
-        private const string _sharedFolderName = "Shared/";
         private ISearchBoxResultItem? _lastItemOver;
         public SearchBox()
         {
@@ -145,31 +143,12 @@ namespace Infomaniak.kDrive.CustomControls
                     items.AddRange(resultItems.Select(r => new SearchBoxResultItem(r)));
                 }
 
-                // Move all the unavailable items to the end of the list
-                items = items
-                    .OrderByDescending(i => i.SearchItem?.IsAvailableLocally ?? false)
-                    .ThenBy(i => i.SearchItem?.ModifiedTime)
-                    .ThenBy(i => i.SearchItem?.Name)
-                    .ToList();
-
                 sender.ItemsSource = items;
             }
             catch (OperationCanceledException)
             {
                 // Expected: ignore
             }
-        }
-
-
-        private void TitleBarSearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            if (args.SelectedItem is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
-            {
-                sender.Text = "";
-                return;
-            }
-
-            sender.Text = resultItem.SearchItem.Name;
         }
 
         private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
@@ -185,7 +164,6 @@ namespace Infomaniak.kDrive.CustomControls
             if (resultItem is null)
                 resultItem = currentSuggestions?.Any() ?? false ? currentSuggestions.ElementAt(0) : null;
 
-            sender.Text = "";
             if (resultItem is null || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
                 Logger.LogInfo("QuerySubmitted but no result match the query.");
@@ -205,7 +183,6 @@ namespace Infomaniak.kDrive.CustomControls
                 var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
                 _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItemWeb);
-                sender.IsSuggestionListOpen = false;
                 return;
             }
 
@@ -214,17 +191,6 @@ namespace Infomaniak.kDrive.CustomControls
             // Remove leading slash or _privateFolderName or _sharedFolderName folder from the path
             if (itemRelativePath is not null)
             {
-                itemRelativePath = itemRelativePath.TrimStart('/', '\\');
-
-                if (itemRelativePath.StartsWith(_privateFolderName))
-                {
-                    itemRelativePath = itemRelativePath[_privateFolderName.Length..];
-                }
-                else if (itemRelativePath.StartsWith(_sharedFolderName))
-                {
-                    itemRelativePath = itemRelativePath[_sharedFolderName.Length..];
-                }
-
                 string path = System.IO.Path.Combine(ViewModel.SelectedSync.LocalPath, itemRelativePath);
 
                 if (!Directory.Exists(path))
@@ -236,16 +202,12 @@ namespace Infomaniak.kDrive.CustomControls
                 }
                 await Utility.OpenFolderSecurely(path);
                 _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItem);
-                sender.IsSuggestionListOpen = false;
             }
         }
 
         private void SearchResultItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (sender.DataContext is not ISearchBoxResultItem item)
-            {
-                return;
-            }
+            if (sender.DataContext is not ISearchBoxResultItem item) return;
 
             // Walk up the visual tree to find the parent ListViewItem
             var parentItem = sender.FindAscendant<ListViewItem>();
@@ -254,56 +216,6 @@ namespace Infomaniak.kDrive.CustomControls
                 parentItem.IsHitTestVisible = item.IsSelectable;
                 parentItem.IsTabStop = item.IsSelectable;
                 parentItem.IsTapEnabled = item.IsSelectable;
-            }
-        }
-
-        private async void Button_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            var control = sender as Control;
-            if (control is null)
-            {
-                Logger.LogWarning("sender is expected to ba a control.");
-                return;
-            }
-
-            if (control.DataContext is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
-            {
-                return;
-            }
-
-            if (ViewModel.SelectedSync is null)
-            {
-                Logger.LogWarning("SearchItem SuggestionChosen called but no sync is selected.");
-                return;
-            }
-
-            if (!resultItem.SearchItem.IsAvailableLocally)
-            {
-                // Item is not available locally, open in web browser
-                var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
-                await Launcher.LaunchUriAsync(url);
-                _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItemWeb);
-                return;
-            }
-
-            var itemRelativePath = resultItem.SearchItem.Path;
-            // Remove leading slash or "Private/" or "Shared/" folder from the path
-            if (itemRelativePath is not null)
-            {
-                itemRelativePath = itemRelativePath.TrimStart('/', '\\');
-
-                if (itemRelativePath.StartsWith("Private/"))
-                {
-                    itemRelativePath = itemRelativePath["Private/".Length..];
-                }
-                else if (itemRelativePath.StartsWith("Shared/"))
-                {
-                    itemRelativePath = itemRelativePath["Shared/".Length..];
-                }
-
-                string path = System.IO.Path.Combine(ViewModel.SelectedSync.LocalPath, itemRelativePath);
-                await Utility.OpenFolderSecurely(path);
-                _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItem);
             }
         }
 
