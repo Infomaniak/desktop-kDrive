@@ -42,6 +42,10 @@ class PreferencesSidebarViewController: NSViewController {
     private let items: [SidebarItem] = [.general, .accounts, .advanced]
     private var bindStore = Set<AnyCancellable>()
 
+    override func loadView() {
+        view = NSView()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()

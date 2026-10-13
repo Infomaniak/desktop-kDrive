@@ -45,6 +45,10 @@ open class OnboardingStepViewController: NSViewController {
         return label
     }()
 
+    override open func loadView() {
+        view = NSView()
+    }
+
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupComponents()
