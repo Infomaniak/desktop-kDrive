@@ -18,149 +18,34 @@
 using CommunityToolkit.WinUI;
 using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Windows.System;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    public interface ISearchBoxResultItem
-    {
-        SearchItem? SearchItem { get; }
-        bool IsSelectable { get; }
-        bool ShowUnavailableState { get; }
-    }
-
-    public sealed class SearchBoxResultItem : UISafeObservableObject, ISearchBoxResultItem
-    {
-        private bool _showUnavailableState = false;
-        public SearchBoxResultItem(SearchItem? SearchItem, bool IsSelectable = true)
-        {
-            this.SearchItem = SearchItem;
-            this.IsSelectable = IsSelectable;
-        }
-
-        public SearchItem? SearchItem { get; }
-        public bool IsSelectable { get; }
-        public bool ShowUnavailableState
-        {
-            get => _showUnavailableState;
-            set => SetPropertyInUIThread(ref _showUnavailableState, value);
-        }
-    }
-
-    public sealed record SearchBoxLoaderItem(bool IsLoadMore = false) : ISearchBoxResultItem
-    {
-        public SearchItem? SearchItem => null;
-        public bool IsSelectable => false;
-        public bool ShowUnavailableState => false;
-    };
-
-    public sealed record SearchBoxNotFoundItem() : ISearchBoxResultItem
-    {
-        public SearchItem? SearchItem => null;
-        public bool IsSelectable => false;
-        public bool ShowUnavailableState => false;
-    };
-
     public sealed partial class SearchBox : UserControl
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
-        private CancellationTokenSource? _searchCts;
+        private readonly SearchResultsPager _pager = new(App.ServiceProvider.GetRequiredService<IServerCommService>());
         private AppModel ViewModel => App.ServiceProvider.GetRequiredService<AppModel>();
-        private ISearchBoxResultItem? _lastItemOver;
-        private readonly ObservableCollection<ISearchBoxResultItem> _results = [new SearchBoxNotFoundItem()];
-        private string _currentQuery = "";
-        private string _nextCursor = "";
-        private bool _hasMore = false;
-        private bool _isInitialLoading = false;
-        private bool _isLoadingMore = false;
+        private SearchBoxResultItem? _hoveredItem;
+        private ListView? _suggestionsList;
 
         public SearchBox()
         {
             InitializeComponent();
-            TitleBarSearchBox.ItemsSource = _results;
+            TitleBarSearchBox.ItemsSource = _pager.Items;
+            _pager.LoaderTransitionStarting += (_, _) => SuppressItemTransitionsForNextLayout();
             GotFocus += (_, _) => TitleBarSearchBox.IsSuggestionListOpen = true;
-        }
-
-        private void SetResults(IEnumerable<ISearchBoxResultItem> items)
-        {
-            // Update in place to avoid collapsing the popup and triggering add/remove animations.
-            var newItems = items.ToList();
-            bool involvesLoader = newItems.First() is SearchBoxLoaderItem;
-            if (involvesLoader)
-                SuppressTransitionsForNextLayout();
-
-            for (int i = 0; i < newItems.Count; i++)
-            {
-                if (i < _results.Count)
-                {
-                    if (!ReferenceEquals(_results[i], newItems[i]))
-                        _results[i] = newItems[i];
-                }
-                else
-                {
-                    _results.Add(newItems[i]);
-                }
-            }
-            while (_results.Count > newItems.Count)
-                _results.RemoveAt(_results.Count - 1);
-        }
-
-        private ListView? _suggestionsList;
-        private TransitionCollection? _savedItemContainerTransitions;
-
-        private void SuppressTransitionsForNextLayout()
-        {
-            _suggestionsList ??= TitleBarSearchBox.FindDescendant<Popup>()?.Child is FrameworkElement popupChild
-                ? popupChild as ListView ?? popupChild.FindDescendant<ListView>()
-                : null;
-            if (_suggestionsList is null || _savedItemContainerTransitions is not null)
-                return;
-
-            var listView = _suggestionsList;
-            _savedItemContainerTransitions = listView.ItemContainerTransitions;
-            listView.ItemContainerTransitions = new TransitionCollection();
-
-            void Restore(object? sender, object e)
-            {
-                listView.LayoutUpdated -= Restore;
-                listView.ItemContainerTransitions = _savedItemContainerTransitions;
-                _savedItemContainerTransitions = null;
-            }
-            listView.LayoutUpdated += Restore;
-        }
-
-
-        private void ShowNotFound()
-        {
-            _nextCursor = "";
-            _hasMore = false;
-            SetResults([new SearchBoxNotFoundItem()]);
-        }
-
-        private CancellationToken ResetSearchCancellation()
-        {
-            if (_searchCts is not null)
-            {
-                _searchCts.Cancel();
-                _searchCts.Dispose();
-            }
-            _searchCts = new CancellationTokenSource();
-            return _searchCts.Token;
         }
 
         private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -170,123 +55,43 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (string.IsNullOrWhiteSpace(sender.Text))
             {
-                // Keep the last results, unless the initial search was still loading.
-                if (_isInitialLoading)
-                {
-                    ResetSearchCancellation();
-                    _isInitialLoading = false;
-                    _isLoadingMore = false;
-                    ShowNotFound();
-                }
+                _pager.ClearQuery();
                 return;
             }
 
-            var token = ResetSearchCancellation();
-            _currentQuery = sender.Text;
-            _nextCursor = "";
-            _hasMore = false;
-            _isInitialLoading = true;
-            _isLoadingMore = false;
-            SetResults([new SearchBoxLoaderItem(), new SearchBoxLoaderItem(), new SearchBoxLoaderItem()]);
-
-            if (ViewModel.SelectedSync is null)
-            {
-                Logger.LogWarning("SearchItem called but no sync is selected.");
-                _isInitialLoading = false;
-                ShowNotFound();
-                return;
-            }
-
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            try
-            {
-                var result = await commService.SearchItem(ViewModel.SelectedSync, _currentQuery, "", token);
-                if (token.IsCancellationRequested)
-                    return;
-
-                _isInitialLoading = false;
-                if (result.Cause != ExitCode.Ok)
-                {
-                    Logger.LogWarning($"SearchItem failed with cause {result.Cause}.");
-                    ShowNotFound();
-                    Utility.ShowUnexpectedErrorTeachingTip();
-                    return;
-                }
-
-                if (result.Items.Count == 0)
-                {
-                    Logger.LogExtended("SearchItem returned empty result.");
-                    ShowNotFound();
-                    return;
-                }
-
-                _nextCursor = result.Cursor;
-                _hasMore = result.HasMore;
-                List<ISearchBoxResultItem> items = [.. result.Items.Select(r => new SearchBoxResultItem(r))];
-                if (_hasMore)
-                    items.Add(new SearchBoxLoaderItem(IsLoadMore: true));
-                SetResults(items);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected: ignore
-            }
+            if (!await _pager.SearchAsync(ViewModel.SelectedSync, sender.Text))
+                Utility.ShowUnexpectedErrorTeachingTip();
         }
 
-        private async void LoadMoreResults()
+        // Loader items should appear/disappear instantly, so item transitions are disabled for one layout pass.
+        private void SuppressItemTransitionsForNextLayout()
         {
-            if (_isInitialLoading || _isLoadingMore || !_hasMore || ViewModel.SelectedSync is null)
+            _suggestionsList ??= TitleBarSearchBox.FindDescendant<Popup>()?.Child is FrameworkElement popupChild
+                ? popupChild as ListView ?? popupChild.FindDescendant<ListView>()
+                : null;
+            if (_suggestionsList is not { } listView || listView.ItemContainerTransitions.Count == 0)
                 return;
 
-            _isLoadingMore = true;
-            var token = _searchCts?.Token ?? CancellationToken.None;
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            try
+            var savedTransitions = listView.ItemContainerTransitions;
+            listView.ItemContainerTransitions = [];
+
+            void Restore(object? sender, object e)
             {
-                var result = await commService.SearchItem(ViewModel.SelectedSync, _currentQuery, _nextCursor, token);
-                if (token.IsCancellationRequested)
-                    return;
-
-                _isLoadingMore = false;
-                SuppressTransitionsForNextLayout();
-                if (_results.Count > 0 && _results[^1] is SearchBoxLoaderItem { IsLoadMore: true })
-                    _results.RemoveAt(_results.Count - 1);
-
-                if (result.Cause != ExitCode.Ok)
-                {
-                    Logger.LogWarning($"SearchItem (load more) failed with cause {result.Cause}.");
-                    _nextCursor = "";
-                    _hasMore = false;
-                    return;
-                }
-
-                _nextCursor = result.Cursor;
-                _hasMore = result.HasMore;
-                foreach (var item in result.Items)
-                    _results.Add(new SearchBoxResultItem(item));
-                if (_hasMore)
-                    _results.Add(new SearchBoxLoaderItem(IsLoadMore: true));
+                listView.LayoutUpdated -= Restore;
+                listView.ItemContainerTransitions = savedTransitions;
             }
-            catch (OperationCanceledException)
-            {
-                // Expected: ignore
-            }
+            listView.LayoutUpdated += Restore;
         }
 
         private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            ISearchBoxResultItem? resultItem = args.ChosenSuggestion as ISearchBoxResultItem;
+            // Prefer the chosen suggestion, then an exact name match, then the first result.
+            var results = _pager.Items.Where(i => i.IsSelectable).ToList();
+            var searchItem = (args.ChosenSuggestion as ISearchBoxResultItem)?.SearchItem
+                ?? results.FirstOrDefault(i => i.SearchItem?.Name == sender.Text)?.SearchItem
+                ?? results.FirstOrDefault()?.SearchItem;
 
-            // If the user has not selected a suggestion, attempt to find an exact match in the suggestion list.
-            // Otherwise, use the first suggestion if available. If no suggestions exist, there is no result to process.
-            IEnumerable<ISearchBoxResultItem>? currentSuggestions = sender.ItemsSource as IEnumerable<ISearchBoxResultItem>;
-            if (resultItem is null)
-                resultItem = currentSuggestions?.FirstOrDefault(i => i.SearchItem?.Name == sender.Text);
-
-            if (resultItem is null)
-                resultItem = currentSuggestions?.Any() ?? false ? currentSuggestions.ElementAt(0) : null;
-
-            if (resultItem is null || resultItem.SearchItem is null || !resultItem.IsSelectable)
+            if (searchItem is null)
             {
                 Logger.LogInfo("QuerySubmitted but no result match the query.");
                 return;
@@ -299,32 +104,29 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            if (!resultItem.SearchItem.IsAvailableLocally)
+            if (!searchItem.IsAvailableLocally)
             {
                 // Item is not available locally, open in web browser
-                var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
+                var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, searchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
                 _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItemWeb);
                 return;
             }
 
-            // Open the file or folder
-            var itemRelativePath = resultItem.SearchItem.Path;
-            // Remove leading slash or _privateFolderName or _sharedFolderName folder from the path
-            if (itemRelativePath is not null)
-            {
-                string path = System.IO.Path.Combine(ViewModel.SelectedSync.LocalPath, itemRelativePath);
+            if (searchItem.Path is null)
+                return;
 
-                if (!Directory.Exists(path))
-                {
-                    await Utility.OpenFileAsync(path);
-                    _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItem);
-                    sender.IsSuggestionListOpen = false;
-                    return;
-                }
+            string path = Path.Combine(ViewModel.SelectedSync.LocalPath, searchItem.Path);
+            if (Directory.Exists(path))
+            {
                 await Utility.OpenFolderSecurely(path);
-                _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItem);
             }
+            else
+            {
+                await Utility.OpenFileAsync(path);
+                sender.IsSuggestionListOpen = false;
+            }
+            _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItem);
         }
 
         private void SearchResultItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -333,93 +135,51 @@ namespace Infomaniak.kDrive.CustomControls
 
             // The trailing loader is realized when the user scrolls near the end of the list.
             if (item is SearchBoxLoaderItem { IsLoadMore: true })
-                LoadMoreResults();
+                _ = _pager.LoadNextPageAsync();
 
-            // Containers are recycled: always reset the state, and retry once loaded if not yet in the tree.
-            if (!ApplyContainerSelectableState(sender, item))
+            // Containers are recycled: always reset their state, once loaded if not yet in the tree.
+            if (!TryApplyContainerSelectableState(sender))
             {
                 void OnLoaded(object s, RoutedEventArgs e)
                 {
                     sender.Loaded -= OnLoaded;
-                    if (sender.DataContext is ISearchBoxResultItem current)
-                        ApplyContainerSelectableState(sender, current);
+                    TryApplyContainerSelectableState(sender);
                 }
                 sender.Loaded += OnLoaded;
             }
         }
 
-        private static bool ApplyContainerSelectableState(FrameworkElement element, ISearchBoxResultItem item)
+        private static bool TryApplyContainerSelectableState(FrameworkElement element)
         {
-            // Walk up the visual tree to find the parent ListViewItem
-            var parentItem = element.FindAscendant<ListViewItem>();
-            if (parentItem is null)
+            if (element.DataContext is not ISearchBoxResultItem item || element.FindAscendant<ListViewItem>() is not { } container)
                 return false;
 
-            parentItem.IsHitTestVisible = item.IsSelectable;
-            parentItem.IsTabStop = item.IsSelectable;
-            parentItem.IsTapEnabled = item.IsSelectable;
+            container.IsHitTestVisible = item.IsSelectable;
+            container.IsTabStop = item.IsSelectable;
+            container.IsTapEnabled = item.IsSelectable;
             return true;
         }
 
-        private void Template_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void Template_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            FrameworkElement? frameworkElement = sender as FrameworkElement;
-            if (frameworkElement is null)
-            {
-                Logger.LogWarning("sender is expected to be a FrameworkElement.");
-                return;
-            }
-
-            SearchBoxResultItem? searchResultItem = frameworkElement.DataContext as SearchBoxResultItem;
-            if (searchResultItem is null)
+            if ((sender as FrameworkElement)?.DataContext is not SearchBoxResultItem item || item == _hoveredItem)
                 return;
 
-            if (_lastItemOver is SearchBoxResultItem lastItemOver && lastItemOver != searchResultItem)
-                lastItemOver.ShowUnavailableState = false;
-
-            if (!searchResultItem.SearchItem?.IsAvailableLocally ?? false)
+            ClearHoveredItem();
+            if (item.SearchItem?.IsAvailableLocally == false)
             {
-                searchResultItem.ShowUnavailableState = true;
-                _lastItemOver = searchResultItem;
+                item.ShowUnavailableState = true;
+                _hoveredItem = item;
             }
         }
 
-        private void Template_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void Template_PointerExited(object sender, PointerRoutedEventArgs e) => ClearHoveredItem();
+
+        private void ClearHoveredItem()
         {
-            if (_lastItemOver is SearchBoxResultItem lastItemOver)
-                lastItemOver.ShowUnavailableState = false;
-        }
-    }
-
-    public class SearchBoxResultItemTemplateSelector : DataTemplateSelector
-    {
-        public DataTemplate? FileTemplate { get; set; }
-        public DataTemplate? FolderTemplate { get; set; }
-        public DataTemplate? NotFoundTemplate { get; set; }
-        public DataTemplate? LoaderTemplate { get; set; }
-
-
-        protected override DataTemplate? SelectTemplateCore(object item)
-        {
-            if (item is null)
-                return base.SelectTemplateCore(item);
-
-            if (item is not ISearchBoxResultItem resultItem)
-                return base.SelectTemplateCore(item);
-
-            if (resultItem.SearchItem is not null)
-            {
-                return resultItem.SearchItem.Type == NodeType.File ? FileTemplate : FolderTemplate;
-            }
-            else if (item is SearchBoxNotFoundItem)
-            {
-                return NotFoundTemplate;
-            }
-            else if (item is SearchBoxLoaderItem)
-            {
-                return LoaderTemplate;
-            }
-            return base.SelectTemplateCore(item);
+            if (_hoveredItem is not null)
+                _hoveredItem.ShowUnavailableState = false;
+            _hoveredItem = null;
         }
     }
 }
