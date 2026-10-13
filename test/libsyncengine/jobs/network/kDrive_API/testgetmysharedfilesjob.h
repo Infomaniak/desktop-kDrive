@@ -21,13 +21,13 @@
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 
-#include "utility/types.h"
+#include "libsyncengine/testbasewithparmsdb.h"
 
 using namespace CppUnit;
 
 namespace KDC {
 
-class TestGetMySharedFilesJob : public CppUnit::TestFixture, public TestBase {
+class TestGetMySharedFilesJob : public CppUnit::TestFixture, public TestBaseWithParmsDb {
     public:
         CPPUNIT_TEST_SUITE(TestGetMySharedFilesJob);
         CPPUNIT_TEST(testHandleResponse);
@@ -47,10 +47,6 @@ class TestGetMySharedFilesJob : public CppUnit::TestFixture, public TestBase {
         void testHandleResponseMissingDataArray();
         void testSetQueryParameters();
         void testGetSpecificUrl();
-
-    private:
-        const DriveDbId _driveDbId = 1;
-        LocalTemporaryDirectory _localTempDir{"testGetMySharedFilesJob"};
 };
 
 } // namespace KDC
