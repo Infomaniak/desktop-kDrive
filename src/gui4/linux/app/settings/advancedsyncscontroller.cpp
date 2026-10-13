@@ -225,6 +225,9 @@ void AdvancedSyncsController::refresh() {
             row.deletePending = _syncService.isDeleteSyncPending(syncInfo.dbId());
             rows.push_back(std::move(row));
         }
+    } else if (_creation) {
+        qCInfo(lcAdvancedSyncsController) << "Advanced sync creation closed: the drive is gone | driveDbId:" << _driveDbId;
+        releaseCreation();
     }
 
     for (const SyncDbId addedSyncDbId: _model.replaceRows(std::move(rows))) {
@@ -232,6 +235,28 @@ void AdvancedSyncsController::refresh() {
     }
 
     emit presentationChanged();
+}
+
+void AdvancedSyncsController::openCreation() {
+    if (_creation || !_appCache.driveContext(_driveDbId)) {
+        return;
+    }
+
+    _creation = new AdvancedSyncCreationController(_appCache, _commService, _syncService, _driveDbId, this);
+    emit creationChanged();
+}
+
+void AdvancedSyncsController::releaseCreation() {
+    if (!_creation) {
+        return;
+    }
+
+    // A submitted synchronization is not abandoned: it still reaches the page through its SYNC_ADDED push.
+    AdvancedSyncCreationController *const creation = _creation;
+    _creation = nullptr;
+    // The dialog schedules its own destruction first, so it never outlives its controller.
+    emit creationChanged();
+    creation->deleteLater();
 }
 
 void AdvancedSyncsController::loadBlackList(const SyncDbId syncDbId) {
@@ -257,6 +282,7 @@ void AdvancedSyncsController::loadBlackList(const SyncDbId syncDbId) {
 }
 
 void AdvancedSyncsController::resetTarget() {
+    releaseCreation();
     ++_targetGeneration;
     _driveDbId = 0;
     _driveId = 0;
