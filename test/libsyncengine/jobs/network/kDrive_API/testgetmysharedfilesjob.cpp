@@ -19,7 +19,7 @@
 #include "testgetmysharedfilesjob.h"
 
 #include "version.h"
-#include "jobs/network/kDrive_API/getmysharedfilesjob.h"
+#include "jobs/network/kDrive_API/getfilessharedwithmejob.h"
 #include "jobs/network/abstracttokennetworkjob.h"
 #include "requests/parameterscache.h"
 
@@ -50,15 +50,15 @@ std::string makeMySharedResponseJson() {
 
 } // anonymous namespace
 
-void TestGetMySharedFilesJob::setUp() {
+void TestGetFilesSharedWithMeJob::setUp() {
     TestBase::start();
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestGetMySharedFilesJob");
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestGetFilesSharedWithMeJob");
 
     initParmsDb();
 }
 
-void TestGetMySharedFilesJob::tearDown() {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Tear Down TestGetMySharedFilesJob");
+void TestGetFilesSharedWithMeJob::tearDown() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Tear Down TestGetFilesSharedWithMeJob");
 
     AbstractTokenNetworkJob::clearCache();
     ParmsDb::instance()->close();
@@ -67,8 +67,8 @@ void TestGetMySharedFilesJob::tearDown() {
     TestBase::stop();
 }
 
-void TestGetMySharedFilesJob::testHandleResponse() {
-    GetMySharedFilesJob job(_driveDbId);
+void TestGetFilesSharedWithMeJob::testHandleResponse() {
+    GetFilesSharedWithMeJob job(_driveDbId);
 
     const std::string json = makeMySharedResponseJson();
     std::istringstream is(json);
@@ -97,9 +97,9 @@ void TestGetMySharedFilesJob::testHandleResponse() {
     CPPUNIT_ASSERT(fileInfo.path().isEmpty());
 }
 
-void TestGetMySharedFilesJob::testHandleResponseTwice() {
+void TestGetFilesSharedWithMeJob::testHandleResponseTwice() {
     // A retried request handles a second response: its results replace those of the first one instead of piling up.
-    GetMySharedFilesJob job(_driveDbId);
+    GetFilesSharedWithMeJob job(_driveDbId);
     const std::string json = makeMySharedResponseJson();
 
     for (int32_t attempt = 0; attempt < 2; ++attempt) {
@@ -110,9 +110,9 @@ void TestGetMySharedFilesJob::testHandleResponseTwice() {
     CPPUNIT_ASSERT_EQUAL(size_t{2}, job.v3RemoteNodeInfoList().size());
 }
 
-void TestGetMySharedFilesJob::testHandleResponseMissingDataArray() {
+void TestGetFilesSharedWithMeJob::testHandleResponseMissingDataArray() {
     // A response without a data array is a backend error.
-    GetMySharedFilesJob job(_driveDbId);
+    GetFilesSharedWithMeJob job(_driveDbId);
 
     const std::string json = R"({"cursor":"c1","has_more":false})";
     std::istringstream is(json);
@@ -122,8 +122,8 @@ void TestGetMySharedFilesJob::testHandleResponseMissingDataArray() {
     CPPUNIT_ASSERT_EQUAL(size_t{0}, job.v3RemoteNodeInfoList().size());
 }
 
-void TestGetMySharedFilesJob::testSetQueryParameters() {
-    const auto queryParameters = [](GetMySharedFilesJob &job) {
+void TestGetFilesSharedWithMeJob::testSetQueryParameters() {
+    const auto queryParameters = [](GetFilesSharedWithMeJob &job) {
         Poco::URI uri("https://api.infomaniak.com/3/drive/1/files/my_shared");
         job.setQueryParameters(uri);
         std::map<std::string, std::string> parameters;
@@ -134,20 +134,20 @@ void TestGetMySharedFilesJob::testSetQueryParameters() {
     };
 
     // A first page is requested without cursor.
-    GetMySharedFilesJob firstPageJob(_driveDbId);
+    GetFilesSharedWithMeJob firstPageJob(_driveDbId);
     auto parameters = queryParameters(firstPageJob);
     CPPUNIT_ASSERT(!parameters.contains("cursor"));
     CPPUNIT_ASSERT_EQUAL(std::string("10"), parameters["limit"]);
 
     // A next page is requested with the cursor of the previous one.
-    GetMySharedFilesJob nextPageJob(_driveDbId, "c1", 50);
+    GetFilesSharedWithMeJob nextPageJob(_driveDbId, "c1", 50);
     parameters = queryParameters(nextPageJob);
     CPPUNIT_ASSERT_EQUAL(std::string("c1"), parameters["cursor"]);
     CPPUNIT_ASSERT_EQUAL(std::string("50"), parameters["limit"]);
 }
 
-void TestGetMySharedFilesJob::testGetSpecificUrl() {
-    GetMySharedFilesJob job(_driveDbId);
+void TestGetFilesSharedWithMeJob::testGetSpecificUrl() {
+    GetFilesSharedWithMeJob job(_driveDbId);
     CPPUNIT_ASSERT(job.getSpecificUrl().ends_with("/files/my_shared"));
 }
 
