@@ -709,7 +709,9 @@ void SyncPal::finalizeDirectDownload(const std::shared_ptr<DownloadJob> &downloa
     }
 
     PinState newPinState = downloadSucceeded ? PinState::AlwaysLocal : PinState::OnlineOnly;
-    VfsStatus newVfsStatus({.isHydrated = downloadSucceeded, .isSyncing = !isLocalItemInSyncWithDb(localPath)});
+    int16_t progress = downloadSucceeded ? 100 : 0;
+    VfsStatus newVfsStatus(
+            {.isHydrated = downloadSucceeded, .isSyncing = !isLocalItemInSyncWithDb(localPath), .progress = progress});
 
     if (const ExitInfo exitInfo = _vfs->setPinState(localPath, newPinState); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(localPath) << L": " << exitInfo);
