@@ -39,6 +39,9 @@ final class SidebarNotificationView: NSView {
         textField.font = NSFont.Tokens.body
         textField.textColor = ColorToken.Text.tertiary.asNSColor
         textField.alignment = .center
+        // Wrap instead of demanding intrinsic width, so a long message never resizes the sidebar
+        textField.lineBreakMode = .byWordWrapping
+        textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return textField
     }()
 

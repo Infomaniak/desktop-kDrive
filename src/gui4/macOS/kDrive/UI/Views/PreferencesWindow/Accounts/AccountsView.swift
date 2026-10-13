@@ -40,8 +40,9 @@ struct AccountsView: View {
 
                 Section {
                     Button(KDriveLocalizable.buttonConnectAccount) {
-                        @InjectService var router: MainWindowRouter
-                        router.navigate(to: .onboarding(nil, nil, .login))
+                        (NSApp.delegate as? AppDelegate)?.openOnboardingWindow()
+                        @InjectService var matomo: MatomoUtils
+                        matomo.track(eventWithCategory: .accountsSettingsPage, name: "openOnboarding")
                     }
                     .buttonStyle(.bordered)
                     .frame(maxWidth: .infinity, alignment: .trailing)

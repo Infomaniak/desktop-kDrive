@@ -27,6 +27,7 @@ public struct UISearchResponse: Sendable, Identifiable {
     public let modifiedDate: Date
     public let size: Int64
     public let isAvailableLocally: Bool
+    public let isHydrated: Bool
 
     public init(
         id: String,
@@ -35,7 +36,8 @@ public struct UISearchResponse: Sendable, Identifiable {
         path: String,
         modifiedDate: Date,
         size: Int64,
-        isAvailableLocally: Bool
+        isAvailableLocally: Bool,
+        isHydrated: Bool
     ) {
         self.id = id
         self.name = name
@@ -44,6 +46,12 @@ public struct UISearchResponse: Sendable, Identifiable {
         self.modifiedDate = modifiedDate
         self.size = size
         self.isAvailableLocally = isAvailableLocally
+        self.isHydrated = isHydrated
+    }
+
+    /// Available directories and hydrated files open locally; dehydrated files require a confirmed unpaused synchro.
+    public func opensLocally(isSynchroPaused: Bool?) -> Bool {
+        isAvailableLocally && (type == .directory || isHydrated || isSynchroPaused == false)
     }
 
     public var parentFolderName: String {

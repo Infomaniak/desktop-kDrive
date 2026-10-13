@@ -1423,9 +1423,9 @@ bool LiteSyncCommClient::vfsSetStatus(const SyncPath &path, const SyncPath &loca
         return false;
     }
 
-    if (!sendStatusToFinder(path, VfsStatus({.isHydrated = vfsStatus.isHydrated,
-                                             .isSyncing = vfsStatus.isSyncing,
-                                             .progress = roundedProgress}))) {
+    if (!sendStatusToFinder(
+                path,
+                VfsStatus({.isHydrated = vfsStatus.isHydrated, .isSyncing = vfsStatus.isSyncing, .progress = roundedProgress}))) {
         LOGW_WARN(_logger, L"Call to sendStatusToFinder failed: " << Utility::formatSyncPath(path));
         return false;
     }

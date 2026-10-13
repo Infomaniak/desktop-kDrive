@@ -37,6 +37,11 @@ struct SetSupportsVirtualFilesQuery: Codable, Sendable {
     let value: Bool
 }
 
+struct AcknowledgeManyDeletesQuery: Codable, Sendable {
+    let syncDbId: Int32
+    let userChoice: KDC.TooManyDeletesUserChoice
+}
+
 struct SyncInfoList: Codable, Sendable {
     let syncInfoList: [SyncInfo]
 }

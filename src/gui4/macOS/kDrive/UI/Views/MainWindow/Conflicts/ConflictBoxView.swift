@@ -51,7 +51,7 @@ struct ConflictBoxView: View {
             HStack {
                 HStack(spacing: AppPadding.padding8) {
                     type.icon
-                        .resizable(at: AppIconSize.iconSize12)
+                        .resizable(at: AppIconSize.iconSize16)
 
                     Text(type.title)
                         .font(.Tokens.body)

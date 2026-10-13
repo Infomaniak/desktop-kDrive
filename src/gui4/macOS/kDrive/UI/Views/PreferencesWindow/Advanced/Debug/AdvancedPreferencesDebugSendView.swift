@@ -23,6 +23,48 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
+enum LogUploadStatusEffect: Equatable {
+    case ignored
+    case inProgress
+    case succeeded
+    case failed
+    case canceled
+    case idle
+}
+
+struct LogUploadSessionTracker {
+    private(set) var hasObservedInProgressStatus = false
+
+    mutating func prepareForUpload() {
+        hasObservedInProgressStatus = false
+    }
+
+    mutating func handle(_ status: LogUploadStatus) -> LogUploadStatusEffect {
+        switch status.state {
+        case .Archiving, .Uploading, .CancelRequested:
+            hasObservedInProgressStatus = true
+            return .inProgress
+        case .Success:
+            return finish(with: .succeeded)
+        case .Failed:
+            return finish(with: .failed)
+        case .Canceled:
+            return finish(with: .canceled)
+        case .None, .EnumEnd:
+            hasObservedInProgressStatus = false
+            return .idle
+        @unknown default:
+            return finish(with: .failed)
+        }
+    }
+
+    private mutating func finish(with effect: LogUploadStatusEffect) -> LogUploadStatusEffect {
+        guard hasObservedInProgressStatus else { return .ignored }
+        hasObservedInProgressStatus = false
+        return effect
+    }
+}
+
 struct SendDebugFolderView: View {
     @LazyInjectService private var logUploadStatusObservable: LogUploadStatusCacheObservable
 
@@ -31,8 +73,10 @@ struct SendDebugFolderView: View {
     @Binding var isShowingError: Bool
 
     @State private var shouldOnlySendLastSession = false
+    @State private var isStartingDebugFolderUpload = false
     @State private var isSendingDebugFolder = false
     @State private var logUploadStatus: LogUploadStatus?
+    @State private var uploadSessionTracker = LogUploadSessionTracker()
 
     private var progressValue: Double {
         let percentage = logUploadStatus?.percentage ?? 0
@@ -64,17 +108,20 @@ struct SendDebugFolderView: View {
             handleLogUploadStatus(status)
         }
         .toolbar {
+            @InjectService var matomo: MatomoUtils
             ToolbarItem(placement: .confirmationAction) {
-                LoadingButton(isLoading: $isSendingDebugFolder) {
+                LoadingButton(isLoading: $isStartingDebugFolderUpload) {
+                    matomo.track(eventWithCategory: .advancedSettingsPage, name: "sendLogToSupport")
                     await sendFolder()
                 } label: {
                     Text(KDriveLocalizable.buttonSend)
                 }
-                .disabled(isSendingDebugFolder)
+                .disabled(isSendingDebugFolder || isStartingDebugFolderUpload)
             }
 
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                    matomo.track(eventWithCategory: .advancedSettingsPage, name: "cancelLogToSupport")
                     cancelLogUploadIfNeeded()
                 }
             }
@@ -83,36 +130,45 @@ struct SendDebugFolderView: View {
 
     func sendFolder() async {
         let utilityJobs = UtilityJobs()
+        IKLogger.general.info("[KD] Support log upload requested includeArchivedLogs=\(!shouldOnlySendLastSession)")
         do {
             logUploadStatus = nil
+            uploadSessionTracker.prepareForUpload()
             isSendingDebugFolder = true
             try await utilityJobs.sendLogToSupport(includeArchivedLogs: !shouldOnlySendLastSession)
+            IKLogger.general.info("[KD] Support log upload request accepted")
         } catch {
+            IKLogger.general.warning("[KD] Support log upload request failed")
             isSendingDebugFolder = false
             isShowingError = true
         }
     }
 
     private func handleLogUploadStatus(_ status: LogUploadStatus) {
+        let effect = uploadSessionTracker.handle(status)
+        guard effect != .ignored else {
+            IKLogger.general.debug("[KD] Support log upload status ignored state=\(status.state.rawValue)")
+            return
+        }
+
         logUploadStatus = status
 
-        switch status.state {
-        case .Archiving, .Uploading, .CancelRequested:
+        switch effect {
+        case .inProgress:
             isSendingDebugFolder = true
-        case .Success:
+        case .succeeded:
             isSendingDebugFolder = false
             dismiss()
-        case .Failed:
+        case .failed:
             isSendingDebugFolder = false
             isShowingError = true
-        case .Canceled:
+        case .canceled:
             isSendingDebugFolder = false
             dismiss()
-        case .None, .EnumEnd:
+        case .idle:
             isSendingDebugFolder = false
-        @unknown default:
-            isSendingDebugFolder = false
-            isShowingError = true
+        case .ignored:
+            break
         }
     }
 
@@ -123,7 +179,13 @@ struct SendDebugFolderView: View {
         }
 
         Task { @MainActor in
-            try? await UtilityJobs().cancelLogToSupport()
+            IKLogger.general.info("[KD] Support log upload cancellation requested")
+            do {
+                try await UtilityJobs().cancelLogToSupport()
+                IKLogger.general.info("[KD] Support log upload cancellation accepted")
+            } catch {
+                IKLogger.general.warning("[KD] Support log upload cancellation failed; dismissing dialog")
+            }
             dismiss()
         }
     }
@@ -135,11 +197,13 @@ struct AdvancedPreferencesDebugSendView: View {
 
     var body: some View {
         Section {
-            HStack(spacing: AppPadding.padding8) {
-                BadgeView(image: KDriveResources.headphones.swiftUIImage, color: ColorToken.Accent.primary.asColor)
+            HStack(spacing: 0) {
+                HStack(spacing: AppPadding.padding8) {
+                    BadgeView(image: KDriveResources.headphones.swiftUIImage, color: ColorToken.Accent.primary.asColor)
+                    Text(KDriveLocalizable.infomaniakSupport)
+                }
 
-                Text(KDriveLocalizable.infomaniakSupport)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer(minLength: AppPadding.padding8)
 
                 Button(KDriveLocalizable.buttonSendLog) {
                     isShowingSheet = true

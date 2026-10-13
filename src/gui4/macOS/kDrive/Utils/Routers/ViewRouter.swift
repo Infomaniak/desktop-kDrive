@@ -32,14 +32,13 @@ struct Path<Tab: RouterTab>: Equatable {
     let details: [Tab.Detail]
 }
 
-enum ModalPath: Equatable {}
-
 // periphery:ignore - Some functions will be used later.
 final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     typealias RouterPath = Path<Tab>
 
+    private let defaultTab: Tab
+
     @Published private(set) var currentPath: RouterPath
-    @Published private(set) var currentModal: ModalPath?
 
     private var pathCache: [Tab: RouterPath]
 
@@ -49,6 +48,16 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     }
 
     init(defaultTab: Tab) {
+        self.defaultTab = defaultTab
+
+        let initialPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])
+
+        currentPath = initialPath
+        pathCache = [defaultTab: initialPath]
+    }
+
+    @MainActor
+    func resetToDefaultState() {
         let initialPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])
 
         currentPath = initialPath
@@ -68,11 +77,6 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
         }
 
         setCurrentTab(tab)
-    }
-
-    @MainActor
-    func setCurrentModal(_ modal: ModalPath?) {
-        currentModal = modal
     }
 
     @MainActor

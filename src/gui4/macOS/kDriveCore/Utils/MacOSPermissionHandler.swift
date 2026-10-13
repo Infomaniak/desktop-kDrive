@@ -16,8 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
 import Foundation
+import InfomaniakDI
 
 public enum MacOSPermission: Sendable {
     case endpointSecurityExtension
@@ -35,56 +35,98 @@ public protocol MacOSPermissionHandling: Sendable {
 }
 
 public final class MacOSPermissionHandler: MacOSPermissionHandling {
-    private let authorizationCheckers: [MacOSPermission: AuthorizationChecker]
+    @LazyInjectService private var permissionsProvider: MacOSPermissionsProviding
 
-    init(authorizationCheckers: [MacOSPermission: AuthorizationChecker]? = nil) {
-        self.authorizationCheckers = authorizationCheckers ?? [
-            .endpointSecurityExtension: EndpointSecurityExtensionChecker(),
-            .fullDiskAccess: FullDiskChecker()
-        ]
+    private let injectedPermissionsProvider: MacOSPermissionsProviding?
+
+    init(permissionsProvider: MacOSPermissionsProviding? = nil) {
+        injectedPermissionsProvider = permissionsProvider
     }
 
     public func isAuthorized(for permission: MacOSPermission) async -> Bool {
-        guard let checker = authorizationCheckers[permission] else {
-            return false
-        }
+        let checker = authorizationChecker(for: permission)
         return await checker.hasAccess()
     }
 
     public func systemPreferencesURL(for permission: MacOSPermission) -> URL? {
-        return authorizationCheckers[permission]?.systemPreferencesURL
+        return authorizationChecker(for: permission).systemPreferencesURL
+    }
+
+    private func authorizationChecker(for permission: MacOSPermission) -> AuthorizationChecker {
+        let permissionsProvider = injectedPermissionsProvider ?? permissionsProvider
+        switch permission {
+        case .endpointSecurityExtension:
+            return EndpointSecurityExtensionChecker(permissionsProvider: permissionsProvider)
+        case .fullDiskAccess:
+            return FullDiskChecker(permissionsProvider: permissionsProvider)
+        }
+    }
+}
+
+// MARK: - Server permissions provider
+
+/// Provides the state of the macOS authorizations required by Lite Sync, as reported by the Server process.
+///
+/// Those authorizations cannot be reliably checked from the client (GUI) process: reading the TCC database requires the reading
+/// process itself to have been granted the Full Disk Access authorization, which the GUI process does not need. Only the Server
+/// process can answer, hence the round-trip over XPC.
+protocol MacOSPermissionsProviding: Sendable {
+    func fetchPermissions() async -> UtilityCheckMacOsPermissionsResponse?
+}
+
+struct ServerMacOSPermissionsProvider: MacOSPermissionsProviding {
+    func fetchPermissions() async -> UtilityCheckMacOsPermissionsResponse? {
+        do {
+            return try await UtilityJobs().checkMacOsPermissions()
+        } catch {
+            IKLogger.general.error("Failed to check macOS permissions: \(error)")
+            return nil
+        }
+    }
+}
+
+actor SingleFlightMacOSPermissionsProvider: MacOSPermissionsProviding {
+    private let provider: MacOSPermissionsProviding
+    private var currentFetch: Task<UtilityCheckMacOsPermissionsResponse?, Never>?
+
+    init(provider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+        self.provider = provider
+    }
+
+    func fetchPermissions() async -> UtilityCheckMacOsPermissionsResponse? {
+        if let currentFetch {
+            return await currentFetch.value
+        }
+
+        let fetch = Task {
+            await provider.fetchPermissions()
+        }
+        currentFetch = fetch
+
+        let permissions = await fetch.value
+        currentFetch = nil
+        return permissions
     }
 }
 
 // MARK: - Full Disk Access
 
+/// Full Disk Access is considered granted only when BOTH the Server process and the Lite Sync extension have been granted it.
+/// The GUI process itself is never required to have Full Disk Access.
 final class FullDiskChecker: AuthorizationChecker {
-    private static let testableFiles = [
-        "~/Library/Containers/com.apple.stocks",
-        "~/Library/Safari",
-        "/Library/Application Support/com.apple.TCC"
-    ]
-
     let systemPreferencesURL = SystemPreferencesURL.fullDiskAccess
 
-    func hasAccess() async -> Bool {
-        for testableFile in FullDiskChecker.testableFiles {
-            if canAccess(toFile: testableFile) {
-                return true
-            }
-        }
+    private let permissionsProvider: MacOSPermissionsProviding
 
-        return false
+    init(permissionsProvider: MacOSPermissionsProviding) {
+        self.permissionsProvider = permissionsProvider
     }
 
-    private func canAccess(toFile file: String) -> Bool {
-        do {
-            let path = (file as NSString).expandingTildeInPath
-            _ = try FileManager.default.contentsOfDirectory(atPath: path)
-            return true
-        } catch {
+    func hasAccess() async -> Bool {
+        guard let permissions = await permissionsProvider.fetchPermissions() else {
             return false
         }
+        return permissions.fullDiskAccess && permissions.liteSyncExtFullDiskAccess
     }
 }
 
@@ -93,16 +135,16 @@ final class FullDiskChecker: AuthorizationChecker {
 final class EndpointSecurityExtensionChecker: AuthorizationChecker {
     let systemPreferencesURL = SystemPreferencesURL.endpointSecurityExtension
 
+    private let permissionsProvider: MacOSPermissionsProviding
+
+    init(permissionsProvider: MacOSPermissionsProviding) {
+        self.permissionsProvider = permissionsProvider
+    }
+
     func hasAccess() async -> Bool {
-        let command = "systemextensionsctl list | grep \(Constants.lightSyncBundleID) | grep enabled | wc -l"
-        guard let result = try? ShellExecutor().execute(command: command) else {
+        guard let permissions = await permissionsProvider.fetchPermissions() else {
             return false
         }
-
-        guard let processCount = Int(result.trimmingCharacters(in: .whitespacesAndNewlines)), processCount > 0 else {
-            return false
-        }
-
-        return true
+        return permissions.liteSyncExtEnabled
     }
 }

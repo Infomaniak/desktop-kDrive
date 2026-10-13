@@ -22,9 +22,11 @@ extension SynchroErrorKind {
     private var matcher: SynchroErrorKindMatcher? {
         switch self {
         case .conflict:
-            return .node(conflictTypes: [.CreateCreate])
+            return .node(conflictTypes: [.CreateCreate, .EditEdit], exitCodes: [.Unknown, .Ok])
+        case .caseError:
+            return .node(inconsistencyTypes: [.Case])
         case .createCancel:
-            return .node(conflictTypes: [.CreateCreate])
+            return .node(cancelTypes: [.Create])
         case .deleteCancel:
             return .node(cancelTypes: [.Delete])
         case .editCancel:
@@ -64,11 +66,7 @@ extension SynchroErrorKind {
         case .backErrorDriveNotRenew:
             return .syncPal(exitCodes: [.BackError], exitCauses: [.DriveNotRenew])
         case .invalidSyncDirAccess:
-            return .syncPal(
-                nodeTypes: [.File, .Directory, .Unknown],
-                exitCodes: [.SystemError],
-                exitCauses: [.SyncDirAccessError]
-            )
+            return .syncPal(exitCodes: [.InvalidSync], exitCauses: [.SyncDirAccessError])
         case .invalidSyncDirNesting:
             return .syncPal(exitCodes: [.InvalidSync], exitCauses: [.SyncDirNestingError])
         case .invalidToken:
@@ -78,7 +76,11 @@ extension SynchroErrorKind {
         case .systemNotEnoughDiskSpace:
             return .syncPal(exitCodes: [.SystemError], exitCauses: [.NotEnoughDiskSpace])
         case .systemSyncDirAccess:
-            return .syncPal(exitCodes: [.InvalidSync], exitCauses: [.SyncDirAccessError])
+            return .syncPal(
+                nodeTypes: [.File, .Directory, .Unknown],
+                exitCodes: [.SystemError],
+                exitCauses: [.SyncDirAccessError]
+            )
         case .systemSyncDirDiskMissing:
             return .syncPal(
                 nodeTypes: [.File, .Directory, .Unknown],
@@ -95,6 +97,8 @@ extension SynchroErrorKind {
             return .node(exitCodes: [.BackError], exitCauses: [.HttpErrForbidden])
         case .hardLink:
             return .node(cancelTypes: [.Hardlink])
+        case .invalidLinkTarget:
+            return .node(cancelTypes: [.InvalidLinkTarget])
         case .localAccess:
             return .node(exitCodes: [.SystemError], exitCauses: [.FileAccessError])
         case .dataSyncDirChanged:

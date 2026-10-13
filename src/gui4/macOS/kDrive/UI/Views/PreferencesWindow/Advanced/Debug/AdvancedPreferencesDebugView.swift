@@ -20,13 +20,15 @@ import kDriveCoreUI
 import SwiftUI
 
 struct AdvancedPreferencesDebugView: View {
-    let repository: PreferencesRepository
+    @ObservedObject var repository: PreferencesRepository
 
     var body: some View {
         VStack(alignment: .leading) {
             Form {
                 AdvancedPreferencesDebugEnableView(repository: repository)
-                AdvancedPreferencesDebugOptionsView(repository: repository)
+                if repository.parametersInfo.shouldUseLog {
+                    AdvancedPreferencesDebugOptionsView(repository: repository)
+                }
                 AdvancedPreferencesDebugSendView()
             }
             .groupedFormatStyle()

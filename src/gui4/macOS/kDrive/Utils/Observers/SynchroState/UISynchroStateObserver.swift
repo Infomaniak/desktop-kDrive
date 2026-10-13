@@ -24,20 +24,27 @@ import OrderedCollections
 import SwiftUI
 
 public struct UISynchroState: Sendable, Equatable {
+    public let syncDbId: Int32?
+    public let isStatusKnown: Bool
     public let errorCount: Int
     public let status: UISynchroStatus
 
-    public init(errorCount: Int, status: UISynchroStatus) {
+    public init(errorCount: Int, status: UISynchroStatus, syncDbId: Int32? = nil, isStatusKnown: Bool = false) {
+        self.syncDbId = syncDbId
+        self.isStatusKnown = isStatusKnown
         self.errorCount = errorCount
         self.status = status
     }
 
-    public init(fromSynchro synchro: Synchro?) {
-        let synchroProgress: SynchroProgressInfo? = synchro?.progress
-        let syncStatus: KDC.SyncStatus = synchroProgress?.syncStatus ?? KDC.SyncStatus.Idle
+    public init(fromSynchro synchro: Synchro?, syncDbId: Int32? = nil) {
+        let progress: SynchroProgressInfo? = synchro?.progress
+        let syncStatus: KDC.SyncStatus? = progress?.syncStatus
+        let status = syncStatus.flatMap { UISynchroStatus(syncStatus: $0) }
         self.init(
             errorCount: synchro?.errors.count ?? 0,
-            status: UISynchroStatus(syncStatus: syncStatus) ?? UISynchroStatus.idle
+            status: status ?? .idle,
+            syncDbId: synchro?.dbId ?? syncDbId,
+            isStatusKnown: status != nil
         )
     }
 }
@@ -62,34 +69,40 @@ public final class UISynchroStateObserver: UISynchroStateObserving {
     }
 
     @MainActor private var cancellable: AnyCancellable?
+    @MainActor private var observationTask: Task<Void, Never>?
+    @MainActor private var observationGeneration = UUID()
 
     public init() {}
 
     deinit {
-        Task { @MainActor [weak self] in
-            self?.cancellable?.cancel()
-        }
+        observationTask?.cancel()
     }
 
     @MainActor
     public func observeSynchro(_ synchroDbId: UISynchro.ID) {
         cancellable?.cancel()
+        observationTask?.cancel()
+        let generation = UUID()
+        observationGeneration = generation
+        let syncDbId = Int32(synchroDbId)
 
-        synchroState = UISynchroState(errorCount: 0, status: .idle)
+        synchroState = UISynchroState(errorCount: 0, status: .idle, syncDbId: syncDbId)
 
-        Task {
+        observationTask = Task { [weak self] in
             @InjectService var cache: CoherentCache
-            let synchro = await cache.getSynchro(synchroDbId: Int32(synchroDbId))
-            synchroState = UISynchroState(fromSynchro: synchro)
+            let synchro = await cache.getSynchro(synchroDbId: syncDbId)
+            guard !Task.isCancelled, let self, observationGeneration == generation else { return }
+            synchroState = UISynchroState(fromSynchro: synchro, syncDbId: syncDbId)
 
             @InjectService var cacheObservable: CoherentCacheObservable
-            cancellable = cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(synchroDbId))
+            cancellable = cacheObservable.usersPublisher.synchroPublisher(dbId: syncDbId)
                 .throttle(for: 0.5, scheduler: RunLoop.main, latest: true)
-                .map { UISynchroState(fromSynchro: $0) }
+                .map { UISynchroState(fromSynchro: $0, syncDbId: syncDbId) }
                 .removeDuplicates()
                 .receive(on: RunLoop.main)
                 .sink { [weak self] output in
-                    self?.synchroState = output
+                    guard let self, observationGeneration == generation else { return }
+                    synchroState = output
                 }
         }
     }
