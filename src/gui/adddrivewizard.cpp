@@ -223,7 +223,8 @@ bool AddDriveWizard::addSync(const UserDbId userDbId, const AccountId accountId,
             KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
         } else {
             qCWarning(lcAddDriveWizard()) << "Failed to create local folder" << localFolderDir.path();
-            CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to create local folder %1").arg(localFolderDir.path()),
+            CustomMessageBox msgBox(QMessageBox::Warning,
+                                    tr("Failed to create local folder %1").arg(localFolderDir.path().toHtmlEscaped()),
                                     QMessageBox::Ok, this);
             msgBox.exec();
             return false;
