@@ -28,6 +28,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using System;
 using System.IO;
 using System.Linq;
+using System.Windows.Automation;
 using Windows.System;
 
 namespace Infomaniak.kDrive.CustomControls
@@ -46,6 +47,12 @@ namespace Infomaniak.kDrive.CustomControls
             TitleBarSearchBox.ItemsSource = _pager.Items;
             _pager.LoaderTransitionStarting += (_, _) => SuppressItemTransitionsForNextLayout();
             GotFocus += (_, _) => TitleBarSearchBox.IsSuggestionListOpen = true;
+        }
+
+        public void Focus()
+        {
+            if (!TitleBarSearchBox.Focus(FocusState.Programmatic))
+                Logger.LogWarning("Failed to set focus on the search box.");
         }
 
         private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
