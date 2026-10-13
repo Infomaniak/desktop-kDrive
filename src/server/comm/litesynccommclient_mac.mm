@@ -1401,12 +1401,13 @@ bool LiteSyncCommClient::vfsSetStatus(const SyncPath &path, const SyncPath &loca
         roundedProgress = static_cast<int16_t>(ceil(float(vfsStatus.progress) / stepWidth) * stepWidth);
     }
 
-    if(vfsStatus.isHydrated == currentVfsStatus.isHydrated && currentVfsStatus.isHydrated && roundedProgress != 100) {
+    if (vfsStatus.isHydrated == currentVfsStatus.isHydrated && currentVfsStatus.isHydrated && roundedProgress != 100) {
         // If the file is already hydrated, we don't need to update the status again (progress is not reported on upload)
         return true;
     }
 
-    if(vfsStatus.isSyncing == currentVfsStatus.isSyncing && currentVfsStatus.isSyncing && roundedProgress == currentVfsStatus.progress) {
+    if (vfsStatus.isSyncing == currentVfsStatus.isSyncing && currentVfsStatus.isSyncing &&
+        roundedProgress == currentVfsStatus.progress) {
         return true;
     }
 
