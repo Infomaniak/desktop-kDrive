@@ -178,6 +178,19 @@ Rectangle {
             treeView.placeInitialCurrentRow();
         }
 
+        // Before the name field exists, Escape cancels the creation without leaving the picker page.
+        Keys.onShortcutOverride: event => {
+            if (event.key === Qt.Key_Escape && root.treeModel.folderCreationPreparing) {
+                event.accepted = true;
+            }
+        }
+        Keys.onEscapePressed: event => {
+            event.accepted = root.treeModel.folderCreationPreparing;
+            if (event.accepted) {
+                root.controller.cancelFolderCreation();
+            }
+        }
+
         // Ctrl+Shift+N, the file managers' new-folder shortcut. Ignored when it comes up from the name field.
         Keys.onPressed: event => {
             if (event.key === Qt.Key_N && event.modifiers === (Qt.ControlModifier | Qt.ShiftModifier)
