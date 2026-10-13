@@ -17,6 +17,7 @@
  */
 
 #include "app/mainwindow/activitylistmodel.h"
+#include "app/fileformat.h"
 
 #include "libcommon/utility/types.h"
 
@@ -62,20 +63,6 @@ QString itemName(const SyncPath &path) {
 QString parentFolder(const SyncPath &path) {
     const auto parent = path.parent_path();
     return parent.empty() || parent == SyncPath{"."} ? QString{} : Path2QStr(parent);
-}
-
-QString formatSize(const NodeType nodeType, const int64_t size) {
-    if (nodeType == NodeType::Directory || size < 0) {
-        return {};
-    }
-    const QLocale locale;
-    QString formatted = locale.formattedDataSize(size, 1, QLocale::DataSizeSIFormat);
-    // Drop the decimal part when it is zero, to match the macOS and Windows clients.
-    const QString trailingZero = locale.decimalPoint() + locale.zeroDigit();
-    if (const auto index = formatted.indexOf(trailingZero); index >= 0) {
-        (void) formatted.remove(index, trailingZero.size());
-    }
-    return formatted;
 }
 
 QString formatAgo(const std::chrono::seconds elapsed, const std::chrono::seconds unit, const char *const unitTranslationId) {
@@ -215,10 +202,10 @@ ActivityListModel::Source toModelSource(const SyncDirection direction) {
 QStringList ActivityListModel::sizeTextSamples() {
     // Widest value of each unit tier, capped at terabytes: drive quotas make larger files unreachable, and the Windows
     // client stops there too.
-    QStringList samples{formatSize(NodeType::File, 999)};
+    QStringList samples{formatFileSize(NodeType::File, 999)};
     int64_t unit = 1000;
     for (uint8_t tier = 0; tier < 4; ++tier) {
-        samples << formatSize(NodeType::File, static_cast<int64_t>(999.9 * static_cast<double>(unit)));
+        samples << formatFileSize(NodeType::File, static_cast<int64_t>(999.9 * static_cast<double>(unit)));
         unit *= 1000;
     }
     return samples;
@@ -426,7 +413,7 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.exactTimeText = formatExactTime(activity.receivedAtUtc);
     row.changeText = formatChange(activity);
     row.folder = parentFolder(relativePath);
-    row.sizeText = formatSize(activity.nodeType, activity.size);
+    row.sizeText = formatFileSize(activity.nodeType, activity.size);
     row.nodeType = activity.nodeType;
     row.status = status;
     row.source = toModelSource(activity.direction);
