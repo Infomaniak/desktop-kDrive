@@ -36,6 +36,7 @@ IKShadowedWindow {
     required property var manyDeletesController
     required property var onboardingSessionManager
     required property var storageController
+    required property var searchController
     required property var systemTrayController
 
     readonly property bool onboardingActive: onboardingSessionManager.activeSession !== null
@@ -107,6 +108,41 @@ IKShadowedWindow {
             anchors.bottom: parent.bottom
             appRouter: mainWindow.appRouter
             controller: mainWindow.homeController
+            searchAvailable: mainWindow.searchController.available
+            onSearchRequested: mainWindow.openSearch()
+        }
+    }
+
+    function openSearch() {
+        if (mainWindow.searchController.available && !searchDialog.opened) {
+            searchDialog.open();
+        }
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.Find ]
+        enabled: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
+                 && mainWindow.searchController.available
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.openSearch()
+    }
+
+    SearchDialog {
+        id: searchDialog
+
+        controller: mainWindow.searchController
+        scrimInset: mainWindow.effectiveShadowMargin
+        scrimRadius: mainWindow.surfaceRadius
+    }
+
+    // The dialog belongs to the main shell: it must not outlive it when onboarding or the waiting screen takes over.
+    Connections {
+        target: mainWindowLoader
+
+        function onActiveChanged() {
+            if (!mainWindowLoader.active) {
+                searchDialog.close();
+            }
         }
     }
 
