@@ -39,6 +39,8 @@ final class MainWindowController: NSWindowController {
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
     private var bindStore = Set<AnyCancellable>()
+    private var isInstallingContentView = false
+    private var pendingRoute: WindowRoute?
 
     init() {
         let window = NSWindow(
@@ -163,6 +165,12 @@ final class MainWindowController: NSWindowController {
     }
 
     private func onRouteChange(route: WindowRoute) {
+        if isInstallingContentView {
+            IKLogger.general.warning("[KD] Deferring re-entrant navigation while installing a content view, pending route: \(String(describing: route))")
+            pendingRoute = route
+            return
+        }
+
         switch route {
         case .preloading(let isShowingError):
             setViewController(PreloadingViewController(isShowingError: isShowingError))
@@ -184,6 +192,15 @@ final class MainWindowController: NSWindowController {
     }
 
     private func setViewController(_ viewController: NSViewController) {
+        isInstallingContentView = true
+        defer {
+            isInstallingContentView = false
+
+            if let pendingRoute {
+                self.pendingRoute = nil
+                onRouteChange(route: pendingRoute)
+            }
+        }
         self.viewController = viewController
         window?.contentView = viewController.view
     }
