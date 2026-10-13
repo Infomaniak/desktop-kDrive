@@ -743,21 +743,11 @@ Function un.UninstallFct
 		${EndIf}
 
 		;Uninstall extension
-		!define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
-		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
-			uninstall_x64:
-			DetailPrint $UNINSTALL_EXTENSION
-			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
-		!undef PackageFullName_x64
-		uninstall_kdrive_ext_x64_done:
-
-		!define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
-		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
-			uninstall_arm64:
-			DetailPrint $UNINSTALL_EXTENSION
-			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
-		!undef PackageFullName_arm64
-		uninstall_kdrive_ext_arm64_done:
+		DetailPrint $UNINSTALL_EXTENSION
+		; Remove the provisioned package so that the extension is not registered for the future users.
+		${PowerShellExecLog} "Get-AppxProvisionedPackage -Online | Where-Object { $$_.PackageName -like '${VFS_PACKAGE_NAME}*' } | ForEach-Object { Remove-AppxProvisionedPackage -Online -AllUsers -PackageName $$_.PackageName }"
+		; Remove the extension for all the users, whatever its version or package identity.
+		${PowerShellExecLog} "Get-AppxPackage -AllUsers -Name '${VFS_PACKAGE_NAME}' -ErrorAction SilentlyContinue | Remove-AppxPackage -AllUsers"
 
 		; Delete Navigation Pane entries added for Windows 10.
 		; On 64bit Windows, the client will be writing to the 64bit registry.
