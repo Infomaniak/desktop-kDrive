@@ -348,12 +348,16 @@ bool RemoteFolderPickerModel::beginFolderCreation(const QModelIndex &parentIndex
 
     // The editing row is inserted once the listing arrives, so it cannot be followed by folders loaded after it.
     _pendingCreationParentNodeId = parentNode->nodeId;
+    emit folderCreationChanged();
     requestChildren(parentNode);
     return true;
 }
 
 void RemoteFolderPickerModel::cancelFolderCreation() {
-    _pendingCreationParentNodeId.clear();
+    if (folderCreationPreparing()) {
+        _pendingCreationParentNodeId.clear();
+        emit folderCreationChanged();
+    }
     if (!_editingNode || _editingNode->creating) {
         return;
     }
