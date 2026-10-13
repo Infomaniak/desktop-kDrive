@@ -228,11 +228,8 @@ void RemoteFileSystemObserverWorker::execute() {
 }
 
 
-ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const {
-    validSnapshotBackupExists = false;
-
-    // Check if a valid remote snapshot backup exists.
-    if (!_syncPal->isRemoteSnapshotBackupValid(blackList())) return ExitCode::Ok;
+ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &validListingCursorsExist) const {
+    validListingCursorsExist = false;
 
     CursorData cursorData;
     if (const auto exitInfo = getListingCursor(cursorData); !exitInfo) {
@@ -296,6 +293,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &aValid
 
     if (aValidSnapshotBackupWasRestored) {
         LOG_SYNCPAL_DEBUG(_logger, "A valid remote snapshot backup was restored.");
+
         return ExitCode::Ok;
     }
 
