@@ -26,6 +26,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QDir>
+#include <QTextDocument>
 
 #include "utility/utility.h"
 
