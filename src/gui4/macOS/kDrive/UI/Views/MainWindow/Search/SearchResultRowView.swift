@@ -22,11 +22,18 @@ import SwiftUI
 
 struct SearchResultRowView: View {
     let file: UISearchResponse
+    let opensLocally: Bool
+    let isSynchroPaused: Bool?
 
     @State private var isHovered = false
 
     private var openInBrowserTooltip: String {
-        KDriveLocalizable.searchResultOpenInBrowserTooltip
+        guard file.isAvailableLocally else {
+            return KDriveLocalizable.searchResultOpenInBrowserTooltip
+        }
+        return isSynchroPaused == true
+            ? KDriveLocalizable.searchResultOpenInBrowserSyncPausedTooltip
+            : KDriveLocalizable.buttonOpenInBrowser
     }
 
     var body: some View {
@@ -48,7 +55,7 @@ struct SearchResultRowView: View {
 
             Spacer()
 
-            if !file.isAvailableLocally {
+            if !opensLocally {
                 Image(systemName: "arrow.up.forward.square")
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
                     .accessibilityHidden(true)
@@ -60,11 +67,11 @@ struct SearchResultRowView: View {
             in: .rect(cornerRadius: 8)
         )
         .contentShape(.rect)
-        .accessibilityHint(file.isAvailableLocally ? KDriveLocalizable.buttonOpenInFinder : KDriveLocalizable.buttonOpenInBrowser)
+        .accessibilityHint(opensLocally ? KDriveLocalizable.buttonOpenInFinder : KDriveLocalizable.buttonOpenInBrowser)
         .onHover { hovering in
             isHovered = hovering
         }
-        .help(file.isAvailableLocally ? "" : openInBrowserTooltip)
+        .help(opensLocally ? "" : openInBrowserTooltip)
     }
 
     private var formattedSubtitle: String {
@@ -82,25 +89,52 @@ struct SearchResultRowView: View {
 }
 
 #Preview("Available locally") {
-    SearchResultRowView(file: UISearchResponse(
-        id: "1",
-        name: "Example.pdf",
-        type: .file,
-        path: "/Documents/Example.pdf",
-        modifiedDate: Date(),
-        size: 1024,
-        isAvailableLocally: true
-    ))
+    SearchResultRowView(
+        file: UISearchResponse(
+            id: "1",
+            name: "Example.pdf",
+            type: .file,
+            path: "/Documents/Example.pdf",
+            modifiedDate: Date(),
+            size: 1024,
+            isAvailableLocally: true,
+            isHydrated: true
+        ),
+        opensLocally: true,
+        isSynchroPaused: false
+    )
 }
 
 #Preview("Not available locally") {
-    SearchResultRowView(file: UISearchResponse(
-        id: "2",
-        name: "Remote file.docx",
-        type: .file,
-        path: "/Documents/Remote file.docx",
-        modifiedDate: Date(),
-        size: 2048,
-        isAvailableLocally: false
-    ))
+    SearchResultRowView(
+        file: UISearchResponse(
+            id: "2",
+            name: "Remote file.docx",
+            type: .file,
+            path: "/Documents/Remote file.docx",
+            modifiedDate: Date(),
+            size: 2048,
+            isAvailableLocally: false,
+            isHydrated: false
+        ),
+        opensLocally: false,
+        isSynchroPaused: nil
+    )
+}
+
+#Preview("Dehydrated while sync is paused") {
+    SearchResultRowView(
+        file: UISearchResponse(
+            id: "3",
+            name: "Online-only file.xlsx",
+            type: .file,
+            path: "/Documents/Online-only file.xlsx",
+            modifiedDate: Date(),
+            size: 4096,
+            isAvailableLocally: true,
+            isHydrated: false
+        ),
+        opensLocally: false,
+        isSynchroPaused: true
+    )
 }

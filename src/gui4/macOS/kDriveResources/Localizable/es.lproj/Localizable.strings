@@ -736,6 +736,9 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Parece que no podemos cargar la aplicación…";
 
+/* loco:6ac60bf864441a81870fc9d2 */
+"errorCopyingShareLink" = "Se ha producido un error al copiar el enlace.";
+
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Se ha producido un error al eliminar tu cuenta.";
 
@@ -1433,6 +1436,10 @@
 /* loco:69eb8137c1ea8e116a0ba282
  * Search field placeholder in SearchSheetView. */
 "searchPlaceholder" = "Buscar…";
+
+/* loco:6ac604dd665bcc5b3402f332
+ * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online. */
+"searchResultOpenInBrowserSyncPausedTooltip" = "Sincronización en pausa.\nEste archivo se abrirá en kDrive en línea.";
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
