@@ -41,6 +41,7 @@
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                   ToolTipService.Placement="Right"
                   Background="Transparent"
+                  DataContextChanged="SearchResultItem_DataContextChanged"
                   PointerEntered="Template_PointerEntered"
                   PointerExited="Template_PointerExited"
                   HorizontalAlignment="Stretch"
@@ -119,6 +120,7 @@
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
                   ToolTipService.Placement="Right"
+                  DataContextChanged="SearchResultItem_DataContextChanged"
                   PointerEntered="Template_PointerEntered"
                   PointerExited="Template_PointerExited"
                   Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}">

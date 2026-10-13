@@ -23,6 +23,10 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media.Animation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -81,6 +85,7 @@ namespace Infomaniak.kDrive.CustomControls
         private readonly ObservableCollection<ISearchBoxResultItem> _results = [new SearchBoxNotFoundItem()];
         private string _currentQuery = "";
         private string _nextCursor = "";
+        private bool _hasMore = false;
         private bool _isInitialLoading = false;
         private bool _isLoadingMore = false;
 
@@ -93,14 +98,57 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void SetResults(IEnumerable<ISearchBoxResultItem> items)
         {
-            _results.Clear();
-            foreach (var item in items)
-                _results.Add(item);
+            // Update in place to avoid collapsing the popup and triggering add/remove animations.
+            var newItems = items.ToList();
+            bool involvesLoader = newItems.First() is SearchBoxLoaderItem;
+            if (involvesLoader)
+                SuppressTransitionsForNextLayout();
+
+            for (int i = 0; i < newItems.Count; i++)
+            {
+                if (i < _results.Count)
+                {
+                    if (!ReferenceEquals(_results[i], newItems[i]))
+                        _results[i] = newItems[i];
+                }
+                else
+                {
+                    _results.Add(newItems[i]);
+                }
+            }
+            while (_results.Count > newItems.Count)
+                _results.RemoveAt(_results.Count - 1);
         }
+
+        private ListView? _suggestionsList;
+        private TransitionCollection? _savedItemContainerTransitions;
+
+        private void SuppressTransitionsForNextLayout()
+        {
+            _suggestionsList ??= TitleBarSearchBox.FindDescendant<Popup>()?.Child is FrameworkElement popupChild
+                ? popupChild as ListView ?? popupChild.FindDescendant<ListView>()
+                : null;
+            if (_suggestionsList is null || _savedItemContainerTransitions is not null)
+                return;
+
+            var listView = _suggestionsList;
+            _savedItemContainerTransitions = listView.ItemContainerTransitions;
+            listView.ItemContainerTransitions = new TransitionCollection();
+
+            void Restore(object? sender, object e)
+            {
+                listView.LayoutUpdated -= Restore;
+                listView.ItemContainerTransitions = _savedItemContainerTransitions;
+                _savedItemContainerTransitions = null;
+            }
+            listView.LayoutUpdated += Restore;
+        }
+
 
         private void ShowNotFound()
         {
             _nextCursor = "";
+            _hasMore = false;
             SetResults([new SearchBoxNotFoundItem()]);
         }
 
@@ -136,6 +184,7 @@ namespace Infomaniak.kDrive.CustomControls
             var token = ResetSearchCancellation();
             _currentQuery = sender.Text;
             _nextCursor = "";
+            _hasMore = false;
             _isInitialLoading = true;
             _isLoadingMore = false;
             SetResults([new SearchBoxLoaderItem(), new SearchBoxLoaderItem(), new SearchBoxLoaderItem()]);
@@ -172,8 +221,9 @@ namespace Infomaniak.kDrive.CustomControls
                 }
 
                 _nextCursor = result.Cursor;
+                _hasMore = result.HasMore;
                 List<ISearchBoxResultItem> items = [.. result.Items.Select(r => new SearchBoxResultItem(r))];
-                if (!string.IsNullOrEmpty(_nextCursor))
+                if (_hasMore)
                     items.Add(new SearchBoxLoaderItem(IsLoadMore: true));
                 SetResults(items);
             }
@@ -185,7 +235,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void LoadMoreResults()
         {
-            if (_isInitialLoading || _isLoadingMore || string.IsNullOrEmpty(_nextCursor) || ViewModel.SelectedSync is null)
+            if (_isInitialLoading || _isLoadingMore || !_hasMore || ViewModel.SelectedSync is null)
                 return;
 
             _isLoadingMore = true;
@@ -198,6 +248,7 @@ namespace Infomaniak.kDrive.CustomControls
                     return;
 
                 _isLoadingMore = false;
+                SuppressTransitionsForNextLayout();
                 if (_results.Count > 0 && _results[^1] is SearchBoxLoaderItem { IsLoadMore: true })
                     _results.RemoveAt(_results.Count - 1);
 
@@ -205,13 +256,15 @@ namespace Infomaniak.kDrive.CustomControls
                 {
                     Logger.LogWarning($"SearchItem (load more) failed with cause {result.Cause}.");
                     _nextCursor = "";
+                    _hasMore = false;
                     return;
                 }
 
                 _nextCursor = result.Cursor;
+                _hasMore = result.HasMore;
                 foreach (var item in result.Items)
                     _results.Add(new SearchBoxResultItem(item));
-                if (!string.IsNullOrEmpty(_nextCursor))
+                if (_hasMore)
                     _results.Add(new SearchBoxLoaderItem(IsLoadMore: true));
             }
             catch (OperationCanceledException)
@@ -282,14 +335,30 @@ namespace Infomaniak.kDrive.CustomControls
             if (item is SearchBoxLoaderItem { IsLoadMore: true })
                 LoadMoreResults();
 
-            // Walk up the visual tree to find the parent ListViewItem
-            var parentItem = sender.FindAscendant<ListViewItem>();
-            if (parentItem is not null)
+            // Containers are recycled: always reset the state, and retry once loaded if not yet in the tree.
+            if (!ApplyContainerSelectableState(sender, item))
             {
-                parentItem.IsHitTestVisible = item.IsSelectable;
-                parentItem.IsTabStop = item.IsSelectable;
-                parentItem.IsTapEnabled = item.IsSelectable;
+                void OnLoaded(object s, RoutedEventArgs e)
+                {
+                    sender.Loaded -= OnLoaded;
+                    if (sender.DataContext is ISearchBoxResultItem current)
+                        ApplyContainerSelectableState(sender, current);
+                }
+                sender.Loaded += OnLoaded;
             }
+        }
+
+        private static bool ApplyContainerSelectableState(FrameworkElement element, ISearchBoxResultItem item)
+        {
+            // Walk up the visual tree to find the parent ListViewItem
+            var parentItem = element.FindAscendant<ListViewItem>();
+            if (parentItem is null)
+                return false;
+
+            parentItem.IsHitTestVisible = item.IsSelectable;
+            parentItem.IsTabStop = item.IsSelectable;
+            parentItem.IsTapEnabled = item.IsSelectable;
+            return true;
         }
 
         private void Template_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)

@@ -821,6 +821,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (!HasRequiredParam(data, JsonKeys.SearchInfoList) || !HasRequiredParam(data, JsonKeys.Cursor))
                 return SearchItemResult.Failed(ExitCode.DataError);
 
+            if (data.Params[JsonKeys.HasMore] is not JsonValue hasMoreValue || !hasMoreValue.TryGetValue<bool>(out bool hasMore))
+            {
+                Logger.LogError("Missing or invalid hasMore in search response.");
+                return SearchItemResult.Failed(ExitCode.DataError);
+            }
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -860,7 +866,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 ));
             }
 
-            return SearchItemResult.Success(resultItems, resultCursor);
+            return SearchItemResult.Success(resultItems, resultCursor, hasMore);
         }
         public async Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken)
         {
