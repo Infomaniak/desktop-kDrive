@@ -87,19 +87,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         struct SearchItemResult
         {
-            public ExitCode Cause { get; private set; }
+            public ExitCode Code { get; private set; }
             public List<SearchItem> Items { get; private set; }
             public string Cursor { get; private set; }
             public bool HasMore { get; private set; }
-            public SearchItemResult(ExitCode cause, List<SearchItem>? items, string cursor, bool hasMore)
+            public SearchItemResult(ExitCode code, List<SearchItem>? items, string cursor, bool hasMore)
             {
-                Cause = cause;
+                Code = code;
                 Items = items ?? new List<SearchItem>();
                 Cursor = cursor;
                 HasMore = hasMore;
             }
 
-            static public SearchItemResult Failed(ExitCode? cause) => new SearchItemResult(cause ?? ExitCode.DataError, null, "", false);
+            static public SearchItemResult Failed(ExitCode? code) => new SearchItemResult(code ?? ExitCode.DataError, null, "", false);
             static public SearchItemResult Success(List<SearchItem> items, string cursor, bool hasMore) => new SearchItemResult(ExitCode.Ok, items, cursor, hasMore);
         }
         Task<SearchItemResult> SearchItem(Sync? sync, string searchString, string cursor, CancellationToken cancellationToken);

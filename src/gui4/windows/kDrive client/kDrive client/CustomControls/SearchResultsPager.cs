@@ -72,10 +72,10 @@ namespace Infomaniak.kDrive.CustomControls
                 return true;
 
             _isLoadingFirstPage = false;
-            if (page.Value.Cause != ExitCode.Ok || page.Value.Items.Count == 0)
+            if (page.Value.Code != ExitCode.Ok || page.Value.Items.Count == 0)
             {
                 ShowNotFound();
-                return page.Value.Cause == ExitCode.Ok;
+                return page.Value.Code == ExitCode.Ok;
             }
 
             ReplaceItems(ToItems(page.Value));
@@ -107,7 +107,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (Items.LastOrDefault() is SearchBoxLoaderItem { IsLoadMore: true })
                 Items.RemoveAt(Items.Count - 1);
 
-            if (page.Value.Cause != ExitCode.Ok)
+            if (page.Value.Code != ExitCode.Ok)
                 return;
 
             foreach (var item in ToItems(page.Value))
@@ -123,11 +123,11 @@ namespace Infomaniak.kDrive.CustomControls
                 if (token.IsCancellationRequested)
                     return null;
 
-                if (page.Cause != ExitCode.Ok)
-                    Logger.LogWarning($"SearchItem failed with cause {page.Cause}.");
+                if (page.Code != ExitCode.Ok)
+                    Logger.LogWarning($"SearchItem failed with cause {page.Code}.");
 
                 _cursor = page.Cursor;
-                _hasMore = page.Cause == ExitCode.Ok && page.HasMore;
+                _hasMore = page.Code == ExitCode.Ok && page.HasMore;
                 return page;
             }
             catch (OperationCanceledException)
