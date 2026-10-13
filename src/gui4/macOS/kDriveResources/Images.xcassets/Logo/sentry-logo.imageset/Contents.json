@@ -1,7 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "sentry-logo.svg",
+      "filename" : "sentry-logo-light.svg",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "sentry-logo-dark.svg",
       "idiom" : "universal"
     }
   ],

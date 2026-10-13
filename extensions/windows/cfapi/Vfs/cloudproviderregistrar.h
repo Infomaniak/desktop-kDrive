@@ -40,6 +40,10 @@ class CloudProviderRegistrar {
         static void updateAumidEntry(HKEY hKey);
         static void updateSyncRootRegistryEntries(const std::wstring &syncRootID, wchar_t *namespaceCLSID,
                                                   DWORD *namespaceCLSIDSize, bool updateIcons = false);
+
+        // Returns true if the two folders are related (i.e. one is a subfolder of the other or they are the same folder)
+        static bool areRelatedFolders(const std::wstring &folderPath1, const std::wstring &folderPath2);
+
         static void updateRegistration(const ProviderInfo *providerInfo);
         static bool createRegistration(const ProviderInfo *providerInfo, const std::wstring &syncRootID);
         /*static void addCustomState(

@@ -19,16 +19,42 @@
 #include "xpcService.h"
 #include "fileAttributes.h"
 
+#import "userURLs.h"
+
 #import <Foundation/Foundation.h>
 #import <EndpointSecurity/EndpointSecurity.h>
 #import <bsm/libbsm.h>
+#import <os/lock.h>
 
+#include <SystemConfiguration/SystemConfiguration.h>
 #include <dispatch/queue.h>
 #include <sys/xattr.h>
+#include <pwd.h>
 
 es_client_t *g_client = NULL;
 XPCService *g_xpcService = NULL;
 static dispatch_queue_t g_event_queue = NULL;
+
+static NSMutableDictionary<NSNumber *, UserURLs *> *g_userURLsByUID;
+static os_unfair_lock g_userURLsByUIDLock = OS_UNFAIR_LOCK_INIT;
+
+// Clean-up before exiting
+void sig_handler(int sig)
+{
+    NSLog(@"[KD] Tidying Up");
+    
+    if (g_client) {
+        if (@available(macOS 10.15, *)) {
+            es_unsubscribe_all(g_client);
+            es_delete_client(g_client);
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+    
+    NSLog(@"[KD] Exiting");
+    exit(EXIT_SUCCESS);
+}
 
 static BOOL isExtendedLogEnabled(void)
 {
@@ -50,22 +76,58 @@ static void initDispatchQueue(void)
     g_event_queue = dispatch_queue_create("event_queue", queue_attrs);
 }
 
-// Clean-up before exiting
-void sig_handler(int sig)
+NSURL *trashURLForFileURL(uid_t uid, NSURL *fileURL)
 {
-    NSLog(@"[KD] Tidying Up");
-    
-    if (g_client) {
-        if (@available(macOS 10.15, *)) {
-            es_unsubscribe_all(g_client);
-            es_delete_client(g_client);
-        } else {
-            // Fallback on earlier versions
-        }
+    if (!fileURL) {
+        return nil;
     }
-    
-    NSLog(@"[KD] Exiting");
-    exit(EXIT_SUCCESS);
+
+    // Retrieval of the user URLs for the UID
+    os_unfair_lock_lock(&g_userURLsByUIDLock);
+    UserURLs *urls = g_userURLsByUID[@(uid)];
+    os_unfair_lock_unlock(&g_userURLsByUIDLock);
+    if (urls == nil) {
+        struct passwd *pw = getpwuid(uid);
+        if (!pw || !pw->pw_dir) {
+            return nil;
+        }
+        
+        urls = [UserURLs new];
+        urls.homeURL = [NSURL fileURLWithPath:@(pw->pw_dir) isDirectory:YES];
+        
+        NSURL *homeVolumeURL = nil;
+        if (![urls.homeURL getResourceValue:&homeVolumeURL forKey:NSURLVolumeURLKey error:nil]) {
+            return nil;
+        }
+        urls.homeVolumeURL = homeVolumeURL;
+        
+        os_unfair_lock_lock(&g_userURLsByUIDLock);
+        g_userURLsByUID[@(uid)] = urls;
+        os_unfair_lock_unlock(&g_userURLsByUIDLock);
+    }
+
+    // Retrieval of the file path volume
+    NSURL *volumeURL = nil;
+    if (![fileURL getResourceValue:&volumeURL forKey:NSURLVolumeURLKey error:nil]) {
+        return nil;
+    }
+
+    if ([volumeURL isEqual:urls.homeVolumeURL]) {
+        // Main/home volume
+        if (urls.mainTrashURL == nil) {
+            urls.mainTrashURL = [urls.homeURL URLByAppendingPathComponent:@".Trash" isDirectory:YES];
+        }
+        return urls.mainTrashURL;
+    }
+
+    // Other volume
+    NSURL *volumeTrashURL = [urls trashURLForVolume:volumeURL];
+    if (volumeTrashURL == nil) {
+        NSString *uidStr = [NSString stringWithFormat:@"%u", uid];
+        volumeTrashURL = [[volumeURL URLByAppendingPathComponent:@".Trashes" isDirectory:YES] URLByAppendingPathComponent:uidStr isDirectory:YES];
+        [urls setTrashURL:volumeTrashURL forVolume:volumeURL];
+    }
+    return volumeTrashURL;
 }
 
 NSString *fileDefaultOpeningAppId(NSString *path)
@@ -204,21 +266,33 @@ static BOOL processAuthRename(const es_message_t *msg)
     }
         
     // Check that the file is being monitored
-    NSString *filePath = [NSString stringWithUTF8String:msg->event.rename.source->path.data];
+    NSString *sourcePath = [NSString stringWithUTF8String:msg->event.rename.source->path.data];
     
-    if (!(g_xpcService && [g_xpcService isFileMonitored:filePath])) {
+    NSString *syncFolderPath = nil;
+    if (!(g_xpcService && [g_xpcService isFileMonitored:sourcePath syncFolderPath:&syncFolderPath])) {
         return FALSE;
     }
     
-    /*NSLog(@"[KD] Move file %s to destination %s",
-          msg->event.rename.source->path.data, msg->event.rename.destination.new_path.dir->path.data);*/
+    NSString *destinationPath = nil;
+    if (msg->event.rename.destination_type == ES_DESTINATION_TYPE_NEW_PATH) {
+        destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
+    } else if (msg->event.rename.destination_type == ES_DESTINATION_TYPE_EXISTING_FILE) {
+        NSString *existingPath = [NSString stringWithUTF8String:msg->event.rename.destination.existing_file->path.data];
+        destinationPath = [existingPath stringByDeletingLastPathComponent];
+    } else {
+        return FALSE;
+    }
+    
+    if (isExtendedLogEnabled()) {
+        NSLog(@"[KD] Move file %@ to destination %@", sourcePath, destinationPath);
+    }
     
     // Check file status
-    long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
+    long bufferLength = getxattr([sourcePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
     if (bufferLength >= 0) {
         char status[bufferLength];
-        if (getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
-            NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", filePath, errno);
+        if (getxattr([sourcePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
+            NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", sourcePath, errno);
             return FALSE;
         }
         
@@ -229,18 +303,24 @@ static BOOL processAuthRename(const es_message_t *msg)
     else {
         return FALSE;
     }
-    
-    NSString *destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
-    
-    // Check that the destination is the Trash
-    if ([destinationPath hasSuffix:@".Trash"]) {
-        NSLog(@"[KD] Moving monitored file %s to trash.", filePath.UTF8String);
+        
+    // Check if the destination is the Trash
+    uid_t uid = audit_token_to_euid(msg->process->audit_token);
+    NSURL *sourceURL = [NSURL fileURLWithPath:sourcePath];
+    NSURL *trashURL = trashURLForFileURL(uid, sourceURL);
+    NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
+    if ([destinationURL isEqual:trashURL]) {
+        NSLog(@"[KD] Moving monitored file %@ to trash.", sourcePath);
         return FALSE;
     }
     
-    // Check that the destination is not monitored
-    if (!(g_xpcService && [g_xpcService isFileMonitored:destinationPath])) {
-        NSLog(@"[KD] Moving monitored file %s to %s, outside of sync folder.", filePath.UTF8String, destinationPath.UTF8String);
+    // Check if the destination is outside the sync folder
+    NSString *standardizedSyncFolderPath = [syncFolderPath stringByStandardizingPath];
+    NSString *standardizedDestinationPath = [destinationPath stringByStandardizingPath];
+    NSString *syncFolderPrefix = [standardizedSyncFolderPath stringByAppendingString:@"/"];
+    if (![standardizedDestinationPath isEqualToString:standardizedSyncFolderPath]
+        && ![standardizedDestinationPath hasPrefix:syncFolderPrefix]) {
+        NSLog(@"[KD] Moving monitored file %@ to %@, outside of sync folder.", sourcePath, destinationPath);
         return TRUE;
     }
     
@@ -323,6 +403,9 @@ int main(int argc, char *argv[])
     signal(SIGSEGV, &sig_handler);
     
     initDispatchQueue();
+    
+    // Initialize user URLs cache
+    g_userURLsByUID = [NSMutableDictionary dictionary];
     
     // Initialize XPC cLient
     NSLog(@"[KD] Initialize XPC client");
