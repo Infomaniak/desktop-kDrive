@@ -61,7 +61,13 @@ struct StateIndicator: StatusIndicator {
     )
 }
 
+private enum ShareLinkCopyError: Error {
+    case pasteboardWriteFailed
+}
+
 struct ActivitiesTableStatusView: View {
+    @InjectService private var matomo: MatomoUtils
+
     let context: UISynchroNodeContext
 
     private var direction: DirectionIndicator {
@@ -106,7 +112,12 @@ struct ActivitiesTableStatusView: View {
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
             StatusIndicatorView(indicator: direction)
-            StatusIndicatorView(indicator: status)
+
+            if status == .inProgress, let progress = context.node.progress {
+                ProgressIndicatorView(progress: progress)
+            } else {
+                StatusIndicatorView(indicator: status)
+            }
 
             if shouldDisplayOptionButton {
                 Menu {
@@ -116,7 +127,7 @@ struct ActivitiesTableStatusView: View {
                         Text(KDriveLocalizable.buttonShowOption)
                     } icon: {
                         KDriveResources.dotsVertical.swiftUIImage
-                            .resizable(at: AppIconSize.iconSize12)
+                            .resizable(at: AppIconSize.iconSize16)
                     }
                     .labelStyle(.iconOnly)
                     .tint(ColorToken.Text.primary.asColor)
@@ -155,6 +166,7 @@ struct ActivitiesTableStatusView: View {
 
     private func openInFinder() {
         @InjectService var nodeURLGenerator: NodeURLGenerator
+        matomo.track(eventWithCategory: .activityPage, name: "openItem")
         let pathToLink = context.node.type == .directory ? context.node.path : context.node.parentFolder
         let url = nodeURLGenerator.localURL(for: pathToLink.path, synchroPath: context.synchro.localPath)
 
@@ -162,6 +174,7 @@ struct ActivitiesTableStatusView: View {
     }
 
     private func openInBrowser() {
+        matomo.track(eventWithCategory: .activityPage, name: "openItemWeb")
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.remoteURL(for: context.node.remoteID, driveId: context.drive.driveId)
 
@@ -169,29 +182,52 @@ struct ActivitiesTableStatusView: View {
     }
 
     private func copyShareLink() {
+        matomo.track(eventWithCategory: .activityPage, name: "copyItemWebLink")
         @InjectService var loadingIndicatorShower: SidebarNotificationPresenting
         loadingIndicatorShower.show(SidebarNotificationState(text: .init(text: KDriveLocalizable.copyingLink), showLoader: true))
 
         Task { @MainActor in
             @InjectService var nodeURLGenerator: NodeURLGenerator
-            let url = try await nodeURLGenerator.shareURL(for: context.node.remoteID, driveDbId: context.drive.dbId)
+            do {
+                let url = try await nodeURLGenerator.shareURL(for: context.node.remoteID, driveDbId: context.drive.dbId)
 
-            let pasteboard = NSPasteboard.general
-            pasteboard.clearContents()
-            pasteboard.setString(url.absoluteString, forType: .string)
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                guard pasteboard.setString(url.absoluteString, forType: .string) else {
+                    throw ShareLinkCopyError.pasteboardWriteFailed
+                }
 
-            loadingIndicatorShower.show(
-                SidebarNotificationState(
-                    icon: .init(icon: KDriveResources.checkmarkCircle.image, tint: ColorToken.Status.Medium.success.asNSColor),
-                    text: .init(text: KDriveLocalizable.linkCopiedToClipboardTitle),
-                    showLoader: false,
-                    duration: SidebarNotificationState.defaultDuration
+                loadingIndicatorShower.show(
+                    SidebarNotificationState(
+                        icon: .init(
+                            icon: KDriveResources.checkmarkCircle.image,
+                            tint: ColorToken.Status.Medium.success.asNSColor
+                        ),
+                        text: .init(text: KDriveLocalizable.linkCopiedToClipboardTitle),
+                        showLoader: false,
+                        duration: SidebarNotificationState.defaultDuration
+                    )
                 )
-            )
+            } catch {
+                IKLogger.general.error("Failed to copy share link: \(error)")
+                loadingIndicatorShower.show(
+                    SidebarNotificationState(
+                        icon: .init(icon: KDriveResources.warning.image, tint: ColorToken.Status.Medium.warning.asNSColor),
+                        text: .init(text: KDriveLocalizable.errorCopyingShareLink),
+                        showLoader: false,
+                        duration: SidebarNotificationState.defaultDuration
+                    )
+                )
+            }
         }
     }
 
-    private func navigateToErrorsView() {}
+    private func navigateToErrorsView() {
+        matomo.track(eventWithCategory: .activityPage, name: "openErrors")
+        @InjectService var router: MainViewRouter
+        router.setCurrentTab(.activities)
+        router.append(.errors)
+    }
 }
 
 #Preview {

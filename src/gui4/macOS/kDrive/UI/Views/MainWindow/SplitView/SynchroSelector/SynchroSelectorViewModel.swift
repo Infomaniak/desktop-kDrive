@@ -51,7 +51,7 @@ struct SynchroSelectorItem: Identifiable {
 
         return SynchroSelectorItem(
             synchro: info.context.synchro,
-            icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+            icon: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
             iconColor: info.context.drive.color ?? ColorToken.Drive.defaultColor.asColor,
             title: title,
             subtitle: subtitle,
@@ -98,5 +98,10 @@ final class SynchroSelectorViewModel: ObservableObject {
 
     func update(with contexts: [UISynchroInfo]) {
         items = contexts.selectorItems()
+    }
+
+    var hasOtherSynchroWithError: Bool {
+        guard let selectedItem else { return false }
+        return items.contains { $0.notification && $0.id != selectedItem.id }
     }
 }

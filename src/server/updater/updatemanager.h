@@ -52,6 +52,7 @@ class UpdateManager final : public QObject {
         void forceRefresh() const { slotTimerFired(); }
         void startInstaller() const;
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
+        [[nodiscard]] bool isUpdateSessionInProgress() const { return _updater->isUpdateSessionInProgress(); }
 
         std::unique_ptr<AbstractUpdater> &updater() { return _updater; }
 

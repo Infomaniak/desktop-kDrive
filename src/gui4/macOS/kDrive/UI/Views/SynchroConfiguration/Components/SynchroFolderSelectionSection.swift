@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -86,6 +87,8 @@ struct SynchroFolderSelectionSection: View {
                 HStack {
                     Button(KDriveLocalizable.buttonChangeFolder) {
                         isShowingFileImporter = true
+                        @InjectService var matomo: MatomoUtils
+                        matomo.track(eventWithCategory: .driveSetupDialog, name: "changeSyncLocalLocation")
                     }
                     .buttonStyle(.borderedProminent)
                     .fileImporter(
@@ -174,6 +177,10 @@ struct SynchroFolderSelectionSection: View {
 }
 
 #Preview {
-    SynchroFolderSelectionSection(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []))
-        .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: { _ in }, onCancel: nil))
+    SynchroFolderSelectionSection(configuration: SynchroConfiguration(
+        drive: PreviewHelper.drive1,
+        blackList: [],
+        useLightSync: true
+    ))
+    .environmentObject(SynchroConfigurationFlowViewModel(onConfirm: { _ in }, onCancel: nil))
 }

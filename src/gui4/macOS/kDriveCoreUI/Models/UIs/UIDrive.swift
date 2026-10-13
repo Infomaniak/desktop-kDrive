@@ -55,6 +55,7 @@ public struct UIAvailableDrive: UIDriveRepresentation, Hashable {
 
     public let driveId: Int
     public let userDbId: Int
+    public let accountName: String
     public let name: String
     public let hexColor: UIHexColor?
 
@@ -72,9 +73,10 @@ public struct UIAvailableDrive: UIDriveRepresentation, Hashable {
         return Color(nsColor: nsColor)
     }
 
-    public init(driveId: Int, userDbId: Int, name: String, hexColor: UIHexColor?) {
+    public init(driveId: Int, userDbId: Int, accountName: String, name: String, hexColor: UIHexColor?) {
         self.driveId = driveId
         self.userDbId = userDbId
+        self.accountName = accountName
         self.name = name
         self.hexColor = hexColor
     }
@@ -90,6 +92,7 @@ public extension UIAvailableDrive {
         self.init(
             driveId: Int(availableDrive.driveId),
             userDbId: Int(availableDrive.userDbId),
+            accountName: availableDrive.accountName,
             name: availableDrive.name,
             hexColor: hexColor
         )
