@@ -24,22 +24,23 @@
 
 namespace KDC {
 
-class GetMySharedFilesJob : public AbstractTokenNetworkJob {
+class GetFilesSharedWithMeJob : public AbstractTokenNetworkJob {
     public:
         /// @brief List the files that the user shared on the drive.
         /// @param driveDbId The database ID of the drive.
         /// @param cursorInput The cursor of the previously fetched page, empty for a first page.
         /// @param limit The maximal number of items returned by the request.
-        GetMySharedFilesJob(DriveDbId driveDbId, Cursor cursorInput = {}, int64_t limit = 10);
+        GetFilesSharedWithMeJob(DriveDbId driveDbId, Cursor cursorInput = {}, int64_t limit = 10);
 
         // The node info list as returned by the backend API v3
         [[nodiscard]] const RemoteNodeInfoList &v3RemoteNodeInfoList() const { return _remoteNodeInfoList; }
 
         [[nodiscard]] const Cursor &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
+        [[nodiscard]] bool sharedIsEmpty() const { return _remoteNodeInfoList.empty(); }
 
     private:
-        friend class TestGetMySharedFilesJob;
+        friend class TestGetFilesSharedWithMeJob;
 
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri) override;

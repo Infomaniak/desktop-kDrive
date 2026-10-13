@@ -27,9 +27,9 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestGetMySharedFilesJob : public CppUnit::TestFixture, public TestBaseWithParmsDb {
+class TestGetFilesSharedWithMeJob : public CppUnit::TestFixture, public TestBaseWithParmsDb {
     public:
-        CPPUNIT_TEST_SUITE(TestGetMySharedFilesJob);
+        CPPUNIT_TEST_SUITE(TestGetFilesSharedWithMeJob);
         CPPUNIT_TEST(testHandleResponse);
         CPPUNIT_TEST(testHandleResponseTwice);
         CPPUNIT_TEST(testHandleResponseMissingDataArray);

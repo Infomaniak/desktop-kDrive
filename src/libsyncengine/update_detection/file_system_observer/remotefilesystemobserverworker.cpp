@@ -24,6 +24,7 @@
 #include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/getfilessharedwithmejob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 
@@ -240,7 +241,7 @@ void RemoteFileSystemObserverWorker::execute() {
 }
 
 
-ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &validListingCursorsExist) const {
+ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorExists(bool &validListingCursorsExist) const {
     validListingCursorsExist = false;
 
     CursorData cursorData;
@@ -249,6 +250,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &v
 
         return exitInfo;
     }
+
     if (cursorData == CursorData{}) {
         LOG_SYNCPAL_DEBUG(_logger, "No valid listing cursor for the watched folder.");
 
@@ -545,6 +547,14 @@ ExitInfo RemoteFileSystemObserverWorker::insertItemInRemoteSnapshot(const Remote
     // The "Private" folder of the v3 API is translated into the root folder of the remote drive: it is already represented
     // by the root item of the snapshot and must not be inserted into the snapshot.
     if (item.id() == _liveSnapshot.rootFolderId()) return ExitCode::Ok;
+
+    // Do not synchronize the Shared folder (drive scope) if it is empty. This is to avoid creating an empty Shared folder in the
+    // local replica when the user has no shared files.
+    if (item.name() == ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared) &&
+        item.parentId() == ApiTranslator::v2RootFolderRemoteId()) {
+        bool sharedIsEmtpy = false;
+        if (const auto exitInfo = checkIfSharedFolderIsEmpty(sharedIsEmtpy); !exitInfo || sharedIsEmtpy) return exitInfo;
+    }
 
     if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
         return ExitCode::Ok;
@@ -1424,5 +1434,27 @@ RemoteNodeIdSet RemoteFileSystemObserverWorker::blackList() const {
 
     return _blackList;
 };
+
+ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty) const {
+    empty = false;
+
+    CursorData cursorData;
+    if (const auto exitInfo = getListingCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    auto job = std::make_shared<GetFilesSharedWithMeJob>(_driveDbId, cursorData.cursor, 5);
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in GetFilesSharedWithMeJob::runSynchronously: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    empty = job->sharedIsEmpty();
+
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

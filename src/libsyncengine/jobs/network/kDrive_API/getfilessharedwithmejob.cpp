@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "jobs/network/kDrive_API/getmysharedfilesjob.h"
+#include "jobs/network/kDrive_API/getfilessharedwithmejob.h"
 
 #include "jobs/network/abstracttokennetworkjob.h"
 #include "libcommon/utility/utility.h"
@@ -26,30 +26,30 @@
 
 namespace KDC {
 
-GetMySharedFilesJob::GetMySharedFilesJob(const DriveDbId driveDbId, Cursor cursorInput, const int64_t limit /*= 10*/) :
+GetFilesSharedWithMeJob::GetFilesSharedWithMeJob(const DriveDbId driveDbId, Cursor cursorInput, const int64_t limit /*= 10*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _limit(limit),
     _cursorInput(std::move(cursorInput)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-std::string GetMySharedFilesJob::getSpecificUrl() {
+std::string GetFilesSharedWithMeJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/my_shared";
+    str += "/files/shared_with_me";
 
     return str;
 }
 
-void GetMySharedFilesJob::setQueryParameters(Poco::URI &uri) {
+void GetFilesSharedWithMeJob::setQueryParameters(Poco::URI &uri) {
     if (!_cursorInput.empty()) uri.addQueryParameter("cursor", _cursorInput);
 
     uri.addQueryParameter("limit", std::to_string(_limit));
 }
 
-ExitInfo GetMySharedFilesJob::deserializeDataArray() {
+ExitInfo GetFilesSharedWithMeJob::deserializeDataArray() {
     const auto dataArray = jsonRes()->getArray(dataKey);
     if (!dataArray) {
-        LOG_WARN(_logger, "Missing data array for GetMySharedFilesJob.");
+        LOG_WARN(_logger, "Missing data array for GetFilesSharedWithMeJob.");
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
@@ -94,7 +94,7 @@ ExitInfo GetMySharedFilesJob::deserializeDataArray() {
     return ExitCode::Ok;
 }
 
-ExitInfo GetMySharedFilesJob::handleResponse(std::istream &is) {
+ExitInfo GetFilesSharedWithMeJob::handleResponse(std::istream &is) {
     // AbstractNetworkJob::runJob() sends the whole request again after a failed response: start from scratch each time.
     _remoteNodeInfoList.clear();
 

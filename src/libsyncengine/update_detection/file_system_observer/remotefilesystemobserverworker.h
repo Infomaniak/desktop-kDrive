@@ -44,7 +44,9 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         Count listingFullCount() const { return _listingFullCount.load(); };
         RemoteNodeIdSet blackList() const;
-        [[nodiscard]] ExitInfo checkIfValidListingCursorsExist(bool &validSnapshotBackupExists) const;
+        void setBlackList(RemoteNodeIdSet blackList);
+        void restoreRemoteSnapshotBackup(const ConstSnapshot &snapshotBackup);
+        [[nodiscard]] ExitInfo checkIfValidListingCursorExists(bool &validSnapshotBackupExists) const;
 
     protected:
         void execute() override;
@@ -183,6 +185,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         void abortAndClearLongPollJob(std::shared_ptr<LongPollJob> &longPollJob);
 
         ExitInfo setBlackList(bool &blackListChanged);
+        [[nodiscard]] ExitInfo checkIfSharedFolderIsEmpty(bool &empty) const;
 
         friend class TestRemoteFileSystemObserverWorker;
 };
