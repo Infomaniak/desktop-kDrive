@@ -49,6 +49,7 @@ class RemoteFolderPickerModel final : public QAbstractItemModel {
         Q_PROPERTY(QString selectedNodeId READ selectedNodeId NOTIFY selectionChanged)
         Q_PROPERTY(QString selectedName READ selectedName NOTIFY selectionChanged)
         Q_PROPERTY(QString selectedPath READ selectedPath NOTIFY selectionChanged)
+        Q_PROPERTY(bool folderCreationPreparing READ folderCreationPreparing NOTIFY folderCreationChanged)
         Q_PROPERTY(bool folderCreationActive READ folderCreationActive NOTIFY folderCreationChanged)
         Q_PROPERTY(bool folderCreationPending READ folderCreationPending NOTIFY folderCreationChanged)
 
@@ -90,6 +91,8 @@ class RemoteFolderPickerModel final : public QAbstractItemModel {
         [[nodiscard]] QString selectedName() const { return _selectedName; }
         // The remote path of the selected folder, as the server returned it.
         [[nodiscard]] QString selectedPath() const { return _selectedPath; }
+        // Waiting for the parent's children before the editing row can be inserted.
+        [[nodiscard]] bool folderCreationPreparing() const { return !_pendingCreationParentNodeId.isEmpty(); }
         [[nodiscard]] bool folderCreationActive() const { return _editingNode != nullptr; }
         [[nodiscard]] bool folderCreationPending() const { return _editingNode && _editingNode->creating; }
         // Node id of the folder under which the editing row lives, empty when no creation is active.
@@ -145,7 +148,7 @@ class RemoteFolderPickerModel final : public QAbstractItemModel {
          * that cannot be opened or chosen.
          */
         Q_INVOKABLE bool beginFolderCreation(const QModelIndex &parentIndex);
-        /** Drops the editing row, unless its creation request is pending. */
+        /** Drops a creation waiting for its parent's listing or its editing row, unless its creation request is pending. */
         Q_INVOKABLE void cancelFolderCreation();
 
     signals:
