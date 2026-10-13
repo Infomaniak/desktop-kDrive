@@ -5123,12 +5123,11 @@ void AppServer::onUpdateSyncsProgress() {
     }
 
     for (const auto &sync: syncList) {
-        SyncCache syncCache{SyncStatus::Undefined, SyncStep::None, SyncProgress()};
         const std::scoped_lock lock(syncPalMapMutex);
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
             // Show the sync paused anyway. It is most likely that an external drive is not plugged in.
-            syncCache._status = SyncStatus::Paused;
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress());
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);
@@ -5137,25 +5136,24 @@ void AppServer::onUpdateSyncsProgress() {
 
             const auto syncPal = syncPalMapIt->second;
 
-            syncCache._status = syncPal->status();
-            syncCache._step = syncPal->step();
-
             // Get progress
-            if (syncCache._status == SyncStatus::Running && syncCache._step == SyncStep::Propagation2) {
-                syncPal->loadProgress(syncCache._progress);
+            SyncProgress progress;
+            if (syncPal->status() == SyncStatus::Running && syncPal->step() == SyncStep::Propagation2) {
+                syncPal->loadProgress(progress);
             }
-        }
 
-        if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
-            syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
-            // Set/update sync cache
-            if (syncCacheMapIt == _syncCacheMap.end())
-                _syncCacheMap[sync.dbId()] = syncCache;
-            else
-                syncCacheMapIt->second = syncCache;
+            const SyncCache syncCache{syncPal->status(), syncPal->step(), progress};
+            if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
+                syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
+                // Set/update sync cache
+                if (syncCacheMapIt == _syncCacheMap.end())
+                    _syncCacheMap[sync.dbId()] = syncCache;
+                else
+                    syncCacheMapIt->second = syncCache;
 
-            // Send progress to the client
-            sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, syncCache._progress);
+                // Send progress to the client
+                sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, progress);
+            }
         }
     }
 }
