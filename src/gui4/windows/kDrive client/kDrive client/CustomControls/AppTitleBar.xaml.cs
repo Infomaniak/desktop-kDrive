@@ -34,6 +34,12 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
+        public void FocusOnSearchBox()
+        {
+            if (!SearchBox.Focus(FocusState.Programmatic))
+                Logger.LogWarning("Failed to set focus on the search box.");
+        }
+
         private Visibility TitleBarContentVisibility(bool isModelInitialized, Sync? selectedSync, bool isUpdateRequired)
         {
             if (!isModelInitialized || isUpdateRequired)

@@ -828,7 +828,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
             List<SearchInfo>? resultInfos = data.Params[JsonKeys.SearchInfoList]?.Deserialize<List<SearchInfo>>(options);
-            string resultCursor = data.Params[JsonKeys.Cursor]?.GetValue<string>() ?? "";
+            string resultCursor = Utility.FromBase64String(data.Params[JsonKeys.Cursor]?.GetValue<string>() ?? "") ?? "";
 
             if (resultInfos is null)
             {

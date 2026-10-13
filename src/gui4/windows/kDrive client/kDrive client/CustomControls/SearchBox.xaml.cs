@@ -80,6 +80,7 @@ namespace Infomaniak.kDrive.CustomControls
         public SearchBox()
         {
             InitializeComponent();
+            GotFocus += (_, _) => TitleBarSearchBox.IsSuggestionListOpen = true;
         }
         private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {

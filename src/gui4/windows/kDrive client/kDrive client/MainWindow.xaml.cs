@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.ComponentModel;
+using System.Windows.Input;
 
 namespace Infomaniak.kDrive
 {
@@ -53,7 +54,16 @@ namespace Infomaniak.kDrive
             Closed += MainWindow_Closed;
             Activated += MainWindow_Activated;
             this.Content.PointerPressed += OnPointerPressed;
+            this.Content.PreviewKeyDown += OnPreviewKeyDown;
             UpdateControlsVisibility();
+        }
+
+        private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control && e.Key == Windows.System.VirtualKey.F)
+            {
+                AppTitleBar.FocusOnSearchBox();
+            }
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -97,7 +107,7 @@ namespace Infomaniak.kDrive
             Activated -= MainWindow_Activated;
             this.Content.PointerPressed -= OnPointerPressed;
         }
-         
+
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(AppModel.IsInitialized) || e.PropertyName == nameof(AppModel.UpdateRequired))
