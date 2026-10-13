@@ -731,7 +731,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
             // Move
             return tr("You are not allowed to move item to \"%1\".<br>"
                       "It will be restored into its original parent folder.")
-                    .arg(destinationPath);
+                    .arg(destinationPath.toHtmlEscaped());
         }
         case CancelType::Delete: {
             return tr(
@@ -1101,7 +1101,7 @@ void ParametersDialog::onSetStyle(bool darkTheme) {
 
 void ParametersDialog::onOpenFolder(const QString &filePath) {
     if (!KDC::GuiUtility::openFolder(filePath)) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath), QMessageBox::Ok, this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath.toHtmlEscaped()), QMessageBox::Ok, this);
         msgBox.exec();
     }
 }
