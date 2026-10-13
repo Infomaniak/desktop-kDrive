@@ -267,7 +267,7 @@ void AddDriveWizard::onStepTerminated(const bool next) {
             if (found) {
                 CustomMessageBox msgBox(QMessageBox::Warning,
                                         tr("The kDrive %1 is already synchronized on this computer. Continue anyway?")
-                                                .arg(QString::fromStdString(_driveInfo.name())),
+                                                .arg(QString::fromStdString(_driveInfo.name()).toHtmlEscaped()),
                                         QMessageBox::Yes | QMessageBox::No, this);
                 if (msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this)) != QMessageBox::Yes) {
                     stayCurrentStep = true;
