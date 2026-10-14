@@ -27,6 +27,8 @@ Rectangle {
 
     required property var appRouter
     required property var controller
+    // False while the selected synchronization is blocked: its pages are replaced by the blocking error screen.
+    property bool navigationEnabled: true
     readonly property int currentTab: appRouter.currentMainTabIndex
     readonly property int tabActivities: AppRouter.Activities
     readonly property int tabHome: AppRouter.Home
@@ -49,6 +51,7 @@ Rectangle {
             spacing: IKSpacing.s4
 
             IKSidebarItem {
+                enabled: root.navigationEnabled
                 iconSource: "qrc:/assets/main/house.svg"
                 label: qsTrId("tabTitleHome")
                 selected: root.currentTab === root.tabHome
@@ -57,7 +60,7 @@ Rectangle {
                 onTriggered: root.appRouter.navigateToMainTab(root.tabHome)
             }
             IKSidebarItem {
-                enabled: root.controller.hasCurrentSyncRoot
+                enabled: root.navigationEnabled && root.controller.hasCurrentSyncRoot
                 iconSource: "qrc:/assets/main/activities.svg"
                 label: qsTrId("tabTitleActivities")
                 notificationColor: IKColors.statusMediumWarning
@@ -68,7 +71,7 @@ Rectangle {
                 onTriggered: root.appRouter.navigateToMainTab(root.tabActivities)
             }
             IKSidebarItem {
-                enabled: root.controller.hasCurrentSyncRoot
+                enabled: root.navigationEnabled && root.controller.hasCurrentSyncRoot
                 iconSource: "qrc:/assets/main/storage.svg"
                 label: qsTrId("tabTitleStorage")
                 selected: root.currentTab === root.tabStorage

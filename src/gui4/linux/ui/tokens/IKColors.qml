@@ -203,6 +203,8 @@ QtObject {
     readonly property color storageBarSeparator: darkMode ? _p.neutralBlue700 : _p.gray100
     readonly property color blockingStateSurface: surfaceSecondary
     readonly property color blockingStateBorder: surfaceTertiary
+    readonly property color blockingErrorDriveLabelSurface: darkMode ? _p.neutralBlue900 : _p.white
+    readonly property color blockingErrorDriveLabelBorder: surfaceTertiary
     readonly property color sidebarNotificationSurface: surfacePrimary
     readonly property color sidebarNotificationBorder: surfaceTertiary
     readonly property color modalSurface: onboardingSurfacePrimary
