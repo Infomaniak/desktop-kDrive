@@ -43,3 +43,21 @@ if(WIN32)
         PATTERN "${CLIENT_STAMP_NAME}" EXCLUDE
     )
 endif()
+
+if(APPLE)
+    add_custom_target(kdrive_client
+            COMMAND ${CMAKE_COMMAND} -E env DEVELOPER_DIR=/Applications/Xcode_26.app/Contents/Developer
+            xcodebuild -project "${CMAKE_SOURCE_DIR}/src/gui4/macOS/kDrive.xcodeproj"
+            -target "kDrive" -configuration ${CMAKE_BUILD_TYPE} "SYMROOT=${CMAKE_CURRENT_BINARY_DIR}"
+            COMMENT building kDrive client
+            VERBATIM)
+    # mac_litesyncext is only set as a dependency to avoid parallel build issues between xcode projects
+    #   -> error: unable to attach DB: error: accessing build database "{...}/build-macos/client/extensions/MacOSX/XCBuildData/build.db":
+    #      database is locked Possibly there are two concurrent builds running in the same filesystem location.
+    #      ** BUILD FAILED *
+    add_dependencies(kdrive_client mac_litesyncext ${APPLICATION_EXECUTABLE})
+
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/kDrive.app"
+            DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/
+            USE_SOURCE_PERMISSIONS)
+endif()
