@@ -110,21 +110,6 @@ public final class SyncCreationService: SyncCreator {
         return URL(fileURLWithPath: path)
     }
 
-    private func computeDefaultFolderPath(driveName: String) -> URL {
-        let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
-
-        var name = driveName
-        if driveName.lowercased().hasPrefix("kdrive") {
-            name = driveName
-                .replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
-                .trimmingCharacters(in: .whitespaces)
-        }
-
-        let folderName = "kDrive \(name)".trimmingCharacters(in: .whitespacesAndNewlines)
-
-        return homeDirectory.appendingPathComponent(folderName)
-    }
-
     private func getIdentifier(from origin: SyncOrigin) -> NewSyncParentIdentifier {
         switch origin {
         case .storedDrive(let drive):
