@@ -163,6 +163,7 @@ final class MainWindowController: NSWindowController {
     }
 
     private func onRouteChange(route: WindowRoute) {
+        IKLogger.general.debug("[KD] Main window route changed: \(String(describing: route))")
         switch route {
         case .preloading(let isShowingError):
             setViewController(PreloadingViewController(isShowingError: isShowingError))

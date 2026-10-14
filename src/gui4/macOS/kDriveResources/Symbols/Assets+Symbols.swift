@@ -11,6 +11,7 @@
 #if canImport(SwiftUI)
   import SwiftUI
 #endif
+import os
 
 // Deprecated typealiases
 @available(*, deprecated, renamed: "ImageAsset.Image", message: "This typealias will be removed in SwiftGen 7.0")
@@ -118,7 +119,11 @@ public struct ImageAsset {
     let image = Image(named: name)
     #endif
     guard let result = image else {
-      fatalError("Unable to load image asset named \(name).")
+      // NOTE: Manually patched deviation from the SwiftGen `swift5` template (see swiftgen.yml).
+      // A missing image asset must never crash the app (it degrades the UI instead).
+      // Keep this change when regenerating with SwiftGen.
+      AssetFailureLogger.logger.error("Unable to load image asset named \(name, privacy: .public). Falling back to an empty image.")
+      return Image()
     }
     return result
   }

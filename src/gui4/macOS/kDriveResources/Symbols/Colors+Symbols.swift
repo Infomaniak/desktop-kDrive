@@ -11,6 +11,7 @@
 #if canImport(SwiftUI)
   import SwiftUI
 #endif
+import os
 
 // Deprecated typealiases
 @available(*, deprecated, renamed: "ColorAsset.Color", message: "This typealias will be removed in SwiftGen 7.0")
@@ -86,7 +87,11 @@ public final class ColorAsset {
   @available(iOS 11.0, tvOS 11.0, watchOS 4.0, macOS 10.13, *)
   public private(set) lazy var color: Color = {
     guard let color = Color(asset: self) else {
-      fatalError("Unable to load color asset named \(name).")
+      // NOTE: Manually patched deviation from the SwiftGen `swift5` template (see swiftgen.yml).
+      // A missing color asset must never crash the app (it degrades the UI instead).
+      // Keep this change when regenerating with SwiftGen.
+      AssetFailureLogger.logger.error("Unable to load color asset named \(self.name, privacy: .public). Falling back to NSColor.gray.")
+      return .gray
     }
     return color
   }()
@@ -137,6 +142,10 @@ public extension SwiftUI.Color {
   }
 }
 #endif
+
+enum AssetFailureLogger {
+  static let logger = Logger(subsystem: "com.infomaniak.drive.desktopclient", category: "kDriveResources")
+}
 
 // swiftlint:disable convenience_type
 private final class BundleToken {

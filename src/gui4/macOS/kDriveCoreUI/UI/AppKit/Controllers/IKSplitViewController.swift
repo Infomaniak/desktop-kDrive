@@ -50,7 +50,10 @@ open class IKSplitViewController: NSSplitViewController {
 
 public extension IKSplitViewController {
     func switchContentViewController(destination viewController: NSViewController) {
-        removeSplitViewItem(splitViewItems[1])
+        if splitViewItems.count >= 2 {
+            removeSplitViewItem(splitViewItems[1])
+        }
+
         addSplitViewItem(NSSplitViewItem(viewController: viewController))
         currentContentViewController = viewController
     }
