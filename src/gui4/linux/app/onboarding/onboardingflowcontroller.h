@@ -97,6 +97,8 @@ class OnboardingFlowController final : public QObject {
         void handleLoginTokenSucceeded(qint64 userDbId);
         void handleLoginFailed(const QString &error, const QString &errorDescription);
         void completeLogin(qint64 userDbId);
+        // Ends the session after the login of a user who already has synchronizations, without selecting drives.
+        void completeReconnection(qint64 userDbId);
 
     signals:
         void titleChanged();
