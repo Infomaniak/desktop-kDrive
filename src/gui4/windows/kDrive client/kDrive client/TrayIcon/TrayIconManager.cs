@@ -297,7 +297,7 @@ namespace Infomaniak.kDrive.TrayIcon
 
         private void DpiHelper_DpiChanged(object? sender, double newScale)
         {
-            _dpi = (uint)(newScale * 96);
+            _dpi = GetDpiForSystem();
             _ = Utility.RunOnUIThread(() => SetIcon(_currentIcon));
         }
 
