@@ -99,10 +99,15 @@ void MainSelectionStore::ensureValidSelection() {
 }
 
 void MainSelectionStore::handleCacheGraphChanged() {
-    const auto previousSyncContext = currentSyncContext();
     const auto previousSyncDbId = _currentSyncDbId;
     ensureValidSelection();
-    if (_currentSyncDbId == previousSyncDbId && previousSyncContext != currentSyncContext()) {
+    if (_currentSyncDbId != previousSyncDbId) {
+        return;
+    }
+
+    // The cache signals after its update: compare with the last notified context, not with a fresh read.
+    if (auto syncContext = currentSyncContext(); syncContext != _currentSyncContext) {
+        _currentSyncContext = std::move(syncContext);
         emit currentContextChanged();
     }
 }
@@ -114,6 +119,7 @@ void MainSelectionStore::setCurrentSyncDbId(const SyncDbId syncDbId) {
 
     qCDebug(lcMainSelectionStore) << "Current synchronization changed | syncDbId:" << _currentSyncDbId << "=>" << syncDbId;
     _currentSyncDbId = syncDbId;
+    _currentSyncContext = currentSyncContext();
     emit currentSyncDbIdChanged();
     emit currentSyncRuntimeInfoChanged();
     emit currentContextChanged();

@@ -430,7 +430,8 @@
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing. It
   prefers a classic root synchronization, then any synchronization.
     - Emits `currentContextChanged()` as a coarse invalidation signal when the selected ids stay unchanged but the
-      underlying cache graph changes.
+      selected context changes. The cache signals after its update, so the store compares with a copy of the last
+      notified context.
     - Exposes selected-sync runtime through its dedicated accessor and signals, including a status-only notification so
       progress ticks do not invalidate presentation that only depends on the synchronization status.
 - `app/cache/syncerrorsprojection.*`: single source of classified sync errors for every error consumer. It classifies
