@@ -292,6 +292,8 @@
   A user-resolvable conflict (node-level create/create or edit/edit) is always a version conflict. `resolveBlockingError`
   keeps the oldest blocking error of a synchronization and reports `LoggedOut` for a disconnected user even without an
   `InvalidToken` error; `isUpdateRequired` detects an `UpdateRequired` error of any level.
+  `BlockingErrorKind` lives in the `BlockingErrors` `Q_NAMESPACE` (the only Qt meta-object of the domain), registered
+  for QML as `BlockingErrors.Asleep`, ..., so no layer mirrors it.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability (the error state follows `SyncErrorsProjection::hasTrayRelevantError`, so only the error kinds
   marked `showsInTray` turn the icon to error), GNOME-compatible tray menu actions (the Settings entry is disabled while
@@ -457,10 +459,22 @@
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
   locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
   transient feedback independent from projected row lifetime.
+- `app/mainwindow/blockingerrorcontroller.*`: QML-facing state of the blocking error screen of the selected
+  synchronization (`SyncErrorsProjection::currentBlockingError`: drive asleep, waking up, not renewed, in maintenance,
+  access denied, or user logged out). Only that synchronization is blocked: the controller switches `AppRouter` to the
+  `BlockingError` tab, keeps it there while the error lasts, and returns to Home when it disappears or another
+  synchronization is selected; the sidebar selector and Settings stay usable. It exposes the variant (`kind`, texts
+  translated in QML), the drive name, color and admin status, and `triggerAction()`: open the drive on the web (asleep),
+  open the shop (not renewed and admin: `AppConstants::Drive::renewSubscriptionUri` for a standalone drive pack such as
+  `solo`, `team` or `pro`, `myKSuiteRenewalUri` for a `my_ksuite*` pack, the shop home for any other pack until the
+  server fetches the kSuite id), restart the synchronization with `SyncService::startSync` (not renewed for a
+  non-admin, maintenance, access denied), or request an onboarding login (logged out). The waking-up variant has no
+  action, only a loader. The drive name shows a tooltip when truncated.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
   a pending pause or resume request drives the toolbar control (`SyncControlState::Pending`), never the central status.
+  The control is disabled while the selected synchronization has a blocking error, as on macOS.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
@@ -516,7 +530,9 @@
   state.
 - `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow
   controller, OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not
-  accumulate login-specific workflow logic.
+  accumulate login-specific workflow logic. A user who already has synchronizations and logs in again (for instance
+  from the blocking error screen) skips drive selection: `SyncService::startSyncsAfterLogin` sends
+  `SYNC_START_AFTER_LOGIN` and `OnboardingFlowController::completeReconnection` ends the session, as on macOS.
 - `app/onboarding/onboardingdefaultpathresolver.*`: resolves the default local folder of a drive as soon as it is
   selected, so advanced settings never open on a blocking request. A drive whose folder cannot be resolved is
   unselected, and drive selection cannot continue while a resolution is in flight.
@@ -605,6 +621,10 @@
       `states/`, and versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window
       active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML
       models.
+    - `ui/windows/main/blockingerror/`: blocking error screen built on `IKBlockingState`, in place of the page content
+      with the Storage page margins; `BlockingErrorDriveLabel` renders the drive with its status badge (macOS icons
+      recolored white for `IKTintedIcon`, status colors per variant). `SidebarView.navigationEnabled` disables Home,
+      Activities and Storage meanwhile; opening the synchronization folder stays available.
     - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
       presentation, and empty state. Size and status columns have fixed widths; only the name/folder boundary is
       draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
