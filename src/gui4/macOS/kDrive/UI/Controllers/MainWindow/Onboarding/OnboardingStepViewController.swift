@@ -20,7 +20,7 @@ import Cocoa
 import Combine
 import kDriveCoreUI
 
-open class OnboardingStepViewController: NSViewController {
+open class OnboardingStepViewController: BaseViewController {
     enum Tokens {
         static let minContainerWidth: CGFloat = 300
         static let maxContainerWidth: CGFloat = 500
@@ -44,10 +44,6 @@ open class OnboardingStepViewController: NSViewController {
         label.isHidden = true
         return label
     }()
-
-    override open func loadView() {
-        view = NSView()
-    }
 
     override open func viewDidLoad() {
         super.viewDidLoad()

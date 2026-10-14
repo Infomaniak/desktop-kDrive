@@ -85,6 +85,7 @@ Services are registered at app startup. Check `AppDelegate` or the DI setup file
 ### ViewModels & Views
 - ViewModels are `@MainActor final class` conforming to `ObservableObject`
 - ViewControllers (AppKit `NSViewController`) host SwiftUI views via `NSHostingView`
+- Nibless AppKit controllers must inherit from `BaseViewController` (in `kDriveCoreUI/UI/AppKit/Controllers/`), which explicitly creates the root view: default `NSViewController.loadView()` can crash trying to load a nib on macOS 12/13. Use it for empty placeholders too; SwiftLint rejects direct `NSViewController` inheritance/construction. Genuine nib-backed exceptions require a narrowly scoped lint disable with an explanation.
 - Example ViewModel: `kDrive/UI/Controllers/MainWindow/MainView/MainViewModel.swift`
 - Example VC: `kDrive/UI/Controllers/MainWindow/MainView/MainViewController.swift`
 
