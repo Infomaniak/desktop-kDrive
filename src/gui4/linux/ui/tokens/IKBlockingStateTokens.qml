@@ -36,4 +36,23 @@ QtObject {
     readonly property real updateRequiredMargin: IKSpacing.page
     readonly property real updateRequiredIllustrationWidth: 178
     readonly property real updateRequiredIllustrationHeight: 131
+
+    // Blocking synchronization error screen, which replaces the page content. As for the update-required screen, the
+    // toolbar already separates the card from the top edge.
+    readonly property real blockingErrorMargin: IKSpacing.page
+    readonly property real blockingErrorTopMargin: 0
+    readonly property real blockingErrorVisualSpacing: 56
+    readonly property real spinnerSize: 24
+    readonly property real spinnerStrokeWidth: 2.5
+
+    // Drive label of the blocking error screen, with its status badge overlapping the top-right corner.
+    readonly property real driveLabelRadius: 10
+    readonly property real driveLabelHorizontalPadding: IKSpacing.s24
+    readonly property real driveLabelVerticalPadding: 10
+    readonly property real driveLabelSpacing: IKSpacing.s8
+    readonly property real driveLabelIconSize: 16
+    readonly property real driveLabelTextSize: 16
+    readonly property real driveLabelMaximumTextWidth: 320
+    readonly property real badgeSize: 40
+    readonly property real badgeIconSize: 20
 }

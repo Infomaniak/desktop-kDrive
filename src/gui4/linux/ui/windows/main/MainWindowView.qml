@@ -27,6 +27,7 @@ Item {
 
     required property var appRouter
     required property var activitiesController
+    required property var blockingErrorController
     required property var homeController
     required property var mainSidebarController
     required property var storageController
@@ -49,6 +50,7 @@ Item {
             height: parent.height
             appRouter: root.appRouter
             controller: root.mainSidebarController
+            navigationEnabled: !root.blockingErrorController.active
         }
 
         Rectangle {
@@ -80,9 +82,10 @@ Item {
                     sourceComponent: storageViewComponent
                 }
 
-                BlockingErrorPlaceholder {
+                Loader {
                     anchors.fill: parent
-                    visible: root.currentTab === root.tabBlockingError
+                    active: root.currentTab === root.tabBlockingError && root.blockingErrorController.active
+                    sourceComponent: blockingErrorViewComponent
                 }
             }
         }
@@ -101,6 +104,14 @@ Item {
 
         function onShareLinkCopyFailed(rowId) {
             sidebarView.notification.showError(qsTrId("failedToCreateShareLinkError"));
+        }
+    }
+
+    Component {
+        id: blockingErrorViewComponent
+
+        BlockingErrorView {
+            controller: root.blockingErrorController
         }
     }
 
