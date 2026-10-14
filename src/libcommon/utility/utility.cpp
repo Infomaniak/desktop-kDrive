@@ -164,7 +164,11 @@ std::string CommonUtility::generateUUID() {
 
 void CommonUtility::crash() {
     volatile int *a = (int *) (NULL);
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnull-dereference"
     *a = 1;
+#pragma clang diagnostic pop
 }
 
 QString CommonUtility::platformName() {
@@ -1310,15 +1314,13 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
-                                  .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr.data()));
+                                  .arg(serviceStr, liteSyncExtBundleIdStr.data()));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
-                                  .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr.data()));
+                                  .arg(serviceStr, liteSyncExtBundleIdStr.data()));
         }
 
         query.exec();

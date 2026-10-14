@@ -406,6 +406,17 @@ void AppServer::init() {
     }
 #endif
 
+#if defined(KD_MACOS)
+    // Check LoginItemAgent process
+    //Utility::registerLoginItemAgent(false);
+    if (!Utility::isLoginItemAgentRunning()) {
+        LOG_WARN(_logger, "LoginItemAgent is not running, try to start it");
+        if (!Utility::registerLoginItemAgent(true)) {
+            LOG_WARN(_logger, "Error in registerLoginItemAgent");
+        }
+    }
+#endif
+
     // Check vfs plugins
     QString error;
 #if defined(KD_WINDOWS)
@@ -1160,7 +1171,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             QList<qint64> list;
-            for (const auto userDbId: tmpList) {
+            for (const auto userDbId: std::as_const(tmpList)) {
                 list << static_cast<qint64>(userDbId);
             }
 
@@ -1262,7 +1273,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             std::unordered_set<ConflictType> filter2;
-            for (const auto &c: filter) {
+            for (const auto &c: std::as_const(filter)) {
                 filter2.insert(c);
             }
 
@@ -1525,7 +1536,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QList<BaseSync> baseList;
             baseList.reserve(list.size());
-            for (const auto &sync: list) {
+            for (const auto &sync: std::as_const(list)) {
                 baseList.push_back(static_cast<const BaseSync &>(sync));
             }
 
@@ -1898,7 +1909,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             NodeSet nodeIdSet2;
-            for (const QString &nodeId: nodeIdSet) {
+            for (const QString &nodeId: std::as_const(nodeIdSet)) {
                 nodeIdSet2.insert(nodeId.toStdString());
             }
 
