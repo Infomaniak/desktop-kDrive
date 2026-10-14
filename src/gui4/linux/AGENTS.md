@@ -441,7 +441,8 @@
   (including a disconnected user), whether any error is relevant to the tray, and whether an update is required.
   Changes are coalesced by a 150 ms single-shot timer that is never pushed back: the server replaces an error it detects
   again with `UTILITY_ERROR_REMOVED` then `UTILITY_ERROR_ADDED` (same `ErrorDbId`), and the pair must land in one
-  refresh. Each signal is emitted only when its value changed.
+  refresh. A change of the selected synchronization refreshes at once, so a newly selected synchronization never shows
+  the previous one's errors or blocking screen. Each signal is emitted only when its value changed.
 - `app/mainwindow/syncselectormodel.*`: QML adapter for the synchronization selector. It flattens each configured drive
   into classic and advanced synchronization rows and exposes only the presentation data required by the selector.
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
