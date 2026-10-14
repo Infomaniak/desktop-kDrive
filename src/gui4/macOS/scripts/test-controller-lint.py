@@ -1,4 +1,4 @@
-"""Regression checks for the macOS 12/13 programmatic-controller lint rules.
+"""Regression checks for the macOS 12/13 controller and toolbar lint rules.
 
 Run from src/gui4/macOS with `mise exec -- python3 scripts/test-controller-lint.py`.
 """
@@ -48,6 +48,37 @@ class ControllerLintTests(unittest.TestCase):
             "let reference: NSViewController? = nil\n"
             "// class Example: NSViewController {}\n"
             'let example = "NSViewController()"\n'
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(violations, [])
+
+
+    def test_parameterless_toolbars_fail(self):
+        cases = [
+            "NSToolbar()",
+            "NSToolbar.init()",
+            "AppKit.NSToolbar()",
+            "Cocoa.NSToolbar.init()",
+            "NSToolbar(\n)",
+            "NSToolbar\n    .init(\n)",
+        ]
+        for expression in cases:
+            with self.subTest(expression=expression):
+                code, violations = self.lint(f"let toolbar = {expression}\n")
+                self.assertEqual(code, 2)
+                self.assertEqual(
+                    [(v["rule_id"], v["severity"]) for v in violations],
+                    [("bare_nstoolbar_init", "Error")],
+                )
+
+    def test_explicit_toolbar_identifiers_and_references_pass(self):
+        code, violations = self.lint(
+            'let toolbar = NSToolbar(identifier: NSToolbar.Identifier("MainToolbar"))\n'
+            'let other = AppKit.NSToolbar.init(identifier: NSToolbar.Identifier("OtherToolbar"))\n'
+            "let reference: NSToolbar? = nil\n"
+            "// NSToolbar() and NSToolbar.init() are unsafe on macOS 12.\n"
+            "/* NSToolbar() */\n"
+            'let example = "NSToolbar()"\n'
         )
         self.assertEqual(code, 0)
         self.assertEqual(violations, [])

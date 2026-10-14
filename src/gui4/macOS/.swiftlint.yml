@@ -52,6 +52,14 @@ custom_rules:
       - typeidentifier
     message: "Use BaseViewController() to create a nibless controller safely on macOS 12/13."
     severity: error
+  bare_nstoolbar_init:
+    name: "Bare NSToolbar Initialization"
+    regex: '\bNSToolbar\s*(?:\.\s*init\s*)?\(\s*\)'
+    match_kinds:
+      - identifier
+      - typeidentifier
+    message: "Use NSToolbar(identifier:) to prevent toolbar initialization crashes on macOS 12."
+    severity: error
 included:
  - kDrive
  - kDriveCoreUI
