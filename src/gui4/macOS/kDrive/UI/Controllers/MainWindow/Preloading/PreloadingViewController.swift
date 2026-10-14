@@ -64,7 +64,7 @@ final class PreloadingViewController: BaseViewController {
 
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
-        window.toolbar = NSToolbar()
+        window.toolbar = NSToolbar(identifier: NSToolbar.Identifier("PreloadingToolbar"))
     }
 
     private func setupView() {

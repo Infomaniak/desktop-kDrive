@@ -76,7 +76,7 @@ final class OnboardingViewController: BaseViewController {
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = false
 
-        window.toolbar = NSToolbar()
+        window.toolbar = NSToolbar(identifier: NSToolbar.Identifier("OnboardingToolbar"))
     }
 
     private func setupUI() {
