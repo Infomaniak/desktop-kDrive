@@ -45,8 +45,8 @@ struct ClassifiedSyncError {
  * Single source of the classified sync errors, shared by every error consumer.
  *
  * Each error is classified and remembered by its database id, and logged once unless its kind changes. Cache signals are
- * coalesced into one refresh within 150 ms (the server replaces a known error with a removed then added signal pair), and
- * each signal is emitted only when its value changed.
+ * coalesced into one refresh within 150 ms (the server replaces a known error with a removed then added signal pair); a
+ * change of the selected synchronization is applied at once. Each signal is emitted only when its value changed.
  */
 class SyncErrorsProjection final : public QObject {
         Q_OBJECT
