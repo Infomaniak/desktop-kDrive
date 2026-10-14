@@ -106,8 +106,7 @@ public final class SyncCreationService: SyncCreator {
     }
 
     public func preferredLocalPath(for driveName: String) async throws -> URL {
-        let defaultPath = computeDefaultFolderPath(driveName: driveName)
-        let path = try await UtilityJobs().getGoodPathForNewSynchro(basePath: defaultPath.path)
+        let path = try await UtilityJobs().getGoodPathForNewSynchro(driveName: driveName)
         return URL(fileURLWithPath: path)
     }
 
