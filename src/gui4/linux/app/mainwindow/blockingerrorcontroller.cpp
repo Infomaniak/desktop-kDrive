@@ -49,9 +49,8 @@ void openUrl(const QUrl &url) {
 // `with=k_suite`). Until then, a kSuite drive, or an unknown pack, open shop.infomaniak.com
 QUrl renewalUri(const Drive &drive) {
     const auto &packName = drive.packInfo().name();
-    constexpr std::array<std::string_view, 4> standaloneDrivePacks{"free", "solo", "team", "pro"};
-
-    if (std::ranges::find(standaloneDrivePacks, packName) != standaloneDrivePacks.end()) {
+    if (constexpr std::array<std::string_view, 4> standaloneDrivePacks{"free", "solo", "team", "pro"};
+        std::ranges::find(standaloneDrivePacks, packName) != standaloneDrivePacks.end()) {
         return AppConstants::Drive::renewSubscriptionUri(drive.driveId());
     }
 
