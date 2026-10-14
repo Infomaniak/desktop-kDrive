@@ -44,6 +44,21 @@ namespace KDC::AppConstants::Drive {
     return QColor{QStringLiteral("#0098FF")};
 }
 
+// Shop page renewing the subscription of a standalone drive, offered to its admins when it is not renewed.
+[[nodiscard]] inline QUrl renewSubscriptionUri(const DriveId driveId) {
+    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/drive/%1").arg(static_cast<qulonglong>(driveId))};
+}
+
+// Shop page renewing the my kSuite of the logged-in user.
+[[nodiscard]] inline QUrl myKSuiteRenewalUri() {
+    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/my_ksuite")};
+}
+
+// Shop home, for the drives of a kSuite whose renewal page needs an id the client does not have.
+[[nodiscard]] inline QUrl shopUri() {
+    return QUrl{QStringLiteral("https://shop.infomaniak.com")};
+}
+
 } // namespace KDC::AppConstants::Drive
 
 namespace KDC::AppConstants::Login {

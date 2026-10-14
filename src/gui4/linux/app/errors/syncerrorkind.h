@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <QObject>
+
 #include <cstdint>
 #include <string_view>
 
@@ -123,6 +125,11 @@ enum class SyncErrorExplanation : uint8_t {
     EnumEnd
 };
 
+// Dedicated namespace so that Q_NAMESPACE does not cover the whole KDC namespace: QML reads these values as
+// `BlockingErrors.Asleep`, ... (registered in AppClientLinux::setupQmlEngine).
+namespace BlockingErrors {
+Q_NAMESPACE
+
 // Error that blocks the whole synchronization and replaces the main window content.
 enum class BlockingErrorKind : uint8_t {
     Asleep,
@@ -133,6 +140,11 @@ enum class BlockingErrorKind : uint8_t {
     LoggedOut,
     EnumEnd
 };
+Q_ENUM_NS(BlockingErrorKind)
+
+} // namespace BlockingErrors
+
+using BlockingErrors::BlockingErrorKind;
 
 // Up to this number of version conflicts, each conflict has its own row; beyond it, a single aggregated row is shown.
 inline constexpr int32_t kMaxIndividualConflicts = 5;
