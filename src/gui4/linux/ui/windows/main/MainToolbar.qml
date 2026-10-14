@@ -35,7 +35,6 @@ Rectangle {
     readonly property int currentTab: root.appRouter.currentMainTabIndex
     readonly property int tabActivities: AppRouter.Activities
     readonly property int tabStorage: AppRouter.Storage
-    readonly property int tabBlockingError: AppRouter.BlockingError
 
     color: "transparent"
 
@@ -51,8 +50,6 @@ Rectangle {
                 return qsTrId("tabTitleActivities")
             case root.tabStorage:
                 return qsTrId("tabTitleStorage")
-            case root.tabBlockingError:
-                return qsTrId("errorPageTitle")
             default:
                 return qsTrId("tabTitleHome")
             }
