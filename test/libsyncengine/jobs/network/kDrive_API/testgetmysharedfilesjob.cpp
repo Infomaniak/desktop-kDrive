@@ -148,7 +148,7 @@ void TestGetFilesSharedWithMeJob::testSetQueryParameters() {
 
 void TestGetFilesSharedWithMeJob::testGetSpecificUrl() {
     GetFilesSharedWithMeJob job(_driveDbId);
-    CPPUNIT_ASSERT(job.getSpecificUrl().ends_with("/files/my_shared"));
+    CPPUNIT_ASSERT(job.getSpecificUrl().ends_with("/files/shared_with_me"));
 }
 
 } // namespace KDC
