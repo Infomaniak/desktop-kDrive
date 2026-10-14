@@ -44,7 +44,7 @@ if(WIN32)
     )
 endif()
 
-if(APPLE)
+if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
     add_custom_target(kdrive_client
             COMMAND ${CMAKE_COMMAND} -E env DEVELOPER_DIR=/Applications/Xcode_26.app/Contents/Developer
             xcodebuild -project "${CMAKE_SOURCE_DIR}/src/gui4/macOS/kDrive.xcodeproj"

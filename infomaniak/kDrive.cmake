@@ -1,8 +1,6 @@
 set( APPLICATION_NAME       "kDrive" )
 set( APPLICATION_SHORTNAME  "kDrive" )
 set( APPLICATION_EXECUTABLE "kDrive" )
-set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
-set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive" )
 set( APPLICATION_DOMAIN     "infomaniak.com" )
 set( APPLICATION_VENDOR     "Infomaniak Network SA" )
 
@@ -23,12 +21,18 @@ set( FEEDBACK_DE_URL "https://feedback.userreport.com/074f5c5a-372b-40a6-b82f-91
 set( FEEDBACK_ES_URL "https://feedback.userreport.com/e1304b1e-ebd0-4ffe-9234-a1a91730e651" )
 set( FEEDBACK_IT_URL "https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31889a0012ee" )
 
+set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
 if( APPLE )
+    set( APPLICATION_CLIENTV4_EXECUTABLE "kDrive.app" )
     set( APPLICATION_ICON_NAME  "kdrive-mac" )
     set( MINIMUM_SYSTEM_VERSION "10.15" )
+elseif( WIN32 )
+    set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive" )
+    set( APPLICATION_ICON_NAME  "kdrive-win" )
 else()
     set( APPLICATION_ICON_NAME  "kdrive-win" )
 endif()
+
 set( APPLICATION_DOWNLOAD_URL "https://kdrive.infomaniak.com/app/drive/sync" CACHE STRING "App download URL" )
 set( APPLICATION_TRASH_URL_WINAPI "https://kdrive.infomaniak.com/app/drive/%s/trash")
 set( APPLICATION_TRASH_URL_QSTRING "https://kdrive.infomaniak.com/app/drive/%1/trash")
