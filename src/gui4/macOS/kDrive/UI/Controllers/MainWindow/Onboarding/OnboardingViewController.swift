@@ -22,7 +22,7 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
-final class OnboardingViewController: NSViewController {
+final class OnboardingViewController: BaseViewController {
     private let flowCoordinator: OnboardingFlowCoordinator
 
     private let shouldGuessInitialStep: Bool
@@ -47,10 +47,6 @@ final class OnboardingViewController: NSViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func loadView() {
-        view = NSView()
     }
 
     override func viewDidLoad() {

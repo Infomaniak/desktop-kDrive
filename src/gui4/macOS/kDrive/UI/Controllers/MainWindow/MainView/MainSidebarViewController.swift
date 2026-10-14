@@ -72,7 +72,7 @@ extension SidebarItem {
     static let mainViewItems: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
 }
 
-final class MainSidebarViewController: NSViewController {
+final class MainSidebarViewController: BaseViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
     @LazyInjectService private var router: MainViewRouter
@@ -139,10 +139,6 @@ final class MainSidebarViewController: NSViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func loadView() {
-        view = NSView()
     }
 
     override func viewDidLoad() {

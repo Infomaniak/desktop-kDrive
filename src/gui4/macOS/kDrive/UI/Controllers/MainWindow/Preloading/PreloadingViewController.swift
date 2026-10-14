@@ -22,7 +22,7 @@ import kDriveCoreUI
 import kDriveResources
 import Lottie
 
-final class PreloadingViewController: NSViewController {
+final class PreloadingViewController: BaseViewController {
     private lazy var animationView: NSThemedAnimationView = {
         let view = NSThemedAnimationView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -45,10 +45,6 @@ final class PreloadingViewController: NSViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func loadView() {
-        view = NSView()
     }
 
     override func viewDidLoad() {
