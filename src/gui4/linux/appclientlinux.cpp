@@ -523,7 +523,7 @@ void AppClientLinux::handleUpdateRequiredChanged() {
     _systemTrayController.setSettingsAvailable(!updateRequired);
     if (updateRequired && _settingsWindow && _settingsWindow->isVisible()) {
         qCInfo(lcAppClientLinux) << "Closing the Settings window: an update is required";
-        _settingsWindow->close();
+        (void) _settingsWindow->close();
     }
 }
 
