@@ -288,7 +288,6 @@ set(GUI_QML_FILES # .qml files for the app
         ui/features/syncconfiguration/SyncConfigurationSummaryPage.qml
         ui/dialogs/GlobalModalHost.qml
         ui/dialogs/ManyDeletesDialog.qml
-        ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
         ui/windows/main/storage/StorageErrorState.qml
@@ -306,6 +305,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivityRow.qml
         ui/windows/main/activities/ActivitySourceIcon.qml
         ui/windows/main/activities/ActivityStatusIcon.qml
+        ui/windows/main/blockingerror/BlockingErrorDriveLabel.qml
+        ui/windows/main/blockingerror/BlockingErrorView.qml
         ui/windows/main/home/HomeGreeting.qml
         ui/windows/main/home/HomeStatusPanel.qml
         ui/windows/main/home/HomeView.qml
@@ -402,6 +403,11 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities/source-web.svg
         ui/assets/main/activities/status-error.svg
         ui/assets/main/activities/status-synchronized-outline.svg
+        ui/assets/main/blockingerror/door-arrow-right.svg
+        ui/assets/main/blockingerror/moon-sleep.svg
+        ui/assets/main/blockingerror/sun.svg
+        ui/assets/main/blockingerror/warning.svg
+        ui/assets/main/blockingerror/wrench.svg
         ui/assets/main/chevron-down.svg
         ui/assets/main/folder.svg
         ui/assets/main/house.svg
