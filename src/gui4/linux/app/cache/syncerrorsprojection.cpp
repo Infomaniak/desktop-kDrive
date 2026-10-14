@@ -80,7 +80,9 @@ SyncErrorsProjection::SyncErrorsProjection(const AppCache &cache, const MainSele
 
     (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &SyncErrorsProjection::scheduleRefresh);
     (void) connect(&_cache, &AppCache::serverErrorsChanged, this, &SyncErrorsProjection::scheduleRefresh);
-    (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, &SyncErrorsProjection::scheduleRefresh);
+    // A selection change is applied at once, or the newly selected synchronization would show the previous one's errors
+    // (blocking screen included) for up to refreshInterval. A pending coalesced refresh still runs afterwards.
+    (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, &SyncErrorsProjection::refresh);
     // Also covers a change of the connection state of the selected synchronization's user.
     (void) connect(&_selectionStore, &MainSelectionStore::currentContextChanged, this, &SyncErrorsProjection::scheduleRefresh);
 
