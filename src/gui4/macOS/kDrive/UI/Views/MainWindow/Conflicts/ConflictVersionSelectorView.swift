@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
@@ -39,6 +40,7 @@ struct ConflictInfo: Equatable {
 
 struct ConflictVersionSelectorView: View {
     @LazyInjectService private var matomo: MatomoUtils
+    @LazyInjectService private var synchroErrorsObserver: SynchroErrorsObserving
 
     @Environment(\.dismiss) private var dismiss
 
@@ -130,6 +132,16 @@ struct ConflictVersionSelectorView: View {
             }
         }
         .genericErrorAlert(isPresented: $isShowingGenericErrorAlert)
+        .onReceive(synchroErrorsObserver.synchroErrorsPublisher.receive(on: RunLoop.main)) { synchroErrors in
+            let activeConflicts = synchroErrors[.filesToCheck, default: []]
+            if !errors.allSatisfy({ error in
+                activeConflicts.contains {
+                    $0.metadata.dbId == error.metadata.dbId && $0.metadata.synchroDbId == error.metadata.synchroDbId
+                }
+            }) {
+                dismiss()
+            }
+        }
         .task(id: currentErrorIndex) {
             guard let currentError else {
                 dismiss()

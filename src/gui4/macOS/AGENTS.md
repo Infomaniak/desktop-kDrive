@@ -195,6 +195,7 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 
 ## Local norms
 - Keep the possible server-crash notion in server connection-loss diagnostics; connection loss is a useful crash indicator.
+- Explicitly receive Combine events on the main thread before updating SwiftUI state or dismissing views.
 
 ## Common Gotchas
 - `@MainActor` is required on all ViewModels — missing it causes runtime warnings in Swift 6 strict concurrency.
