@@ -84,7 +84,7 @@ void TestGetFilesSharedWithMeJob::testHandleResponse() {
     CPPUNIT_ASSERT_EQUAL(std::string("95755"), dirInfo.nodeId().toStdString());
     CPPUNIT_ASSERT(QString("Shared directory") == dirInfo.name());
     CPPUNIT_ASSERT_EQUAL(std::string("51006"), dirInfo.parentNodeId().toStdString());
-    CPPUNIT_ASSERT_EQUAL(SyncTime{1700000000}, dirInfo.modtime());
+    CPPUNIT_ASSERT_EQUAL(qint64{1700000000}, dirInfo.modtime());
     CPPUNIT_ASSERT_EQUAL(qint64{-1}, dirInfo.size()); // No size is extracted for a directory.
     CPPUNIT_ASSERT(dirInfo.path().isEmpty());
 
@@ -92,7 +92,7 @@ void TestGetFilesSharedWithMeJob::testHandleResponse() {
     CPPUNIT_ASSERT_EQUAL(std::string("95756"), fileInfo.nodeId().toStdString());
     CPPUNIT_ASSERT(QString("Shared file.txt") == fileInfo.name());
     CPPUNIT_ASSERT_EQUAL(std::string("51006"), fileInfo.parentNodeId().toStdString());
-    CPPUNIT_ASSERT_EQUAL(SyncTime{1700000001}, fileInfo.modtime());
+    CPPUNIT_ASSERT_EQUAL(qint64{1700000001}, fileInfo.modtime());
     CPPUNIT_ASSERT_EQUAL(qint64{1700}, fileInfo.size());
     CPPUNIT_ASSERT(fileInfo.path().isEmpty());
 }
@@ -124,7 +124,7 @@ void TestGetFilesSharedWithMeJob::testHandleResponseMissingDataArray() {
 
 void TestGetFilesSharedWithMeJob::testSetQueryParameters() {
     const auto queryParameters = [](GetFilesSharedWithMeJob &job) {
-        Poco::URI uri("https://api.infomaniak.com/3/drive/1/files/my_shared");
+        Poco::URI uri("https://api.infomaniak.com/3/drive/1/files/shared_with_me");
         job.setQueryParameters(uri);
         std::map<std::string, std::string> parameters;
         for (const auto &[key, value]: uri.getQueryParameters()) {
