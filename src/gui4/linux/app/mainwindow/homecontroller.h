@@ -32,6 +32,7 @@ class AppCache;
 class AppRouter;
 class MainSelectionStore;
 class NetworkStatusObserver;
+class SyncErrorsProjection;
 class SyncService;
 
 /**
@@ -80,8 +81,9 @@ class HomeController final : public QObject {
         };
         Q_ENUM(SyncControlState)
 
-        explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore, SyncService &syncService,
-                                AppRouter &appRouter, NetworkStatusObserver &networkStatusObserver, QObject *parent = nullptr);
+        explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
+                                const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
+                                NetworkStatusObserver &networkStatusObserver, QObject *parent = nullptr);
 
         [[nodiscard]] HomeStatus status() const;
         [[nodiscard]] PrimaryAction primaryAction() const;
@@ -110,6 +112,7 @@ class HomeController final : public QObject {
 
         AppCache &_appCache;
         MainSelectionStore &_mainSelectionStore;
+        const SyncErrorsProjection &_syncErrorsProjection;
         SyncService &_syncService;
         AppRouter &_appRouter;
         NetworkStatusObserver &_networkStatusObserver;
