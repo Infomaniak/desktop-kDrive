@@ -22,7 +22,7 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
-final class OnboardingViewController: NSViewController {
+final class OnboardingViewController: BaseViewController {
     private let flowCoordinator: OnboardingFlowCoordinator
 
     private let shouldGuessInitialStep: Bool
@@ -76,7 +76,7 @@ final class OnboardingViewController: NSViewController {
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = false
 
-        window.toolbar = NSToolbar()
+        window.toolbar = NSToolbar(identifier: NSToolbar.Identifier("OnboardingToolbar"))
     }
 
     private func setupUI() {

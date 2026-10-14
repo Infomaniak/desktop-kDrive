@@ -29,7 +29,7 @@ extension SidebarItem {
     static let advanced = SidebarItem(icon: KDriveResources.hammerWrench.image, title: KDriveLocalizable.sidebarItemAdvanced)
 }
 
-class PreferencesSidebarViewController: NSViewController {
+class PreferencesSidebarViewController: BaseViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
     weak var delegate: NavigableSidebarViewControllerDelegate?
