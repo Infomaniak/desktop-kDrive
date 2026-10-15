@@ -28,7 +28,7 @@ struct UtilityBestVFSResponse: Codable, Sendable {
 }
 
 struct UtilityGoodPathNewSyncQuery: Codable, Sendable {
-    @Base64CodedString var basePath: String
+    @Base64CodedString var driveName: String
 }
 
 struct UtilityGoodPathNewSyncResponse: Codable, Sendable {
