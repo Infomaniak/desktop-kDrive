@@ -4026,11 +4026,10 @@ bool AppServer::startClient() {
         bool useClientV4 = false;
 #endif
 
-        auto getPathToExecutable = [](const SyncPath &executableName) -> SyncPath {
+        auto getPathToExecutable = [](const SyncPath &executableName) {
             SyncPath pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
             IoError ioError = IoError::Success;
-            bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+            if (bool exists = false; !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
                 !exists || ioError != IoError::Success) {
                 return SyncPath();
             }
