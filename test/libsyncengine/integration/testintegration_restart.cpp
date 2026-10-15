@@ -357,7 +357,7 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     // Verify the blacklist change was detected and full listing was triggered
-    // When snapshot backup is invalidated due to blacklist mismatch, clearListingCursors() is called
+    // When snapshot backup is invalidated due to blacklist mismatch, clearSyncFolderListingCursor() is called
     Count secondListingCount = getFullListingCount();
     CPPUNIT_ASSERT_MESSAGE("Blacklist change should cause incremented full listing count",
                            secondListingCount > firstListingCount);

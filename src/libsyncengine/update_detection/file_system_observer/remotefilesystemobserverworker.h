@@ -137,15 +137,26 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] ExitInfo setSharedFolderListingCursor(const CursorData &cursorData);
 
         /**
-         * @brief Clears the listing cursor of the watched folder.
+         * @brief Clears the listing cursor of the sync folder.
          *
          * This function resets the state of the listing cursor, effectively removing any previously saved cursor data
-         * for the watched folder. It ensures that subsequent listing operations start without relying on outdated
+         * for the sync folder. It ensures that subsequent listing operations start without relying on outdated
          * cursor data.
          *
          * @return ExitInfo indicating the success or failure of the operation.
          */
-        [[nodiscard]] ExitInfo clearListingCursor();
+        [[nodiscard]] ExitInfo clearSyncFolderListingCursor();
+
+        /**
+         * @brief Clears the listing cursor of the shared folder.
+         *
+         * This function resets the state of the shared folder listing cursor, effectively removing any previously saved
+         * cursor data for the shared folder. It ensures that subsequent listing operations start without relying on
+         * outdated cursor data.
+         *
+         * @return ExitInfo indicating the success or failure of the operation.
+         */
+        [[nodiscard]] ExitInfo clearSharedFolderListingCursor();
 
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
         mutable std::mutex _blackListMutex; // Mutex to protect access to the _blackList member variable.
