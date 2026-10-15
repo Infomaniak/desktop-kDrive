@@ -39,6 +39,8 @@ Item {
     readonly property real sidebarWidth: IKMainWindow.sidebarWidth
     readonly property int currentTab: appRouter.currentMainTabIndex
     readonly property bool windowVisible: root.Window.window !== null && root.Window.window.visible
+    readonly property bool canGoBackInActivities: root.currentTab === root.tabActivities
+                                                  && root.appRouter.activitiesNavigation.canGoBack
 
     Row {
         anchors.fill: parent
@@ -91,6 +93,19 @@ Item {
         }
     }
 
+    // Back to the parent Activities page, like the toolbar back button (Alt+Left, mouse back button).
+    Shortcut {
+        sequences: [ StandardKey.Back ]
+        enabled: root.canGoBackInActivities
+        onActivated: root.appRouter.activitiesNavigation.back()
+    }
+
+    TapHandler {
+        acceptedButtons: Qt.BackButton
+        enabled: root.canGoBackInActivities
+        onTapped: root.appRouter.activitiesNavigation.back()
+    }
+
     Connections {
         target: root.activitiesController
 
@@ -128,6 +143,7 @@ Item {
 
         ActivitiesView {
             controller: root.activitiesController
+            navigation: root.appRouter.activitiesNavigation
         }
     }
 
