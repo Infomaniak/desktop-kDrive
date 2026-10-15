@@ -23,13 +23,28 @@ public enum XPCConnectionState {
     case connected
     case notConnected
     case error
+    case serverCrashed
+}
+
+public enum XPCLoginItemAgentConnectionState: Sendable, Equatable {
+    /// A connection attempt is in progress and has not yet succeeded or failed.
+    case connecting
+    /// The login item agent is reachable.
+    case connected
+    /// The login item agent could not be reached (e.g. it was invalidated or is not enabled).
+    case disconnected
 }
 
 public protocol XPCConnectionProvider: Sendable {
-    var guiConnection: XPCGuiProtocol { get async throws }
+    func sendQuery(_ requestData: Data) async throws -> Data
 
     var guiConnectionState: XPCConnectionState { get }
     var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
+
+    var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState { get }
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> { get }
+
+    func reconnectToLoginAgent() async
 }
 
 extension XPCConnectionManager: XPCConnectionProvider {
@@ -43,18 +58,32 @@ extension XPCConnectionManager: XPCConnectionProvider {
         }
     }
 
-    public var guiConnection: XPCGuiProtocol {
-        get async throws {
-            try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
+    public func sendQuery(_ requestData: Data) async throws -> Data {
+        try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
 
-            let connection = try connection
-            let proxy = try connection.proxy(from: connection, type: XPCGuiProtocol.self)
-
-            return proxy
+        let connection = try connection
+        return try await withCheckedThrowingContinuation { continuation in
+            let continuation = XPCContinuation(continuation)
+            do {
+                let proxy = try connection.proxy(errorHandler: { error in
+                    IKLogger.xpc.error("[KD] Failed to send query to server: \(error)")
+                    continuation.resume(throwing: error)
+                }, type: XPCGuiProtocol.self)
+                proxy.processQuery(requestData) { data in
+                    IKLogger.xpc.log("[KD] recv raw callback len: \(data.count)")
+                    continuation.resume(returning: data)
+                }
+            } catch {
+                continuation.resume(throwing: error)
+            }
         }
     }
 
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {
         return $guiConnectionState.eraseToAnyPublisher()
+    }
+
+    public var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> {
+        return $loginItemAgentConnectionState.eraseToAnyPublisher()
     }
 }

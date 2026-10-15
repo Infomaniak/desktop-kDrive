@@ -49,19 +49,23 @@ struct UISynchroInfo: Equatable {
 extension SidebarItem {
     static let home = SidebarItem(
         icon: KDriveResources.house.image,
-        title: KDriveLocalizable.tabTitleHome
+        title: KDriveLocalizable.tabTitleHome,
+        matomo: "openHome"
     )
     static let activities = SidebarItem(
         icon: KDriveResources.circularArrowsClockwise.image,
-        title: KDriveLocalizable.tabTitleActivities
+        title: KDriveLocalizable.tabTitleActivities,
+        matomo: "openActivity"
     )
     static let storage = SidebarItem(
         icon: KDriveResources.hardDiskDrive.image,
-        title: KDriveLocalizable.tabTitleStorage
+        title: KDriveLocalizable.tabTitleStorage,
+        matomo: "openStorage"
     )
     static let openInFinder = SidebarItem(
         icon: KDriveResources.finder.image,
         title: KDriveLocalizable.buttonOpenInFinder,
+        matomo: "openSyncDir",
         type: .action
     )
 
@@ -75,6 +79,7 @@ final class MainSidebarViewController: NSViewController {
     @LazyInjectService private var loadingIndicatorShower: SidebarNotificationPresenting
     @LazyInjectService private var observableCache: CoherentCacheObservable
     @LazyInjectService private var coherentCache: CoherentCache
+    @LazyInjectService private var matomo: MatomoUtils
 
     private let mainViewModel: MainViewModel
     private var bindStore = Set<AnyCancellable>()
@@ -191,6 +196,7 @@ final class MainSidebarViewController: NSViewController {
                 self?.synchroSelectorViewModel.selectedSynchroId = synchroContext?.synchro.id
                 self?.currentSynchroId = synchroContext?.synchro.id
                 self?.updateActivitiesBadge()
+                self?.updateSidebarIfNecessary()
             }
     }
 
@@ -223,7 +229,7 @@ final class MainSidebarViewController: NSViewController {
                 constant: -AppPadding.padding16
             ),
 
-            synchroSelectorView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: AppPadding.padding16),
+            synchroSelectorView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: AppPadding.padding24),
             synchroSelectorView.leadingAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                 constant: AppPadding.padding12
@@ -378,6 +384,10 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
             return
         }
 
+        if let matomoName = selectedItem.matomo {
+            matomo.track(eventWithCategory: .navBar, name: matomoName)
+        }
+
         router.setCurrentTabIfNecessary(path)
     }
 
@@ -388,6 +398,10 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
 
         switch item {
         case .openInFinder:
+            if let matomoName = item.matomo {
+                matomo.track(eventWithCategory: .navBar, name: matomoName)
+            }
+
             openSyncInFolder()
         default:
             break

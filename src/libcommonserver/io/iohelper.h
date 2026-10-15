@@ -89,7 +89,8 @@ struct IoHelper {
             EnumEnd
         };
 
-        static ExitInfo toExitInfo(const IoError ioError, const ExitInfo &defaultExitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
+        static ExitInfo toExitInfo(const IoError ioError,
+                                   const ExitInfo &defaultExitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
 
         static PathCheckOption getDefaultPathCheckOption() noexcept {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
@@ -471,8 +472,8 @@ struct IoHelper {
          \return the 'status' extended attribute value.
          */
         static std::string statusXAttr(const bool isSyncing, const int16_t progress, const bool isHydrated) {
-            return (isSyncing ? std::string(litesync_attrs::statusHydrating) + std::to_string(progress)
-                              : (isHydrated ? std::string(litesync_attrs::statusOffline)
+            return (isHydrated ? std::string(litesync_attrs::statusOffline)
+                               : (isSyncing ? std::string(litesync_attrs::statusHydrating) + std::to_string(progress)
                                             : std::string(litesync_attrs::statusOnline)));
         }
 #endif

@@ -39,12 +39,19 @@ struct ActivitiesTable: View {
         Table(orderedNodes) {
             TableColumn(KDriveLocalizable.labelName) { context in
                 Label {
-                    Text(context.node.relevantPath, format: .node)
+                    VStack(alignment: .leading) {
+                        Text(context.node.relevantPath, format: .node)
+                            .foregroundStyle(ColorToken.Text.primary.asColor)
+                        if let instruction = context.node.instruction {
+                            Text(instruction.label)
+                                .font(.Tokens.callout)
+                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                        }
+                    }
                 } icon: {
                     FileTypeView(fileTypeRepresentation: context.node.fileTypeRepresentation)
-                        .frame(size: AppIconSize.iconSize12)
+                        .frame(size: AppIconSize.iconSize16)
                 }
-                .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
             TableColumn(KDriveLocalizable.labelFolder) { context in
@@ -56,6 +63,7 @@ struct ActivitiesTable: View {
                         format: .node(driveFolderName: context.synchro.localPath.lastPathComponent)
                     )
                     .underline()
+                    .lineLimit(1)
                 }
                 .buttonStyle(.borderless)
                 .tint(ColorToken.Text.tertiary.asColor)
@@ -81,6 +89,8 @@ struct ActivitiesTable: View {
     }
 
     private func openParentFolder(of context: UISynchroNodeContext) {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .activityPage, name: "openItemFolder")
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: context.node.parentFolder.path, synchroPath: context.synchro.localPath)
 

@@ -731,7 +731,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
             // Move
             return tr("You are not allowed to move item to \"%1\".<br>"
                       "It will be restored into its original parent folder.")
-                    .arg(destinationPath);
+                    .arg(destinationPath.toHtmlEscaped());
         }
         case CancelType::Delete: {
             return tr(
@@ -831,7 +831,7 @@ QString ParametersDialog::getErrorLevelNodeText(const Error &error) const {
                         "The download has been canceled.");
             } else if (error.exitCause() == ExitCause::FileSystemNotSupported) {
                 return tr(R"(Impossible to create file "%1" because it is not supported on your filesystem.<br>It has been excluded from synchronization.)")
-                        .arg(Path2QStr(error.path()));
+                        .arg(Path2QStr(error.path()).toHtmlEscaped());
             } else if (error.exitCause() == ExitCause::MoveThroughSymlink) {
                 return tr(
                         "The item could not be moved because its path contains a symbolic link or junction.<br>"
@@ -1101,7 +1101,8 @@ void ParametersDialog::onSetStyle(bool darkTheme) {
 
 void ParametersDialog::onOpenFolder(const QString &filePath) {
     if (!KDC::GuiUtility::openFolder(filePath)) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath), QMessageBox::Ok, this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath.toHtmlEscaped()),
+                                QMessageBox::Ok, this);
         msgBox.exec();
     }
 }

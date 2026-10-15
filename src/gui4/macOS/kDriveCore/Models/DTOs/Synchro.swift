@@ -36,7 +36,6 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let targetNodeId: String
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
-    public var isUpdatingVfsMode = false
     public var progress: SynchroProgressInfo?
     public var synchNodes: OrderedDictionary<Int32, SynchroNode> = [:]
     public var errors: IndexedErrors = [:]
@@ -177,6 +176,11 @@ public enum BlockingSynchroError: Error, Hashable, Sendable, CaseIterable {
     case loggingError
 
     init?(errorInfo: ErrorInfo) {
+        if errorInfo.exitCode == .InvalidToken {
+            self = .loggingError
+            return
+        }
+
         switch errorInfo.exitCause {
         case .DriveAsleep:
             self = .asleep

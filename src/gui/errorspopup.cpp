@@ -109,6 +109,7 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, const Count ge
                                                           .arg(driveError.autoresolvedErrorsCount));
         }
 
+        driveNameLabel->setTextFormat(Qt::PlainText);
         driveNameLabel->setText(text);
         driveNameLabel->setWordWrap(true);
         driveErrorHBox->addWidget(driveNameLabel);

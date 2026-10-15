@@ -60,6 +60,7 @@ MenuItemWidget::MenuItemWidget(const QString &text, QWidget *parent, QMargins ma
 
     QLabel *menuItemLabel = new QLabel(this);
     menuItemLabel->setObjectName("menuItemLabel");
+    menuItemLabel->setTextFormat(Qt::PlainText);
     menuItemLabel->setText(text);
     layout->addWidget(menuItemLabel);
 

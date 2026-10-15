@@ -1,0 +1,9 @@
+{
+  "id": 16969,
+  "num": 20,
+  "params": {
+    "syncDbId": 1,
+    "notificationType": 2,
+    "nbFiles": 12345
+  }
+}
