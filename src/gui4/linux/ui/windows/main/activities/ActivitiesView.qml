@@ -19,55 +19,71 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Layouts
+import QtQuick.Controls
 import kDrive.UI
 
+// Hosts the Activities sub-pages and follows ActivitiesNavigation.currentPage.
 Item {
     id: root
 
     required property var controller
+    required property var navigation
 
-    ColumnLayout {
+    // One component per page of the ActivitiesNavigation chain, in chain order: the stack depth of a page is its index + 1.
+    readonly property list<Component> pageComponents: [listPageComponent, errorsPageComponent]
+
+    function syncStack(operation) {
+        if (stack.busy) {
+            return;
+        }
+
+        const targetDepth = Math.min(root.navigation.currentPage + 1, root.pageComponents.length);
+        if (stack.depth > targetDepth) {
+            stack.pop(stack.get(targetDepth - 1), operation);
+            return;
+        }
+        while (stack.depth < targetDepth) {
+            stack.push(root.pageComponents[stack.depth], {}, operation);
+        }
+    }
+
+    clip: true
+
+    StackView {
+        id: stack
+
         anchors.fill: parent
-        anchors.margins: IKActivities.pagePadding
-        spacing: IKActivities.sectionSpacing
 
-        ActivitiesHeader {
-            Layout.fillWidth: true
-            Layout.preferredHeight: implicitHeight
+        // A page change during a transition is applied once it ends.
+        onBusyChanged: {
+            if (!busy) {
+                root.syncStack(StackView.Transition);
+            }
+        }
+    }
+
+    Connections {
+        target: root.navigation
+
+        function onCurrentPageChanged() {
+            root.syncStack(StackView.Transition);
+        }
+    }
+
+    // Builds the whole stack, list included, without animation: the view is recreated when the tab or the window comes back.
+    Component.onCompleted: root.syncStack(StackView.Immediate)
+
+    Component {
+        id: listPageComponent
+
+        ActivitiesListPage {
             controller: root.controller
         }
+    }
 
-        IKErrorBanner {
-            Layout.fillWidth: true
-            Layout.preferredHeight: visible ? implicitHeight : 0
-            errorCount: root.controller.errorCount
-            visible: root.controller.hasErrors
-            onActionTriggered: root.controller.requestFixAllErrors()
-        }
+    Component {
+        id: errorsPageComponent
 
-        Item {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            IKLoadingSpinner {
-                anchors.centerIn: parent
-                width: IKSpacing.s32
-                height: IKSpacing.s32
-                visible: root.controller.loading
-            }
-
-            ActivitiesEmptyState {
-                anchors.fill: parent
-                visible: !root.controller.loading && !root.controller.hasActivities
-            }
-
-            ActivitiesTable {
-                anchors.fill: parent
-                visible: !root.controller.loading && root.controller.hasActivities
-                model: root.controller.model
-                controller: root.controller
-            }
-        }
+        ErrorsPage {}
     }
 }
