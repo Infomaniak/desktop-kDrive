@@ -220,12 +220,19 @@ namespace Infomaniak.kDrive.TrayIcon
             try
             {
                 _currentIcon = fileName;
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Custom", "Icons", "TrayIcons", $"{_currentIcon}{GetThemeSuffix()}.ico");
-                using var bitmap = new Bitmap(imagePath);
-                var iconHandle = bitmap.GetHicon();
-                var icon = Icon.FromHandle(iconHandle);
+
+                var imagePath = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "Assets",
+                    "Custom",
+                    "Icons",
+                    "TrayIcons",
+                    $"{_currentIcon}{GetThemeSuffix()}.ico"
+                );
+
+                using var icon = new Icon(imagePath);
+
                 _trayIcon.UpdateIcon(icon);
-                DestroyIcon(iconHandle);
             }
             catch (Exception ex)
             {
