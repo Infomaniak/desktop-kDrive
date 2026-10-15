@@ -1530,12 +1530,12 @@ RemoteNodeIdSet RemoteFileSystemObserverWorker::blackList() const {
     return _blackList;
 };
 
-ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty) const {
+ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty) {
     empty = false;
 
     CursorData cursorData;
-    if (const auto exitInfo = getSyncFolderListingCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getSyncFolderListingCursor: " << exitInfo);
+    if (const auto exitInfo = getSharedFolderListingCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getSharedFolderListingCursor: " << exitInfo);
 
         return exitInfo;
     }
@@ -1550,6 +1550,11 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty)
     }
 
     empty = job->sharedIsEmpty();
+    if (const auto exitInfo = setSharedFolderListingCursor(CursorData{job->cursor(), CommonUtility::now()}); !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::setSharedFolderListingCursor: " << exitInfo);
+
+        return exitInfo;
+    }
 
     return ExitCode::Ok;
 }
