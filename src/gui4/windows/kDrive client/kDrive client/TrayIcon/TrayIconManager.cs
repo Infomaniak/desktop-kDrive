@@ -85,8 +85,14 @@ namespace Infomaniak.kDrive.TrayIcon
             if (Application.Current.Resources["TrayIcon"] is TaskbarIcon trayIcon)
             {
                 _trayIcon = trayIcon;
-                _trayIcon.ForceCreate();
-
+                try
+                {
+                    _trayIcon.ForceCreate();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to force create tray icon: {ex.Message}");
+                }
                 // Set initial icon
                 SetIconNeutral();
             }

@@ -132,7 +132,15 @@ namespace Infomaniak.kDrive
             .AddText(message)
             .BuildNotification();
             appNotification.ExpiresOnReboot = true;
-            AppNotificationManager.Default.Show(appNotification);
+            try
+            {
+                AppNotificationManager.Default.Show(appNotification);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to show notification: {ex.Message}");
+            }
+
             if (appNotification.Id == 0)
                 Logger.Log(Logger.Level.Error, "Failed to show notification.");
 
