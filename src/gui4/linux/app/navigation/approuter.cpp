@@ -60,6 +60,12 @@ void AppRouter::showBlockingError() {
     setCurrentMainTab(MainTab::BlockingError);
 }
 
+void AppRouter::showErrors() {
+    qCInfo(lcAppRouter) << "Main tab navigation requested | tab: Activities | page: Errors";
+    setCurrentMainTab(MainTab::Activities);
+    _activitiesNavigation.show(ActivitiesNavigation::Page::Errors);
+}
+
 void AppRouter::navigateToMainTab(const int32_t tabIndex) {
     switch (tabIndex) {
         case static_cast<int32_t>(MainTab::Home):
