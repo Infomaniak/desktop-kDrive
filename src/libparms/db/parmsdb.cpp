@@ -323,6 +323,8 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "rootFolderCursorTimestamp INTEGER,"                                                     \
     "customTargetFolderCursor TEXT,"                                                         \
     "customTargetFolderCursorTimestamp INTEGER,"                                             \
+    "sharedFolderCursor TEXT,"                                                               \
+    "sharedFolderCursorTimestamp INTEGER,"                                                   \
     "toDelete INTEGER,"                                                                      \
     "vfsRegisteredAt INTEGER,"                                                               \
     "FOREIGN KEY (driveDbId) REFERENCES drive(dbId) ON DELETE CASCADE ON UPDATE NO ACTION) " \
@@ -334,8 +336,9 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "virtualFileMode, "                                                                                                 \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                   \
     "rootFolderCursor, rootFolderCursorTimestamp, "                                                                     \
-    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete, vfsRegisteredAt) "                          \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19);"
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, "                                                     \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt) "                                      \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21);"
 
 #define UPDATE_SYNC_REQUEST_ID "update_sync"
 #define UPDATE_SYNC_REQUEST                                                                                              \
@@ -343,8 +346,9 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "supportVfs=?8, "                                                                                                    \
     "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, "                    \
     "rootFolderCursor=?13, rootFolderCursorTimestamp=?14, "                                                              \
-    "customTargetFolderCursor=?15, customTargetFolderCursorTimestamp=?16, toDelete=?17, vfsRegisteredAt=?18 "            \
-    "WHERE dbId=?19;"
+    "customTargetFolderCursor=?15, customTargetFolderCursorTimestamp=?16, "                                              \
+    "sharedFolderCursor=?17, sharedFolderCursorTimestamp=?18, toDelete=?19, vfsRegisteredAt=?20 "                        \
+    "WHERE dbId=?21;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
 #define UPDATE_SYNC_PAUSED_REQUEST \
@@ -371,7 +375,8 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
     "rootFolderCursor, rootFolderCursorTimestamp, "                                                                           \
-    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                 \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, "                                                           \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                             \
     "FROM sync "                                                                                                              \
     "WHERE dbId=?1;"
 
@@ -380,7 +385,8 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
     "rootFolderCursor, rootFolderCursorTimestamp, "                                                                           \
-    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                 \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, "                                                           \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                             \
     "FROM sync "                                                                                                              \
     "WHERE dbPath=?1;"
 
@@ -389,7 +395,8 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid,  "                                                        \
     "rootFolderCursor, rootFolderCursorTimestamp, "                                                                           \
-    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete, vfsRegisteredAt  "                                \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, "                                                           \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt  "                                            \
     "FROM sync "                                                                                                              \
     "ORDER BY dbId;"
 
@@ -399,7 +406,8 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "notificationsDisabled, "                                                                                      \
     "hasFullyCompleted, navigationPaneClsid, "                                                                     \
     "rootFolderCursor, rootFolderCursorTimestamp, "                                                                \
-    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete, vfsRegisteredAt "                      \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, "                                                \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, toDelete, vfsRegisteredAt "                                  \
     "FROM sync "                                                                                                   \
     "WHERE driveDbId=?1 "                                                                                          \
     "ORDER BY dbId;"
@@ -1438,17 +1446,17 @@ bool ParmsDb::upgradeTables() {
     if (!addIntegerColumnIfMissing(tableName, "rootFolderCursorTimestamp", 0)) return false;
     if (!addTextColumnIfMissing(tableName, "customTargetFolderCursor")) return false;
     if (!addIntegerColumnIfMissing(tableName, "customTargetFolderCursorTimestamp", 0)) return false;
+    if (!addTextColumnIfMissing(tableName, "sharedFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "sharedFolderCursorTimestamp", 0)) return false;
 
     // Drop the cursor columns of the former per-special-folder cursor management: the cursors are now tracked for the
-    // root folder of the remote drive and for the target folder of an advanced synchronization only. The old cursors
-    // are not migrated, as they are not compatible with the new listing requests: the corresponding synchronizations
-    // will simply regenerate a remote snapshot and a new cursor.
+    // root folder of the remote drive, for the target folder of an advanced synchronization and for the shared folder of
+    // the remote drive. The old cursors are not migrated, as they are not compatible with the new listing requests: the
+    // corresponding synchronizations will simply regenerate a remote snapshot and a new cursor.
     if (!dropColumnIfExists(tableName, "userPrivateFolderCursor")) return false;
     if (!dropColumnIfExists(tableName, "userPrivateFolderCursorTimestamp")) return false;
     if (!dropColumnIfExists(tableName, "commonDocumentsFolderCursor")) return false;
     if (!dropColumnIfExists(tableName, "commonDocumentsFolderCursorTimestamp")) return false;
-    if (!dropColumnIfExists(tableName, "sharedFolderCursor")) return false;
-    if (!dropColumnIfExists(tableName, "sharedFolderCursorTimestamp")) return false;
 
     // Account table
     tableName = "account";
@@ -2548,6 +2556,10 @@ bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, con
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, customTargetFolderCursor.cursor));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, customTargetFolderCursor.timestamp));
 
+    const auto &sharedFolderCursor = sync.sharedFolderCursor();
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sharedFolderCursor.cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sharedFolderCursor.timestamp));
+
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.toDelete())));
     LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.vfsRegisteredAt()));
 
@@ -2753,6 +2765,11 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
     LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, customTargetFolderCursor.cursor));
     LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, customTargetFolderCursor.timestamp));
     sync.setCustomTargetFolderCursor(customTargetFolderCursor);
+
+    CursorData sharedFolderCursor;
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, sharedFolderCursor.cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, sharedFolderCursor.timestamp));
+    sync.setSharedFolderCursor(sharedFolderCursor);
 
     // To-delete flag
     int32_t toDeleteResult{0};
