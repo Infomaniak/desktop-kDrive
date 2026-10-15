@@ -180,6 +180,10 @@ void RemoteFileSystemObserverWorker::execute() {
         const std::scoped_lock lock(_listingCursorCacheMutex);
         _listingCursorCache.reset();
     }
+    {
+        const std::scoped_lock lock(_sharedFolderListingCursorCacheMutex);
+        _sharedFolderListingCursorCache.reset();
+    }
     std::shared_ptr<LongPollJob> longPollJob;
 
     // We never pause this thread, but we stop it as soon as the synchronization leaves its Idle state, or if stop is asked.
@@ -233,8 +237,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorExists(bool &v
     validListingCursorsExist = false;
 
     CursorData cursorData;
-    if (const auto exitInfo = getListingCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: " << exitInfo);
+    if (const auto exitInfo = getSyncFolderListingCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getSyncFolderListingCursor: " << exitInfo);
 
         return exitInfo;
     }
@@ -467,8 +471,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
     // Get the most recently used listing cursor.
     CursorData cursorData;
-    if (const auto exitInfo = getListingCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
+    if (const auto exitInfo = getSyncFolderListingCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getSyncFolderListingCursor: " << exitInfo);
 
         return exitInfo;
     }
@@ -508,8 +512,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
         // Save the most recently used listing cursor now that the current page of `listing/continue` response has been fully
         // processed.
-        if (const auto exitInfo = saveListingCursor(cursorData_); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: " << exitInfo);
+        if (const auto exitInfo = setSyncFolderListingCursor(cursorData_); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::setSyncFolderListingCursor: " << exitInfo);
             tryToInvalidateSnapshot();
 
             return exitInfo;
@@ -792,16 +796,16 @@ ExitInfo RemoteFileSystemObserverWorker::handleCsvReplyCursor(
     const auto &cursor = csvFullFileListWithCursorJob->getCursor();
 
     CursorData cursorData;
-    if (const auto exitInfo = getListingCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: " << exitInfo);
+    if (const auto exitInfo = getSyncFolderListingCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getSyncFolderListingCursor: " << exitInfo);
         return exitInfo;
     }
 
     if (cursorData.cursor != cursor) {
         cursorData = CursorData{cursor, CommonUtility::now()};
         LOG_SYNCPAL_DEBUG(_logger, "Cursor for remoteDirId=" << remoteDirId << " updated: " << cursorData.cursor);
-        if (const auto exitInfo = saveListingCursor(cursorData); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor");
+        if (const auto exitInfo = setSyncFolderListingCursor(cursorData); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::setSyncFolderListingCursor");
 
             return exitInfo;
         }
@@ -844,8 +848,8 @@ ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &r
                                                            std::shared_ptr<LongPollJob> &longPollJob) {
     longPollJob = nullptr;
     CursorData cursorData;
-    if (const auto exitInfo = getListingCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: " << exitInfo);
+    if (const auto exitInfo = getSyncFolderListingCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getSyncFolderListingCursor: " << exitInfo);
         return exitInfo;
     }
 
@@ -1390,7 +1394,7 @@ ExitInfo RemoteFileSystemObserverWorker::getWatchedFolderRemoteId(RemoteNodeId &
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getListingCursor(CursorData &cursorData) const {
+ExitInfo RemoteFileSystemObserverWorker::getSyncFolderListingCursor(CursorData &cursorData) const {
     const std::scoped_lock lock(_listingCursorCacheMutex);
 
     if (_listingCursorCache) {
@@ -1417,16 +1421,16 @@ ExitInfo RemoteFileSystemObserverWorker::getListingCursor(CursorData &cursorData
 }
 
 ExitInfo RemoteFileSystemObserverWorker::clearListingCursor() {
-    const auto exitInfo = saveListingCursor(CursorData{});
+    const auto exitInfo = setSyncFolderListingCursor(CursorData{});
     if (!exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: "
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::setSyncFolderListingCursor: "
                                           << exitInfo << ". Failed to clear listing cursor.");
     }
 
     return exitInfo;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const CursorData &cursorData) {
+ExitInfo RemoteFileSystemObserverWorker::setSyncFolderListingCursor(const CursorData &cursorData) {
     const std::scoped_lock lock(_listingCursorCacheMutex);
 
     ExitInfo setCursorExitInfo = ExitCode::Ok;
@@ -1442,6 +1446,40 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const CursorData &cur
     }
 
     _listingCursorCache = cursorData;
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::getSharedFolderListingCursor(CursorData &cursorData) const {
+    const std::scoped_lock lock(_sharedFolderListingCursorCacheMutex);
+
+    if (_sharedFolderListingCursorCache) {
+        cursorData = *_sharedFolderListingCursorCache;
+
+        return ExitCode::Ok;
+    }
+
+    if (const auto exitInfo = _syncPal->getSharedFolderCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::getSharedFolderCursor: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    _sharedFolderListingCursorCache = cursorData;
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::setSharedFolderListingCursor(const CursorData &cursorData) {
+    const std::scoped_lock lock(_sharedFolderListingCursorCacheMutex);
+
+    if (const auto exitInfo = _syncPal->setSharedFolderCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setSharedFolderCursor: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    _sharedFolderListingCursorCache = cursorData;
 
     return ExitCode::Ok;
 }
@@ -1480,8 +1518,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty)
     empty = false;
 
     CursorData cursorData;
-    if (const auto exitInfo = getListingCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: " << exitInfo);
+    if (const auto exitInfo = getSyncFolderListingCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getSyncFolderListingCursor: " << exitInfo);
 
         return exitInfo;
     }
