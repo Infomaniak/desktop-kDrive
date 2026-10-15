@@ -40,6 +40,7 @@ namespace Infomaniak.kDrive.CustomControls
         private AppModel ViewModel => App.ServiceProvider.GetRequiredService<AppModel>();
         private SearchBoxResultItem? _hoveredItem;
         private ListView? _suggestionsList;
+        private string _lastOnFocusQuery = "";
 
         public SearchBox()
         {
@@ -47,8 +48,23 @@ namespace Infomaniak.kDrive.CustomControls
             TitleBarSearchBox.ItemsSource = _pager.Items;
             _pager.LoaderTransitionStarting += (_, _) => SuppressItemTransitionsForNextLayout();
             SetupKeyboardAccelerators();
-            GotFocus += (_, _) => TitleBarSearchBox.IsSuggestionListOpen = true;
+            GotFocus += OnGotFocus;
+            LostFocus += OnLostFocus;
         }
+
+        private void OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            _lastOnFocusQuery = TitleBarSearchBox.Text;
+            TitleBarSearchBox.Text = "";
+            _pager.ClearQuery();
+        }
+
+        private void OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            TitleBarSearchBox.Text = _lastOnFocusQuery;
+            TitleBarSearchBox.IsSuggestionListOpen = true;
+        }
+
         private void SetupKeyboardAccelerators()
         {
             if (Content is UIElement root)
@@ -72,8 +88,6 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
-                return;
 
             if (string.IsNullOrWhiteSpace(sender.Text))
             {
