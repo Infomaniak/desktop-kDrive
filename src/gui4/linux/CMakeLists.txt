@@ -78,6 +78,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/storagescanner.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
+        app/navigation/activitiesnavigation.cpp
+        app/navigation/activitiesnavigation.h
         app/navigation/approuter.cpp
         app/navigation/approuter.h
         app/navigation/mainwindowactivationdecision.cpp
