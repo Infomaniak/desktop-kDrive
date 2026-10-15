@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -32,6 +33,10 @@ struct DataManagementPreferencesHeaderView: View {
             Link(KDriveLocalizable.viewSourceCode, destination: DataManagementPreferencesView.githubURL)
                 .buttonStyle(.bordered)
                 .foregroundStyle(ColorToken.Accent.primary.asColor)
+                .onTapGesture {
+                    @InjectService var matomo: MatomoUtils
+                    matomo.track(eventWithCategory: .advancedSettingsPage, name: "openSourceCodeWeb")
+                }
         }
     }
 }

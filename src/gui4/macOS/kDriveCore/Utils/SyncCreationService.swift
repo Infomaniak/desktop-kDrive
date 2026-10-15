@@ -50,12 +50,14 @@ public struct NewSyncCandidate {
     public let remoteFolder: SyncRemoteFolder
     public let localFolder: URL?
     public let blackList: [String]
+    public let useLightSync: Bool
 
-    public init(origin: SyncOrigin, remoteFolder: SyncRemoteFolder, localFolder: URL?, blackList: [String]) {
+    public init(origin: SyncOrigin, remoteFolder: SyncRemoteFolder, localFolder: URL?, blackList: [String], useLightSync: Bool) {
         self.origin = origin
         self.remoteFolder = remoteFolder
         self.localFolder = localFolder
         self.blackList = blackList
+        self.useLightSync = useLightSync
     }
 }
 
@@ -65,43 +67,47 @@ public protocol SyncCreator: Sendable {
 }
 
 public final class SyncCreationService: SyncCreator {
-    private let useLightSyncIfPossible: Bool
-
-    public init(useLightSyncIfPossible: Bool = true) {
-        self.useLightSyncIfPossible = useLightSyncIfPossible
-    }
+    public init() {}
 
     @discardableResult
     public func create(from sync: NewSyncCandidate) async throws -> SyncInfo {
         let identifier = getIdentifier(from: sync.origin)
+        let driveId = sync.origin.drive.driveId
+        var stage = "resolveLocalFolder"
+        IKLogger.general.info("[KD] Sync creation started driveId=\(driveId) requestedLiteSync=\(sync.useLightSync)")
+        do {
+            let localFolderURL = try await getLocalFolderURL(for: sync)
 
-        let localFolderURL = try await getLocalFolderURL(for: sync)
+            stage = "checkVolumeCapabilities"
+            let volumeSupportsLightSync = try await canUseLightSync(at: localFolderURL)
+            let useLightSync = sync.useLightSync && volumeSupportsLightSync
+            if sync.useLightSync && !volumeSupportsLightSync {
+                IKLogger.general.info("[KD] Sync creation using offline mode driveId=\(driveId) reason=volumeUnsupported")
+            }
+            let metadata = getMetadata(for: sync, useLightSync: useLightSync, localFolderURL: localFolderURL)
 
-        let useLightSync = try await shouldUseLightSync(at: localFolderURL)
-        let metadata = getMetadata(for: sync, useLightSync: useLightSync, localFolderURL: localFolderURL)
+            stage = "createDestination"
+            try createDestinationIfNecessary(at: localFolderURL)
 
-        try createDestinationIfNecessary(at: localFolderURL)
-
-        return try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
+            stage = "addSync"
+            let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
+            IKLogger.general.info(
+                "[KD] Sync creation accepted driveId=\(driveId) syncDbId=\(syncInfo.dbId) liteSync=\(useLightSync)"
+            )
+            let syncRootURL = URL(fileURLWithPath: syncInfo.localPath, isDirectory: true)
+            if !FinderSidebarFavorites.add(syncRootURL) {
+                IKLogger.general.warning("Failed to add sync root to Finder Favorites")
+            }
+            return syncInfo
+        } catch {
+            IKLogger.general.warning("[KD] Sync creation failed driveId=\(driveId) stage=\(stage)")
+            throw error
+        }
     }
 
     public func preferredLocalPath(for driveName: String) async throws -> URL {
-        let defaultPath = computeDefaultFolderPath(driveName: driveName)
-        let path = try await UtilityJobs().getGoodPathForNewSynchro(basePath: defaultPath.path)
+        let path = try await UtilityJobs().getGoodPathForNewSynchro(driveName: driveName)
         return URL(fileURLWithPath: path)
-    }
-
-    private func computeDefaultFolderPath(driveName: String) -> URL {
-        let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
-
-        var name = driveName
-        if driveName.lowercased().hasPrefix("kdrive") {
-            name = driveName.replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
-        }
-
-        let folderName = "kDrive \(name)".trimmingCharacters(in: .whitespacesAndNewlines)
-
-        return homeDirectory.appendingPathComponent(folderName)
     }
 
     private func getIdentifier(from origin: SyncOrigin) -> NewSyncParentIdentifier {
@@ -131,11 +137,7 @@ public final class SyncCreationService: SyncCreator {
         )
     }
 
-    private func shouldUseLightSync(at url: URL) async throws -> Bool {
-        guard useLightSyncIfPossible else {
-            return false
-        }
-
+    public func canUseLightSync(at url: URL) async throws -> Bool {
         let bestMode = try await UtilityJobs().getBestVirtualFileSystemMode(path: url.path)
         return bestMode == .Mac
     }

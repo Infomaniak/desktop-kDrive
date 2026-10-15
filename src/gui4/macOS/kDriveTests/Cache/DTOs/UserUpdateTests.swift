@@ -242,6 +242,7 @@ struct UserUpdateTests {
         drives[1] = try AvailableDrive(
             driveId: 1,
             accountId: 1,
+            accountName: "Test Account",
             userDbId: UserUpdateTests.dbId,
             userId: UserUpdateTests.userId,
             name: "Test Drive",

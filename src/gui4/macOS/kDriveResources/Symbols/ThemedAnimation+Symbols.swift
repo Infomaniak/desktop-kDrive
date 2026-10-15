@@ -70,6 +70,15 @@ public extension ThemedAnimation {
     }
 }
 
+// MARK: - Other
+
+public extension ThemedAnimation {
+    static let backgroundActivity = ThemedAnimation(
+        light: "permission-background-activity-light",
+        dark: "permission-background-activity-dark"
+    )
+}
+
 public struct ThemedAnimation: Sendable, Hashable {
     public let light: String
     public let dark: String

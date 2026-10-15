@@ -24,7 +24,10 @@ import Sentry
 import SwiftUI
 
 struct BlacklistPreferencesView: View {
-    @State private var initialBlacklist: Set<String> = []
+    @InjectService private var matomo: MatomoUtils
+
+    /// `nil` while the blacklisted nodes have not been fetched yet.
+    @State private var initialBlacklist: Set<String>?
     @State private var blackList: Set<String> = []
 
     @State private var isLoadingButton = false
@@ -65,6 +68,7 @@ struct BlacklistPreferencesView: View {
     }
 
     private func saveChanges() async {
+        matomo.track(eventWithCategory: .exclusionSelector, name: "Confirm")
         do {
             isLoadingButton = true
             try await BlacklistJobs().setBlacklistedNodeList(syncDbId: Int32(synchroDbId), nodeIdList: Array(blackList))
@@ -77,6 +81,7 @@ struct BlacklistPreferencesView: View {
     }
 
     private func goBack() {
+        matomo.track(eventWithCategory: .exclusionSelector, name: "Cancel")
         @InjectService var router: PreferencesViewRouter
         router.removeLast()
     }
@@ -86,8 +91,10 @@ struct BlacklistPreferencesView: View {
             let blacklistedNodes = try await BlacklistJobs().getBlacklistedNodeList(syncDbId: Int32(synchroDbId))
 
             initialBlacklist = Set(blacklistedNodes)
-            blackList = initialBlacklist
+            blackList = Set(blacklistedNodes)
         } catch {
+            // Degrade to an empty blacklist instead of keeping the tree in a pending state forever.
+            initialBlacklist = []
             SentrySDK.capture(error: error)
         }
     }

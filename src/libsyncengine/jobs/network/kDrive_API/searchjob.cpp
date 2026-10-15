@@ -163,8 +163,8 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
                 return ExitCode::SystemError;
             }
         } else {
-            localProperties.isAvailableLocally = true;
-            localProperties.isHydrated = !isDehydrated;
+            localProperties.isAvailableLocally = ioError != IoError::NoSuchFileOrDirectory;
+            localProperties.isHydrated = localProperties.isAvailableLocally && !isDehydrated;
         }
     }
 

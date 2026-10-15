@@ -16,12 +16,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct ConflictsToResolve: Sendable, Identifiable {
+struct ConflictsToResolve: Identifiable {
     var id: String {
         return errors.map(\.metadata.path).joined(separator: ",")
     }
@@ -30,6 +31,8 @@ struct ConflictsToResolve: Sendable, Identifiable {
 }
 
 struct ConflictsListView: View {
+    @InjectService private var matomo: MatomoUtils
+
     @State private var search = ""
     @State private var isShowingVersionSelectorSheet: ConflictsToResolve?
 
@@ -62,6 +65,7 @@ struct ConflictsListView: View {
             Section {
                 ForEach(filteredErrors) { error in
                     ConflictCellView(path: error.metadata.path) {
+                        matomo.track(eventWithCategory: .individualConflictResolutionPage, name: "manageSingleConflict")
                         resolveConflict(error)
                     }
                 }
@@ -97,6 +101,7 @@ struct ConflictsListView: View {
     }
 
     private func startConflictsResolution() {
+        matomo.track(eventWithCategory: .individualConflictResolutionPage, name: "startChoices")
         isShowingVersionSelectorSheet = ConflictsToResolve(errors: errors)
     }
 

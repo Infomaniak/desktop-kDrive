@@ -22,12 +22,11 @@
 
 @interface UserURLs : NSObject
 
-@property (nonatomic, strong) NSURL *homeURL;
-@property (nonatomic, strong) NSURL *homeVolumeURL;
-@property (nonatomic, strong) NSURL *mainTrashURL;
+@property(nonatomic, strong) NSURL *homeURL;
+@property(nonatomic, strong) NSURL *homeVolumeURL;
+@property(nonatomic, strong) NSURL *mainTrashURL;
 
 - (NSURL *)trashURLForVolume:(NSURL *)volumeURL;
 - (void)setTrashURL:(NSURL *)trashURL forVolume:(NSURL *)volumeURL;
 
 @end
-
