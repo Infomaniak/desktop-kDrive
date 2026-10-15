@@ -457,6 +457,31 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
             return exitInfo;
         }
 
+        bool sharedFolderIsEmpty = false;
+        if (const auto exitInfo = checkIfSharedFolderIsEmpty(sharedFolderIsEmpty); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty: " << exitInfo);
+
+            return exitInfo;
+        }
+
+        if (!sharedFolderIsEmpty) {
+            RemoteNodeId sharedFolderRemoteId;
+            if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                              SpecialRemoteFolder::Shared, sharedFolderRemoteId);
+                !exitInfo) {
+                LOG_SYNCPAL_WARN(_logger, "Error in ApiTranslator::getSpecialFolderRemoteId: " << exitInfo);
+            }
+
+            if (sharedFolderRemoteId.empty()) {
+                LOG_SYNCPAL_WARN(_logger, "Shared folder remote ID is empty.");
+
+                return {ExitCode::BackError, ExitCause::MissingReplyData};
+            }
+
+
+            return ExitCode::Ok;
+        }
+
         // Save the most recently used listing cursor now that the current page of `listing/continue` response has been fully
         // processed.
         if (const auto exitInfo = saveListingCursor(cursorData_); !exitInfo) {
@@ -1445,7 +1470,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty)
         return exitInfo;
     }
 
-    auto job = std::make_shared<GetFilesSharedWithMeJob>(_driveDbId, cursorData.cursor, 5);
+    constexpr auto maxItemsToCheck = 5; // This is the minimum number allowed by the API. We only need to check the existence of a
+                                        // single item to determine if the shared folder is empty or not.
+    auto job = std::make_shared<GetFilesSharedWithMeJob>(_driveDbId, cursorData.cursor, maxItemsToCheck);
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in GetFilesSharedWithMeJob::runSynchronously: " << exitInfo);
 
