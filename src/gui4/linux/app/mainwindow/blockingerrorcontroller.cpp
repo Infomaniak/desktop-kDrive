@@ -46,7 +46,7 @@ void openUrl(const QUrl &url) {
 }
 
 // TODO: Renewing a kSuite (`order2/ksuite/<k_suite.id>`) needs an id the server does not fetch yet (drive API,
-// `with=k_suite`). Until then, a kSuite drive, or an unknown pack, open shop.infomaniak.com
+// `with=k_suite`). Until then, a kSuite drive, or an unknown pack, opens shop.infomaniak.com.
 QUrl renewalUri(const Drive &drive) {
     const auto &packName = drive.packInfo().name();
     if (constexpr std::array<std::string_view, 4> standaloneDrivePacks{"free", "solo", "team", "pro"};
