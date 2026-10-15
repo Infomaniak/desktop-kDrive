@@ -74,9 +74,8 @@ bool ComputeFSOperationWorker::checkAndFixLocalTimestamp(const NodeType nodeType
             return false;
         }
         modificationTime = currentTime;
+        LOGW_INFO(_logger, L"Modification time updated for item with " << Utility::formatSyncPath(absolutePath));
     }
-
-    LOGW_INFO(_logger, L"Modification time updated for item with " << Utility::formatSyncPath(absolutePath));
 
     return true;
 }
