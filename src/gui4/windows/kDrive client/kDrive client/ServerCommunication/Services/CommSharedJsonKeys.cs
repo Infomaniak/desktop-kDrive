@@ -77,6 +77,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
         static public string SearchString = "searchString";
         static public string SearchInfoList = "searchInfoList";
+        static public string Cursor = "cursor";
 
         static public string NodeSubFolderInfoList = "nodeSubFolderInfoList";
         static public string FolderSize = "folderSize";

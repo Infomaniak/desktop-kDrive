@@ -26,6 +26,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.ComponentModel;
+using System.Windows.Input;
+using Windows.System;
 
 namespace Infomaniak.kDrive
 {
@@ -97,7 +99,7 @@ namespace Infomaniak.kDrive
             Activated -= MainWindow_Activated;
             this.Content.PointerPressed -= OnPointerPressed;
         }
-         
+
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(AppModel.IsInitialized) || e.PropertyName == nameof(AppModel.UpdateRequired))
