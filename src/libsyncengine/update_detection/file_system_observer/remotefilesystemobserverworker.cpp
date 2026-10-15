@@ -773,11 +773,8 @@ ExitInfo RemoteFileSystemObserverWorker::createGetItemsInRemoteDirJob(
     } catch (const std::bad_alloc &badAllocationException) {
         return exception2ExitCode(badAllocationException);
     } catch (const JobException &e) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "Error in "
-                         "CsvFullFileListWithCursorJob::"
-                         "CsvFullFileListWithCursorJob for driveDbId="
-                                 << _driveDbId << " error=" << e.what());
+        LOG_SYNCPAL_WARN(_logger, "Error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob for driveDbId="
+                                          << _driveDbId << " error=" << e.what());
         return exception2ExitCode(e);
     }
 
