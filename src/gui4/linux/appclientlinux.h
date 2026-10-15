@@ -172,8 +172,8 @@ class AppClientLinux : public QApplication {
                 _appCache, _mainSelectionStore, _syncErrorsProjection, _syncService, _appRouter, _networkStatusObserver, this};
         BlockingErrorController _blockingErrorController{_syncErrorsProjection, _mainSelectionStore, _syncService, _appRouter,
                                                          this};
-        ActivitiesController _activitiesController{_activityStore,         _appCache,        _mainSelectionStore,
-                                                   _networkStatusObserver, _activityService, this};
+        ActivitiesController _activitiesController{
+                _activityStore, _appCache, _mainSelectionStore, _networkStatusObserver, _activityService, _appRouter, this};
         StorageController _storageController{_mainSelectionStore, this};
         SearchController _searchController{_serverCommService, _mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
