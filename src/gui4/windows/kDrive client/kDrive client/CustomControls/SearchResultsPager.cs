@@ -82,12 +82,8 @@ namespace Infomaniak.kDrive.CustomControls
             return true;
         }
 
-        /// <summary>Keeps the last results, unless the first page was still loading.</summary>
         public void ClearQuery()
         {
-            if (!_isLoadingFirstPage)
-                return;
-
             Restart();
             ShowNotFound();
         }
