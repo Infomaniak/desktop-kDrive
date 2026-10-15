@@ -128,7 +128,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const Remote
 
         if (longPollJob->exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::HttpErr)) {
             invalidateSnapshot();
-            (void) clearListingCursor();
+            (void) clearSyncFolderListingCursor();
         }
 
         return longPollJob->exitInfo();
@@ -305,7 +305,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &aValid
 
     LOG_SYNCPAL_DEBUG(_logger, "No valid remote snapshot backup exists. Clearing all listing cursors from database.");
 
-    (void) clearListingCursor();
+    (void) clearSyncFolderListingCursor();
     invalidateSnapshot();
 
     return ExitCode::Ok;
@@ -556,7 +556,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         // Clear the cursor if the listing request is invalid to avoid being stuck with a broken cursor.
         if (exitInfo == ExitInfo{ExitCode::BackError, ExitCause::HttpErr}) {
             invalidateSnapshot();
-            (void) clearListingCursor();
+            (void) clearSyncFolderListingCursor();
         }
         return exitInfo;
     }
@@ -1420,11 +1420,11 @@ ExitInfo RemoteFileSystemObserverWorker::getSyncFolderListingCursor(CursorData &
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::clearListingCursor() {
+ExitInfo RemoteFileSystemObserverWorker::clearSyncFolderListingCursor() {
     const auto exitInfo = setSyncFolderListingCursor(CursorData{});
     if (!exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::setSyncFolderListingCursor: "
-                                          << exitInfo << ". Failed to clear listing cursor.");
+                                          << exitInfo << ". Failed to clear sync folder listing cursor.");
     }
 
     return exitInfo;
@@ -1482,6 +1482,16 @@ ExitInfo RemoteFileSystemObserverWorker::setSharedFolderListingCursor(const Curs
     _sharedFolderListingCursorCache = cursorData;
 
     return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::clearSharedFolderListingCursor() {
+    const auto exitInfo = setSharedFolderListingCursor(CursorData{});
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::setSharedFolderListingCursor: "
+                                          << exitInfo << ". Failed to clear shared folder listing cursor.");
+    }
+
+    return exitInfo;
 }
 
 void RemoteFileSystemObserverWorker::resume() {
