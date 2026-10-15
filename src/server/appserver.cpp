@@ -4035,7 +4035,7 @@ bool AppServer::startClient() {
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
-#else
+#elif defined(KD_MACOS)
         useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
         if (useClientV4) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENTV4_EXECUTABLE);
@@ -4043,6 +4043,9 @@ bool AppServer::startClient() {
         else {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
+#else
+        useClientV4 = false;
+        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
 #endif
 
         QStringList arguments;
