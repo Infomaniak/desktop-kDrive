@@ -29,6 +29,7 @@ std::mutex ApiTranslator::_mutex;
 
 
 ApiTranslator::RemoteSpecialFoldersCacheMap ApiTranslator::_specialFolderRemoteIdsCache;
+NodeInfo ApiTranslator::_sharedFolderNodeInfo;
 
 RemoteNodeId ApiTranslator::v2RootFolderRemoteId() {
     const auto v2RootFolderRemoteId_ = SyncDb::driveRootNode().nodeIdRemote();
@@ -145,9 +146,11 @@ ExitInfo ApiTranslator::updateCache(const UserDbId userDbId, const DriveId drive
         const auto it = std::find_if(nodeInfoList.cbegin(), nodeInfoList.cend(), [specialFolder](const NodeInfo &nodeInfo) {
             return nodeInfo.name() == SyncName2QStr(v3SpecialFolderNames.at(specialFolder));
         });
-        if (it != nodeInfoList.cend())
+
+        if (it != nodeInfoList.cend()) {
             _specialFolderRemoteIdsCache[specialFolder][driveId] = it->nodeId().toStdString();
-        else
+            if (it->name() == SyncName2QStr(v3SpecialFolderNames.at(SpecialRemoteFolder::Shared))) _sharedFolderNodeInfo = *it;
+        } else
             _specialFolderRemoteIdsCache[specialFolder][driveId] = {};
     }
 
@@ -178,6 +181,24 @@ ExitInfo ApiTranslator::getSpecialFolderRemoteId(const UserDbId userDbId, const 
     }
 
     folderRemoteId = getValue(driveId, _specialFolderRemoteIdsCache[specialFolder]);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ApiTranslator::getSharedFolderNodeInfo(const UserDbId userDbId, const DriveId driveId, NodeInfo &nodeInfo) {
+    nodeInfo = {};
+
+    bool updateIsRequired = false;
+    {
+        const std::scoped_lock lock(_mutex);
+        updateIsRequired = _sharedFolderNodeInfo.nodeId().isEmpty();
+    }
+    if (updateIsRequired) {
+        if (const auto exitInfo = updateCache(userDbId, driveId); !exitInfo) return exitInfo;
+    }
+
+    const std::scoped_lock lock(_mutex);
+    nodeInfo = _sharedFolderNodeInfo;
 
     return ExitCode::Ok;
 }
