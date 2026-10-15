@@ -21,6 +21,7 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import OrderedCollections
 import Sentry
 import SwiftUI
 
@@ -41,6 +42,7 @@ struct ConflictInfo: Equatable {
 struct ConflictVersionSelectorView: View {
     @LazyInjectService private var matomo: MatomoUtils
     @LazyInjectService private var synchroErrorsObserver: SynchroErrorsObserving
+    @LazyInjectService private var coherentCache: CoherentCache
 
     @Environment(\.dismiss) private var dismiss
 
@@ -51,6 +53,7 @@ struct ConflictVersionSelectorView: View {
     @State private var currentConflict: ConflictInfo?
 
     @State private var selection = [Int: ConflictType]()
+    @State private var validationRevision = 0
 
     let errors: [SynchroError]
 
@@ -132,15 +135,11 @@ struct ConflictVersionSelectorView: View {
             }
         }
         .genericErrorAlert(isPresented: $isShowingGenericErrorAlert)
-        .onReceive(synchroErrorsObserver.synchroErrorsPublisher.receive(on: RunLoop.main)) { synchroErrors in
-            let activeConflicts = synchroErrors[.filesToCheck, default: []]
-            if !errors.allSatisfy({ error in
-                activeConflicts.contains {
-                    $0.metadata.dbId == error.metadata.dbId && $0.metadata.synchroDbId == error.metadata.synchroDbId
-                }
-            }) {
-                dismiss()
-            }
+        .onReceive(synchroErrorsObserver.synchroErrorsPublisher.receive(on: RunLoop.main)) { _ in
+            validationRevision += 1
+        }
+        .task(id: validationRevision) {
+            _ = await validateConflicts()
         }
         .task(id: currentErrorIndex) {
             guard let currentError else {
@@ -148,8 +147,31 @@ struct ConflictVersionSelectorView: View {
                 return
             }
 
-            await fetchConflictInfo(currentError)
+            if await validateConflicts() {
+                await fetchConflictInfo(currentError)
+            }
         }
+    }
+
+    // The categorized observer also publishes temporary empty loading states. Only the cache can confirm removal.
+    static func conflictsAreActive(_ errors: [SynchroError], cache: CoherentCache) async -> Bool {
+        guard !errors.isEmpty else { return false }
+        for (synchroDbId, syncErrors) in Dictionary(grouping: errors, by: \.metadata.synchroDbId) {
+            guard let synchro = await cache.getSynchro(synchroDbId: Int32(synchroDbId)),
+                  syncErrors.allSatisfy({ synchro.errors[Int32($0.metadata.dbId)] != nil }) else {
+                return false
+            }
+        }
+        return true
+    }
+
+    private func validateConflicts() async -> Bool {
+        let active = await Self.conflictsAreActive(errors, cache: coherentCache)
+        guard !Task.isCancelled else { return false }
+        if !active {
+            dismiss()
+        }
+        return active
     }
 
     private var placeholder: some View {
@@ -186,6 +208,7 @@ struct ConflictVersionSelectorView: View {
                 selection[error.metadata.dbId] = .remote
             }
         } catch {
+            guard await validateConflicts() else { return }
             isShowingGenericErrorAlert = true
             SentrySDK.capture(error: error)
         }
@@ -238,6 +261,8 @@ struct ConflictVersionSelectorView: View {
             dismiss()
             return
         }
+
+        guard await validateConflicts() else { return }
 
         if currentErrorIndex == errors.indices.last {
             isLoadingConfirmButton = true
