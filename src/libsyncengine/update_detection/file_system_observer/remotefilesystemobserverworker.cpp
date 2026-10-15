@@ -1563,6 +1563,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty)
     if (const auto exitInfo = setSharedFolderListingCursor(CursorData{job->cursor(), CommonUtility::now()}); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::setSharedFolderListingCursor: " << exitInfo);
 
+        if (exitInfo == ExitInfo{ExitCode::BackError, ExitCause::HttpErr}) (void) clearSharedFolderListingCursor();
+
         return exitInfo;
     }
 
