@@ -186,6 +186,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo setBlackList(bool &blackListChanged);
         [[nodiscard]] ExitInfo checkIfSharedFolderIsEmpty(bool &empty) const;
+        [[nodiscard]] ExitInfo updateSharedFolderItem();
 
         friend class TestRemoteFileSystemObserverWorker;
 };

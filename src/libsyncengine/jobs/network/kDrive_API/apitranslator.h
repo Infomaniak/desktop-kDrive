@@ -36,12 +36,14 @@ class ApiTranslator {
 
         [[nodiscard]] static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId,
                                                                SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId);
+        [[nodiscard]] static ExitInfo getSharedFolderNodeInfo(const UserDbId userDbId, const DriveId driveId, NodeInfo &nodeInfo);
         [[nodiscard]] static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
         [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
 
         static void clearSharedCache(const DriveId driveId) {
             const std::scoped_lock lock(_mutex);
             (void) _specialFolderRemoteIdsCache[SpecialRemoteFolder::Shared].erase(driveId);
+            _sharedFolderNodeInfo = {};
         };
 
         static const SpecialFolderNames v3SpecialFolderNames;
@@ -53,6 +55,7 @@ class ApiTranslator {
         using RemoteNodeIdCacheMap = std::unordered_map<DriveId, RemoteNodeId>;
         using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialRemoteFolder, RemoteNodeIdCacheMap>;
         static RemoteSpecialFoldersCacheMap _specialFolderRemoteIdsCache;
+        static NodeInfo _sharedFolderNodeInfo;
 
         [[nodiscard]] static RemoteNodeId getValue(DriveId driveId, const RemoteNodeIdCacheMap &cache);
 

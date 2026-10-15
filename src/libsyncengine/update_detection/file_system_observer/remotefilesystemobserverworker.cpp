@@ -427,6 +427,47 @@ ExitInfo RemoteFileSystemObserverWorker::runListingContinueJob(const RemoteNodeI
     return ExitCode::Ok;
 }
 
+ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
+    bool sharedFolderIsEmpty = false;
+    if (const auto exitInfo = checkIfSharedFolderIsEmpty(sharedFolderIsEmpty); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    RemoteNodeId sharedFolderRemoteId;
+    const auto sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
+    const auto getItemIdExitInfo = _liveSnapshot.getItemId(sharedFolderName, sharedFolderRemoteId);
+    if (!getItemIdExitInfo && getItemIdExitInfo != ExitInfo{ExitCode::DataError, ExitCause::NotFound}) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getItemId for Shared folder: " << getItemIdExitInfo);
+
+        return getItemIdExitInfo;
+    }
+
+    if (!sharedFolderIsEmpty && !getItemIdExitInfo) { // 'Shared' folder does not exist in the snapshot, we need to add it.
+        NodeInfo sharedFolderNodeInfo;
+        if (const auto exitInfo =
+                    ApiTranslator::getSharedFolderNodeInfo(_syncPal->userDbId(), _syncPal->driveId(), sharedFolderNodeInfo);
+            exitInfo)
+            return exitInfo;
+
+        const RemoteSnapshotItem sharedFolderItem(sharedFolderNodeInfo.nodeId().toStdString(),
+                                                  sharedFolderNodeInfo.parentNodeId().toStdString(),
+                                                  QStr2SyncName(sharedFolderNodeInfo.name()), 0, sharedFolderNodeInfo.modtime(),
+                                                  NodeType::Directory, sharedFolderNodeInfo.size(), false, false, false);
+        (void) _liveSnapshot.updateItem(sharedFolderItem);
+
+    } else if (sharedFolderIsEmpty &&
+               getItemIdExitInfo) { // 'Shared' folder exists in the snapshot, but it is now empty, we need to remove it.
+
+        if (sharedFolderRemoteId.empty()) return ExitCode::LogicError;
+
+        (void) _liveSnapshot.removeItem(sharedFolderRemoteId);
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remoteDirId) {
     assert(!remoteDirId.empty() && "Unexpected empty remote node ID.");
 
@@ -464,22 +505,13 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
             return exitInfo;
         }
 
-        if (!sharedFolderIsEmpty) {
-            RemoteNodeId sharedFolderRemoteId;
-            if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_syncPal->userDbId(), _syncPal->driveId(),
-                                                                              SpecialRemoteFolder::Shared, sharedFolderRemoteId);
-                !exitInfo) {
-                LOG_SYNCPAL_WARN(_logger, "Error in ApiTranslator::getSpecialFolderRemoteId: " << exitInfo);
-            }
+        // Check if the 'Shared' folder needs to be added or removed from the snapshot.
+        // An empty 'Shared' folder is not synchronized to avoid creating an empty 'Shared' folder in the local replica when the
+        // user has no shared files.
+        if (const auto exitInfo = updateSharedFolderItem(); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::updateSharedFolderItem: " << exitInfo);
 
-            if (sharedFolderRemoteId.empty()) {
-                LOG_SYNCPAL_WARN(_logger, "Shared folder remote ID is empty.");
-
-                return {ExitCode::BackError, ExitCause::MissingReplyData};
-            }
-
-
-            return ExitCode::Ok;
+            return exitInfo;
         }
 
         // Save the most recently used listing cursor now that the current page of `listing/continue` response has been fully
@@ -573,8 +605,8 @@ ExitInfo RemoteFileSystemObserverWorker::insertItemInRemoteSnapshot(const Remote
     // by the root item of the snapshot and must not be inserted into the snapshot.
     if (item.id() == _liveSnapshot.rootFolderId()) return ExitCode::Ok;
 
-    // Do not synchronize the Shared folder (drive scope) if it is empty. This is to avoid creating an empty Shared folder in the
-    // local replica when the user has no shared files.
+    // Do not synchronize the Shared folder (drive scope) if it is empty. This is to avoid creating an empty Shared folder in
+    // the local replica when the user has no shared files.
     if (item.name() == ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared) &&
         item.parentId() == ApiTranslator::v2RootFolderRemoteId()) {
         bool sharedIsEmtpy = false;
@@ -1470,8 +1502,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty)
         return exitInfo;
     }
 
-    constexpr auto maxItemsToCheck = 5; // This is the minimum number allowed by the API. We only need to check the existence of a
-                                        // single item to determine if the shared folder is empty or not.
+    constexpr auto maxItemsToCheck = 5; // This is the minimum number allowed by the API. We only need to check the existence
+                                        // of a single item to determine if the shared folder is empty or not.
     auto job = std::make_shared<GetFilesSharedWithMeJob>(_driveDbId, cursorData.cursor, maxItemsToCheck);
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in GetFilesSharedWithMeJob::runSynchronously: " << exitInfo);
