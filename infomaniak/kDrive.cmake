@@ -30,6 +30,7 @@ elseif( WIN32 )
     set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive.exe" )
     set( APPLICATION_ICON_NAME  "kdrive-win" )
 else()
+    set( APPLICATION_CLIENTV4_EXECUTABLE "kdrive_qml" )
     set( APPLICATION_ICON_NAME  "kdrive-win" )
 endif()
 
