@@ -7,7 +7,7 @@
  Exported by: Romain Galland
  Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
-<TS version="2.1" sourcelanguage="en"> 
+<TS version="2.1" sourcelanguage="en" language="en"> 
     <context>
         <name></name> 
         <message id="aboutAppVersionCopyright"> 
