@@ -298,6 +298,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivitiesEmptyState.qml
         ui/windows/main/activities/ActivitiesFilterMenu.qml
         ui/windows/main/activities/ActivitiesHeader.qml
+        ui/windows/main/activities/ActivitiesListPage.qml
         ui/windows/main/activities/ActivitiesTable.qml
         ui/windows/main/activities/ActivitiesTableHeader.qml
         ui/windows/main/activities/ActivitiesView.qml
@@ -309,6 +310,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivityStatusIcon.qml
         ui/windows/main/blockingerror/BlockingErrorDriveLabel.qml
         ui/windows/main/blockingerror/BlockingErrorView.qml
+        ui/windows/main/errors/ErrorsPage.qml
         ui/windows/main/home/HomeGreeting.qml
         ui/windows/main/home/HomeStatusPanel.qml
         ui/windows/main/home/HomeView.qml
