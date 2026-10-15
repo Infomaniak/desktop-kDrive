@@ -29,6 +29,8 @@
 
 namespace KDC {
 
+class AppRouter;
+
 /**
  * QML-facing state and interaction controller for the Activities page.
  *
@@ -49,7 +51,7 @@ class ActivitiesController final : public QObject {
     public:
         explicit ActivitiesController(const ActivityStore &activityStore, const AppCache &appCache,
                                       MainSelectionStore &selectionStore, const NetworkStatusObserver &networkStatusObserver,
-                                      ActivityService &activityService, QObject *parent = nullptr);
+                                      ActivityService &activityService, AppRouter &appRouter, QObject *parent = nullptr);
 
         [[nodiscard]] ActivityListModel *model() { return &_model; }
         [[nodiscard]] ActivityListModel::Filter filter() const { return _model.filter(); }
@@ -66,8 +68,8 @@ class ActivitiesController final : public QObject {
         Q_INVOKABLE void openFolder(const QString &rowId);
         Q_INVOKABLE void openOnline(const QString &rowId);
         Q_INVOKABLE void copyShareLink(const QString &rowId);
-        Q_INVOKABLE void requestFixErrors(const QString &rowId) const;
-        Q_INVOKABLE void requestFixAllErrors() const;
+        Q_INVOKABLE void requestFixErrors(const QString &rowId);
+        Q_INVOKABLE void requestFixAllErrors();
 
     signals:
         void filterChanged();
@@ -91,6 +93,7 @@ class ActivitiesController final : public QObject {
         MainSelectionStore &_selectionStore;
         const NetworkStatusObserver &_networkStatusObserver;
         ActivityService &_activityService;
+        AppRouter &_appRouter;
         ActivityListModel _model;
         QString _title;
         bool _loading{true};
