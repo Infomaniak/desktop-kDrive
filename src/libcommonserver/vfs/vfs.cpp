@@ -230,7 +230,11 @@ VfsOff::VfsOff(const VfsSetupParams &vfsSetupParams, QObject *parent) :
 
 VfsOff::~VfsOff() = default;
 
-ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus) {
+ExitInfo VfsOff::forceStatus([[maybe_unused]] const SyncPath &pathStd, [[maybe_unused]] const VfsStatus &vfsStatus) {
+#if defined(KD_LINUX)
+    // No file manager extension to notify on Linux.
+    return ExitCode::Ok;
+#else
     const SyncPath fullPath(_vfsSetupParams.localPath / pathStd);
     if (const ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
@@ -251,6 +255,7 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus
     }
 
     return ExitCode::Ok;
+#endif
 }
 
 ExitInfo VfsOff::startImpl(bool &, bool &, bool &) {

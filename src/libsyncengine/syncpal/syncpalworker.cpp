@@ -259,10 +259,7 @@ void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
         return;
     }
 
-    if (!exists) {
-        LOGW_DEBUG(_logger, L"Path does not exist - " << Utility::formatSyncPath(path) << L". No need to set full access rights.");
-        return;
-    }
+    if (!exists) return;
 
     if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
         const auto errorMsg = L"Failed to set full access rights - " + Utility::formatIoError(path, ioError);
