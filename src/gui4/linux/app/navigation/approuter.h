@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "app/navigation/activitiesnavigation.h"
+
 #include <QLoggingCategory>
 #include <QObject>
 
@@ -30,7 +32,8 @@ namespace KDC {
 /**
  * Minimal main-window router for Linux v4.
  *
- * Role: own whether the main-window content is active and which main tab is selected.
+ * Role: own whether the main-window content is active, which main tab is selected, and the Activities sub-page
+ * navigation.
  * Non-role: read product cache, execute backend commands, or decide onboarding eligibility.
  */
 class AppRouter final : public QObject {
@@ -38,6 +41,7 @@ class AppRouter final : public QObject {
         Q_PROPERTY(bool mainWindowActive READ mainWindowActive NOTIFY mainWindowActiveChanged)
         Q_PROPERTY(MainTab currentMainTab READ currentMainTab NOTIFY currentMainTabChanged)
         Q_PROPERTY(int32_t currentMainTabIndex READ currentMainTabIndex NOTIFY currentMainTabChanged)
+        Q_PROPERTY(ActivitiesNavigation *activitiesNavigation READ activitiesNavigation CONSTANT)
 
     public:
         enum class MainTab : uint8_t {
@@ -53,6 +57,7 @@ class AppRouter final : public QObject {
         [[nodiscard]] bool mainWindowActive() const { return _mainWindowActive; }
         [[nodiscard]] MainTab currentMainTab() const { return _currentMainTab; }
         [[nodiscard]] int32_t currentMainTabIndex() const { return static_cast<int32_t>(_currentMainTab); }
+        [[nodiscard]] ActivitiesNavigation *activitiesNavigation() { return &_activitiesNavigation; }
 
         Q_INVOKABLE void showMainWindow();
         Q_INVOKABLE void hideMainWindow();
@@ -60,6 +65,7 @@ class AppRouter final : public QObject {
         Q_INVOKABLE void showActivities();
         Q_INVOKABLE void showStorage();
         Q_INVOKABLE void showBlockingError();
+        Q_INVOKABLE void showErrors();
         Q_INVOKABLE void navigateToMainTab(int32_t tabIndex);
         Q_INVOKABLE static void openSupport();
 
@@ -73,6 +79,7 @@ class AppRouter final : public QObject {
 
         bool _mainWindowActive{false};
         MainTab _currentMainTab{MainTab::Home};
+        ActivitiesNavigation _activitiesNavigation{this};
 };
 
 } // namespace KDC
