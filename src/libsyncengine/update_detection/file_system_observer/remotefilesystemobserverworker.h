@@ -184,6 +184,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         void abortAndClearLongPollJob(std::shared_ptr<LongPollJob> &longPollJob);
 
         [[nodiscard]] ExitInfo checkIfSharedFolderIsEmpty(bool &empty) const;
+        [[nodiscard]] ExitInfo updateSharedFolderItem();
 
         friend class TestRemoteFileSystemObserverWorker;
 };
