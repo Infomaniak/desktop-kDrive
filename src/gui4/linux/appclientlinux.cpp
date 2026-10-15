@@ -87,6 +87,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
     (void) qmlRegisterUncreatableType<AppRouter>(AppConstants::Qml::moduleUri, 1, 0, "AppRouter",
                                                  "AppRouter is owned by AppClientLinux and exposed as appRouter.");
+    (void) qmlRegisterUncreatableType<ActivitiesNavigation>(AppConstants::Qml::moduleUri, 1, 0, "ActivitiesNavigation",
+                                                            "ActivitiesNavigation is owned by AppRouter.");
     (void) qmlRegisterUncreatableType<SyncSelectorModel>(AppConstants::Qml::moduleUri, 1, 0, "SyncSelectorModel",
                                                          "SyncSelectorModel is owned by MainSidebarController.");
     (void) qmlRegisterUncreatableType<HomeController>(AppConstants::Qml::moduleUri, 1, 0, "HomeController",
@@ -456,6 +458,7 @@ void AppClientLinux::openMainWindow() {
         case MainWindowActivationRoute::SetupHome:
             _mainSelectionStore.clearSelection();
             _appRouter.showHome();
+            _appRouter.activitiesNavigation()->reset();
             _appRouter.showMainWindow();
             _systemTrayController.showMainWindow();
             qCInfo(lcAppClientLinux) << "Unconfigured Home opened after onboarding dismissal or configuration removal";
@@ -520,6 +523,7 @@ void AppClientLinux::handleConfiguredSyncsChanged() {
         _preferSetupHomeWhenUnconfigured = true;
         _mainSelectionStore.clearSelection();
         _appRouter.showHome();
+        _appRouter.activitiesNavigation()->reset();
         qCInfo(lcAppClientLinux) << "Configured synchronization set became empty; Home switched to setup state";
     }
     _hadConfiguredSync = hasConfiguredSync;
