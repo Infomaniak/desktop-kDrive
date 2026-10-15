@@ -46,7 +46,7 @@ Item {
             Layout.preferredHeight: visible ? implicitHeight : 0
             errorCount: root.controller.errorCount
             visible: root.controller.errorCount > 0
-            onActionTriggered: root.controller.showActivities()
+            onActionTriggered: root.controller.showErrors()
         }
         Row {
             id: panelsRow
