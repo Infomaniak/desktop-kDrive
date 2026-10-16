@@ -143,7 +143,7 @@ void TestAppServer::testStartAndStopSync() {
     bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(userDbId, user, found) && found);
 
-    // Start syncs (ie. Vfs & SyncPal) for a user
+    // Start syncs (i.e. Vfs & SyncPal) for a user
     ExitInfo exitInfo = _appPtr->startSyncs(user);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(_appPtr->syncPalMap[syncDbId]->isRunning());
