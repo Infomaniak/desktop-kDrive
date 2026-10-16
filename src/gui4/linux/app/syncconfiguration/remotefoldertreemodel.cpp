@@ -24,6 +24,7 @@
 
 #include <QCollator>
 #include <QLocale>
+#include <QLoggingCategory>
 #include <QPointer>
 
 #include <algorithm>
@@ -35,6 +36,8 @@ using namespace Qt::StringLiterals;
 namespace KDC {
 
 namespace {
+Q_LOGGING_CATEGORY(lcRemoteFolderTree, "gui.v4.remotefoldertree", QtInfoMsg)
+
 // Quiet period after the last visibility change before visible folders request their size and children.
 constexpr std::chrono::milliseconds visibleNodeRequestDelay{150};
 constexpr QStringView unavailableSize = u"—";
@@ -131,7 +134,7 @@ bool RemoteFolderTreeModel::loading() const {
 }
 
 bool RemoteFolderTreeModel::loadFailed() const {
-    return _initialPathsState == InitialPathsState::Failed || _root->childrenState == LoadState::Failed;
+    return _root->childrenState == LoadState::Failed;
 }
 
 bool RemoteFolderTreeModel::empty() const {
@@ -159,7 +162,6 @@ void RemoteFolderTreeModel::configure(const UserDbId userDbId, const DriveId dri
     _pendingInitialPathRequests = 0;
     for (const auto &nodeId: initialBlackList) (void) _excludedNodeIds.insert(QString::fromStdString(nodeId));
     _initialPathsState = _excludedNodeIds.isEmpty() ? InitialPathsState::Ready : InitialPathsState::Resolving;
-    _initialPathRequestFailed = false;
     endResetModel();
     emit selectionChanged();
     resolveInitialExclusionPaths();
@@ -195,13 +197,6 @@ void RemoteFolderTreeModel::retranslate() {
 }
 
 void RemoteFolderTreeModel::retryRoot() {
-    if (_initialPathsState == InitialPathsState::Failed) {
-        _initialPathsState = InitialPathsState::Resolving;
-        _initialPathRequestFailed = false;
-        emit stateChanged();
-        resolveInitialExclusionPaths();
-        return;
-    }
     if (_root->childrenState == LoadState::Failed) requestChildren(_root.get());
 }
 
@@ -322,9 +317,10 @@ QString RemoteFolderTreeModel::effectivePath(const NodeInfo &info, const TreeNod
     return parentNode->path + u'/' + name;
 }
 
-// An unresolved path would make every ancestor of the excluded folder look completely selected, so a failure here
-// fails the whole page instead of displaying a selection that does not match what will be synchronized. The root listing
-// is requested at the same time, but only displayed once every path is known.
+// A folder that stays excluded without a known path (e.g. no longer accessible) is tolerated: its ancestors may look
+// completely selected, but failing the whole page would hide every other exclusion. The node stays blacklisted and its
+// path is completed if a listing returns it. The root listing is requested at the same time, but only displayed once
+// every path request is done.
 void RemoteFolderTreeModel::resolveInitialExclusionPaths() {
     if (_excludedNodeIds.isEmpty()) {
         requestChildren(_root.get());
@@ -332,6 +328,8 @@ void RemoteFolderTreeModel::resolveInitialExclusionPaths() {
     }
 
     _pendingInitialPathRequests = static_cast<uint32_t>(_excludedNodeIds.size());
+    _requestedInitialPaths = _pendingInitialPathRequests;
+    _unresolvedInitialPaths = 0;
     emit stateChanged();
     requestChildren(_root.get());
     const uint64_t generation = _generation;
@@ -356,29 +354,22 @@ void RemoteFolderTreeModel::handleInitialExclusionPathResult(const QString &node
         (void) _excludedNodeIds.remove(nodeId);
         (void) _excludedPaths.remove(nodeId);
     } else {
-        _initialPathRequestFailed = true;
+        ++_unresolvedInitialPaths;
+        qCWarning(lcRemoteFolderTree) << "Exclusion path not resolved for node" << nodeId << "exitInfo" << exitInfo;
     }
 
     if (_pendingInitialPathRequests > 0) return;
-    if (_initialPathRequestFailed) {
-        _initialPathsState = InitialPathsState::Failed;
-        _excludedPaths.clear();
-        // `retryRoot()` resolves the paths again, then requests a fresh root listing.
-        _pendingRootChildren.reset();
-        if (_root->childrenState == LoadState::Loading) _root->childrenState = LoadState::NotLoaded;
-        emit stateChanged();
-        return;
+    if (_unresolvedInitialPaths > 0) {
+        qCWarning(lcRemoteFolderTree) << "Exclusion paths partially resolved requested=" << _requestedInitialPaths
+                                      << "resolved=" << (_requestedInitialPaths - _unresolvedInitialPaths);
     }
     _initialPathsState = InitialPathsState::Ready;
     emit selectionChanged();
-    // The root listing either arrived first and was kept aside, is still in flight and applies on arrival, or was never
-    // requested (retry after a failed resolution).
+    // The root listing either arrived first and was kept aside, or is still in flight and applies on arrival.
     if (_pendingRootChildren) {
         const PendingRootChildren pending = std::move(*_pendingRootChildren);
         _pendingRootChildren.reset();
         handleChildrenResult(_root.get(), _generation, pending.success, pending.children);
-    } else if (_root->childrenState != LoadState::Loading) {
-        requestChildren(_root.get());
     }
 }
 
@@ -386,7 +377,6 @@ void RemoteFolderTreeModel::requestChildren(TreeNode *const node) {
     if (!node || node->accessDenied) return;
     if (node->childrenState != LoadState::NotLoaded && node->childrenState != LoadState::Failed) return;
     // The root may load while the initial paths resolve: `handleChildrenResult()` keeps its listing aside until then.
-    if (node == _root.get() && _initialPathsState == InitialPathsState::Failed) return;
     node->childrenState = LoadState::Loading;
     if (node == _root.get())
         emit stateChanged();
@@ -405,11 +395,10 @@ void RemoteFolderTreeModel::requestChildren(TreeNode *const node) {
 void RemoteFolderTreeModel::handleChildrenResult(TreeNode *const node, const uint64_t generation, const bool success,
                                                  const std::vector<NodeInfo> &children) {
     if (generation != _generation || !node) return;
-    // A root listing from before a failed path resolution can still arrive once a retry has started a new one.
     if (node->childrenState != LoadState::Loading) return;
     if (node == _root.get() && _initialPathsState != InitialPathsState::Ready) {
         // The root stays loading: the tree cannot display its selection before the exclusion paths are known.
-        if (_initialPathsState == InitialPathsState::Resolving) _pendingRootChildren = PendingRootChildren{success, children};
+        _pendingRootChildren = PendingRootChildren{success, children};
         return;
     }
     if (!success) {
