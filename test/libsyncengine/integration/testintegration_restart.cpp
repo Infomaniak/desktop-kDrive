@@ -331,18 +331,17 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
     // (4) Stop sync and simulate blacklist change by adding "excludeMe" to blacklist.
     CPPUNIT_ASSERT(testHelper.stopSync());
 
-    // Add "excludeMe" folder to the blacklist using the remote snapshot API
-    const auto backup = _syncPal->remoteLiveSnapshotBackup();
-    CPPUNIT_ASSERT(backup.snapshot);
-
-    NodeId excludeId{};
-    CPPUNIT_ASSERT(backup.snapshot->getItemId(SyncPath{Str("excludeMe")}, excludeId));
-    CPPUNIT_ASSERT(!excludeId.empty());
-
-    RemoteNodeIdSet newBlackList;
-    (void) newBlackList.insert(excludeId);
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
-                         SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList));
+    // Add "excludeMe" folder to the blacklist.
+    if (RemoteNodeId excludeId = {};
+        _syncPal->_remoteFSObserverWorker->liveSnapshot().getItemId(SyncPath{Str("excludeMe")}, excludeId)) {
+        CPPUNIT_ASSERT(!excludeId.empty());
+        RemoteNodeIdSet newBlackList;
+        (void) newBlackList.insert(excludeId);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                             SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList));
+    } else {
+        CPPUNIT_ASSERT_MESSAGE("Item 'excludeMe' not found in remote live snapshot.", false);
+    }
 
     // (5) Make another remote change to the excluded folder.
     const Operations moreRemoteOps{Str2SyncName(R"({

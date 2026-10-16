@@ -338,14 +338,10 @@ void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncSte
         case SyncStep::Idle: {
             if (rfsoWorker.isInProgress) return;
 
-            if (!rfsoWorker.isResumable) {
-                startFSOWorker(rfsoWorker);
-                rfsoWorker.isResumable = true;
-            } else {
-                LOG_DEBUG(_logger, resumeMessage);
-                rfsoWorker.worker->resume();
-                rfsoWorker.isInProgress = true;
-            }
+            LOG_DEBUG(_logger, resumeMessage);
+            rfsoWorker.worker->start();
+            rfsoWorker.isInProgress = true;
+
             break;
         }
         case SyncStep::UpdateDetection1: {
@@ -360,7 +356,7 @@ void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncSte
             if (rfsoWorker.isInProgress) return;
 
             LOG_DEBUG(_logger, resumeMessage);
-            rfsoWorker.worker->resume();
+            rfsoWorker.worker->start();
             rfsoWorker.isInProgress = true;
             break;
         }
@@ -447,6 +443,7 @@ void SyncPalWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Start sync loop");
     ReplicaWorkers fsoWorkers = {{ReplicaSide::Local, Worker(ReplicaSide::Local, _syncPal->_localFSObserverWorker)},
                                  {ReplicaSide::Remote, Worker(ReplicaSide::Remote, _syncPal->_remoteFSObserverWorker)}};
+
     bool isStepInProgress = false;
     ReplicaWorkers stepWorkers = {{ReplicaSide::Local, Worker(ReplicaSide::Local)},
                                   {ReplicaSide::Remote, Worker(ReplicaSide::Remote)}};

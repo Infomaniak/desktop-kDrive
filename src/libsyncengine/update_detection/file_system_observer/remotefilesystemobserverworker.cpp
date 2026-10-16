@@ -201,10 +201,22 @@ void RemoteFileSystemObserverWorker::execute() {
         const std::scoped_lock lock(_listingCursorCacheMutex);
         _listingCursorCache.clear();
     }
+
+    // Check if the current remote snapshot can be reused (i.e. if it is still valid and if the listing cursors are not too old).
+    // If not, invalidate it and clear all the listing cursors from the database.
+    exitInfo = checkIfRemoteSnapshotCanBeReused();
+    if (!exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in checkIfRemoteSnapshotCanBeReused: " << exitInfo);
+        setExitCause(exitInfo.cause());
+        setDone(exitInfo.code());
+
+        return;
+    }
+
     LongPollJobMap longPollJobs;
 
     // We never pause this thread, but we stop it as soon as the synchronization leaves its Idle state, or if stop is asked.
-    // The RFSO worker will be restarted when the synchronization reaches the Done state.
+    // The Remote File System Observer worker is restarted when the synchronization reaches the Done state.
     for (;;) {
         if (stopAsked()) {
             exitInfo = ExitCode::Ok;
@@ -310,63 +322,55 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist(bool &v
     return ExitCode::Ok;
 }
 
-void RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup(const ConstSnapshot &snapshotBackup) {
-    setUpdateFlagValue(true);
+ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotValidity(bool &remoteSnapshotCanBeReused) {
+    remoteSnapshotCanBeReused = false;
 
-    _liveSnapshot.restoreFromBackup(snapshotBackup);
-    _liveSnapshot.setValid(true);
+    if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
-    setUpdateFlagValue(false);
+    if (const auto exitInfo = checkIfValidListingCursorsExist(remoteSnapshotCanBeReused); !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in checkIfValidListingCursorsExist: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &aValidSnapshotBackupWasRestored) {
-    aValidSnapshotBackupWasRestored = false;
+ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteSnapshotCanBeReused() {
+    const auto clearRemoteSnapshotData = [this]() {
+        LOG_SYNCPAL_DEBUG(_logger, "No valid remote snapshot backup exists. Clearing all listing cursors from database.");
+        (void) clearListingCursors();
+        invalidateSnapshot();
+    };
 
-    // Retrieve the list of blacklisted folders.
-    RemoteNodeIdSet newBlackList;
-    if (const ExitInfo exitInfo =
-                SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList);
-        !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in SyncNodeCache::syncNodes: " << exitInfo);
+    // Retrieve the list of blacklisted folders (folders excluded by the user).
+    bool backListHasChanged = false;
+    if (const auto exitInfo = setBlackList(backListHasChanged); !exitInfo) return exitInfo;
 
-        return exitInfo;
+    bool remoteSnapshotCanBeReused = !backListHasChanged;
+    if (!backListHasChanged) {
+        if (const auto exitInfo = handleRemoteSnapshotValidity(remoteSnapshotCanBeReused);
+            !exitInfo || !remoteSnapshotCanBeReused) {
+            clearRemoteSnapshotData();
+
+            if (!exitInfo) return exitInfo;
+        }
     }
 
-    setBlackList(newBlackList);
+    if (remoteSnapshotCanBeReused) {
+        LOG_SYNCPAL_DEBUG(_logger, "A valid remote snapshot backup exists. No need to generate a new one.");
 
-    // The restore call checks, among other things, if the blacklist has changed wrt to the last snapshot backup.
-    LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
-                                                                                                 << _syncPal->syncDbId() << ".")
-    if (const auto exitInfo = _syncPal->restoreRemoteLiveSnapshotBackup(blackList(), aValidSnapshotBackupWasRestored);
-        !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup: " << exitInfo);
-
-        return exitInfo;
-    }
-
-    if (aValidSnapshotBackupWasRestored) {
-        LOG_SYNCPAL_DEBUG(_logger, "A valid remote snapshot backup was restored.");
         return ExitCode::Ok;
-    }
-
-    LOG_SYNCPAL_DEBUG(_logger, "No valid remote snapshot backup exists. Clearing all listing cursors from database.");
-
-    (void) clearListingCursors();
-    invalidateSnapshot();
+    } else
+        clearRemoteSnapshotData();
 
     return ExitCode::Ok;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
+    LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation.");
     _liveSnapshot.init();
 
-    bool aValidSnapshotBackupWasRestored = false;
-    if (const auto exitInfo = handleRemoteSnapshotBackup(aValidSnapshotBackupWasRestored);
-        !exitInfo || aValidSnapshotBackupWasRestored) {
-        return exitInfo;
-    }
-
-    LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation.");
     const auto start = std::chrono::steady_clock::now();
     sentry::pTraces::scoped::RFSOGenerateInitialSnapshot perfMonitor(syncDbId());
 
@@ -1576,28 +1580,32 @@ ExitInfo RemoteFileSystemObserverWorker::getSpecialRemoteFolderName(const Remote
     return {ExitCode::LogicError, ExitCause::InvalidArgument};
 }
 
-void RemoteFileSystemObserverWorker::resume() {
-    if (isRunning()) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " is already running");
-        return;
-    }
-
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " resuming.");
-
+void RemoteFileSystemObserverWorker::init() {
     ISyncWorker::init();
 
-    setRunningFlagValue(true);
-
-    // We force a `listing/continue` every time the worker is resumed, to ensure that we do not miss any change.
+    // We force a `listing/continue` every time the worker is resumed, to ensure that we do not miss any remote change.
     setUpdateFlagValue(true);
-
-    startExecutionThread();
 }
 
-void RemoteFileSystemObserverWorker::setBlackList(RemoteNodeIdSet blackList) {
+ExitInfo RemoteFileSystemObserverWorker::setBlackList(bool &blacklistHasChanged) {
+    blacklistHasChanged = false;
+
     const std::scoped_lock lock(_blackListMutex);
 
-    _blackList = std::move(blackList);
+    // Retrieve the list of blacklisted folders.
+    RemoteNodeIdSet newBlackList;
+    if (const ExitInfo exitInfo =
+                SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, newBlackList);
+        !exitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in SyncNodeCache::syncNodes: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    blacklistHasChanged = _blackList != newBlackList;
+    _blackList = newBlackList;
+
+    return ExitCode::Ok;
 };
 
 RemoteNodeIdSet RemoteFileSystemObserverWorker::blackList() const {

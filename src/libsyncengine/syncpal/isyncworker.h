@@ -63,8 +63,6 @@ class ISyncWorker {
         } // Minimum pause duration is 1 min
         void resetPauseDuration() { _pauseDuration = defaultPauseDuration; }
 
-        virtual void resume() { start(); }
-
         [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _syncPal->cacheDirectory(); }
 
     protected:

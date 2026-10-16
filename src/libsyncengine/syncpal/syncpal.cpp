@@ -511,8 +511,13 @@ void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_unix(shared_from_this(), "Local File System Observer", "LFSO"));
 #endif
-    _remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-            new RemoteFileSystemObserverWorker(shared_from_this(), "Remote File System Observer", "RFSO"));
+    // The lifetime of the remote FS observer is the same as the lifetime of the SyncPal. It is not freed when the SyncPal is
+    // stopped, as it keeps a backup of the last remote snapshot, which is needed for the next sync. The backup allows to perform
+    // a lightweight listing request instead of a costly full listing request on the remote server.
+    if (!_remoteFSObserverWorker) {
+        _remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
+                new RemoteFileSystemObserverWorker(shared_from_this(), "Remote File System Observer", "RFSO"));
+    }
     _computeFSOperationsWorker = std::shared_ptr<ComputeFSOperationWorker>(
             new ComputeFSOperationWorker(shared_from_this(), "Compute FS Operations", "COOP"));
     _localUpdateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
@@ -539,19 +544,14 @@ void SyncPal::freeWorkers() {
     LOG_SYNCPAL_DEBUG(_logger, "Free workers");
     _localFSObserverWorker.reset();
 
-    // Handle remote snapshot backup before freeing the remote FS observer worker, as it is used to get the live snapshot and
-    // blacklist.
-    if (!_invalidateRemoteSnapshotBackup && _remoteFSObserverWorker && _remoteFSObserverWorker->liveSnapshot().isValid()) {
-        setRemoteLiveSnapshotBackup(
-                std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot()),
-                std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker)->blackList());
-    } else {
-        clearRemoteLiveSnapshotBackup();
+    // The remote FS observer is not freed as it keeps a backup of the last remote snapshot, which is needed for the next sync.
+    // This backup allows to perform a lightweight listing request instead of a costly full listing request on the remote server.
+    // The remote FS observer will be freed when the SyncPal is destroyed.
+    if (_remoteFSObserverWorker)
+        _remoteFSObserverWorker->stop();
+    else {
+        LOG_SYNCPAL_WARN(_logger, "Remote FS Observer worker is null. This should not happen.");
     }
-
-    _invalidateRemoteSnapshotBackup.store(false);
-
-    _remoteFSObserverWorker.reset();
 
     _computeFSOperationsWorker.reset();
     _localUpdateTreeWorker.reset();
@@ -1961,53 +1961,16 @@ void SyncPal::tryToInvalidateSnapshots() {
 void SyncPal::forceInvalidateSnapshots() {
     if (_localFSObserverWorker)
         _localFSObserverWorker->invalidateSnapshot();
-    else
+    else {
         LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for local snapshot, but local FS observer worker is not available.");
-
-    clearRemoteLiveSnapshotBackup();
+    }
 
     if (_remoteFSObserverWorker) {
         _remoteFSObserverWorker->forceUpdate();
         _remoteFSObserverWorker->invalidateSnapshot();
-        // Invalidating the remote snapshot will not invalidate its backup if the initial snapshot is being generated. This is why
-        // we use this extra flag.
-        _invalidateRemoteSnapshotBackup.store(true);
     } else {
         LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for remote snapshot, but remote FS observer worker is not available.");
     }
-}
-
-ExitInfo SyncPal::restoreRemoteLiveSnapshotBackup(const RemoteNodeIdSet &blackList, bool &aValidSnapshotBackupWasRestored) {
-    aValidSnapshotBackupWasRestored = false;
-
-    auto remoteFSObserverWorker = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker);
-    if (!remoteFSObserverWorker) {
-        LOG_SYNCPAL_WARN(_logger, "Remote FS observer worker is not available or not of the expected type.");
-
-        return {ExitCode::LogicError, ExitCause::Unknown};
-    }
-
-    const std::scoped_lock lock(_remoteLiveSnapshotBackupMutex);
-
-    if (isRemoteSnapshotBackupValid(blackList)) {
-        bool validCursorExists = false;
-        if (const auto exitInfo = remoteFSObserverWorker->checkIfValidListingCursorsExist(validCursorExists); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist: " << exitInfo);
-            return exitInfo;
-        }
-
-        if (validCursorExists) {
-            remoteFSObserverWorker->restoreRemoteSnapshotBackup(*_remoteLiveSnapshotBackup.snapshot);
-            aValidSnapshotBackupWasRestored = true;
-        }
-
-    } else {
-        LOG_SYNCPAL_DEBUG(_logger, "No remote live snapshot backup available to restore.");
-    }
-
-    _remoteLiveSnapshotBackup.clear();
-
-    return ExitCode::Ok;
 }
 
 } // namespace KDC
