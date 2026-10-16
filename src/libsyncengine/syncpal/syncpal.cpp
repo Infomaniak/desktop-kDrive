@@ -1443,6 +1443,9 @@ void SyncPal::stop(PauseCaller caller, DbBehaviorAfterStop behavior) {
     // Free workers
     freeWorkers();
 
+    // The Remote File System Observer Worker has the lifetime of SyncPal.
+    if (behavior == DbBehaviorAfterStop::Remove) _remoteFSObserverWorker.reset();
+
     // Free shared objects
     freeSharedObjects();
 
