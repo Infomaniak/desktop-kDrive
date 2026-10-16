@@ -126,13 +126,13 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         // Cache of the listing cursor of the sync folder.
         mutable std::optional<CursorData> _listingCursorCache;
-        mutable std::recursive_mutex _listingCursorCacheMutex;
+        mutable std::mutex _listingSyncFolderCursorCacheMutex;
         [[nodiscard]] ExitInfo getSyncFolderListingCursor(CursorData &cursorData) const;
         [[nodiscard]] ExitInfo setSyncFolderListingCursor(const CursorData &cursorData);
 
         // Cache of the listing cursor of the shared folder.
         mutable std::optional<CursorData> _sharedFolderListingCursorCache;
-        mutable std::recursive_mutex _sharedFolderListingCursorCacheMutex;
+        mutable std::mutex _sharedFolderListingCursorCacheMutex;
         [[nodiscard]] ExitInfo getSharedFolderListingCursor(CursorData &cursorData) const;
         [[nodiscard]] ExitInfo setSharedFolderListingCursor(const CursorData &cursorData);
 
