@@ -4016,29 +4016,37 @@ bool AppServer::startClient() {
 #ifdef QT_NO_DEBUG
     startClient = true;
 #endif
+
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
-    bool useClientV4 = false;
     if (startClient) {
         // Start the client
-        QString pathToExecutable;
-
-#if defined(KD_WINDOWS)
-        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
-        useClientV4 = true;
-        IoError ioError = IoError::Success;
-        bool exists = false;
-        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
-            !exists || ioError != IoError::Success) {
-            pathToExecutable.clear();
-            useClientV4 = false;
-        }
-        if (pathToExecutable.isEmpty()) {
-            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
-        }
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+        bool useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
 #else
-        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
-        useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
+        bool useClientV4 = false;
 #endif
+
+        auto getPathToExecutable = [](const SyncPath &executableName) {
+            auto pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
+            auto ioError = IoError::Success;
+            if (auto exists = false; !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+                !exists || ioError != IoError::Success) {
+                return SyncPath();
+            }
+            return pathToExecutable;
+        };
+
+        auto pathToExecutable = getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
+        if (pathToExecutable.empty()) {
+            if (useClientV4) {
+                useClientV4 = false;
+                pathToExecutable = getPathToExecutable(APPLICATION_CLIENT_EXECUTABLE);
+            }
+            if (pathToExecutable.empty()) {
+                LOG_FATAL(_logger, "Failed to start kDrive client (executable not found)");
+                return false;
+            }
+        }
 
         QStringList arguments;
         if (useClientV4 && useCommManager(true)) {
@@ -4066,10 +4074,10 @@ bool AppServer::startClient() {
             arguments << "--settings";
         }
 
-        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)));
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Utility::formatSyncPath(pathToExecutable));
 
         _clientProcess = new QProcess(this);
-        _clientProcess->setProgram(pathToExecutable);
+        _clientProcess->setProgram(Path2QStr(pathToExecutable));
         _clientProcess->setArguments(arguments);
 
         _clientProcess->start();
