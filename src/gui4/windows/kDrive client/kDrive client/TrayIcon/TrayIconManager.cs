@@ -90,7 +90,15 @@ namespace Infomaniak.kDrive.TrayIcon
             if (Application.Current.Resources["TrayIcon"] is TaskbarIcon trayIcon)
             {
                 _trayIcon = trayIcon;
-                _trayIcon.ForceCreate();
+                try
+                {
+                    _trayIcon.ForceCreate();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to force create tray icon: {ex.Message}",
+                    "Failed to force create tray icon");
+                }
                 // Set initial icon
                 SetIconNeutral();
             }
@@ -388,7 +396,8 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             catch (Exception ex)
             {
-                Logger.LogWarning($"Failed to read system theme from registry, falling back to app theme: {ex.Message}");
+                Logger.LogWarning($"Failed to read system theme from registry, falling back to app theme: {ex.Message}",
+                				"Failed to read system theme from registry");
             }
 
             // Value not available: fall back to the app theme.

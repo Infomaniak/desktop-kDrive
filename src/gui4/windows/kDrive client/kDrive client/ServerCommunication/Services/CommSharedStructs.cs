@@ -90,7 +90,14 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             {
                 target.Avatar = new byte[source.Avatar.Length];
             }
-            Array.Copy(source.Avatar, target.Avatar, source.Avatar.Length);
+            try
+            {
+                Array.Copy(source.Avatar, target.Avatar, source.Avatar.Length);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error copying Avatar: {ex.Message}", "ConversionHelper: Error copying Avatar");
+            }
         }
     }
 
