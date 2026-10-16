@@ -696,14 +696,16 @@ ExitInfo AppServer::stopSyncTask(const SyncDbId syncDbId,
 
     {
         const std::scoped_lock lock(syncPalMapMutex);
-        LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() == 2)
+        // The SyncPal count can be 2 if its Remote File System Observer Worker still exists as it has a reference to the
+        // SyncPal. It can be 1 if the SyncPal is scheduled for destruction since it has a reference to itself.
+        LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() <= 2)
         (void) syncPalMap.erase(syncDbId);
     }
 
     {
         const std::scoped_lock lock(vfsMapMutex);
         LOG_IF_FAIL(!vfsMap[syncDbId] ||
-                    vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+                    vfsMap[syncDbId].use_count() <= 2) // `use_count` can be zero when the local drive has been removed.
         (void) vfsMap.erase(syncDbId);
     }
     return ExitCode::Ok;
