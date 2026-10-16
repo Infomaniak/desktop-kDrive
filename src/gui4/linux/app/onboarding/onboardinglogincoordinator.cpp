@@ -119,7 +119,7 @@ void OnboardingLoginCoordinator::loadAvailableDrivesWhenUserIsCached(const UserD
     _pendingUserDbId.reset();
 
     // A user who already has synchronizations logged in again, for instance from the blocking error screen: restart
-    // them and return to the main window, as on macOS, instead of selecting drives.
+    // them and return to the main window, instead of selecting drives.
     if (hasSyncs(_appCache, userDbId)) {
         qCInfo(lcOnboardingLoginCoordinator) << "Known user logged in again, restarting synchronizations | userDbId:" << userDbId;
         _syncService.startSyncsAfterLogin(userDbId);
