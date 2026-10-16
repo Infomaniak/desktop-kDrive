@@ -119,6 +119,9 @@ struct IoHelper {
             See isExpectedError for the definition of an expected error.
         */
         [[nodiscard]] static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
+        [[nodiscard]] static bool getItemTypeAndProcessIoError(
+                const SyncPath &path, ItemType &itemType,
+                const std::source_location &location = std::source_location::current()) noexcept;
 
         //! Retrieves the node identifier of the item indicated by a file system path.
         /*!

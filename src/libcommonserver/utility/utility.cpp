@@ -466,22 +466,10 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
 
     auto tmpItemType = itemType;
     if (tmpItemType == ItemType()) {
-        const bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
-        ioError = tmpItemType.ioError;
-        if (!result) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
-            return false;
-        }
-
-        if (ioError == IoError::Success) {
-            isManaged = true;
-            return true;
-        } else if (IoHelper::isExpectedError(ioError)) {
-            return true;
-        } else {
-            // Should not happen
-            assert(false);
-            return false;
+        if (auto result = IoHelper::getItemTypeAndProcessIoError(dirEntry.path(), tmpItemType);
+            !result || itemType.ioError != IoError::Success) {
+            ioError = itemType.ioError;
+            return result;
         }
     }
 

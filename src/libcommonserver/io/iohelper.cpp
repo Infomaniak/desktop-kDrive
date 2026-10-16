@@ -467,6 +467,33 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     return true;
 }
 
+bool IoHelper::getItemTypeAndProcessIoError(const SyncPath &path, ItemType &itemType,
+                                            const std::source_location &location) noexcept {
+    if (!getItemType(path, itemType)) {
+        LOGW_WARN(logger(), CommonUtility::s2ws(toString(location))
+                                    << L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
+        return false;
+    }
+
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(logger(), CommonUtility::s2ws(toString(location))
+                                    << L"Item does not exist anymore: " << Utility::formatSyncPath(path));
+        return true;
+    } else if (itemType.ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), CommonUtility::s2ws(toString(location))
+                                    << L"Item misses search permission: " << Utility::formatSyncPath(path));
+        return true;
+    } else if (itemType.ioError != IoError::Success) {
+        // Should not happen
+        LOGW_WARN(logger(), CommonUtility::s2ws(toString(location)) << L"Unexpected error in IoHelper::getItemType: "
+                                                                    << Utility::formatIoError(path, itemType.ioError));
+        assert(false);
+        return false;
+    }
+
+    return true;
+}
+
 bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError) {
     size = 0;
     ioError = IoError::Unknown;
@@ -861,8 +888,7 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traverses
     SyncPath tmpPath = path.parent_path();
     while (!tmpPath.empty() && tmpPath != tmpPath.parent_path()) {
         ItemType itemType;
-        if (!IoHelper::getItemType(tmpPath, itemType) || itemType.ioError != IoError::Success) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
+        if (auto result = getItemTypeAndProcessIoError(tmpPath, itemType); !result || itemType.ioError != IoError::Success) {
             return itemType.ioError;
         }
 

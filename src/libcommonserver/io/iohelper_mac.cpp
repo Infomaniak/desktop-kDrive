@@ -40,26 +40,12 @@ inline bool _isXAttrValueExpectedError(IoError error) {
 bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrName, std::string &value,
                              IoError &ioError) noexcept {
     value = "";
-    ItemType itemType;
-    if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
-        ioError = itemType.ioError;
-        return false;
-    }
+    ioError = IoError::Unknown;
 
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(path));
+    ItemType itemType;
+    if (auto result = getItemTypeAndProcessIoError(path, itemType); !result || itemType.ioError != IoError::Success) {
         ioError = itemType.ioError;
-        return true;
-    } else if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"Item misses search permission: " << Utility::formatSyncPath(path));
-        ioError = itemType.ioError;
-        return true;
-    } else if (itemType.ioError != IoError::Success) {
-        // Should not happen
-        assert(false);
-        ioError = itemType.ioError;
-        return false;
+        return result;
     }
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
@@ -90,26 +76,12 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrN
 
 bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrName, const std::string_view &value,
                              IoError &ioError) noexcept {
-    ItemType itemType;
-    if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
-        ioError = itemType.ioError;
-        return false;
-    }
+    ioError = IoError::Unknown;
 
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(path));
+    ItemType itemType;
+    if (auto result = getItemTypeAndProcessIoError(path, itemType); !result || itemType.ioError != IoError::Success) {
         ioError = itemType.ioError;
-        return true;
-    } else if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"Item misses search permission: " << Utility::formatSyncPath(path));
-        ioError = itemType.ioError;
-        return true;
-    } else if (itemType.ioError != IoError::Success) {
-        // Should not happen
-        assert(false);
-        ioError = itemType.ioError;
-        return false;
+        return result;
     }
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;

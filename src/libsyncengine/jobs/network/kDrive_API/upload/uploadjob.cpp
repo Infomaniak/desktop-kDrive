@@ -165,19 +165,19 @@ void UploadJob::setQueryParameters(Poco::URI &uri) {
 
 ExitInfo UploadJob::setData() {
     ItemType itemType;
-    if (!IoHelper::getItemType(_absoluteFilePath, itemType)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getItemType - " << Utility::formatSyncPath(_absoluteFilePath));
-        return ExitCode::SystemError;
-    }
+    if (auto result = IoHelper::getItemTypeAndProcessIoError(_absoluteFilePath, itemType);
+        !result || itemType.ioError != IoError::Success) {
+        if (!result) {
+            return ExitCode::SystemError;
+        }
 
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::NotFound};
-    }
-
-    if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        } else if (itemType.ioError == IoError::AccessDenied) {
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        } else {
+            return ExitCode::SystemError;
+        }
     }
 
     _linkType = itemType.linkType;

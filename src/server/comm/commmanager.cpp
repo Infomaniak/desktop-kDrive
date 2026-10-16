@@ -348,6 +348,7 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 
 void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_INFO(Log::instance()->getLogger(), "Lost gui connection: sender=" << channel->id());
+    //_guiCommServer->removeConnection(channel);
     if (_guiCommServer->connections().empty()) {
         LOG_INFO(Log::instance()->getLogger(), "No more GUI connections");
         _appServer.handleClientDisconnection();
