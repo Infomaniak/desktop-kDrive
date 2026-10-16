@@ -696,7 +696,7 @@ ExitInfo AppServer::stopSyncTask(const SyncDbId syncDbId,
 
     {
         const std::scoped_lock lock(syncPalMapMutex);
-        LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() == 1)
+        LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() == 2)
         (void) syncPalMap.erase(syncDbId);
     }
 
@@ -4048,14 +4048,16 @@ bool AppServer::startClient() {
         auto getPathToExecutable = [](const SyncPath &executableName) {
             auto pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
             auto ioError = IoError::Success;
-            if (auto exists = false; !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+            if (auto exists = false;
+                !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
                 !exists || ioError != IoError::Success) {
                 return SyncPath();
             }
             return pathToExecutable;
         };
 
-        auto pathToExecutable = getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
+        auto pathToExecutable =
+                getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
         if (pathToExecutable.empty()) {
             if (useClientV4) {
                 useClientV4 = false;
