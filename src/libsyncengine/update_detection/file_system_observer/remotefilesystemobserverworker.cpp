@@ -178,7 +178,7 @@ void RemoteFileSystemObserverWorker::execute() {
     ApiTranslator::clearSharedCache(_syncPal->driveId());
     {
         const std::scoped_lock lock(_listingSyncFolderCursorCacheMutex);
-        _listingCursorCache.reset();
+        _listingSyncFolderCursorCache.reset();
     }
     {
         const std::scoped_lock lock(_sharedFolderListingCursorCacheMutex);
@@ -233,7 +233,7 @@ void RemoteFileSystemObserverWorker::execute() {
 }
 
 
-ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingCursorExists(bool &validListingCursorsExist) const {
+ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingSyncFolderCursorExists(bool &validListingCursorsExist) const {
     validListingCursorsExist = false;
 
     CursorData cursorData;
@@ -1399,8 +1399,8 @@ ExitInfo RemoteFileSystemObserverWorker::getWatchedFolderRemoteId(RemoteNodeId &
 ExitInfo RemoteFileSystemObserverWorker::getSyncFolderListingCursor(CursorData &cursorData) const {
     const std::scoped_lock lock(_listingSyncFolderCursorCacheMutex);
 
-    if (_listingCursorCache) {
-        cursorData = *_listingCursorCache;
+    if (_listingSyncFolderCursorCache) {
+        cursorData = *_listingSyncFolderCursorCache;
 
         return ExitCode::Ok;
     }
@@ -1417,7 +1417,7 @@ ExitInfo RemoteFileSystemObserverWorker::getSyncFolderListingCursor(CursorData &
         return getCursorExitInfo;
     }
 
-    _listingCursorCache = cursorData;
+    _listingSyncFolderCursorCache = cursorData;
 
     return ExitCode::Ok;
 }
@@ -1447,7 +1447,7 @@ ExitInfo RemoteFileSystemObserverWorker::setSyncFolderListingCursor(const Cursor
         return setCursorExitInfo;
     }
 
-    _listingCursorCache = cursorData;
+    _listingSyncFolderCursorCache = cursorData;
 
     return ExitCode::Ok;
 }

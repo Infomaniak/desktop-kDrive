@@ -1888,8 +1888,10 @@ ExitInfo SyncPal::restoreRemoteLiveSnapshotBackup(const RemoteNodeIdSet &blackLi
 
     if (isRemoteSnapshotBackupValid(blackList)) {
         bool validCursorExists = false;
-        if (const auto exitInfo = remoteFSObserverWorker->checkIfValidListingCursorExists(validCursorExists); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidListingCursorExists: " << exitInfo);
+        if (const auto exitInfo = remoteFSObserverWorker->checkIfValidListingSyncFolderCursorExists(validCursorExists);
+            !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in RemoteFileSystemObserverWorker::checkIfValidListingSyncFolderCursorExists: " << exitInfo);
             return exitInfo;
         }
 
