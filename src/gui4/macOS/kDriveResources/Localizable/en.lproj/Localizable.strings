@@ -998,7 +998,7 @@
 "labelFolderRecreatedOrReplacedTip" = "The folder was deleted and recreated, or replaced by another folder with the same name.";
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
-"labelJustNow" = "Just now";
+"labelJustNow" = "just now";
 
 /* loco:698aecc409658598f60cc334 */
 "labelKDriveVersion" = "kDrive %@";
