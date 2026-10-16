@@ -107,6 +107,8 @@ struct COMMONSERVER_EXPORT Utility {
         static void restartFinderExtension();
         static void restartLoginItemAgent();
         static bool isLiteSyncExtRunning();
+        static bool isLoginItemAgentRunning();
+        static bool registerLoginItemAgent(bool enable);
 #endif
         static bool isLiteSyncExtError(const ExitInfo &exitInfo);
 
