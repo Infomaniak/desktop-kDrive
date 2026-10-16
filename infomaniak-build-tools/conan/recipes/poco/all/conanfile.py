@@ -135,6 +135,11 @@ class PocoConan(ConanFile):
             else:
                 self.requires("openssl/3.6.5", options={ "shared": True })
 
+    def build_requirements(self):
+        # Poco 1.15.x requires CMake >= 3.26 (root CMakeLists.txt), which CI runner
+        # images may not provide (e.g. 3.22 on Linux), so bring our own.
+        self.tool_requires("cmake/[>=3.26 <4]")
+
     def package_id(self):
         del self.info.options.enable_active_record
 
