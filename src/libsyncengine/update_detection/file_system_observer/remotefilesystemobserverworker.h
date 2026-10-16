@@ -46,7 +46,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         RemoteNodeIdSet blackList() const;
         void setBlackList(RemoteNodeIdSet blackList);
         void restoreRemoteSnapshotBackup(const ConstSnapshot &snapshotBackup);
-        [[nodiscard]] ExitInfo checkIfValidListingCursorExists(bool &validSnapshotBackupExists) const;
+        [[nodiscard]] ExitInfo checkIfValidListingSyncFolderCursorExists(bool &validSnapshotBackupExists) const;
 
     protected:
         void execute() override;
@@ -125,7 +125,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         DriveDbId _driveDbId = -1;
 
         // Cache of the listing cursor of the sync folder.
-        mutable std::optional<CursorData> _listingCursorCache;
+        mutable std::optional<CursorData> _listingSyncFolderCursorCache;
         mutable std::mutex _listingSyncFolderCursorCacheMutex;
         [[nodiscard]] ExitInfo getSyncFolderListingCursor(CursorData &cursorData) const;
         [[nodiscard]] ExitInfo setSyncFolderListingCursor(const CursorData &cursorData);
