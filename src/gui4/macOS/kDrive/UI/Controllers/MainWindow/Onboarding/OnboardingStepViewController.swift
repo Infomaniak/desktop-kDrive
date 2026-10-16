@@ -20,7 +20,7 @@ import Cocoa
 import Combine
 import kDriveCoreUI
 
-open class OnboardingStepViewController: NSViewController {
+open class OnboardingStepViewController: BaseViewController {
     enum Tokens {
         static let minContainerWidth: CGFloat = 300
         static let maxContainerWidth: CGFloat = 500

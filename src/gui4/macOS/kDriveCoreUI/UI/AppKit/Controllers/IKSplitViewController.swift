@@ -26,7 +26,9 @@ public extension NSToolbarItem.Identifier {
 }
 
 open class IKSplitViewController: NSSplitViewController {
-    public var toolbar = NSToolbar()
+    // Use the designated initializer for macOS 12 compatibility. Keep each
+    // toolbar independent: AppKit synchronizes toolbars sharing an identifier.
+    public var toolbar = NSToolbar(identifier: NSToolbar.Identifier(UUID().uuidString))
 
     public var currentContentViewController: NSViewController?
 
@@ -47,6 +49,13 @@ open class IKSplitViewController: NSSplitViewController {
 // MARK: - Helpers
 
 public extension IKSplitViewController {
+    static func toolbarImage(_ image: NSImage) -> NSImage {
+        // Asset images are shared; resize a copy without affecting other views.
+        let toolbarImage = image.copy() as! NSImage
+        toolbarImage.size = AppIconSize.iconSize16
+        return toolbarImage
+    }
+
     func switchContentViewController(destination viewController: NSViewController) {
         removeSplitViewItem(splitViewItems[1])
         addSplitViewItem(NSSplitViewItem(viewController: viewController))
@@ -83,7 +92,9 @@ extension IKSplitViewController: NSToolbarDelegate {
         case .trackingSplitView:
             return NSTrackingSeparatorToolbarItem(identifier: .trackingSplitView, splitView: splitView, dividerIndex: 0)
         case .goBack:
-            return NSGoBackToolbarItem()
+            let item = NSGoBackToolbarItem()
+            item.image = item.image.map { Self.toolbarImage($0) }
+            return item
         case .titleLabel:
             return NSToolbarTitleItem()
         default:
