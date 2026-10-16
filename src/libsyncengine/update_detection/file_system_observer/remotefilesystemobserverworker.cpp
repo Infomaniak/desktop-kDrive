@@ -169,8 +169,9 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteN
                                                        LongPollJobMap &longPollJobs) {
     const ForcedUpdate updateFlag = initializing() || updating() ? ForcedUpdate::Asked : ForcedUpdate::None;
 
+    const RemoteNodeIdSet blackList_ = blackList();
     for (const auto &remoteDirId: specialFoldersRemoteIds) {
-        if (blackList().contains(remoteDirId)) continue;
+        if (blackList_.contains(remoteDirId)) continue;
 
         bool hasChanges = false;
         if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, updateFlag, longPollJobs, hasChanges); !exitInfo)
