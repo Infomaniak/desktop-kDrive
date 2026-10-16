@@ -157,10 +157,13 @@ elseif(APPLE)
     find_library(CORESERVICES_LIBRARY NAMES CoreServices)
     find_library(APPKIT_LIBRARY NAMES AppKit)
     find_library(SECURITY_LIBRARY NAMES Security)
+    find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
 
     target_link_libraries(${libcommonserver_NAME}
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY}
-        ${SECURITY_LIBRARY})
+        ${SECURITY_LIBRARY}
+        ${SERVICE_MANAGEMENT_LIBRARY}
+    )
 endif()
