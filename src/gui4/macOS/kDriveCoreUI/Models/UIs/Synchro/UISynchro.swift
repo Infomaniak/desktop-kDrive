@@ -63,4 +63,13 @@ public enum UISynchroStatus: Sendable, Equatable, Hashable {
     case stopAsked
     case stopped
     case error
+
+    public var isPaused: Bool {
+        switch self {
+        case .pauseAsked, .paused, .stopAsked, .stopped:
+            return true
+        case .starting, .running, .idle, .error:
+            return false
+        }
+    }
 }

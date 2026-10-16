@@ -228,6 +228,12 @@ void AppServer::init() {
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
+#if defined(KD_MACOS)
+    // Qt emits ApplicationActive when macOS asks an already running application to reopen.
+    connect(this, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+        if (state == Qt::ApplicationActive && (!_updateManager || !_updateManager->isUpdateSessionInProgress())) showSynthesis();
+    });
+#endif
 
 #if defined(KD_LINUX)
     // This adds a bit of Qt to the server, which is deliberate: it temporarily makes the OAuth callback reliable, and the
@@ -501,7 +507,6 @@ void AppServer::init() {
         LOG_INFO(_logger, "Updater disabled by app_state table");
     }
 
-
     if (!_noUpdate) {
         // Update checks
         _updateManager = std::make_unique<UpdateManager>();
@@ -654,8 +659,15 @@ void AppServer::reset() {
 
 // Schedule the quit on the Qt application thread. Most callers only need the default zero-delay queued execution, while
 // asynchronous operations can request enough time to finish before aboutToQuit starts cleanup.
+// Note: this function is intentionally thread-safe — it may be called from non-Qt threads (e.g. Poco thread pool).
+// QTimer::singleShot called directly from a non-Qt thread cannot reliably transfer the timer to the main thread
+// in release builds. Instead, we use QMetaObject::invokeMethod (Qt::QueuedConnection) to first post the
+// timer creation to the main thread's event loop, then start the timer there.
 void AppServer::quitLater(const int32_t delayMs) {
-    QTimer::singleShot(delayMs, QCoreApplication::instance(), [] { AppServer::quit(); });
+    auto *app = QCoreApplication::instance();
+    if (!app) return;
+    QMetaObject::invokeMethod(
+            app, [delayMs] { QTimer::singleShot(delayMs, [] { QCoreApplication::quit(); }); }, Qt::QueuedConnection);
 }
 
 // This task can be long and block the GUI
@@ -4015,29 +4027,37 @@ bool AppServer::startClient() {
 #ifdef QT_NO_DEBUG
     startClient = true;
 #endif
+
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
-    bool useClientV4 = false;
     if (startClient) {
         // Start the client
-        QString pathToExecutable;
-
-#if defined(KD_WINDOWS)
-        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
-        useClientV4 = true;
-        IoError ioError = IoError::Success;
-        bool exists = false;
-        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
-            !exists || ioError != IoError::Success) {
-            pathToExecutable.clear();
-            useClientV4 = false;
-        }
-        if (pathToExecutable.isEmpty()) {
-            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
-        }
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+        bool useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
 #else
-        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
-        useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
+        bool useClientV4 = false;
 #endif
+
+        auto getPathToExecutable = [](const SyncPath &executableName) {
+            auto pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
+            auto ioError = IoError::Success;
+            if (auto exists = false; !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+                !exists || ioError != IoError::Success) {
+                return SyncPath();
+            }
+            return pathToExecutable;
+        };
+
+        auto pathToExecutable = getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
+        if (pathToExecutable.empty()) {
+            if (useClientV4) {
+                useClientV4 = false;
+                pathToExecutable = getPathToExecutable(APPLICATION_CLIENT_EXECUTABLE);
+            }
+            if (pathToExecutable.empty()) {
+                LOG_FATAL(_logger, "Failed to start kDrive client (executable not found)");
+                return false;
+            }
+        }
 
         QStringList arguments;
         if (useClientV4 && useCommManager(true)) {
@@ -4065,10 +4085,10 @@ bool AppServer::startClient() {
             arguments << "--settings";
         }
 
-        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)));
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Utility::formatSyncPath(pathToExecutable));
 
         _clientProcess = new QProcess(this);
-        _clientProcess->setProgram(pathToExecutable);
+        _clientProcess->setProgram(Path2QStr(pathToExecutable));
         _clientProcess->setArguments(arguments);
 
         _clientProcess->start();
@@ -4076,6 +4096,9 @@ bool AppServer::startClient() {
             LOG_WARN(_logger, "Failed to start kDrive client");
             return false;
         }
+
+        _synthesisAsked = false;
+        _settingsAsked = false;
     }
 
     return true;
@@ -4197,6 +4220,38 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
 
     return ExitCode::Ok;
 }
+
+#if defined(KD_MACOS)
+ExitInfo AppServer::installVfs() {
+    VfsSetupParams vfsSetupParams;
+    vfsSetupParams.logger = _logger;
+    vfsSetupParams.sentryHandler = sentry::Handler::instance();
+    vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
+        if (useCommManager()) {
+            _commManager->executeCommandDirect(command, broadcast);
+        }
+    };
+
+    QString error;
+    std::shared_ptr vfs = KDC::createVfsFromPlugin(KDC::VirtualFileMode::Mac, vfsSetupParams, error);
+    if (!vfs) {
+        LOG_WARN(_logger,
+                 "Error in Vfs::createVfsFromPlugin for mode " << KDC::VirtualFileMode::Mac << " : " << error.toStdString());
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
+    }
+
+    // Set callbacks
+    vfs->setExclusionAppListCallback(std::bind_front(&AppServer::exclusionAppList, this));
+
+    // Start VFS
+    if (ExitInfo exitInfo = vfs->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone); !exitInfo) {
+        LOG_WARN(_logger, "Error in Vfs::start: " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+#endif
 
 ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, const SyncPal::PauseCaller caller,
                                 const SyncPal::DbBehaviorAfterStop behavior) {
@@ -5134,11 +5189,12 @@ void AppServer::onUpdateSyncsProgress() {
     }
 
     for (const auto &sync: syncList) {
+        SyncCache syncCache{SyncStatus::Undefined, SyncStep::None, SyncProgress()};
         const std::scoped_lock lock(syncPalMapMutex);
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
             // Show the sync paused anyway. It is most likely that an external drive is not plugged in.
-            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress());
+            syncCache._status = SyncStatus::Paused;
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);
@@ -5147,24 +5203,25 @@ void AppServer::onUpdateSyncsProgress() {
 
             const auto syncPal = syncPalMapIt->second;
 
+            syncCache._status = syncPal->status();
+            syncCache._step = syncPal->step();
+
             // Get progress
-            SyncProgress progress;
-            if (syncPal->status() == SyncStatus::Running && syncPal->step() == SyncStep::Propagation2) {
-                syncPal->loadProgress(progress);
+            if (syncCache._status == SyncStatus::Running && syncCache._step == SyncStep::Propagation2) {
+                syncPal->loadProgress(syncCache._progress);
             }
+        }
 
-            const SyncCache syncCache{syncPal->status(), syncPal->step(), progress};
-            if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
-                syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
-                // Set/update sync cache
-                if (syncCacheMapIt == _syncCacheMap.end())
-                    _syncCacheMap[sync.dbId()] = syncCache;
-                else
-                    syncCacheMapIt->second = syncCache;
+        if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
+            syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
+            // Set/update sync cache
+            if (syncCacheMapIt == _syncCacheMap.end())
+                _syncCacheMap[sync.dbId()] = syncCache;
+            else
+                syncCacheMapIt->second = syncCache;
 
-                // Send progress to the client
-                sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, progress);
-            }
+            // Send progress to the client
+            sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, syncCache._progress);
         }
     }
 }

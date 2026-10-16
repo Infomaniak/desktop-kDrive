@@ -41,6 +41,7 @@
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
                   ToolTipService.Placement="Right"
                   Background="Transparent"
+                  DataContextChanged="SearchResultItem_DataContextChanged"
                   PointerEntered="Template_PointerEntered"
                   PointerExited="Template_PointerExited"
                   HorizontalAlignment="Stretch"
@@ -65,7 +66,7 @@
                                        Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
 
                             <TextBlock Text="{x:Bind SearchItem.Name}"
-                                       TextWrapping="Wrap"/>
+                                       TextWrapping="Wrap" />
                             <TextBlock Foreground="{ThemeResource TextFillColorSecondary}"
                                        TextWrapping="Wrap">
                                  <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
@@ -119,6 +120,7 @@
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
                   ToolTipService.Placement="Right"
+                  DataContextChanged="SearchResultItem_DataContextChanged"
                   PointerEntered="Template_PointerEntered"
                   PointerExited="Template_PointerExited"
                   Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}">
@@ -128,7 +130,7 @@
                             <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('itemUnavailableBrowserFallback'), Mode=OneWay}"
                                        Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                        TextWrapping="Wrap"
-                                       Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}"/>
+                                       Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}" />
                             <TextBlock Text="{x:Bind SearchItem.Name}"
                                        TextWrapping="Wrap" />
                             <TextBlock Foreground="{ThemeResource TextFillColorSecondary}"
@@ -193,7 +195,7 @@
                 <local:SvgIcon UriString="{ThemeResource Infomaniak.Custom.Images.servin}"
                                Height="100"
                                HorizontalAlignment="Center"
-                               Foreground="{ThemeResource AccentFillColorTertiaryBrush}"/>
+                               Foreground="{ThemeResource AccentFillColorTertiaryBrush}" />
                 <TextBlock Grid.Row="1"
                            Text="{x:Bind kDrive:Localizer.Instance.GetString('noResultsFound'), Mode=OneWay}"
                            HorizontalAlignment="Center" />
@@ -265,7 +267,6 @@
                     TextChanged="SearchBox_TextChanged"
                     ItemTemplateSelector="{StaticResource SearchBoxResultItemTemplateSelector}"
                     UpdateTextOnSelect="False"
-                    SuggestionChosen="TitleBarSearchBox_SuggestionChosen"
                     QuerySubmitted="TitleBarSearchBox_QuerySubmitted"
                     Visibility="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
 </UserControl>

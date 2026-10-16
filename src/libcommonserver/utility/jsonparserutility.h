@@ -37,8 +37,9 @@ struct JsonParserUtility {
             }
 
             if (!obj->has(key)) {
+                if (!mandatory) return true;
                 LOG_INFO(Log::instance()->getLogger(), "Missing key: " << key);
-                return mandatory ? false : true;
+                return false;
             }
 
             if (obj->isNull(key)) {

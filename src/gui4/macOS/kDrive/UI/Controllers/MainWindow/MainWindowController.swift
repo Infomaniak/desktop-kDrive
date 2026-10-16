@@ -51,12 +51,13 @@ final class MainWindowController: NSWindowController {
 
         window.center()
         window.setFrameAutosaveName(WindowConstants.frameName)
-        window.minSize = NSSize(width: 800, height: 450)
+        window.minSize = NSSize(width: 800, height: 550)
         window.collectionBehavior = [.managed, .moveToActiveSpace]
         window.delegate = self
 
         observeRouter()
         observeXPConnectionState()
+        observeLoginItemAgentConnectionState()
         observerServerError()
         observeUsersCache()
     }
@@ -78,6 +79,28 @@ final class MainWindowController: NSWindowController {
             .receiveOnMain(store: &bindStore) { [weak self] state in
                 self?.navigateAfterPreloading(state: state)
             }
+    }
+
+    private func observeLoginItemAgentConnectionState() {
+        xpcConnectionProvider.loginItemAgentConnectionStatePublisher
+            .receiveOnMain(store: &bindStore) { [weak self] state in
+                self?.handleLoginItemAgentConnectionState(state)
+            }
+    }
+
+    private func handleLoginItemAgentConnectionState(_ state: XPCLoginItemAgentConnectionState) {
+        switch state {
+        case .connecting:
+            break
+        case .connected:
+            if case .enableBackgroundActivity = router.currentRoute {
+                navigateAfterPreloading(state: xpcConnectionProvider.guiConnectionState)
+            }
+        case .disconnected:
+            guard xpcConnectionProvider.guiConnectionState != .connected else { return }
+            guard router.currentRoute != .enableBackgroundActivity else { return }
+            router.navigate(to: .enableBackgroundActivity)
+        }
     }
 
     private func observerServerError() {
@@ -116,6 +139,9 @@ final class MainWindowController: NSWindowController {
             router.navigate(to: .preloading(isShowingError: false))
         case .error:
             router.navigate(to: .preloading(isShowingError: true))
+        case .serverCrashed:
+            IKLogger.general.error("[KD] Server connection interrupted (possible server crash), terminating the app")
+            NSApp.terminate(nil)
         case .connected:
             Task {
                 guard await !presentPermissionsViewIfNecessary() else { return }
@@ -143,13 +169,17 @@ final class MainWindowController: NSWindowController {
         case .onboarding(let user, let steps, let initialStep):
             setViewController(OnboardingViewController(user: user, steps: steps, initialStep: initialStep))
         case .mainWindow(let tab):
-            setViewController(MainViewController())
+            @InjectService var mainViewRouter: MainViewRouter
             if let tab {
-                @InjectService var mainViewRouter: MainViewRouter
                 mainViewRouter.setCurrentTab(tab)
+            } else {
+                mainViewRouter.resetToDefaultState()
             }
+            setViewController(MainViewController())
         case .updateRequired:
             setViewController(UpdateRequiredViewController())
+        case .enableBackgroundActivity:
+            setViewController(EnableBackgroundActivityViewController())
         }
     }
 
@@ -173,17 +203,23 @@ final class MainWindowController: NSWindowController {
         }
 
         @InjectService var permissionHander: MacOSPermissionHandling
-        var permissionsToShow = [OnboardingStep]()
+        var missingPermissions = [MacOSPermission]()
         for requiredPermission in PermissionsViewModel.requiredPermissions {
             if await !permissionHander.isAuthorized(for: requiredPermission) {
-                permissionsToShow.append(.permissions(requiredPermission))
+                missingPermissions.append(requiredPermission)
             }
         }
 
-        guard !permissionsToShow.isEmpty else {
+        guard !missingPermissions.isEmpty else {
             return false
         }
-        windowRouter.navigate(to: .onboarding(nil, permissionsToShow, permissionsToShow.first))
+
+        let hasLoggedInUser = await coherentCache.getFirstAvailableUser() != nil
+        let steps = OnboardingFlowCoordinator.permissionsFirstSteps(
+            missingPermissions: missingPermissions,
+            hasLoggedInUser: hasLoggedInUser
+        )
+        windowRouter.navigate(to: .onboarding(nil, steps, steps.first))
 
         return true
         #endif
@@ -202,6 +238,8 @@ final class MainWindowController: NSWindowController {
 extension MainWindowController: NSWindowDelegate {
     func windowDidBecomeMain(_ notification: Notification) {
         Task {
+            handleLoginItemAgentConnectionState(xpcConnectionProvider.loginItemAgentConnectionState)
+            guard router.currentRoute != .enableBackgroundActivity else { return }
             await presentPermissionsViewIfNecessary()
         }
     }
