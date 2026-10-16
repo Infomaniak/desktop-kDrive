@@ -2,17 +2,15 @@
 """Build the kChat notification of the nightly vulnerability scan.
 
 Reads the JSON summary produced by vulnerability_report.py, classifies the
-overall status, draws the matching badge PNG and writes the kChat markdown
-message to a UTF-8 file:
+overall status and writes the kChat markdown message to a UTF-8 file:
 
   - red:    Critical or High finding on at least one scope
   - orange: only Medium/Low findings on any scope, or a failed/cancelled scan
   - green:  nothing to report
 
-The badge URL is emitted as a {{BADGE_URL}} placeholder: the workflow uploads
-the PNG first, then replaces the placeholder (falling back to a static
-raster.shields.io URL if the upload fails, since kChat can only display
-images from a public URL).
+The badge is a static shields.io URL rendered by raster.shields.io as a PNG
+(kChat cannot display SVGs), colored by severity: every message keeps its
+own result since the status and date are baked into the URL.
 """
 
 import argparse
@@ -21,17 +19,15 @@ import os
 import sys
 from datetime import datetime, timezone
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import make_badge  # noqa: E402
-
 SEVERITIES = ["Critical", "High", "Medium", "Low", "Unknown"]
 
-COLORS = {
-    "red": "#e05d44",
-    "orange": "#fe7d37",
-    "green": "#4c1",
-    "grey": "#9f9f9f",
-    "failed": "#fe7d37",
+# shields.io named colors of the badges endpoint
+SHIELDS_COLORS = {
+    "red": "red",
+    "orange": "orange",
+    "failed": "orange",
+    "green": "brightgreen",
+    "grey": "lightgrey",
 }
 
 HEADLINES = {
@@ -86,6 +82,17 @@ def badge_right_text(status, total, date):
     return " ".join("%d %s" % (count, word) for count, word in parts if count) or "SCAN FAILED"
 
 
+def badge_url(status, total, date):
+    right = badge_right_text(status, total, date)
+    # Static badge as documented on https://shields.io/badges: in the path,
+    # a literal dash must be written as "--" and a space as "_"; the query
+    # parameters control the style and the logo.
+    escaped = right.replace("-", "--").replace(" ", "_")
+    color = SHIELDS_COLORS[status]
+    return ("https://raster.shields.io/badge/vulnerability_scan-%s-%s.png"
+            "?style=for-the-badge&logo=githubactions&logoColor=white" % (escaped, color)), right
+
+
 def scope_line(scope):
     title = scope.get("title") or scope.get("key") or "?"
     counts = scope.get("counts")
@@ -100,8 +107,8 @@ def scope_line(scope):
     return "- %s **%s** — %s" % (emoji, title, ", ".join(parts))
 
 
-def build_message(status, summary, date, run_url):
-    lines = ["![Vulnerability scan]({{BADGE_URL}})", "", HEADLINES[status].format(date=date), ""]
+def build_message(status, badge, summary, date, run_url):
+    lines = ["![Vulnerability scan](%s)" % badge, "", HEADLINES[status].format(date=date), ""]
     if status in ("red", "orange", "failed"):
         scopes = (summary or {}).get("scopes")
         if scopes:
@@ -114,12 +121,10 @@ def build_message(status, summary, date, run_url):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build the kChat message and badge of the vulnerability scan")
+    parser = argparse.ArgumentParser(description="Build the kChat message of the vulnerability scan")
     parser.add_argument("--summary", help="Path of the JSON summary written by vulnerability_report.py")
     parser.add_argument("--result", default="", help="Result of the Build-report job")
     parser.add_argument("--run-url", default="", help="URL of the workflow run")
-    parser.add_argument("--badge-out", required=True, help="Path of the badge PNG to draw")
-    parser.add_argument("--badge-meta", required=True, help="Path of the JSON badge description to write")
     parser.add_argument("--out", required=True, help="Path of the UTF-8 kChat message file to write")
     args = parser.parse_args()
 
@@ -129,24 +134,16 @@ def main():
 
     status, total = classify(args.result, summary)
     date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    right_text = badge_right_text(status, total, date)
-    color = COLORS[status]
+    badge, right_text = badge_url(status, total, date)
 
-    make_badge.make_badge("VULNERABILITY SCAN", right_text, color, args.badge_out)
-    meta_dir = os.path.dirname(os.path.abspath(args.badge_meta))
-    os.makedirs(meta_dir, exist_ok=True)
-    with open(args.badge_meta, "w", encoding="utf-8") as stream:
-        json.dump({"color": color, "right_text": right_text}, stream, indent=2)
-        stream.write("\n")
-
-    message = build_message(status, summary, date, args.run_url)
+    message = build_message(status, badge, summary, date, args.run_url)
     # Emojis would crash print() on the cp1252 console of the Windows runners:
     # the message goes to a UTF-8 file, stdout keeps an ASCII status line.
     out_dir = os.path.dirname(os.path.abspath(args.out))
     os.makedirs(out_dir, exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as stream:
         stream.write(message + "\n")
-    print("kChat notification: %s, badge '%s' %s, message written to %s" % (status, right_text, color, args.out))
+    print("kChat notification: %s, badge '%s', message written to %s" % (status, right_text, args.out))
 
 
 if __name__ == "__main__":
