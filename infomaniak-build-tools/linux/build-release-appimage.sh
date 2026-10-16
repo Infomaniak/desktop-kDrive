@@ -103,6 +103,11 @@ function build_client_via_cmake() {
     exit 1
   fi
 
+  # Ensure cmake is the one provided by Conan: Qt >= 6.12 requires CMake >= 3.25 to be
+  # consumed via find_package() (see QtPublicCMakeVersionHelpers.cmake).
+  # shellcheck disable=SC1091
+  source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
+
   architecture=$(get_host_arch)
   qt_neon_activation="ON"
 
