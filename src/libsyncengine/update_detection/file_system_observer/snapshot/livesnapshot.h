@@ -58,7 +58,7 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         void restoreFromBackup(const ConstSnapshot &backupSnapshot);
 
     private:
-        std::shared_ptr<SnapshotRevisionHandler> _revisionHandlder;
+        std::shared_ptr<SnapshotRevisionHandler> _revisionHandler;
         bool removeItem(std::shared_ptr<SnapshotItem> &item);
         void removeChildrenRecursively(std::shared_ptr<SnapshotItem> parent);
         std::atomic<bool> _isValid = false;
