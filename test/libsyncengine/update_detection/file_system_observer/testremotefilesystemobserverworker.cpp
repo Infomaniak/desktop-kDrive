@@ -131,10 +131,13 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
     // Generating the initial snapshot requires access to the remote drive: it is only done by the tests that need it.
-    const ExitInfo exitInfo = _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
+    bool blackListHasChanged = false;
+    auto rfso = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(rfso->setBlackList(blackListHasChanged));
+    const ExitInfo exitInfo = rfso->generateInitialSnapshot();
     CPPUNIT_ASSERT_MESSAGE("Failed to generate the initial remote snapshot", exitInfo);
 
-    NodeSet ids;
+    RemoteNodeIdSet ids;
     _syncPal->liveSnapshot(ReplicaSide::Remote).ids(ids);
 
     NodeSet childrenIds;
