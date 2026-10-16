@@ -26,17 +26,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6.0.2
       - name: Build
+        # A cancelled run can leave the shared DerivedData inconsistent: the
+        # build database then reports object files as up to date although
+        # they are missing, and the next run fails at link time with
+        # "file cannot be open()ed". Retry once from a clean DerivedData
+        # before giving up, so a poisoned runner state does not fail CI.
         run: |
-          xcodebuild \
-            -scheme kDrive \
-            -destination "platform=macOS,arch=arm64" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            DEVELOPMENT_TEAM="" \
-            ENABLE_HARDENED_RUNTIME=NO \
-            build-for-testing
+          build_for_testing() {
+            xcodebuild \
+              -scheme kDrive \
+              -destination "platform=macOS,arch=arm64" \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO \
+              CODE_SIGN_IDENTITY="" \
+              PROVISIONING_PROFILE_SPECIFIER="" \
+              DEVELOPMENT_TEAM="" \
+              ENABLE_HARDENED_RUNTIME=NO \
+              build-for-testing
+          }
+          if ! build_for_testing; then
+            echo "::warning::Build failed, retrying once with a clean DerivedData"
+            rm -rf "$HOME/Library/Developer/Xcode/DerivedData/"kDrive-*
+            build_for_testing
+          fi
       - name: Run tests
         run: |
           xcodebuild \
