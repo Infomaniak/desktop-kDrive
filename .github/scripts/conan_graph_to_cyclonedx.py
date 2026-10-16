@@ -15,6 +15,34 @@ graph_info.json layout is also accepted for convenience.
 import argparse
 import json
 import sys
+import urllib.parse
+
+# Conan recipe names that build a product known to NVD under a different
+# identifier (the recipe name does not always match the CPE product name);
+# grype matches components by CPE when their purl is unknown.
+CPE_PRODUCT_ALIASES = {
+    "openssl-macos": "openssl",
+    "sqlite3": "sqlite",
+}
+
+
+def conan_purl(name, version, user=None, channel=None):
+    # pkg:conan/<name>@<version>, as defined by the purl-spec conan type:
+    # the conan user and channel are optional percent-encoded qualifiers.
+    purl = "pkg:conan/%s@%s" % (name, version)
+    qualifiers = [(key, value) for key, value in (("user", user), ("channel", channel))
+                  if value and value != "_"]
+    if qualifiers:
+        purl += "?" + "&".join(
+            "%s=%s" % (key, urllib.parse.quote(value, safe="")) for key, value in sorted(qualifiers))
+    return purl
+
+
+def conan_cpe(name, version):
+    # Emit the same CPE form as syft (vendor = product name), using the
+    # product identifier instead of the recipe name.
+    product = CPE_PRODUCT_ALIASES.get(name, name)
+    return "cpe:2.3:a:%s:%s:%s:*:*:*:*:*:*:*" % (product, product, version)
 
 
 def parse_ref(ref):
@@ -53,11 +81,8 @@ def graph_packages(data):
             continue  # root/consumer node, not a dependency
         if node.get("context", "host") != "host":
             continue  # build tool_requires (cmake, ninja, ...) are not shipped
-        user_channel = None
-        if node.get("user"):
-            user_channel = node["user"]
-            if node.get("channel"):
-                user_channel += "/" + node["channel"]
+        user = node.get("user") or None
+        channel = node.get("channel") or None
         name = node.get("name")
         version = node.get("version")
         if not name or not version:
@@ -65,21 +90,17 @@ def graph_packages(data):
             if parsed is None:
                 continue
             name, version, ref_user_channel = parsed
-            user_channel = user_channel or ref_user_channel
-        packages.setdefault((name, version), user_channel)
+            if ref_user_channel and not user:
+                user, _, channel = ref_user_channel.partition("/")
+        packages.setdefault((name, version), (user, channel))
     return packages
 
 
 def cyclonedx(packages):
     components = []
-    for (name, version), user_channel in sorted(packages.items()):
-        purl = "pkg:conan/%s/%s" % (name, version)
-        if user_channel:
-            purl += "@%s" % user_channel
-        # Grype matches binaries by the CPE syft generates for them; emit the
-        # same CPE form so the conan packages are matched the same way.
-        cpe = "cpe:2.3:a:%s:%s:%s:*:*:*:*:*:*:*" % (name, name, version)
-        components.append({"type": "library", "name": name, "version": version, "purl": purl, "cpe": cpe})
+    for (name, version), (user, channel) in sorted(packages.items()):
+        components.append({"type": "library", "name": name, "version": version,
+                           "purl": conan_purl(name, version, user, channel), "cpe": conan_cpe(name, version)})
     return {
         "bomFormat": "CycloneDX",
         "specVersion": "1.4",

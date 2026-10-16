@@ -6,7 +6,9 @@ overall status and writes the kChat markdown message to a UTF-8 file:
 
   - red:    Critical or High finding on at least one scope
   - orange: only Medium/Low findings on any scope, or a failed/cancelled scan
-  - green:  nothing to report
+  - green:  nothing to report — only when every scope reported clean results
+            and its scan job succeeded (a missing, failed or cancelled scope
+            is never reported green)
 
 The badge is a static shields.io URL rendered by raster.shields.io as a PNG
 (kChat cannot display SVGs), colored by severity: every message keeps its
@@ -38,6 +40,11 @@ HEADLINES = {
     "grey": "⚪ **Nightly vulnerability scan {date} — cancelled**",
 }
 
+# Scope keys written by vulnerability_report.py: the green status requires all
+# of them to be present, successful and clean, so that a truncated summary or
+# a failed/missing scan result is never reported as "nothing to report".
+EXPECTED_SCOPE_KEYS = ["windows-server", "macos-app", "linux-appimage", "windows-client-nuget"]
+
 
 def load_summary(path):
     try:
@@ -65,6 +72,12 @@ def classify(report_result, summary):
         return "red", total
     if report_result != "success":
         return "failed", total
+    scopes = {scope.get("key"): scope for scope in (summary or {}).get("scopes") or []}
+    for key in EXPECTED_SCOPE_KEYS:
+        scope = scopes.get(key)
+        if scope is None or scope.get("counts") is None or scope.get("result") != "success":
+            # An incomplete or partially failed scan must not be reported green
+            return "failed", total
     if total["Medium"] or total["Low"] or total["Unknown"]:
         return "orange", total
     return "green", total
