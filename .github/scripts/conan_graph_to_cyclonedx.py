@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Convert a Conan graph_info.json into a CycloneDX SBOM.
+"""Convert the dependency graph resolved by Conan into a CycloneDX SBOM.
 
 Some dependencies are statically linked into the shipped binaries (conan zlib
 is for example linked into libcrypto/libssl on macOS), so a binary scan of the
 app bundle cannot fingerprint them. The dependency graph resolved by conan for
 the build is converted to CycloneDX instead, so Grype can scan it like any
 other SBOM.
+
+The input is the JSON output of `conan graph info . --format=json` (conan 2
+does not write the resolved graph to disk during `conan install`). The
+graph_info.json layout is also accepted for convenience.
 """
 
 import argparse
@@ -28,17 +32,40 @@ def load_graph(path):
         return json.load(stream)
 
 
+def graph_nodes(data):
+    # `conan graph info --format=json` nests the graph under the "graph" key,
+    # while graph_info.json nests it under "serialized"; accept both plus a
+    # bare "nodes" mapping.
+    for container in (data, data.get("graph"), data.get("serialized")):
+        if isinstance(container, dict) and isinstance(container.get("nodes"), dict):
+            return container["nodes"]
+    return {}
+
+
 def graph_packages(data):
-    serialized = data.get("serialized") or {}
-    nodes = serialized.get("nodes") or {}
+    nodes = graph_nodes(data)
     packages = {}
-    for index, node in nodes.items():
-        if index == serialized.get("root"):
+    for node in nodes.values():
+        if not isinstance(node, dict):
             continue
-        parsed = parse_ref(node.get("ref") or "")
-        if parsed is None:
-            continue
-        name, version, user_channel = parsed
+        ref = node.get("ref") or ""
+        if not ref or node.get("recipe") == "Consumer":
+            continue  # root/consumer node, not a dependency
+        if node.get("context", "host") != "host":
+            continue  # build tool_requires (cmake, ninja, ...) are not shipped
+        user_channel = None
+        if node.get("user"):
+            user_channel = node["user"]
+            if node.get("channel"):
+                user_channel += "/" + node["channel"]
+        name = node.get("name")
+        version = node.get("version")
+        if not name or not version:
+            parsed = parse_ref(ref)
+            if parsed is None:
+                continue
+            name, version, ref_user_channel = parsed
+            user_channel = user_channel or ref_user_channel
         packages.setdefault((name, version), user_channel)
     return packages
 
@@ -65,8 +92,8 @@ def cyclonedx(packages):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert a Conan graph_info.json to a CycloneDX SBOM")
-    parser.add_argument("graph", help="Path of the Conan graph_info.json file")
+    parser = argparse.ArgumentParser(description="Convert a Conan resolved graph to a CycloneDX SBOM")
+    parser.add_argument("graph", help="Path of the Conan graph JSON (conan graph info --format=json)")
     parser.add_argument("output", help="Path of the CycloneDX JSON to write")
     args = parser.parse_args()
 
