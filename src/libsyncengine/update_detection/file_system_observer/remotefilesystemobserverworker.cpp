@@ -468,6 +468,51 @@ ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
     return ExitCode::Ok;
 }
 
+ExitInfo RemoteFileSystemObserverWorker::mainProcessingTask(const RemoteNodeId &remoteDirId, CursorData &cursorData,
+                                                            bool &hasMore) {
+    if (stopAsked()) return ExitCode::Ok;
+
+    std::shared_ptr<ContinueFileListWithCursorJob> job = nullptr;
+    if (const auto exitInfo = runListingContinueJob(remoteDirId, job, cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::runListingContinueJob: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    if (const auto exitInfo = processListingContinueResponse(remoteDirId, job, cursorData, hasMore); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processListingContinueResponse: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    bool sharedFolderIsEmpty = false;
+    if (const auto exitInfo = checkIfSharedFolderIsEmpty(sharedFolderIsEmpty); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    // Check if the 'Shared' folder needs to be added or removed from the snapshot.
+    // An empty 'Shared' folder is not synchronized to avoid creating an empty 'Shared' folder in the local replica when the
+    // user has no shared files.
+    if (const auto exitInfo = updateSharedFolderItem(); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::updateSharedFolderItem: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    // Save the most recently used listing cursor now that the current page of `listing/continue` response has been fully
+    // processed.
+    if (const auto exitInfo = setSyncFolderListingCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::setSyncFolderListingCursor: " << exitInfo);
+        tryToInvalidateSnapshot();
+
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remoteDirId) {
     assert(!remoteDirId.empty() && "Unexpected empty remote node ID.");
 
@@ -481,51 +526,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         return exitInfo;
     }
 
-    // Retrieve changes
-    const auto mainProcessingTask = [this](const RemoteNodeId &remoteDirId, CursorData &cursorData_, bool &hasMore_) -> ExitInfo {
-        if (stopAsked()) return ExitCode::Ok;
-
-        std::shared_ptr<ContinueFileListWithCursorJob> job = nullptr;
-        if (const auto exitInfo = runListingContinueJob(remoteDirId, job, cursorData_); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::runListingContinueJob: " << exitInfo);
-
-            return exitInfo;
-        }
-
-        if (const auto exitInfo = processListingContinueResponse(remoteDirId, job, cursorData_, hasMore_); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processListingContinueResponse: " << exitInfo);
-
-            return exitInfo;
-        }
-
-        bool sharedFolderIsEmpty = false;
-        if (const auto exitInfo = checkIfSharedFolderIsEmpty(sharedFolderIsEmpty); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty: " << exitInfo);
-
-            return exitInfo;
-        }
-
-        // Check if the 'Shared' folder needs to be added or removed from the snapshot.
-        // An empty 'Shared' folder is not synchronized to avoid creating an empty 'Shared' folder in the local replica when the
-        // user has no shared files.
-        if (const auto exitInfo = updateSharedFolderItem(); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::updateSharedFolderItem: " << exitInfo);
-
-            return exitInfo;
-        }
-
-        // Save the most recently used listing cursor now that the current page of `listing/continue` response has been fully
-        // processed.
-        if (const auto exitInfo = setSyncFolderListingCursor(cursorData_); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::setSyncFolderListingCursor: " << exitInfo);
-            tryToInvalidateSnapshot();
-
-            return exitInfo;
-        }
-
-        return ExitCode::Ok;
-    };
-
+    // Retrieve changes from the remote drive using the most recently used listing cursor. The `listing/continue` request may
+    // return multiple pages of results, so we loop until all pages have been processed or until a maximum page count is reached.
     ExitInfo exitInfo = ExitCode::Ok;
     bool hasMore = true;
     constexpr Count maxListingPageCount = 100000; // To detect and avoid potential infinite loop.
