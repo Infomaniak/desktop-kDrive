@@ -4007,7 +4007,21 @@ bool AppServer::startClient() {
         // Start the client
         QString pathToExecutable;
 
-#if defined(KD_WINDOWS)
+#if defined(KD_MACOS)
+        pathToExecutable =
+                QCoreApplication::applicationDirPath() +
+                QString("/%1.app/Contents/MacOS/%2").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE, APPLICATION_CLIENTV4_EXECUTABLE);
+        useClientV4 = true;
+
+        IoError ioError = IoError::Success;
+        bool exists = false;
+        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+            !exists || ioError != IoError::Success) {
+            LOGW_FATAL(_logger, L"Failed to start kDrive client (GUI4 executable isn't available): "
+                                        << Path2WStr(QStr2Path(pathToExecutable)));
+            return false;
+        }
+#elif defined(KD_WINDOWS)
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
         useClientV4 = true;
         IoError ioError = IoError::Success;
@@ -5265,7 +5279,7 @@ void AppServer::onRestartSyncs() {
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
             syncPal->pauseTime() + std::chrono::milliseconds(syncPal->pauseDuration()) < std::chrono::steady_clock::now()) {
             syncPal->unpause();
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
             Utility::restartFinderExtension();
 #endif
         }

@@ -2,7 +2,14 @@ set( APPLICATION_NAME       "kDrive" )
 set( APPLICATION_SHORTNAME  "kDrive" )
 set( APPLICATION_EXECUTABLE "kDrive" )
 set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
-set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive" )
+
+if( APPLE )
+    set( APPLICATION_CLIENTV4_APP_EXECUTABLE "kDrive" )
+    set( APPLICATION_CLIENTV4_EXECUTABLE "kDrive.gui" )
+elseif( WIN32 )
+    set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive" )
+endif()
+
 set( APPLICATION_DOMAIN     "infomaniak.com" )
 set( APPLICATION_VENDOR     "Infomaniak Network SA" )
 
@@ -25,7 +32,7 @@ set( FEEDBACK_IT_URL "https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31
 
 if( APPLE )
     set( APPLICATION_ICON_NAME  "kdrive-mac" )
-    set( MINIMUM_SYSTEM_VERSION "10.15" )
+    set( MINIMUM_SYSTEM_VERSION "12.4" )
 else()
     set( APPLICATION_ICON_NAME  "kdrive-win" )
 endif()
