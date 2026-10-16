@@ -51,6 +51,8 @@ $app = "kDrive-$version"
 # Extract the build number  (after the 3rd .)
 $versionTab = $version.Split('.')
 $buildNumber = $versionTab[3]
+# The Linux 4.x client is kdrive_qml, while the 3.x client is kDrive_client.
+$linuxClient = if ([int]$versionTab[0] -ge 4) { "kdrive_qml" } else { "kDrive_client" }
 
 # version number example: 3.7.1
 $versionNumber = $versionTab[0..2] -join '.'
@@ -361,9 +363,9 @@ if ($os -eq "linux-amd") {
         @("$app-amd64.AppImage", $true),
         @("$app-amd64.AppImage.sha256", $true),
         @("kDrive.dbg", $true),
-        @("kDrive_client.dbg", $true),
+        @("$linuxClient.dbg", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true),
+        @("$linuxClient.src.zip", $true),
         @("kDriveRecoveryUpdater-$version-amd64.AppImage", $true),
         @("kDriveRecoveryUpdater-$version-amd64.AppImage.sha256", $true)
     )
@@ -383,9 +385,9 @@ if ($os -eq "linux-arm") {
         @("$app-arm64.AppImage", $true),
         @("$app-arm64.AppImage.sha256", $true),
         @("kDrive.dbg", $true),
-        @("kDrive_client.dbg", $true),
+        @("$linuxClient.dbg", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true),
+        @("$linuxClient.src.zip", $true),
         @("kDriveRecoveryUpdater-$version-arm64.AppImage", $true),
         @("kDriveRecoveryUpdater-$version-arm64.AppImage.sha256", $true)
     )

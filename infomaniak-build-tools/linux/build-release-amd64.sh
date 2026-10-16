@@ -20,6 +20,9 @@
 
 set -e
 
+script_directory_path="$(cd -- "$(dirname "$0")" >/dev/null 2>&1; pwd -P)"
+source "$script_directory_path/build-utils.sh"
+source "$script_directory_path/appimage-v4.sh"
 
 program_name="$(basename "$0")"
 
@@ -81,6 +84,8 @@ if [ ! -d "$src_dir" ]; then
     exit 1
 fi
 
+release_flavor="$(get_linux_release_flavor "$src_dir")"
+echo "Release flavor: $release_flavor"
 
 build_dir="$src_dir/build-linux"
 
@@ -89,7 +94,8 @@ if [ -d "$build_dir" ]; then
     rm -rf "$build_dir"
 fi
 
-app_dir="$build_dir/install"
+artifact_dir="$build_dir/install"
+app_dir="$build_dir/AppDir"
 build_type="RelWithDebInfo"
 
 export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
@@ -101,7 +107,8 @@ echo
 echo "Build type: $build_type"
 echo "Source directory '$src_dir'"
 echo "Build directory '$build_dir'"
-echo "Install directory '$app_dir'"
+echo "AppDir '$app_dir'"
+echo "Artifact directory '$artifact_dir'"
 echo
 
 extract_debug () {
@@ -147,6 +154,8 @@ build_release() {
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DBIN_INSTALL_DIR="$build_dir/build/bin" \
       -DBUILD_UNIT_TESTS="$build_unit_tests" \
+      -DBUILD_GUI=OFF \
+      -DBUILD_GUI_LEGACY=ON \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
@@ -161,6 +170,59 @@ build_release() {
   cp "$src_dir/sync-exclude-linux.lst" "$build_dir/build/bin/sync-exclude.lst"
   cp "$src_dir/sync-folder-rules-linux.csv" "$build_dir/build/bin/sync-folder-rules.csv"
 } 
+
+build_release_v4() {
+  mkdir -p "$app_dir"
+  mkdir -p "$build_dir"
+
+  conan_folder="$build_dir/conan"
+  bash "$src_dir/infomaniak-build-tools/conan/build_dependencies.sh" $build_type "--output-dir=$conan_folder" --make-release
+
+  conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+  conan_generator_folder="$(dirname "$conan_toolchain_file")"
+
+  if [ ! -f "$conan_toolchain_file" ]; then
+    echo "Conan toolchain file not found: $conan_toolchain_file"
+    exit 1
+  fi
+
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+  export QMAKE="$QTDIR/bin/qmake"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:$HOME/.local/bin:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+  source "$conan_generator_folder/conanbuild.sh"
+
+  mkdir -p "$build_dir/build"
+  cd "$build_dir/build"
+
+  export KDRIVE_DEBUG=0
+
+  cmake -B"$build_dir/build" -H"$src_dir" \
+      -DQT_FEATURE_neon=OFF \
+      -DCMAKE_BUILD_TYPE=$build_type \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DBIN_INSTALL_DIR="$build_dir/build/bin" \
+      -DBUILD_UNIT_TESTS="$build_unit_tests" \
+      -DBUILD_GUI=ON \
+      -DBUILD_GUI_LEGACY=OFF \
+      -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
+      -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
+      -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \
+      -DCONAN_DEP_DIR="$conan_dependencies_folder" \
+      -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
+
+  make -j"$(nproc)"
+
+  v4_extract_debug_symbols ./bin "$build_dir" kDrive kdrive_qml
+
+  make DESTDIR="$app_dir" install
+
+  cp "$src_dir/sync-exclude-linux.lst" "$build_dir/build/bin/sync-exclude.lst"
+  cp "$src_dir/sync-folder-rules-linux.csv" "$build_dir/build/bin/sync-folder-rules.csv"
+}
 
 package_release() {
   QTDIR="$(find_qt_conan_path "$build_dir")"
@@ -197,7 +259,28 @@ package_release() {
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   app_name="kDrive-${full_version}-amd64.AppImage"
-  mv kDrive*.AppImage "$app_dir/$app_name"
+  mkdir -p "$artifact_dir"
+  mv kDrive*.AppImage "$artifact_dir/$app_name"
+}
+
+package_release_v4() {
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+
+  local full_version
+
+  v4_prepare_appdir "$app_dir"
+  v4_check_appdir "$app_dir"
+
+  cd "$build_dir"
+  v4_linuxdeploy_deploy "$app_dir"
+  v4_strip_unneeded_symbols "$app_dir"
+  v4_verify_bundle "$app_dir"
+  v4_package_appimage "$app_dir"
+
+  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
+  mkdir -p "$artifact_dir"
+  mv kDrive*.AppImage "$artifact_dir/kDrive-${full_version}-amd64.AppImage"
 }
 
 package_recovery_updater() {
@@ -252,23 +335,72 @@ EOF
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
-  mv kDriveRecoveryUpdater*.AppImage "$app_dir/$updater_appimage"
+  mkdir -p "$artifact_dir"
+  mv kDriveRecoveryUpdater*.AppImage "$artifact_dir/$updater_appimage"
 
-  echo "Recovery updater AppImage created: $app_dir/$updater_appimage"
+  echo "Recovery updater AppImage created: $artifact_dir/$updater_appimage"
 }
 
-echo "Building ..."
-build_release
+package_recovery_updater_v4() {
+  local updater_bin="$app_dir/usr/bin/kDriveRecoveryUpdater"
+  local updater_appdir="$build_dir/updater-app"
+  local full_version
+  local updater_appimage
 
-echo
+  if [ ! -f "$updater_bin" ]; then
+    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
+    return 0
+  fi
 
-echo "Packaging ..."
-package_release
+  v4_prepare_recovery_updater_appdir \
+    "$app_dir" \
+    "$updater_appdir" \
+    "$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
+  v4_check_recovery_updater_appdir "$updater_appdir"
 
-echo
+  cd "$build_dir"
+  v4_linuxdeploy_recovery_updater "$updater_appdir"
+  v4_strip_unneeded_symbols "$updater_appdir"
+  v4_verify_bundle "$updater_appdir"
+  v4_package_appimage "$updater_appdir"
 
-echo "Packaging recovery updater ..."
-package_recovery_updater
+  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
+  updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
+  mkdir -p "$artifact_dir"
+  mv kDriveRecoveryUpdater*.AppImage "$artifact_dir/$updater_appimage"
+
+  echo "Recovery updater AppImage created: $artifact_dir/$updater_appimage"
+}
+
+if [[ "$release_flavor" == "v4" ]]; then
+  echo "Building ..."
+  build_release_v4
+
+  echo
+  echo "Packaging recovery updater ..."
+  package_recovery_updater_v4
+
+  rm -f "$app_dir/usr/bin/kDriveRecoveryUpdater"
+  check_main_appdir_updater_separation "$app_dir"
+
+  echo
+  echo "Packaging ..."
+  package_release_v4
+else
+  echo "Building ..."
+  build_release
+
+  echo
+  echo "Packaging recovery updater ..."
+  package_recovery_updater
+
+  rm -f "$app_dir/usr/bin/kDriveRecoveryUpdater"
+  check_main_appdir_updater_separation "$app_dir"
+
+  echo
+  echo "Packaging ..."
+  package_release
+fi
 
 echo
 
