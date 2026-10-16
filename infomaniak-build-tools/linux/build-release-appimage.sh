@@ -59,7 +59,7 @@ function find_qt_from_conan() {
 
   # Build Conan dependencies
   conan_folder=/build/conan
-  bash /src/infomaniak-build-tools/conan/build_dependencies.sh "$build_type" --output-dir="$conan_folder" --clean-cache
+  bash /src/infomaniak-build-tools/conan/build_dependencies.sh "$build_type" --output-dir="$conan_folder" --clean-cache --update
 
   if [ ! "$?" -eq "0" ]; then
     echo "ERROR: Conan dependencies build failed" >&2
@@ -102,6 +102,11 @@ function build_client_via_cmake() {
     echo "ERROR: Conan toolchain file not found: $conan_toolchain_file" >&2
     exit 1
   fi
+
+  # Ensure cmake is the one provided by Conan: Qt >= 6.12 requires CMake >= 3.25 to be
+  # consumed via find_package() (see QtPublicCMakeVersionHelpers.cmake).
+  # shellcheck disable=SC1091
+  source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 
   architecture=$(get_host_arch)
   qt_neon_activation="ON"
