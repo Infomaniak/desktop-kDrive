@@ -60,7 +60,8 @@
             <controls:SyncStartPauseButton Grid.Column="0" />
 
             <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
-            <controls:SearchBox Grid.Column="1"
+            <controls:SearchBox x:Name="SearchBox"
+                                Grid.Column="1"
                                 MinWidth="319"
                                 Height="32" />
         </Grid>

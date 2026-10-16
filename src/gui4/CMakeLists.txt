@@ -32,14 +32,34 @@ if(WIN32)
         USES_TERMINAL  
     )
 
-    add_custom_target(build_kDrive_client ALL
+    add_custom_target(kdriveclient ALL
         DEPENDS "${CLIENT_STAMP}"
     )
 
     # Ensure the main executable always triggers the client build
-    add_dependencies(${APPLICATION_EXECUTABLE} build_kDrive_client)
+    add_dependencies(${APPLICATION_EXECUTABLE} kdriveclient)
 
     install(DIRECTORY ${CLIENT_DEST}/ DESTINATION ${CMAKE_INSTALL_BINDIR}/client
         PATTERN "${CLIENT_STAMP_NAME}" EXCLUDE
     )
+endif()
+
+if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
+    # TODO: Do that also for Release and RelWithDebInfo builds when we will have a proper release build for macOS
+    # TODO: Remove the hardcoded Xcode version when all the app will be built with the default version
+    add_custom_target(kdriveclient ALL
+            COMMAND ${CMAKE_COMMAND} -E env DEVELOPER_DIR=/Applications/${XCODE_GUI4}/Contents/Developer
+            xcodebuild -project "${CMAKE_SOURCE_DIR}/src/gui4/macOS/kDrive.xcodeproj"
+            -target "kDrive" -configuration ${CMAKE_BUILD_TYPE} "SYMROOT=${CMAKE_CURRENT_BINARY_DIR}"
+            COMMENT building kDrive client
+            VERBATIM)
+    # mac_litesyncext is only set as a dependency to avoid parallel build issues between xcode projects
+    #   -> error: unable to attach DB: error: accessing build database "{...}/build-macos/client/extensions/MacOSX/XCBuildData/build.db":
+    #      database is locked Possibly there are two concurrent builds running in the same filesystem location.
+    #      ** BUILD FAILED *
+    add_dependencies(kdriveclient mac_litesyncext ${APPLICATION_EXECUTABLE})
+
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/kDrive.app"
+            DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/
+            USE_SOURCE_PERMISSIONS)
 endif()

@@ -421,6 +421,17 @@ void AppServer::init() {
 #endif
 
     if (useCommManager(false)) {
+#if defined(KD_MACOS)
+        // Check LoginItemAgent process
+        if (Utility::isLoginItemAgentRunning()) {
+            // Unregister LoginItemAgent, it will be registered by the CommManager when it starts
+            LOG_DEBUG(_logger, "Unregister LoginItemAgent");
+            if (!Utility::registerLoginItemAgent(false)) {
+                LOG_WARN(_logger, "Error in Utility::registerLoginItemAgent");
+            }
+        }
+#endif
+
         // Init CommManager
         LOG_DEBUG(_logger, "Init CommManager");
         _commManager = std::make_shared<CommManager>(*this);
@@ -1172,7 +1183,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             QList<qint64> list;
-            for (const auto userDbId: tmpList) {
+            for (const auto userDbId: std::as_const(tmpList)) {
                 list << static_cast<qint64>(userDbId);
             }
 
@@ -1274,7 +1285,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             std::unordered_set<ConflictType> filter2;
-            for (const auto &c: filter) {
+            for (const auto &c: std::as_const(filter)) {
                 filter2.insert(c);
             }
 
@@ -1537,7 +1548,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QList<BaseSync> baseList;
             baseList.reserve(list.size());
-            for (const auto &sync: list) {
+            for (const auto &sync: std::as_const(list)) {
                 baseList.push_back(static_cast<const BaseSync &>(sync));
             }
 
@@ -1910,7 +1921,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             NodeSet nodeIdSet2;
-            for (const QString &nodeId: nodeIdSet) {
+            for (const QString &nodeId: std::as_const(nodeIdSet)) {
                 nodeIdSet2.insert(nodeId.toStdString());
             }
 
@@ -4016,29 +4027,37 @@ bool AppServer::startClient() {
 #ifdef QT_NO_DEBUG
     startClient = true;
 #endif
+
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
-    bool useClientV4 = false;
     if (startClient) {
         // Start the client
-        QString pathToExecutable;
-
-#if defined(KD_WINDOWS)
-        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
-        useClientV4 = true;
-        IoError ioError = IoError::Success;
-        bool exists = false;
-        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
-            !exists || ioError != IoError::Success) {
-            pathToExecutable.clear();
-            useClientV4 = false;
-        }
-        if (pathToExecutable.isEmpty()) {
-            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
-        }
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+        bool useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
 #else
-        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
-        useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
+        bool useClientV4 = false;
 #endif
+
+        auto getPathToExecutable = [](const SyncPath &executableName) {
+            auto pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
+            auto ioError = IoError::Success;
+            if (auto exists = false; !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+                !exists || ioError != IoError::Success) {
+                return SyncPath();
+            }
+            return pathToExecutable;
+        };
+
+        auto pathToExecutable = getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
+        if (pathToExecutable.empty()) {
+            if (useClientV4) {
+                useClientV4 = false;
+                pathToExecutable = getPathToExecutable(APPLICATION_CLIENT_EXECUTABLE);
+            }
+            if (pathToExecutable.empty()) {
+                LOG_FATAL(_logger, "Failed to start kDrive client (executable not found)");
+                return false;
+            }
+        }
 
         QStringList arguments;
         if (useClientV4 && useCommManager(true)) {
@@ -4066,10 +4085,10 @@ bool AppServer::startClient() {
             arguments << "--settings";
         }
 
-        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)));
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Utility::formatSyncPath(pathToExecutable));
 
         _clientProcess = new QProcess(this);
-        _clientProcess->setProgram(pathToExecutable);
+        _clientProcess->setProgram(Path2QStr(pathToExecutable));
         _clientProcess->setArguments(arguments);
 
         _clientProcess->start();
