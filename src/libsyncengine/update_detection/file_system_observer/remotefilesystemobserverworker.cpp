@@ -177,7 +177,7 @@ void RemoteFileSystemObserverWorker::execute() {
     ExitInfo exitInfo = ExitCode::Ok;
     ApiTranslator::clearSharedCache(_syncPal->driveId());
     {
-        const std::scoped_lock lock(_sharedFolderListingCursorCacheMutex);
+        const std::scoped_lock lock(_listingSyncFolderCursorCacheMutex);
         _sharedFolderListingCursorCache.reset();
     }
 
@@ -1399,7 +1399,7 @@ ExitInfo RemoteFileSystemObserverWorker::getWatchedFolderRemoteId(RemoteNodeId &
 }
 
 ExitInfo RemoteFileSystemObserverWorker::getSyncFolderListingCursor(CursorData &cursorData) const {
-    const std::scoped_lock lock(_listingCursorCacheMutex);
+    const std::scoped_lock lock(_listingSyncFolderCursorCacheMutex);
 
     if (_listingCursorCache) {
         cursorData = *_listingCursorCache;
@@ -1435,7 +1435,7 @@ ExitInfo RemoteFileSystemObserverWorker::clearSyncFolderListingCursor() {
 }
 
 ExitInfo RemoteFileSystemObserverWorker::setSyncFolderListingCursor(const CursorData &cursorData) {
-    const std::scoped_lock lock(_listingCursorCacheMutex);
+    const std::scoped_lock lock(_listingSyncFolderCursorCacheMutex);
 
     ExitInfo setCursorExitInfo = ExitCode::Ok;
     if (syncIsAdvancedWithNonRootFolder())
