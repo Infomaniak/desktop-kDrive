@@ -265,6 +265,17 @@ void OnboardingFlowController::completeLogin(const qint64 userDbId) {
     setCurrentStep(DriveSelection);
 }
 
+void OnboardingFlowController::completeReconnection(const qint64 userDbId) {
+    if (_currentStep != Login || _onboardingCompleted) {
+        return;
+    }
+
+    qCInfo(lcOnboardingFlowController) << "Onboarding completed by a reconnection | userDbId:" << userDbId;
+    setLoginState(LoginIdle);
+    _onboardingCompleted = true;
+    emit completed();
+}
+
 void OnboardingFlowController::setLoginState(const LoginState loginState) {
     if (_loginState == loginState) {
         return;

@@ -32,6 +32,7 @@ IKShadowedWindow {
     required property var settingsController
     required property var appRouter
     required property var activitiesController
+    required property var blockingErrorController
     required property var homeController
     required property var mainSidebarController
     required property var manyDeletesController
@@ -248,6 +249,7 @@ IKShadowedWindow {
 
         MainWindowView {
             activitiesController: mainWindow.activitiesController
+            blockingErrorController: mainWindow.blockingErrorController
             appRouter: mainWindow.appRouter
             homeController: mainWindow.homeController
             mainSidebarController: mainWindow.mainSidebarController

@@ -21,6 +21,7 @@
 #include "app/appconstants.h"
 #include "app/cache/appcache.h"
 #include "app/cache/mainselectionstore.h"
+#include "app/cache/syncerrorsprojection.h"
 #include "app/mainwindow/homestateresolver.h"
 #include "app/mainwindow/networkstatusobserver.h"
 #include "app/navigation/approuter.h"
@@ -48,11 +49,13 @@ std::optional<AppConstants::WebDrive::Destination> toWebDriveDestination(const i
 }
 } // namespace
 
-HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore, SyncService &syncService,
-                               AppRouter &appRouter, NetworkStatusObserver &networkStatusObserver, QObject *const parent) :
+HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
+                               const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
+                               NetworkStatusObserver &networkStatusObserver, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _mainSelectionStore(mainSelectionStore),
+    _syncErrorsProjection(syncErrorsProjection),
     _syncService(syncService),
     _appRouter(appRouter),
     _networkStatusObserver(networkStatusObserver) {
@@ -61,6 +64,8 @@ HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelec
     (void) connect(&_appCache, &AppCache::usersChanged, this, &HomeController::homeChanged);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &HomeController::homeChanged);
     (void) connect(&_appCache, &AppCache::syncErrorsChanged, this, &HomeController::homeChanged);
+    (void) connect(&_syncErrorsProjection, &SyncErrorsProjection::currentBlockingErrorChanged, this,
+                   &HomeController::homeChanged);
     (void) connect(&_syncService, &SyncService::syncActionPendingChanged, this, [this](const qint64 syncDbId) {
         if (syncDbId == currentSyncDbId()) {
             emit homeChanged();
@@ -95,7 +100,8 @@ HomeController::PrimaryAction HomeController::primaryAction() const {
 }
 
 HomeController::SyncControlState HomeController::syncControlState() const {
-    if (!hasCurrentDrive() || _networkStatusObserver.offline()) {
+    // A blocked synchronization is restarted from the blocking error screen, as on macOS.
+    if (!hasCurrentDrive() || _networkStatusObserver.offline() || _syncErrorsProjection.currentBlockingError().has_value()) {
         return SyncControlState::Disabled;
     }
     if (syncActionPending()) {
