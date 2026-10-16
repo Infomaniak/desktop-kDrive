@@ -54,7 +54,6 @@ class SyncPalWorker : public ISyncWorker {
                     side(side){};
                 std::shared_ptr<ISyncWorker> worker{nullptr};
                 bool isInProgress{false};
-                bool isResumable{false};
                 ReplicaSide side{ReplicaSide::Unknown};
         };
 
