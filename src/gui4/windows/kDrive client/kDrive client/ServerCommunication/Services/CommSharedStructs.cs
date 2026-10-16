@@ -96,7 +96,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Error copying Avatar: {ex.Message}");
+                Logger.LogError($"Error copying Avatar: {ex.Message}", "ConversionHelper: Error copying Avatar");
             }
         }
     }

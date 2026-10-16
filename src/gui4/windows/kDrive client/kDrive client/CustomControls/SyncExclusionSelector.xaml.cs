@@ -328,12 +328,12 @@ namespace Infomaniak.kDrive.CustomControls
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "Loading root tree item children was canceled.");
+                Logger.LogInfo("Loading root tree item children was canceled.");
                 return;
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, "Failed to load root tree item children: " + ex.Message);
+                Logger.LogError($"Failed to load root tree item children: {ex.Message}", "SyncExclusionSelector: Failed to load root tree item children");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }

@@ -141,7 +141,7 @@ namespace Infomaniak.kDrive
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to show notification: {ex.Message}");
+                Logger.LogError($"Failed to show notification: {ex.Message}", "Failed to show notification.");
             }
 
             if (appNotification.Id == 0)
