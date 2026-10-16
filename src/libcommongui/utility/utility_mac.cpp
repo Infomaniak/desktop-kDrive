@@ -36,6 +36,10 @@ void CommonGuiUtility::setupFavLink(const QString &folder) {
     CFStringRef folderCFStr = CFStringCreateWithCString(0, folder.toUtf8().data(), kCFStringEncodingUTF8);
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(0, folderCFStr, kCFURLPOSIXPathStyle, true);
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    // NB: Apple has deprecated `LSSharedFileList*` without providing an equivalent API.
+
     LSSharedFileListRef placesItems = LSSharedFileListCreate(0, kLSSharedFileListFavoriteItems, 0);
     if (placesItems) {
         // Insert an item to the list.
@@ -43,8 +47,11 @@ void CommonGuiUtility::setupFavLink(const QString &folder) {
         if (item) {
             CFRelease(item);
         }
+        CFRelease(placesItems);
     }
-    CFRelease(placesItems);
+
+#pragma clang diagnostic pop
+
     CFRelease(folderCFStr);
     CFRelease(urlRef);
 }

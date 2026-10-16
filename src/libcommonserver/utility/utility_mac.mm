@@ -234,6 +234,11 @@ bool Utility::hasLaunchOnStartup(const std::string &) {
     SyncPath filePath = CommonUtility::applicationFilePath().parent_path().parent_path().parent_path();
     CFStringRef folderCFStr = CFStringCreateWithCString(0, filePath.c_str(), kCFStringEncodingUTF8);
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(0, folderCFStr, kCFURLPOSIXPathStyle, true);
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    // NB: Apple has deprecated `LSSharedFileList*` without providing an equivalent API.
+
     LSSharedFileListRef loginItems = LSSharedFileListCreate(0, kLSSharedFileListSessionLoginItems, 0);
     if (!loginItems) {
         CFRelease(urlRef);
@@ -259,6 +264,9 @@ bool Utility::hasLaunchOnStartup(const std::string &) {
             CFRelease(itemUrlRef);
         }
     }
+
+#pragma clang diagnostic pop
+
     CFRelease(itemsArray);
     CFRelease(loginItems);
     CFRelease(urlRef);
@@ -270,6 +278,11 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     SyncPath filePath = CommonUtility::applicationFilePath().parent_path().parent_path().parent_path();
     CFStringRef folderCFStr = CFStringCreateWithCString(0, filePath.c_str(), kCFStringEncodingUTF8);
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(0, folderCFStr, kCFURLPOSIXPathStyle, true);
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    // NB: Apple has deprecated `LSSharedFileList*` without providing an equivalent API.
+
     LSSharedFileListRef loginItems = LSSharedFileListCreate(0, kLSSharedFileListSessionLoginItems, 0);
     if (!loginItems) {
         CFRelease(folderCFStr);
@@ -319,6 +332,8 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         CFRelease(itemsArray);
         CFRelease(loginItems);
     }
+
+#pragma clang diagnostic pop
 
     CFRelease(folderCFStr);
     CFRelease(urlRef);
