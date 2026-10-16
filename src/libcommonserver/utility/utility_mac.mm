@@ -99,10 +99,18 @@ void Utility::restartFinderExtension() {
     });
 }
 
-NSMutableArray *getPIDsForProcessName(NSString *processName) {
+NSString *userName() {
+    return NSProcessInfo.processInfo.environment[@"USER"];
+}
+
+NSMutableArray *getPIDsForProcessName(NSString *processName, bool rootProcess) {
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:@"/bin/ps"];
-    [task setArguments:@[ @"-axo", @"pid,comm" ]];
+    if (rootProcess) {
+        [task setArguments:@[ @"-axo", @"pid,comm" ]];
+    } else {
+        [task setArguments:@[ @"-axo", @"pid,comm", @"-u", userName() ]];
+    }
 
     NSPipe *pipe = [NSPipe pipe];
     [task setStandardOutput:pipe];
@@ -133,7 +141,7 @@ NSMutableArray *getPIDsForProcessName(NSString *processName) {
 void Utility::restartLoginItemAgent() {
     LOG_DEBUG(logger(), "Killing Login Item Agent");
     NSString *processName = processMatchingName(@"LoginItemAgentMachName");
-    NSMutableArray *pids = getPIDsForProcessName(processName);
+    NSMutableArray *pids = getPIDsForProcessName(processName, false);
     assert(pids.count <= 1);
     if (pids.count == 1) {
         NSNumber *pidNumber = [pids objectAtIndex:0];
@@ -161,23 +169,23 @@ NSString *processMatchingName(NSString *const _Nonnull processMatchName) {
     return processName;
 }
 
-bool existProcessMatchingNameAndRunning(NSString *const _Nonnull processMatchName) {
+bool existProcessMatchingNameAndRunning(NSString *const _Nonnull processMatchName, bool rootProcess) {
     NSString *processName = processMatchingName(processMatchName);
     if (!processName) {
         return false;
     }
 
-    NSMutableArray *pids = getPIDsForProcessName(processName);
+    NSMutableArray *pids = getPIDsForProcessName(processName, rootProcess);
     assert(pids.count <= 1);
     return pids.count == 1;
 }
 
 bool Utility::isLiteSyncExtRunning() {
-    return existProcessMatchingNameAndRunning(@"LiteSyncExtMachName");
+    return existProcessMatchingNameAndRunning(@"LiteSyncExtMachName", true);
 }
 
 bool Utility::isLoginItemAgentRunning() {
-    return existProcessMatchingNameAndRunning(@"LoginItemAgentMachName");
+    return existProcessMatchingNameAndRunning(@"LoginItemAgentMachName", false);
 }
 
 bool Utility::registerLoginItemAgent(bool enable) {
@@ -330,9 +338,11 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
         NSMutableArray<NSString *> *args = [NSMutableArray arrayWithCapacity:arguments.size()];
         for (const auto &arg: arguments) {
             NSString *_Nullable argStr = [NSString stringWithUTF8String:arg.c_str()];
-            if (argStr) {
-                [args addObject:argStr];
+            if (!argStr) {
+                LOG_WARN(logger(), "Cannot run command: argument is not valid");
+                return false;
             }
+            [args addObject:argStr];
         }
         [task setArguments:args];
 

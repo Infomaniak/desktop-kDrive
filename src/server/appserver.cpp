@@ -412,17 +412,6 @@ void AppServer::init() {
     }
 #endif
 
-#if defined(KD_MACOS)
-    // Check LoginItemAgent process
-    //Utility::registerLoginItemAgent(false);
-    if (!Utility::isLoginItemAgentRunning()) {
-        LOG_WARN(_logger, "LoginItemAgent is not running, try to start it");
-        if (!Utility::registerLoginItemAgent(true)) {
-            LOG_WARN(_logger, "Error in registerLoginItemAgent");
-        }
-    }
-#endif
-
     // Check vfs plugins
     QString error;
 #if defined(KD_WINDOWS)
@@ -432,6 +421,17 @@ void AppServer::init() {
 #endif
 
     if (useCommManager(false)) {
+#if defined(KD_MACOS)
+        // Check LoginItemAgent process
+        if (Utility::isLoginItemAgentRunning()) {
+            // Unregister LoginItemAgent, it will be registered by the CommManager when it starts
+            LOG_DEBUG(_logger, "Unregister LoginItemAgent");
+            if (!Utility::registerLoginItemAgent(false)) {
+                LOG_WARN(_logger, "Error in Utility::registerLoginItemAgent");
+            }
+        }
+#endif
+
         // Init CommManager
         LOG_DEBUG(_logger, "Init CommManager");
         _commManager = std::make_shared<CommManager>(*this);
