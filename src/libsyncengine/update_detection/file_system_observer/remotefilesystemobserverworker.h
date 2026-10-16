@@ -40,21 +40,19 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
         ~RemoteFileSystemObserverWorker() override;
 
-        // Unlike the `start` method, the `resume` method:
-        // - does not set the initializing flag to `true` (which would otherwise have the effect of skipping `longpoll` and
-        // `listing/continue` requests),
-        // - does not invalidate the remote snapshot (which would otherwise trigger the reconstruction of the remote snapshot),
-        // - does set the updating flag to `true` in order to trigger the `longpoll` and `listing/continue` requests.
-        void resume() override;
-
         Count listingFullCount() const { return _listingFullCount.load(); };
         RemoteNodeIdSet blackList() const;
-        void setBlackList(RemoteNodeIdSet blackList);
-        void restoreRemoteSnapshotBackup(const ConstSnapshot &snapshotBackup);
         [[nodiscard]] ExitInfo checkIfValidListingCursorsExist(bool &validSnapshotBackupExists) const;
 
     protected:
         void execute() override;
+        // Unlike the `init` method of the parent class, this method:
+        // - does not set the init flag to `true`, which would otherwise have the effect of skipping `longpoll` and
+        // `listing/continue` requests,
+        // - does not invalidate the remote snapshot (which would otherwise trigger the full reconstruction of the remote
+        // snapshot),
+        // - does set the updating flag to `true` in order to trigger the `longpoll` and `listing/continue` requests.
+        void init() override;
         ExitInfo generateInitialSnapshot() override;
         using LongPollJobMap =
                 std::unordered_map<RemoteNodeId, std::shared_ptr<LongPollJob>, StringHashFunction, std::equal_to<>>;
@@ -177,9 +175,12 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                                      std::shared_ptr<ContinueFileListWithCursorJob> &job,
                                                      const CursorData &cursorData);
 
-        [[nodiscard]] ExitInfo handleRemoteSnapshotBackup(bool &validSnapshotBackupExists);
+        [[nodiscard]] ExitInfo handleRemoteSnapshotValidity(bool &remoteSnapshotCanBeReused);
+        [[nodiscard]] ExitInfo checkIfRemoteSnapshotCanBeReused();
 
         void abortAndClearLongPollJobs(LongPollJobMap &longPollJobs);
+
+        ExitInfo setBlackList(bool &blackListChanged);
 
         friend class TestRemoteFileSystemObserverWorker;
 };
