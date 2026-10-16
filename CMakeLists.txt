@@ -397,37 +397,30 @@ if(UNIX AND NOT APPLE)
             include("${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
         endif()
 
-        # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type
-        file(COPY
+        # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type.
+        # Glob each shared library and its SONAME chain (e.g. libPocoCrypto.so and
+        # libPocoCrypto.so.<abi>) instead of hardcoding versioned file names, so that
+        # dependency SONAME bumps do not require updating this list.
+        file(GLOB _dep_shared_libs
             # log4cplus
-            "${log4cplus_LIB_DIRS}/liblog4cplus.so"
-            "${log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+            "${log4cplus_LIB_DIRS}/liblog4cplus.so*"
             # xxHash
-            "${xxhash_LIB_DIRS}/libxxhash.so"
-            "${xxhash_LIB_DIRS}/libxxhash.so.0"
-            "${xxhash_LIB_DIRS}/libxxhash.so.0.8.2"
+            "${xxhash_LIB_DIRS}/libxxhash.so*"
             # OpenSSL
-            "${openssl_LIB_DIRS}/libcrypto.so"
-            "${openssl_LIB_DIRS}/libcrypto.so.3"
-            "${openssl_LIB_DIRS}/libssl.so"
-            "${openssl_LIB_DIRS}/libssl.so.3"
+            "${openssl_LIB_DIRS}/libcrypto.so*"
+            "${openssl_LIB_DIRS}/libssl.so*"
             # sentry
-            "${sentry_LIB_DIRS}/libsentry.so"
+            "${sentry_LIB_DIRS}/libsentry.so*"
             # Poco
-            "${poco_LIB_DIRS}/libPocoCrypto.so"
-            "${poco_LIB_DIRS}/libPocoCrypto.so.103"
-            "${poco_LIB_DIRS}/libPocoFoundation.so"
-            "${poco_LIB_DIRS}/libPocoFoundation.so.103"
-            "${poco_LIB_DIRS}/libPocoJSON.so"
-            "${poco_LIB_DIRS}/libPocoJSON.so.103"
-            "${poco_LIB_DIRS}/libPocoNet.so"
-            "${poco_LIB_DIRS}/libPocoNet.so.103"
-            "${poco_LIB_DIRS}/libPocoNetSSL.so"
-            "${poco_LIB_DIRS}/libPocoNetSSL.so.103"
-            "${poco_LIB_DIRS}/libPocoUtil.so"
-            "${poco_LIB_DIRS}/libPocoUtil.so.103"
-            "${poco_LIB_DIRS}/libPocoXML.so"
-            "${poco_LIB_DIRS}/libPocoXML.so.103"
+            "${poco_LIB_DIRS}/libPocoCrypto.so*"
+            "${poco_LIB_DIRS}/libPocoFoundation.so*"
+            "${poco_LIB_DIRS}/libPocoJSON.so*"
+            "${poco_LIB_DIRS}/libPocoNet.so*"
+            "${poco_LIB_DIRS}/libPocoNetSSL.so*"
+            "${poco_LIB_DIRS}/libPocoUtil.so*"
+            "${poco_LIB_DIRS}/libPocoXML.so*"
+        )
+        file(COPY ${_dep_shared_libs}
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
         )
