@@ -156,8 +156,6 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
                 LOGW_WARN(_logger, L"Item name is invalid: " << Utility::formatSyncPath(absolutePath));
                 return {ExitCode::SystemError, ExitCause::InvalidName};
             } else {
-                // Should not happen
-                assert(false);
                 LOGW_WARN(_logger,
                           L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(absolutePath, ioError));
                 return ExitCode::SystemError;
