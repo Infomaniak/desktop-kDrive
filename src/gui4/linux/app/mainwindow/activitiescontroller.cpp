@@ -17,6 +17,7 @@
  */
 
 #include "app/mainwindow/activitiescontroller.h"
+#include "app/navigation/approuter.h"
 #include "app/syncconfiguration/localpaths.h"
 
 #include "libcommon/utility/types.h"
@@ -114,12 +115,13 @@ std::optional<SyncPath> safeRelativePath(const SyncPath &path) {
 
 ActivitiesController::ActivitiesController(const ActivityStore &activityStore, const AppCache &appCache,
                                            MainSelectionStore &selectionStore, const NetworkStatusObserver &networkStatusObserver,
-                                           ActivityService &activityService, QObject *const parent) :
+                                           ActivityService &activityService, AppRouter &appRouter, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _selectionStore(selectionStore),
     _networkStatusObserver(networkStatusObserver),
     _activityService(activityService),
+    _appRouter(appRouter),
     _model(activityStore, appCache, selectionStore, this) {
     (void) connect(&_model, &ActivityListModel::filterChanged, this, &ActivitiesController::filterChanged);
     (void) connect(&_model, &ActivityListModel::projectionChanged, this, &ActivitiesController::refreshPageState);
@@ -248,22 +250,24 @@ void ActivitiesController::copyShareLink(const QString &rowId) {
     _activityService.copyShareLink(target->activityLocalId, context->drive.dbId(), target->remoteNodeId);
 }
 
-void ActivitiesController::requestFixErrors(const QString &rowId) const {
+void ActivitiesController::requestFixErrors(const QString &rowId) {
     const auto target = _model.actionTarget(rowId);
     if (!target.has_value() || target->activeErrorDbIds.empty()) {
         qCInfo(lcActivitiesController) << "Activity error resolution ignored because the row has no active error"
                                        << "| rowId:" << rowId;
         return;
     }
-    qCInfo(lcActivitiesController) << "Activity error resolution is not implemented yet"
+    qCInfo(lcActivitiesController) << "Opening the errors page from an activity"
                                    << "| rowId:" << rowId << "| activeErrorCount:" << target->activeErrorDbIds.size();
+    _appRouter.showErrors();
 }
 
-void ActivitiesController::requestFixAllErrors() const {
+void ActivitiesController::requestFixAllErrors() {
     const auto context = _selectionStore.currentSyncContext();
-    qCInfo(lcActivitiesController) << "Global activity error resolution is not implemented yet"
+    qCInfo(lcActivitiesController) << "Opening the errors page from the activities banner"
                                    << "| syncDbId:" << _selectionStore.currentSyncDbId()
                                    << "| activeErrorCount:" << (context.has_value() ? context->errors.size() : 0);
+    _appRouter.showErrors();
 }
 
 void ActivitiesController::refreshPageState() {
