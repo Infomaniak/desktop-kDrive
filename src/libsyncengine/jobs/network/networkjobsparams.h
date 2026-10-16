@@ -126,6 +126,7 @@ static const std::string maintenanceReasonKey = "maintenance_reason";
 static const std::string maintenanceTypesKey = "maintenance_types";
 
 static const std::string colorKey = "color";
+static const std::string logoKey = "logo";
 
 static const std::string errorCodePathKey = "/Error/Code";
 
