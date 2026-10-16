@@ -42,9 +42,13 @@ struct ActivitiesTable: View {
                     VStack(alignment: .leading) {
                         Text(context.node.relevantPath, format: .node)
                             .foregroundStyle(ColorToken.Text.primary.asColor)
-                        if let instruction = context.node.instruction {
-                            Text(instruction.label)
-                                .font(.Tokens.callout)
+                        HStack(alignment: .center, spacing: AppPadding.padding2) {
+                            if let instruction = context.node.instruction {
+                                Text(instruction.label)
+                                    .font(.Tokens.callout)
+                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                            }
+                            Text(context.node.syncDate, format: .friendlyRelative)
                                 .foregroundStyle(ColorToken.Text.tertiary.asColor)
                         }
                     }
@@ -52,9 +56,6 @@ struct ActivitiesTable: View {
                     FileTypeView(fileTypeRepresentation: context.node.fileTypeRepresentation)
                         .frame(size: AppIconSize.iconSize16)
                 }
-                
-                Text(context.node.syncDate, format: .friendlyRelative)
-                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
             TableColumn(KDriveLocalizable.labelFolder) { context in
@@ -96,5 +97,5 @@ struct ActivitiesTable: View {
 }
 
 #Preview {
-    ActivitiesTable(contexts: [PreviewHelper.synchroNodeContext])
+    ActivitiesTable(contexts: [PreviewHelper.synchroNodeContext, PreviewHelper.synchroNodeContext2])
 }
