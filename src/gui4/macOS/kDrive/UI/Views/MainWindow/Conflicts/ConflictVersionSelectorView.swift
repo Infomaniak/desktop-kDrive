@@ -16,10 +16,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
+import OrderedCollections
 import Sentry
 import SwiftUI
 
@@ -39,6 +41,8 @@ struct ConflictInfo: Equatable {
 
 struct ConflictVersionSelectorView: View {
     @LazyInjectService private var matomo: MatomoUtils
+    @LazyInjectService private var synchroErrorsObserver: SynchroErrorsObserving
+    @LazyInjectService private var coherentCache: CoherentCache
 
     @Environment(\.dismiss) private var dismiss
 
@@ -49,14 +53,17 @@ struct ConflictVersionSelectorView: View {
     @State private var currentConflict: ConflictInfo?
 
     @State private var selection = [Int: ConflictType]()
+    @State private var validationRevision = 0
 
     let errors: [SynchroError]
 
-    private var currentError: SynchroError {
+    var currentError: SynchroError? {
+        guard errors.indices.contains(currentErrorIndex) else { return nil }
         return errors[currentErrorIndex]
     }
 
     private var currentSelection: ConflictType {
+        guard let currentError else { return .local }
         return selection[currentError.metadata.dbId, default: .local]
     }
 
@@ -84,30 +91,32 @@ struct ConflictVersionSelectorView: View {
                 }
             }
 
-            PathInfoChipView(
-                pathInfo: .init(path: currentError.metadata.path, nodeType: .file),
-                backgroundColor: ColorToken.Surface.primary.asColor
-            )
+            if let currentError {
+                PathInfoChipView(
+                    pathInfo: .init(path: currentError.metadata.path, nodeType: .file),
+                    backgroundColor: ColorToken.Surface.primary.asColor
+                )
 
-            Text(KDriveLocalizable.labelConflictDialogQuestion)
-                .font(.Tokens.body)
+                Text(KDriveLocalizable.labelConflictDialogQuestion)
+                    .font(.Tokens.body)
 
-            HStack(spacing: AppPadding.padding24) {
-                if let currentConflict {
-                    ForEach(ConflictType.allCases, id: \.rawValue) { type in
-                        ConflictBoxView(
-                            type: type,
-                            isMostRecent: isMostRecent(type),
-                            isSelected: currentSelection == type,
-                            info: currentConflict[type]
-                        ) {
-                            previewVersion(type, error: currentError)
-                        } toggleState: {
-                            selectVersion(type)
+                HStack(spacing: AppPadding.padding24) {
+                    if let currentConflict {
+                        ForEach(ConflictType.allCases, id: \.rawValue) { type in
+                            ConflictBoxView(
+                                type: type,
+                                isMostRecent: isMostRecent(type),
+                                isSelected: currentSelection == type,
+                                info: currentConflict[type]
+                            ) {
+                                previewVersion(type, error: currentError)
+                            } toggleState: {
+                                selectVersion(type)
+                            }
                         }
+                    } else {
+                        placeholder
                     }
-                } else {
-                    placeholder
                 }
             }
         }
@@ -126,9 +135,43 @@ struct ConflictVersionSelectorView: View {
             }
         }
         .genericErrorAlert(isPresented: $isShowingGenericErrorAlert)
-        .task(id: currentErrorIndex) {
-            await fetchConflictInfo(currentError)
+        .onReceive(synchroErrorsObserver.synchroErrorsPublisher.receive(on: RunLoop.main)) { _ in
+            validationRevision += 1
         }
+        .task(id: validationRevision) {
+            _ = await validateConflicts()
+        }
+        .task(id: currentErrorIndex) {
+            guard let currentError else {
+                dismiss()
+                return
+            }
+
+            if await validateConflicts() {
+                await fetchConflictInfo(currentError)
+            }
+        }
+    }
+
+    // The categorized observer also publishes temporary empty loading states. Only the cache can confirm removal.
+    static func conflictsAreActive(_ errors: [SynchroError], cache: CoherentCache) async -> Bool {
+        guard !errors.isEmpty else { return false }
+        for (synchroDbId, syncErrors) in Dictionary(grouping: errors, by: \.metadata.synchroDbId) {
+            guard let synchro = await cache.getSynchro(synchroDbId: Int32(synchroDbId)),
+                  syncErrors.allSatisfy({ synchro.errors[Int32($0.metadata.dbId)] != nil }) else {
+                return false
+            }
+        }
+        return true
+    }
+
+    private func validateConflicts() async -> Bool {
+        let active = await Self.conflictsAreActive(errors, cache: coherentCache)
+        guard !Task.isCancelled else { return false }
+        if !active {
+            dismiss()
+        }
+        return active
     }
 
     private var placeholder: some View {
@@ -165,12 +208,14 @@ struct ConflictVersionSelectorView: View {
                 selection[error.metadata.dbId] = .remote
             }
         } catch {
+            guard await validateConflicts() else { return }
             isShowingGenericErrorAlert = true
             SentrySDK.capture(error: error)
         }
     }
 
     private func selectVersion(_ type: ConflictType) {
+        guard let currentError else { return }
         selection[currentError.metadata.dbId] = type
     }
 
@@ -212,6 +257,13 @@ struct ConflictVersionSelectorView: View {
     }
 
     private func didClickConfirmButton() async {
+        guard currentError != nil else {
+            dismiss()
+            return
+        }
+
+        guard await validateConflicts() else { return }
+
         if currentErrorIndex == errors.indices.last {
             isLoadingConfirmButton = true
             await confirmResolution()

@@ -85,7 +85,9 @@ Services are registered at app startup. Check `AppDelegate` or the DI setup file
 ### ViewModels & Views
 - ViewModels are `@MainActor final class` conforming to `ObservableObject`
 - ViewControllers (AppKit `NSViewController`) host SwiftUI views via `NSHostingView`
+- Nibless AppKit controllers must inherit from `BaseViewController` (in `kDriveCoreUI/UI/AppKit/Controllers/`), which explicitly creates the root view: default `NSViewController.loadView()` can crash trying to load a nib on macOS 12/13. Use it for empty placeholders too; SwiftLint rejects direct `NSViewController` inheritance/construction. Genuine nib-backed exceptions require a narrowly scoped lint disable with an explanation.
 - Example ViewModel: `kDrive/UI/Controllers/MainWindow/MainView/MainViewModel.swift`
+- Create toolbars with `NSToolbar(identifier:)`; parameterless `NSToolbar()` can crash on macOS 12 and is rejected by SwiftLint. AppKit synchronizes toolbars sharing an identifier, so use distinct identifiers (e.g. a UUID per instance) for independent toolbars.
 - Example VC: `kDrive/UI/Controllers/MainWindow/MainView/MainViewController.swift`
 
 ### Navigation / Router
@@ -193,6 +195,7 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 
 ## Local norms
 - Keep the possible server-crash notion in server connection-loss diagnostics; connection loss is a useful crash indicator.
+- Explicitly receive Combine events on the main thread before updating SwiftUI state or dismissing views.
 
 ## Common Gotchas
 - `@MainActor` is required on all ViewModels — missing it causes runtime warnings in Swift 6 strict concurrency.
