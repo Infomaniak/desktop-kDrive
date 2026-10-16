@@ -166,10 +166,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     const RemoteNodeId nodeIdAA = testhelpers::createRemoteDir(_driveDbId, nodeIdA, Str("AA"));
     const RemoteNodeId nodeIdB = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("B"));
 
-    RemoteNodeId commonDocumentsFolderId;
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
-                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::CommonDocuments,
-                                                                 commonDocumentsFolderId));
+    // The watched folder of the RFSO worker is the root folder of the remote drive.
+    const RemoteNodeId watchedFolderId = ApiTranslator::v2RootFolderRemoteId();
 
     {
         LOG_DEBUG(_logger, "***** test create file *****");
@@ -190,7 +188,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         }
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(watchedFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).canWrite(_testFileId));
@@ -203,7 +201,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         const RemoteNodeId nodeIdCC = testhelpers::createRemoteDir(_driveDbId, nodeIdC, Str("CC"));
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(watchedFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdC));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdCC));
@@ -228,7 +226,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(watchedFolderId);
 
         CPPUNIT_ASSERT_EQUAL(prevCreationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId));
         CPPUNIT_ASSERT_GREATER(prevModificationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId));
@@ -241,7 +239,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(watchedFolderId);
 
         CPPUNIT_ASSERT_EQUAL(nestedRemoteTmpDirId, _syncPal->liveSnapshot(ReplicaSide::Remote).parentId(_testFileId));
 
@@ -256,7 +254,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         testhelpers::moveRemoteItem(_driveDbId, nodeIdA, nodeIdB);
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(watchedFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdA));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAA));
@@ -273,7 +271,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(watchedFolderId);
 
         CPPUNIT_ASSERT_EQUAL(SyncName2Str(newFileName),
                              SyncName2Str(_syncPal->liveSnapshot(ReplicaSide::Remote).name(_testFileId)));
@@ -287,7 +285,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(watchedFolderId);
 
         CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
     }

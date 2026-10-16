@@ -266,19 +266,13 @@ SyncSetupData createSyncs() {
 
     sync2.setDbPath("/Users/me/Library/Application Support/kDrive/.parms.db");
 
-    CursorStore cursorStore1;
-    cursorStore1[SpecialRemoteFolder::Private] = CursorData{"xxx", 1};
-    cursorStore1[SpecialRemoteFolder::CommonDocuments] = CursorData{"yyy", 2};
-    cursorStore1[SpecialRemoteFolder::Shared] = CursorData{"zzz", 3};
+    sync1.setRootFolderCursor(CursorData{"xxx", 1});
+    sync1.setCustomTargetFolderCursor(CursorData{"yyy", 2});
+    sync1.setSharedFolderCursor(CursorData{"zzz", 3});
 
-    sync1.setCursorStore(cursorStore1);
-
-    CursorStore cursorStore2;
-    cursorStore2[SpecialRemoteFolder::Private] = CursorData{"aaa", 10};
-    cursorStore2[SpecialRemoteFolder::CommonDocuments] = CursorData{"bbb", 20};
-    cursorStore2[SpecialRemoteFolder::Shared] = CursorData{"ccc", 30};
-
-    sync2.setCursorStore(cursorStore2);
+    sync2.setRootFolderCursor(CursorData{"aaa", 10});
+    sync2.setCustomTargetFolderCursor(CursorData{"bbb", 20});
+    sync2.setSharedFolderCursor(CursorData{"ccc", 30});
 
     SyncSetupData data;
     data.syncs = {sync1, sync2};
@@ -307,7 +301,9 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.localPath() == sync1.localPath());
         CPPUNIT_ASSERT(sync.paused() == sync1.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync1.notificationsDisabled());
-        CPPUNIT_ASSERT(sync.getCursorStore() == sync1.getCursorStore());
+        CPPUNIT_ASSERT(sync.rootFolderCursor() == sync1.rootFolderCursor());
+        CPPUNIT_ASSERT(sync.customTargetFolderCursor() == sync1.customTargetFolderCursor());
+        CPPUNIT_ASSERT(sync.sharedFolderCursor() == sync1.sharedFolderCursor());
     }
     // Update sync
     {
@@ -330,7 +326,9 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
         CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
         CPPUNIT_ASSERT_EQUAL(sync2.vfsRegisteredAt(), sync.vfsRegisteredAt());
-        CPPUNIT_ASSERT(sync.getCursorStore() == sync2.getCursorStore());
+        CPPUNIT_ASSERT(sync.rootFolderCursor() == sync2.rootFolderCursor());
+        CPPUNIT_ASSERT(sync.customTargetFolderCursor() == sync2.customTargetFolderCursor());
+        CPPUNIT_ASSERT(sync.sharedFolderCursor() == sync2.sharedFolderCursor());
     }
     // Find sync by DB path
     {
@@ -356,7 +354,9 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(syncList[1].toDelete() == sync2.toDelete());
         CPPUNIT_ASSERT_EQUAL(sync1.vfsRegisteredAt(), syncList[0].vfsRegisteredAt());
         CPPUNIT_ASSERT_EQUAL(sync2.vfsRegisteredAt(), syncList[1].vfsRegisteredAt());
-        CPPUNIT_ASSERT(syncList[0].getCursorStore() == sync1.getCursorStore());
+        CPPUNIT_ASSERT(syncList[0].rootFolderCursor() == sync1.rootFolderCursor());
+        CPPUNIT_ASSERT(syncList[0].customTargetFolderCursor() == sync1.customTargetFolderCursor());
+        CPPUNIT_ASSERT(syncList[0].sharedFolderCursor() == sync1.sharedFolderCursor());
     }
     // Delete sync
     {
@@ -452,15 +452,35 @@ bool TestParmsDb::deleteColumn(const std::string &tableName, const std::string &
     return true;
 }
 
+bool TestParmsDb::addColumn(const std::string &tableName, const std::string &columnName, const std::string &columnType) {
+    auto parmsDb = ParmsDb::instance();
+
+    const auto addRequestName = std::string("add_") + columnName + "_to_" + tableName;
+    const auto sqlRequestBody = std::string("ALTER TABLE ") + tableName + " ADD COLUMN " + columnName + " " + columnType + ";";
+    if (!parmsDb->createAndPrepareRequest(addRequestName.c_str(), sqlRequestBody.c_str())) return false;
+
+    int32_t errId = -1;
+    std::string error;
+    if (!parmsDb->queryExec(addRequestName, errId, error)) {
+        parmsDb->queryFree(addRequestName);
+
+        return parmsDb->sqlFail(addRequestName, error);
+    }
+
+    parmsDb->queryFree(addRequestName);
+
+    return true;
+}
+
 // We simulate the absence of mandatory columns in a previous version of the database
 // by deleting them.
 bool TestParmsDb::deleteColumns() {
     // Sync table
     if (!deleteColumn("sync", "localNodeId")) return false;
-    if (!deleteColumn("sync", "userPrivateFolderCursor")) return false;
-    if (!deleteColumn("sync", "userPrivateFolderCursorTimestamp")) return false;
-    if (!deleteColumn("sync", "commonDocumentsFolderCursor")) return false;
-    if (!deleteColumn("sync", "commonDocumentsFolderCursorTimestamp")) return false;
+    if (!deleteColumn("sync", "rootFolderCursor")) return false;
+    if (!deleteColumn("sync", "rootFolderCursorTimestamp")) return false;
+    if (!deleteColumn("sync", "customTargetFolderCursor")) return false;
+    if (!deleteColumn("sync", "customTargetFolderCursorTimestamp")) return false;
     if (!deleteColumn("sync", "sharedFolderCursor")) return false;
     if (!deleteColumn("sync", "sharedFolderCursorTimestamp")) return false;
 
@@ -911,17 +931,42 @@ void TestParmsDb::testAddMissingColumnsDuringUpgrade() {
     CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "matomoEnabled", exists) && exists);
 
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "localNodeId", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderCursor", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderCursorTimestamp", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderCursor", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderCursorTimestamp", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursor", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursorTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "rootFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "rootFolderCursorTimestamp", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "customTargetFolderCursor", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "customTargetFolderCursorTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursorTimestamp", exists) && exists);
 
     CPPUNIT_ASSERT(parmsDb->columnExists("account", "name", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("user", "firstName", exists) && exists);
+}
+
+// We simulate the presence of the obsolete cursor columns in a previous version of the database by adding them, and
+// check that the upgrade removes them.
+void TestParmsDb::testDropOfObsoleteColumnsDuringUpgrade() {
+    auto parmsDb = ParmsDb::instance();
+
+    CPPUNIT_ASSERT(addColumn("sync", "userPrivateFolderCursor", "TEXT"));
+    CPPUNIT_ASSERT(addColumn("sync", "userPrivateFolderCursorTimestamp", "INTEGER"));
+    CPPUNIT_ASSERT(addColumn("sync", "commonDocumentsFolderCursor", "TEXT"));
+    CPPUNIT_ASSERT(addColumn("sync", "commonDocumentsFolderCursorTimestamp", "INTEGER"));
+
+    CPPUNIT_ASSERT(parmsDb->upgradeTables());
+
+    bool exists = true;
+
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderCursor", exists) && !exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "userPrivateFolderCursorTimestamp", exists) && !exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderCursor", exists) && !exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "commonDocumentsFolderCursorTimestamp", exists) && !exists);
+
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "rootFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "rootFolderCursorTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "customTargetFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "customTargetFolderCursorTimestamp", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursor", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("sync", "sharedFolderCursorTimestamp", exists) && exists);
 }
 
 } // namespace KDC

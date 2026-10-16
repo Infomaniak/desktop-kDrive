@@ -357,7 +357,7 @@ void TestIntegration::testSyncRestartWithBlacklistChange() {
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     // Verify the blacklist change was detected and full listing was triggered
-    // When snapshot backup is invalidated due to blacklist mismatch, clearListingCursors() is called
+    // When snapshot backup is invalidated due to blacklist mismatch, clearSyncFolderListingCursor() is called
     Count secondListingCount = getFullListingCount();
     CPPUNIT_ASSERT_MESSAGE("Blacklist change should cause incremented full listing count",
                            secondListingCount > firstListingCount);
@@ -486,11 +486,11 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
 
     // Get current cursor and age it
     CursorData oldCursor;
-    CPPUNIT_ASSERT(_syncPal->getFolderCursor(SpecialRemoteFolder::CustomTarget, oldCursor));
-    CPPUNIT_ASSERT(!oldCursor.cursor.empty());
+    CPPUNIT_ASSERT(_syncPal->getRootFolderCursor(oldCursor));
+    CCPUNIT_ASSERT(!oldCursor.cursor.empty());
     // Set timestamp to 4 days ago
     oldCursor.timestamp = CommonUtility::getCurrentSyncTime() - EXPIRY_OFFSET;
-    CPPUNIT_ASSERT(_syncPal->setFolderCursor(SpecialRemoteFolder::CustomTarget, oldCursor));
+    CPPUNIT_ASSERT(_syncPal->setRootFolderCursor(oldCursor));
 
     // (5) Make more remote changes while cursors are stale.
     const Operations moreRemoteOps{Str2SyncName(R"({

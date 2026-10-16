@@ -1001,20 +1001,56 @@ ExitInfo SyncPal::updateSync(const Sync &sync) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::setFolderCursor(const SpecialRemoteFolder specialFolder, const CursorData &cursorData) {
+ExitInfo SyncPal::setRootFolderCursor(const CursorData &cursorData) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
-    sync.setFolderCursor(specialFolder, cursorData);
+    sync.setRootFolderCursor(cursorData);
 
     return updateSync(sync);
 }
 
-ExitInfo SyncPal::getFolderCursor(const SpecialRemoteFolder specialFolder, CursorData &cursorData) {
+ExitInfo SyncPal::getRootFolderCursor(CursorData &cursorData) {
     Sync sync;
     if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
-    sync.getFolderCursor(specialFolder, cursorData);
+    cursorData = sync.rootFolderCursor();
+
+    return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::setCustomTargetFolderCursor(const CursorData &cursorData) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    sync.setCustomTargetFolderCursor(cursorData);
+
+    return updateSync(sync);
+}
+
+ExitInfo SyncPal::getCustomTargetFolderCursor(CursorData &cursorData) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    cursorData = sync.customTargetFolderCursor();
+
+    return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::setSharedFolderCursor(const CursorData &cursorData) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    sync.setSharedFolderCursor(cursorData);
+
+    return updateSync(sync);
+}
+
+ExitInfo SyncPal::getSharedFolderCursor(CursorData &cursorData) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    cursorData = sync.sharedFolderCursor();
 
     return ExitCode::Ok;
 }
@@ -1852,8 +1888,10 @@ ExitInfo SyncPal::restoreRemoteLiveSnapshotBackup(const RemoteNodeIdSet &blackLi
 
     if (isRemoteSnapshotBackupValid(blackList)) {
         bool validCursorExists = false;
-        if (const auto exitInfo = remoteFSObserverWorker->checkIfValidListingCursorsExist(validCursorExists); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidListingCursorsExist: " << exitInfo);
+        if (const auto exitInfo = remoteFSObserverWorker->checkIfValidListingSyncFolderCursorExists(validCursorExists);
+            !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger,
+                             "Error in RemoteFileSystemObserverWorker::checkIfValidListingSyncFolderCursorExists: " << exitInfo);
             return exitInfo;
         }
 
