@@ -124,6 +124,12 @@ source "$BASEPATH/infomaniak-build-tools/conan/common-utils.sh"
 QTDIR="$(find_qt_conan_path "$conan_build_folder")"
 export QTDIR
 
+# Ensure cmake is the one provided by Conan: Qt >= 6.12 requires CMake >= 3.25 to be
+# consumed via find_package() (see QtPublicCMakeVersionHelpers.cmake), which the system
+# CMake (e.g. 3.22.1 on the CI runner) does not satisfy.
+# shellcheck disable=SC1091
+source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
+
 
 extract_debug () {
     objcopy --only-keep-debug "$1/$2" "$CONTENTDIR/$2-amd64.dbg"

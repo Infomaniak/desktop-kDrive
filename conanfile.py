@@ -186,6 +186,11 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Windows":
             self.tool_requires("cmake/[>=3.16.Z]")
             self.tool_requires("ninja/[>=1.11.1]")
+        if self.settings.os == "Linux":
+            # Qt >= 6.12 requires CMake >= 3.25 to be consumed via find_package()
+            # (checked in QtPublicCMakeVersionHelpers.cmake). Provide it via Conan instead
+            # of relying on the system CMake (e.g. 3.22.1 on the CI runners).
+            self.tool_requires("cmake/[>=3.25 <4]")
 
     def requirements(self):
         """
