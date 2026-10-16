@@ -679,7 +679,7 @@ bool Db::dropColumnIfExists(const std::string &tableName, const std::string &col
         const auto request = "ALTER TABLE " + tableName + " DROP COLUMN " + columnName + ";";
         auto scopeGuard = createAndPrepareScopedRequest(requestId.c_str(), request.c_str());
         if (!scopeGuard) return false;
-        int errId = 0;
+        int32_t errId = 0;
         std::string error;
         if (!queryExec(requestId, errId, error)) {
             return sqlFail(requestId, error);

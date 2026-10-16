@@ -197,6 +197,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                                      const CursorData &cursorData);
 
         [[nodiscard]] ExitInfo handleRemoteSnapshotBackup(bool &validSnapshotBackupExists);
+        [[nodiscard]] ExitInfo mainProcessingTask(const RemoteNodeId &remoteDirId, CursorData &cursorData, bool &hasMore);
 
         void abortAndClearLongPollJob(std::shared_ptr<LongPollJob> &longPollJob);
 
