@@ -42,14 +42,18 @@ struct ActivitiesTable: View {
                     VStack(alignment: .leading) {
                         Text(context.node.relevantPath, format: .node)
                             .foregroundStyle(ColorToken.Text.primary.asColor)
-                        HStack(alignment: .center, spacing: AppPadding.padding2) {
-                            if let instruction = context.node.instruction {
+                        if context.node.status == .syncing {
+                            Text(KDriveLocalizable.labelSynchronisation)
+                                .font(.Tokens.callout)
+                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                        } else if let instruction = context.node.instruction {
+                            HStack(alignment: .center, spacing: AppPadding.padding2) {
                                 Text(instruction.label)
                                     .font(.Tokens.callout)
                                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                                Text(context.node.syncDate, format: .friendlyRelative)
+                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
                             }
-                            Text(context.node.syncDate, format: .friendlyRelative)
-                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
                         }
                     }
                 } icon: {
