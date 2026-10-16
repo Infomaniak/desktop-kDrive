@@ -887,7 +887,10 @@ Function .onInit
 		!insertmacro UAC_RunElevated
 		${Switch} $0
 		${Case} 0
-			${IfThen} $1 = 1 ${|} Quit ${|} ;we are the outer process, the inner process has done its work, we are done
+			${If} $1 = 1 ;we are the outer process, the inner process has done its work, we are done
+				SetErrorLevel $2 ;forward the exit code of the inner process
+				Quit
+			${EndIf}
 			${IfThen} $3 <> 0 ${|} ${Break} ${|} ;we are admin, let the show go on
 			${If} $1 = 3 ;RunAs completed successfully, but with a non-admin user
 				MessageBox mb_YesNo|mb_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND $UAC_INSTALLER_REQUIRE_ADMIN /SD IDNO IDYES UAC_TryAgain IDNO 0
@@ -904,6 +907,9 @@ Function .onInit
 			Abort
 			Quit
 		${EndSwitch}
+
+	; The UAC plugin may leave a non-zero error level (e.g. 1223) even when elevation succeeded
+	SetErrorLevel 0
 
 	;Prevent multiple instances.
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPLICATION_SHORTNAME}Installer") i .r1 ?e'
@@ -961,7 +967,10 @@ Function un.onInit
 		!insertmacro UAC_RunElevated
 		${Switch} $0
 		${Case} 0
-			${IfThen} $1 = 1 ${|} Quit ${|} ;we are the outer process, the inner process has done its work, we are done
+			${If} $1 = 1 ;we are the outer process, the inner process has done its work, we are done
+				SetErrorLevel $2 ;forward the exit code of the inner process
+				Quit
+			${EndIf}
 			${IfThen} $3 <> 0 ${|} ${Break} ${|} ;we are admin, let the show go on
 			${If} $1 = 3 ;RunAs completed successfully, but with a non-admin user
 				MessageBox mb_YesNo|mb_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND $UAC_UNINSTALLER_REQUIRE_ADMIN /SD IDNO IDYES UAC_TryAgain IDNO 0
@@ -978,6 +987,9 @@ Function un.onInit
 			Abort
 			Quit
 		${EndSwitch}
+
+	; The UAC plugin may leave a non-zero error level (e.g. 1223) even when elevation succeeded
+	SetErrorLevel 0
 
 	;Prevent multiple instances.
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPLICATION_SHORTNAME}Uninstaller") i .r1 ?e'
