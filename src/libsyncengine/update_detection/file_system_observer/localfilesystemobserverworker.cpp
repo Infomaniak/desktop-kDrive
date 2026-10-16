@@ -774,15 +774,15 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 continue;
             }
 
-            if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-                dirIt.disableRecursionPending();
-                continue;
-            } else if (itemType.ioError == IoError::AccessDenied) {
-                dirIt.disableRecursionPending();
-                sendAccessDeniedError(relativePath);
-            } else {
-                dirIt.disableRecursionPending();
-                continue;
+            switch (itemType.ioError) {
+                case IoError::AccessDenied:
+                    dirIt.disableRecursionPending();
+                    sendAccessDeniedError(relativePath);
+                    break;
+                case IoError::NoSuchFileOrDirectory:
+                default:
+                    dirIt.disableRecursionPending();
+                    continue;
             }
         }
 
@@ -794,15 +794,15 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 continue;
             }
 
-            if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-                dirIt.disableRecursionPending();
-                continue;
-            } else if (itemType.ioError == IoError::AccessDenied) {
-                dirIt.disableRecursionPending();
-                sendAccessDeniedError(relativePath);
-            } else {
-                dirIt.disableRecursionPending();
-                continue;
+            switch (itemType.ioError) {
+                case IoError::AccessDenied:
+                    dirIt.disableRecursionPending();
+                    sendAccessDeniedError(relativePath);
+                    break;
+                case IoError::NoSuchFileOrDirectory:
+                default:
+                    dirIt.disableRecursionPending();
+                    continue;
             }
         }
 
