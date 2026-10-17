@@ -23,24 +23,38 @@
 namespace KDC {
 
 ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                         const std::chrono::seconds &startDelay, bool testing /*= false*/) :
+                         const std::chrono::seconds &startDelay) :
     _logger(Log::instance()->getLogger()),
     _syncPal(syncPal),
-    _testing(testing),
     _name(name),
     _shortName(shortName),
     _startDelay(startDelay) {}
 
 ISyncWorker::~ISyncWorker() {
-    if (_isRunning) {
-        ISyncWorker::stop();
-    }
+    if (isRunning()) ISyncWorker::stop();
+
     waitForExit();
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " destroyed");
 }
 
+bool ISyncWorker::stopAsked() const {
+    return _stopAsked.load();
+}
+
+void ISyncWorker::setStopAsked(const bool stopAsked) {
+    _stopAsked.store(stopAsked);
+}
+
+bool ISyncWorker::isRunning() const {
+    return _isRunning.load();
+}
+
+void ISyncWorker::setRunningFlagValue(const bool isRunning) {
+    _isRunning.store(isRunning);
+}
+
 void ISyncWorker::start() {
-    if (_isRunning) {
+    if (isRunning()) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already running");
         return;
     }
@@ -48,26 +62,26 @@ void ISyncWorker::start() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " start");
 
     init();
-    _isRunning = true;
-    auto executeFunc = std::function<void()>([this]() { execute(); });
-    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
+    setRunningFlagValue(true);
+
+    startExecutionThread();
 }
 
 
 void ISyncWorker::stop() {
-    if (!_isRunning) {
+    if (!isRunning()) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is not running");
         return;
     }
 
-    if (_stopAsked) {
+    if (stopAsked()) {
         LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " is already stopping");
         return;
     }
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name << " stop");
 
-    _stopAsked = true;
+    setStopAsked(true);
 }
 
 void ISyncWorker::waitForExit() {
@@ -79,7 +93,7 @@ void ISyncWorker::waitForExit() {
 }
 
 void ISyncWorker::init() {
-    _stopAsked = false;
+    setStopAsked(false);
     _exitCode = ExitCode::Unknown;
     _exitCause = ExitCause::Unknown;
 }
@@ -117,9 +131,15 @@ void ISyncWorker::setDone(const ExitCode exitCode) {
         _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, exitCode, _exitCause));
     }
 
-    _isRunning = false;
-    _stopAsked = false;
+    setRunningFlagValue(false);
+    setStopAsked(false);
+
     _exitCode = exitCode;
+}
+
+void ISyncWorker::startExecutionThread() {
+    auto executeFunc = std::function<void()>([this]() { execute(); });
+    _thread = (std::make_unique<StdLoggingThread>(executeFunc));
 }
 
 } // namespace KDC

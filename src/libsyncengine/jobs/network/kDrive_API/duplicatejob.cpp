@@ -24,29 +24,23 @@
 
 namespace KDC {
 
-DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const NodeId &remoteFileId,
-                           const SyncPath &absoluteFinalPath) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _remoteFileId(remoteFileId),
-    _absoluteFinalPath(absoluteFinalPath),
-    _vfs(vfs) {
+DuplicateJob::DuplicateJob(const DriveDbId driveDbId, RemoteNodeId remoteFileId, SyncPath absoluteFinalPath) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _remoteFileId(std::move(remoteFileId)),
+    _absoluteFinalPath(std::move(absoluteFinalPath)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
 ExitInfo DuplicateJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
-        return exitInfo;
-    }
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
-    if (jsonRes()) {
-        if (Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey)) {
-            if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
-                return {};
-            }
-            if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return {};
-            }
-        }
+    if (!jsonRes()) return ExitCode::Ok;
+
+    if (Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey)) {
+        if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+        if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime))
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     return ExitCode::Ok;
@@ -57,6 +51,7 @@ std::string DuplicateJob::getSpecificUrl() {
     str += "/files/";
     str += _remoteFileId;
     str += "/duplicate";
+
     return str;
 }
 

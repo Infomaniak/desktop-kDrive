@@ -33,6 +33,7 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public T
         CPPUNIT_TEST(testUpdateSnapshot);
         CPPUNIT_TEST(testCheckSnapshotIntegrity);
         CPPUNIT_TEST(testInsertItemsFromCorruptedCsvReply);
+        CPPUNIT_TEST(testExtractActionInfo);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -44,16 +45,20 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public T
         void testUpdateSnapshot();
         void testCheckSnapshotIntegrity();
         void testInsertItemsFromCorruptedCsvReply();
+        void testExtractActionInfo();
 
     private:
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPalTest> _syncPal;
 
-        int _driveDbId{0};
+        DriveDbId _driveDbId{0};
+        UserDbId _userDbId{1}; // Valid default value
+        DriveId _driveId{0};
+
         NodeId _testFolderId;
         NodeId _testFileId;
 
-        LocalTemporaryDirectory _localTempDir{"testRemoteFileSystemObserverrWorker"};
+        LocalTemporaryDirectory _localTempDir{"testRemoteFileSystemObserverWorker"};
 };
 
 } // namespace KDC

@@ -18,7 +18,7 @@
 
 #include "testremotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
-#include "jobs/network/kDrive_API/listing/snapshotitemhandler.h"
+#include "jobs/network/kDrive_API/listing/remotesnapshotitemhandler.h"
 #include "requests/syncnodecache.h"
 
 #include "libcommon/utility/utility.h"
@@ -28,6 +28,7 @@
 #include "mocks/mockkeychainstorage.h"
 
 #include "libsyncengine/jobs/syncjobmanager.h"
+#include "libsyncengine/jobs/network/kDrive_API/apitranslator.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
@@ -52,9 +53,9 @@ namespace KDC {
 // Test in drive "kDrive Desktop Team"
 static const uint64_t nbFileInTestDir = 5; // "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
 static const std::string endOfFileDelimiter("#EOF");
-const NodeId testRemoteFsoDirId = "59541"; // Common documents/Test kDrive/test_ci/test_remote_FSO/
-const NodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/test_ci/test_pictures/
-const NodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
+const RemoteNodeId testRemoteFsoDirId = "59541"; // Common documents/Test kDrive/test_ci/test_remote_FSO/
+const RemoteNodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/test_ci/test_pictures/
+const RemoteNodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
 
 void TestRemoteFileSystemObserverWorker::setUp() {
     TestBase::start();
@@ -79,21 +80,21 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
 
     // Insert user, account, drive & sync
-    const int userId(atoi(testVariables.userId.c_str()));
-    User user(1, userId, keychainKey);
+    const UserId userId(atoi(testVariables.userId.c_str()));
+    User user(_userDbId, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    const int accountId(atoi(testVariables.accountId.c_str()));
-    Account account(1, accountId, user.dbId(), "account1");
+    const AccountId accountId(atoi(testVariables.accountId.c_str()));
+    Account account(AccountDbId{1}, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    const int driveId(atoi(testVariables.driveId.c_str()));
-    Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    _driveId = atoi(testVariables.driveId.c_str());
+    Drive drive(_driveDbId, _driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), testhelpers::localTestDirPath(), "", "/");
-    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1);
+    Sync sync(SyncDbId{1}, drive.dbId(), testhelpers::localTestDirPath(), "", "/");
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, _driveId, 1);
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
@@ -159,11 +160,16 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         CPPUNIT_ASSERT(testFile.good());
     }
     RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _testFolderId, "test_remote_FSO");
-    const NodeId nestedRemoteTmpDirId =
+    const RemoteNodeId nestedRemoteTmpDirId =
             testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("test_remote_FSO_nested"));
-    const NodeId nodeIdA = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("A"));
-    const NodeId nodeIdAA = testhelpers::createRemoteDir(_driveDbId, nodeIdA, Str("AA"));
-    const NodeId nodeIdB = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("B"));
+    const RemoteNodeId nodeIdA = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("A"));
+    const RemoteNodeId nodeIdAA = testhelpers::createRemoteDir(_driveDbId, nodeIdA, Str("AA"));
+    const RemoteNodeId nodeIdB = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("B"));
+
+    RemoteNodeId commonDocumentsFolderId;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::CommonDocuments,
+                                                                 commonDocumentsFolderId));
 
     {
         LOG_DEBUG(_logger, "***** test create file *****");
@@ -184,7 +190,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         }
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).canWrite(_testFileId));
@@ -193,11 +199,11 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test create directory *****");
 
-        const NodeId nodeIdC = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("C"));
-        const NodeId nodeIdCC = testhelpers::createRemoteDir(_driveDbId, nodeIdC, Str("CC"));
+        const RemoteNodeId nodeIdC = testhelpers::createRemoteDir(_driveDbId, remoteTmpDir.id(), Str("C"));
+        const RemoteNodeId nodeIdCC = testhelpers::createRemoteDir(_driveDbId, nodeIdC, Str("CC"));
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdC));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdCC));
@@ -222,7 +228,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
 
         CPPUNIT_ASSERT_EQUAL(prevCreationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).createdAt(_testFileId));
         CPPUNIT_ASSERT_GREATER(prevModificationTime, _syncPal->liveSnapshot(ReplicaSide::Remote).lastModified(_testFileId));
@@ -235,7 +241,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
 
         CPPUNIT_ASSERT_EQUAL(nestedRemoteTmpDirId, _syncPal->liveSnapshot(ReplicaSide::Remote).parentId(_testFileId));
 
@@ -250,7 +256,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         testhelpers::moveRemoteItem(_driveDbId, nodeIdA, nodeIdB);
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdA));
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(nodeIdAA));
@@ -267,7 +273,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
 
         CPPUNIT_ASSERT_EQUAL(SyncName2Str(newFileName),
                              SyncName2Str(_syncPal->liveSnapshot(ReplicaSide::Remote).name(_testFileId)));
@@ -281,7 +287,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         (void) job.runSynchronously();
 
         // Get activity from the server
-        (void) _syncPal->_remoteFSObserverWorker->processEvents();
+        (void) _syncPal->_remoteFSObserverWorker->processEvents(commonDocumentsFolderId);
 
         CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
     }
@@ -301,29 +307,31 @@ void TestRemoteFileSystemObserverWorker::testCheckSnapshotIntegrity() {
     _syncPal->setAddErrorCallback([&nbErrors](const Error &) { ++nbErrors; });
 
     // Insert a consistent directory with a file inside.
-    const SnapshotItem dirItem("dir", rootId, Str("dir"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                               testhelpers::defaultFileSize, false, true, true);
+    const RemoteSnapshotItem dirItem("dir", rootId, Str("dir"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                     NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(dirItem));
 
-    const SnapshotItem fileItem("file", "dir", Str("file.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
-                                NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    const RemoteSnapshotItem fileItem("file", "dir", Str("file.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                      NodeType::File, testhelpers::defaultFileSize, false, true, true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(fileItem));
 
     // Insert an item whose parent is a file. Such items are skipped by getItemsInDir before being inserted into the
     // snapshot, the integrity check must leave them untouched.
-    const SnapshotItem childOfFileItem("child", "file", Str("child.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
-                                       NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    const RemoteSnapshotItem childOfFileItem("child", "file", Str("child.txt"), testhelpers::defaultTime,
+                                             testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true,
+                                             true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(childOfFileItem));
     CPPUNIT_ASSERT(liveSnapshot.exists("child"));
 
     // Insert an orphan item. The integrity check must remove it from the snapshot.
     // Note: `exists` returns false for orphan items, so `type` is used to check the presence of the item in the snapshot.
-    const SnapshotItem orphanItem("orphan", "missingParentId", Str("orphan.txt"), testhelpers::defaultTime,
-                                  testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    const RemoteSnapshotItem orphanItem("orphan", "missingParentId", Str("orphan.txt"), testhelpers::defaultTime,
+                                        testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true,
+                                        true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(orphanItem));
     CPPUNIT_ASSERT_EQUAL(NodeType::File, liveSnapshot.type("orphan"));
 
-    const ExitInfo exitInfo = remoteFSObserverWorker->removeOrphans();
+    const ExitInfo exitInfo = remoteFSObserverWorker->deleteOrphans();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
     // Items whose parent is a file are left untouched.
@@ -393,8 +401,8 @@ Z",file,4,1789735691,1789735698,1,)csv";
            << csvBody << "\n"
            << endOfFileDelimiter;
 
-        SnapshotItemHandler handler(_logger);
-        SnapshotItem item;
+        RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
+        RemoteSnapshotItem item;
         bool error = false;
         bool ignore = false;
         bool eof = false;
@@ -415,7 +423,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
             }
             if (eof) break;
 
-            CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInSnapshot(item, existingFiles));
+            CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInRemoteSnapshot(item, existingFiles));
         }
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);
@@ -436,6 +444,69 @@ Z",file,4,1789735691,1789735698,1,)csv";
     }
 
     _syncPal->setAddErrorCallback(nullptr);
+}
+
+void TestRemoteFileSystemObserverWorker::testExtractActionInfo() {
+    Poco::JSON::Object::Ptr actionObject = new Poco::JSON::Object();
+
+    (void) actionObject->set(actionKey, "file_move");
+    (void) actionObject->set(fileIdKey, 1234);
+    (void) actionObject->set(parentIdKey, 3);
+    (void) actionObject->set(destinationKey, "/Common documents/folder/another_test_file.txt");
+    (void) actionObject->set(pathKey, "/Common documents/folder/test_file.txt");
+    (void) actionObject->set(fileTypeKey, fileKey);
+    (void) actionObject->set(createdAtKey, SyncTime{1000});
+    (void) actionObject->set(lastModifiedAtKey, SyncTime{2000});
+
+    RemoteFileSystemObserverWorker::ActionInfo actionInfo;
+    std::shared_ptr<RemoteFileSystemObserverWorker> rfso =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(rfso->extractActionInfo(actionObject, actionInfo));
+
+    CPPUNIT_ASSERT_EQUAL(RemoteNodeId{"1234"}, actionInfo.snapshotItem.id());
+    CPPUNIT_ASSERT_EQUAL(RemoteNodeId{"3"}, actionInfo.snapshotItem.parentId());
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, actionInfo.snapshotItem.type());
+    CPPUNIT_ASSERT_EQUAL(SyncTime{1000}, actionInfo.snapshotItem.createdAt());
+    CPPUNIT_ASSERT_EQUAL(SyncTime{2000}, actionInfo.snapshotItem.lastModified());
+
+    // Since it is a move action, the name should be extracted from the destination field.
+    CPPUNIT_ASSERT_EQUAL(std::string("another_test_file.txt"), SyncName2Str(actionInfo.snapshotItem.name()));
+
+    (void) actionObject->set(actionKey, "file_create");
+    (void) actionObject->set(destinationKey, "");
+    CPPUNIT_ASSERT(rfso->extractActionInfo(actionObject, actionInfo));
+
+    // Since it is not a move action, the name should be extracted from the path field.
+    CPPUNIT_ASSERT_EQUAL(std::string("test_file.txt"), SyncName2Str(actionInfo.snapshotItem.name()));
+
+
+    // Check that the function returns an appropriate error if a mandatory key is missing.
+    actionObject->remove(actionKey);
+    CPPUNIT_ASSERT(ExitInfo(ExitCode::BackError, ExitCause::MissingReplyData) ==
+                   rfso->extractActionInfo(actionObject, actionInfo));
+
+    (void) actionObject->set(actionKey, "acl_insert");
+    actionObject->remove(fileIdKey);
+    CPPUNIT_ASSERT(ExitInfo(ExitCode::BackError, ExitCause::MissingReplyData) ==
+                   rfso->extractActionInfo(actionObject, actionInfo));
+
+    (void) actionObject->set(fileIdKey, 1234);
+    actionObject->remove(parentIdKey);
+    CPPUNIT_ASSERT(ExitInfo(ExitCode::BackError, ExitCause::MissingReplyData) ==
+                   rfso->extractActionInfo(actionObject, actionInfo));
+
+    actionObject->remove(parentIdKey);
+    CPPUNIT_ASSERT(ExitInfo(ExitCode::BackError, ExitCause::MissingReplyData) ==
+                   rfso->extractActionInfo(actionObject, actionInfo));
+
+    (void) actionObject->set(parentIdKey, 1234);
+
+    // Check that the function returns no error if an optional key is missing.
+    actionObject->remove(fileTypeKey);
+    actionObject->remove(destinationKey);
+    actionObject->remove(createdAtKey);
+    actionObject->remove(lastModifiedAtKey);
+    CPPUNIT_ASSERT(rfso->extractActionInfo(actionObject, actionInfo));
 }
 
 } // namespace KDC
