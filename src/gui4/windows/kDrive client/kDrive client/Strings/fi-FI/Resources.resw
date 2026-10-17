@@ -1578,8 +1578,14 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Muut tietokoneella olevat tiedostot</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Tilauksesi jäljellä oleva käyttöaika</value> 
+  </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Verkossa tallennetut kDrive-tiedostot</value> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Synkronointi</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Tämä tietokone - %@ - %@</value> 

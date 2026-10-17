@@ -1578,8 +1578,14 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <value>Andre filer på datamaskinen</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Gjenværende tid på abonnementet ditt</value> 
+  </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>kDrive-filer lagret på nettet</value> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Synkronisering</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Denne PC-en – %@ – %@</value> 
