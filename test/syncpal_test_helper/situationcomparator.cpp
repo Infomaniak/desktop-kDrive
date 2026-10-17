@@ -25,6 +25,7 @@
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "test_utility/testhelpers.h"
 #include "io/iohelper.h"
+#include "requests/syncnodecache.h"
 
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>

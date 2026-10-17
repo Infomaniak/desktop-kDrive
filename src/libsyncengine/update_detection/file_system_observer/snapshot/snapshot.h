@@ -106,6 +106,8 @@ class ConstSnapshot : public Snapshot {
             Snapshot(other) {}
 
     private:
+        friend class LiveSnapshot;
+
         // Prevent any derived class to modify the snapshot content.
         using Snapshot::_items;
         using Snapshot::_mutex;
