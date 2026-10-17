@@ -1102,6 +1102,9 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Plus récente</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Mon abonnement</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nom</value> 
   </data> 
@@ -1562,6 +1565,12 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
     <value>Autres fichiers de l’ordinateur</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Espace libre de votre abonnement</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Fichiers kDrive stockés en ligne</value> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronisation</value> 
