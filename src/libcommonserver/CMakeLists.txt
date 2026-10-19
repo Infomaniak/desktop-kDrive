@@ -6,7 +6,7 @@ endif()
 
 find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.53.0 REQUIRED)
-find_package(Poco 1.15.2 REQUIRED Foundation Net JSON Util)
+find_package(Poco 1.15.2 REQUIRED Foundation Net Crypto JSON Util)
 find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
 find_package(xxHash 0.8.2 REQUIRED)
 
