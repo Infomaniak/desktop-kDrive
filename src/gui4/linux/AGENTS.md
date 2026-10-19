@@ -491,8 +491,8 @@
 - `app/mainwindow/syncerroractionhandler.*`: the only place that knows what each error button does: rename or open the
   item online, open a local folder below the synchronization root, open the volume (disk space), open the shop
   (`renewalUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
-  (`loginRequested`, as on the blocking screen), or contact the support. Logs name the kind and the action, never a
-  path.
+  (`loginRequested`, as on the blocking screen), or contact the support. Logs name the kind, the action and the
+  opened URL.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
