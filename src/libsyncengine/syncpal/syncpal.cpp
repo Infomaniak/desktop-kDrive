@@ -1109,7 +1109,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     exists = false;
 
-    if (!_remoteFSObserverWorker) return {ExitCode::SyncPaused};
+    if (!isRunning() || !_remoteFSObserverWorker) return {ExitCode::SyncPaused};
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -1135,7 +1135,7 @@ ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) cons
 ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
-    if (!_remoteFSObserverWorker) return ExitCode::SyncPaused;
+    if (!isRunning() || !_remoteFSObserverWorker) return ExitCode::SyncPaused;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
