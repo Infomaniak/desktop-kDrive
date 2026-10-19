@@ -367,34 +367,44 @@ namespace Infomaniak.kDrive.CustomControls
                 return false;
             }
             _excludedNodeIds = res;
-            return await RefreshExcludedNodePathsAsync();
+            await RefreshExcludedNodePathsAsync();
+            return true;
         }
 
         // Ensure path map for excluded nodes is up to date (add new)
-        private async Task<bool> RefreshExcludedNodePathsAsync()
+        private async Task RefreshExcludedNodePathsAsync()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            async Task<bool> loadPath(NodeId nodeId)
+            async Task loadPath(NodeId nodeId)
             {
-                var getNodeInfoResult = await commService.GetNodeInfo(UserDbId, DriveId, nodeId, CancellationToken.None);
-                if (nodeId is not null && getNodeInfoResult.IsSuccess && getNodeInfoResult.Node is not null)
+                if (nodeId is null)
                 {
-                    _excludedNodePathsMap.TryAdd(nodeId, getNodeInfoResult.Node.Path);
-                    return true;
+                    Logger.LogError("Cannot load path for null nodeId.");
+                    return;
                 }
 
-                if (getNodeInfoResult.Cause == ExitCause.NotFound)
+                var getNodeInfoResult = await commService.GetNodeInfo(UserDbId, DriveId, nodeId, CancellationToken.None);
+                if (getNodeInfoResult.IsSuccess && getNodeInfoResult.Node is not null)
                 {
-                    Logger.LogInfo($"Excluded node with id {nodeId} not found on server. It might have been deleted since it was blacklisted.");
-                    return true;
+                    _excludedNodePathsMap.TryAdd(nodeId, getNodeInfoResult.Node.Path);
+                    return;
                 }
-                else
+                _excludedNodeIds.Remove(nodeId); // Remove from exclusion list if we cannot fetch its path
+                _excludedNodePathsMap.Remove(nodeId);
+
+                string logMessage = $"Failed to load node info for nodeId: {nodeId} - Code : {getNodeInfoResult.Code} Cause: {getNodeInfoResult.Cause}. Node will be removed from exclusion list.";
+                switch (getNodeInfoResult.Cause)
                 {
-                    Logger.LogWarning("Failed to load node info for nodeId: " + nodeId,
-                        "SyncExclusionSelector: Failed to load node info");
-                    return false;
+                    case ExitCause.FileAccessError:
+                    case ExitCause.NotFound:
+                        Logger.LogInfo(logMessage);
+                        return;
+                    default:
+                        Logger.LogWarning(logMessage, "SyncExclusionSelector: Failed to load node info");
+                        return;
                 }
             }
+
             var newExcludedNodePathsMap = _excludedNodePathsMap.Where(pair => _excludedNodeIds.Contains(pair.Key)).ToDictionary(); // Remove all the nodes that are not blacklisted anymore.
             _excludedNodePathsMap.Clear(); // Cannot just use "=" because of references held by TreeItems.
             foreach (var pair in newExcludedNodePathsMap)
@@ -403,22 +413,12 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Fetch path for newly excluded nodes
-            List<Task<bool>> loadTasks = [];
+            List<Task> loadTasks = [];
             foreach (var nodeId in _excludedNodeIds.Where(id => !_excludedNodePathsMap.ContainsKey(id)))
             {
                 loadTasks.Add(loadPath(nodeId));
             }
             await Task.WhenAll(loadTasks);
-
-            // Check for any failures
-            bool results = loadTasks.All(t => t.Result);
-            if (!results)
-            {
-                Logger.LogWarning("Some excluded node paths failed to load.");
-                _excludedNodePathsMap.Clear();
-            }
-
-            return results;
         }
         #endregion
 

@@ -938,6 +938,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return nodes;
         }
+
         public async Task<GetNodeInfoResult> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -949,10 +950,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_INFO, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, cancellationToken))
-                return new GetNodeInfoResult(data.Cause, null);
+                return new GetNodeInfoResult(data.Code, data.Cause, null);
 
             if (!HasRequiredParam(data, JsonKeys.NodeInfo))
-                return new GetNodeInfoResult(data.Cause, null);
+                return new GetNodeInfoResult(data.Code, data.Cause, null);
 
             var options = new JsonSerializerOptions
             {
@@ -964,9 +965,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Logger.LogError($"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.",
                     "ServerCommService: Failed to deserialize node info");
-                return new GetNodeInfoResult(data.Cause, null);
+                return new GetNodeInfoResult(data.Code, data.Cause, null);
             }
-            return new GetNodeInfoResult(data.Cause, new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false));
+            return new GetNodeInfoResult(data.Code, data.Cause, new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false));
         }
 
         private readonly RequestQueue _getFolderSizeQueue;
