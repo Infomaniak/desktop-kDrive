@@ -513,10 +513,14 @@ void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
 #endif
     // The lifetime of the remote FS observer is the same as the lifetime of the SyncPal. It is not freed when the SyncPal is
     // stopped, as it keeps a backup of the last remote snapshot, which is needed for the next sync. The backup allows to perform
-    // a lightweight listing request instead of a costly full listing request on the remote server.
+    // a lightweight listing request instead of a costly full listing request on the remote server. Its reference to the SyncPal
+    // is released in freeWorkers() to avoid a shared_ptr reference cycle that would prevent the destruction of both objects; it
+    // is re-armed here before the worker is restarted.
     if (!_remoteFSObserverWorker) {
         _remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
                 new RemoteFileSystemObserverWorker(shared_from_this(), "Remote File System Observer", "RFSO"));
+    } else {
+        _remoteFSObserverWorker->setSyncPal(shared_from_this());
     }
     _computeFSOperationsWorker = std::shared_ptr<ComputeFSOperationWorker>(
             new ComputeFSOperationWorker(shared_from_this(), "Compute FS Operations", "COOP"));
@@ -547,9 +551,12 @@ void SyncPal::freeWorkers() {
     // The remote FS observer is not freed as it keeps a backup of the last remote snapshot, which is needed for the next sync.
     // This backup allows to perform a lightweight listing request instead of a costly full listing request on the remote server.
     // The remote FS observer will be freed when the SyncPal is destroyed.
-    if (_remoteFSObserverWorker)
+    if (_remoteFSObserverWorker) {
         _remoteFSObserverWorker->stop();
-    else {
+        // Break the SyncPal <-> remote FS observer shared_ptr reference cycle: the worker object is kept alive but must not keep
+        // the SyncPal alive. Its reference to the SyncPal is restored in createWorkers() when the SyncPal is restarted.
+        _remoteFSObserverWorker->setSyncPal(nullptr);
+    } else {
         LOG_SYNCPAL_WARN(_logger, "Remote FS Observer worker is null. This should not happen.");
     }
 

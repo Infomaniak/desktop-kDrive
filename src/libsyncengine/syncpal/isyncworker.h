@@ -39,6 +39,13 @@ class ISyncWorker {
                     const std::chrono::seconds &startDelay = std::chrono::seconds(0));
         virtual ~ISyncWorker();
 
+        /* The SyncPal owns its workers, not the other way around. A worker that is kept alive after a stop of the SyncPal
+         * (RemoteFileSystemObserverWorker) must not hold a shared_ptr to the SyncPal, otherwise the two objects keep each
+         * other alive and are never destroyed. Call this method with nullptr when the SyncPal is stopped and re-arm it in
+         * SyncPal::createWorkers() before the worker is restarted.
+         */
+        void setSyncPal(const std::shared_ptr<SyncPal> &syncPal) { _syncPal = syncPal; }
+
         virtual void start();
         virtual void stop();
 
