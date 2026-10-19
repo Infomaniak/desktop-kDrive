@@ -23,6 +23,7 @@
 #include "app/errors/blockingerrorresolver.h"
 #include "app/errors/syncerrorcatalog.h"
 #include "app/errors/syncerrorclassifier.h"
+#include "app/services/sentryservice.h"
 
 #include <QLoggingCategory>
 
@@ -57,6 +58,16 @@ void logClassification(const ClassifiedSyncError &classified) {
                                           << "/ nodeType:" << error.nodeType() << "/ cancelType:" << error.cancelType()
                                           << "/ inconsistencyType:" << error.inconsistencyType()
                                           << "/ conflictType:" << error.conflictType();
+        // One issue per code and cause, whatever the user: tells which unexpected errors deserve a kind of their own.
+        // The simulator's errors (negative ids, real ones are SQLite rowids) are not reported.
+        if (error.dbId() > 0) {
+            SentryService::reportWarning(
+                    "Unclassified sync error: " + toString(error.exitCode()) + " / " + toString(error.exitCause()),
+                    "level: " + toString(error.level()) + ", cancelType: " + toString(error.cancelType()) +
+                            ", inconsistencyType: " + toString(error.inconsistencyType()) +
+                            ", conflictType: " + toString(error.conflictType()) + ", function: " + error.functionName() +
+                            ", worker: " + error.workerName());
+        }
         return;
     }
 
