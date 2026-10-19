@@ -128,6 +128,7 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
     // (2) Stop the synchronization, perform changes on the distant drive and restart the synchronization.
     // The changes must not be lost: they have to be detected by the update detection on restart and downloaded to the local
     // replica.
+    const auto previousFullListingCount = getFullListingCount();
     CPPUNIT_ASSERT(testHelper.stopSync());
 
     const Operations remoteOperations{Str2SyncName(R"({
@@ -146,7 +147,7 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
 
     // Restarting SyncPal should not trigger a full listing, but a continue listing instead, as the changes have already been
     // detected and processed.
-    CPPUNIT_ASSERT_EQUAL(Count{0}, getFullListingCount());
+    CPPUNIT_ASSERT_EQUAL(previousFullListingCount, getFullListingCount());
 
     const Situation expectedSituation{Str2SyncName(R"({
         "content" : [
