@@ -1567,7 +1567,7 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
   <data name="storageOnlineFree" xml:space="preserve"> 
-    <value>Gjenværende tid på abonnementet ditt</value> 
+    <value>Ledig lagringsplass i abonnementet ditt</value> 
   </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>kDrive-filer lagret på nettet</value> 

@@ -1567,7 +1567,7 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
   <data name="storageOnlineFree" xml:space="preserve"> 
-    <value>Tilauksesi jäljellä oleva käyttöaika</value> 
+    <value>Tilauksesi vapaa tallennustila</value> 
   </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Verkossa tallennetut kDrive-tiedostot</value> 

@@ -28,6 +28,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -182,13 +183,34 @@ namespace Infomaniak.kDrive.Pages
         {
             AppViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             Sync = AppViewModel.SelectedSync;
+            if (Sync is not null)
+                Sync.Drive.PropertyChanged += OnDrivePropertyChanged;
+        }
+
+        private async void OnDrivePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            try
+            {
+                await ForceUpdate();
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+            }
         }
 
         private async void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
             try
             {
+                if (Sync is not null)
+                    Sync.Drive.PropertyChanged -= OnDrivePropertyChanged;
+
                 Sync = AppViewModel.SelectedSync;
+
+                if (Sync is not null)
+                    Sync.Drive.PropertyChanged += OnDrivePropertyChanged;
+
                 await ForceUpdate();
             }
             catch (OperationCanceledException)
@@ -205,6 +227,10 @@ namespace Infomaniak.kDrive.Pages
                 _isDisposed = true;
 
                 AppViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
+
+                if (Sync is not null)
+                    Sync.Drive.PropertyChanged -= OnDrivePropertyChanged;
+
                 _cancellationTokenSource.Cancel();
                 _cancellationTokenSource.Dispose();
             }
