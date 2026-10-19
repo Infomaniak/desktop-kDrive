@@ -58,6 +58,8 @@ class SentryService final : public QObject {
         [[nodiscard]] static bool isInitialized();
 
         static void reportError(const std::string &title, const std::string &message);
+        // Something the app does not handle yet, but which is not a failure. Ignored while Sentry is not activated.
+        static void reportWarning(const std::string &title, const std::string &message);
         static void reportError(const QString &title, const QString &message);
         [[noreturn]] static void reportFatalAndExit(const std::string &title, const std::string &message);
         [[noreturn]] static void reportFatalAndExit(const char *title, const char *message);
