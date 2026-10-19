@@ -57,6 +57,8 @@ class BaseFolderTreeItemWidget : public QTreeWidget {
         class CustomDelegate : public QStyledItemDelegate {
             public:
                 CustomDelegate(BaseFolderTreeItemWidget *treeWidget, QObject *parent = nullptr);
+                QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+                                      const QModelIndex &index) const override;
                 void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
                                           const QModelIndex &index) const override;
 

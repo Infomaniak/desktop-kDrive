@@ -24,6 +24,7 @@
 
 #include <QApplication>
 #include <QColor>
+#include <QFont>
 #include <QIcon>
 #include <QPoint>
 #include <QString>
@@ -148,6 +149,7 @@ void setEnabledRecursively(C *root, bool enabled) {
     }
 }
 bool checkBlacklistSize(const size_t blacklistSize, QWidget *parent);
+QFont folderTreeDisplayFont(QFont font);
 } // namespace GuiUtility
 
 } // namespace KDC

@@ -228,6 +228,7 @@ void FolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInfo &n
     setFolderIcon(item, nodeInfo.name());
 
     // Set name
+    item->setFont(TreeWidgetColumn::Folder, KDC::GuiUtility::folderTreeDisplayFont(font()));
     item->setText(TreeWidgetColumn::Folder, nodeInfo.name());
 
     // Manage access denied
@@ -465,6 +466,7 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
         }
         if (nodeId.isEmpty()) {
             // Drive root
+            _root->setFont(TreeWidgetColumn::Folder, KDC::GuiUtility::folderTreeDisplayFont(font()));
             _root->setText(TreeWidgetColumn::Folder, _driveName);
             _root->setIcon(TreeWidgetColumn::Folder,
                            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", _driveColor));
@@ -475,6 +477,7 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
                 return;
             }
 
+            _root->setFont(TreeWidgetColumn::Folder, KDC::GuiUtility::folderTreeDisplayFont(font()));
             _root->setText(TreeWidgetColumn::Folder, nodeInfo.name());
             setFolderIcon(_root, ":/client/resources/icons/actions/folder.svg");
 

@@ -82,6 +82,7 @@ void BaseFolderTreeItemWidget::loadSubFolders() {
             }
 
             // Set drive name
+            root->setFont(TreeWidgetColumn::Folder, KDC::GuiUtility::folderTreeDisplayFont(font()));
             root->setText(TreeWidgetColumn::Folder,
                           _driveDbId == 0 ? QString() : QString::fromStdString(driveInfoMapIt->second.name()));
             root->setIcon(TreeWidgetColumn::Folder,
@@ -118,6 +119,7 @@ void BaseFolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInf
             setFolderIcon(item, folderInfo.name());
 
             // Set name
+            item->setFont(TreeWidgetColumn::Folder, KDC::GuiUtility::folderTreeDisplayFont(font()));
             item->setText(TreeWidgetColumn::Folder, folderInfo.name());
 
             item->setData(TreeWidgetColumn::Folder, dirRole, folderInfo.name());
@@ -300,6 +302,7 @@ void BaseFolderTreeItemWidget::onItemClicked(QTreeWidgetItem *item, int column) 
         setFolderIcon(newItem, QString());
 
         // Set name
+        newItem->setFont(TreeWidgetColumn::Folder, KDC::GuiUtility::folderTreeDisplayFont(font()));
         newItem->setText(TreeWidgetColumn::Folder, QString());
 
         // Expand item
@@ -351,6 +354,15 @@ void BaseFolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int column) 
 BaseFolderTreeItemWidget::CustomDelegate::CustomDelegate(BaseFolderTreeItemWidget *treeWidget, QObject *parent) :
     QStyledItemDelegate(parent),
     _treeWidget(treeWidget) {}
+
+QWidget *BaseFolderTreeItemWidget::CustomDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+                                                                const QModelIndex &index) const {
+    QWidget *editor = QStyledItemDelegate::createEditor(parent, option, index);
+    if (editor && index.column() == TreeWidgetColumn::Folder) {
+        editor->setFont(KDC::GuiUtility::folderTreeDisplayFont(editor->font()));
+    }
+    return editor;
+}
 
 void BaseFolderTreeItemWidget::CustomDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
                                                                     const QModelIndex &index) const {

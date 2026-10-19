@@ -703,6 +703,14 @@ bool GuiUtility::checkBlacklistSize(const qsizetype blacklistSize, QWidget *pare
     return true;
 }
 
+QFont GuiUtility::folderTreeDisplayFont(QFont font) {
+#ifdef Q_OS_LINUX
+    // Disable per-character fallback font lookup: with Qt 6.2.3, Fontconfig may crash on a pattern without charset (GH Issue #2597) / (Fix Qt: https://github.com/qt/qtbase/commit/80ddc8dee6a05cd619085e29fc21ff92c4b877a8)
+    font.setStyleStrategy(static_cast<QFont::StyleStrategy>(font.styleStrategy() | QFont::NoFontMerging));
+#endif
+    return font;
+}
+
 #ifdef Q_OS_LINUX
 bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
     type = QProcessEnvironment::systemEnvironment().value("XDG_CURRENT_DESKTOP");
