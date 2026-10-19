@@ -50,6 +50,9 @@
   `QStringLiteral(...)`.
 - When adding a string literal within an existing uniformly styled block, preserve that block's convention, including
   `QStringLiteral`. Do not convert an isolated entry to `u"..."_s`.
+- The `u"..."_s` rule is a preference, not an obligation: in an existing file that mostly uses `QStringLiteral`, keep
+  `QStringLiteral` instead of importing `Qt::StringLiterals` for a few new literals. Mention it in the PR and offer a
+  small tracking card to migrate the file later.
 - Use the domain aliases from `libcommon/utility/types.h` whenever they match the represented concept. Keep `int` and Qt
   numeric types when required by an overridden Qt API or a QML boundary, and make that constraint explicit when unclear.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
@@ -271,6 +274,7 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
+  `AppConstants::Drive::renewalUri(drive)` holds the shop page rule per pack, so that no screen copies it.
 - `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
@@ -285,7 +289,8 @@
   read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
 - `app/errors/*`: pure sync error domain, without QObject, IPC or cache access. `classifySyncError` maps a raw `Error` to
   a `SyncErrorKind` through an ordered matcher table aligned with the macOS and Windows definitions (first match
-  wins), plus the Linux-only `NotEnoughINotifyWatches`; LiteSync and VFS kinds are absent and fall back to `Unknown`.
+  wins), plus the Linux-only `NotEnoughINotifyWatches`; LiteSync and VFS kinds are absent and fall back to `Unknown`,
+  like the case clash and reserved name kinds, which the sync engine only detects on macOS and Windows.
   `syncerrorcatalog.*` gives each kind its errors-page section, row variant, explanation dialog, system tray relevance
   (Windows `ShowInSystemTray` list), action and texts, with admin variants resolved by `describeSyncError`. Texts are
   translation ids with their node-label placeholder count, translated in QML with `qsTrId`, never in C++.
@@ -293,7 +298,8 @@
   keeps the oldest blocking error of a synchronization and reports `LoggedOut` for a disconnected user even without an
   `InvalidToken` error; `isUpdateRequired` detects an `UpdateRequired` error of any level.
   `BlockingErrorKind` lives in the `BlockingErrors` `Q_NAMESPACE` (the only Qt meta-object of the domain), registered
-  for QML as `BlockingErrors.Asleep`, ..., so no layer mirrors it.
+  for QML as `BlockingErrors.Asleep`, ..., so no layer mirrors it. `toString` returns a `std::string`, so
+  `qCInfo() << kind` prints "Name(value)" through the generic `libcommon` operator.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability (the error state follows `SyncErrorsProjection::hasTrayRelevantError`, so only the error kinds
   marked `showsInTray` turn the icon to error), GNOME-compatible tray menu actions (the Settings entry is disabled while
@@ -464,9 +470,9 @@
   `BlockingError` tab, keeps it there while the error lasts, and returns to Home when it disappears or another
   synchronization is selected; the sidebar selector and Settings stay usable. It exposes the variant (`kind`, texts
   translated in QML), the drive name, color and admin status, and `triggerAction()`: open the drive on the web (asleep),
-  open the shop (not renewed and admin: `AppConstants::Drive::renewSubscriptionUri` for a standalone drive pack such as
-  `solo`, `team` or `pro`, `myKSuiteRenewalUri` for a `my_ksuite*` pack, the shop home for any other pack until the
-  server fetches the kSuite id), restart the synchronization with `SyncService::startSync` (not renewed for a
+  open the shop (not renewed and admin: `AppConstants::Drive::renewalUri`, the renewal page of a standalone drive pack
+  such as `solo`, `team` or `pro`, the my kSuite page for a `my_ksuite*` pack, the shop home for any other pack until
+  the server fetches the kSuite id), restart the synchronization with `SyncService::startSync` (not renewed for a
   non-admin, maintenance, access denied), or request an onboarding login (logged out). The waking-up variant has no
   action, only a loader. The drive name shows a tooltip when truncated.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
