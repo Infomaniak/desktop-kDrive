@@ -55,7 +55,6 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         bool isValid() const;
         void setValid(bool newIsValid);
         SnapshotRevision revision() const override;
-        void restoreFromBackup(const ConstSnapshot &backupSnapshot);
 
     private:
         std::shared_ptr<SnapshotRevisionHandler> _revisionHandler;
