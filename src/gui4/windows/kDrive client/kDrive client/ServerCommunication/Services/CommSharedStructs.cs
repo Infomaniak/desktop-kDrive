@@ -460,6 +460,27 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
     }
 
+    public class SyncProgressInfo
+    {
+        public Int64? CompletedSize { get; set; }
+        public Int64? CurrentFile { get; set; }
+        public Int64? EstimatedRemainingTime { get; set; }
+        public Int64? TotalFiles { get; set; }
+        public Int64? TotalSize { get; set; }
+    }
+
+    public static partial class ConversionHelper
+    {
+        public static void CopyToSyncProgress(SyncProgressInfo source, SyncProgress target)
+        {
+            CopyProperty(source, target, nameof(source.CompletedSize), nameof(target.CompletedSize));
+            CopyProperty(source, target, nameof(source.CurrentFile), nameof(target.CurrentFile));
+            CopyProperty(source, target, nameof(source.EstimatedRemainingTime), nameof(target.EstimatedRemainingTime));
+            CopyProperty(source, target, nameof(source.TotalFiles), nameof(target.TotalFiles));
+            CopyProperty(source, target, nameof(source.TotalSize), nameof(target.TotalSize));
+        }
+    }
+
     public class SearchInfo
     {
         public NodeId? Id { get; set; }

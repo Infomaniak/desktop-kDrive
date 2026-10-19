@@ -48,6 +48,17 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('activitiesTitleInProgress')}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                <StackPanel Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                            VerticalAlignment="Center">
+                    <ProgressRing IsActive="True"
+                                  Width="14"
+                                  Height="14"
+                                  VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Bind kDrive:LocalizerXamlHelper.PrettySyncRunningStatus(kDrive:Localizer.Instance, (viewmodels:Sync), SyncStep, SyncProgress.TotalFiles, SyncProgress.CurrentFile), Mode=OneWay}"
+                               Style="{StaticResource BodyTextBlockStyle}"
+                               VerticalAlignment="Top" />
+                </StackPanel>
             </StackPanel>
         </DataTemplate>
 

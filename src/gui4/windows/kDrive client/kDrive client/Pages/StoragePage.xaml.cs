@@ -188,6 +188,7 @@ namespace Infomaniak.kDrive.Pages
             try
             {
                 await UpdateDiskSizeAsync();
+                await UpdateDiskSizeAsync();
             }
             catch (OperationCanceledException)
             {

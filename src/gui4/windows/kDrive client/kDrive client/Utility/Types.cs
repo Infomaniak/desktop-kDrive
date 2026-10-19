@@ -51,6 +51,21 @@ namespace Infomaniak.kDrive.Types
         Offline
     };
 
+    public enum SyncStep
+    {
+        None = 0,
+        Idle,
+        UpdateDetection1, // Compute operations
+        UpdateDetection2, // Update Trees
+        Reconciliation1, // Platform Inconsistency Checker
+        Reconciliation2, // Conflict Finder
+        Reconciliation3, // Conflict Resolver
+        Reconciliation4, // Operation Generator
+        Propagation1, // Sorter
+        Propagation2, // Executor
+        Done
+    };
+
     public enum SyncErrorStates
     {
         Undefined,

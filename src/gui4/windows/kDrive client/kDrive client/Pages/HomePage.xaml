@@ -40,7 +40,7 @@
 
         <!-- SyncStatus main template-->
         <DataTemplate x:Key="SyncUpToDateMainTemplate"
-                      x:DataType="types:SyncStatus">
+                      x:DataType="viewmodel:Sync">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -74,7 +74,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="SyncInProgressMainTemplate"
-                      x:DataType="types:SyncStatus">
+                      x:DataType="viewmodel:Sync">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -98,10 +98,9 @@
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('synchroStatusInProgressDescription')}"
+                    <TextBlock Text="{x:Bind kDrive:LocalizerXamlHelper.PrettySyncRunningStatus(kDrive:Localizer.Instance, (viewmodel:Sync), SyncStep, SyncProgress.TotalFiles, SyncProgress.CurrentFile), Mode=OneWay}"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap" />
-
                     <!-- Link -->
                     <HyperlinkButton HorizontalAlignment="Center"
                                      Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSeeActivities')}"
@@ -111,7 +110,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="SyncInPauseMainTemplate"
-                      x:DataType="types:SyncStatus">
+                      x:DataType="viewmodel:Sync">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -148,7 +147,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="SyncOfflineMainTemplate"
-                      x:DataType="types:SyncStatus">
+                      x:DataType="viewmodel:Sync">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}"
@@ -188,7 +187,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="SyncLoadingMainTemplate"
-                      x:DataType="types:SyncStatus">
+                      x:DataType="viewmodel:Sync">
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -345,11 +344,12 @@
             </Border.Background>
             <Grid>
                 <!-- Main content layout -->
-                <ContentControl HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
-                                ContentTemplateSelector="{StaticResource SyncStatusMainTemplateSelector}"
-                                Content="{x:Bind ViewModel.SelectedSync.SyncStatus, Mode=OneWay}" />
+                <controls:RefreshableContentControl HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                                                    ContentTemplateSelector="{StaticResource SyncStatusMainTemplateSelector}"
+                                                    Content="{x:Bind ViewModel.SelectedSync, Mode=OneWay}"
+                                                    RefreshSource="{x:Bind ViewModel.SelectedSync.SyncStatus, Mode=OneWay}" />
 
                 <ContentControl HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
