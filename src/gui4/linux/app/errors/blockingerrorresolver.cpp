@@ -66,7 +66,7 @@ bool isUpdateRequired(const std::vector<Error> &errors) {
     return std::ranges::any_of(errors, [](const Error &error) { return error.exitCode() == ExitCode::UpdateRequired; });
 }
 
-std::string_view toString(const BlockingErrorKind kind) {
+std::string toString(const BlockingErrorKind kind) {
     using enum BlockingErrorKind;
 
     switch (kind) {
