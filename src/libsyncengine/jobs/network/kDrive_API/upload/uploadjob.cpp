@@ -165,19 +165,19 @@ void UploadJob::setQueryParameters(Poco::URI &uri) {
 
 ExitInfo UploadJob::setData() {
     ItemType itemType;
-    if (!IoHelper::getItemType(_absoluteFilePath, itemType)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getItemType - " << Utility::formatSyncPath(_absoluteFilePath));
-        return ExitCode::SystemError;
-    }
+    if (auto result = IoHelper::getItemTypeAndProcessIoError(_absoluteFilePath, itemType);
+        !result || itemType.ioError != IoError::Success) {
+        if (!result) {
+            return ExitCode::SystemError;
+        }
 
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::NotFound};
-    }
-
-    if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        } else if (itemType.ioError == IoError::AccessDenied) {
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        } else {
+            return ExitCode::SystemError;
+        }
     }
 
     _linkType = itemType.linkType;
@@ -303,20 +303,18 @@ ExitInfo UploadJob::readLink() {
         IoError ioError = IoError::Success;
         if (!IoHelper::readAlias(_absoluteFilePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_absoluteFilePath));
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::OperationCanceled};
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::NotFound};
-        }
-
-        if (ioError == IoError::AccessDenied) {
+        } else if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        assert(ioError == IoError::Success); // For every other error type, false should have been returned.
+        assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed - type=" << _linkType);
