@@ -24,6 +24,7 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using System;
@@ -42,6 +43,7 @@ namespace Infomaniak.kDrive.TrayIcon
     {
         private TaskbarIcon? _trayIcon;
         private string _currentIcon = "taskbar-ico";
+        private uint _dpi = 96;
         private UISettings? _uiSettings;
         private readonly AppModel _appModel;
         private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
@@ -54,6 +56,7 @@ namespace Infomaniak.kDrive.TrayIcon
         public void Initialize()
         {
             Logger.LogInfo("Initializing TrayIconManager");
+            _dpi = GetDpiForSystem();
 
             // Find resources from the app's main window or application resources
             if (Application.Current.Resources["ShowWindowCommand"] is XamlUICommand showCommand)
@@ -110,6 +113,8 @@ namespace Infomaniak.kDrive.TrayIcon
 
             _uiSettings = new UISettings();
             _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
+            SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+            Utility.DpiHelper.DpiChanged += DpiHelper_DpiChanged;
         }
 
         public TrayIconManager(AppModel appModel)
@@ -292,6 +297,18 @@ namespace Infomaniak.kDrive.TrayIcon
             await Utility.RunOnUIThread(() => RefreshTheme());
         }
 
+        private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            _dpi = GetDpiForSystem();
+            _ = Utility.RunOnUIThread(() => SetIcon(_currentIcon));
+        }
+
+        private void DpiHelper_DpiChanged(object? sender, double newScale)
+        {
+            _dpi = GetDpiForSystem();
+            _ = Utility.RunOnUIThread(() => SetIcon(_currentIcon));
+        }
+
         public void SetIconSync()
         {
             Logger.LogDebug("Setting tray icon to 'sync' state.");
@@ -347,6 +364,14 @@ namespace Infomaniak.kDrive.TrayIcon
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
         extern static bool DestroyIcon(IntPtr handle);
 
+        private const int SM_CXSMICON = 49;
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForSystem();
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetricsForDpi(int nIndex, uint dpi);
+
         private void SetIcon(string fileName)
         {
             if (_trayIcon is null)
@@ -355,12 +380,20 @@ namespace Infomaniak.kDrive.TrayIcon
             try
             {
                 _currentIcon = fileName;
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Custom", "Icons", "TrayIcons", $"{_currentIcon}{GetThemeSuffix()}.ico");
-                using var bitmap = new Bitmap(imagePath);
-                var iconHandle = bitmap.GetHicon();
-                var icon = Icon.FromHandle(iconHandle);
+
+                var imagePath = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "Assets",
+                    "Custom",
+                    "Icons",
+                    "TrayIcons",
+                    $"{_currentIcon}{GetThemeSuffix()}.ico"
+                );
+
+                int iconSize = Math.Max(1, GetSystemMetricsForDpi(SM_CXSMICON, _dpi));
+                using var icon = new Icon(imagePath, new Size(iconSize, iconSize));
+
                 _trayIcon.UpdateIcon(icon);
-                DestroyIcon(iconHandle);
             }
             catch (Exception ex)
             {
@@ -408,6 +441,8 @@ namespace Infomaniak.kDrive.TrayIcon
         {
             StopToolTipCycle();
             _appModel.SelectedSyncChanged -= AppModel_SelectedSyncChanged;
+            SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
+            Utility.DpiHelper.DpiChanged -= DpiHelper_DpiChanged;
             foreach (var subscription in _subscriptions)
             {
                 subscription.Dispose();
