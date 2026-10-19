@@ -63,7 +63,7 @@ namespace KDC::AppConstants::Drive {
     return QUrl{QStringLiteral("https://shop.infomaniak.com")};
 }
 
-// Shop page renewing `drive`, chosen from its pack.
+// Shop page renewing `drive`, chosen from its pack: shared by the blocking error screen and the errors page.
 // TODO: Renewing a kSuite (`order2/ksuite/<k_suite.id>`) needs an id the server does not fetch yet (drive API,
 // `with=k_suite`). Until then, a kSuite drive, or an unknown pack, opens shop.infomaniak.com.
 [[nodiscard]] inline QUrl renewalUri(const KDC::Drive &drive) {

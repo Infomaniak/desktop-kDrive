@@ -150,6 +150,7 @@ inline constexpr int32_t kMaxIndividualConflicts = 5;
 
 // Like the `libcommon` enums, so that `qCInfo() << kind` prints "Name(value)" through its generic operator.
 [[nodiscard]] std::string toString(SyncErrorKind kind);
+[[nodiscard]] std::string toString(SyncErrorAction action);
 [[nodiscard]] std::string toString(BlockingErrorKind kind);
 
 } // namespace KDC
