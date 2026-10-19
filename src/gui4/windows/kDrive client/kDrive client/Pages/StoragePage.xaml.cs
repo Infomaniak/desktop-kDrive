@@ -187,11 +187,13 @@ namespace Infomaniak.kDrive.Pages
                 Sync.Drive.PropertyChanged += OnDrivePropertyChanged;
         }
 
-        private async void OnDrivePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void OnDrivePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName != nameof(Drive.UsedSize) && e.PropertyName != nameof(Drive.Size)) return;
+
             try
             {
-                await ForceUpdate();
+                UpdateOnlineStorage();
             }
             catch (OperationCanceledException)
             {
