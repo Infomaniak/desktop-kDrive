@@ -59,12 +59,18 @@ class SettingsWindowController final : public QObject {
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
         Q_INVOKABLE void requestAccountConnection() { emit accountConnectionRequested(); }
+        // Opens Settings on the file exclusions page (Advanced), for the errors page.
+        void requestOpenFileExclusions() {
+            emit openRequested();
+            emit fileExclusionsRequested();
+        }
 
         void refreshUpdates() const;
 
     signals:
         void openRequested();
         void accountConnectionRequested();
+        void fileExclusionsRequested();
 
     private:
         GeneralSettingsController &_generalController;
