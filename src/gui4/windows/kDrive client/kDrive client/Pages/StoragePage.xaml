@@ -31,11 +31,14 @@
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
         <Grid.RowDefinitions>
             <!-- Title -->
+            <RowDefinition Height="Auto" />
+            <!-- Subscription (online storage) -->
             <RowDefinition Height="Auto" />
             <!-- Main -->
             <RowDefinition Height="*" />
@@ -48,8 +51,114 @@
                    Grid.Row="0"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
+        <!-- Subscription (online storage) -->
+        <Grid Grid.Row="1"
+              Background="{ThemeResource LayerFillColorDefaultBrush}"
+              BorderThickness="1"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+              CornerRadius="{StaticResource OverlayCornerRadius}"
+              RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
+              Visibility="{x:Bind PageViewModel.OnlineUsedSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('labelMySubscription')}" />
+                <controls:MultiValueProgressBar Value1="{x:Bind PageViewModel.OnlineUsedSize, Mode=OneWay}"
+                                                Value2="{x:Bind PageViewModel.OnlineFreeSize, Mode=OneWay}"
+                                                Color1="{ThemeResource Infomaniak.DS.colors.accent.kdrive.defaultBrush}"
+                                                Color2="{ThemeResource AccentAAFillColorDisabledBrush}" />
+                <Grid>
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                               Foreground="{ThemeResource TextFillColorSecondary}"
+                               Text="{x:Bind GetStorageUsedLabel(PageViewModel.OnlineUsedSize), Mode=OneWay}" />
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                               Foreground="{ThemeResource TextFillColorSecondary}"
+                               Text="{x:Bind GetStorageFreeLabel(PageViewModel.OnlineFreeSize), Mode=OneWay}"
+                               HorizontalAlignment="Right" />
+                </Grid>
+            </StackPanel>
+            <StackPanel Grid.Row="1">
+                <!-- kDrive files stored online -->
+                <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
+                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0"
+                             Height="8"
+                             Width="8"
+                             Fill="{ThemeResource Infomaniak.DS.colors.accent.kdrive.defaultBrush}" />
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('storageOnlineUsed')}"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                        <Border Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}"
+                                VerticalAlignment="Center"
+                                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                <controls:SyncIcon Height="14"
+                                                   Sync="{x:Bind PageViewModel.Sync, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind PageViewModel.Sync.Drive.Name, Mode=OneWay}"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"
+                                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="2"
+                               Text="{x:Bind PageViewModel.OnlineUsedSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind PageViewModel.OnlineUsedSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
+                </Grid>
+
+                <Rectangle Height="1"
+                           Fill="LightGray"
+                           HorizontalAlignment="Stretch" />
+
+                <!-- Free space of the subscription -->
+                <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
+                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0"
+                             Height="8"
+                             Width="8"
+                             Fill="{ThemeResource AccentAAFillColorDisabledBrush}" />
+
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('storageOnlineFree')}"
+                               Grid.Column="1"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+
+                    <TextBlock Grid.Column="2"
+                               Text="{x:Bind PageViewModel.OnlineFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind PageViewModel.OnlineFreeSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
+                </Grid>
+            </StackPanel>
+        </Grid>
+
         <!-- Main - Missing disk -->
-        <Grid  Grid.Row="1"
+        <Grid  Grid.Row="2"
                VerticalAlignment="Center"
                Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
                RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
@@ -60,7 +169,7 @@
             <controls:SvgIcon Grid.Row="0"
                               Width="120"
                               UriString="{StaticResource Infomaniak.Custom.Images.hardware}"
-                              Foreground="{ThemeResource AccentFillColorTertiaryBrush}"/>
+                              Foreground="{ThemeResource AccentFillColorTertiaryBrush}" />
             <StackPanel Grid.Row="1"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1s('winStorageMissingDiskTitle', PageViewModel.TrimmedDiskRoot), Mode=OneWay}"
@@ -79,7 +188,7 @@
             </StackPanel>
         </Grid>
         <!-- Main -->
-        <Grid Grid.Row="1"
+        <Grid Grid.Row="2"
               VerticalAlignment="Top"
               Background="{ThemeResource LayerFillColorDefaultBrush}"
               BorderThickness="1"
@@ -139,9 +248,28 @@
                              Width="8"
                              Fill="{ThemeResource Infomaniak.DS.colors.accent.kdrive.defaultBrush}" />
 
-                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('storageComputerUsedByKDrive')}"
-                               Grid.Column="1"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('storageComputerUsedByKDrive')}"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                        <Border Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}"
+                                VerticalAlignment="Center"
+                                Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                <controls:SyncIcon Height="14"
+                                                   Sync="{x:Bind PageViewModel.Sync, Mode=OneWay}" />
+
+                                <TextBlock Text="{x:Bind PageViewModel.Sync.Drive.Name, Mode=OneWay}"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"
+                                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
 
                     <TextBlock Grid.Column="2"
                                Text="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
@@ -251,7 +379,7 @@
                 </Grid>
             </StackPanel>
         </Grid>
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Height="96"
                 Background="LightGray"
                 CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
