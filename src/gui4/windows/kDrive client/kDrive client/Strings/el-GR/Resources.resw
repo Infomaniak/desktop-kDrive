@@ -1102,6 +1102,9 @@
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Πιο πρόσφατο</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Η συνδρομή μου</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Όνομα</value> 
   </data> 
@@ -1562,6 +1565,12 @@
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
     <value>Άλλα αρχεία στον υπολογιστή</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Διαθέσιμος χώρος στη συνδρομή σας</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Αρχεία kDrive που είναι αποθηκευμένα στο διαδίκτυο</value> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Συγχρονισμός</value> 

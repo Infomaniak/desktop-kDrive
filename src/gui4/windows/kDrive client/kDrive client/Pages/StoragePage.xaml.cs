@@ -20,6 +20,7 @@ using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -27,6 +28,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -55,7 +57,7 @@ namespace Infomaniak.kDrive.Pages
 
             try
             {
-                await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);
+                await PageViewModel.ForceUpdate();
             }
             catch (OperationCanceledException)
             {
@@ -79,7 +81,7 @@ namespace Infomaniak.kDrive.Pages
                 RetryProgressRing.Visibility = Visibility.Visible;
                 try
                 {
-                    await PageViewModel.UpdateDiskSizeAsync();
+                    await PageViewModel.ForceUpdate();
                     if (!PageViewModel.IsDiskConnected)
                     {
                         await Task.Delay(2000); // Add a small delay to let the user know we've done something but the disk still unavailable.
@@ -167,6 +169,9 @@ namespace Infomaniak.kDrive.Pages
         private string _diskRoot = "";
         private bool _isDiskConnected = false;
         private bool _isDisposed = false;
+        private long? _onlineUsedSize;
+        private long? _onlineFreeSize;
+        private Sync? _sync = null;
 
         // Text
         private string _missingDiskTitle = "";
@@ -177,13 +182,38 @@ namespace Infomaniak.kDrive.Pages
         public StoragePageViewModel()
         {
             AppViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
+            Sync = AppViewModel.SelectedSync;
+            if (Sync is not null)
+                Sync.Drive.PropertyChanged += OnDrivePropertyChanged;
+        }
+
+        private void OnDrivePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(Drive.UsedSize) && e.PropertyName != nameof(Drive.Size)) return;
+
+            try
+            {
+                UpdateOnlineStorage();
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+            }
         }
 
         private async void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
             try
             {
-                await UpdateDiskSizeAsync();
+                if (Sync is not null)
+                    Sync.Drive.PropertyChanged -= OnDrivePropertyChanged;
+
+                Sync = AppViewModel.SelectedSync;
+
+                if (Sync is not null)
+                    Sync.Drive.PropertyChanged += OnDrivePropertyChanged;
+
+                await ForceUpdate();
             }
             catch (OperationCanceledException)
             {
@@ -199,9 +229,31 @@ namespace Infomaniak.kDrive.Pages
                 _isDisposed = true;
 
                 AppViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
+
+                if (Sync is not null)
+                    Sync.Drive.PropertyChanged -= OnDrivePropertyChanged;
+
                 _cancellationTokenSource.Cancel();
                 _cancellationTokenSource.Dispose();
             }
+        }
+
+        public long? OnlineUsedSize
+        {
+            get => _onlineUsedSize;
+            set => SetPropertyInUIThread(ref _onlineUsedSize, value);
+        }
+
+        public long? OnlineFreeSize
+        {
+            get => _onlineFreeSize;
+            set => SetPropertyInUIThread(ref _onlineFreeSize, value);
+        }
+
+        public Sync? Sync
+        {
+            get => _sync;
+            set => SetPropertyInUIThread(ref _sync, value);
         }
 
         public long? DiskSize
@@ -271,6 +323,25 @@ namespace Infomaniak.kDrive.Pages
         {
             get => _isDiskConnected;
             set => SetPropertyInUIThread(ref _isDiskConnected, value);
+        }
+
+        public async Task ForceUpdate()
+        {
+            UpdateOnlineStorage();
+            await UpdateDiskSizeAsync();
+        }
+
+        public void UpdateOnlineStorage()
+        {
+            if (_sync is null)
+            {
+                OnlineUsedSize = null;
+                OnlineFreeSize = null;
+                return;
+            }
+
+            OnlineUsedSize = _sync.Drive.UsedSize;
+            OnlineFreeSize = Math.Max(0, _sync.Drive.Size - _sync.Drive.UsedSize);
         }
 
         public async Task UpdateDiskSizeAsync()
@@ -343,11 +414,11 @@ namespace Infomaniak.kDrive.Pages
 
         private async Task<long?> GetHydratedFileSizeAsync(CancellationToken cancellationToken)
         {
-            if (AppViewModel.SelectedSync is null)
+            if (_sync is null)
                 return null;
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            UInt64? res = await commService.GetSyncOfflineFilesSize(AppViewModel.SelectedSync.DbId, cancellationToken);
+            UInt64? res = await commService.GetSyncOfflineFilesSize(_sync.DbId, cancellationToken);
 
             if (res is null)
             {
