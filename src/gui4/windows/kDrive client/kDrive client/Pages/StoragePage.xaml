@@ -113,7 +113,8 @@
                                     <TextBlock Text="{x:Bind PageViewModel.Sync.Drive.Name, Mode=OneWay}"
                                                TextTrimming="CharacterEllipsis"
                                                VerticalAlignment="Center"
-                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               MaxWidth="200"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -266,7 +267,8 @@
                                     <TextBlock Text="{x:Bind PageViewModel.Sync.Drive.Name, Mode=OneWay}"
                                                TextTrimming="CharacterEllipsis"
                                                VerticalAlignment="Center"
-                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               MaxWidth="200" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
