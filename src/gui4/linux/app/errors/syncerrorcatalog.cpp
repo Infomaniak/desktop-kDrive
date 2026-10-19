@@ -419,4 +419,44 @@ const char *syncErrorCategoryTitleId(const SyncErrorCategory category) {
     return "errorListSystemHeader";
 }
 
+std::string toString(const SyncErrorAction action) {
+    using enum SyncErrorAction;
+
+    switch (action) {
+        case None:
+            return "None";
+        case ChooseVersion:
+            return "ChooseVersion";
+        case Rename:
+            return "Rename";
+        case OpenParentFolder:
+            return "OpenParentFolder";
+        case OpenRescueFolder:
+            return "OpenRescueFolder";
+        case ManageDiskSpace:
+            return "ManageDiskSpace";
+        case ManageStorage:
+            return "ManageStorage";
+        case OpenExclusions:
+            return "OpenExclusions";
+        case Explain:
+            return "Explain";
+        case RestartSync:
+            return "RestartSync";
+        case WakeUp:
+            return "WakeUp";
+        case RefreshErrors:
+            return "RefreshErrors";
+        case RenewSubscription:
+            return "RenewSubscription";
+        case Reconnect:
+            return "Reconnect";
+        case ContactSupport:
+            return "ContactSupport";
+        case EnumEnd:
+            break;
+    }
+    return "EnumEnd";
+}
+
 } // namespace KDC
