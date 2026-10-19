@@ -322,7 +322,22 @@ namespace Infomaniak.kDrive.CustomControls
             Node rootNode = new Node(RemoteRootNodeId, "", -1, "", "", UserDbId, DriveId, false);
             RootTreeItem = new TreeItem(rootNode, UserDbId, DriveId, null, _excludedNodePathsMap);
 
-            await RootTreeItem.LoadImmediateChildrenAsync(CancellationTokenSource.Token);
+            try
+            {
+                await RootTreeItem.LoadImmediateChildrenAsync(CancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogInfo("Loading root tree item children was canceled.");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load root tree item children: {ex.Message}", "SyncExclusionSelector: Failed to load root tree item children");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             HasSubDirectory = RootTreeItem.Children.Any();
             _rootLevelItems.AddRange(RootTreeItem.Children);
             List<Task> tasks = new List<Task>();

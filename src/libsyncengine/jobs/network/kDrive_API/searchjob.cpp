@@ -125,18 +125,41 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
 
     if (_syncVfsMode == VirtualFileMode::Off) {
         if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
-                                                                             ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+                                                                             ioError, IoHelper::PathCheckOption::Insensitive) ||
+                                                ioError != IoError::Success) {
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            } else if (ioError == IoError::FileNameTooLong) {
+                LOGW_WARN(_logger, L"Item name or path is too long: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileNameTooLong};
+            } else {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
+                return ExitCode::SystemError;
+            }
         }
         localProperties.isHydrated = localProperties.isAvailableLocally;
     } else {
-        IoError ioError = IoError::Success;
         bool isDehydrated = false;
-        if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
-            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory)) {
-            LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        if (auto ioError = IoError::Success; !IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
+                                             (ioError != IoError::Success && ioError != IoError::AttrNotFound)) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
+                localProperties.isAvailableLocally = false;
+                localProperties.isHydrated = false;
+            } else if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            } else if (ioError == IoError::FileNameTooLong) {
+                LOGW_WARN(_logger, L"Item name or path is too long: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileNameTooLong};
+            } else if (ioError == IoError::InvalidFileName) {
+                LOGW_WARN(_logger, L"Item name is invalid: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::InvalidName};
+            } else {
+                LOGW_WARN(_logger,
+                          L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(absolutePath, ioError));
+                return ExitCode::SystemError;
+            }
         } else {
             localProperties.isAvailableLocally = ioError != IoError::NoSuchFileOrDirectory;
             localProperties.isHydrated = localProperties.isAvailableLocally && !isDehydrated;
@@ -209,7 +232,14 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
                                            localProperties.path, modifiedTime, size, localProperties.isAvailableLocally,
                                            localProperties.isHydrated);
 
-        if (!itemExitInfo) exitInfo = itemExitInfo; // Stores only the last error for the final return value.
+        if (!itemExitInfo) {
+            LOGW_WARN(_logger, L"Error in getLocalProperties: " << Utility::formatExitInfo(path, itemExitInfo));
+            if (!(itemExitInfo.code() == ExitCode::SystemError &&
+                  (itemExitInfo.cause() == ExitCause::FileAccessError || itemExitInfo.cause() == ExitCause::FileNameTooLong ||
+                   itemExitInfo.cause() == ExitCause::InvalidName))) {
+                exitInfo = itemExitInfo; // Stores only the last error for the final return value.
+            }
+        }
     }
 
     // Only a local metadata failure reaches this point: sending the request again would fail the same way.

@@ -55,6 +55,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
 #endif
 
         void sendAccessDeniedError(const SyncPath &relativePath);
+        void sendAccessUnknownError(const SyncPath &relativePath);
 
         ExitInfo handleIoError(const SyncPath &relativePath, IoError ioError);
 
