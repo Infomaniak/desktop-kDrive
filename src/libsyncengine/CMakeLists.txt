@@ -233,8 +233,7 @@ if(WIN32)
 else()
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR}
-            "/usr/local/include")
+            ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 # Link

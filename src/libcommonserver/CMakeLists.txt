@@ -134,7 +134,6 @@ else()
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
 endif()
 
