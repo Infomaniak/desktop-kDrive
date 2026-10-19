@@ -127,14 +127,14 @@ namespace Infomaniak.kDrive
             return GetString(key, new object?[] { arg1, arg2 });
         }
 
-        public string GetStringWithPlural1i(string key, int count, int arg1)
+        public string GetStringWithPlural1i(string key, Int64 count, int arg1)
         {
             return GetStringWithPlural(key, count, new object?[] { arg1 });
         }
 
         // This method is used to get a localized string that has a singular and plural form based on the count.
         // The singularKey is the key for the singular form of the string, and the plural form is expected to be defined in the resource file with the key singularKey + "-plural".
-        public string GetStringWithPlural(string singularKey, int count, params object?[]? args)
+        public string GetStringWithPlural(string singularKey, Int64 count, params object?[]? args)
         {
             // Compute which form to use based on the count and the pluralization rules of the current culture
             bool usePluralForm = System.Globalization.CultureInfo.CurrentUICulture.Name switch
