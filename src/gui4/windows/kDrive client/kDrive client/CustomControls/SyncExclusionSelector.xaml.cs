@@ -76,6 +76,10 @@ namespace Infomaniak.kDrive.CustomControls
         // Node IDs currently excluded on the server for this sync
         private List<NodeId> _excludedNodeIds = [];
 
+        // Node IDs currently excluded on the server for this sync, but for which we were unable to fetch the path.
+        // They are included in every save to avoid unintentionally unblacklisting directories due to transient errors.
+        private List<NodeId> _unprocessableExcludedNodeIds = [];
+
         // Map of excluded node id -> full remote path (needed to infer exclusion state for unloaded descendants)
         private readonly Dictionary<NodeId, string> _excludedNodePathsMap = [];
 
@@ -205,10 +209,14 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.ExclusionSelector, Analytics.Keys.EventName.Confirm);
+
+            var newExclusionList = GetExcludedNodeIds();
+            newExclusionList.AddRange(_unprocessableExcludedNodeIds);
+
             if (Sync is ViewModels.Sync dbSync)
             {
                 IsLoading = true;
-                if (!await dbSync.SetExcludedNodeIds(GetExcludedNodeIds()))
+                if (!await dbSync.SetExcludedNodeIds(newExclusionList))
                 {
                     Logger.LogWarning("Failed to save BlacklistedNodeIdList");
                     Utility.ShowUnexpectedErrorTeachingTip();
@@ -220,7 +228,7 @@ namespace Infomaniak.kDrive.CustomControls
             else if (Sync is NewSync tmpSync)
             {
                 tmpSync.ExcludedNodeIds.Clear();
-                tmpSync.ExcludedNodeIds.AddRange(GetExcludedNodeIds());
+                tmpSync.ExcludedNodeIds.AddRange(newExclusionList);
             }
             else
             {
@@ -389,8 +397,8 @@ namespace Infomaniak.kDrive.CustomControls
                     _excludedNodePathsMap.TryAdd(nodeId, getNodeInfoResult.Node.Path);
                     return;
                 }
-                _excludedNodeIds.Remove(nodeId); // Remove from exclusion list if we cannot fetch its path
-                _excludedNodePathsMap.Remove(nodeId);
+                _excludedNodePathsMap.Remove(nodeId); // Remove from exclusion list if we cannot fetch its path
+                _unprocessableExcludedNodeIds.Add(nodeId);
 
                 string logMessage = $"Failed to load node info for nodeId: {nodeId} - Code : {getNodeInfoResult.Code} Cause: {getNodeInfoResult.Cause}. Node will be removed from exclusion list.";
                 switch (getNodeInfoResult.Cause)
@@ -407,6 +415,8 @@ namespace Infomaniak.kDrive.CustomControls
 
             var newExcludedNodePathsMap = _excludedNodePathsMap.Where(pair => _excludedNodeIds.Contains(pair.Key)).ToDictionary(); // Remove all the nodes that are not blacklisted anymore.
             _excludedNodePathsMap.Clear(); // Cannot just use "=" because of references held by TreeItems.
+            _unprocessableExcludedNodeIds.Clear();
+
             foreach (var pair in newExcludedNodePathsMap)
             {
                 _excludedNodePathsMap.TryAdd(pair.Key, pair.Value);
@@ -536,6 +546,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
             var currentExcluded = GetExcludedDescendantNodeIds(RootTreeItem);
+            currentExcluded.AddRange(_unprocessableExcludedNodeIds);
             var currentSet = new HashSet<string>(currentExcluded);
             var excludedSet = new HashSet<string>(_excludedNodeIds);
             HasPendingChanges = !currentSet.SetEquals(excludedSet);
