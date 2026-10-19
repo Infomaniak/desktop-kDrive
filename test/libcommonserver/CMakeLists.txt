@@ -33,8 +33,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testcommonserver_NAME} ${testcommonserver_SRCS})
