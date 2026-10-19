@@ -49,16 +49,6 @@ CatalogEntry catalogEntry(const SyncErrorKind kind) {
                                      .actionLabel = {"conflictErrorAction"}},
             };
 
-        case CaseError:
-            // As on macOS, the rename always happens online.
-            return {
-                    .traits = {.category = Category::FilesToCheck},
-                    .presentation = {.title = {"errCaseTitle"},
-                                     .description = {"errCaseDescription", 2},
-                                     .action = Action::OpenOnline,
-                                     .actionLabel = kRenameLabel},
-            };
-
         case CreateCancel:
             return {
                     .traits = {.category = Category::FilesToCheck, .showsInTray = true},
@@ -115,11 +105,10 @@ CatalogEntry catalogEntry(const SyncErrorKind kind) {
             };
 
         case ForbiddenChar:
-            // The shared text names the Windows application: Linux has its own.
             return {
                     .traits = {.category = Category::FilesToCheck},
                     .presentation = {.title = {"errForbiddenCharTitle"},
-                                     .description = {"linuxErrForbiddenCharDescription", 2},
+                                     .description = {"errForbiddenCharDescription", 2},
                                      .action = Action::Rename,
                                      .actionLabel = kRenameLabel},
             };
@@ -165,15 +154,6 @@ CatalogEntry catalogEntry(const SyncErrorKind kind) {
             return {
                     .traits = {.category = Category::Storage, .showsInTray = true},
                     .presentation = {.title = {"errQuotaExceededTitle"}, .description = {"errQuotaExceededDescription", 1}},
-            };
-
-        case ReservedName:
-            return {
-                    .traits = {.category = Category::FilesToCheck},
-                    .presentation = {.title = {"errReservedNameTitle", 1},
-                                     .description = {"errReservedNameDescription", 1},
-                                     .action = Action::Rename,
-                                     .actionLabel = kRenameLabel},
             };
 
         case TemporaryBlacklisted:

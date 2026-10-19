@@ -951,8 +951,8 @@ Kontakt support for å låse opp grensen.</translation>
             <translation>Tilgang forbudt</translation> 
         </message> 
         <message id="errForbiddenCharDescription"> 
-            <source>The name of this %1 contains one or more characters not supported by the kDrive Windows application. Rename the %2 from kDrive online.</source> 
-            <translation>Navnet på dette %1 inneholder ett eller flere tegn som ikke støttes av kDrive Windows-programmet. Gi nytt navn til %2 fra kDrive på nett.</translation> 
+            <source>The name of this %1 contains one or more characters that are not supported by the kDrive app. Rename %2 using kDrive online.</source> 
+            <translation>Navnet på denne %1 inneholder ett eller flere tegn som ikke støttes av kDrive-appen. Gi %2 et nytt navn via kDrive online.</translation> 
         </message> 
         <message id="errForbiddenCharOnlySpacesTitle"> 
             <source>Invalid name</source> 
