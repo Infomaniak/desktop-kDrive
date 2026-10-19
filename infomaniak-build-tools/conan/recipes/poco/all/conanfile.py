@@ -175,6 +175,9 @@ class PocoConan(ConanFile):
         for comp in self._poco_component_tree.values():
             if comp.option:
                 tc.variables[comp.option.upper()] = self.options.get_safe(comp.option, False)
+        # FastLogger (Quill-based, MIT-licensed) is not used by kDrive. Poco 1.15.x enables it by
+        # default, so explicitly turn it off to avoid building its bundled Quill code.
+        tc.variables["ENABLE_FASTLOGGER"] = False
         tc.variables["POCO_UNBUNDLED"] = True
         tc.variables["CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP"] = True
         if is_msvc(self):

@@ -65,7 +65,8 @@ The exact set of redistributed binaries can vary by platform:
 - **Copyright:** Copyright (c) 2006-2024, Applied Informatics Software Engineering GmbH and Contributors
 - **Repository:** https://github.com/pocoproject/poco
 - **Note:** Declared in `conanfile.py`. Required by multiple kDrive libraries and redistributed by platform packaging
-  scripts.
+  scripts. The local recipe explicitly disables Poco's FastLogger (`ENABLE_FASTLOGGER=OFF`), so its bundled
+  MIT-licensed Quill backend is not built or redistributed.
 
 ### Sentry Native
 
