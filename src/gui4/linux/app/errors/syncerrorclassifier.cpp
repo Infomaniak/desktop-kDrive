@@ -109,7 +109,6 @@ const std::vector<Matcher> &matchers() {
     static const std::vector<Matcher> table{
             nodeWithConflict(SyncErrorKind::Conflict, {ConflictType::CreateCreate, ConflictType::EditEdit},
                              {ExitCode::Unknown, ExitCode::Ok}),
-            nodeWithInconsistency(SyncErrorKind::CaseError, {InconsistencyType::Case}),
             nodeWithCancel(SyncErrorKind::CreateCancel, CancelType::Create),
             nodeWithCancel(SyncErrorKind::DeleteCancel, CancelType::Delete),
             nodeWithCancel(SyncErrorKind::EditCancel, CancelType::Edit),
@@ -125,7 +124,6 @@ const std::vector<Matcher> &matchers() {
             nodeWithInconsistency(SyncErrorKind::PathLength, {InconsistencyType::PathLength}),
             nodeWithExit(SyncErrorKind::NotEnoughDiskSpace, ExitCode::SystemError, ExitCause::NotEnoughDiskSpace),
             nodeWithExit(SyncErrorKind::QuotaExceeded, ExitCode::BackError, ExitCause::QuotaExceeded),
-            nodeWithInconsistency(SyncErrorKind::ReservedName, {InconsistencyType::ReservedName}),
             nodeWithCancel(SyncErrorKind::TemporaryBlacklisted, CancelType::TmpBlacklisted),
             nodeWithCancel(SyncErrorKind::ExcludedByTemplate, CancelType::ExcludedByTemplate),
             nodeWithExit(SyncErrorKind::GenericErrForbidden, ExitCode::BackError, ExitCause::HttpErrForbidden),
@@ -164,14 +162,12 @@ bool isUserResolvableConflict(const Error &error) {
            (error.conflictType() == ConflictType::CreateCreate || error.conflictType() == ConflictType::EditEdit);
 }
 
-std::string_view toString(const SyncErrorKind kind) {
+std::string toString(const SyncErrorKind kind) {
     using enum SyncErrorKind;
 
     switch (kind) {
         case Conflict:
             return "Conflict";
-        case CaseError:
-            return "CaseError";
         case CreateCancel:
             return "CreateCancel";
         case DeleteCancel:
@@ -200,8 +196,6 @@ std::string_view toString(const SyncErrorKind kind) {
             return "NotEnoughDiskSpace";
         case QuotaExceeded:
             return "QuotaExceeded";
-        case ReservedName:
-            return "ReservedName";
         case TemporaryBlacklisted:
             return "TemporaryBlacklisted";
         case ExcludedByTemplate:
