@@ -96,7 +96,7 @@ void SyncErrorActionHandler::trigger(const ClassifiedSyncError &classified, cons
             openLocalFolder(context, parentFolder(error.destinationPath()));
             break;
         case SyncErrorAction::ManageDiskSpace:
-            // No disk usage tool is common to every desktop environment: open the volume of the synchronization (D9).
+            // No disk usage tool is common to every desktop environment: open the volume of the synchronization.
             openUrl(QUrl::fromLocalFile(QStorageInfo(Path2QStr(context.syncInfo.localPath())).rootPath()));
             break;
         case SyncErrorAction::ManageStorage:
