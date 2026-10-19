@@ -8,6 +8,7 @@ find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.15.2 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
+find_package(keychain REQUIRED)
 
 if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -112,13 +113,11 @@ if(WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/libzip/include"
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
+        "C:/Program Files (x86)/libzip/include")
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
+        ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 # Link

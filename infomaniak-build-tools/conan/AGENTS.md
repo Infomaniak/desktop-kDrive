@@ -19,7 +19,8 @@ conan/
     ├── openssl-macos/all/conanfile.py  # OpenSSL universal binary for macOS (lipo)
     ├── sentry/all/conanfile.py         # Sentry Native SDK + Crashpad
     ├── poco/all/conanfile.py           # Poco C++ libraries (22+ components)
-    └── xxhash/all/conanfile.py         # xxHash hashing library
+    ├── xxhash/all/conanfile.py         # xxHash hashing library
+    └── keychain/all/conanfile.py       # keychain password storage (ex-upstream submodule)
 ```
 
 ## Setup & Run
@@ -85,6 +86,8 @@ Several recipes remove `build_type` from package_id to avoid unnecessary rebuild
 
 ```
 qt/6.x (standalone)
+
+keychain/1.3.1 (standalone; replaces the former `src/3rdparty/keychain` submodule)
 
 openssl-macos/3.2.4 (macOS only)
   └── zlib [>=1.2.11 <2]

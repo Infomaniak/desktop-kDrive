@@ -141,7 +141,7 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** MIT
 - **Copyright:** Copyright (c) 2019 Hannes Rantzsch, Rene Meusel
 - **Repository:** https://github.com/hrantzsch/keychain
-- **Note:** Built from vendored source.
+- **Note:** Fetched from the upstream repository and built via a local Conan recipe.
 
 ### qt-piwik-tracker
 
