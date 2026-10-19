@@ -34,13 +34,14 @@ namespace Infomaniak.kDrive
         private const int _defaultHeight = 683;
         private const int _minimumWidth = 900;
         private const int _minimumHeight = 600;
+        private Type? _landingPageType = null;
         public AppNavigationView AppNavView { get { return NavView; } }
         public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public MainWindow(Type? landingPageType = null)
         {
             InitializeComponent();
-            AppNavView.LandingPageType = landingPageType;
+            _landingPageType = landingPageType;
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set the minimum size and allow resizing
@@ -78,6 +79,7 @@ namespace Infomaniak.kDrive
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
+            AppNavView.LandingPageType = _landingPageType;
             UpdateControlsVisibility();
         }
 
