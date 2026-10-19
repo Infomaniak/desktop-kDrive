@@ -27,11 +27,13 @@
 #include "app/dialogs/manydeletescontroller.h"
 #include "app/mainwindow/activitiescontroller.h"
 #include "app/mainwindow/blockingerrorcontroller.h"
+#include "app/mainwindow/errorspagecontroller.h"
 #include "app/mainwindow/homecontroller.h"
 #include "app/mainwindow/mainsidebarcontroller.h"
 #include "app/mainwindow/networkstatusobserver.h"
 #include "app/mainwindow/searchcontroller.h"
 #include "app/mainwindow/storagecontroller.h"
+#include "app/mainwindow/syncerroractionhandler.h"
 #include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
 #include "app/services/cachepopulator.h"
@@ -198,6 +200,16 @@ class AppClientLinux : public QApplication {
                                                            _settingsSyncActivationController,
                                                            _driveManagementController,
                                                            this};
+        // Declared after SettingsWindowController, which opens the file exclusions, and after SyncErrorsProjection, which
+        // must apply a change of synchronization before the error list reads it.
+        SyncErrorActionHandler _syncErrorActionHandler{_syncService, _syncErrorService, _settingsWindowController, this};
+        ErrorsPageController _errorsPageController{_syncErrorsProjection,
+                                                   _mainSelectionStore,
+                                                   _syncService,
+                                                   _syncErrorService,
+                                                   _syncErrorActionHandler,
+                                                   *_appRouter.activitiesNavigation(),
+                                                   this};
         QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};
