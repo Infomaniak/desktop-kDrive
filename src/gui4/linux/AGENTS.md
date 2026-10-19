@@ -274,7 +274,8 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
-  `AppConstants::Drive::renewalUri(drive)` holds the shop page rule per pack, so that no screen copies it.
+  `AppConstants::Drive::renewalUri(drive)` holds the shop page rule per pack, shared by the blocking error screen and
+  the errors page.
 - `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
@@ -336,6 +337,7 @@
 - `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It references
   category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
   presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
+  `requestOpenFileExclusions()` opens Settings on Advanced > file exclusions, for the errors page.
 - `app/settings/settingssyncactivationcontroller.*`: process-long transactional editor, owned by `AppClientLinux` and
   exposed as `SettingsWindowController.syncActivation`, that activates one available drive from Accounts. A single
   private `State` drives it: `Preparing` (server default folder requested, row busy) → `Editing` ⇄ `CheckingFolder` →
@@ -475,6 +477,20 @@
   the server fetches the kSuite id), restart the synchronization with `SyncService::startSync` (not renewed for a
   non-admin, maintenance, access denied), or request an onboarding login (logged out). The waking-up variant has no
   action, only a loader. The drive name shows a tooltip when truncated.
+- `app/mainwindow/errorlistmodel.*`: rows of the errors page for the selected synchronization, from
+  `SyncErrorsProjection`. Sections follow `SyncErrorCategory` order, then the error database id. Up to
+  `kMaxIndividualConflicts` conflicts are rows of the files to verify; beyond, one aggregated row stands for them in
+  the conflicts section. Texts are translation ids with their "file"/"folder" placeholder count, translated by the
+  `ErrorTexts` QML singleton; admin variants come from `describeSyncError`. Rows carry the item chip (name, path within
+  the synchronization, icon). Updates are applied in place by one merge pass over both sorted lists, so the view keeps
+  its scroll and focus; a change of synchronization resets the model.
+- `app/mainwindow/errorspagecontroller.*`: QML-facing state of the errors page (`errorCount`, `refreshPending`,
+  `refresh()`). Every row action is revalidated against the current errors before reaching `SyncErrorActionHandler`.
+- `app/mainwindow/syncerroractionhandler.*`: the only place that knows what each error button does: rename or open the
+  item online, open a local folder below the synchronization root, open the volume (disk space), open the shop
+  (`renewalUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
+  (`loginRequested`, as on the blocking screen), or contact the support. Logs name the kind and the action, never a
+  path.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
