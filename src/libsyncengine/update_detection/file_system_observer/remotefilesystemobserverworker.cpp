@@ -377,19 +377,20 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     countListingRequests();
 
     setUpdateFlagValue(true);
+    _liveSnapshot.setValid(true); // Allows to detect invalidation during the snapshot generation (e.g. if the user changes the
+                                  // exclusion template).
     ExitInfo exitInfo = initWithCursor();
 
     const auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedSeconds = end - start;
 
     if (exitInfo && !stopAsked()) {
-        _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for "
                                                                    << _liveSnapshot.nbItems() << " items");
         perfMonitor.stop();
     } else {
-        tryToInvalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
+        invalidateSnapshot();
 
         switch (exitInfo.code()) {
             case ExitCode::NetworkError:
