@@ -71,4 +71,15 @@ QtObject {
     readonly property real errorsChipIconSize: 12
     readonly property real errorsChipSpacing: 6
     readonly property real errorsChipMaximumWidthRatio: 0.7
+    readonly property real errorsCopyFieldHeight: 28
+    readonly property real errorsCopyIconSize: 14
+    readonly property real errorsInfoIconSize: 16
+    readonly property real errorsDetailsLineSpacing: IKSpacing.s2
+    readonly property real errorsDetailsHeaderPadding: IKSpacing.s4
+    readonly property real errorsDetailsColumnSpacing: IKSpacing.s16
+    // Below this width, the technical details show one name and value pair per row instead of two.
+    readonly property real errorsDetailsTwoPairsMinWidth: 480
+    readonly property int errorsDetailsChevronDuration: 150
+    // How long the copy button of a path shows its confirmation.
+    readonly property int errorsCopiedFeedbackDuration: 3000
 }
