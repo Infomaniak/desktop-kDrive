@@ -593,6 +593,7 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
                                                                                      << " nodeId=" << nodeId.toStdString());
         ExitCause exitCause{ExitCause::Unknown};
         if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) exitCause = ExitCause::NotFound;
+        if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) exitCause = ExitCause::FileAccessError;
 
         return {ExitCode::BackError, exitCause};
     }
