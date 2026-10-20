@@ -197,6 +197,7 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 
 ## Local norms
 - Keep the possible server-crash notion in server connection-loss diagnostics; connection loss is a useful crash indicator.
+- Derive state from existing sources of truth rather than maintaining redundant flags. For example, infer whether refresh work is active from its task handle instead of a separate boolean.
 
 ## Common Gotchas
 - `@MainActor` is required on all ViewModels — missing it causes runtime warnings in Swift 6 strict concurrency.

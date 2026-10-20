@@ -234,19 +234,29 @@ final class PermissionsViewController: OnboardingStepViewController {
 
         setupUI()
         bindValues()
-
-        viewModel.installLiteSyncExtensionIfNeeded()
     }
 
     override func viewWillAppear() {
         super.viewWillAppear()
 
-        didBecomeActiveObserver = NotificationCenter.default
-            .addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
-                self?.checkPermission()
-            }
+        if didBecomeActiveObserver == nil {
+            didBecomeActiveObserver = NotificationCenter.default
+                .addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+                    self?.checkPermission()
+                }
+        }
 
-        checkPermission()
+        viewModel.startRefreshing()
+    }
+
+    override func viewWillDisappear() {
+        super.viewWillDisappear()
+
+        viewModel.stopRefreshing()
+        if let didBecomeActiveObserver {
+            NotificationCenter.default.removeObserver(didBecomeActiveObserver)
+            self.didBecomeActiveObserver = nil
+        }
     }
 
     private func bindValues() {
