@@ -332,13 +332,11 @@ void SyncPalWorker::startFSOWorker(Worker &fsoWorker) {
 void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncStep step) {
     LOG_IF_FAIL(rfsoWorker.worker && rfsoWorker.side == ReplicaSide::Remote)
 
-    static const std::string resumeMessage = "Resuming RFSO until the synchronization leaves the Idle state.";
-
     switch (step) {
         case SyncStep::Idle: {
             if (rfsoWorker.isInProgress) return;
 
-            LOG_DEBUG(_logger, resumeMessage);
+            LOG_DEBUG(_logger, "Resuming RFSO until the synchronization leaves the Idle state.");
             rfsoWorker.worker->start();
             rfsoWorker.isInProgress = true;
 
@@ -350,14 +348,6 @@ void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncSte
             LOG_DEBUG(_logger, "Stopping RFSO as long as the synchronization does not reach the Done or Idle state.");
             stopAndWaitForExitOfWorker(rfsoWorker.worker);
             rfsoWorker.isInProgress = false;
-            break;
-        }
-        case SyncStep::Done: {
-            if (rfsoWorker.isInProgress) return;
-
-            LOG_DEBUG(_logger, resumeMessage);
-            rfsoWorker.worker->start();
-            rfsoWorker.isInProgress = true;
             break;
         }
         default:
