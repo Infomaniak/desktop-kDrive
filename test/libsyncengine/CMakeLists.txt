@@ -4,7 +4,7 @@ else()
     project(testsyncengine LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
@@ -99,8 +99,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testsyncengine_NAME} ${testsyncengine_SRCS})

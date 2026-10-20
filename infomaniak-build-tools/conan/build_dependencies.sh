@@ -94,8 +94,11 @@ function get_platform {
 
 
 # Get the target cpu architecture (Conan format) based on the platform and build type
-# On macOS and the build_type is Release, we build a universal binary (arm64 and x86_64).
-# Otherwise, we build for the current architecture (arm64 or x86_64).
+# On macOS, the host context always builds a universal binary (arm64 and x86_64), while the
+# build context uses the native architecture: build tools (e.g. the ConanCenter 'cmake' package
+# pulled by dependency recipes such as expat) only exist for 'armv8' and 'x86_64' and would be
+# rejected for the composite universal architecture.
+# On Linux, we build for the current architecture (arm64 or x86_64).
 # Possible values: 'armv8', 'x86_64', and 'armv8|x86_64' (universal binary).
 function get_target_architecture {
   local platform="$1"
@@ -114,7 +117,7 @@ function get_target_architecture {
 
   case "$platform" in
     darwin)
-      if [[ "$build_type" = "Debug" && "$target" = "build" ]]; then
+      if [[ "$target" = "build" ]]; then
         architecture="$(get_real_architecture)"
       else
         architecture="armv8|x86_64" # Universal binary

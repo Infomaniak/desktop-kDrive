@@ -4,8 +4,8 @@ else()
     project(libsyncengine LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation Net NetSSL JSON Util)
-find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+find_package(Poco 1.15.2 REQUIRED Foundation Net NetSSL JSON Util)
+find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -233,8 +233,7 @@ if(WIN32)
 else()
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR}
-            "/usr/local/include")
+            ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 # Link
