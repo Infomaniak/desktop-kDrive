@@ -321,9 +321,19 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</translation>
             <source>Continue</source> 
             <translation>Doorgaan</translation> 
         </message> 
+        <message id="buttonCopyPath"> 
+            <source>Copy path</source> 
+            <extracomment>Icon-only button next to a file path (Linux desktop app, "Errors to fix" page): copies the path to the clipboard. Used as tooltip and accessible name.</extracomment> 
+            <translation>Pad kopiëren</translation> 
+        </message> 
         <message id="buttonCopyShareLink"> 
             <source>Copy share link</source> 
             <translation>Deellink kopiëren</translation> 
+        </message> 
+        <message id="buttonCopyTechnicalDetails"> 
+            <source>Copy technical details</source> 
+            <extracomment>Icon-only button next to the "Technical details" of an unexpected error (Linux desktop app, "Errors to fix" page): copies them to the clipboard, to send them to the support. Used as tooltip and accessible name.</extracomment> 
+            <translation>Technische details kopiëren</translation> 
         </message> 
         <message id="buttonCreateAccount"> 
             <source>Create an account</source> 
@@ -2507,6 +2517,11 @@ De synchronisatie is onderbroken. Controleer uw bestanden en probeer het opnieuw
         <message id="teachingTipInvalidFolderTitle"> 
             <source>This folder cannot be used</source> 
             <translation>Deze map kan niet worden gebruikt</translation> 
+        </message> 
+        <message id="technicalDetailsCopiedToClipboard"> 
+            <source>Technical details copied to clipboard</source> 
+            <extracomment>Confirmation shown for a moment in the tooltip of the "Copy technical details" button once the details are in the clipboard (Linux desktop app, "Errors to fix" page).</extracomment> 
+            <translation>Technische details naar het klembord gekopieerd</translation> 
         </message> 
         <message id="titleConflictIndividualResolution"> 
             <source>Individual handling</source> 
