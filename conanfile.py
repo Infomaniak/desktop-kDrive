@@ -229,7 +229,7 @@ class KDriveDesktop(ConanFile):
 
         self.requires("sentry/0.7.10", options={ "shared": True, "qt_version": qt_version })
         self.requires("poco/1.15.4", options={ "shared": True })
-        self.requires("keychain/1.3.1")  # From local recipe
+        self.requires("keychain/1.3.0", options={ "shared": True })
 
     def _append_conan_vars_normalization(self):
         """
