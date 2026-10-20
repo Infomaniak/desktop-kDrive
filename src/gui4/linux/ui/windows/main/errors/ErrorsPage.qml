@@ -19,6 +19,116 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls.Basic
+import QtQuick.Layouts
+import kDrive.UI
 
-// "Errors to fix" page of the Activities tab. Its content comes with the error list.
-Item {}
+// "Errors to fix" page of the Activities tab: the errors of the selected synchronization, by section.
+FocusScope {
+    id: root
+
+    required property var controller
+
+    readonly property bool hasErrors: root.controller.errorCount > 0
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: IKActivities.pagePadding
+        spacing: IKActivities.errorsCardSpacing
+        visible: root.hasErrors
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: IKActivities.errorsCardActionSpacing
+
+            Text {
+                Layout.fillWidth: true
+                text: qsTrId("informationBlockSynchroErrorTitle", root.controller.errorCount)
+                textFormat: Text.StyledText
+                color: IKColors.textPrimary
+                font.pixelSize: IKFonts.bodySize
+                elide: Text.ElideRight
+            }
+
+            IKModalButton {
+                id: refreshButton
+
+                implicitHeight: IKActivities.errorsHeaderButtonHeight
+                role: IKModalButton.Tonal
+                text: qsTrId("buttonRefresh")
+                busy: root.controller.refreshPending
+                onClicked: root.controller.refresh()
+            }
+        }
+
+        ListView {
+            id: list
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            spacing: IKActivities.errorsCardSpacing
+            boundsBehavior: Flickable.StopAtBounds
+            // No current row: the view would keep it in place while the rows above settle their height, pushing the
+            // first section title out of view. The keyboard goes through the row buttons instead.
+            currentIndex: -1
+            keyNavigationEnabled: false
+            model: root.controller.model
+            section.property: "sectionTitleId"
+            section.delegate: Text {
+                required property string section
+
+                width: list.width
+                topPadding: IKActivities.sectionSpacing - IKActivities.errorsCardSpacing
+                bottomPadding: IKActivities.errorsSectionTitleSpacing - IKActivities.errorsCardSpacing
+                text: qsTrId(section)
+                textFormat: Text.PlainText
+                color: IKColors.textPrimary
+                font.pixelSize: IKActivities.errorsSectionTitleSize
+                font.weight: IKFonts.emphasized
+                Accessible.role: Accessible.Heading
+                Accessible.name: text
+            }
+            delegate: ErrorRow {
+                width: ListView.view.width
+                onActionTriggered: rowId => root.controller.invokeAction(rowId)
+            }
+
+            ScrollBar.vertical: ScrollBar {}
+        }
+    }
+
+    Column {
+        anchors.centerIn: parent
+        spacing: IKActivities.emptyContentSpacing
+        visible: !root.hasErrors
+
+        Image {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: IKActivities.noActivityIllustrationWidth
+            height: IKActivities.noActivityIllustrationHeight
+            source: ThemeMode.isDark ? "qrc:/assets/main/activities/empty-dark.svg" : "qrc:/assets/main/activities/empty.svg"
+            fillMode: Image.PreserveAspectFit
+            sourceSize.width: width
+            sourceSize.height: height
+        }
+
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: qsTrId("labelNoErrorsToFix")
+            color: IKColors.textPrimary
+            font.pixelSize: IKActivities.emptyTitleSize
+            font.weight: IKFonts.emphasized
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        IKModalButton {
+            id: seeActivitiesButton
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            role: IKModalButton.Tonal
+            text: qsTrId("buttonSeeActivities")
+            onClicked: root.controller.showActivities()
+        }
+    }
+}
