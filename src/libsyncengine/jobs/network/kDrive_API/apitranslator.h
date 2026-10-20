@@ -43,7 +43,7 @@ class ApiTranslator {
         static void clearSharedCache(const DriveId driveId) {
             const std::scoped_lock lock(_mutex);
             (void) _specialFolderRemoteIdsCache[SpecialRemoteFolder::Shared].erase(driveId);
-            _sharedFolderNodeInfo = {};
+            (void) _sharedFolderNodeInfoCacheMap.erase(driveId);
         };
 
         static const SpecialFolderNames v3SpecialFolderNames;
@@ -55,7 +55,8 @@ class ApiTranslator {
         using RemoteNodeIdCacheMap = std::unordered_map<DriveId, RemoteNodeId>;
         using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialRemoteFolder, RemoteNodeIdCacheMap>;
         static RemoteSpecialFoldersCacheMap _specialFolderRemoteIdsCache;
-        static NodeInfo _sharedFolderNodeInfo;
+        using SharedFolderNodeInfoCacheMap = std::unordered_map<DriveId, NodeInfo>;
+        static SharedFolderNodeInfoCacheMap _sharedFolderNodeInfoCacheMap;
 
         [[nodiscard]] static RemoteNodeId getValue(DriveId driveId, const RemoteNodeIdCacheMap &cache);
 
