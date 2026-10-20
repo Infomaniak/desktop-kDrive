@@ -25,7 +25,7 @@
   choice translated in the system language independently of the app language, with English as fallback.
 
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
-- Treat Qt 6.11.1 as the authoritative Qt version for Linux v4; verify the configured dependency before attributing
+- Treat Qt 6.12.0 as the authoritative Qt version for Linux v4; verify the configured dependency before attributing
   behavior
   to an older Qt release.
 - Do not add links to `.md` files that are not versioned in git.
@@ -260,7 +260,7 @@
 
 ## Scope
 
-- Linux-only v4 frontend based on Qt 6.11.1 (QML + C++).
+- Linux-only v4 frontend based on Qt 6.12.0 (QML + C++).
 - This package handles UI bootstrap and server communication only.
 - Sync business logic stays in `src/libsyncengine/` and server-side jobs.
 

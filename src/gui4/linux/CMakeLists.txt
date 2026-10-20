@@ -5,14 +5,14 @@ endif ()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS
+find_package(Qt6 6.12 REQUIRED COMPONENTS
         Core Concurrent Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
 if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
 find_package(keychain REQUIRED) # TLS certificate read by communicationlayer/tlscerthelper.cpp
 
-qt_standard_project_setup(REQUIRES 6.11)
+qt_standard_project_setup(REQUIRES 6.12)
 
 set(QT_QML_GENERATE_QMLLS_INI ON)
 
