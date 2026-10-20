@@ -60,6 +60,10 @@ class ErrorsPageController final : public QObject {
         Q_INVOKABLE void refresh();
         /** Runs the action of a row; ignored when its error is gone. */
         Q_INVOKABLE void invokeAction(const QString &rowId);
+        /** Copies the absolute destination path of a row to the clipboard; the row shows its `~` display form. */
+        Q_INVOKABLE void copyPath(const QString &rowId) const;
+        /** Copies the technical details of a row to the clipboard, to be sent to the support. */
+        Q_INVOKABLE void copyTechnicalDetails(const QString &rowId) const;
         /** Returns to the activity list ("View activities" of the empty state). */
         Q_INVOKABLE void showActivities();
 

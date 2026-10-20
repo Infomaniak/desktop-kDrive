@@ -65,4 +65,10 @@ namespace KDC {
  */
 [[nodiscard]] std::optional<SyncPath> resolveExistingPathBelowSyncRoot(const SyncPath &syncRoot, const SyncPath &path);
 
+/**
+ * Returns the absolute form of a path of a synchronization, without checking it: `path` itself when absolute, otherwise
+ * `path` below `syncRoot`. Error paths are relative to the root, except some server ones (`FileRescuer`).
+ */
+[[nodiscard]] SyncPath absoluteSyncPath(const SyncPath &syncRoot, const SyncPath &path);
+
 } // namespace KDC
