@@ -76,9 +76,7 @@ final class PermissionsViewModel: ObservableObject {
                     return
                 }
                 guard !Task.isCancelled else { return }
-                if self?.currentState != .done {
-                    self?.updatePermissionStatus()
-                }
+                self?.updatePermissionStatus()
             }
         }
         updatePermissionStatus()

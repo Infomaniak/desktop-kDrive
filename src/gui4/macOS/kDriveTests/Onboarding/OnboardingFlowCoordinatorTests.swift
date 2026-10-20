@@ -104,6 +104,7 @@ struct OnboardingFlowCoordinatorTests {
 private actor RefreshPermissionHandler: MacOSPermissionHandling {
     private var checks = 0
     private var pendingCheck: CheckedContinuation<Bool, Never>?
+    private var isRevoked = false
     let suspendFirstCheck: Bool
 
     init(suspendFirstCheck: Bool = false) {
@@ -115,12 +116,16 @@ private actor RefreshPermissionHandler: MacOSPermissionHandling {
         if suspendFirstCheck && checks == 1 {
             return await withCheckedContinuation { pendingCheck = $0 }
         }
-        return checks > 1
+        return checks > 1 && !isRevoked
     }
 
     nonisolated func systemPreferencesURL(for permission: MacOSPermission) -> URL? { nil }
 
     func checkCount() -> Int { checks }
+
+    func revokeAuthorization() {
+        isRevoked = true
+    }
 
     func completePendingCheck() {
         pendingCheck?.resume(returning: true)
@@ -164,6 +169,28 @@ extension SharedDITests {
                     try await Task.sleep(nanoseconds: 10_000_000)
                 }
                 #expect(viewModel.currentState == .done)
+            }
+        }
+
+        @Test("Authorization revocation is detected after the permission was marked done")
+        func detectsRevocationAfterAuthorization() async throws {
+            let handler = RefreshPermissionHandler()
+            try await withHandler(handler) {
+                let viewModel = makeViewModel()
+                defer { viewModel.stopRefreshing() }
+                viewModel.startRefreshing()
+                for _ in 0 ..< 500 {
+                    if viewModel.currentState == .done { break }
+                    try await Task.sleep(nanoseconds: 10_000_000)
+                }
+                #expect(viewModel.currentState == .done)
+
+                await handler.revokeAuthorization()
+                for _ in 0 ..< 500 {
+                    if viewModel.currentState == .warning { break }
+                    try await Task.sleep(nanoseconds: 10_000_000)
+                }
+                #expect(viewModel.currentState == .warning)
             }
         }
 
