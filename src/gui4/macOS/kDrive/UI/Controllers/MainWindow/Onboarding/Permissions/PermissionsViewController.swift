@@ -43,12 +43,7 @@ extension MacOSPermission {
     }
 
     var majorCellIndex: Int {
-        switch self {
-        case .endpointSecurityExtension:
-            return 2
-        case .fullDiskAccess:
-            return 1
-        }
+        return instructions.count - 1
     }
 }
 
