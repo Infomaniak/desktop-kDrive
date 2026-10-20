@@ -220,7 +220,6 @@ public extension UIParametersInfo {
             distributionChannel: distributionChannel.toKDCDistributionChannel(),
             sentryEnabled: isSentryEnabled,
             matomoEnabled: isMatomoEnabled,
-            askBeforeDelete: parametersInfo.askBeforeDelete
         )
     }
 }
