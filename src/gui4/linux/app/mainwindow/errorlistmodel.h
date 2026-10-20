@@ -27,6 +27,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <utility>
 #include <vector>
 
 namespace KDC {
@@ -62,6 +63,9 @@ class ErrorListModel final : public QAbstractListModel {
             ItemPathRole,
             ItemIconNameRole,
             IsDirectoryRole,
+            VariantRole,
+            CopyablePathRole,
+            TechnicalDetailsRole,
             ActionLabelIdRole,
             ActionLabelArgCountRole,
             ActionExternalRole,
@@ -78,6 +82,8 @@ class ErrorListModel final : public QAbstractListModel {
 
         /** Returns the error of an error row, or `std::nullopt` for an unknown row or the aggregated conflicts row. */
         [[nodiscard]] std::optional<ErrorDbId> errorDbId(const QString &rowId) const;
+        /** Returns the technical details of a row as "Name: value" lines, or an empty string. */
+        [[nodiscard]] QString technicalDetailsText(const QString &rowId) const;
 
     private:
         struct Row {
@@ -94,6 +100,9 @@ class ErrorListModel final : public QAbstractListModel {
                 QString itemPath;
                 QString itemIconName;
                 bool isDirectory{false};
+                SyncErrorRowVariant variant{SyncErrorRowVariant::Standard};
+                QString copyablePath;
+                std::vector<std::pair<QString, QString>> technicalDetails;
                 QString actionLabelId;
                 uint8_t actionLabelArgCount{0};
                 bool actionExternal{false};
