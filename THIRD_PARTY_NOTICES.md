@@ -85,6 +85,14 @@ The exact set of redistributed binaries can vary by platform:
 - **Repository:** https://chromium.googlesource.com/crashpad/crashpad/
 - **Note:** Declared in `conanfile.py`. The `crashpad_handler` executable is redistributed with the application.
 
+### keychain
+
+- **Version:** 1.3.0
+- **License:** MIT
+- **Copyright:** Copyright (c) 2019 Hannes Rantzsch, Rene Meusel
+- **Repository:** https://github.com/hrantzsch/keychain
+- **Note:** Declared in `conanfile.py` as `keychain/1.3.0` (ConanCenter recipe) and linked as a static library.
+
 ---
 
 ## Packaged Dependencies Installed Outside Conan
@@ -135,13 +143,6 @@ The exact set of redistributed binaries can vary by platform:
 - **Repository:** https://github.com/JuliaStrings/utf8proc
 - **Note:** Built from vendored source on Unix platforms. Also a Conan-transitive dependency pulled in by Poco 1.15.x
   (Foundation's Unicode support was unbundled onto utf8proc starting in Poco 1.15.x).
-
-### keychain
-
-- **License:** MIT
-- **Copyright:** Copyright (c) 2019 Hannes Rantzsch, Rene Meusel
-- **Repository:** https://github.com/hrantzsch/keychain
-- **Note:** Fetched from the upstream repository and built via a local Conan recipe.
 
 ### qt-piwik-tracker
 

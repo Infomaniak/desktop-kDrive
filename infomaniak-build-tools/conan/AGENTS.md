@@ -19,8 +19,7 @@ conan/
     ├── openssl-macos/all/conanfile.py  # OpenSSL universal binary for macOS (lipo)
     ├── sentry/all/conanfile.py         # Sentry Native SDK + Crashpad
     ├── poco/all/conanfile.py           # Poco C++ libraries (22+ components)
-    ├── xxhash/all/conanfile.py         # xxHash hashing library
-    └── keychain/all/conanfile.py       # keychain password storage (ex-upstream submodule)
+    └── xxhash/all/conanfile.py         # xxHash hashing library
 ```
 
 ## Setup & Run
@@ -87,7 +86,7 @@ Several recipes remove `build_type` from package_id to avoid unnecessary rebuild
 ```
 qt/6.x (standalone)
 
-keychain/1.3.1 (standalone; replaces the former `src/3rdparty/keychain` submodule)
+keychain/1.3.0 (ConanCenter; replaces the former `src/3rdparty/keychain` submodule)
 
 openssl-macos/3.2.4 (macOS only)
   └── zlib [>=1.2.11 <2]
@@ -177,6 +176,8 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   configurations are built. Updates can also advance dependencies using version ranges and recipes from ConanCenter.
   Volatile runners need a persistent/restored cache or a binary remote to reuse newly built packages across runs.
 - **Poco components**: 22+ components with recursive dependency tree. Enable/disable via `enable_*` options
+- **GCC 15 (Linux)**: package-scoped workarounds for ConanCenter sources (m4 in C23, keychain `-Werror`) live in
+  `profiles/linux-overrides`, composed by `build_dependencies.sh`. Add new ones there.
 - **openssl-macos vs openssl**: macOS uses `openssl-macos` (universal), other platforms use `openssl` from Conan Center
 
 ## Pre-PR Checks

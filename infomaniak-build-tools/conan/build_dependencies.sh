@@ -264,8 +264,8 @@ conan_install_cmd=(
 )
 
 if [[ "$platform" == "linux" ]]; then
-  # Compose with the selected profile; only libgcrypt's build environment is overridden.
-  conan_install_cmd+=(--profile:all="$conan_remote_base_folder/profiles/linux-libgcrypt")
+  # Compose with the selected profile; only package-scoped Linux overrides are applied.
+  conan_install_cmd+=(--profile:all="$conan_remote_base_folder/profiles/linux-overrides")
 fi
 
 if [[ "$enable_update" == true ]]; then
