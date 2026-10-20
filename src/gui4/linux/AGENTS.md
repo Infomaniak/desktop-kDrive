@@ -40,8 +40,8 @@
 - Keep the Linux frameless header and custom shadow on native Wayland without depending on `Qt6::GuiPrivate`. Accept
   that Wayland snapping includes the transparent shadow margin, so the visible surface may not touch the screen edge.
 - On a Linux host, validate natively: run `./infomaniak-build-tools/conan/build_dependencies.sh Debug`, configure with
-  the generated Conan/CMake Debug preset, then build `kDrive`, `kDrive_client`, and `kdrive_qml`. Do not use the Podman
-  release script for this local Linux validation path.
+  the generated Conan/CMake Debug preset, then build `kDrive` and `kdrive_qml`. Do not build the legacy `kDrive_client`,
+  which is not buildable for version 4. Do not use the Podman release script for this local Linux validation path.
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not duplicate method documentation between headers and implementation files. Document public API contracts in
   headers, private helpers in `.cpp` files, and keep implementation-specific comments next to the relevant code.
