@@ -298,9 +298,10 @@
   A user-resolvable conflict (node-level create/create or edit/edit) is always a version conflict. `resolveBlockingError`
   keeps the oldest blocking error of a synchronization and reports `LoggedOut` for a disconnected user even without an
   `InvalidToken` error; `isUpdateRequired` detects an `UpdateRequired` error of any level.
-  `BlockingErrorKind` lives in the `BlockingErrors` `Q_NAMESPACE` (the only Qt meta-object of the domain), registered
-  for QML as `BlockingErrors.Asleep`, ..., so no layer mirrors it. `toString` returns a `std::string`, so
-  `qCInfo() << kind` prints "Name(value)" through the generic `libcommon` operator.
+  `BlockingErrorKind` and `SyncErrorRowVariant` live in the `BlockingErrors` and `SyncErrors` `Q_NAMESPACE`s (the only
+  Qt meta-objects of the domain), registered for QML as `BlockingErrors.Asleep`, `SyncErrors.CopyablePath`, ..., so no
+  layer mirrors them. `toString` returns a `std::string`, so `qCInfo() << kind` prints "Name(value)" through the
+  generic `libcommon` operator.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability (the error state follows `SyncErrorsProjection::hasTrayRelevantError`, so only the error kinds
   marked `showsInTray` turn the icon to error), GNOME-compatible tray menu actions (the Settings entry is disabled while
@@ -482,10 +483,14 @@
   `kMaxIndividualConflicts` conflicts are rows of the files to verify; beyond, one aggregated row stands for them in
   the conflicts section. Texts are translation ids with their "file"/"folder" placeholder count, translated by the
   `ErrorTexts` QML singleton; admin variants come from `describeSyncError`. Rows carry the item chip (name, path within
-  the synchronization, icon). Updates are applied in place by one merge pass over both sorted lists, so the view keeps
-  its scroll and focus; a change of synchronization resets the model.
+  the synchronization, icon), the copyable path (`~` form, the controller copies the absolute one), and the technical
+  details of an unexpected error (support fields, paths relative to the root, app version and system, empty or unknown
+  values skipped). Destination paths go through `absoluteSyncPath`: the server sends some of them absolute. Updates are
+  applied in place by one merge pass over both sorted lists, so the view keeps its scroll and focus; a change of
+  synchronization resets the model.
 - `app/mainwindow/errorspagecontroller.*`: QML-facing state of the errors page (`errorCount`, `refreshPending`,
-  `refresh()`). Every row action is revalidated against the current errors before reaching `SyncErrorActionHandler`.
+  `refresh()`). Every row action is revalidated against the current errors before reaching `SyncErrorActionHandler`. It
+  copies a path or the technical details to the clipboard.
 - `app/mainwindow/syncerroractionhandler.*`: the only place that knows what each error button does: rename or open the
   item online, open a local folder below the synchronization root, open the volume (disk space), open the shop
   (`renewalUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
@@ -662,8 +667,11 @@
     - `ui/windows/main/errors/`: "Errors to fix" sub-page of Activities (`ErrorsPage`), titled `errorPageTitle` in the
       toolbar: header with the error count and Refresh, one card per error in sections (`ErrorRow`), empty state with
       "View activities". A row shows its button only once its action exists: "Choose a version", "Manage" (conflicts)
-      and "Understand the issue" stay hidden until their pages and dialogs land. The item chip (`ErrorItemChip`) puts
-      names with a leading or trailing space in quotes and shows the path in its tooltip.
+      and "Understand the issue" stay hidden until their pages and dialogs land. Variants: the item chip
+      (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the tooltip), the information icon
+      (first line of the description, advice in the tooltip), the copyable path, and the folded technical details
+      (two name and value pairs per row on wide cards, values elided on the left) with their copy button
+      (`ErrorCopyButton`, a check mark confirms the copy).
     - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
       the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
       with Down on the last row. It consumes `SearchController`; it must not call IPC.
