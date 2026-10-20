@@ -102,6 +102,11 @@ enum class SyncErrorAction : uint8_t {
     EnumEnd
 };
 
+// Dedicated namespace, like `BlockingErrors` below: QML reads these values as `SyncErrors.CopyablePath`, ...
+// (registered in AppClientLinux::setupQmlEngine).
+namespace SyncErrors {
+Q_NAMESPACE
+
 // Layout of an error row.
 enum class SyncErrorRowVariant : uint8_t {
     Standard,
@@ -111,6 +116,11 @@ enum class SyncErrorRowVariant : uint8_t {
     Technical, // The technical details of the error are listed
     EnumEnd
 };
+Q_ENUM_NS(SyncErrorRowVariant)
+
+} // namespace SyncErrors
+
+using SyncErrors::SyncErrorRowVariant;
 
 // Explanation dialog opened by the `Explain` action.
 enum class SyncErrorExplanation : uint8_t {
