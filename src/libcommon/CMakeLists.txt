@@ -8,7 +8,6 @@ find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.15.2 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
-find_package(keychain REQUIRED)
 
 if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -126,7 +125,6 @@ target_link_libraries(${libcommon_NAME}
     Poco::Foundation Poco::JSON Poco::Util
     log4cplus::log4cplus
     sentry::sentry
-    keychain
     libzip::zip)
 
 if(UNIX)
