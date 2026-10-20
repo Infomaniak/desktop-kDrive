@@ -280,7 +280,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotValidity(bool &remo
 
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
-    if (const auto exitInfo = checkIfValidListingCursorsExist(remoteSnapshotCanBeReused); !exitInfo) {
+    if (const auto exitInfo = checkIfValidListingSyncFolderCursorExists(remoteSnapshotCanBeReused); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in checkIfValidListingCursorsExist: " << exitInfo);
 
         return exitInfo;
@@ -292,7 +292,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotValidity(bool &remo
 ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteSnapshotCanBeReused() {
     const auto clearRemoteSnapshotData = [this]() {
         LOG_SYNCPAL_DEBUG(_logger, "No valid remote snapshot backup exists. Clearing all listing cursors from database.");
-        (void) clearListingCursors();
+        (void) clearSyncFolderListingCursor();
         invalidateSnapshot();
     };
 
@@ -1504,14 +1504,7 @@ ExitInfo RemoteFileSystemObserverWorker::clearSharedFolderListingCursor() {
     return exitInfo;
 }
 
-void RemoteFileSystemObserverWorker::resume() {
-    if (isRunning()) {
-        LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " is already running");
-        return;
-    }
-
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << name() << " resuming.");
-
+void RemoteFileSystemObserverWorker::init() {
     ISyncWorker::init();
 
     // We force a `listing/continue` every time the worker is resumed, to ensure that we do not miss any remote change.
