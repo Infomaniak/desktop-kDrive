@@ -10,6 +10,7 @@ find_package(Qt6 6.11 REQUIRED COMPONENTS
 if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
+find_package(keychain REQUIRED) # TLS certificate read by communicationlayer/tlscerthelper.cpp
 
 qt_standard_project_setup(REQUIRES 6.11)
 
@@ -493,6 +494,7 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::Widgets # Added because libcommon depends on it; Qt will warn if it's not linked.
         ${libcommon_NAME}
         ${libcommongui_NAME}
+        keychain::keychain
 )
 
 if (QT_FEATURE_xcb)
