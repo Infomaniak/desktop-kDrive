@@ -290,6 +290,8 @@ final class PermissionsViewController: OnboardingStepViewController {
             return
         }
 
+        secondaryButton.isHidden = state == .done
+
         switch state {
         case .neutral:
             cell.state = .neutral
@@ -331,7 +333,10 @@ final class PermissionsViewController: OnboardingStepViewController {
         primaryButton.isHidden = false
         primaryButton.target = self
         primaryButton.action = #selector(didClickValidate)
-        secondaryButton.isHidden = true
+        secondaryButton.title = KDriveLocalizable.needHelpSetting
+        secondaryButton.target = self
+        secondaryButton.action = #selector(didClickNeedHelp)
+        secondaryButton.isHidden = viewModel.currentState == .done
 
         switch permission {
         case .endpointSecurityExtension:
@@ -343,6 +348,10 @@ final class PermissionsViewController: OnboardingStepViewController {
 
     @objc private func didClickValidate() {
         viewModel.navigateIfPossible()
+    }
+
+    @objc private func didClickNeedHelp() {
+        NSWorkspace.shared.open(URLConstants.permissionsFaq)
     }
 
     private func checkPermission() {
