@@ -1604,7 +1604,8 @@ ExitInfo RemoteFileSystemObserverWorker::setBlackList(bool &blacklistHasChanged)
     }
 
     blacklistHasChanged = _blackList != newBlackList;
-    _blackList = newBlackList;
+
+    if (blacklistHasChanged) _blackList = newBlackList;
 
     return ExitCode::Ok;
 };
