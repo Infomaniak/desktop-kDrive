@@ -27,6 +27,7 @@
 #include "libcommon/utility/types.h"
 
 #include <algorithm>
+#include <iterator>
 #include <tuple>
 
 namespace KDC {
@@ -188,34 +189,51 @@ void ErrorListModel::reset() {
 }
 
 // Applies the next rows in place. Both lists are sorted the same way, so a single merge pass removes, inserts and updates
-// rows without moving any. A row whose section changed is removed, then inserted at its new place.
+// rows. Consecutive removed or inserted rows go in one range each: a large change moves the rows once per range, not once
+// per row. A row whose section changed is removed, then inserted at its new place.
 void ErrorListModel::refresh() {
     auto nextRows = buildRows();
+    const auto removeRange = [this](const std::size_t first, const std::size_t last) {
+        beginRemoveRows({}, static_cast<int>(first), static_cast<int>(last) - 1);
+        (void) _rows.erase(_rows.begin() + static_cast<std::ptrdiff_t>(first), _rows.begin() + static_cast<std::ptrdiff_t>(last));
+        endRemoveRows();
+    };
+
     std::size_t rowIndex = 0;
-    for (auto &nextRow: nextRows) {
-        while (rowIndex < _rows.size() && isBefore(_rows[rowIndex], nextRow)) {
-            const auto removedIndex = static_cast<int>(rowIndex);
-            beginRemoveRows({}, removedIndex, removedIndex);
-            (void) _rows.erase(_rows.begin() + static_cast<std::ptrdiff_t>(rowIndex));
-            endRemoveRows();
+    std::size_t nextIndex = 0;
+    while (nextIndex < nextRows.size()) {
+        auto removedEnd = rowIndex;
+        while (removedEnd < _rows.size() && isBefore(_rows[removedEnd], nextRows[nextIndex])) {
+            ++removedEnd;
+        }
+        if (removedEnd > rowIndex) {
+            removeRange(rowIndex, removedEnd);
         }
 
         // Same section and database id: the same row.
-        if (rowIndex < _rows.size() && !isBefore(nextRow, _rows[rowIndex])) {
-            updateRow(static_cast<int32_t>(rowIndex), std::move(nextRow));
-        } else {
-            const auto insertedIndex = static_cast<int>(rowIndex);
-            beginInsertRows({}, insertedIndex, insertedIndex);
-            (void) _rows.insert(_rows.begin() + static_cast<std::ptrdiff_t>(rowIndex), std::move(nextRow));
-            endInsertRows();
+        if (rowIndex < _rows.size() && !isBefore(nextRows[nextIndex], _rows[rowIndex])) {
+            updateRow(static_cast<int32_t>(rowIndex), std::move(nextRows[nextIndex]));
+            ++rowIndex;
+            ++nextIndex;
+            continue;
         }
-        ++rowIndex;
+
+        auto insertedEnd = nextIndex + 1;
+        while (insertedEnd < nextRows.size() && (rowIndex == _rows.size() || isBefore(nextRows[insertedEnd], _rows[rowIndex]))) {
+            ++insertedEnd;
+        }
+        const auto insertedCount = insertedEnd - nextIndex;
+        beginInsertRows({}, static_cast<int>(rowIndex), static_cast<int>(rowIndex + insertedCount) - 1);
+        (void) _rows.insert(_rows.begin() + static_cast<std::ptrdiff_t>(rowIndex),
+                            std::make_move_iterator(nextRows.begin() + static_cast<std::ptrdiff_t>(nextIndex)),
+                            std::make_move_iterator(nextRows.begin() + static_cast<std::ptrdiff_t>(insertedEnd)));
+        endInsertRows();
+        rowIndex += insertedCount;
+        nextIndex = insertedEnd;
     }
 
     if (rowIndex < _rows.size()) {
-        beginRemoveRows({}, static_cast<int>(rowIndex), static_cast<int>(_rows.size()) - 1);
-        (void) _rows.erase(_rows.begin() + static_cast<std::ptrdiff_t>(rowIndex), _rows.end());
-        endRemoveRows();
+        removeRange(rowIndex, _rows.size());
     }
 }
 
