@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.13.3 REQUIRED XML Net NetSSL Crypto)
+find_package(Poco 1.15.2 REQUIRED XML Net NetSSL Crypto)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -248,8 +248,6 @@ endif()
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/libzip/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testserver_NAME}
