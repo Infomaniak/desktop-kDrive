@@ -101,7 +101,9 @@ extension MacOSPermission {
         var argument: String? {
             switch self {
             case .openSecurityExtensions:
-                if #available(macOS 15.0, *) {
+                if #available(macOS 26.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsLink
+                } else if #available(macOS 15.0, *) {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
                 } else {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsArgumentLegacy
@@ -122,7 +124,9 @@ extension MacOSPermission {
             case .openSystemSettings:
                 return KDriveLocalizable.instructionOpenSystemSettingsLink
             case .openSecurityExtensions:
-                if #available(macOS 15.0, *) {
+                if #available(macOS 26.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
+                } else if #available(macOS 15.0, *) {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsLink
                 } else {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsLinkLegacy
