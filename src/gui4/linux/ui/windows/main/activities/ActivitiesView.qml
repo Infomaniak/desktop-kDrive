@@ -27,6 +27,7 @@ Item {
     id: root
 
     required property var controller
+    required property var errorsPageController
     required property var navigation
 
     // One component per page of the ActivitiesNavigation chain, in chain order: the stack depth of a page is its index + 1.
@@ -84,6 +85,8 @@ Item {
     Component {
         id: errorsPageComponent
 
-        ErrorsPage {}
+        ErrorsPage {
+            controller: root.errorsPageController
+        }
     }
 }
