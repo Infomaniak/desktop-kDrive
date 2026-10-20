@@ -25,6 +25,14 @@
 #include "app/services/syncservice.h"
 #include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/types.h"
+#include "version.h"
+
+#include <QDateTime>
+#include <QGuiApplication>
+#include <QStringList>
+#include <QSysInfo>
+#include <QVariantList>
+#include <QVariantMap>
 
 #include <algorithm>
 #include <iterator>
@@ -79,6 +87,73 @@ bool isBefore(const auto &lhs, const auto &rhs) {
     return std::tie(lhs.section, lhs.errorDbId) < std::tie(rhs.section, rhs.errorDbId);
 }
 
+// Distribution and graphical session, such as "Ubuntu 26.04 LTS, Wayland": the behavior of the app depends on both.
+QString systemDescription() {
+    QString session = QGuiApplication::platformName();
+    if (session == u"wayland"_s) {
+        session = u"Wayland"_s;
+    } else if (session == u"xcb"_s) {
+        session = u"X11"_s;
+    }
+    return u"%1, %2"_s.arg(QSysInfo::prettyProductName(), session);
+}
+
+// Fields of an unexpected error for the support, those of the macOS client plus where the sync engine raised it and the
+// app version. Empty, unknown and `None` values are skipped. Paths are relative to the synchronization root, so that the
+// text the user sends does not show the rest of the computer. Labels stay in English: they name technical fields that
+// support reads.
+std::vector<std::pair<QString, QString>> technicalDetails(const Error &error, const std::optional<SyncContext> &context) {
+    std::vector<std::pair<QString, QString>> details;
+    const auto add = [&details](const QString &label, const QString &value) {
+        if (!value.isEmpty() && value != u"Unknown"_s && value != u"None"_s) {
+            (void) details.emplace_back(label, value);
+        }
+    };
+    const SyncPath syncRoot = context.has_value() ? context->syncInfo.localPath().lexically_normal() : SyncPath{};
+    const auto pathBelowRoot = [&syncRoot](const SyncPath &path) {
+        if (path.empty() || syncRoot.empty()) {
+            return Path2QStr(path.lexically_normal());
+        }
+        return Path2QStr(absoluteSyncPath(syncRoot, path).lexically_relative(syncRoot));
+    };
+
+    add(u"ID"_s, QString::number(error.dbId()));
+    if (error.time() > 0) {
+        add(u"Timestamp"_s, QDateTime::fromSecsSinceEpoch(error.time()).toString(Qt::ISODate));
+    }
+    add(u"Level"_s, QString::fromStdString(toString(error.level())));
+    add(u"Exit code"_s, QString::fromStdString(toString(error.exitCode())));
+    add(u"Exit cause"_s, QString::fromStdString(toString(error.exitCause())));
+    add(u"Auto-resolved"_s, error.isAutoResolved() ? u"true"_s : u"false"_s);
+    add(u"Function"_s, QString::fromStdString(error.functionName()));
+    add(u"Worker"_s, QString::fromStdString(error.workerName()));
+    add(u"Sync DB ID"_s, QString::number(error.syncDbId()));
+    // Without synchronization context, the drive is unknown; a context whose drive id is 0 is shown, as an anomaly.
+    if (context.has_value()) {
+        add(u"Drive ID"_s, QString::number(context->drive.driveId()));
+    }
+    add(u"Path"_s, pathBelowRoot(error.path()));
+    add(u"Destination path"_s, pathBelowRoot(error.destinationPath()));
+    add(u"Node type"_s, QString::fromStdString(toString(error.nodeType())));
+    add(u"Conflict type"_s, QString::fromStdString(toString(error.conflictType())));
+    add(u"Inconsistency type"_s, QString::fromStdString(toString(error.inconsistencyType())));
+    add(u"Cancel type"_s, QString::fromStdString(toString(error.cancelType())));
+    add(u"Local node ID"_s, QString::fromStdString(error.localNodeId()));
+    add(u"Remote node ID"_s, QString::fromStdString(error.remoteNodeId()));
+    add(u"App version"_s, QString::fromLatin1(KDRIVE_VERSION_STRING));
+    add(u"System"_s, systemDescription());
+    return details;
+}
+
+QVariantList technicalDetailsVariant(const std::vector<std::pair<QString, QString>> &details) {
+    QVariantList list;
+    list.reserve(static_cast<qsizetype>(details.size()));
+    for (const auto &[label, value]: details) {
+        list.append(QVariantMap{{u"label"_s, label}, {u"value"_s, value}});
+    }
+    return list;
+}
+
 } // namespace
 
 ErrorListModel::ErrorListModel(const SyncErrorsProjection &projection, const MainSelectionStore &selectionStore,
@@ -100,6 +175,19 @@ ErrorListModel::ErrorListModel(const SyncErrorsProjection &projection, const Mai
     (void) connect(&_syncService, &SyncService::syncActionPendingChanged, this, refreshPendingRows);
     (void) connect(&_syncErrorService, &SyncErrorService::refreshPendingChanged, this, refreshPendingRows);
     _rows = buildRows();
+}
+
+QString ErrorListModel::technicalDetailsText(const QString &rowId) const {
+    const auto rowIt = std::ranges::find(_rows, rowId, &Row::rowId);
+    if (rowIt == _rows.end()) {
+        return {};
+    }
+
+    QStringList lines;
+    for (const auto &[label, value]: rowIt->technicalDetails) {
+        lines.append(u"%1: %2"_s.arg(label, value));
+    }
+    return lines.join(u'\n');
 }
 
 int ErrorListModel::rowCount(const QModelIndex &parent) const {
@@ -138,6 +226,12 @@ QVariant ErrorListModel::data(const QModelIndex &index, const int role) const {
             return row.itemIconName;
         case IsDirectoryRole:
             return row.isDirectory;
+        case VariantRole:
+            return QVariant::fromValue(row.variant);
+        case CopyablePathRole:
+            return row.copyablePath;
+        case TechnicalDetailsRole:
+            return technicalDetailsVariant(row.technicalDetails);
         case ActionLabelIdRole:
             return row.actionLabelId;
         case ActionLabelArgCountRole:
@@ -165,6 +259,9 @@ QHash<int, QByteArray> ErrorListModel::roleNames() const {
             {ItemPathRole, "itemPath"},
             {ItemIconNameRole, "itemIconName"},
             {IsDirectoryRole, "isDirectory"},
+            {VariantRole, "variant"},
+            {CopyablePathRole, "copyablePath"},
+            {TechnicalDetailsRole, "technicalDetails"},
             {ActionLabelIdRole, "actionLabelId"},
             {ActionLabelArgCountRole, "actionLabelArgCount"},
             {ActionExternalRole, "actionExternal"},
@@ -280,6 +377,7 @@ ErrorListModel::Row ErrorListModel::makeErrorRow(const ClassifiedSyncError &clas
     row.descriptionId = textId(presentation.description.id);
     row.descriptionArgCount = presentation.description.nodeLabelArgs;
     row.nodeLabelId = textId(syncErrorNodeLabelId(error.nodeType()));
+    row.variant = variant;
 
     const SyncPath syncRoot = context.has_value() ? context->syncInfo.localPath() : SyncPath{};
     // The chip shows the name; its tooltip, the path within the synchronization, or the local path of its root.
@@ -294,6 +392,14 @@ ErrorListModel::Row ErrorListModel::makeErrorRow(const ClassifiedSyncError &clas
     }
     if (!row.itemName.isEmpty()) {
         row.itemIconName = _fileIconResolver.iconName(row.itemName, row.isDirectory ? NodeType::Directory : error.nodeType());
+    }
+
+    // Shown in its `~` form; the controller copies the absolute path.
+    if (variant == SyncErrorRowVariant::CopyablePath && !error.destinationPath().empty() && !syncRoot.empty()) {
+        row.copyablePath = displayLocalPath(Path2QStr(absoluteSyncPath(syncRoot, error.destinationPath())));
+    }
+    if (variant == SyncErrorRowVariant::Technical) {
+        row.technicalDetails = technicalDetails(error, context);
     }
 
     if (isActionShown(presentation.action)) {
@@ -350,6 +456,9 @@ void ErrorListModel::updateRow(const int32_t rowIndex, Row nextRow) {
     addRoleIf(row.itemPath != nextRow.itemPath, ItemPathRole);
     addRoleIf(row.itemIconName != nextRow.itemIconName, ItemIconNameRole);
     addRoleIf(row.isDirectory != nextRow.isDirectory, IsDirectoryRole);
+    addRoleIf(row.variant != nextRow.variant, VariantRole);
+    addRoleIf(row.copyablePath != nextRow.copyablePath, CopyablePathRole);
+    addRoleIf(row.technicalDetails != nextRow.technicalDetails, TechnicalDetailsRole);
     addRoleIf(row.actionLabelId != nextRow.actionLabelId, ActionLabelIdRole);
     addRoleIf(row.actionLabelArgCount != nextRow.actionLabelArgCount, ActionLabelArgCountRole);
     addRoleIf(row.actionExternal != nextRow.actionExternal, ActionExternalRole);
