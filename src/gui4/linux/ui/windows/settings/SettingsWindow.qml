@@ -569,6 +569,16 @@ IKShadowedWindow {
         }
     }
 
+    // "Manage exclusions" on the errors page: Advanced, then its file exclusions page.
+    Connections {
+        target: root.controller
+
+        function onFileExclusionsRequested() {
+            root.selectAdvanced();
+            advancedPane.push(fileExclusionsComponent);
+        }
+    }
+
     Connections {
         target: root.advancedSyncs.creation
 
