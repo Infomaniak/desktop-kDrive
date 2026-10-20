@@ -22,6 +22,7 @@
 #include "app/cache/activitystore.h"
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
+#include "app/cache/syncerrorsprojection.h"
 #include "app/cache/parametersstore.h"
 #include "app/dialogs/manydeletescontroller.h"
 #include "app/mainwindow/activitiescontroller.h"
@@ -42,6 +43,7 @@
 #include "app/services/settingsuserservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
+#include "app/services/syncerrorservice.h"
 #include "app/services/syncservice.h"
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
@@ -143,6 +145,7 @@ class AppClientLinux : public QApplication {
         ParametersStore _parametersStore{this};
         CachePipeline _cachePipeline{_serverCommService, _appCache, _activityStore, this};
         MainSelectionStore _mainSelectionStore{_appCache, this};
+        SyncErrorsProjection _syncErrorsProjection{_appCache, _mainSelectionStore, this};
         MainSidebarController _mainSidebarController{_appCache, _mainSelectionStore, this};
         ParametersService _parametersService{_serverCommService, _parametersStore, this};
         ManyDeletesController _manyDeletesController{_serverCommService, _appCache, this};
@@ -155,6 +158,7 @@ class AppClientLinux : public QApplication {
         CachePopulator _cachePopulator{_serverCommService, _appCache, _parametersStore, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _appCache, _cachePopulator, _serviceActionTracker, _serviceEventBus, this};
+        SyncErrorService _syncErrorService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SettingsUserService _settingsUserService{_appCache, _userService, this};
         OnboardingSessionManager _onboardingSessionManager{
                 _cachePopulator, _appCache, _serverCommService, _userService, _syncService, _serviceEventBus, this};

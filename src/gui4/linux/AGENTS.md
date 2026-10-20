@@ -124,6 +124,8 @@
 - After resolving a rebase conflict that removes or renames a shared model/header, grep Linux v4 for stale includes and
   old type names, then validate at least the `kdrive_qml` target.
 - For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
+- To see sync errors in the UI, run a Debug build with `KDRIVE_SIMULATE_ERRORS=<scenario>` (see
+  `app/devtools/errorsimulator.*`). Give every new `SyncErrorKind` a simulator fixture.
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
 - Give an in-app modal its hosting window's `effectiveShadowMargin` and `surfaceRadius` as `scrimInset`/`scrimRadius`.
   The overlay spans the complete native window, so an un-inset scrim also dims the transparent custom-shadow margin.
@@ -272,13 +274,30 @@
 - `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
+- `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
+  enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), one blocking error (`asleep`,
+  `wakingup`, `maintenance`, `notrenew`, `accessdenied`, `loggedout`) or `update-required`. Once the cache is populated,
+  it dispatches fake `UTILITY_ERROR_ADDED` signals through `SignalDispatcher` on the selected sync, with negative
+  `ErrorDbId` values (real ones are SQLite rowids, always positive). Its fixtures assert that each kind is covered and
+  classified as expected. Requests on fake errors reach the server and fail; a cache reconciliation removes them.
 - `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
   same-sync severity escalation, hard-warning acknowledgement, soft-warning opt-out (`AppStateKey::NotifyBeforeDelete`,
   read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
+- `app/errors/*`: pure sync error domain, without QObject, IPC or cache access. `classifySyncError` maps a raw `Error` to
+  a `SyncErrorKind` through an ordered matcher table aligned with the macOS and Windows definitions (first match
+  wins), plus the Linux-only `NotEnoughINotifyWatches`; LiteSync and VFS kinds are absent and fall back to `Unknown`.
+  `syncerrorcatalog.*` gives each kind its errors-page section, row variant, explanation dialog, system tray relevance
+  (Windows `ShowInSystemTray` list), action and texts, with admin variants resolved by `describeSyncError`. Texts are
+  translation ids with their node-label placeholder count, translated in QML with `qsTrId`, never in C++.
+  A user-resolvable conflict (node-level create/create or edit/edit) is always a version conflict. `resolveBlockingError`
+  keeps the oldest blocking error of a synchronization and reports `LoggedOut` for a disconnected user even without an
+  `InvalidToken` error; `isUpdateRequired` detects an `UpdateRequired` error of any level.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
-  updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
-  tray availability, and main QML window show/hide behavior. Linux exposes no panel color, so it picks the white or black
-  icon set from `KDRIVE_TRAY_ICONS` (`white`/`black`), else white on GNOME, else the system color scheme, else white.
+  updater availability (the error state follows `SyncErrorsProjection::hasTrayRelevantError`, so only the error kinds
+  marked `showsInTray` turn the icon to error), GNOME-compatible tray menu actions, fallback-to-window startup
+  behavior, retry loop for late tray availability, and main QML window show/hide behavior. Linux exposes no panel
+  color, so it picks the white or black icon set from `KDRIVE_TRAY_ICONS` (`white`/`black`), else white on GNOME,
+  else the system color scheme, else white.
 - `communicationlayer/ipcclient.*`: TLS-over-loopback JSON transport (`QSslSocket`), request/reply correlation,
   reconnect-before-first-connect logic, and pinned self-signed certificate verification. The pinned CA certificate is
   loaded once from the OS keychain via `CertReader` and set as the socket's only CA; the peer is verified against
@@ -414,6 +433,14 @@
       underlying cache graph changes.
     - Exposes selected-sync runtime through its dedicated accessor and signals, including a status-only notification so
       progress ticks do not invalidate presentation that only depends on the synchronization status.
+- `app/cache/syncerrorsprojection.*`: single source of classified sync errors for every error consumer. It classifies
+  each `AppCache` error with the `app/errors` domain, keeps the result by `ErrorDbId` and logs it once unless its kind
+  changes (category `gui.v4.syncerrors`, never file paths; unclassified errors as warnings with their raw fields). It
+  exposes the selected synchronization's errors (oldest first), its user-resolvable conflict ids, its blocking error
+  (including a disconnected user), whether any error is relevant to the tray, and whether an update is required.
+  Changes are coalesced by a 150 ms single-shot timer that is never pushed back: the server replaces an error it detects
+  again with `UTILITY_ERROR_REMOVED` then `UTILITY_ERROR_ADDED` (same `ErrorDbId`), and the pair must land in one
+  refresh. Each signal is emitted only when its value changed.
 - `app/mainwindow/syncselectormodel.*`: QML adapter for the synchronization selector. It flattens each configured drive
   into classic and advanced synchronization rows and exposes only the presentation data required by the selector.
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
@@ -551,6 +578,10 @@
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. It reconciles cached and server-confirmed consent,
   publishes normalized Linux/Qt runtime tags after the GUI application exists, and refreshes the distribution channel
   from the confirmed `ParametersStore` snapshot.
+- `app/services/syncerrorservice.*`: sync error action facade driven by `ServiceActionTracker` + `ServiceEventBus`.
+  `refreshErrors` sends `ERROR_SYNC_REFRESH` once per synchronization at a time; the server deletes the errors and
+  replies after re-detecting the remaining ones (up to 30 s), which come back through push signals, so the cache is
+  never changed here.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`. `addDriveSync` is the only sender of `SYNC_ADD`:
   onboarding and Settings must never call `CommService::requestSyncAdd` directly, otherwise two windows can create two
