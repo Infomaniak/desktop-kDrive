@@ -120,13 +120,18 @@ jobs:
               return;
             }
 
-            // Any mention of the QA label ("QA required", as written in the
-            // review per AGENTS.md, or the historical "QA_required" spelling)
-            // counts as a recommendation unless it is explicitly negated.
-            const isRecommended = (body) =>
-              /\bQA[ _]required\b/i.test(body) &&
-              !/\b(?:no|not|isn't|is not|without)\b[^.\n]{0,30}\bQA[ _]required\b[^.\n]{0,60}\b(?:needed|necessary|required|recommended)\b/i.test(body) &&
-              !/\bQA[ _]required\b[^.\n]{0,40}\b(?:is|are)\s+not\b[^.\n]{0,40}\b(?:needed|necessary|required|recommended)\b/i.test(body);
+            // Explicit verdict line ("QA required: yes|no") takes precedence.
+            // Fallback: any non-negated mention of the QA label (legacy
+            // reviews used the historical "QA_required" spelling).
+            const isRecommended = (body) => {
+              const verdict = body.match(/\bQA[ _]required\b`?\s*[:\u2013-]\s*`?(yes|no)\b/i);
+              if (verdict) {
+                return verdict[1].toLowerCase() === 'yes';
+              }
+              return /\bQA[ _]required\b/i.test(body) &&
+                !/\b(?:no|not|isn't|is not|without)\b[^.\n]{0,30}\bQA[ _]required\b[^.\n]{0,60}\b(?:needed|necessary|required|recommended)\b/i.test(body) &&
+                !/\bQA[ _]required\b[^.\n]{0,40}\b(?:is|are)\s+not\b[^.\n]{0,40}\b(?:needed|necessary|required|recommended)\b/i.test(body);
+            };
 
             // Incremental Copilot reviews may omit the QA section, so any
             // non-dismissed Copilot review recommending the label is enough.
