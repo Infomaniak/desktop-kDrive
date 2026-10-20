@@ -28,6 +28,7 @@ Item {
     required property var appRouter
     required property var activitiesController
     required property var blockingErrorController
+    required property var errorsPageController
     required property var homeController
     required property var mainSidebarController
     required property var storageController
@@ -143,6 +144,7 @@ Item {
 
         ActivitiesView {
             controller: root.activitiesController
+            errorsPageController: root.errorsPageController
             navigation: root.appRouter.activitiesNavigation
         }
     }

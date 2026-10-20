@@ -23,7 +23,9 @@ Item {
     id: root
 
     required property string fileIconName
-    readonly property url fileSource: root.isDirectory ? "" : "qrc:/assets/main/activities/" + root.fileIconName + (ThemeMode.isDark ? "-dark" : "") + ".svg"
+    // No icon name, such as the chip of an error without item: nothing to load.
+    readonly property url fileSource: root.isDirectory || root.fileIconName.length === 0
+                                      ? "" : "qrc:/assets/main/activities/" + root.fileIconName + (ThemeMode.isDark ? "-dark" : "") + ".svg"
     required property bool isDirectory
 
     height: IKActivities.fileIconSize
