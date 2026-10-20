@@ -53,4 +53,22 @@ QtObject {
     readonly property real emptyContentSpacing: IKSpacing.s32
     readonly property real emptyTextSpacing: IKSpacing.s8
     readonly property real emptyTitleSize: 15
+
+    // Errors page (Figma 5269-83680)
+    readonly property real errorsHeaderButtonHeight: 24
+    readonly property real errorsSectionTitleSize: IKFonts.title3Size
+    readonly property real errorsSectionTitleSpacing: IKSpacing.s8
+    readonly property real errorsCardSpacing: IKSpacing.s8
+    readonly property real errorsCardRadius: IKRadius.r8
+    readonly property real errorsCardHorizontalPadding: IKSpacing.s12
+    readonly property real errorsCardVerticalPadding: IKSpacing.s8
+    readonly property real errorsCardContentSpacing: IKSpacing.s8
+    readonly property real errorsCardActionSpacing: IKSpacing.s16
+    readonly property real errorsActionButtonHeight: 24
+    readonly property real errorsChipHeight: 24
+    readonly property real errorsChipRadius: IKRadius.r6
+    readonly property real errorsChipHorizontalPadding: IKSpacing.s4
+    readonly property real errorsChipIconSize: 12
+    readonly property real errorsChipSpacing: 6
+    readonly property real errorsChipMaximumWidthRatio: 0.7
 }
