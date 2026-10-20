@@ -155,10 +155,6 @@ class Sync : public BaseSync {
         [[nodiscard]] const CursorData &customTargetFolderCursor() const { return _customTargetFolderCursor; }
         void setCustomTargetFolderCursor(const CursorData &cursorData) { _customTargetFolderCursor = cursorData; }
 
-        /// Cursor of the listing requests made for the shared folder of the remote drive.
-        [[nodiscard]] const CursorData &sharedFolderCursor() const { return _sharedFolderCursor; }
-        void setSharedFolderCursor(const CursorData &cursorData) { _sharedFolderCursor = cursorData; }
-
         [[nodiscard]] bool toDelete() const { return _toDelete; }
         void setToDelete(const bool toDelete) { _toDelete = toDelete; }
 
@@ -170,7 +166,6 @@ class Sync : public BaseSync {
         bool _hasFullyCompleted{false};
         CursorData _rootFolderCursor;
         CursorData _customTargetFolderCursor;
-        CursorData _sharedFolderCursor;
         bool _toDelete{false};
 };
 

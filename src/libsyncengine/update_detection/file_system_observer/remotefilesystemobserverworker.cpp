@@ -180,10 +180,6 @@ void RemoteFileSystemObserverWorker::execute() {
         const std::scoped_lock lock(_listingSyncFolderCursorCacheMutex);
         _listingSyncFolderCursorCache.reset();
     }
-    {
-        const std::scoped_lock lock(_sharedFolderListingCursorCacheMutex);
-        _sharedFolderListingCursorCache.reset();
-    }
 
     // Check if the current remote snapshot can be reused (i.e. if it is still valid and if the listing cursors are not too old).
     // If not, invalidate it and clear all the listing cursors from the database.
@@ -432,6 +428,12 @@ ExitInfo RemoteFileSystemObserverWorker::runListingContinueJob(const RemoteNodeI
 }
 
 ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
+    const auto sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
+
+    // Early exit for advanced sync with a non-root folder different from 'Shared': the 'Shared' folder is not synchronized in
+    // this case, so we don't need to add it.
+    if (syncIsAdvancedWithNonRootFolder() && rootFolderRemoteName() != sharedFolderName) return ExitCode::Ok;
+
     bool sharedFolderIsEmpty = false;
     if (const auto exitInfo = checkIfSharedFolderIsEmpty(sharedFolderIsEmpty); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty: " << exitInfo);
@@ -440,7 +442,6 @@ ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
     }
 
     RemoteNodeId sharedFolderRemoteId;
-    const auto sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
     const auto getItemIdExitInfo = _liveSnapshot.getItemId(sharedFolderName, sharedFolderRemoteId);
     if (!getItemIdExitInfo && getItemIdExitInfo != ExitInfo{ExitCode::DataError, ExitCause::NotFound}) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getItemId for Shared folder: " << getItemIdExitInfo);
@@ -448,11 +449,15 @@ ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
         return getItemIdExitInfo;
     }
 
+    // Identify the case of an advanced sync with a non-root folder that is not the 'Shared' folder: in this case, we don't need
+    // to add it.
+    if (syncIsAdvancedWithNonRootFolder() && rootFolderRemoteId() != sharedFolderRemoteId) return ExitCode::Ok;
+
     if (!sharedFolderIsEmpty && !getItemIdExitInfo) { // 'Shared' folder does not exist in the snapshot, we need to add it.
         NodeInfo sharedFolderNodeInfo;
         if (const auto exitInfo =
                     ApiTranslator::getSharedFolderNodeInfo(_syncPal->userDbId(), _syncPal->driveId(), sharedFolderNodeInfo);
-            exitInfo)
+            !exitInfo)
             return exitInfo;
 
         const RemoteSnapshotItem sharedFolderItem(sharedFolderNodeInfo.nodeId().toStdString(),
@@ -485,13 +490,6 @@ ExitInfo RemoteFileSystemObserverWorker::mainProcessingTask(const RemoteNodeId &
 
     if (const auto exitInfo = processListingContinueResponse(remoteDirId, job, cursorData, hasMore); !exitInfo) {
         LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processListingContinueResponse: " << exitInfo);
-
-        return exitInfo;
-    }
-
-    bool sharedFolderIsEmpty = false;
-    if (const auto exitInfo = checkIfSharedFolderIsEmpty(sharedFolderIsEmpty); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty: " << exitInfo);
 
         return exitInfo;
     }
@@ -1396,6 +1394,10 @@ RemoteNodeId RemoteFileSystemObserverWorker::rootFolderRemoteId() const {
     return _syncPal->syncDb()->rootNode().nodeIdRemote().value();
 }
 
+RemoteNodeId RemoteFileSystemObserverWorker::rootFolderRemoteName() const {
+    return _syncPal->syncDb()->rootNode().nameRemote();
+}
+
 ExitInfo RemoteFileSystemObserverWorker::getWatchedFolderRemoteId(RemoteNodeId &watchedFolderRemoteId) const {
     // For an advanced synchronization whose target folder is not the root folder of the remote drive, the watched folder is
     // the target folder of the synchronization. Otherwise, it is the root folder of the remote drive.
@@ -1460,50 +1462,6 @@ ExitInfo RemoteFileSystemObserverWorker::setSyncFolderListingCursor(const Cursor
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getSharedFolderListingCursor(CursorData &cursorData) const {
-    const std::scoped_lock lock(_sharedFolderListingCursorCacheMutex);
-
-    if (_sharedFolderListingCursorCache) {
-        cursorData = *_sharedFolderListingCursorCache;
-
-        return ExitCode::Ok;
-    }
-
-    if (const auto exitInfo = _syncPal->getSharedFolderCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::getSharedFolderCursor: " << exitInfo);
-
-        return exitInfo;
-    }
-
-    _sharedFolderListingCursorCache = cursorData;
-
-    return ExitCode::Ok;
-}
-
-ExitInfo RemoteFileSystemObserverWorker::setSharedFolderListingCursor(const CursorData &cursorData) {
-    const std::scoped_lock lock(_sharedFolderListingCursorCacheMutex);
-
-    if (const auto exitInfo = _syncPal->setSharedFolderCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setSharedFolderCursor: " << exitInfo);
-
-        return exitInfo;
-    }
-
-    _sharedFolderListingCursorCache = cursorData;
-
-    return ExitCode::Ok;
-}
-
-ExitInfo RemoteFileSystemObserverWorker::clearSharedFolderListingCursor() {
-    const auto exitInfo = setSharedFolderListingCursor(CursorData{});
-    if (!exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::setSharedFolderListingCursor: "
-                                          << exitInfo << ". Failed to clear shared folder listing cursor.");
-    }
-
-    return exitInfo;
-}
-
 void RemoteFileSystemObserverWorker::init() {
     ISyncWorker::init();
 
@@ -1542,16 +1500,11 @@ RemoteNodeIdSet RemoteFileSystemObserverWorker::blackList() const {
 ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty) {
     empty = false;
 
-    CursorData cursorData;
-    if (const auto exitInfo = getSharedFolderListingCursor(cursorData); !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getSharedFolderListingCursor: " << exitInfo);
-
-        return exitInfo;
-    }
-
     constexpr auto maxItemsToCheck = 5; // This is the minimum number allowed by the API. We only need to check the existence
                                         // of a single item to determine if the shared folder is empty or not.
-    auto job = std::make_shared<GetFilesSharedWithMeJob>(_driveDbId, cursorData.cursor, maxItemsToCheck);
+    // The content of the shared folder is queried with an empty cursor: the listing cursor of the shared folder is not
+    // persisted.
+    auto job = std::make_shared<GetFilesSharedWithMeJob>(_driveDbId, Cursor{}, maxItemsToCheck);
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in GetFilesSharedWithMeJob::runSynchronously: " << exitInfo);
 
@@ -1559,13 +1512,6 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty)
     }
 
     empty = job->sharedIsEmpty();
-    if (const auto exitInfo = setSharedFolderListingCursor(CursorData{job->cursor(), CommonUtility::now()}); !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::setSharedFolderListingCursor: " << exitInfo);
-
-        if (exitInfo == ExitInfo{ExitCode::BackError, ExitCause::HttpErr}) (void) clearSharedFolderListingCursor();
-
-        return exitInfo;
-    }
 
     return ExitCode::Ok;
 }
