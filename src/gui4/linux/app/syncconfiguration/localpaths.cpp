@@ -74,15 +74,15 @@ QString makeUniqueLocalPath(const QString &path, const std::function<bool(const 
     return {};
 }
 
-std::optional<SyncPath> resolveExistingPathBelowSyncRoot(const SyncPath &syncRoot, const SyncPath &relativePath) {
-    if (relativePath.has_root_path() ||
-        std::ranges::any_of(relativePath, [](const SyncPath &component) { return component == SyncPath{".."}; })) {
+std::optional<SyncPath> resolveExistingPathBelowSyncRoot(const SyncPath &syncRoot, const SyncPath &path) {
+    if (std::ranges::any_of(path, [](const SyncPath &component) { return component == SyncPath{".."}; })) {
         return std::nullopt;
     }
 
     const SyncPath rootPath = syncRoot.lexically_normal();
+    const SyncPath targetPath = path.is_absolute() ? path : rootPath / path;
     const QFileInfo rootInfo{Path2QStr(rootPath)};
-    const QFileInfo targetInfo{Path2QStr((rootPath / relativePath).lexically_normal())};
+    const QFileInfo targetInfo{Path2QStr(targetPath.lexically_normal())};
     if (!rootInfo.exists() || !rootInfo.isDir() || !targetInfo.exists()) {
         return std::nullopt;
     }
