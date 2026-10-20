@@ -130,12 +130,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] ExitInfo getSyncFolderListingCursor(CursorData &cursorData) const;
         [[nodiscard]] ExitInfo setSyncFolderListingCursor(const CursorData &cursorData);
 
-        // Cache of the listing cursor of the shared folder.
-        mutable std::optional<CursorData> _sharedFolderListingCursorCache;
-        mutable std::mutex _sharedFolderListingCursorCacheMutex;
-        [[nodiscard]] ExitInfo getSharedFolderListingCursor(CursorData &cursorData) const;
-        [[nodiscard]] ExitInfo setSharedFolderListingCursor(const CursorData &cursorData);
-
         /**
          * @brief Clears the listing cursor of the sync folder.
          *
@@ -147,17 +141,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
          */
         [[nodiscard]] ExitInfo clearSyncFolderListingCursor();
 
-        /**
-         * @brief Clears the listing cursor of the shared folder.
-         *
-         * This function resets the state of the shared folder listing cursor, effectively removing any previously saved
-         * cursor data for the shared folder. It ensures that subsequent listing operations start without relying on
-         * outdated cursor data.
-         *
-         * @return ExitInfo indicating the success or failure of the operation.
-         */
-        [[nodiscard]] ExitInfo clearSharedFolderListingCursor();
-
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
         mutable std::mutex _blackListMutex; // Mutex to protect access to the _blackList member variable.
         std::atomic<Count> _listingFullCount{0}; // Thread-safe counter for full listing requests
@@ -165,6 +148,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         [[nodiscard]] bool syncIsAdvancedWithNonRootFolder() const;
         [[nodiscard]] RemoteNodeId rootFolderRemoteId() const;
+        [[nodiscard]] RemoteNodeId rootFolderRemoteName() const;
 
         /**
          * @brief Returns the remote ID of the folder whose changes are watched, i.e. the folder used by the `longpoll`,
