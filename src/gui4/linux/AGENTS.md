@@ -660,7 +660,10 @@
       draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
       history.
     - `ui/windows/main/errors/`: "Errors to fix" sub-page of Activities (`ErrorsPage`), titled `errorPageTitle` in the
-      toolbar. It is an empty shell until the error list lands.
+      toolbar: header with the error count and Refresh, one card per error in sections (`ErrorRow`), empty state with
+      "View activities". A row shows its button only once its action exists: "Choose a version", "Manage" (conflicts)
+      and "Understand the issue" stay hidden until their pages and dialogs land. The item chip (`ErrorItemChip`) puts
+      names with a leading or trailing space in quotes and shows the path in its tooltip.
     - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
       the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
       with Down on the last row. It consumes `SearchController`; it must not call IPC.
