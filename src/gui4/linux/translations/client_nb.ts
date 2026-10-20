@@ -321,9 +321,19 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</translation>
             <source>Continue</source> 
             <translation>Fortsett</translation> 
         </message> 
+        <message id="buttonCopyPath"> 
+            <source>Copy path</source> 
+            <extracomment>Icon-only button next to a file path (Linux desktop app, "Errors to fix" page): copies the path to the clipboard. Used as tooltip and accessible name.</extracomment> 
+            <translation>Kopier bane</translation> 
+        </message> 
         <message id="buttonCopyShareLink"> 
             <source>Copy share link</source> 
             <translation>Kopier delingslenke</translation> 
+        </message> 
+        <message id="buttonCopyTechnicalDetails"> 
+            <source>Copy technical details</source> 
+            <extracomment>Icon-only button next to the "Technical details" of an unexpected error (Linux desktop app, "Errors to fix" page): copies them to the clipboard, to send them to the support. Used as tooltip and accessible name.</extracomment> 
+            <translation>Kopier tekniske detaljer</translation> 
         </message> 
         <message id="buttonCreateAccount"> 
             <source>Create an account</source> 
@@ -2507,6 +2517,11 @@ Synkronisering er stoppet midlertidig. Kontroller filene dine og prøv igjen.</t
         <message id="teachingTipInvalidFolderTitle"> 
             <source>This folder cannot be used</source> 
             <translation>Denne mappen kan ikke brukes</translation> 
+        </message> 
+        <message id="technicalDetailsCopiedToClipboard"> 
+            <source>Technical details copied to clipboard</source> 
+            <extracomment>Confirmation shown for a moment in the tooltip of the "Copy technical details" button once the details are in the clipboard (Linux desktop app, "Errors to fix" page).</extracomment> 
+            <translation>Tekniske detaljer kopiert til utklippstavlen</translation> 
         </message> 
         <message id="titleConflictIndividualResolution"> 
             <source>Individual handling</source> 
