@@ -487,7 +487,7 @@ void TestIntegration::testSyncRestartWithInvalidatedBackup() {
     // Get current cursor and age it
     CursorData oldCursor;
     CPPUNIT_ASSERT(_syncPal->getRootFolderCursor(oldCursor));
-    CCPUNIT_ASSERT(!oldCursor.cursor.empty());
+    CPPUNIT_ASSERT(!oldCursor.cursor.empty());
     // Set timestamp to 4 days ago
     oldCursor.timestamp = CommonUtility::getCurrentSyncTime() - EXPIRY_OFFSET;
     CPPUNIT_ASSERT(_syncPal->setRootFolderCursor(oldCursor));
