@@ -52,6 +52,10 @@ clang-format -i <file>
 - **Commit & push:** Only commit and push when the user explicitly asks for it.
 - **Commit Format:** Follow the project's semantic-commit validation rules defined in [`.github/workflows/semantic-commit.yml`](https://github.com/Infomaniak/.github/blob/main/.github/workflows/semantic-commit.yml).
 
+## Pull Request Review (agents)
+- **QA regression risk:** During PR review, estimate the risk of regressions and/or bugs requiring specific QA testing. The assessment must trigger at least for new features, sync algorithm changes (`src/libsyncengine/`), daemon/IPC changes (`src/server/`), platform-specific code (`*_mac.mm`, `*_win.cpp`, `*_linux.cpp`), DB schema/migration changes (`src/libparms/`), and shell extensions (`extensions/`).
+- When a QA risk is detected, add the label `QA_required` to the PR and describe in the review the scenarios QA should test. If no risk is detected, no label is needed.
+
 ## Security & Secrets
 - Never commit API tokens, passwords, or credentials. Use env vars (`KDRIVE_TEST_CI_API_TOKEN`, etc.).
 - Keychain access is managed by `libcommonserver/keychainmanager/`.
