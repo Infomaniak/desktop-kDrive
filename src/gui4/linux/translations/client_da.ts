@@ -976,6 +976,16 @@ Anmod om adgang fra ejeren eller administratoren.</translation>
             <source>Unsupported file type</source> 
             <translation>Ikke-understøttet filtype</translation> 
         </message> 
+        <message id="errInvalidLinkTargetDescription"> 
+            <source>This link has been excluded from synchronization because its destination path is invalid.
+The path must be relative and cannot contain a reference to a parent folder, such as "..".</source> 
+            <translation>Dette link er blevet udelukket fra synkroniseringen, da dets målsti ikke er gyldig.
+Stien skal være relativ og må ikke indeholde en henvisning til en overordnet mappe, såsom »..«.</translation> 
+        </message> 
+        <message id="errInvalidLinkTargetTitle"> 
+            <source>Invalid destination path</source> 
+            <translation>Ugyldig destinationssti</translation> 
+        </message> 
         <message id="errInvalidSyncSyncDirAccessDescription"> 
             <source>This folder is no longer accessible at its original location.</source> 
             <translation>Denne mappe er ikke længere tilgængelig på sin oprindelige placering.</translation> 
@@ -1764,6 +1774,26 @@ Nyttigt, hvis du ved, at det vigtige arbejde er online på kDrive.</translation>
         <message id="linkCopiedToClipboardTitle"> 
             <source>Link copied to clipboard</source> 
             <translation>Link kopieret til udklipsholder</translation> 
+        </message> 
+        <message id="linuxErrINotifyWatchesDescription"> 
+            <source>Your system limits the number of folders kDrive can watch. Changes made on this computer are no longer detected.</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrINotifyWatchesTitle. "This computer" is the computer running the kDrive app.</extracomment> 
+            <translation>Dit system begrænser antallet af mapper, som kDrive kan overvåge. Ændringer foretaget på denne computer registreres ikke længere.</translation> 
+        </message> 
+        <message id="linuxErrINotifyWatchesTitle"> 
+            <source>Too many folders to watch</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page: title of the row shown when the Linux system limit on watched folders (inotify) is reached, so kDrive no longer detects local changes.</extracomment> 
+            <translation>For mange mapper at overvåge</translation> 
+        </message> 
+        <message id="linuxErrTmpDirAccessDescription"> 
+            <source>kDrive cannot write to its working folder (.kDrive-cache) inside the sync folder. Check the write permissions of the sync folder, then retry.</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrTmpDirAccessTitle. Keep ".kDrive-cache" as is: it is the name of a hidden folder. The row offers a "Retry" button.</extracomment> 
+            <translation>kDrive kan ikke skrive til sin arbejdsmappe (.kDrive-cache) i synkroniseringsmappen. Kontrollér skriverettighederne for synkroniseringsmappen, og prøv derefter igen.</translation> 
+        </message> 
+        <message id="linuxErrTmpDirAccessTitle"> 
+            <source>Sync folder not writable</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page: title of the row shown when kDrive cannot write to its hidden working folder (.kDrive-cache) inside the sync folder, for example after its permissions changed. The row offers a "Retry" button.</extracomment> 
+            <translation>Synkroniseringsmappen er ikke skrivbar</translation> 
         </message> 
         <message id="linuxStorageLocationUnavailableDescription"> 
             <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
