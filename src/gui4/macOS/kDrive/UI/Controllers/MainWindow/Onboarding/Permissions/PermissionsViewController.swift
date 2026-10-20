@@ -43,12 +43,7 @@ extension MacOSPermission {
     }
 
     var majorCellIndex: Int {
-        switch self {
-        case .endpointSecurityExtension:
-            return 2
-        case .fullDiskAccess:
-            return 1
-        }
+        return instructions.count - 1
     }
 }
 
@@ -56,7 +51,7 @@ extension MacOSPermission {
     var instructions: [Instruction] {
         switch self {
         case .endpointSecurityExtension:
-            return [.openSystemSettings, .openSecurityExtensions, .enableKDrive]
+            return [.openSecurityExtensions, .enableKDrive]
         case .fullDiskAccess:
             return [.openPrivacySecurity, .enableFullDiskAccess]
         }
@@ -100,8 +95,12 @@ extension MacOSPermission {
 
         var argument: String? {
             switch self {
+            case .openSystemSettings:
+                return KDriveLocalizable.instructionOpenSystemSettingsLink
             case .openSecurityExtensions:
-                if #available(macOS 15.0, *) {
+                if #available(macOS 26.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsLink
+                } else if #available(macOS 15.0, *) {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
                 } else {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsArgumentLegacy
@@ -119,10 +118,10 @@ extension MacOSPermission {
 
         var link: String? {
             switch self {
-            case .openSystemSettings:
-                return KDriveLocalizable.instructionOpenSystemSettingsLink
             case .openSecurityExtensions:
-                if #available(macOS 15.0, *) {
+                if #available(macOS 26.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
+                } else if #available(macOS 15.0, *) {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsLink
                 } else {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsLinkLegacy
@@ -140,14 +139,12 @@ extension MacOSPermission {
             @InjectService var permissionHandler: MacOSPermissionHandling
 
             switch self {
-            case .openSystemSettings:
-                return SystemPreferencesURL.general
             case .openSecurityExtensions:
                 return permissionHandler.systemPreferencesURL(for: .endpointSecurityExtension)
             case .openPrivacySecurity:
                 return permissionHandler.systemPreferencesURL(for: .fullDiskAccess)
             case .openLoginItems:
-                return permissionHandler.systemPreferencesURL(for: .endpointSecurityExtension)
+                return SystemPreferencesURL.loginItems
             default:
                 return nil
             }
