@@ -54,7 +54,7 @@ clang-format -i <file>
 
 ## Pull Request Review (agents)
 - **QA regression risk:** During PR review, estimate the risk of regressions and/or bugs requiring specific QA testing. The assessment must trigger at least for new features, sync algorithm changes (`src/libsyncengine/`), daemon/IPC changes (`src/server/`), platform-specific code (`*_mac.mm`, `*_win.cpp`, `*_linux.cpp`), DB schema/migration changes (`src/libparms/`), and shell extensions (`extensions/`).
-- When a QA risk is detected, add the label `QA required` to the PR and describe in the review the scenarios QA should test. If no risk is detected, no label is needed.
+- When a QA risk is detected, add the label `QA required` to the PR and describe in the review, using the exact wording `QA required`, the scenarios QA should test. If no risk is detected, no label is needed.
 
 ## Security & Secrets
 - Never commit API tokens, passwords, or credentials. Use env vars (`KDRIVE_TEST_CI_API_TOKEN`, etc.).

@@ -32,7 +32,7 @@ Before proposing code or review comments:
 ## QA Regression Risk Assessment
 - During PR review, estimate the risk of regressions and/or bugs that would require specific testing by the QA team.
 - This assessment must trigger at least when the PR: adds a new feature, modifies the sync algorithm (`src/libsyncengine/`), changes the daemon or IPC (`src/server/`), touches platform-specific code (`*_mac.mm`, `*_win.cpp`, `*_linux.cpp`), changes DB schema or migrations (`src/libparms/`), or affects file integrity paths (upload/download, conflict handling, shell extensions in `extensions/`).
-- If a risk is detected, add the label `QA required` to the PR and state in the review which scenarios QA should test. If no risk is detected, no label is needed.
+- If a risk is detected, add the label `QA required` to the PR and state in the review, using the exact wording `QA required`, which scenarios QA should test. If no risk is detected, no label is needed.
 
 ## Pull Request & Commit Rules (MANDATORY)
 - **Commit Format:** Follow the project's semantic-commit validation rules defined in [`.github/workflows/semantic-commit.yml`](https://github.com/Infomaniak/.github/blob/main/.github/workflows/semantic-commit.yml) and always write them in english.
