@@ -45,10 +45,10 @@ void openUrl(const QUrl &url) {
     }
 }
 
-// Opens a folder of the synchronization in the file manager. `relativePath` is relative to the root; the folder must
-// still exist and stay below the root.
-void openLocalFolder(const SyncContext &context, const SyncPath &relativePath) {
-    const auto folder = resolveExistingPathBelowSyncRoot(context.syncInfo.localPath(), relativePath);
+// Opens a folder of the synchronization in the file manager. `path` is relative to the root, or absolute (`FileRescuer`
+// stores an absolute destination); the folder must still exist and stay below the root.
+void openLocalFolder(const SyncContext &context, const SyncPath &path) {
+    const auto folder = resolveExistingPathBelowSyncRoot(context.syncInfo.localPath(), path);
     if (!folder.has_value()) {
         qCWarning(lcSyncErrorActionHandler) << "Local folder unavailable | syncDbId:" << context.syncInfo.dbId();
         return;
@@ -57,7 +57,7 @@ void openLocalFolder(const SyncContext &context, const SyncPath &relativePath) {
 }
 
 SyncPath parentFolder(const SyncPath &path) {
-    return path.relative_path().lexically_normal().parent_path();
+    return path.lexically_normal().parent_path();
 }
 
 // Opens the item on kDrive web when the server knows it, otherwise its local parent folder: the user renames it there.
