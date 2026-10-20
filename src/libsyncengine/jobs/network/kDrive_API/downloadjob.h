@@ -73,8 +73,6 @@ class DownloadJob : public AbstractTokenNetworkJob {
         ExitInfo resolveDownloadNeed();
 
         ExitInfo createLink(const std::string &mimeType, const std::string &data);
-        void handleCreation(bool &fetchFinished, bool &fetchCanceled, bool &fetchError, bool &writeError);
-        ExitInfo createFile(std::istream &is, bool &fetchedCanceled);
         bool removeTmpFile();
         ExitInfo moveTmpFile();
         //! Create a tmp file from a std::istream or a std::string
