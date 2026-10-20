@@ -193,6 +193,8 @@ QtObject {
     readonly property color activitiesProgressTrack: surfaceTertiary
     readonly property color activitiesActionMenuSurface: surfaceSecondary
     readonly property color activitiesActionMenuHover: surfaceTertiary
+    readonly property color errorsCardSurface: surfaceSecondary
+    readonly property color errorsChipSurface: surfacePrimary
     readonly property color storageSurface: surfaceSecondary
     readonly property color storageDivider: darkMode ? _p.neutralBlue600 : _p.neutralBlack05
     readonly property color storageBarSync: darkMode ? _p.kDriveLight : _p.kDrive500

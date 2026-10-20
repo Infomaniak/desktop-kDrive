@@ -47,7 +47,8 @@ ToolTip {
         font.pixelSize: IKFonts.bodySize
         lineHeightMode: root.textLineHeight > 0 ? Text.FixedHeight : Text.ProportionalHeight
         lineHeight: root.textLineHeight > 0 ? root.textLineHeight : 1
-        wrapMode: Text.WordWrap
+        // Long file names and paths have no space to break at: they wrap anywhere instead of being cut.
+        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
     }
 
     background: Rectangle {
