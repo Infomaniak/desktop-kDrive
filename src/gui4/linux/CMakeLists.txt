@@ -42,8 +42,17 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/cache/parametersstore.cpp
         app/cache/parametersstore.h
+        app/cache/syncerrorsprojection.cpp
+        app/cache/syncerrorsprojection.h
         app/dialogs/manydeletescontroller.cpp
         app/dialogs/manydeletescontroller.h
+        app/errors/blockingerrorresolver.cpp
+        app/errors/blockingerrorresolver.h
+        app/errors/syncerrorcatalog.cpp
+        app/errors/syncerrorcatalog.h
+        app/errors/syncerrorclassifier.cpp
+        app/errors/syncerrorclassifier.h
+        app/errors/syncerrorkind.h
         app/mainwindow/mainsidebarcontroller.cpp
         app/mainwindow/mainsidebarcontroller.h
         app/mainwindow/activitiescontroller.cpp
@@ -131,6 +140,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/serviceeventbus.h
         app/services/sentryservice.cpp
         app/services/sentryservice.h
+        app/services/syncerrorservice.cpp
+        app/services/syncerrorservice.h
         app/services/syncservice.cpp
         app/services/syncservice.h
         app/services/translationservice.cpp
@@ -421,6 +432,12 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
 
 qt_add_executable(${APPLICATION_CLIENTV4_EXECUTABLE}
         ${GUI_SOURCE_FILES}
+)
+
+# Debug-only error simulator, enabled with KDRIVE_SIMULATE_ERRORS.
+target_sources(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
+        $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/app/devtools/errorsimulator.cpp>
+        $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/app/devtools/errorsimulator.h>
 )
 
 set_target_properties(${APPLICATION_CLIENTV4_EXECUTABLE} PROPERTIES
