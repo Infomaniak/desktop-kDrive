@@ -2227,8 +2227,8 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
             <translation>Ustawienia</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
-            <source>Accounts &amp; Sync</source> 
-            <translation>Konta i synchronizacje</translation> 
+            <source>Syncs</source> 
+            <translation>Synchronizacje</translation> 
         </message> 
         <message id="sidebarItemAdvanced"> 
             <source>Advanced</source> 
