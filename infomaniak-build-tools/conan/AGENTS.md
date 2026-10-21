@@ -177,8 +177,6 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   configurations are built. Updates can also advance dependencies using version ranges and recipes from ConanCenter.
   Volatile runners need a persistent/restored cache or a binary remote to reuse newly built packages across runs.
 - **Poco components**: 22+ components with recursive dependency tree. Enable/disable via `enable_*` options
-- **GCC 15 (Linux)**: package-scoped workarounds for dependency sources (m4 in C23, pulled by `libpq`'s flex/bison;
-  keychain upstream `-Werror`) live in `profiles/linux-overrides`, composed by `build_dependencies.sh`. Add new ones there.
 - **openssl-macos vs openssl**: macOS uses `openssl-macos` (universal), other platforms use `openssl` from Conan Center
 
 ## Pre-PR Checks
