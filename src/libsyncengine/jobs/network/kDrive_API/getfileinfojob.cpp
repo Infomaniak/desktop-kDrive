@@ -95,6 +95,7 @@ ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
         }
 
         _path = relativePathStr;
+        ApiTranslator::translateV3ToV2(_path);
     }
 
     return ExitCode::Ok;
