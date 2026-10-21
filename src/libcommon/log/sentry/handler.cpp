@@ -145,9 +145,11 @@ static void readObject(const sentry_value_t event, std::stringstream &ss, int le
  *  sentry_value_t reader implementation - end
  */
 
-static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
+
+static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_t event, sentry_hint_t *hint, void *user_data) {
     (void) uctx;
-    (void) closure;
+    (void) hint;
+    (void) user_data;
 
     std::cerr << "Sentry detected a crash in the app " << Handler::appType() << std::endl;
 
@@ -164,9 +166,9 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
     return event;
 }
 
-sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closure) {
+sentry_value_t beforeSendCallback(sentry_value_t event, sentry_hint_t *hint, void *user_data) {
     (void) hint;
-    (void) closure;
+    (void) user_data;
 
     std::cout << "Sentry will send an event for the app " << Handler::appType() << std::endl;
 
