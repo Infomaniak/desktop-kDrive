@@ -353,7 +353,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
             }
 
             fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
-                                                 snapshotModificationTime, snapshot->size(nodeId), dbPath, destinationPath);
+                                                 snapshotModificationTime, snapshot->size(nodeId), dbPath,
+                                                 destinationPath / "test");
         }
 
         opSet->insertOp(fsOp);
