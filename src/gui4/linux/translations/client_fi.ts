@@ -2223,8 +2223,8 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
             <translation>Asetukset</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
-            <source>Accounts &amp; Sync</source> 
-            <translation>Tilit ja synkronoinnit</translation> 
+            <source>Syncs</source> 
+            <translation>Synkronoinnit</translation> 
         </message> 
         <message id="sidebarItemAdvanced"> 
             <source>Advanced</source> 

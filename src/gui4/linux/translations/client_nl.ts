@@ -2223,8 +2223,8 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
             <translation>Instellingen</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
-            <source>Accounts &amp; Sync</source> 
-            <translation>Accounts &amp; synchronisatiess</translation> 
+            <source>Syncs</source> 
+            <translation>Synchronisaties</translation> 
         </message> 
         <message id="sidebarItemAdvanced"> 
             <source>Advanced</source> 
