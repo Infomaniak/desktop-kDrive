@@ -145,7 +145,7 @@ target_link_libraries(${libcommonserver_NAME}
     Poco::Foundation Poco::Net Poco::Crypto Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
     xxHash::xxhash
-    keychain::keychain)
+    keychain)
 
 if(WIN32)
     target_link_libraries(${libcommonserver_NAME}
