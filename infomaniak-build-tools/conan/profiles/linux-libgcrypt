@@ -1,0 +1,5 @@
+# libgpg-error's Conan package omits its pkg-config files, so gpgrt-config
+# can select an older system gpg-error.pc. An explicitly empty PKG_CONFIG_LIBDIR
+# makes it use PKG_CONFIG_PATH, populated by Conan's PkgConfigDeps.
+[buildenv]
+libgcrypt/*:PKG_CONFIG_LIBDIR=
