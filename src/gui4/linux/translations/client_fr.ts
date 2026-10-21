@@ -2223,8 +2223,8 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
             <translation>Paramètres</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
-            <source>Accounts &amp; Sync</source> 
-            <translation>Comptes &amp; Synchronisations</translation> 
+            <source>Syncs</source> 
+            <translation>Synchronisations</translation> 
         </message> 
         <message id="sidebarItemAdvanced"> 
             <source>Advanced</source> 
