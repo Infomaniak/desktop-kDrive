@@ -47,14 +47,12 @@ clang-format -i <file>
 - **PR Title Format:** PR titles must follow the same Conventional Commits format as commit messages.
 - **PR Target Branch:** Use `develop` as the default target branch unless the user explicitly asks for a different base branch.
 - **PR Status:** Create the PR as **Draft** by default.
+- **QA regression risk:** When creating a PR, estimate the risk of regressions and/or bugs requiring specific QA testing. The assessment must trigger at least for new features, sync algorithm changes (`src/libsyncengine/`), daemon/IPC changes (`src/server/`), platform-specific code (`*_mac.mm`, `*_win.cpp`, `*_linux.cpp`), DB schema/migration changes (`src/libparms/`), and shell extensions (`extensions/`).
+- **QA required label:** When the risk applies, add the `QA required` label as soon as the PR is created, and include a "QA Testing" section in the PR description describing what must be tested.
 - **Branch creation (AI/automation):** If the user requests a PR but has not created a branch, create one with an appropriate name before opening the PR.
 - **History rewriting (AI/automation):** Never amend, rebase, or force-push commits unless the user explicitly asks for it.
 - **Commit & push:** Only commit and push when the user explicitly asks for it.
 - **Commit Format:** Follow the project's semantic-commit validation rules defined in [`.github/workflows/semantic-commit.yml`](https://github.com/Infomaniak/.github/blob/main/.github/workflows/semantic-commit.yml).
-
-## Pull Request Review (agents)
-- **QA regression risk:** During PR review, estimate the risk of regressions and/or bugs requiring specific QA testing. The assessment must trigger at least for new features, sync algorithm changes (`src/libsyncengine/`), daemon/IPC changes (`src/server/`), platform-specific code (`*_mac.mm`, `*_win.cpp`, `*_linux.cpp`), DB schema/migration changes (`src/libparms/`), and shell extensions (`extensions/`).
-- End every PR review summary with a final verdict line that is exactly `QA required: yes` or `QA required: no`, where `yes` means the PR carries a regression and/or bug risk requiring specific QA testing. When the verdict is `yes`, list after the verdict line the scenarios QA should test; the label is applied by automation.
 
 ## Security & Secrets
 - Never commit API tokens, passwords, or credentials. Use env vars (`KDRIVE_TEST_CI_API_TOKEN`, etc.).

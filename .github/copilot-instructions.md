@@ -30,9 +30,9 @@ Before proposing code or review comments:
 - Do not duplicate SonarCloud findings verbatim unless they identify a concrete actionable problem in the changed code.
 
 ## QA Regression Risk Assessment
-- During PR review, estimate the risk of regressions and/or bugs that would require specific testing by the QA team.
+- When creating a PR, estimate the risk of regressions and/or bugs that would require specific testing by the QA team.
 - This assessment must trigger at least when the PR: adds a new feature, modifies the sync algorithm (`src/libsyncengine/`), changes the daemon or IPC (`src/server/`), touches platform-specific code (`*_mac.mm`, `*_win.cpp`, `*_linux.cpp`), changes DB schema or migrations (`src/libparms/`), or affects file integrity paths (upload/download, conflict handling, shell extensions in `extensions/`).
-- End every review with a final verdict line that is exactly `QA required: yes` or `QA required: no`. With `yes`, list after the verdict line which scenarios QA should test; the label is applied by automation.
+- When the risk applies, add the `QA required` label as soon as the PR is created, and include a "QA Testing" section in the PR description describing what must be tested.
 
 ## Pull Request & Commit Rules (MANDATORY)
 - **Commit Format:** Follow the project's semantic-commit validation rules defined in [`.github/workflows/semantic-commit.yml`](https://github.com/Infomaniak/.github/blob/main/.github/workflows/semantic-commit.yml) and always write them in english.
