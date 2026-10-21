@@ -29,6 +29,14 @@
 #include <cassert>
 #include <random>
 
+#if defined(KD_WINDOWS)
+#include <io.h>
+#include <windows.h>
+#else
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 namespace KDC::sentry {
 
 std::shared_ptr<Handler> Handler::_instance = nullptr;
@@ -36,6 +44,41 @@ std::shared_ptr<Handler> Handler::_instance = nullptr;
 AppType Handler::_appType = AppType::None;
 bool Handler::_debugCrashCallback = false;
 bool Handler::_debugBeforeSendCallback = false;
+
+namespace {
+// Precomputed in Handler::init so that crashCallback does not need to allocate.
+SyncPath crashSignalFilePath;
+std::string crashMessage;
+
+// Async-signal-safe, see https://man7.org/linux/man-pages/man7/signal-safety.7.html
+void writeToStdErr(const std::string &str) noexcept {
+#if defined(KD_WINDOWS)
+    (void) _write(2, str.data(), static_cast<unsigned int>(str.size()));
+#else
+    (void) ::write(STDERR_FILENO, str.data(), str.size());
+#endif
+}
+
+// Async-signal-safe equivalent of CommonUtility::writeSignalFile.
+void writeCrashSignalFile() noexcept {
+    // As `signum` is unknown, a crash is considered as a kill.
+    static constexpr char signalValue[] = "0\n";
+#if defined(KD_WINDOWS)
+    const HANDLE file =
+            CreateFileW(crashSignalFilePath.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (file == INVALID_HANDLE_VALUE) return;
+    DWORD written = 0;
+    (void) WriteFile(file, signalValue, sizeof(signalValue) - 1, &written, nullptr);
+    (void) CloseHandle(file);
+#else
+    const int fd = ::open(crashSignalFilePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) return;
+    (void) ::write(fd, signalValue, sizeof(signalValue) - 1);
+    (void) ::close(fd);
+#endif
+}
+} // namespace
+
 /*
  *  sentry_value_t reader implementation - begin
  *  Used for debbuging
@@ -151,11 +194,9 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
     (void) hint;
     (void) user_data;
 
-    std::cerr << "Sentry detected a crash in the app " << Handler::appType() << std::endl;
-
-    // As `signum` is unknown, a crash is considered as a kill.
-    const int signum{0};
-    KDC::CommonUtility::writeSignalFile(Handler::appType(), KDC::fromInt<KDC::SignalType>(signum));
+    // This callback may run inside a signal handler: only async-signal-safe calls are allowed.
+    writeToStdErr(crashMessage);
+    writeCrashSignalFile();
 
     if (Handler::debugCrashCallback()) {
         std::stringstream ss;
@@ -209,6 +250,8 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     }
 
     _appType = appType;
+    crashSignalFilePath = CommonUtility::signalFilePath(appType, SignalCategory::Kill);
+    crashMessage = "Sentry detected a crash in the app " + toString(appType) + "\n";
 
     // For debugging: if the following environment variable is set, the crash event will be printed into a debug file
     bool isSet = false;
@@ -378,7 +421,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min) (storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
