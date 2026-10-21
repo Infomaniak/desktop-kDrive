@@ -6,8 +6,8 @@ import shutil
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
-from conan.tools.files import copy, replace_in_file
-from conan.tools.scm import Git, Version
+from conan.tools.files import copy
+from conan.tools.scm import Git
 from conan.tools.system import package_manager
 
 required_conan_version = ">=2"
@@ -122,6 +122,10 @@ class SentryNativeConan(ConanFile):
 
     def package(self):
         copy(self, "LICENSE*", src=self.source_folder, dst=pjoin(self.package_folder, "licenses"))
+        if self.settings.os == "Linux":
+            # libunwind is vendored and statically linked into libsentry on Linux
+            copy(self, "COPYING", src=pjoin(self.source_folder, "vendor", "libunwind"),
+                 dst=pjoin(self.package_folder, "licenses", "libunwind"))
         cmake = CMake(self)
         cmake.install()
         if self.settings.os == "Macos":
