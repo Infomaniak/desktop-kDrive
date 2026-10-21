@@ -175,7 +175,7 @@ void RemoteFileSystemObserverWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
     ExitInfo exitInfo = ExitCode::Ok;
-    ApiTranslator::clearSharedCache(_syncPal->driveId());
+    ApiTranslator::clearSharedCache(_syncPal->userDbId(), _syncPal->driveId());
     {
         const std::scoped_lock lock(_listingSyncFolderCursorCacheMutex);
         _listingSyncFolderCursorCache.reset();
