@@ -173,7 +173,7 @@ IKShadowedWindow {
                 IKSidebarItem {
                     width: parent.width
                     label: qsTrId("sidebarItemAccounts")
-                    iconSource: "qrc:/assets/settings/accounts.svg"
+                    iconSource: "qrc:/assets/settings/user-sync.svg"
                     selected: root.selectedCategory === SettingsWindow.Category.Accounts
                     onTriggered: root.selectAccounts()
                 }
