@@ -37,6 +37,9 @@ class FileListJob : public SyncJob {
 
         void setListingConf(const ListingConf &listingConf) { _listingConf = listingConf; };
 
+        UserDbId userDbId() const { return _userDbId; };
+        DriveId driveId() const { return _driveId; };
+
         // The return value of this accessor is only meaningful when all the responses of the
         // underlying file list requests have been handled.
         [[nodiscard]] ExitInfo remoteNodeInfoList(RemoteNodeInfoList &nodeInfoList) const {
