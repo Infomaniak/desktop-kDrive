@@ -2222,8 +2222,8 @@ Diese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und z
             <translation>Einstellungen</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
-            <source>Accounts &amp; Sync</source> 
-            <translation>Konten &amp; Synchronisierungen</translation> 
+            <source>Syncs</source> 
+            <translation>Synchronisierungen</translation> 
         </message> 
         <message id="sidebarItemAdvanced"> 
             <source>Advanced</source> 

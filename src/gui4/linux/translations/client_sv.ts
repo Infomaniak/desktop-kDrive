@@ -2223,8 +2223,8 @@ Dessa data gör det möjligt för vårt team att snabbt åtgärda och optimera p
             <translation>Inställningar</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
-            <source>Accounts &amp; Sync</source> 
-            <translation>Konton och synkroniseringar</translation> 
+            <source>Syncs</source> 
+            <translation>Synkroniseringar</translation> 
         </message> 
         <message id="sidebarItemAdvanced"> 
             <source>Advanced</source> 
