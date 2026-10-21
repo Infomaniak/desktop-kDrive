@@ -115,7 +115,7 @@ poco/1.15.4
 - `install_name_tool` for rpath fixes (`@loader_path`)
 
 ### Linux
-- System package manager detection for Sentry dependencies (apt, yum, dnf, pacman, zypper, apk)
+- System package manager detection for Sentry and keychain dependencies (apt, yum, dnf, pacman, zypper, apk)
 - Additional QtSerialPort module installation
 - No universal binary support
 

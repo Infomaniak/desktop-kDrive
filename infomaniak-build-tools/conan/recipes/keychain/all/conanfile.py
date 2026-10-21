@@ -47,6 +47,37 @@ class KeychainConan(ConanFile):
             strip_root=True,
         )
 
+    def system_requirements(self):
+        """Validate required Linux system packages for keychain and fail if they are missing."""
+        # Upstream finds glib and libsecret through pkg-config without REQUIRED. The glib development
+        # packages already depend on pkg-config, except on Arch where it is part of base-devel.
+        if self.settings.os != "Linux":
+            return
+
+        managers = [
+            (package_manager.Apt, ["libglib2.0-dev", "libsecret-1-dev"]),  # Debian/Ubuntu/Mint/Raspbian
+            (package_manager.Yum, ["glib2-devel", "libsecret-devel"]),  # Amazon Linux
+            (package_manager.Dnf, ["glib2-devel", "libsecret-devel"]),  # Fedora/RHEL/CentOS/Rocky/Alma
+            (package_manager.PacMan, ["pkgconf", "glib2", "libsecret"]),  # Arch/Manjaro
+            (package_manager.Zypper, ["glib2-devel", "libsecret-devel"]),  # openSUSE/SLES
+            (package_manager.Apk, ["glib-dev", "libsecret-dev"]),  # Alpine
+        ]
+
+        for manager_class, packages in managers:
+            missing = manager_class(self).check(packages)
+            if missing is None:
+                # This manager is not active on the current system.
+                continue
+
+            if missing:
+                raise ConanInvalidConfiguration(
+                    f"Missing Linux system packages required by keychain recipe: {', '.join(missing)}. "
+                    "Install them manually and retry."
+                )
+
+            self.output.info(f"All required Linux system packages for keychain are installed: {', '.join(packages)}.")
+            return
+
     def generate(self):
         tc = CMakeToolchain(self)
         tc.cache_variables["BUILD_TESTS"] = False
