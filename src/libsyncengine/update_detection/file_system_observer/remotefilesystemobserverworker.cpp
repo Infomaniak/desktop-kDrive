@@ -1423,16 +1423,10 @@ ExitInfo RemoteFileSystemObserverWorker::getSyncFolderListingCursor(CursorData &
         return ExitCode::Ok;
     }
 
-    ExitInfo getCursorExitInfo = ExitCode::Ok;
-    if (syncIsAdvancedWithNonRootFolder())
-        getCursorExitInfo = _syncPal->getCustomTargetFolderCursor(cursorData);
-    else
-        getCursorExitInfo = _syncPal->getRootFolderCursor(cursorData);
+    if (const auto exitInfo = _syncPal->getRootFolderCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::getRootFolderCursor: " << exitInfo);
 
-    if (!getCursorExitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in getRootFolderCursor or getCustomTargetFolderCursor: " << getCursorExitInfo);
-
-        return getCursorExitInfo;
+        return exitInfo;
     }
 
     _listingSyncFolderCursorCache = cursorData;
@@ -1453,16 +1447,10 @@ ExitInfo RemoteFileSystemObserverWorker::clearSyncFolderListingCursor() {
 ExitInfo RemoteFileSystemObserverWorker::setSyncFolderListingCursor(const CursorData &cursorData) {
     const std::scoped_lock lock(_listingSyncFolderCursorCacheMutex);
 
-    ExitInfo setCursorExitInfo = ExitCode::Ok;
-    if (syncIsAdvancedWithNonRootFolder())
-        setCursorExitInfo = _syncPal->setCustomTargetFolderCursor(cursorData);
-    else
-        setCursorExitInfo = _syncPal->setRootFolderCursor(cursorData);
+    if (const auto exitInfo = _syncPal->setRootFolderCursor(cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::setRootFolderCursor: " << exitInfo);
 
-    if (!setCursorExitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in setRootFolderCursor or setCustomTargetFolderCursor: " << setCursorExitInfo);
-
-        return setCursorExitInfo;
+        return exitInfo;
     }
 
     _listingSyncFolderCursorCache = cursorData;
