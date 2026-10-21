@@ -345,7 +345,6 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
-        ui/assets/settings/accounts.svg
         ui/assets/settings/advanced.svg
         ui/assets/settings/folder-circle-plus.svg
         ui/assets/settings/chevron-left.svg
@@ -357,6 +356,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/settings/sentry-logo.svg
         ui/assets/settings/sentry-logo-dark.svg
         ui/assets/settings/single-user.svg
+        ui/assets/settings/user-sync.svg
         ui/assets/main/activities.svg
         ui/assets/main/activities/empty.svg
         ui/assets/main/activities/empty-dark.svg
