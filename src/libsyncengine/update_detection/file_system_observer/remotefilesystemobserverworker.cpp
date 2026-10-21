@@ -462,17 +462,13 @@ ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
     const bool sharedFolderShouldBeRemovedFromSnapshot = getItemIdExitInfo && (sharedFolderIsEmpty || sharedFolderIsExcluded);
     if (sharedFolderShouldBeAddedToSnapshot) { // 'Shared' folder does not exist in the snapshot, has some content and is not
                                                // excluded. We need to add it.
-        NodeInfo sharedFolderNodeInfo;
-        if (const auto exitInfo =
-                    ApiTranslator::getSharedFolderNodeInfo(_syncPal->userDbId(), _syncPal->driveId(), sharedFolderNodeInfo);
+        RemoteSnapshotItem sharedFolderSnapshotItem;
+        if (const auto exitInfo = ApiTranslator::getSharedFolderSnapshotItem(_syncPal->userDbId(), _syncPal->driveId(),
+                                                                             sharedFolderSnapshotItem);
             !exitInfo)
             return exitInfo;
 
-        const RemoteSnapshotItem sharedFolderItem(sharedFolderNodeInfo.nodeId().toStdString(),
-                                                  sharedFolderNodeInfo.parentNodeId().toStdString(),
-                                                  QStr2SyncName(sharedFolderNodeInfo.name()), 0, sharedFolderNodeInfo.modtime(),
-                                                  NodeType::Directory, sharedFolderNodeInfo.size(), false, false, false);
-        (void) _liveSnapshot.updateItem(sharedFolderItem);
+        (void) _liveSnapshot.updateItem(sharedFolderSnapshotItem);
 
     } else if (sharedFolderShouldBeRemovedFromSnapshot) { // 'Shared' folder exists in the snapshot, but it is now empty or
                                                           // excluded. We need to remove it.
