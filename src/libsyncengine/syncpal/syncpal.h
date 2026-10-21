@@ -275,8 +275,18 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void resetSnapshotInvalidationCounters();
 
-        ExitInfo addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
-                                const SyncPath &parentFolderPath);
+        //! Adds a direct download job for the item at `absoluteLocalPath`.
+        /*!
+          \param relativePath is the path of the item, relative to the local folder of the sync.
+          \param absoluteLocalPath is the absolute path of the item on the local file system.
+          \param parentFolderPath is the absolute path of the parent folder of the item, when its hydration is monitored
+          (\ref monitorFolderHydration), empty otherwise.
+          \param observer is an optional completion observer, invoked with the job id and true if the download has
+          succeeded, false otherwise. It is called on a job manager worker thread, while the direct download jobs map
+          is locked, and must therefore not call any SyncPal method.
+        */
+        ExitInfo addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath, const SyncPath &parentFolderPath,
+                                const std::function<void(UniqueId, bool)> &observer = nullptr);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs();
@@ -410,6 +420,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                            PathHashFunction>
                 _folderHydrationInProgress; // key: bundle path, value: bundle children paths
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
+        // Completion observers of the direct download jobs, removed and invoked when the corresponding download is
+        // finalized (see SyncPal::addDlDirectJob).
+        std::unordered_map<UniqueId, std::function<void(UniqueId, bool)>> _directDownloadObserversMap;
         std::mutex _directDownloadJobsMapMutex;
 
         // Cumulative count of local delete operations that were propagated across successive synchronization cycles since the
