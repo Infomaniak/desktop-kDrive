@@ -32,9 +32,9 @@ namespace KDC {
 
 LiveSnapshot::LiveSnapshot(const ReplicaSide side, const DbNode &dbNode) :
     Snapshot(side, side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
-    _revisionHandlder = std::make_shared<SnapshotRevisionHandler>();
+    _revisionHandler = std::make_shared<SnapshotRevisionHandler>();
     _items.try_emplace(rootFolderId(), std::make_shared<SnapshotItem>(rootFolderId()))
-            .first->second->setSnapshotRevisionHandler(_revisionHandlder);
+            .first->second->setSnapshotRevisionHandler(_revisionHandler);
 }
 
 void LiveSnapshot::init() {
@@ -44,9 +44,9 @@ void LiveSnapshot::init() {
     _items.clear();
     auto [res, _] = _items.try_emplace(rootFolderId(), std::make_shared<SnapshotItem>(rootFolderId()));
     auto newItemPtr = res->second;
-    newItemPtr->setSnapshotRevisionHandler(_revisionHandlder);
+    newItemPtr->setSnapshotRevisionHandler(_revisionHandler);
 
-    _isValid = false;
+    setValid(false);
 }
 
 bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
@@ -109,7 +109,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId
         // Item does not exist yet, create it
         parentChanged = true;
         item = std::make_shared<SnapshotItem>(newItem.id());
-        item->setSnapshotRevisionHandler(_revisionHandlder);
+        item->setSnapshotRevisionHandler(_revisionHandler);
         (void) _items.try_emplace(newItem.id(), item);
     }
 
@@ -123,7 +123,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId
             LOG_DEBUG(Log::instance()->getLogger(),
                       "Parent " << newItem.parentId().c_str() << " does not exist yet, creating it");
             newParent = std::make_shared<SnapshotItem>(newItem.parentId());
-            newParent->setSnapshotRevisionHandler(_revisionHandlder);
+            newParent->setSnapshotRevisionHandler(_revisionHandler);
             (void) _items.try_emplace(newItem.parentId(), newParent);
             newParent->addChild(item);
         } else {
@@ -299,17 +299,15 @@ bool LiveSnapshot::forceUpdateLastChangeRevision(const NodeId &itemId) {
 
 
 bool LiveSnapshot::isValid() const {
-    const std::scoped_lock lock(_mutex);
-    return _isValid;
+    return _isValid.load();
 }
 
 void LiveSnapshot::setValid(const bool newIsValid) {
-    const std::scoped_lock lock(_mutex);
-    _isValid = newIsValid;
+    _isValid.store(newIsValid);
 }
 
 SnapshotRevision LiveSnapshot::revision() const {
-    return _revisionHandlder->revision();
+    return _revisionHandler->revision();
 }
 
 void LiveSnapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem> parent) {

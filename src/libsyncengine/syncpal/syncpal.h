@@ -144,22 +144,21 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             EnumEnd
         };
 
-        SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
-        SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId, const std::string &version);
+        SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted);
+        SyncPal(std::shared_ptr<Vfs> vfs, int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
-        inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
-        inline void setResolveSyncErrorsByExitCauseCallback(
+        void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
+        void setResolveSyncErrorsByExitCauseCallback(
                 const std::function<void(SyncDbId syncDbId, ExitCause cause)> &resolveSyncErrors) {
             _resolveSyncErrors = resolveSyncErrors;
         }
 
-        inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
+        void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
         }
 
-        inline void setFixConflictedFilesCompletedCallback(
-                const std::function<void(int, uint64_t)> &fixConflictedFilesCompleted) {
+        void setFixConflictedFilesCompletedCallback(const std::function<void(int, uint64_t)> &fixConflictedFilesCompleted) {
             _fixConflictedFilesCompleted = fixConflictedFilesCompleted;
         }
 
@@ -170,24 +169,24 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         void setVfs(std::shared_ptr<Vfs> vfs);
-        inline std::shared_ptr<Vfs> vfs() { return _vfs; }
+        [[nodiscard]] std::shared_ptr<Vfs> vfs() { return _vfs; }
 
         // SyncPalInfo
-        [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
-        inline const SyncPalInfo &syncInfo() const { return _syncInfo; }
-        inline SyncDbId syncDbId() const { return _syncInfo.syncDbId; }
-        inline DriveDbId driveDbId() const { return _syncInfo.driveDbId; }
-        inline DriveId driveId() const { return _syncInfo.driveId; }
-        inline AccountDbId accountDbId() const { return _syncInfo.accountDbId; }
-        inline UserDbId userDbId() const { return _syncInfo.userDbId; }
-        inline UserId userId() const { return _syncInfo.userId; }
-        inline const std::string &driveName() const { return _syncInfo.driveName; }
-        inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
-        inline const SyncPath &localPath() const { return _syncInfo.localPath; }
-        inline const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
-        inline bool restart() const { return _syncInfo.restart; }
-        inline bool updateTreesNeedToBeCleared() const { return _syncInfo.updateTreesNeedToBeCleared; }
-        inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
+        [[nodiscard]] std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
+        [[nodiscard]] const SyncPalInfo &syncInfo() const { return _syncInfo; }
+        [[nodiscard]] SyncDbId syncDbId() const { return _syncInfo.syncDbId; }
+        [[nodiscard]] DriveDbId driveDbId() const { return _syncInfo.driveDbId; }
+        [[nodiscard]] DriveId driveId() const { return _syncInfo.driveId; }
+        [[nodiscard]] AccountDbId accountDbId() const { return _syncInfo.accountDbId; }
+        [[nodiscard]] UserDbId userDbId() const { return _syncInfo.userDbId; }
+        [[nodiscard]] UserId userId() const { return _syncInfo.userId; }
+        [[nodiscard]] const std::string &driveName() const { return _syncInfo.driveName; }
+        [[nodiscard]] VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
+        [[nodiscard]] const SyncPath &localPath() const { return _syncInfo.localPath; }
+        [[nodiscard]] const NodeId &localNodeId() const { return _syncInfo.localNodeId; }
+        [[nodiscard]] bool restart() const { return _syncInfo.restart; }
+        [[nodiscard]] bool updateTreesNeedToBeCleared() const { return _syncInfo.updateTreesNeedToBeCleared; }
+        [[nodiscard]] bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
         void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; }
         ExitInfo isRootFolderValid();
@@ -232,7 +231,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode clearNodes();
 
         void syncPalStartCallback(UniqueId jobId);
-        void handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> jobPtr);
+        void handlePropagatorJobsCompletion(std::shared_ptr<AbstractJob> jobPtr);
 
         //! Start SyncPal.
         /*!
@@ -284,7 +283,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode cleanOldUploadSessionTokens();
         bool isDownloadOngoing(const SyncPath &localPath);
 
-        inline bool syncHasFullyCompleted() const { return _syncInfo.syncHasFullyCompleted; }
+        [[nodiscard]] bool syncHasFullyCompleted() const { return _syncInfo.syncHasFullyCompleted; }
 
         void fixInconsistentFileNames();
 
@@ -392,6 +391,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
         [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath);
 
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -455,17 +455,20 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<OperationGeneratorWorker> _operationsGeneratorWorker{nullptr};
         std::shared_ptr<OperationSorterWorker> _operationsSorterWorker{nullptr};
         std::shared_ptr<ExecutorWorker> _executorWorker{nullptr};
-
         std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
-
 
         void freeWorkers();
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
         void setSyncHasFullyCompletedInParams(bool syncHasFullyCompleted);
-        ExitInfo setListingCursor(const std::string &value, int64_t timestamp);
-        ExitInfo listingCursor(std::string &value, int64_t &timestamp);
+
+        ExitInfo selectSync(Sync &sync);
+        ExitInfo updateSync(const Sync &sync);
+
+        ExitInfo setRootFolderCursor(const CursorData &cursorData);
+        ExitInfo getRootFolderCursor(CursorData &cursorData);
+
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
@@ -497,6 +500,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setUpExcludelistPropagator();
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                             const std::vector<Error> &keepRemoteErrorList);
+
         log4cplus::Logger _logger;
 
         int64_t _consecutiveBackErrors{0};

@@ -13,6 +13,7 @@ set(testsyncengine_SRCS
         # Utility
         ../test.cpp
         test.cpp
+        testbasewithparmsdb.h testbasewithparmsdb.cpp
         ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp ../test_utility/testhelpers_requests.h ../test_utility/testhelpers_requests.cpp
         ../test_utility/iohelpertestutilities.h ../test_utility/iohelpertestutilities.cpp
         ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
@@ -37,12 +38,13 @@ set(testsyncengine_SRCS
         jobs/testabstractjob.h jobs/testabstractjob.cpp
         jobs/testsyncjobmanagersingleton.h jobs/testsyncjobmanagersingleton.cpp
         ## Network jobs
-        jobs/network/testsnapshotitemhandler.h jobs/network/testsnapshotitemhandler.cpp
+        jobs/network/testremotesnapshotitemhandler.h jobs/network/testremotesnapshotitemhandler.cpp
         jobs/network/testnetworkjobs.h jobs/network/testnetworkjobs.cpp
         jobs/network/testabstractnetworkjob.h jobs/network/testabstractnetworkjob.cpp
         jobs/network/kDrive_API/testapitranslator.h jobs/network/kDrive_API/testapitranslator.cpp
         jobs/network/kDrive_API/testloguploadjob.h jobs/network/kDrive_API/testloguploadjob.cpp
         jobs/network/kDrive_API/testsearchjob.h jobs/network/kDrive_API/testsearchjob.cpp
+        jobs/network/kDrive_API/testgetmysharedfilesjob.h jobs/network/kDrive_API/testgetmysharedfilesjob.cpp
         ## Local jobs
         jobs/local/testlocaljobs.h jobs/local/testlocaljobs.cpp
         # Update Detection
@@ -77,6 +79,7 @@ set(testsyncengine_SRCS
         integration/testintegration_conflicts.cpp
         integration/testintegration_conflictresolver.cpp
         integration/testintegration_nodeid_reuse.cpp
+        integration/testintegration_restart.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp

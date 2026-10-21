@@ -82,12 +82,26 @@ using Timestamp = int64_t;
 struct CursorData {
         Cursor cursor;
         Timestamp timestamp{0};
+
+        friend bool operator==(const CursorData &lhs, const CursorData &rhs) = default;
 };
-struct CursorStore {
-        CursorData userPrivateFolderCursor;
-        CursorData commonDocumentsFolderCursor;
-        CursorData sharedFolderCursor;
+
+enum class SpecialRemoteFolder {
+    CommonDocuments = 0,
+    Private = 1,
+    Shared = 2,
+    CustomTarget = 3 // For an advanced synchronization.
 };
+
+using SpecialFolderNames = std::unordered_map<SpecialRemoteFolder, SyncName>;
+
+using Url = std::string;
+struct SessionInfo {
+        Url url;
+        std::string token;
+};
+
+
 #if defined(KD_WINDOWS)
 using StringStream = std::wstringstream;
 using OStringStream = std::wostringstream;
@@ -521,6 +535,7 @@ std::string toString(TooManyDeletesNotificationType e);
 std::string toString(TooManyDeletesUserChoice e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
+    if (side == ReplicaSide::Both) return ReplicaSide::Both;
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
     return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
 }
