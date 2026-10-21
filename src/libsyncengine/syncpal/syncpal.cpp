@@ -1026,24 +1026,6 @@ ExitInfo SyncPal::getRootFolderCursor(CursorData &cursorData) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::setCustomTargetFolderCursor(const CursorData &cursorData) {
-    Sync sync;
-    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
-
-    sync.setCustomTargetFolderCursor(cursorData);
-
-    return updateSync(sync);
-}
-
-ExitInfo SyncPal::getCustomTargetFolderCursor(CursorData &cursorData) {
-    Sync sync;
-    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
-
-    cursorData = sync.customTargetFolderCursor();
-
-    return ExitCode::Ok;
-}
-
 std::shared_ptr<ConstSnapshot> SyncPal::snapshot(const ReplicaSide side) const {
     LOG_IF_FAIL(side != ReplicaSide::Unknown);
     if (side == ReplicaSide::Unknown) {
