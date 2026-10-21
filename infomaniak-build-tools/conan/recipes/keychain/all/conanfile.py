@@ -39,7 +39,13 @@ class KeychainConan(ConanFile):
         cmake_layout(self, src_folder="src")
 
     def source(self):
-        get(self, f"https://github.com/hrantzsch/keychain/archive/refs/tags/v{self.version}.tar.gz", strip_root=True)
+        # Update the hash together with the version in config.yml.
+        get(
+            self,
+            f"https://github.com/hrantzsch/keychain/archive/refs/tags/v{self.version}.tar.gz",
+            sha256="9a9fc5aaa94d03180f1c3735f93d1ebcf9d2925fc915306b8476abc17a3906a9",
+            strip_root=True,
+        )
 
     def generate(self):
         tc = CMakeToolchain(self)
