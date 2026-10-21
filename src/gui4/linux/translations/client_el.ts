@@ -2223,8 +2223,8 @@ This data allows our team to quickly fix and optimize the application, resulting
             <translation>Ρυθμίσεις</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
-            <source>Accounts &amp; Sync</source> 
-            <translation>Λογαριασμοί &amp; Συγχρονισμοί</translation> 
+            <source>Syncs</source> 
+            <translation>Συγχρονισμοί</translation> 
         </message> 
         <message id="sidebarItemAdvanced"> 
             <source>Advanced</source> 
