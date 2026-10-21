@@ -147,13 +147,11 @@ class Sync : public BaseSync {
         [[nodiscard]] bool hasFullyCompleted() const { return _hasFullyCompleted; }
         void setHasFullyCompleted(const bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
 
-        /// Cursor of the listing requests made for the root folder of the remote drive.
+        /// Cursor of the listing requests made for the root folder of the synchronization: the root folder of the remote
+        /// drive for a standard synchronization, or the target folder of the synchronization for an advanced
+        /// synchronization.
         [[nodiscard]] const CursorData &rootFolderCursor() const { return _rootFolderCursor; }
         void setRootFolderCursor(const CursorData &cursorData) { _rootFolderCursor = cursorData; }
-
-        /// Cursor of the listing requests made for the target folder of an advanced synchronization.
-        [[nodiscard]] const CursorData &customTargetFolderCursor() const { return _customTargetFolderCursor; }
-        void setCustomTargetFolderCursor(const CursorData &cursorData) { _customTargetFolderCursor = cursorData; }
 
         [[nodiscard]] bool toDelete() const { return _toDelete; }
         void setToDelete(const bool toDelete) { _toDelete = toDelete; }
@@ -165,7 +163,6 @@ class Sync : public BaseSync {
         std::filesystem::path _dbPath;
         bool _hasFullyCompleted{false};
         CursorData _rootFolderCursor;
-        CursorData _customTargetFolderCursor;
         bool _toDelete{false};
 };
 
