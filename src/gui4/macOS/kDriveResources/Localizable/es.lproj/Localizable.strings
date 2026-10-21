@@ -736,7 +736,8 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Parece que no podemos cargar la aplicación…";
 
-/* loco:6ac60bf864441a81870fc9d2 */
+/* loco:6ac60bf864441a81870fc9d2
+ * kDrive Desktop macOS redesign. General failure message when a share link could not be copied to the clipboard. */
 "errorCopyingShareLink" = "Se ha producido un error al copiar el enlace.";
 
 /* loco:69aa7fb3753c400c81087842 */
@@ -904,10 +905,10 @@
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Abrir y Extensiones";
 
-/* loco:69305849f1fb5be2c7093fa2 */
+/* loco:6ad7140e17c71fcc16055532 */
 "instructionOpenSystemSettings" = "Abre Configuración del sistema > General";
 
-/* loco:6930588953221ff00608e983 */
+/* loco:6ad7141185062f3cbf0caf52 */
 "instructionOpenSystemSettingsLink" = "Configuración del sistema";
 
 /* loco:6a16da43bc4d91f15c0416e2 */
@@ -1465,7 +1466,7 @@
 "sentryDescription" = "Sentry es una herramienta alojada y gestionada exclusivamente por Infomaniak para monitorear la estabilidad de la aplicación en tiempo real e informar automáticamente de cualquier error técnico a nuestros desarrolladores.\n\nEstos datos permiten a nuestro equipo corregir y optimizar rápidamente la aplicación, lo que se traduce en una mejor experiencia de usuario para ti.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Cuentas y sincronizaciones";
+"sidebarItemAccounts" = "Sincronizaciones";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Avanzado";
@@ -1550,6 +1551,12 @@
 
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "Sync está en marcha";
+
+/* loco:6ad232f65d64577ad6084542 */
+"syncStatusAnalysing" = "Búsqueda de cambios";
+
+/* loco:6ad232ecab975477a3093ee2 */
+"syncStatusExploring" = "Preparación de tus archivos";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Sincronizado";

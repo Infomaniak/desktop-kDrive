@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: fi, Finnish
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
+  Exported by: Clément Kunz
+  Exported at: Wed, 21 Oct 2026 12:00:04 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1105,6 +1105,9 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Uusin</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Tilaukseni</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nimi</value> 
   </data> 
@@ -1549,7 +1552,7 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Asetukset</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Tilit ja synkronoinnit</value> 
+    <value>Synkronoinnit</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Lisäasetukset</value> 
@@ -1574,6 +1577,12 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
     <value>Muut tietokoneella olevat tiedostot</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Tilauksesi vapaa tallennustila</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Verkossa tallennetut kDrive-tiedostot</value> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synkronointi</value> 
@@ -1618,6 +1627,18 @@ Internet-yhteys vaaditaan niiden käyttämiseen.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synkronointi on käynnissä</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Muutosten haku</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Tiedostojen valmistelu</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@-elementti on synkronoitu %@:n kanssa</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ synkronoitua kohdetta %@:sta</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkronoitu</value> 

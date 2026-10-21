@@ -509,6 +509,7 @@ public enum KDriveLocalizable {
   /// loco:6998110a3f9ff4c3230a4eb2
   public static let errorConnectingToXPCServer = KDriveLocalizable.tr("Localizable", "errorConnectingToXPCServer", fallback: "Looks like we cannot load the app…")
   /// loco:6ac60bf864441a81870fc9d2
+  ///  * kDrive Desktop macOS redesign. General failure message when a share link could not be copied to the clipboard.
   public static let errorCopyingShareLink = KDriveLocalizable.tr("Localizable", "errorCopyingShareLink", fallback: "An error occurred while copying the link.")
   /// loco:69aa7fb3753c400c81087842
   public static let errorDeletingAccount = KDriveLocalizable.tr("Localizable", "errorDeletingAccount", fallback: "An error occurred while deleting your account.")
@@ -680,9 +681,9 @@ public enum KDriveLocalizable {
   public static let instructionOpenSecurityExtensionsLink = KDriveLocalizable.tr("Localizable", "instructionOpenSecurityExtensionsLink", fallback: "Login Items & Extensions")
   /// loco:693059483fc5023f6a0f86b3
   public static let instructionOpenSecurityExtensionsLinkLegacy = KDriveLocalizable.tr("Localizable", "instructionOpenSecurityExtensionsLinkLegacy", fallback: "Open & Extensions")
-  /// loco:69305849f1fb5be2c7093fa2
+  /// loco:6ad7140e17c71fcc16055532
   public static let instructionOpenSystemSettings = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettings", fallback: "Open System Settings > General")
-  /// loco:6930588953221ff00608e983
+  /// loco:6ad7141185062f3cbf0caf52
   public static let instructionOpenSystemSettingsLink = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettingsLink", fallback: "System Settings")
   /// loco:6a16da43bc4d91f15c0416e2
   public static let kSuiteOfferUrl = KDriveLocalizable.tr("Localizable", "kSuiteOfferUrl", fallback: "https://www.infomaniak.com/en/ksuite")
@@ -749,7 +750,7 @@ public enum KDriveLocalizable {
   /// loco:69a06888a8f938beef0635f2
   public static let labelFolderRecreatedOrReplacedTip = KDriveLocalizable.tr("Localizable", "labelFolderRecreatedOrReplacedTip", fallback: "The folder was deleted and recreated, or replaced by another folder with the same name.")
   /// loco:698c656e3e4e4bbf4f02bde2
-  public static let labelJustNow = KDriveLocalizable.tr("Localizable", "labelJustNow", fallback: "Just now")
+  public static let labelJustNow = KDriveLocalizable.tr("Localizable", "labelJustNow", fallback: "just now")
   /// loco:698c6a57a5f62ca5f1091942
   public static let labelkDriveManagement = KDriveLocalizable.tr("Localizable", "labelkDriveManagement", fallback: "kDrive management")
   /// loco:698aecc409658598f60cc334
@@ -1063,7 +1064,7 @@ public enum KDriveLocalizable {
   public static let releaseChannelTest = KDriveLocalizable.tr("Localizable", "releaseChannelTest", fallback: "Test")
   /// loco:69eb8137c1ea8e116a0ba282
   ///  * Search field placeholder in SearchSheetView.
-  public static let searchPlaceholder = KDriveLocalizable.tr("Localizable", "searchPlaceholder", fallback: "Search...")
+  public static let searchPlaceholder = KDriveLocalizable.tr("Localizable", "searchPlaceholder", fallback: "Search…")
   /// loco:6ac604dd665bcc5b3402f332
   ///  * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online.
   public static let searchResultOpenInBrowserSyncPausedTooltip = KDriveLocalizable.tr("Localizable", "searchResultOpenInBrowserSyncPausedTooltip", fallback: "Synchronization paused.\nThis file will open in kDrive online.")
@@ -1084,7 +1085,7 @@ public enum KDriveLocalizable {
   /// loco:698b2df25c57be025b0ecfd2
   public static let sentryDescription = KDriveLocalizable.tr("Localizable", "sentryDescription", fallback: "Sentry is a tool hosted and managed exclusively by Infomaniak to monitor the stability of the application in real time and automatically report any technical errors to our developers.\n\nThis data allows our team to quickly fix and optimize the application, resulting in a better user experience for you.")
   /// loco:68cd386502633dee14000352
-  public static let sidebarItemAccounts = KDriveLocalizable.tr("Localizable", "sidebarItemAccounts", fallback: "Accounts & Sync")
+  public static let sidebarItemAccounts = KDriveLocalizable.tr("Localizable", "sidebarItemAccounts", fallback: "Syncs")
   /// loco:68cd389fcc36238762040074
   public static let sidebarItemAdvanced = KDriveLocalizable.tr("Localizable", "sidebarItemAdvanced", fallback: "Advanced")
   /// loco:68cd3843fbf0b4c60d0c9c82
@@ -1173,6 +1174,10 @@ public enum KDriveLocalizable {
   public static let syncShortStatusPaused = KDriveLocalizable.tr("Localizable", "syncShortStatusPaused", fallback: "Sync is paused")
   /// loco:69ca84494136086fe60cebf2
   public static let syncShortStatusRunning = KDriveLocalizable.tr("Localizable", "syncShortStatusRunning", fallback: "Sync is running")
+  /// loco:6ad232f65d64577ad6084542
+  public static let syncStatusAnalysing = KDriveLocalizable.tr("Localizable", "syncStatusAnalysing", fallback: "Search for Changes")
+  /// loco:6ad232ecab975477a3093ee2
+  public static let syncStatusExploring = KDriveLocalizable.tr("Localizable", "syncStatusExploring", fallback: "Preparing Your Files")
   /// loco:698a08137065b2ad54014e72
   public static let syncSuccessTooltip = KDriveLocalizable.tr("Localizable", "syncSuccessTooltip", fallback: "Synced")
   /// loco:699db0830c3ab713a500b433

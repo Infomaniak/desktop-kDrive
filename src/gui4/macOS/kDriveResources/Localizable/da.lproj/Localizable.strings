@@ -20,13 +20,13 @@
 "accessibilityMoreInformation" = "Vis flere oplysninger";
 
 /* loco:69fa0b22dbdab357240dcb12 */
-"accessibilitySearchClear" = "Clear search";
+"accessibilitySearchClear" = "Ryd søgning";
 
 /* loco:69fa0b2668d2d58f030a2422 */
-"accessibilitySearchSheetLabel" = "Search your files";
+"accessibilitySearchSheetLabel" = "Søg i dine filer";
 
 /* loco:69fa0b2455ed5e00570ecf12 */
-"accessibilitySearching" = "Searching…";
+"accessibilitySearching" = "Søger…";
 
 /* loco:69b275fb3440db13f0011c03 */
 "accessibilitySelectSynchroMode" = "Vælg en synkroniseringstilstand";
@@ -736,6 +736,10 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Det ser ud til, at vi ikke kan indlæse appen…";
 
+/* loco:6ac60bf864441a81870fc9d2
+ * kDrive Desktop macOS redesign. General failure message when a share link could not be copied to the clipboard. */
+"errorCopyingShareLink" = "Der opstod en fejl under kopiering af linket.";
+
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Der opstod en fejl under sletning af din konto.";
 
@@ -901,10 +905,10 @@
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Åbning og udvidelser";
 
-/* loco:69305849f1fb5be2c7093fa2 */
+/* loco:6ad7140e17c71fcc16055532 */
 "instructionOpenSystemSettings" = "Åbn Systemindstillinger > Generelt";
 
-/* loco:6930588953221ff00608e983 */
+/* loco:6ad7141185062f3cbf0caf52 */
 "instructionOpenSystemSettingsLink" = "Systemindstillinger";
 
 /* loco:6a16da43bc4d91f15c0416e2 */
@@ -1432,7 +1436,11 @@
 
 /* loco:69eb8137c1ea8e116a0ba282
  * Search field placeholder in SearchSheetView. */
-"searchPlaceholder" = "Search…";
+"searchPlaceholder" = "Søg…";
+
+/* loco:6ac604dd665bcc5b3402f332
+ * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online. */
+"searchResultOpenInBrowserSyncPausedTooltip" = "Synkronisering sat på pause.\nDenne fil åbnes i kDrive online.";
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
@@ -1440,7 +1448,7 @@
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
-"searchYourFiles" = "Search your files";
+"searchYourFiles" = "Søg i dine filer";
 
 /* loco:698b06dd2a4fff6e66027c92 */
 "selectFoldersToSync" = "Vælg de mapper, der skal synkroniseres på denne computer.";
@@ -1458,7 +1466,7 @@
 "sentryDescription" = "Sentry er et værktøj hostet og administreret udelukkende af Infomaniak for at overvåge stabiliteten af programmet i realtid og automatisk rapportere tekniske fejl til vores udviklere.\n\nDisse data giver vores team mulighed for hurtigt at rette og optimere programmet, hvilket resulterer i en bedre brugeroplevelse for dig.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Konti & synkroniseringer";
+"sidebarItemAccounts" = "Synkroniseringer";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Avanceret";
@@ -1544,6 +1552,12 @@
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "Synkronisering kører";
 
+/* loco:6ad232f65d64577ad6084542 */
+"syncStatusAnalysing" = "Søgning efter ændringer";
+
+/* loco:6ad232ecab975477a3093ee2 */
+"syncStatusExploring" = "Forberedelse af dine filer";
+
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Synkroniseret";
 
@@ -1615,11 +1629,11 @@
 
 /* loco:69eb7b41376492d2de0d0242
  * Empty search state subtitle when no result matches the user query in SearchSheetView. */
-"tryDifferentSearchTerm" = "Try a different search term";
+"tryDifferentSearchTerm" = "Prøv et andet søgeord";
 
 /* loco:69eb809ce1364c763a050862
  * Empty search state subtitle in SearchSheetView before the user enters a query. */
-"typeToStartSearching" = "Type to start searching";
+"typeToStartSearching" = "Skriv for at begynde at søge";
 
 /* loco:6981e8f0b024a7b4e00f7262 */
 "unavailableContentNoActivityDescription" = "Dine filer er tilgængelige og synkroniserede.";

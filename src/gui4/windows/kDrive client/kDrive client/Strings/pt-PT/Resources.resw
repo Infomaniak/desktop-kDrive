@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: pt, Portuguese
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
+  Exported by: Clément Kunz
+  Exported at: Wed, 21 Oct 2026 12:00:04 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1105,6 +1105,9 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Mais recente</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>A minha assinatura</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nome</value> 
   </data> 
@@ -1549,7 +1552,7 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
     <value>Definições</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Contas e sincronizações</value> 
+    <value>Sincronizações</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avançadas</value> 
@@ -1574,6 +1577,12 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
     <value>Outros ficheiros no computador</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Espaço livre da sua assinatura</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Ficheiros kDrive armazenados online</value> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Sincronização</value> 
@@ -1618,6 +1627,18 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>A sincronização está em curso</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Pesquisa de alterações</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Preparação dos seus ficheiros</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ elemento sincronizado com %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ elementos sincronizados em %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Sincronizado</value> 
