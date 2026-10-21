@@ -263,11 +263,6 @@ conan_install_cmd=(
   -vv
 )
 
-if [[ "$platform" == "linux" ]]; then
-  # Compose with the selected profile; only package-scoped Linux overrides are applied.
-  conan_install_cmd+=(--profile:all="$conan_remote_base_folder/profiles/linux-overrides")
-fi
-
 if [[ "$enable_update" == true ]]; then
   conan_install_cmd+=(--update)
 fi

@@ -87,11 +87,11 @@ The exact set of redistributed binaries can vary by platform:
 
 ### keychain
 
-- **Version:** 1.3.0
+- **Version:** 1.3.1
 - **License:** MIT
 - **Copyright:** Copyright (c) 2019 Hannes Rantzsch, Rene Meusel
 - **Repository:** https://github.com/hrantzsch/keychain
-- **Note:** Declared in `conanfile.py` as `keychain/1.3.0` (ConanCenter recipe) and linked as a static library.
+- **Note:** Declared in `conanfile.py` as `keychain/1.3.1` (custom recipe in `infomaniak-build-tools/conan/recipes/keychain`) and linked as a static library.
 
 ---
 
