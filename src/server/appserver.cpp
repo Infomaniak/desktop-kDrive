@@ -127,7 +127,9 @@ static const char optionsC[] =
         "  -h --help            : show this help screen.\n"
         "  -v --version         : show the application version.\n"
         "  --settings           : show the Settings window (if the application is running).\n"
-        "  --synthesis          : show the Synthesis window (if the application is running).\n";
+        "  --synthesis          : show the Synthesis window (if the application is running).\n"
+        "  kdrive://open/drive/<drive id>/file/<node id> : open an item of your kDrive (downloading or synchronizing it\n"
+        "                                                    first if needed).\n";
 
 } // namespace
 
@@ -135,6 +137,7 @@ static const QString showSynthesisMsg("showSynthesis");
 static const QString showSettingsMsg("showSettings");
 static const QString restartClientMsg("restartClient");
 static const QString authorizationCodeMsg("redirectLogin");
+static const QString openFileMsg("openFile");
 static const QString separatorMsg("$$$");
 static constexpr std::int32_t singleApplicationMessageTimeoutMs = 5000;
 
@@ -167,8 +170,9 @@ AppServer::AppServer(int &argc, char **argv) :
     _arguments = arguments();
     _theme = Theme::instance();
     installEventFilter(&_eventFilter);
-    (void) connect(&_eventFilter, &AuthorizationCodeEventFilter::authorizationCodeReceived, this,
+    (void) connect(&_eventFilter, &UrlSchemeEventFilter::authorizationCodeReceived, this,
                    &AppServer::onAuthorizationCodeReceived);
+    (void) connect(&_eventFilter, &UrlSchemeEventFilter::openFileUrlReceived, this, &AppServer::onOpenFileUrlReceived);
 }
 
 AppServer::~AppServer() {
@@ -199,6 +203,12 @@ void AppServer::init() {
             }
 #endif
         }
+        return;
+    }
+
+    // A file opening deeplink received while a server instance is already running starts a short-lived helper process,
+    // which must not initialize logging for the same reason.
+    if (!_openFileUrlStr.isEmpty() && isRunning()) {
         return;
     }
 
@@ -575,6 +585,11 @@ void AppServer::init() {
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+
+    // Process a file opening URL received at startup, once the syncs have been started.
+    if (!_openFileUrlStr.isEmpty()) {
+        QTimer::singleShot(delayedActionMs, this, [this]() { onOpenFileUrlReceived(_openFileUrlStr); });
+    }
 }
 
 void AppServer::cleanup() {
@@ -2785,6 +2800,8 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         const QString code = query.queryItemValue("code");
         const QString state = query.queryItemValue("state");
         onAuthorizationCodeReceived(code, state);
+    } else if (message.startsWith(openFileMsg)) {
+        onOpenFileUrlReceived(message.split(separatorMsg).back());
     } else if (message == showSynthesisMsg) {
         showSynthesis();
     } else if (message == showSettingsMsg) {
@@ -2810,6 +2827,14 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
 void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
     sendShowNotification(title, message);
+}
+
+void AppServer::onOpenFileUrlReceived(const QString &urlStr) {
+    LOG_INFO(_logger, "File opening URL received: '" << urlStr.toStdString() << "'");
+
+    auto *handler = new OpenFileUrlHandler(this, QUrl(urlStr), this);
+    (void) connect(handler, &OpenFileUrlHandler::finished, handler, &QObject::deleteLater);
+    handler->start();
 }
 
 void AppServer::onAuthorizationCodeReceived(const QString &code, const QString &state) {
@@ -3783,6 +3808,9 @@ void AppServer::parseOptions(const QStringList &options) {
                 _authorizationCodeStr = option;
                 break;
             }
+        } else if (OpenFileUrlHandler::isOpenFileUrl(QUrl(option))) {
+            _openFileUrlStr = option;
+            break;
         } else if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
             _helpAsked = true;
             break;
@@ -3884,6 +3912,17 @@ void AppServer::sendAuthorizationCode(qint64 pid) {
     if (!sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr, singleApplicationMessageTimeoutMs, pid)) {
         if (Log::isSet()) {
             LOG_WARN(Log::instance()->getLogger(), "Failed to forward login authorization callback to the running server");
+        }
+    }
+}
+
+void AppServer::sendOpenFileUrlMsg(qint64 pid) {
+    if (Log::isSet()) {
+        LOG_INFO(Log::instance()->getLogger(), "Forwarding file opening request to the running server");
+    }
+    if (!sendMessage(openFileMsg + separatorMsg + _openFileUrlStr, singleApplicationMessageTimeoutMs, pid)) {
+        if (Log::isSet()) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to forward file opening request to the running server");
         }
     }
 }

@@ -16,6 +16,12 @@ VFS plugin, manages auto-updates, and dispatches GUI-requested operations via ty
 - Auto-updater (Windows): `src/server/updater/windowsupdater.h`
 - Auto-updater (Linux): `src/server/updater/linuxupdater.h`
 - Migration from legacy config: `src/server/migration/`
+- `kdrive://open/...` URL handler (open a synced item from a browser link, hydrating/downloading it first if needed): `src/server/openfileurlhandler.{h,cpp}`
+
+## kdrive:// URL scheme
+The `kdrive` scheme is registered at server startup by `Utility::registerLoginRedirection()` (registry keys on Windows, `lsregister` on macOS, `.desktop` + `xdg-mime` on Linux). Incoming URLs reach the server as a command-line argument (Windows/Linux, forwarded to the running instance through the `QtSingleApplication` message channel) or as a `QEvent::FileOpen` caught by `UrlSchemeEventFilter` (macOS). Two hosts are handled:
+- `kdrive://auth-desktop?...` — OAuth login redirect (see `AppServer::onAuthorizationCodeReceived`).
+- `kdrive://open/drive/<drive id>/file/<node id>` — open an item of a sync identified by the server-side drive id and the server-side node id of the item (see `OpenFileUrlHandler`).
 
 ## IPC Architecture
 

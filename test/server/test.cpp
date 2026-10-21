@@ -36,6 +36,7 @@ extern "C" {
 #endif
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
+#include "openfileurlhandler/testopenfileurlhandler.h"
 #include "comm/guicommchannel/testguicommchannel.h"
 #include "comm/testsocketcomm.h"
 #if defined(KD_WINDOWS)
@@ -58,6 +59,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsWinRegistration);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOpenFileUrlHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketComm);
 #if defined(KD_WINDOWS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
@@ -68,5 +70,25 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiJobPriority);
 } // namespace KDC
 
 int main(int, char **) {
-    return runTestSuite("_kDriveTestServer.log");
+    // TEMPORARY: run only TestAppServer to isolate it from the other suites.
+    CPPUNIT_NS::TestResult testresult;
+    CPPUNIT_NS::TestResultCollector collectedresults;
+    testresult.addListener(&collectedresults);
+    CPPUNIT_NS::BriefTestProgressListener progress;
+    testresult.addListener(&progress);
+    CPPUNIT_NS::Test *allTests = CPPUNIT_NS::TestFactoryRegistry::getRegistry().makeTest();
+    CPPUNIT_NS::Test *suite = nullptr;
+    for (int i = 0; i < allTests->getChildTestCount(); ++i) {
+        if (std::string(allTests->getChildTestAt(i)->getName()).find("TestAppServer") != std::string::npos) {
+            suite = allTests->getChildTestAt(i);
+            break;
+        }
+    }
+    if (!suite) return 2;
+    CPPUNIT_NS::TestRunner testrunner;
+    testrunner.addTest(suite);
+    testrunner.run(testresult);
+    CPPUNIT_NS::CompilerOutputter compileroutputter(&collectedresults, std::cerr);
+    compileroutputter.write();
+    return collectedresults.wasSuccessful() ? 0 : 1;
 }

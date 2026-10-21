@@ -766,6 +766,15 @@ void SyncPal::finalizeDirectDownload(const std::shared_ptr<DownloadJob> &downloa
         }
         it++;
     }
+
+    // Notify the completion observer (if any). The observer is invoked while `_directDownloadJobsMapMutex` is locked
+    // and must therefore not call any SyncPal method (see SyncPal::addDlDirectJob).
+    if (const auto observerMapIt = _directDownloadObserversMap.find(downloadJob->jobId());
+        observerMapIt != _directDownloadObserversMap.end()) {
+        const auto observer = std::move(observerMapIt->second);
+        (void) _directDownloadObserversMap.erase(observerMapIt);
+        if (observer) observer(downloadJob->jobId(), downloadSucceeded);
+    }
 }
 
 bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
@@ -779,7 +788,7 @@ void SyncPal::resetSnapshotInvalidationCounters() {
 }
 
 ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
-                                 const SyncPath &parentFolderPath) {
+                                 const SyncPath &parentFolderPath, const std::function<void(UniqueId, bool)> &observer) {
     // Get the nodeId from the File System (not from the DB).
     // It is possible that an element of the path has been renamed and that the change has not yet been synchronized.
     NodeId localNodeId;
@@ -856,6 +865,7 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);
     (void) _syncPathToDownloadJobMap.try_emplace(absoluteLocalPath, job->jobId());
+    if (observer) (void) _directDownloadObserversMap.try_emplace(job->jobId(), observer);
     if (!parentFolderPath.empty() && _folderHydrationInProgress.contains(parentFolderPath)) {
         (void) _folderHydrationInProgress[parentFolderPath].emplace(absoluteLocalPath);
     }
