@@ -59,6 +59,9 @@ class KeychainConan(ConanFile):
         # Keep the same CMake target name as the upstream library to preserve existing consumers.
         self.cpp_info.set_property("cmake_file_name", "keychain")
         self.cpp_info.set_property("cmake_target_name", "keychain")
+        # Without an explicit lib name, CMakeDeps generates a target that never links
+        # libkeychain and consumers fail at link time with undefined symbols.
+        self.cpp_info.libs = ["keychain"]
         # The system libraries are linked privately by the upstream CMakeLists; since the package is
         # built as a static library, they must be propagated to the consumers.
         if self.settings.os == "Macos":
