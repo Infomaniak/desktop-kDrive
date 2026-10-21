@@ -19,6 +19,7 @@
 #pragma once
 
 #include "libcommon/info/nodeinfo.h"
+#include "libsyncengine/update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 namespace KDC {
 
@@ -36,14 +37,14 @@ class ApiTranslator {
 
         [[nodiscard]] static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId,
                                                                SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId);
-        [[nodiscard]] static ExitInfo getSharedFolderNodeInfo(const UserDbId userDbId, const DriveId driveId, NodeInfo &nodeInfo);
+        [[nodiscard]] static ExitInfo getSharedFolderSnapshotItem(UserDbId userDbId, DriveId driveId, RemoteSnapshotItem &item);
         [[nodiscard]] static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
         [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
 
         static void clearSharedCache(const DriveId driveId) {
             const std::scoped_lock lock(_mutex);
             (void) _specialFolderRemoteIdsCache[SpecialRemoteFolder::Shared].erase(driveId);
-            (void) _sharedFolderNodeInfoCacheMap.erase(driveId);
+            (void) _sharedFolderSnapshotItemCacheMap.erase(driveId);
         };
 
         static const SpecialFolderNames v3SpecialFolderNames;
@@ -55,8 +56,8 @@ class ApiTranslator {
         using RemoteNodeIdCacheMap = std::unordered_map<DriveId, RemoteNodeId>;
         using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialRemoteFolder, RemoteNodeIdCacheMap>;
         static RemoteSpecialFoldersCacheMap _specialFolderRemoteIdsCache;
-        using SharedFolderNodeInfoCacheMap = std::unordered_map<DriveId, NodeInfo>;
-        static SharedFolderNodeInfoCacheMap _sharedFolderNodeInfoCacheMap;
+        using SharedFolderSnapshotItemCacheMap = std::unordered_map<DriveId, RemoteSnapshotItem>;
+        static SharedFolderSnapshotItemCacheMap _sharedFolderSnapshotItemCacheMap;
 
         [[nodiscard]] static RemoteNodeId getValue(DriveId driveId, const RemoteNodeIdCacheMap &cache);
 
