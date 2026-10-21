@@ -21,6 +21,8 @@
 #include "libcommon/info/nodeinfo.h"
 #include "libsyncengine/update_detection/file_system_observer/snapshot/snapshotitem.h"
 
+#include <map>
+
 namespace KDC {
 
 class ApiTranslator {
@@ -41,10 +43,11 @@ class ApiTranslator {
         [[nodiscard]] static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
         [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
 
-        static void clearSharedCache(const DriveId driveId) {
+        static void clearSharedCache(const UserDbId userDbId, const DriveId driveId) {
+            const CacheKey key{userDbId, driveId};
             const std::scoped_lock lock(_mutex);
-            (void) _specialFolderRemoteIdsCache[SpecialRemoteFolder::Shared].erase(driveId);
-            (void) _sharedFolderSnapshotItemCacheMap.erase(driveId);
+            (void) _specialFolderRemoteIdsCache[SpecialRemoteFolder::Shared].erase(key);
+            (void) _sharedFolderSnapshotItemCacheMap.erase(key);
         };
 
         static const SpecialFolderNames v3SpecialFolderNames;
@@ -53,13 +56,14 @@ class ApiTranslator {
         [[nodiscard]] static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
         [[nodiscard]] static ExitInfo updateCache(UserDbId userDbId, DriveId driveId);
 
-        using RemoteNodeIdCacheMap = std::unordered_map<DriveId, RemoteNodeId>;
+        using CacheKey = std::pair<UserDbId, DriveId>;
+        using RemoteNodeIdCacheMap = std::map<CacheKey, RemoteNodeId>;
         using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialRemoteFolder, RemoteNodeIdCacheMap>;
         static RemoteSpecialFoldersCacheMap _specialFolderRemoteIdsCache;
-        using SharedFolderSnapshotItemCacheMap = std::unordered_map<DriveId, RemoteSnapshotItem>;
+        using SharedFolderSnapshotItemCacheMap = std::map<CacheKey, RemoteSnapshotItem>;
         static SharedFolderSnapshotItemCacheMap _sharedFolderSnapshotItemCacheMap;
 
-        [[nodiscard]] static RemoteNodeId getValue(DriveId driveId, const RemoteNodeIdCacheMap &cache);
+        [[nodiscard]] static RemoteNodeId getValue(const CacheKey &key, const RemoteNodeIdCacheMap &cache);
 
         static std::mutex _mutex;
 };
