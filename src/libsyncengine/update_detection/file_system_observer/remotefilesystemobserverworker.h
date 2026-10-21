@@ -148,7 +148,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         [[nodiscard]] bool syncIsAdvancedWithNonRootFolder() const;
         [[nodiscard]] RemoteNodeId rootFolderRemoteId() const;
-        [[nodiscard]] RemoteNodeId rootFolderRemoteName() const;
+        [[nodiscard]] SyncName rootFolderRemoteName() const;
 
         /**
          * @brief Returns the remote ID of the folder whose changes are watched, i.e. the folder used by the `longpoll`,

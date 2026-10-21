@@ -1394,7 +1394,7 @@ RemoteNodeId RemoteFileSystemObserverWorker::rootFolderRemoteId() const {
     return _syncPal->syncDb()->rootNode().nodeIdRemote().value();
 }
 
-RemoteNodeId RemoteFileSystemObserverWorker::rootFolderRemoteName() const {
+SyncName RemoteFileSystemObserverWorker::rootFolderRemoteName() const {
     return _syncPal->syncDb()->rootNode().nameRemote();
 }
 
