@@ -2223,8 +2223,8 @@ This data allows our team to quickly fix and optimize the application, resulting
             <translation>Settings</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
-            <source>Accounts &amp; Sync</source> 
-            <translation>Accounts &amp; Sync</translation> 
+            <source>Syncs</source> 
+            <translation>Syncs</translation> 
         </message> 
         <message id="sidebarItemAdvanced"> 
             <source>Advanced</source> 
