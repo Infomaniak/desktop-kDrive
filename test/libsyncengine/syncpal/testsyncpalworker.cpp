@@ -465,11 +465,11 @@ void TestSyncPalWorker::testHandleBackError() {
 void TestSyncPalWorker::testShouldBePausedWithNetworkError() {
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);
-    _syncPal->start();
 
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     CPPUNIT_ASSERT(mockSyncPal);
-    auto *syncPalWorker = mockSyncPal->getSyncPalWorker().get();
+    const auto syncPalWorker =
+            std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
 
     // Simulate a RFSO worker that exits with NetworkError, e.g. an incomplete listing reply received when the computer wakes up.
     const auto rfso = std::make_shared<MockRemoteFileSystemObserverWorker>(_syncPal, "Mock RFSO NetworkError", "M_RFSONE");
