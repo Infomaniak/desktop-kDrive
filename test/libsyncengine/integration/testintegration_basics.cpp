@@ -31,6 +31,7 @@
 
 namespace KDC {
 void TestIntegration::basicTests() {
+    testLocalChanges();
     testRemoteChanges();
     testSimultaneousChanges();
     testUploadBigFile();
