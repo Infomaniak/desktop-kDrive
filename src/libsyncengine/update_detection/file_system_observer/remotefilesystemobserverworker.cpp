@@ -428,7 +428,7 @@ ExitInfo RemoteFileSystemObserverWorker::runListingContinueJob(const RemoteNodeI
 }
 
 ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
-    const auto sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
+    const SyncPath sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
 
     // Early exit for advanced sync with a non-root folder different from 'Shared': the 'Shared' folder is not synchronized in
     // this case, so we don't need to add it.
@@ -453,7 +453,15 @@ ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
     // to add it.
     if (syncIsAdvancedWithNonRootFolder() && rootFolderRemoteId() != sharedFolderRemoteId) return ExitCode::Ok;
 
-    if (!sharedFolderIsEmpty && !getItemIdExitInfo) { // 'Shared' folder does not exist in the snapshot, we need to add it.
+    bool sharedFolderIsExcluded = false;
+    if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(sharedFolderName, isWarning)) {
+        sharedFolderIsExcluded = true;
+    }
+
+    const bool sharedFolderShouldBeAddedToSnapshot = !getItemIdExitInfo && !sharedFolderIsEmpty && !sharedFolderIsExcluded;
+    const bool sharedFolderShouldBeRemovedFromSnapshot = getItemIdExitInfo && (sharedFolderIsEmpty || sharedFolderIsExcluded);
+    if (sharedFolderShouldBeAddedToSnapshot) { // 'Shared' folder does not exist in the snapshot, has some content and is not
+                                               // excluded. We need to add it.
         NodeInfo sharedFolderNodeInfo;
         if (const auto exitInfo =
                     ApiTranslator::getSharedFolderNodeInfo(_syncPal->userDbId(), _syncPal->driveId(), sharedFolderNodeInfo);
@@ -466,8 +474,8 @@ ExitInfo RemoteFileSystemObserverWorker::updateSharedFolderItem() {
                                                   NodeType::Directory, sharedFolderNodeInfo.size(), false, false, false);
         (void) _liveSnapshot.updateItem(sharedFolderItem);
 
-    } else if (sharedFolderIsEmpty &&
-               getItemIdExitInfo) { // 'Shared' folder exists in the snapshot, but it is now empty, we need to remove it.
+    } else if (sharedFolderShouldBeRemovedFromSnapshot) { // 'Shared' folder exists in the snapshot, but it is now empty or
+                                                          // excluded. We need to remove it.
 
         if (sharedFolderRemoteId.empty()) return ExitCode::LogicError;
 
