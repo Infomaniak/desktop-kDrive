@@ -58,9 +58,10 @@ class KeychainConan(ConanFile):
         rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
 
     def package_info(self):
-        # Keep the same CMake target name as the upstream library to preserve existing consumers.
+        # Keep the namespaced target exposed by the ConanCenter recipe: a namespaced name makes CMake
+        # fail at configure time if the target is missing, instead of silently linking -lkeychain.
         self.cpp_info.set_property("cmake_file_name", "keychain")
-        self.cpp_info.set_property("cmake_target_name", "keychain")
+        self.cpp_info.set_property("cmake_target_name", "keychain::keychain")
         # Without an explicit lib name, CMakeDeps generates a target that never links
         # libkeychain and consumers fail at link time with undefined symbols.
         self.cpp_info.libs = ["keychain"]
