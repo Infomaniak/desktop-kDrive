@@ -102,9 +102,10 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     const auto invalidOperation =
             (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
 
-    std::shared_ptr<RemoteFileSystemObserverWorker> r1 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w1);
-    std::shared_ptr<RemoteFileSystemObserverWorker> r2 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w2);
-    const auto rfsoError = (r1 != nullptr && r1->exitCode() != ExitCode::Ok) || (r2 != nullptr && r2->exitCode() != ExitCode::Ok);
+    const std::shared_ptr<RemoteFileSystemObserverWorker> r1 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w1);
+    const std::shared_ptr<RemoteFileSystemObserverWorker> r2 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w2);
+    const auto rfsoError = (r1 != nullptr && (r1->exitCode() != ExitCode::Ok && r1->exitCode() != ExitCode::NetworkError)) ||
+                           (r2 != nullptr && (r2->exitCode() != ExitCode::Ok && r2->exitCode() != ExitCode::NetworkError));
 
     if (handleRateLimited(w1, w2)) return true;
 
@@ -130,7 +131,7 @@ bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, con
 }
 
 void SyncPalWorker::handleBackError(void) {
-    auto computedDelay = static_cast<int64_t>(
+    const auto computedDelay = static_cast<int64_t>(
             backoffVariable::baseDelay *
             std::pow(backoffVariable::multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t) 10)));
     _syncPal->incrementConsecutiveBackErrors();
@@ -926,8 +927,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
                 vfsStatus.isSyncing = false;
                 if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(entry.path(), vfsStatus); !exitInfo) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path())
-                                                                                      << L": " << exitInfo);
+                    LOGW_SYNCPAL_WARN(
+                            _logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path()) << L": " << exitInfo);
                 }
             }
             continue;
