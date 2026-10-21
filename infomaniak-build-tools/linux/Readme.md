@@ -166,7 +166,7 @@ Conan version 2.x.x
 
 3. **Linux only**: The Sentry Conan recipe validates that the required system packages are already installed in order to avoid building `c-ares` and `libcurl` from source.
 
-    > **Note:** `m4` is still built from source, as a build tool of the `keychain` dependencies (libsecret, glib). It does not compile in C23, the default C standard of GCC 15, so `build_dependencies.sh` composes `infomaniak-build-tools/conan/profiles/linux-overrides`, which builds it with `-std=gnu17`.
+    > **Note:** `m4` is still built from source, as a build tool of `libpq` (flex/bison, a `poco` dependency). It does not compile in C23, the default C standard of GCC 15, so `build_dependencies.sh` composes `infomaniak-build-tools/conan/profiles/linux-overrides`, which builds it with `-std=gnu17`.
 
     On Debian/Ubuntu-based systems, the recipe checks for:
     - `libc-ares-dev` (c-ares development library)
