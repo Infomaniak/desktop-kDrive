@@ -64,6 +64,10 @@ ExitInfo GetFilesInRootDirJob::runJob() {
             return exitInfo;
         }
 
+        // Required to translate the listing when this job was built from a drive DB ID.
+        _userDbId = getRootListJob->userDbId();
+        _driveId = getRootListJob->driveId();
+
         if (_remoteNodeInfoList.empty())
             _remoteNodeInfoList = getRootListJob->v3RemoteNodeInfoList();
         else {
