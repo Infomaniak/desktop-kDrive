@@ -45,8 +45,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         Count listingFullCount() const { return _listingFullCount.load(); };
         RemoteNodeIdSet blackList() const;
         void setBlackList(RemoteNodeIdSet blackList);
-        void restoreRemoteSnapshotBackup(const ConstSnapshot &snapshotBackup);
-        [[nodiscard]] ExitInfo checkIfValidListingSyncFolderCursorExists(bool &validSnapshotBackupExists) const;
+        [[nodiscard]] ExitInfo checkIfValidListingSyncFolderCursorExists(bool &validListingSyncFolderCursorExist) const;
 
     protected:
         void execute() override;
