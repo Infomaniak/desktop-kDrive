@@ -618,7 +618,7 @@ ExitInfo RemoteFileSystemObserverWorker::insertItemInRemoteSnapshot(const Remote
     if (item.id() == _liveSnapshot.rootFolderId()) return ExitCode::Ok;
 
     // Do not synchronize the Shared folder (drive scope) if it is empty. This is to avoid creating an empty Shared folder in
-    // the local replica when the user has no shared files.
+    // the local replica when the user has actually no shared files.
     if (item.name() == ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared) &&
         item.parentId() == ApiTranslator::v2RootFolderRemoteId()) {
         bool sharedIsEmtpy = false;
@@ -1509,12 +1509,13 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty)
     empty = false;
 
     constexpr auto maxItemsToCheck = 5; // This is the minimum number allowed by the API. We only need to check the existence
-                                        // of a single item to determine if the shared folder is empty or not.
-    // The content of the shared folder is queried with an empty cursor: the listing cursor of the shared folder is not
+                                        // of a single item to determine if the 'Shared' folder is empty or not.
+    // The content of the 'Shared' folder is queried with an empty cursor: the listing cursor of the 'Shared' folder is not
     // persisted.
     auto job = std::make_shared<GetFilesSharedWithMeJob>(_driveDbId, Cursor{}, maxItemsToCheck);
     if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in GetFilesSharedWithMeJob::runSynchronously: " << exitInfo);
+        if (exitInfo.code() == ExitCode::RateLimited) setPauseDuration(job->sleepDuration());
 
         return exitInfo;
     }
