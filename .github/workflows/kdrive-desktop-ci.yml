@@ -73,6 +73,8 @@ jobs:
           version=$(xcodebuild -version)
           echo "$version"
           [[ "$version" =~ ^Xcode\ 26([.]|$|[[:space:]]) ]]
+          sudo -n env DEVELOPER_DIR="$DEVELOPER_DIR" xcodebuild -license accept
+          sudo -n env DEVELOPER_DIR="$DEVELOPER_DIR" xcodebuild -runFirstLaunch
           xcrun --find clang
           xcrun --sdk macosx --show-sdk-path
       - name: Checkout the PR
