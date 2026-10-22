@@ -462,6 +462,50 @@ void TestSyncPalWorker::testHandleBackError() {
     CPPUNIT_ASSERT_EQUAL(backoffVariable::baseDelay, syncPalWorker->pauseDuration());
 }
 
+void TestSyncPalWorker::testShouldBePausedWithNetworkError() {
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
+
+    const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
+    CPPUNIT_ASSERT(mockSyncPal);
+    const auto syncPalWorker =
+            std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
+
+    // Simulate a RFSO worker that exits with NetworkError, e.g. an incomplete listing reply received when the computer wakes up.
+    const auto rfso = std::make_shared<MockRemoteFileSystemObserverWorker>(_syncPal, "Mock RFSO NetworkError", "M_RFSONE");
+    rfso->setNetworkAvailability(false);
+    rfso->start();
+    rfso->waitForExit();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::NetworkError, rfso->exitCode());
+
+    // Simulate a previous back error. As defaultPauseDuration and backoffVariable::baseDelay share the same value, this makes the
+    // pause duration assertion below discriminating: a regression would produce baseDelay * 2 instead of defaultPauseDuration.
+    syncPalWorker->handleBackError();
+    CPPUNIT_ASSERT_EQUAL(int64_t{1}, _syncPal->consecutiveBackErrors());
+
+    // The sync must be paused, but the pause duration must stay at its default value and the consecutive back errors counter must
+    // not grow, no matter how many times the error repeats.
+    for (auto i = 0; i < 5; ++i) {
+        CPPUNIT_ASSERT(syncPalWorker->shouldBePaused(rfso, nullptr));
+        CPPUNIT_ASSERT_EQUAL(defaultPauseDuration, syncPalWorker->pauseDuration());
+        CPPUNIT_ASSERT_EQUAL(int64_t{1}, _syncPal->consecutiveBackErrors());
+    }
+
+    // Any other RFSO error must still trigger the exponential backoff.
+    auto makeHttpBackErrorWorker = [&syncPal = _syncPal]() -> std::shared_ptr<ISyncWorker> {
+        auto w = std::make_shared<MockPlatformInconsistencyCheckerWorker>(syncPal, "Mock PIC Http5xx", "M_PICH5");
+        w->setMockExecuteCallback([]() { return ExitInfo{ExitCode::BackError, ExitCause::Http5xx}; });
+        return w;
+    };
+    const auto httpBackErrorWorker = makeHttpBackErrorWorker();
+    httpBackErrorWorker->start();
+    httpBackErrorWorker->waitForExit();
+
+    CPPUNIT_ASSERT(syncPalWorker->shouldBePaused(httpBackErrorWorker, nullptr));
+    CPPUNIT_ASSERT_EQUAL(int64_t{2}, _syncPal->consecutiveBackErrors());
+    CPPUNIT_ASSERT_EQUAL(backoffVariable::baseDelay * 2, syncPalWorker->pauseDuration()); // jitter is mocked to 1.0
+}
+
 void TestSyncPalWorker::testEnsureBlackListIsPropagated() {
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
                                              KDRIVE_VERSION_STRING);

@@ -49,6 +49,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testInternalPause2);
         CPPUNIT_TEST(testInternalPause3);
         CPPUNIT_TEST(testHandleBackError);
+        CPPUNIT_TEST(testShouldBePausedWithNetworkError);
         CPPUNIT_TEST(testEnsureBlackListIsPropagated);
         CPPUNIT_TEST(testEnsureBlackListIsPropagatedIgnoresMissingNode);
         CPPUNIT_TEST(testEnsureBlackListIsPropagatedIgnoreTmpBlacklistedNode);
@@ -89,6 +90,13 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
          * maxDelay), and that the counter resets when the sync reaches the Idle step.
          */
         void testHandleBackError();
+
+        /* This test verifies that a RFSO worker exiting with NetworkError leads to a pause without increasing the pause duration
+         * nor the consecutive back errors counter, no matter how many times the error repeats (e.g. each night when the computer
+         * wakes up with an incomplete listing reply). Any other RFSO error still triggers the exponential backoff.
+         */
+        void testShouldBePausedWithNetworkError();
+
         void testEnsureBlackListIsPropagated();
         void testEnsureBlackListIsPropagatedIgnoresMissingNode();
         void testEnsureBlackListIsPropagatedIgnoreTmpBlacklistedNode();
