@@ -6,8 +6,8 @@ import shutil
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
-from conan.tools.files import copy, replace_in_file
-from conan.tools.scm import Git, Version
+from conan.tools.files import copy
+from conan.tools.scm import Git
 from conan.tools.system import package_manager
 
 required_conan_version = ">=2"
@@ -28,9 +28,8 @@ class SentryNativeConan(ConanFile):
 
     options = {
         "shared": [True, False],
-        "qt_version": ["6.2.3", "6.12.0"],
     }
-    default_options = {"shared": True, "qt_version": "6.12.0"}
+    default_options = {"shared": True}
 
     @property
     def _is_linux_arm(self):
@@ -85,18 +84,7 @@ class SentryNativeConan(ConanFile):
             "Continuing without strict validation."
         )
 
-    def build_requirements(self):
-        # Qt >= 6.12 requires CMake >= 3.25 to be consumed via find_package()
-        # (checked in QtPublicCMakeVersionHelpers.cmake). Provide a compatible CMake
-        # instead of relying on the system one (e.g. 3.22.1 on the CI runners).
-        if Version(str(self.options.qt_version)) >= "6.12.0":
-            self.tool_requires("cmake/[>=3.25 <4]")
-
     def requirements(self):
-        # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"
-        # and cannot be propagated via Conan - consumers must find Qt via find_package(Qt6)
-        self.requires(f"qt/{self.options.qt_version}", headers=True, libs=False, visible=False)
-
         if self.settings.os == "Linux":
             # zlib is required explicitly because Crashpad uses it for compression
             self.requires("zlib/[>=1.2.11 <2]", options={"shared": True})
@@ -107,13 +95,8 @@ class SentryNativeConan(ConanFile):
                   args=["-b", str(self.version), "--recurse-submodules"])
 
     def _cache_variables(self):
-        qt = self.dependencies["qt"]
-        if qt is None:
-            raise ConanInvalidConfiguration("The 'qt' dependency is required for the 'sentry' recipe.")
         cache_variables = {
-            "SENTRY_INTEGRATION_QT": "YES",
             "SENTRY_BACKEND": "crashpad",
-            "CMAKE_PREFIX_PATH": qt.package_folder,
             "SENTRY_BUILD_TESTS": "OFF",
             "SENTRY_BUILD_EXAMPLES": "OFF",
             "SENTRY_BUILD_SHARED_LIBS": "ON" if self.options.shared else "OFF",
@@ -139,6 +122,10 @@ class SentryNativeConan(ConanFile):
 
     def package(self):
         copy(self, "LICENSE*", src=self.source_folder, dst=pjoin(self.package_folder, "licenses"))
+        if self.settings.os == "Linux":
+            # libunwind is vendored and statically linked into libsentry on Linux
+            copy(self, "COPYING", src=pjoin(self.source_folder, "vendor", "libunwind"),
+                 dst=pjoin(self.package_folder, "licenses", "libunwind"))
         cmake = CMake(self)
         cmake.install()
         if self.settings.os == "Macos":

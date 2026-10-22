@@ -43,10 +43,6 @@ endif()
 
 #####
 
-# Create an alias for the Qt6::Core target, used by the sentry recipe
-find_package(Qt6 COMPONENTS Core)
-add_library(qt::qt ALIAS Qt6::Core)
-
 if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
     set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
