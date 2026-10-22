@@ -72,7 +72,8 @@ void writeToStdErr(const char *str, const std::size_t size) noexcept {
     DWORD written = 0;
     (void) WriteFile(stdErr, str, static_cast<DWORD>(size), &written, nullptr);
 #else
-    (void) ::write(STDERR_FILENO, str, size);
+    // GCC ignores a (void) cast on warn_unused_result: keep the result in a variable instead.
+    [[maybe_unused]] const ssize_t written = ::write(STDERR_FILENO, str, size);
 #endif
 }
 
@@ -90,7 +91,7 @@ void writeCrashSignalFile() noexcept {
 #else
     const int fd = ::open(crashSignalFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) return;
-    (void) ::write(fd, signalValue, sizeof(signalValue) - 1);
+    [[maybe_unused]] const ssize_t written = ::write(fd, signalValue, sizeof(signalValue) - 1);
     (void) ::close(fd);
 #endif
 }
