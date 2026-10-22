@@ -61,18 +61,23 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
     steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v6.0.2
-        with:
-          submodules: recursive
       - name: Set up Xcode 26
         shell: bash
         run: |
+          if [[ ! -d "$DEVELOPER_DIR" ]]; then
+            echo "::error::Missing Xcode 26 installation: $DEVELOPER_DIR"
+            ls -d /Applications/Xcode*.app
+            exit 1
+          fi
           version=$(xcodebuild -version)
           echo "$version"
           [[ "$version" =~ ^Xcode\ 26([.]|$|[[:space:]]) ]]
           xcrun --find clang
           xcrun --sdk macosx --show-sdk-path
+      - name: Checkout the PR
+        uses: actions/checkout@v6.0.2
+        with:
+          submodules: recursive
       - name: Build macOS
         uses: ./.github/actions/build_macos
         with:
