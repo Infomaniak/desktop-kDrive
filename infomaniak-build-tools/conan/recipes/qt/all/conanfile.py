@@ -188,7 +188,7 @@ class QtConan(ConanFile):
 
         if self.settings.os == "Linux":
             modules.append(f"qt.qt{major}.{compact}.addons.qtserialport")
-            if version == "6.11.1":
+            if version == "6.12.0":
                 modules.append(f"qt.qt{major}.{compact}.addons.qtlottie")
             modules.append("qt.tools.qtcreator_gui")
 
