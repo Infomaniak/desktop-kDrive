@@ -15,7 +15,9 @@ defaults:
 jobs:
   run-tests:
     name: Run tests
-    runs-on: [ self-hosted, iOS ]
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
 
     # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
     # More info here: https://github.com/orgs/community/discussions/175498
