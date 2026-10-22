@@ -40,17 +40,12 @@ inline bool _isXAttrValueExpectedError(IoError error) {
 bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrName, std::string &value,
                              IoError &ioError) noexcept {
     value = "";
-    ItemType itemType;
-    if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
-        ioError = itemType.ioError;
-        return false;
-    }
+    ioError = IoError::Unknown;
 
-    // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::NoSuchFileOrDirectory;
-        return true;
+    ItemType itemType;
+    if (auto result = getItemTypeAndProcessIoError(path, itemType); !result || itemType.ioError != IoError::Success) {
+        ioError = itemType.ioError;
+        return result;
     }
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
@@ -81,17 +76,12 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrN
 
 bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrName, const std::string_view &value,
                              IoError &ioError) noexcept {
-    ItemType itemType;
-    if (!getItemType(path, itemType)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatIoError(path, itemType.ioError));
-        ioError = itemType.ioError;
-        return false;
-    }
+    ioError = IoError::Unknown;
 
-    // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::NoSuchFileOrDirectory;
-        return true;
+    ItemType itemType;
+    if (auto result = getItemTypeAndProcessIoError(path, itemType); !result || itemType.ioError != IoError::Success) {
+        ioError = itemType.ioError;
+        return result;
     }
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
@@ -128,8 +118,22 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     ioError = IoError::Success;
 
     std::string value;
-    if (const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError); !result)
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError);
+    if (!result) {
+        LOGW_WARN(logger(), L"Error in getXAttrValue: " << Utility::formatIoError(itemPath.native(), ioError));
         return false;
+    }
+
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(itemPath.native()));
+        return true;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"Item misses search permission: " << Utility::formatSyncPath(itemPath.native()));
+        return true;
+    }
+
+    assert(ioError == IoError::Success ||
+           ioError == IoError::AttrNotFound); // For every other error type, an error should have been returned.
 
     if (!value.empty()) isDehydrated = (value != litesync_attrs::statusOffline);
 
@@ -188,6 +192,7 @@ IoError IoHelper::unlock(const SyncPath &path) noexcept {
         LOGW_DEBUG(logger(), L"Failed to unset uchg flag for " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
+
     return IoError::Success;
 }
 

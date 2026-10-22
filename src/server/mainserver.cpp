@@ -53,6 +53,12 @@
 #define APP_RLIMIT_STACK 0x4000000
 #endif
 
+#if defined(KD_WINDOWS)
+extern "C" {
+#include <openssl/applink.c>
+}
+#endif
+
 void signalHandler(int signum) {
     KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(signum);
     std::cerr << "Server stopped with signal " << signalType << std::endl;
@@ -155,16 +161,13 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     }
 
 #if defined(Q_OS_MAC) && defined(NDEBUG)
-    try {
-        KDC::SyncPath uninstallerPath = "/Applications/kDrive/kDrive.app/Contents/Frameworks/kDrive Uninstaller.app";
-        KDC::SyncPath destPath = "/Applications/kDrive/kDrive Uninstaller.app";
-        std::filesystem::copy(uninstallerPath, destPath,
-                              std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
-        // LOGW_INFO(KDC::Log::instance()->getLogger(), L"Uninstaller copied to: " << Path2WStr(destPath));
-    } catch (std::filesystem::filesystem_error &fsError) {
-        LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to copy uninstaller: " << fsError.what());
-    } catch (...) {
-        LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to copy uninstaller: nnknown error");
+    KDC::SyncPath uninstallerPath = "/Applications/kDrive/kDrive.app/Contents/Frameworks/kDrive Uninstaller.app";
+    KDC::SyncPath destPath = "/Applications/kDrive/kDrive Uninstaller.app";
+    std::error_code ec;
+    std::filesystem::copy(uninstallerPath, destPath,
+                          std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive, ec);
+    if (ec.value()) {
+        LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to copy uninstaller: " << ec.value());
     }
 #endif
 

@@ -176,7 +176,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             if (_refreshAvailableDrivesTask is not null && !_refreshAvailableDrivesTask.IsCompleted)
             {
-                Logger.Log(Logger.Level.Info, $"Drive refresh already in progress for user {Name} ({DbId}), awaiting existing task.");
+                Logger.LogInfo($"Drive refresh already in progress for user {Name} ({DbId}), awaiting existing task.");
                 return await _refreshAvailableDrivesTask;
             }
 
@@ -190,7 +190,8 @@ namespace Infomaniak.kDrive.ViewModels
             bool result = await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, cancellationToken);
             if (!result)
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to refresh available drives for user {Name} ({DbId}), clearing available drives.");
+                Logger.LogWarning($"Failed to refresh available drives for user {Name} ({DbId}), clearing available drives.",
+                    "User: Failed to refresh available drives");
                 DrivesAvailable.Clear();
             }
             MergeDrives();

@@ -51,7 +51,7 @@ public partial class ConflictDialog : Page
 
         if (errors.Count < 1)
         {
-            Logger.Log(Logger.Level.Error, "ConflictDialog initialized with an empty list of errors.");
+            Logger.LogError("ConflictDialog initialized with an empty list of errors.");
             dialog.Hide();
             Utility.ShowUnexpectedErrorTeachingTip();
             return;

@@ -5,7 +5,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.build import check_min_cppstd
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import copy, rm, rmdir, replace_in_file
+from conan.tools.files import copy, rm, rmdir, replace_in_file, load, save
 from conan.tools.microsoft import is_msvc, is_msvc_static_runtime, msvc_runtime_flag
 from conan.tools.scm import Git
 
@@ -51,7 +51,7 @@ class PocoConan(ConanFile):
 
     _PocoComponent = namedtuple("_PocoComponent", ("option",                    "default_option",   "dependencies", "external_dependencies", "is_lib"))
     _poco_component_tree = {
-        "Foundation":           _PocoComponent(None, "Foundation",              [],                 ["pcre::pcre", "zlib::zlib"], True),
+        "Foundation":           _PocoComponent(None, "Foundation",              [],                 ["pcre::pcre", "zlib::zlib", "utf8proc::utf8proc"], True),
         "Crypto":               _PocoComponent("enable_crypto",                 True,               ["Foundation"], ["openssl::openssl"], True),
         "JSON":                 _PocoComponent("enable_json",                   True,               ["Foundation"], [], True),
         "Net":                  _PocoComponent("enable_net",                    True,               ["Foundation"], [], True),
@@ -102,7 +102,7 @@ class PocoConan(ConanFile):
             del self.options.enable_netssl_win
         if self.settings.build_type != "Debug":
             del self.options.sharedlibrary_debug_suffix
-        
+
         # Enable debug logging when building in Debug mode
         if self.settings.build_type == "Debug":
             self.options.log_debug = True
@@ -130,13 +130,20 @@ class PocoConan(ConanFile):
     def requirements(self):
         self.requires("pcre2/[>=10.42 <11]")
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
+        # Since Poco 1.15.x, Foundation's Unicode support is unbundled onto utf8proc.
+        self.requires("utf8proc/[>=2.5.0 <3]")
         if self.options.enable_xml:
-            self.requires("expat/[>=2.6.2 <2.7.4]", transitive_headers=True)
+            self.requires("expat/[>=2.8.1 <3]", transitive_headers=True)
         if self.options.enable_netssl or self.options.enable_crypto:
             if self.settings.os == "Macos":
-                self.requires("openssl-macos/3.2.4", options={ "shared": True })
+                self.requires("openssl-macos/3.6.5", options={ "shared": True })
             else:
-                self.requires("openssl/3.2.4", options={ "shared": True })
+                self.requires("openssl/3.6.5", options={ "shared": True })
+
+    def build_requirements(self):
+        # Poco 1.15.x requires CMake >= 3.26 (root CMakeLists.txt), which CI runner
+        # images may not provide (e.g. 3.22 on Linux), so bring our own.
+        self.tool_requires("cmake/[>=3.26 <4]")
 
     def package_id(self):
         del self.info.options.enable_active_record
@@ -173,6 +180,9 @@ class PocoConan(ConanFile):
         for comp in self._poco_component_tree.values():
             if comp.option:
                 tc.variables[comp.option.upper()] = self.options.get_safe(comp.option, False)
+        # FastLogger (Quill-based, MIT-licensed) is not used by kDrive. Poco 1.15.x enables it by
+        # default, so explicitly turn it off to avoid building its bundled Quill code.
+        tc.variables["ENABLE_FASTLOGGER"] = False
         tc.variables["POCO_UNBUNDLED"] = True
         tc.variables["CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP"] = True
         if is_msvc(self):
@@ -193,12 +203,19 @@ class PocoConan(ConanFile):
         deps.set_property("expat", "cmake_target_name", "EXPAT::EXPAT")
         deps.set_property("expat", "cmake_find_mode", "config")
         deps.set_property("pcre2::pcre2-8", "cmake_target_name", "Pcre2::Pcre2")
+        deps.set_property("utf8proc", "cmake_file_name", "Utf8Proc")
+        deps.set_property("utf8proc", "cmake_target_name", "Utf8Proc::Utf8Proc")
         deps.generate()
 
     def build(self):
+        # NOTE: Upstream Poco (since ~1.15.x) already guards the embedded pcre2 sources behind
+        # a get_target_property(_PCRE2TYPE Pcre2::Pcre2 TYPE) check in Foundation/CMakeLists.txt,
+        # so the replace_in_file() backport that used to be needed here for older Poco versions
+        # no longer applies and has been removed.
+
         # Remove debug suffix from library names when sharedlibrary_debug_suffix is False
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
-            platform_specific_cmake = os.path.join(self.source_folder, "cmake", "DefinePlatformSpecifc.cmake")
+            platform_specific_cmake = os.path.join(self.source_folder, "cmake", "DefinePlatformSpecific.cmake")
             # Replace "d" suffix with empty string for shared libs
             replace_in_file(self, platform_specific_cmake,
                 'set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Set Debug library postfix" FORCE)',
@@ -207,6 +224,32 @@ class PocoConan(ConanFile):
             replace_in_file(self, platform_specific_cmake,
                 'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}d" CACHE STRING "Set Debug library postfix" FORCE)',
                 'set(CMAKE_DEBUG_POSTFIX "${STATIC_POSTFIX}" CACHE STRING "Set Debug library postfix" FORCE)')
+
+        # Poco's own cmake/openssl/FindOpenSSL.cmake module (a copy of CMake's stock module) may
+        # transitively call find_package(ZLIB) while probing OpenSSL's static link dependencies,
+        # which creates the ZLIB::ZLIB imported target in an ancestor directory scope (it is
+        # included directly, not add_subdirectory()'d). dependencies/zlib/CMakeLists.txt then
+        # tries to unconditionally promote that already-existing target to global scope, which
+        # CMake refuses because IMPORTED_GLOBAL can only be set from the directory that created
+        # the target. Since dependencies/zlib is a descendant of that ancestor scope, the target
+        # is already visible there without promotion, so only find_package()/promote when the
+        # target doesn't already exist.
+        zlib_cmake = os.path.join(self.source_folder, "dependencies", "zlib", "CMakeLists.txt")
+        # Normalize line endings to ensure replace_in_file works across platforms
+        zlib_content = load(self, zlib_cmake)
+        zlib_content = zlib_content.replace("\r\n", "\n")
+        save(self, zlib_cmake, zlib_content)
+        replace_in_file(self, zlib_cmake,
+            """if(POCO_UNBUNDLED)
+\tfind_package(ZLIB REQUIRED)
+\tset_target_properties(ZLIB::ZLIB PROPERTIES IMPORTED_GLOBAL TRUE)
+else()""",
+            """if(POCO_UNBUNDLED)
+\tif(NOT TARGET ZLIB::ZLIB)
+\t\tfind_package(ZLIB REQUIRED)
+\t\tset_target_properties(ZLIB::ZLIB PROPERTIES IMPORTED_GLOBAL TRUE)
+\tendif()
+else()""")
 
         cmake = CMake(self)
         cmake.configure()

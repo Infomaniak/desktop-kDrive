@@ -47,7 +47,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         {
             if (Error.Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Sync is null on a node level error");
+                Logger.LogError("Sync is null on a node level error");
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageQuotaExceeded);

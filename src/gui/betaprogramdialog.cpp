@@ -94,7 +94,7 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
         _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
         _staffSelectionBox->insertItem(indexTest, tr("Test version"));
 
-        switch (ParametersCache::instance()->parametersInfo().distributionChannel()) {
+        switch (ParametersCache::instance()->parameters().distributionChannel()) {
             case DistributionChannel::Prod:
                 _initialIndex = indexNo;
                 break;

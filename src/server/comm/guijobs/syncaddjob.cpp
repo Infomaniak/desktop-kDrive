@@ -56,35 +56,41 @@ ExitInfo SyncAddJob::deserializeInputParms() {
 
 ExitInfo SyncAddJob::process() {
     // Add sync in DB
-    SyncInfo syncInfo;
-    AccountInfo accountInfo;
+    Sync sync;
+    Account account;
     Drive drive;
-    if (const auto exitInfo = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
-                                                      serverFolderNodeId(), liteSync(), accountInfo, drive, syncInfo);
-        !exitInfo) {
+    bool accountAdded = false;
+    bool driveAdded = false;
+    ExitInfo exitInfo;
+    exitInfo = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
+                                       serverFolderNodeId(), liteSync(), account, drive, sync, accountAdded, driveAdded);
+    if (!exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                    << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId << L" local "
                                    << Utility::formatSyncPath(localFolderPath()) << L" server "
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
         addError(Error(ERR_ID, exitInfo));
-        return exitInfo;
     }
 
-    if (accountInfo.dbId() != 0) {
-        auto signalAccountAddedJob = std::make_shared<SignalAccountAddedJob>(accountInfo);
+    if (accountAdded) {
+        auto signalAccountAddedJob = std::make_shared<SignalAccountAddedJob>(account);
         _commManager->sendGuiSignal(signalAccountAddedJob);
     }
 
-    if (drive.dbId() != 0) {
+    if (driveAdded) {
         auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(drive);
         _commManager->sendGuiSignal(signalDriveAddedJob);
     }
 
-    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
+    if (!exitInfo) {
+        return exitInfo;
+    }
+
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(sync);
     _commManager->sendGuiSignal(signalSyncAddedJob);
 
-    return AbstractSyncAddJob::process(syncInfo);
+    return AbstractSyncAddJob::process(sync);
 }
 
 } // namespace KDC

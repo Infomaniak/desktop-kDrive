@@ -4,9 +4,8 @@ else()
     project(testparms LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
-find_package(SQLite3 3.53.0 REQUIRED)
 
 set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 
@@ -30,8 +29,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testparms_NAME} ${testparms_SRCS})
@@ -41,7 +38,6 @@ set_target_properties(${testparms_NAME} PROPERTIES
 
 target_link_libraries(${testparms_NAME}
         ${libparms_NAME}
-        SQLite::SQLite3
 )
 
 if(WIN32)
@@ -61,6 +57,9 @@ endif()
 if(APPLE)
     # Default sync exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/sync-exclude-osx.lst DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-exclude.lst)
+
+    # Default sync folder rules
+    install(FILES ${CMAKE_SOURCE_DIR}/sync-folder-rules-osx.csv DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-folder-rules.csv)
 
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})

@@ -49,13 +49,10 @@ ExitInfo LocalMoveJob::canRun() {
     if (!isEqual) {
         // Check that we can move the file in destination
         bool exists = false;
-        if (!IoHelper::checkIfPathExists(_dest, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        if (!IoHelper::checkIfPathExists(_dest, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+            ioError != IoError::Success) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
-            return ExitCode::SystemError;
-        }
-        if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_dest));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+            return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
         }
 
         if (exists) {
@@ -66,9 +63,10 @@ ExitInfo LocalMoveJob::canRun() {
 
     // Check that the source file still exists.
     bool exists = false;
-    if (!IoHelper::checkIfPathExists(_source, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+    if (!IoHelper::checkIfPathExists(_source, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     if (!exists) {
@@ -86,11 +84,7 @@ ExitInfo LocalMoveJob::runJob() {
 
     if (const auto ioError = IoHelper::moveItem(_source, _dest); ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::moveItem: " << Utility::formatIoError(_source, ioError));
-        if (ioError == IoError::MoveThroughSymlink) {
-            return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
-        }
-        // We consider this as a permission denied error
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     LOGW_INFO(_logger, L"Item with " << Utility::formatSyncPath(_source) << L" moved to " << Utility::formatSyncPath(_dest));

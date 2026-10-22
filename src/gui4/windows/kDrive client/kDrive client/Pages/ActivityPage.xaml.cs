@@ -35,9 +35,9 @@ namespace Infomaniak.kDrive.Pages
         public AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to ActivityPage - Initializing ActivityPage components");
+            Logger.LogInfo("Navigated to ActivityPage - Initializing ActivityPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "ActivityPage components initialized");
+            Logger.LogDebug("ActivityPage components initialized");
             UpdateTitleTemplate();
         }
 
@@ -122,7 +122,7 @@ namespace Infomaniak.kDrive.Pages
 
             if (comboBox.SelectedIndex == 0)
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.ShowMyActivities);
-            else 
+            else
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.ShowAllActivities);
 
         }

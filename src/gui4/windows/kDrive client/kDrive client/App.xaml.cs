@@ -19,6 +19,7 @@
 using CodeArt.MatomoTracking;
 using DynamicData;
 using Infomaniak.kDrive.Analytics;
+using Infomaniak.kDrive.Monitoring;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
@@ -29,7 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.Win32;
-using Sentry;
+using Microsoft.Windows.AppLifecycle;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
+        private AppInstance _mainInstance = AppInstance.FindOrRegisterForKey("com.infomaniak.kdrive.client");
         private Window? _currentWindow;
         private UpdateWindow? _updateWindow;
 
@@ -74,9 +76,10 @@ namespace Infomaniak.kDrive
         {
             var services = new ServiceCollection();
             services.AddSingleton<AppModel>();
+            services.AddSingleton<IKeychainStore, WindowsKeychainStore>();
             services.AddSingleton<IServerCommClient, TcpServerCommClient>();
             services.AddSingleton<IServerCommService, ServerCommService>();
-            services.AddSingleton<AppStateModel>();
+            services.AddSingleton<AppStateService>();
             services.AddSingleton<UserDefaults>();
             services.AddSingleton<TrayIconManager>();
             services.AddSingleton<NotificationManager>();
@@ -88,16 +91,19 @@ namespace Infomaniak.kDrive
                 options.SiteId = Constants.Matomo.SiteId;
             });
             services.AddSingleton<IAnalyticsService, MatomoService>();
+            services.AddSingleton<IMonitoringService, SentryMonitoringService>();
             _serviceProvider = services.BuildServiceProvider();
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
-            Logger.StartSentry();
+            ServiceProvider.GetRequiredService<IMonitoringService>().Start();
             InitializeComponent();
-            Logger.Log(Logger.Level.Info, "Application started");
+            Logger.LogInfo("Application started");
         }
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+            var isMainInstance = _mainInstance == AppInstance.GetCurrent();
+
             string[] arguments = Environment.GetCommandLineArgs();
             if (arguments.Length > 1)
             {
@@ -107,16 +113,42 @@ namespace Infomaniak.kDrive
                     if (OAuth2Manager.CompleteAuthRequest(new Uri(oauthArg)))
                     {
                         // Terminate the Process
-                        Logger.Log(Logger.Level.Info, "OAuth process completed, response routed successfully. Terminating the process.");
+                        Logger.LogInfo("OAuth process completed, response routed successfully. Terminating the process.");
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Warning, "OAuth process failed.");
+                        Logger.LogWarning("OAuth process failed.");
                     }
-                    Process current = Process.GetCurrentProcess();
-                    current.Kill();
+                    ExitApplication();
                     return;
                 }
+
+                if (!isMainInstance)
+                {
+                    // if this is not the main instance, we should start the server which will decide to open or not the main window of the main instance
+                    StartServer();
+                    ExitApplication();
+                    return;
+                }
+
+                if (arguments.Contains("--synthesis"))
+                {
+                    Logger.LogInfo("--synthesis arg detected, opening Synthesis window in foreground.");
+                    CreateWindow(CreateWindowOptions.Foreground);
+                }
+                else if (arguments.Contains("--settings"))
+                {
+                    Logger.LogInfo("--settings arg detected, opening Settings window in foreground.");
+                    CreateWindow(CreateWindowOptions.Foreground | CreateWindowOptions.OpenSettings);
+                }
+            }
+
+            if (!isMainInstance)
+            {
+                // if this is not the main instance, we should start the server which will decide to open or not the main window of the main instance
+                StartServer();
+                ExitApplication();
+                return;
             }
 
             // Register oAuth protocol handler
@@ -125,23 +157,23 @@ namespace Infomaniak.kDrive
             // Initialize notifications
             ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
-            ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
             var serverCommService = ServiceProvider.GetRequiredService<IServerCommService>();
             using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
             {
                 if (!await serverCommService.Init(cts.Token))
                 {
-                    Logger.Log(Logger.Level.Fatal, "Failed to initialize server communication service, exiting application.");
                     ExitApplication();
                     return;
                 }
             }
 
+            ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
+
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             if (!await appModel.InitializeAsync())
             {
-                Logger.Log(Logger.Level.Fatal, "Application failed to initialize, exiting.");
+                Logger.LogFatal("Application failed to initialize, exiting.");
                 ExitApplication();
                 return;
             }
@@ -155,34 +187,53 @@ namespace Infomaniak.kDrive
         }
 
         public enum CreateWindowOptions
-        {   None = 1,
+        {
+            None = 1,
             Foreground = 2,
             CancelOnboarding = 4,
             OpenSettings = 8
         }
+        private bool _isCreatingWindow = false;
+
         public void CreateWindow(CreateWindowOptions options)
         {
-            if (CurrentWindow is OnBoardingWindow && options.HasFlag(CreateWindowOptions.CancelOnboarding))
+            // Prevent reentrant "new MainWindow()" calls (CurrentWindow is only set once the constructor returns).
+            if (_isCreatingWindow)
             {
-                CurrentWindow.Close();
-                CurrentWindow = null;
+                Logger.LogInfo("CreateWindow called while a window creation is already in progress, skipping to avoid reentrancy.");
+                return;
             }
 
-            if (CurrentWindow is null)
+            try
             {
-                var appModel = ServiceProvider.GetRequiredService<AppModel>();
-                if (options.HasFlag(CreateWindowOptions.CancelOnboarding) || !StartOnboardingIfNeeded())
+                _isCreatingWindow = true;
+
+                if (CurrentWindow is OnBoardingWindow && options.HasFlag(CreateWindowOptions.CancelOnboarding))
                 {
-                    CurrentWindow = new MainWindow(options.HasFlag(CreateWindowOptions.OpenSettings) ? typeof(Pages.Settings.SettingsPage) : null);
+                    CurrentWindow.Close();
+                    CurrentWindow = null;
                 }
-                else
+
+                if (CurrentWindow is null)
                 {
-                    options &= ~CreateWindowOptions.Foreground; // StartOnboarding will handle bringing the window to the front, so we can skip it here to avoid unnecessary calls.
+                    var appModel = ServiceProvider.GetRequiredService<AppModel>();
+                    if (options.HasFlag(CreateWindowOptions.CancelOnboarding) || !StartOnboardingIfNeeded())
+                    {
+                        CurrentWindow = new MainWindow(options.HasFlag(CreateWindowOptions.OpenSettings) ? typeof(Pages.Settings.SettingsPage) : null);
+                    }
+                    else
+                    {
+                        options &= ~CreateWindowOptions.Foreground; // StartOnboarding will handle bringing the window to the front, so we can skip it here to avoid unnecessary calls.
+                    }
+                }
+                else if (CurrentWindow is MainWindow mainWindow && options.HasFlag(CreateWindowOptions.OpenSettings))
+                {
+                    mainWindow?.AppNavView?.Frame?.Navigate(typeof(Pages.Settings.SettingsPage));
                 }
             }
-            else if (CurrentWindow is MainWindow mainWindow && options.HasFlag(CreateWindowOptions.OpenSettings))
+            finally
             {
-                mainWindow?.AppNavView?.Frame?.Navigate(typeof(Pages.Settings.SettingsPage));
+                _isCreatingWindow = false;
             }
 
             if (options.HasFlag(CreateWindowOptions.Foreground))
@@ -200,7 +251,7 @@ namespace Infomaniak.kDrive
             string exe = Environment.ProcessPath ?? "";
             if (exe == "")
             {
-                Logger.Log(Logger.Level.Error, "Failed to register oauth protocol handler: unable to determine executable path.");
+                Logger.LogError("Failed to register oauth protocol handler: unable to determine executable path.");
                 return;
             }
 
@@ -221,7 +272,7 @@ namespace Infomaniak.kDrive
             {
                 if (CurrentWindow?.GetType() == typeof(OnBoarding.OnBoardingWindow))
                 {
-                    Logger.Log(Logger.Level.Info, "OnBoardingWindow is already open, skipping StartOnboarding call.");
+                    Logger.LogInfo("OnBoardingWindow is already open, skipping StartOnboarding call.");
                     return;
                 }
 
@@ -236,7 +287,7 @@ namespace Infomaniak.kDrive
 
         private void OnOnboardingClosed(object sender, WindowEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
+            Logger.LogInfo("OnBoardingWindow closed, restarting MainWindow.");
 
             var onboardingWindow = (OnBoarding.OnBoardingWindow)sender;
             onboardingWindow.Closed -= OnOnboardingClosed;
@@ -250,7 +301,7 @@ namespace Infomaniak.kDrive
 
             if (appModel.IsInitialized && !appModel.AllSyncs.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
             {
-                Logger.Log(Logger.Level.Info, "No users available after initialization, starting onboarding process.");
+                Logger.LogInfo("No users available after initialization, starting onboarding process.");
                 StartOnboarding();
                 return true;
             }
@@ -259,7 +310,7 @@ namespace Infomaniak.kDrive
 
         public static void RestartApplicationWindows()
         {
-            Logger.Log(Logger.Level.Info, $"Restarting all application windows.");
+            Logger.LogInfo($"Restarting all application windows.");
             App app = (App)Current;
             app.CloseUpdateWindow();
             var previousWindow = app.CurrentWindow;
@@ -269,14 +320,54 @@ namespace Infomaniak.kDrive
         }
         public static void ExitApplication()
         {
-            SentrySdk.Flush(new TimeSpan(0, 0, 5));
-            Logger.Log(Logger.Level.Info, "Exiting application.");
+            Logger.LogInfo("Exiting application.");
+            ServiceProvider.GetRequiredService<IMonitoringService>().Stop();
             Environment.Exit(0);
+        }
+
+        public static void StartServer()
+        {
+            string serverPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "..", "kDrive.exe");
+            if (!System.IO.File.Exists(serverPath))
+            {
+#if DEBUG
+                Logger.LogInfo($"Server executable not found at {serverPath}. Cannot start server.");
+#else
+                Logger.LogError($"Server executable not found at {serverPath}. Cannot start server.",
+                    "App: Server executable not found");
+#endif
+                return;
+            }
+
+            try
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = serverPath,
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    Arguments = "--synthesis"
+                };
+
+                if (App.Current is App app && app._mainInstance?.IsCurrent == true)
+                {
+                    AppInstance.GetCurrent().UnregisterKey();
+                }
+
+                Process.Start(startInfo);
+                Logger.LogInfo($"Server started successfully from {serverPath}.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to start server from {serverPath}. Exception: {ex.Message}",
+                    "App: Failed to start server");
+            }
         }
 
         public static void ExitApplicationAndShutdownServer()
         {
-            Logger.Log(Logger.Level.Info, "Sending exit command to server.");
+            Logger.LogInfo("Sending exit command to server.");
             App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
             ExitApplication();
         }
@@ -292,8 +383,7 @@ namespace Infomaniak.kDrive
                 while (ServiceProvider.GetRequiredService<AppModel>().Settings.UpdateManager.AvailableUpdate is null &&
                            retryCount < maxRetries)
                 {
-                    Logger.Log(Logger.Level.Info,
-                                   $"ShowUpdateWindow called but no available update found, retrying in 1 seconds ({retryCount + 1}/{maxRetries}).");
+                    Logger.LogInfo($"ShowUpdateWindow called but no available update found, retrying in 1 seconds ({retryCount + 1}/{maxRetries}).");
 
                     retryCount++;
                     await Task.Delay(TimeSpan.FromSeconds(1));
@@ -301,15 +391,15 @@ namespace Infomaniak.kDrive
 
                 if (ServiceProvider.GetRequiredService<AppModel>().Settings.UpdateManager.AvailableUpdate is null)
                 {
-                    Logger.Log(Logger.Level.Warning,
-                                   "ShowUpdateWindow aborted after retries because no available update was found.");
+                    Logger.LogWarning("ShowUpdateWindow aborted after retries because no available update was found.");
                     return;
                 }
 
                 if (_updateWindow is null)
                 {
                     _updateWindow = new UpdateWindow();
-                    _updateWindow.Closed += (s, e) => {
+                    _updateWindow.Closed += (s, e) =>
+                    {
                         CreateWindow(CreateWindowOptions.None);
                         _updateWindow = null;
                     };
@@ -317,7 +407,7 @@ namespace Infomaniak.kDrive
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Info,
+                    Logger.LogInfo(
                                    "Update window is already open, bringing existing window to front.");
                 }
                 Utility.BringWindowToFront(_updateWindow);

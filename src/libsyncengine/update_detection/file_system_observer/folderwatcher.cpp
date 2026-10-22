@@ -33,6 +33,15 @@ void FolderWatcher::start() {
     _stop = false;
     _ready = false;
 
+    LOGW_DEBUG(_logger, L"Start watching folder: " << Utility::formatSyncPath(_folder));
+
+    std::string fsType;
+    std::string fallbackFSType = CommonUtility::fileSystemType(_folder, fsType, CommonUtility::UseCache::No);
+    LOGW_DEBUG(_logger, L"File system format: " << CommonUtility::s2ws(fsType) << L", fallback format: "
+                                                << CommonUtility::s2ws(fallbackFSType));
+
+    LOG_DEBUG(_logger, "Free space on disk: " << Utility::getFreeDiskSpace(_folder) << " bytes.");
+
     auto startWatchingFunc = std::function<void()>([this]() { startWatching(); });
     _thread = std::make_unique<StdLoggingThread>(startWatchingFunc);
 

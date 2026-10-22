@@ -147,7 +147,7 @@ class ExtensionJob : public AbstractJob {
 
         void manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path,
                                        SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
-                                       const Sync &sync);
+                                       const BaseSync &sync);
 
         void fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std::function<void(const std::string &url)> &targetFun);
 
@@ -157,13 +157,13 @@ class ExtensionJob : public AbstractJob {
         void buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChannel> channel, const CommString &type, bool enabled,
                                          const CommString &text);
 
-        bool syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
+        ExitInfo syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
         ExitInfo getPinState(const FileData &fileData, PinState &pinState);
         ExitInfo setPinState(const FileData &fileData, PinState pinState);
-        ExitInfo cancelHydrate(const FileData &fileData, PinState pinState);
+        ExitInfo cancelHydrate(const FileData &fileData, PinState pinState, ExitInfo exitInfo);
         ExitInfo cancelDehydrate(const FileData &fileData, PinState pinState);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
-        bool addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath);
+        ExitInfo addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath);
 
 #if defined(KD_MACOS)
         void processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList);

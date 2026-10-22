@@ -19,6 +19,7 @@
 #include "..\Common\utilities.h"
 #include "vfs.h"
 #include "cloudprovider.h"
+#include "cloudproviderregistrar.h"
 #include "placeholders.h"
 
 #define PROVIDERID(driveId, folderId) std::wstring(driveId) + L"-" + std::wstring(folderId)
@@ -68,7 +69,8 @@ DLL_EXP int __cdecl vfsInit(TraceCbk debugCallback, const wchar_t *appName, DWOR
 }
 
 DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId, const wchar_t *folderName,
-                             const wchar_t *folderPath, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
+                             const wchar_t *folderPath, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize,
+                             int64_t *registeredAt) {
     CloudProvider *cloudProvider = nullptr;
     try {
         cloudProvider = new CloudProvider(PROVIDERID_CSTR(driveId, folderId), driveId, folderId, userId, folderName, folderPath);
@@ -86,7 +88,7 @@ DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, cons
         }
 
         s_cloudProviders[PROVIDERID(driveId, folderId)] = cloudProvider;
-        if (!cloudProvider->start(namespaceCLSID, namespaceCLSIDSize)) {
+        if (!cloudProvider->start(namespaceCLSID, namespaceCLSIDSize, registeredAt)) {
             TRACE_ERROR(L"Start failed!");
             return E_ABORT;
         }
@@ -135,6 +137,21 @@ DLL_EXP int __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId, boo
     return ret;
 }
 
+DLL_EXP int __cdecl vfsIsRegistered(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId,
+                                    const wchar_t *folderPath, bool *registered) {
+    if (!driveId || !userId || !folderId || !folderPath || !registered) {
+        return E_INVALIDARG;
+    }
+
+    // Does not rely on the running cloud provider, so that it can be called even if the VFS is stopped
+    if (!CloudProviderRegistrar::isRegistered(PROVIDERID(driveId, folderId), userId, folderPath, *registered)) {
+        TRACE_ERROR(L"Error in CloudProviderRegistrar::isRegistered!");
+        return E_ABORT;
+    }
+
+    return S_OK;
+}
+
 DLL_EXP int __cdecl vfsGetPlaceHolderStatus(const wchar_t *filePath, bool *isPlaceholder, bool *isDehydrated, bool *isSynced) {
     if (!Placeholders::getStatus(filePath, isPlaceholder, isDehydrated, isSynced)) {
         TRACE_ERROR(L"Error in Placeholders::getPlaceholderStatus: path='%ls'", filePath);
@@ -163,10 +180,10 @@ DLL_EXP int __cdecl vfsCreatePlaceHolder(const wchar_t *fileId, const wchar_t *r
     return S_OK;
 }
 
-DLL_EXP int __cdecl vfsConvertToPlaceHolder(const wchar_t *fileId, const wchar_t *filePath) {
-    if (!Placeholders::convert(fileId, filePath)) {
-        TRACE_ERROR(L"Error in Placeholders::convert: id='%ls', path='%ls'", fileId, filePath);
-        return E_ABORT;
+DLL_EXP int32_t __cdecl vfsConvertToPlaceHolder(const wchar_t *fileId, const wchar_t *filePath) {
+    if (int32_t res = Placeholders::convert(fileId, filePath); res != S_OK) {
+        TRACE_ERROR(L"Error in Placeholders::convert: id='%ls', path='%ls', error=%d", fileId, filePath, res);
+        return res;
     }
 
     return S_OK;
@@ -230,10 +247,10 @@ DLL_EXP int __cdecl vfsUpdateFetchStatus(const wchar_t *driveId, const wchar_t *
     return S_OK;
 }
 
-DLL_EXP int __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath) {
+DLL_EXP int __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath, NTSTATUS status) {
     CloudProvider *cloudProvider = s_cloudProviders[PROVIDERID(driveId, folderId)];
     if (cloudProvider) {
-        if (!CloudProvider::cancelTransfer(cloudProvider->getProviderInfo(), filePath, true)) {
+        if (!CloudProvider::cancelTransfer(cloudProvider->getProviderInfo(), filePath, true, status)) {
             TRACE_ERROR(L"Error in CloudProvider::cancelTransfer!");
             return E_ABORT;
         }

@@ -81,7 +81,7 @@ void FolderTreeItemWidget::setSyncDbId(const SyncDbId syncDbId) {
     }
 
     _driveId = driveInfoMapIt->second.driveId();
-    _nodeId = syncInfoMapIt->second.targetNodeId();
+    _nodeId = QString::fromStdString(syncInfoMapIt->second.targetNodeId());
 
     setDriveDbId(syncInfoMapIt->second.driveDbId());
 }
@@ -158,7 +158,8 @@ void FolderTreeItemWidget::loadSubFolders() {
 ExitCode FolderTreeItemWidget::updateBlacklistSet() {
     _newlyBlackListedItems.clear();
 
-    if (!_syncDbId) return ExitCode::Ok;
+    if (!_syncDbId)
+        return ExitCode::Ok; // `_syncDbId` can be 0 for a non-LiteSync `FolderTreeItemWidget` that is not fully initialized yet.
 
     bool userConnected = false;
     if (const auto userInfoIt = _gui->userInfoMap().find(_userDbId); userInfoIt != _gui->userInfoMap().end()) {
@@ -176,6 +177,8 @@ ExitCode FolderTreeItemWidget::updateBlacklistSet() {
 }
 
 void FolderTreeItemWidget::updateBlacklistPathMap() {
+    if (!_syncDbId) return; // `_syncDbId` can be 0 for a non-LiteSync `FolderTreeItemWidget` that is not fully initialized.
+
     for (const QString &nodeId: _oldBlackList) {
         QString path;
         if (const auto exitCode = GuiRequests::getNodePath(_syncDbId, nodeId, path); exitCode != ExitCode::Ok) {
@@ -248,6 +251,9 @@ QSet<QString> FolderTreeItemWidget::createBlackSet() {
 }
 
 QString FolderTreeItemWidget::getPath(const QString &nodeId) {
+    if (!_syncDbId)
+        return {}; // `_syncDbId` can be 0 for a non-LiteSync `FolderTreeItemWidget` that is not fully initialized yet.
+
     QString path;
 
     if (_blacklistCache.contains(nodeId)) {
@@ -261,6 +267,8 @@ QString FolderTreeItemWidget::getPath(const QString &nodeId) {
 }
 
 void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackset) {
+    // Traverse the tree even before a sync DB exists; getPath() handles the uninitialized ID.
+
     if (!parentItem) parentItem = topLevelItem(0);
     if (!parentItem) return;
 

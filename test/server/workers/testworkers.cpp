@@ -18,14 +18,11 @@
 
 #include "testworkers.h"
 #include "propagation/executor/executorworker.h"
-
 #include "libcommonserver/keychainmanager/keychainmanager.h"
-#include "mocks/mockkeychainstorage.h"
-
-#include "libcommonserver/network/proxy.h"
 #include "libcommonserver/io/iohelper.h"
-
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -65,7 +62,7 @@ void TestWorkers::setUp() {
     // Insert api token into keystore
     std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
+    KeyChainManager::instance()->writeData(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -97,12 +94,6 @@ void TestWorkers::setUp() {
     _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
-
     // Create VFS instance
     VfsSetupParams vfsSetupParams;
     vfsSetupParams.syncDbId = _sync.dbId();
@@ -117,7 +108,8 @@ void TestWorkers::setUp() {
     vfsSetupParams.executeCommand = [](const CommString &, bool) {};
 
 #if defined(KD_MACOS)
-    _vfs = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
+    _vfs = std::make_shared<MockVfs<VfsMac>>(vfsSetupParams);
+    _vfs->resetLiteSyncConnector();
 #elif defined(KD_WINDOWS)
     _vfs = std::shared_ptr<VfsWin>(new VfsWin(vfsSetupParams));
 #else
@@ -160,10 +152,10 @@ void TestWorkers::setUp() {
     if (connectorsAreAlreadyInstalled) {
         _vfsInstallationDone = true;
         _vfsActivationDone = true;
-        startVfs();
+        CPPUNIT_ASSERT(startVfs());
     }
 #else
-    startVfs();
+    CPPUNIT_ASSERT(startVfs());
 #endif
 }
 
@@ -176,8 +168,10 @@ void TestWorkers::tearDown() {
     }
     if (_vfs) {
         // Stop Vfs
+        _vfs->stopVfsWorkers();
         _vfs->stopImpl(true);
         _vfs = nullptr;
+        _vfsConnectionDone = false;
     }
     TestBase::stop();
 }

@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Unable to retrieve assembly version.");
+                Logger.LogError("Unable to retrieve assembly version.");
                 return new AppVersion
                 {
                     Tag = "0.0.0",
@@ -97,13 +97,14 @@ namespace Infomaniak.kDrive.ViewModels
 
                 if (thisTagParts.Length != otherTagParts.Length)
                 {
-                    Logger.Log(Logger.Level.Error, $"Tag format mismatch: '{Tag}' vs '{other.Tag}' with same prefix. Considering the longer tag as higher.");
+                    Logger.LogError($"Tag format mismatch: '{Tag}' vs '{other.Tag}' with same prefix. Considering the longer tag as higher.",
+                        "AppVersion: Version tag format mismatch");
                     return thisTagParts.Length > otherTagParts.Length;
                 }
             }
             catch (System.FormatException)
             {
-                Logger.Log(Logger.Level.Error, "Unable to parse the version tag");
+                Logger.LogError("Unable to parse the version tag");
                 return false;
             }
 

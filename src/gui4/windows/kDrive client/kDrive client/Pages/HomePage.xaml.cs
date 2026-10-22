@@ -34,13 +34,13 @@ namespace Infomaniak.kDrive.Pages
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
-        private readonly AppStateModel _appStateModel = App.ServiceProvider.GetRequiredService<AppStateModel>();
+        private readonly AppStateService _appStateService = App.ServiceProvider.GetRequiredService<AppStateService>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
+            Logger.LogInfo("Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "HomePage components initialized");
+            Logger.LogDebug("HomePage components initialized");
         }
 
         private void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
@@ -94,7 +94,8 @@ namespace Infomaniak.kDrive.Pages
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(AsleepErrorPage)));
                     break;
                 default:
-                    Logger.Log(Logger.Level.Warning, $"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.");
+                    Logger.LogWarning($"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.",
+                        "HomePage: Unexpected sync error state");
                     return false;
             }
             return true;
@@ -114,13 +115,13 @@ namespace Infomaniak.kDrive.Pages
 
         private async Task UpdateV4OnboardingInfoBar()
         {
-            bool? showV4Onboarding = await _appStateModel.GetShowV4Onboarding();
+            bool? showV4Onboarding = await _appStateService.GetShowV4Onboarding();
             AppModel.UIThreadDispatcher.TryEnqueue(() => V4OnboardingInfoBar.IsOpen = showV4Onboarding == true);
         }
 
         private async void V4OnboardingInfoBar_CloseButtonClick(InfoBar sender, object args)
         {
-            await _appStateModel.SetShowV4Onboarding(false);
+            await _appStateService.SetShowV4Onboarding(false);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -168,7 +169,7 @@ namespace Infomaniak.kDrive.Pages
         {
             if (ViewModel.SelectedSync is null)
             {
-                Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
+                Logger.LogWarning("No sync is selected, cannot resume sync.");
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.StartSync);

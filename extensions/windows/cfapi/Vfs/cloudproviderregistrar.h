@@ -22,16 +22,30 @@
 #include "providerinfo.h"
 
 #include <sddl.h>
-#include <winrt\base.h>
+#include <winrt/base.h>
 
 class CloudProviderRegistrar {
     public:
-        static std::wstring registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
+        static std::wstring registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize,
+                                              int64_t *registeredAt);
         static bool unregister(std::wstring syncRootID);
+        static bool isRegistered(const std::wstring &providerId, const std::wstring &userId, const wchar_t *folderPath,
+                                 bool &registered);
 
     private:
         static std::unique_ptr<TOKEN_USER> getTokenInformation();
         static std::wstring getSyncRootId(const ProviderInfo *providerInfo);
+        static std::wstring getSyncRootId(const std::wstring &providerId, const std::wstring &userId);
+        static void getCLSID(HKEY hKey, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
+        static void updateAumidEntry(HKEY hKey);
+        static void updateSyncRootRegistryEntries(const std::wstring &syncRootID, wchar_t *namespaceCLSID,
+                                                  DWORD *namespaceCLSIDSize, bool updateIcons = false);
+
+        // Returns true if the two folders are related (i.e. one is a subfolder of the other or they are the same folder)
+        static bool areRelatedFolders(const std::wstring &folderPath1, const std::wstring &folderPath2);
+
+        static void updateRegistration(const ProviderInfo *providerInfo);
+        static bool createRegistration(const ProviderInfo *providerInfo, const std::wstring &syncRootID);
         /*static void addCustomState(
             _In_ winrt::IVector<winrt::StorageProviderItemPropertyDefinition> &customStates,
             _In_ LPCWSTR displayNameResource,

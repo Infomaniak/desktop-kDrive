@@ -19,6 +19,7 @@
 #include "testincludes.h"
 #include "server/comm/guicommserver.h"
 #include "server/comm/guijobs/guijobfactory.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include <log4cplus/logger.h>
 
@@ -60,6 +61,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveUpdateJob);
         CPPUNIT_TEST(testDriveDeleteJob);
         CPPUNIT_TEST(testDriveSearchJob);
+        CPPUNIT_TEST(testDriveSearchJobOutcome);
         CPPUNIT_TEST(testSyncInfoListJob);
         CPPUNIT_TEST(testSyncOfflineFilesSizeJob);
         CPPUNIT_TEST(testSignalSyncNotifyManyDeletes);
@@ -84,7 +86,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeFolderSizeJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST(testNodeConflictInfoJob);
-        CPPUNIT_TEST(testErrorInfoListJob);
+        CPPUNIT_TEST(testErrorListJob);
         CPPUNIT_TEST(testErrorDeleteJob);
         CPPUNIT_TEST(testErrorResolveConflictsJob);
         CPPUNIT_TEST(testErrorResolveConflictsQuickJob);
@@ -98,7 +100,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testExclAppSetListJob);
         CPPUNIT_TEST(testExclAppGetFetchingAppListJob);
 #endif
-        CPPUNIT_TEST(testParametersInfoJob);
+        CPPUNIT_TEST(testParametersJob);
         CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);
         CPPUNIT_TEST(testUtilityFindGoodPathForNewSyncJob);
@@ -152,6 +154,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testDriveUpdateJob();
         void testDriveDeleteJob();
         void testDriveSearchJob();
+        void testDriveSearchJobOutcome();
         void testSyncInfoListJob();
         void testSyncOfflineFilesSizeJob();
         void testSignalSyncNotifyManyDeletes();
@@ -176,7 +179,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeFolderSizeJob();
         void testNodeCreateMissingFoldersJob();
         void testNodeConflictInfoJob();
-        void testErrorInfoListJob();
+        void testErrorListJob();
         void testErrorDeleteJob();
         void testErrorResolveConflictsJob();
         void testErrorResolveConflictsQuickJob();
@@ -189,7 +192,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testExclAppSetListJob();
         void testExclAppGetFetchingAppListJob();
 #endif
-        void testParametersInfoJob();
+        void testParametersJob();
         void testParametersUpdateJob();
         void testUtilityBestVfsAvailableModeJob();
         void testUtilityFindGoodPathForNewSyncJob();
@@ -229,6 +232,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 
     private:
         GuiJobFactory _guiJobFactory;
+        LocalTemporaryDirectory _localTempDir{"testGuiCommChannel"};
 
         void testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                             const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct);

@@ -26,9 +26,9 @@ namespace Infomaniak.kDrive.Pages.Popup
         public TextBox ExclusionRuleTextBox => TextBox;
         public AddExclusionRulePopup()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to AddExclusionRulePopup - Initializing AddExclusionRulePopup components");
+            Logger.LogInfo("Navigated to AddExclusionRulePopup - Initializing AddExclusionRulePopup components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "AddExclusionRulePopup components initialized");
+            Logger.LogDebug("AddExclusionRulePopup components initialized");
         }
     }
 }

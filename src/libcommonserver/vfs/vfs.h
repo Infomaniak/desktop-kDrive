@@ -22,7 +22,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/vfs/workerinfo.h"
-#include "libsyncengine/progress/syncfileitem.h"
+#include "libcommon/data/syncfileitem.h"
 
 #include <memory>
 #include <deque>
@@ -96,7 +96,7 @@ class Vfs : public QObject {
 
         explicit Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
-        ~Vfs() override;
+        ~Vfs();
 
         void setSyncFileStatusCallback(const std::function<void(SyncDbId, const SyncPath &, SyncFileStatus &)> &syncFileStatus) {
             _syncFileStatus = syncFileStatus;
@@ -125,6 +125,16 @@ class Vfs : public QObject {
         /// Stop interaction with VFS provider. Like when the client application quits.
         /// Also deregister the folder with the sync provider, like when a folder is removed.
         void stop(bool unregister);
+
+        /// Registration time of the sync root with the OS (Unix timestamp in milliseconds).
+        /// Only relevant on Windows, where it is the creation time of the sync root registry entry.
+        /// 0 if unknown or not applicable (macOS, VFS off).
+        [[nodiscard]] SyncTime registeredAt() const { return _registeredAt; }
+
+        /// Whether the sync root is still registered with the OS.
+        /// Only relevant on Windows, where unregistering the sync root (e.g. uninstalling the shell extension) deletes all
+        /// placeholders. Always true otherwise.
+        [[nodiscard]] virtual bool isRegistered() const { return true; }
 
         /** Whether the socket api should show pin state options
          *
@@ -319,7 +329,7 @@ class Vfs : public QObject {
 
         virtual void dehydrate(const SyncPath &path) = 0;
         virtual void hydrate(const SyncPath &path) = 0;
-        virtual void cancelHydrate(const SyncPath &) = 0;
+        virtual void cancelHydrate(const SyncPath &, const ExitInfo &exitInfo = ExitCode::Unknown) = 0;
 
     signals:
         /// Emitted when a user-initiated hydration starts
@@ -329,7 +339,8 @@ class Vfs : public QObject {
 
     protected:
         VfsSetupParams _vfsSetupParams;
-        void starVfsWorkers();
+        void startVfsWorkers();
+        void stopVfsWorkers();
         const std::array<size_t, nbWorkers> s_nb_threads = {5, 5};
 
         // Callbacks
@@ -353,6 +364,8 @@ class Vfs : public QObject {
 
         virtual void stopImpl(bool unregister) = 0;
 
+        void setRegisteredAt(const SyncTime registeredAt) { _registeredAt = registeredAt; }
+
         log4cplus::Logger logger() const { return _vfsSetupParams.logger; }
 
 
@@ -361,7 +374,8 @@ class Vfs : public QObject {
          *  the error provided to the application will only be based on the existence/permission of the file/directory.
          *  If there is no issue with the file/directory, the error will be Vfs::defaultVfsError().         *
          */
-        ExitInfo handleVfsError(const SyncPath &itemPath, const std::source_location &location = std::source_location::current()) const;
+        ExitInfo handleVfsError(const SyncPath &itemPath,
+                                const std::source_location &location = std::source_location::current()) const;
 
         /* Check if a path exists and return an ExitInfo with the appropriate error code.
          *
@@ -390,6 +404,7 @@ class Vfs : public QObject {
     private:
         bool _extendedLog{false};
         bool _started{false};
+        SyncTime _registeredAt{0};
 };
 } // namespace KDC
 
@@ -446,7 +461,7 @@ class VfsOff : public Vfs {
         void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
         void dehydrate(const SyncPath &) override { /*VfsOff*/ }
         void hydrate(const SyncPath &) override { /*VfsOff*/ }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
+        void cancelHydrate(const SyncPath &, [[maybe_unused]] const ExitInfo &exitInfo = ExitCode::Unknown) override { /*VfsOff*/ }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;

@@ -60,11 +60,11 @@ jobs:
     runs-on: [self-hosted, Windows ]
     steps:
       - name: Checkout the PR
-        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive && inputs.build_linux != 'Do not build' }}
         uses: actions/checkout@v6.0.2
 
       - name: Check translations
-        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive && inputs.build_linux != 'Do not build' }}
         run: |
              cd translations\updateTool
              $result = .\Windows.ps1
@@ -91,7 +91,7 @@ jobs:
              }
 
       - name: Skip translations check
-        if: ${{ !inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        if: ${{ !(inputs.enable_safety_checks_and_upload_builds_to_kdrive && inputs.build_linux != 'Do not build') }}
         run: |
              Write-Host "Safety checks and uploads are disabled: translations check skipped."
              "<h1>:warning: Safety checks disabled: translations check skipped.</h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
@@ -194,7 +194,7 @@ jobs:
   build-Windows:
     if: ${{ inputs.build_windows != 'Do not build' }}
     needs: [ check-release-notes, check-translations ]
-    runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
+    runs-on: [ self-hosted, Windows, vs2026 ]
     outputs:
       kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
     steps:
@@ -275,11 +275,12 @@ jobs:
   upload-to-kDrive-and-sentry-Windows:
     if: ${{ inputs.build_windows != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Windows]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [ windows-latest ]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+        KDRIVE_ORGA_ID: ${{ secrets.KDRIVE_ORGA_ID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
@@ -301,7 +302,6 @@ jobs:
         run: |
           $testFlag = if ("${{ inputs.use_ksp_cert }}" -eq "false") { "-test" } else { "" }
           powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_windows }}" -os "win" $testFlag
-
 
       - name: Download sentry-cli and login
         run: |
@@ -326,11 +326,12 @@ jobs:
   upload-to-kDrive-and-sentry-Linux-amd:
     if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-amd]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [windows-latest]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+        KDRIVE_ORGA_ID: ${{ secrets.KDRIVE_ORGA_ID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
@@ -368,11 +369,12 @@ jobs:
   upload-to-kDrive-and-sentry-Linux-arm:
     if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (arm64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-arm]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [windows-latest]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+        KDRIVE_ORGA_ID: ${{ secrets.KDRIVE_ORGA_ID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
@@ -410,11 +412,12 @@ jobs:
   upload-to-kDrive-and-sentry-macOS:
     if: ${{ inputs.build_macos != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-MacOS]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [windows-latest]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+        KDRIVE_ORGA_ID: ${{ secrets.KDRIVE_ORGA_ID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2

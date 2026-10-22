@@ -18,12 +18,13 @@
 
 #include "abstractnetworkjob.h"
 
-#include "network/proxy.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/truststorehelper.h"
+#include "libparms/db/parmsdb.h"
 #include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -33,12 +34,11 @@
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/AutoPtr.h>
 #include <Poco/SharedPtr.h>
-#include <Poco/InflatingStream.h>
 #include <Poco/Error.h>
 
-#include <iostream> // std::ios, std::istream, std::cout, std::cerr
 #include <atomic>
 #include <functional>
+#include <mutex>
 #include <thread>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequest.h>
@@ -57,16 +57,28 @@ const int64_t sleepDurationThreshold = 60000; // 60'000 ms -> 1 min
 
 const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
+std::mutex AbstractNetworkJob::_contextMutex;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
 
 AbstractNetworkJob::AbstractNetworkJob() :
     _requestUuid(CommonUtility::generateUUID()) {
+    const std::scoped_lock lock(_contextMutex);
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
-                _context =
-                        new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
+                // VERIFY_STRICT enables peer certificate verification.
+                // loadDefaultCAs is false because the bundled OpenSSL build does not ship a CA
+                // bundle; instead we load the platform-native trust store below.
+                _context = new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
+                                                  Poco::Net::Context::VERIFY_STRICT, 9, false);
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+                // Load the platform-native trust store (macOS keychain / Windows cert store /
+                // Linux ca-certificates) into the underlying OpenSSL SSL_CTX.
+                if (TrustStoreHelper::loadSystemCAs(_context->sslContext())) {
+                    break;
+                }
+                LOG_ERROR(_logger, "Failed to load system CAs, peer verification may fail");
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
@@ -196,7 +208,11 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
 
         uri = Poco::URI(url);
 
-        createSession(uri);
+        outputExitInfo = createSession(uri);
+        if (!outputExitInfo) {
+            LOG_WARN(_logger, "Failed to create session for job " << jobId() << " " << uri.toString());
+            break;
+        }
 
         try {
             outputExitInfo = canRun();
@@ -330,7 +346,7 @@ void AbstractNetworkJob::abort() {
     abortSession();
 }
 
-void AbstractNetworkJob::createSession(const Poco::URI &uri) {
+ExitInfo AbstractNetworkJob::createSession(const Poco::URI &uri) {
     const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
@@ -338,20 +354,33 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
         clearSession();
     }
 
-    _session.reset(new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context));
+    try {
+        _session.reset(new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context));
+    } catch (Poco::Exception &e) {
+        LOG_WARN(_logger,
+                 "Failed to create HTTPS session for job " << jobId() << " (" << uri.toString() << "): " << errorText(e));
+        return {ExitCode::NetworkError, ExitCause::Unknown};
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger,
+                 "Failed to create HTTPS session for job " << jobId() << " (" << uri.toString() << "): " << errorText(e));
+        return {ExitCode::NetworkError, ExitCause::Unknown};
+    }
 
     if (_customTimeout) {
         _session->setTimeout(Poco::Timespan(_customTimeout, 0));
     }
 
     // Set proxy params
-    if (Proxy::instance()->proxyConfig().type() == ProxyType::HTTP) {
-        _session->setProxy(Proxy::instance()->proxyConfig().hostName(),
-                           static_cast<Poco::UInt16>(Proxy::instance()->proxyConfig().port()));
-        if (Proxy::instance()->proxyConfig().needsAuth()) {
-            _session->setProxyCredentials(Proxy::instance()->proxyConfig().user(), Proxy::instance()->proxyConfig().token());
+    if (ParametersCache::instance()->parameters().proxyConfig().type() == ProxyType::HTTP) {
+        _session->setProxy(ParametersCache::instance()->parameters().proxyConfig().hostName(),
+                           static_cast<Poco::UInt16>(ParametersCache::instance()->parameters().proxyConfig().port()));
+        if (ParametersCache::instance()->parameters().proxyConfig().needsAuth()) {
+            _session->setProxyCredentials(ParametersCache::instance()->parameters().proxyConfig().user(),
+                                          ParametersCache::instance()->parameters().proxyConfig().pwd());
         }
     }
+
+    return ExitCode::Ok;
 }
 
 void AbstractNetworkJob::clearSession() {
@@ -458,6 +487,7 @@ void AbstractNetworkJob::setHeaders(Poco::Net::HTTPRequest &req) {
     }
     if (scope() != Scope::None) req.add("ik-client-scope", toString(scope()));
     if (!context().empty()) req.add("ik-client-context", context());
+    if (const std::string appUID = ParmsDb::appUID(); !appUID.empty()) req.add("ik-client-app-id", appUID);
 }
 
 ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
@@ -583,7 +613,7 @@ bool AbstractNetworkJob::isError500(const Poco::Net::HTTPResponse::HTTPStatus ht
     shouldRetry = false;
     switch (httpErrorCode) {
         case Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY:
-            // Retry only if the job is an uploadSessionChunckJob, as 502 error can be due to a GATEWAY error which can be caused
+            // Retry only if the job is an uploadSessionChunkJob, as 502 error can be due to a GATEWAY error which can be caused
             // by poor network connexion dropping during the upload of a big file. In this case, retrying can help to complete the
             // upload.
             shouldRetry = dynamic_cast<UploadSessionChunkJob *>(this) != nullptr;
@@ -676,7 +706,9 @@ ExitInfo AbstractNetworkJob::followRedirect() {
 
     // Follow redirection
     LOG_DEBUG(_logger, "Request " << jobId() << ", following redirection: " << redirectUrl);
-    createSession(uri);
+    if (const auto exitInfo = createSession(uri); !exitInfo) {
+        return exitInfo;
+    }
 
     if (const auto exitInfo = sendRequest(uri); !exitInfo) {
         return exitInfo;

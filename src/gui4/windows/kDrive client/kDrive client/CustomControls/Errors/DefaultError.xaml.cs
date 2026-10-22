@@ -45,7 +45,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             this.InitializeComponent();
             Error = error;
             UpdateCard();
-            Logger.Log(Logger.Level.Error, $"DefaultError displayed: {Error?.ToString() ?? "null"}");
+            Logger.LogError($"DefaultError displayed: {Error?.ToString() ?? "null"}",
+                "DefaultError: Default error control displayed");
         }
         private void UpdateCard()
         {
@@ -83,7 +84,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                     }
                     catch (Exception ex)
                     {
-                        Logger.Log(Logger.Level.Warning, $"Failed to get property {prop.Name} from Error: {ex.Message}");
+                        Logger.LogWarning($"Failed to get property {prop.Name} from Error: {ex.Message}", "DefaultError::UpdateCard failed");
                     }
                 }
             }
@@ -96,7 +97,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 control.IsEnabled = false;
             if (!await Launcher.LaunchUriAsync(App.Constants.kSuite.HelpUri))
             {
-                Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
+                Logger.LogError("Failed to launch HelpDesk URI.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
             await Task.Delay(1000);

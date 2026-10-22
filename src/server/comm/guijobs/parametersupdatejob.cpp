@@ -26,8 +26,9 @@ static const auto inParamsParametersInfo = "parametersInfo";
 
 namespace KDC {
 
-ParametersUpdateJob::ParametersUpdateJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                         const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
+ParametersUpdateJob::ParametersUpdateJob(const std::shared_ptr<CommManager> commManager, const int requestId,
+                                         const Poco::DynamicStruct &inParams,
+                                         const std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::PARAMETERS_UPDATE;
 }
@@ -35,7 +36,7 @@ ParametersUpdateJob::ParametersUpdateJob(std::shared_ptr<CommManager> commManage
 ExitInfo ParametersUpdateJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in ParametersUpdateJob::readParamValue: error=";
     try {
-        readParamValue(inParamsParametersInfo, _parametersInfo, dynamicVar2Struct<ParametersInfo>);
+        readParamValue(inParamsParametersInfo, _parameters, dynamicVar2Struct<Parameters>);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
@@ -50,7 +51,7 @@ ExitInfo ParametersUpdateJob::deserializeInputParms() {
 }
 
 ExitInfo ParametersUpdateJob::process() {
-    return _commManager->appServer().updateParametersAndPropagateChanges(_parametersInfo);
+    return _commManager->appServer().updateParametersAndPropagateChanges(_parameters);
 }
 
 } // namespace KDC

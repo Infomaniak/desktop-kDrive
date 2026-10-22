@@ -7,7 +7,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
 from conan.tools.files import copy, replace_in_file
-from conan.tools.scm import Git
+from conan.tools.scm import Git, Version
 from conan.tools.system import package_manager
 
 required_conan_version = ">=2"
@@ -28,9 +28,9 @@ class SentryNativeConan(ConanFile):
 
     options = {
         "shared": [True, False],
-        "qt_version": ["6.2.3", "6.5.3", "6.8.3"],
+        "qt_version": ["6.2.3", "6.12.0"],
     }
-    default_options = {"shared": True, "qt_version": "6.2.3"}
+    default_options = {"shared": True, "qt_version": "6.12.0"}
 
     @property
     def _is_linux_arm(self):
@@ -84,6 +84,13 @@ class SentryNativeConan(ConanFile):
             "Unable to detect a supported package manager for Linux system package checks. "
             "Continuing without strict validation."
         )
+
+    def build_requirements(self):
+        # Qt >= 6.12 requires CMake >= 3.25 to be consumed via find_package()
+        # (checked in QtPublicCMakeVersionHelpers.cmake). Provide a compatible CMake
+        # instead of relying on the system one (e.g. 3.22.1 on the CI runners).
+        if Version(str(self.options.qt_version)) >= "6.12.0":
+            self.tool_requires("cmake/[>=3.25 <4]")
 
     def requirements(self):
         # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"

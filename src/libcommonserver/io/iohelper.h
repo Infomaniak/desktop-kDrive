@@ -55,6 +55,7 @@ static constexpr std::string_view pinStateExcluded("E");
 } // namespace litesync_attrs
 #endif
 
+class CacheDirectory;
 struct FileStat;
 
 struct IoHelper {
@@ -88,9 +89,19 @@ struct IoHelper {
             EnumEnd
         };
 
-        static bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
-        static ExitInfo checkDirectoryIteratorInterruption(bool endOfDir, IoError ioError, const DirectoryEntry &entry,
-                                                           bool directoryIterationException = false);
+        static ExitInfo toExitInfo(const IoError ioError,
+                                   const ExitInfo &defaultExitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
+
+        static PathCheckOption getDefaultPathCheckOption() noexcept {
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+            return PathCheckOption::Insensitive;
+#elif defined(KD_LINUX)
+            return PathCheckOption::Sensitive;
+#else
+            static_assert(false, "Unknown platform");
+            return PathCheckOption::Insensitive;
+#endif
+        }
 
         IoHelper() = default;
 
@@ -98,7 +109,6 @@ struct IoHelper {
         static IoError stdError2ioError(int error) noexcept;
         static IoError stdError2ioError(const std::error_code &ec) noexcept;
         static IoError posixError2ioError(int error) noexcept;
-        static std::string ioError2StdString(IoError ioError) noexcept;
 
         //! Get the item type of the item indicated by `path`.
         //! Hardlinks are not supported
@@ -109,6 +119,9 @@ struct IoHelper {
             See isExpectedError for the definition of an expected error.
         */
         [[nodiscard]] static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
+        [[nodiscard]] static bool getItemTypeAndProcessIoError(
+                const SyncPath &path, ItemType &itemType,
+                const std::source_location &location = std::source_location::current()) noexcept;
 
         //! Retrieves the node identifier of the item indicated by a file system path.
         /*!
@@ -126,7 +139,8 @@ struct IoHelper {
          successfully retrieved, nullptr otherwise.
          !!! For a symlink, filestat.nodeType is set with the type of the target !!!
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept;
@@ -138,18 +152,18 @@ struct IoHelper {
         //! Get the checksum of the file indicated by `path`.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
-         \param ifs is an input file stream used to read the file contents.
          \param checksum is set with the checksum of the file indicated by `path`, or empty on error.
+         \param chunkSize is the size of the chunks to be used for computing the checksum.
          \return the IoError representing the success or failure of the operation.
          */
-        static IoError getFileChecksum(const SyncPath &path, std::string &checksum) noexcept;
+        static IoError getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize = 0) noexcept;
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
          \param previousSize is a file size in bytes to be checked against.
          \param previousMtime is the previous modification date to be checked against.
-         \param previousBirthtime is the previous creation date to be checked against.
+         \param previousCreationTime is the previous creation date to be checked against.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param changed is a boolean set with true if the check is successful and the file has changed with respect to size or
          modification time. False otherwise.
@@ -184,8 +198,11 @@ struct IoHelper {
          \param path is the file system path indicating the item to check.
          \param exists is a boolean set with true if an item indicated by the path exists, false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
+
+         \note This method never sets ioError with `IoError::NoSuchFileOrDirectory`.
          */
         static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept;
 
@@ -193,10 +210,11 @@ struct IoHelper {
         /*!
          \param path is the file system path indicating the item to check.
          \param nodeId is node identifier that is checked against the identifier indicated by path.
-         \param exists is a boolean set with true if an item indicated by the path exists with the specified node identifier,
-         false otherwise.
+         \param existsWithSameId is a boolean set with true if an item indicated by the path exists with the specified node
+         identifier, false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
@@ -266,7 +284,25 @@ struct IoHelper {
         static bool createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept;
 
         static bool createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError) noexcept;
+
+        //! Read a Finder alias file.
+        /*!
+         \param aliasPath is the file system location of the alias file to read.
+         \param data is set with the alias data read from the alias file.
+         \param targetPath is set with the file system path of the target item.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
         static bool readAlias(const SyncPath &aliasPath, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept;
+
+        //! Check if a file is a Finder corrupted alias.
+        /*!
+         \param path is the file system location of the file to read.
+         \param isCorruptedAlias is true for a corrupted alias.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool checkForCorruptedAlias(const SyncPath &path, bool &isCorruptedAlias, IoError &ioError) noexcept;
 #endif
 
         //! Check if the item indicated by `path` is a directory.
@@ -324,6 +360,17 @@ struct IoHelper {
          */
         static bool deleteItem(const SyncPath &path) noexcept;
 
+        //! Remove an item located under the specified path.
+        //! If the function fails, the item is left unmodified and an error ExitInfo is returned.
+        //! If it succeeds, the item is removed from its original path and ExitCode::Ok is returned.
+        /*!
+         \param path is the file system path of the item to remove.
+         \param cacheDirectory holds the cache directory pointer. The item to delete is first moved to the cache directory before
+         being deleted.
+         \return ExitInfo.
+         */
+        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory) noexcept;
+
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.
         /*!
@@ -357,6 +404,18 @@ struct IoHelper {
          * \return true if no unexpected error occurred, false otherwise.
          */
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
+
+        //! Computes the canonical form of the parent directory of the indicated path, followed by the file name of the path.
+        // Only the parent directory is canonicalized, not the file name. The canonical form of a path is an absolute path with
+        // all symbolic links and relative path components resolved except for the file itself.
+        /*!
+         \param path is the file system path whose parent directory is to be canonicalized.
+         \param canonicalPath is set with the canonical form of the parent directory of path followed by the file name of path,
+         or left empty if an error occurred.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool getPathWithCanonicalParent(const SyncPath &path, SyncPath &canonicalPath, IoError &ioError) noexcept;
 
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
         //! If the destination item is a link, remove it before copying.
@@ -416,8 +475,8 @@ struct IoHelper {
          \return the 'status' extended attribute value.
          */
         static std::string statusXAttr(const bool isSyncing, const int16_t progress, const bool isHydrated) {
-            return (isSyncing ? std::string(litesync_attrs::statusHydrating) + std::to_string(progress)
-                              : (isHydrated ? std::string(litesync_attrs::statusOffline)
+            return (isHydrated ? std::string(litesync_attrs::statusOffline)
+                               : (isSyncing ? std::string(litesync_attrs::statusHydrating) + std::to_string(progress)
                                             : std::string(litesync_attrs::statusOnline)));
         }
 #endif
@@ -532,6 +591,15 @@ struct IoHelper {
         static IoError setFileDates(const KDC::SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                     bool symlink) noexcept;
 
+        //! Set the last modification date of the item indicated by `absoluteLocalPath`.
+        //! The creation date is left unchanged. Symlinks are not followed.
+        /*!
+         \param absoluteLocalPath is the file system path of the item.
+         \param lastModifiedTime is the modification date to be set.
+         \return IoError::Success if the process succeeds. An appropriate IoError otherwise.
+         */
+        static IoError setLastModifiedTime(const SyncPath &absoluteLocalPath, SyncTime lastModifiedTime) noexcept;
+
         static inline bool isLink(LinkType linkType) {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
                    (linkType == LinkType::FinderAlias && CommonUtility::isMac()) ||
@@ -576,9 +644,11 @@ struct IoHelper {
                                   IoError &ioError)>
                 _checkIfPathExistsSensitive;
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static std::function<bool(const SyncPath &path, NodeId &nodeId)> _getNodeId;
         static bool _checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
                                                   IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
+        static bool _getNodeIdFn(const SyncPath &path, NodeId &nodeId) noexcept;
         static bool _unsuportedFSLogged;
 
     private:
@@ -586,7 +656,15 @@ struct IoHelper {
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
 #if defined(KD_MACOS)
-        static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
+        /**
+         * @brief Check if a file with a given path is a symlink or an alias. Relies on the file's metadata; does not check if the
+         * alias is valid. To distinguish between the two cases, first test whether the file is a symbolic link.
+         * @param path The absolute path to the file.
+         * @param isLink A boolean value indicating whether the file is a symbolic link or a Finder alias.
+         * @param ioError holds the error returned when an underlying OS API call fails.
+         * @return true if the process succeeds, false otherwise.
+         */
+        static bool _checkIfItemIsSymLinkOrAlias(const SyncPath &path, bool &isLink, IoError &ioError) noexcept;
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
@@ -605,6 +683,8 @@ struct IoHelper {
         static std::mutex _initRightsWindowsApiMutex;
         static void initRightsWindowsApi();
 #endif
+
+        friend class TestIo;
 };
 
 } // namespace KDC

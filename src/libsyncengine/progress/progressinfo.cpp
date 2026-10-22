@@ -120,7 +120,7 @@ bool ProgressInfo::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
     return true;
 }
 
-bool ProgressInfo::setProgress(const SyncPath &path, int progress) {
+bool ProgressInfo::setProgress(const SyncPath &path, int16_t progress) {
     const std::scoped_lock lock(_mutex);
     const auto it = GetItemIterator(path);
     if (it == _currentItems.end() || it->second.empty()) {

@@ -41,13 +41,13 @@ namespace Infomaniak.kDrive.CustomControls
             Uri? trashUrl = ViewModel.SelectedSync?.Drive.GetWebTrashUri();
             if (trashUrl != null)
             {
-                Logger.Log(Logger.Level.Debug, $"TrashButton_Click: Launching trash URL: {trashUrl}");
+                Logger.LogDebug($"TrashButton_Click: Launching trash URL: {trashUrl}");
                 _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenTrashWeb);
                 await Windows.System.Launcher.LaunchUriAsync(trashUrl);
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "No sync selected or unable to get trash URL.");
+                Logger.LogError("No sync selected or unable to get trash URL.");
             }
         }
 
@@ -56,13 +56,13 @@ namespace Infomaniak.kDrive.CustomControls
             Uri? favoritesUrl = ViewModel.SelectedSync?.Drive.GetWebFavoritesUri();
             if (favoritesUrl != null)
             {
-                Logger.Log(Logger.Level.Debug, $"Launching favorites URL: {favoritesUrl}"); 
+                Logger.LogDebug($"Launching favorites URL: {favoritesUrl}");
                 _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenFavoritesWeb);
                 await Windows.System.Launcher.LaunchUriAsync(favoritesUrl);
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "No sync selected or unable to get favorites URL.");
+                Logger.LogError("No sync selected or unable to get favorites URL.");
             }
 
         }
@@ -72,37 +72,37 @@ namespace Infomaniak.kDrive.CustomControls
             Uri? sharedUrl = ViewModel.SelectedSync?.Drive.GetWebSharedUri();
             if (sharedUrl != null)
             {
-                Logger.Log(Logger.Level.Debug, $"Launching shared URL: {sharedUrl}");
+                Logger.LogDebug($"Launching shared URL: {sharedUrl}");
                 _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenSharedWeb);
                 await Windows.System.Launcher.LaunchUriAsync(sharedUrl);
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "No sync selected or unable to get shared URL.");
+                Logger.LogError("No sync selected or unable to get shared URL.");
             }
         }
 
-        private async void OpenDriveOnlineButton_Click(object sender, RoutedEventArgs e)
+        private async void OpenSyncOnlineButton_Click(object sender, RoutedEventArgs e)
         {
-            Uri? onlineDriveUrl = ViewModel.SelectedSync?.Drive.GetWebUri();
-            if (onlineDriveUrl != null)
+            Uri? onlineSyncUrl = ViewModel.SelectedSync?.GetWebUri();
+            if (onlineSyncUrl != null)
             {
-                Logger.Log(Logger.Level.Debug, $"Launching URL: {onlineDriveUrl}");
+                Logger.LogDebug($"Launching URL: {onlineSyncUrl}");
                 _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenKDriveWeb);
-                await Windows.System.Launcher.LaunchUriAsync(onlineDriveUrl);
+                await Windows.System.Launcher.LaunchUriAsync(onlineSyncUrl);
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "No sync selected or unable to get URL.");
+                Logger.LogError("No sync selected or unable to get URL.");
             }
         }
 
         private void ProfilePictureBorder_Click(object sender, RoutedEventArgs e)
         {
             var frame = Utility.GetFrame(this);
-            if(frame is null)
+            if (frame is null)
             {
-                Logger.Log(Logger.Level.Warning, "ProfilePictureBorder_PointerPressed: Unable to find Frame for navigation.");
+                Logger.LogWarning("ProfilePictureBorder_PointerPressed: Unable to find Frame for navigation.");
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenUserSettings);
@@ -117,7 +117,7 @@ namespace Infomaniak.kDrive.CustomControls
             var frame = Utility.GetFrame(this);
             if (frame is null)
             {
-                Logger.Log(Logger.Level.Warning, "SyncBorder_Click: Unable to find Frame for navigation.");
+                Logger.LogWarning("SyncBorder_Click: Unable to find Frame for navigation.");
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenSyncSettings);

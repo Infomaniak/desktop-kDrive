@@ -34,7 +34,8 @@ class BaseSync {
         BaseSync() = default;
         BaseSync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath,
                  const std::filesystem::path &targetPath, const NodeId &targetNodeId = NodeId(), bool supportVfs = false,
-                 VirtualFileMode virtualFileMode = VirtualFileMode::Off, const std::string &navigationPaneClsid = std::string());
+                 VirtualFileMode virtualFileMode = VirtualFileMode::Off, const std::string &navigationPaneClsid = std::string(),
+                 SyncTime vfsRegisteredAt = 0);
         BaseSync(const BaseSync &sync) noexcept = default;
         BaseSync(BaseSync &&other) noexcept = default;
         BaseSync &operator=(const BaseSync &other) noexcept = default;
@@ -55,6 +56,8 @@ class BaseSync {
         [[nodiscard]] bool supportVfs() const { return _supportVfs; }
         void setVirtualFileMode(const VirtualFileMode virtualFileMode) { _virtualFileMode = virtualFileMode; }
         [[nodiscard]] VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
+        void setVfsRegisteredAt(const SyncTime vfsRegisteredAt) { _vfsRegisteredAt = vfsRegisteredAt; }
+        [[nodiscard]] SyncTime vfsRegisteredAt() const { return _vfsRegisteredAt; }
         void setNavigationPaneClsid(const std::string &navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
         [[nodiscard]] const std::string &navigationPaneClsid() const { return _navigationPaneClsid; }
 
@@ -119,6 +122,7 @@ class BaseSync {
         std::filesystem::path _targetPath;
         NodeId _targetNodeId;
         bool _supportVfs{false};
+        SyncTime _vfsRegisteredAt{0};
         VirtualFileMode _virtualFileMode{VirtualFileMode::Off};
         std::string _navigationPaneClsid;
 };
@@ -131,7 +135,7 @@ class Sync : public BaseSync {
              bool supportVfs = false, VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const std::filesystem::path &dbPath = std::filesystem::path(), bool hasFullyCompleted = false,
              const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
-             int64_t listingCursorTimestamp = 0, bool toDelete = false);
+             int64_t listingCursorTimestamp = 0, bool toDelete = false, SyncTime vfsRegisteredAt = 0);
 
         [[nodiscard]] const NodeId &localNodeId() const { return _localNodeId; }
         void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }

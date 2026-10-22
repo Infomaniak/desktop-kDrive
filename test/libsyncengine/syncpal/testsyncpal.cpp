@@ -19,12 +19,12 @@
 #include "testsyncpal.h"
 #include "syncpal/tmpblacklistmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 
@@ -46,7 +46,7 @@ void TestSyncPal::setUp() {
 
     std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -72,15 +72,10 @@ void TestSyncPal::setUp() {
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
-                                         KDRIVE_VERSION_STRING);
+    auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    _syncPal = std::make_shared<SyncPal>(vfs, sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal->setLocalPath(std::filesystem::weakly_canonical(_localPath));
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
@@ -458,7 +453,7 @@ bool TestSyncPal::exec_case_6_4() {
         return false;
     }
 
-    MoveJob job(_syncPal->vfs(), _driveDbId, localCasePath, driveIdT.value(), driveIdN.value(), Str("w"));
+    MoveJob job(_driveDbId, localCasePath, driveIdT.value(), driveIdN.value(), Str("w"));
     job.runSynchronously();
 
     return true;
@@ -488,19 +483,194 @@ bool TestSyncPal::check_case_6_4() {
 }
 
 void TestSyncPal::testWipeVirtualFiles() {
-#if !defined(KD_LINUX)
-    const SyncPath placeholderPath = _localTempDir.path() / "dehydrated_placeholder.txt";
+    auto vfsMock = std::dynamic_pointer_cast<MockVfs<VfsOff>>(_syncPal->vfs());
+
+    const SyncPath localFilePath = _localTempDir.path() / "file.txt";
+    { std::ofstream localFile{localFilePath}; }
+
+    // Vfs is OFF: the file should be kept.
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::exists(localFilePath, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Simulate an activated Vfs and the file is a hydrated placeholder: the file should be kept.
+    vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = true;
+
+        return ExitCode::Ok;
+    });
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    CPPUNIT_ASSERT(std::filesystem::exists(localFilePath, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Simulate an activated Vfs and the file is not a placeholder: the file should be kept.
+    vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = false;
+        vfsStatus.isHydrated = false;
+
+        return ExitCode::Ok;
+    });
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    CPPUNIT_ASSERT(std::filesystem::exists(localFilePath, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Simulate an activated Vfs and the item is a folder: the item should be kept.
+    const SyncPath localFolderPath = _localTempDir.path() / "folder";
+    CPPUNIT_ASSERT(std::filesystem::create_directory(localFolderPath, ec));
+    CPPUNIT_ASSERT(!ec);
+    vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+
+        return ExitCode::Ok;
+    });
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    CPPUNIT_ASSERT(std::filesystem::exists(localFolderPath, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Simulate an activated Vfs and the file is a dehydrated placeholder: the file should be wiped.
+    { std::ofstream localFile{localFilePath}; }
+    vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+
+        return ExitCode::Ok;
+    });
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    CPPUNIT_ASSERT(!std::filesystem::exists(localFilePath, ec));
+    CPPUNIT_ASSERT(!ec);
+}
+
+void TestSyncPal::testHandleAccessUnknownErrorItem() {
+    // A regular file.
     {
-        std::ofstream placeholder{placeholderPath};
-        auto ioError = IoError::Success;
-        testhelpers::setDehydratedPlaceholderStatus(placeholderPath, ioError);
+        const SyncPath path = _syncPal->localPath() / "regular_file.txt";
+        {
+            std::ofstream ofs(path);
+            ofs << "Some content.\n";
+        }
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
+
+        SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), path);
+
+        CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(
+                DbNode(_syncPal->syncDb()->rootNode().nodeId(), path.filename(), path.filename(), nodeId, nodeId,
+                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0)));
+
+        _syncPal->clearTmpBlacklist();
+
+        CPPUNIT_ASSERT(_syncPal->handleAccessUnknownErrorItem(relativePath, true));
+
+        // The file should still exist
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::exists(path, ec));
+        CPPUNIT_ASSERT(!ec);
+
+        // The file should be blacklisted
+        CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local));
+
+        // The file node should still exist in the DB
+        std::optional<NodeId> tmpNodeId;
+        auto found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->id(ReplicaSide::Local, relativePath, tmpNodeId, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(nodeId, *tmpNodeId);
+    }
+
+#if defined(KD_MACOS)
+    // A MacOSX Finder alias.
+    {
+        const SyncPath path = _syncPal->localPath() / "regular_alias.txt";
+        const SyncPath targetPath = _syncPal->localPath() / "dummy.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+        }
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
+
+        SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), path);
+
+        CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(
+                DbNode(_syncPal->syncDb()->rootNode().nodeId(), path.filename(), path.filename(), nodeId, nodeId,
+                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0)));
+
+        _syncPal->clearTmpBlacklist();
+
+        CPPUNIT_ASSERT(_syncPal->handleAccessUnknownErrorItem(relativePath, true));
+
+        // The alias should still exist
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::exists(path, ec));
+        CPPUNIT_ASSERT(!ec);
+
+        // The alias should be blacklisted
+        CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local));
+
+        // The alias node should still exist in the DB
+        std::optional<NodeId> tmpNodeId;
+        auto found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->id(ReplicaSide::Local, relativePath, tmpNodeId, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(nodeId, *tmpNodeId);
+    }
+
+    // A corrupted MacOSX Finder alias.
+    {
+        const SyncPath path = _syncPal->localPath() / "corrupted_alias.txt";
+        const SyncPath targetPath = _syncPal->localPath() / "dummy.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+        }
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        // Corrupt the alias
+        {
+            std::ofstream ofs(path);
+            ofs << "qwertz";
+        }
+
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
+
+        SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), path);
+
+        _syncPal->clearTmpBlacklist();
+
+        CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(
+                DbNode(_syncPal->syncDb()->rootNode().nodeId(), path.filename(), path.filename(), nodeId, nodeId,
+                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 0)));
+
+        CPPUNIT_ASSERT(_syncPal->handleAccessUnknownErrorItem(relativePath, true));
+
+        // The alias should have been deleted
+        std::error_code ec;
+        CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
+        CPPUNIT_ASSERT(!ec);
+
+        // The alias should NOT be blacklisted
+        CPPUNIT_ASSERT(!_syncPal->isTmpBlacklisted(relativePath, ReplicaSide::Local));
+
+        // The alias node should have been deleted from the DB
+        std::optional<NodeId> tmpNodeId;
+        auto found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->id(ReplicaSide::Local, relativePath, tmpNodeId, found));
+        CPPUNIT_ASSERT(!found);
     }
 #endif
-    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
-#if !defined(KD_LINUX)
-    std::error_code ec;
-    CPPUNIT_ASSERT(!std::filesystem::exists(placeholderPath, ec));
-    CPPUNIT_ASSERT(!ec);
-#endif
 }
+
 } // namespace KDC

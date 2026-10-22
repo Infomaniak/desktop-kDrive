@@ -19,20 +19,24 @@
 #pragma once
 
 #include "parmslib.h"
-#include "parameters.h"
-#include "user.h"
-#include "account.h"
-#include "sync.h"
-#include "exclusiontemplate.h"
+#include "libcommon/data/parameters.h"
+#include "libcommon/data/user.h"
+#include "libcommon/data/account.h"
+#include "libcommon/data/sync.h"
+#include "libcommon/data/exclusiontemplate.h"
+
+#include "syncfolderrule.h"
+
 #if defined(KD_MACOS)
-#include "exclusionapp.h"
+#include "libcommon/data/exclusionapp.h"
 #endif
-#include "error.h"
+#include "libcommon/data/error.h"
 #include "migrationselectivesync.h"
 
 #include "libcommonserver/db/db.h"
 
 #include "libcommon/data/drive.h"
+#include "libcommonserver/data/serverparameters.h"
 
 namespace KDC {
 
@@ -55,8 +59,8 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool initData();
 
-        bool updateParameters(const Parameters &parameters, bool &found);
-        bool selectParameters(Parameters &parameters, bool &found);
+        bool updateParameters(const ServerParameters &parameters, bool &found);
+        bool selectParameters(ServerParameters &parameters, bool &found);
 
         bool insertUser(const User &user);
         bool updateUser(const User &user, bool &found);
@@ -115,6 +119,13 @@ class PARMS_EXPORT ParmsDb : public Db {
             return updateAllExclusionTemplates(false, exclusionTemplateList);
         };
 
+
+        bool insertSyncFolderRule(const SyncFolderRule &syncFolderRule, bool &constraintError);
+        bool updateSyncFolderRule(const SyncFolderRule &syncFolderRule, bool &found);
+        bool deleteSyncFolderRule(const SyncPath &syncPath, bool &found);
+        bool selectAllSyncFolderRules(std::vector<SyncFolderRule> &syncFolderRuleList);
+
+
 #if defined(KD_MACOS)
         bool insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError);
         bool updateExclusionApp(const ExclusionApp &exclusionApp, bool &found);
@@ -143,6 +154,10 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
+        /// @brief Returns the application UID stored in the app_state table. Returns an empty string if it cannot be
+        /// retrieved (DB not initialized, DB error, or key not found).
+        static std::string appUID();
+
         bool selectAppState(AppStateKey key, AppStateValue &value, bool &found);
         bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found); // update or insert
 
@@ -162,6 +177,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool createAppState();
         bool prepareAppState();
+        bool createSyncFolderRule();
 
         void fillSyncWithQueryResult(Sync &sync, const char *requestId);
 
@@ -170,6 +186,17 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeListPath,
                                                   std::vector<std::string> &fileDefaultExclusionTemplates);
         bool insertUserTemplateNormalizations(const std::string &fromVersion);
+
+        /**
+         * This function reads the sync folder rules from a .csv file and populates the provided vector with the rules.
+         * @param syncFolderRulesPath  The path to the .csv file containing the sync folder rules.
+         * @param fileSyncFolderRules  The vector to be populated with the sync folder rules.
+         * @return true if the sync folder rules are successfully read from the file, false otherwise
+         */
+        bool getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath,
+                                        std::vector<SyncFolderRule> &fileSyncFolderRules) const;
+        bool updateSyncFolderRules();
+
 
 #if defined(KD_MACOS)
         bool updateExclusionApps();

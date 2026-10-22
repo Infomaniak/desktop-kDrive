@@ -62,6 +62,7 @@ AddDriveLocalFolderWidget::AddDriveLocalFolderWidget(std::shared_ptr<ClientGui> 
 }
 
 void AddDriveLocalFolderWidget::setDrive(const QString &driveName) {
+    _titleLabel->setTextFormat(Qt::PlainText);
     _titleLabel->setText(tr("Location of your %1 kDrive").arg(driveName));
 }
 
@@ -254,14 +255,17 @@ void AddDriveLocalFolderWidget::initUI() {
 }
 
 void AddDriveLocalFolderWidget::updateUI() {
-    if (const bool ok = !_localFolderPath.isEmpty(); !ok) return;
+    if (_localFolderPath.isEmpty()) return;
 
     const QDir dir(_localFolderPath);
+    _folderNameLabel->setTextFormat(Qt::PlainText);
     _folderNameLabel->setText(dir.dirName());
-    _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath));
+    _folderPathLabel->setText(
+            QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath.toHtmlEscaped()));
 
     if (_localFolderPath != _defaultLocalFolderPath) {
-        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
+        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive")
+                                    .arg(dir.dirName().toHtmlEscaped()));
         _infoWidget->setVisible(true);
     } else {
         _infoWidget->setVisible(false);
@@ -298,6 +302,10 @@ void AddDriveLocalFolderWidget::selectFolder(const QString &startDirPath) {
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (!dirPath.isEmpty()) {
         if (!GuiUtility::warnOnInvalidSyncFolder(dirPath, _gui->syncInfoMap(), this)) {
+            return;
+        }
+
+        if (!GuiUtility::validateLocalFolderForNewSync(dirPath, this)) {
             return;
         }
 
@@ -357,6 +365,12 @@ void AddDriveLocalFolderWidget::onBackButtonTriggered(bool checked) {
 void AddDriveLocalFolderWidget::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
     MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "continueButton");
+
+    if (_localFolderPath.isEmpty()) {
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Please select a folder to continue."), QMessageBox::Ok, this);
+        msgBox.exec();
+        return;
+    }
 
     emit terminated();
 }

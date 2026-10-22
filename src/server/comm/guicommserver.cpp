@@ -45,6 +45,7 @@ bool GuiCommChannel::sendMessage(const CommString &message) {
 
 bool GuiCommChannel::canReadMessage() {
     fetchDataToBuffer();
+    const std::scoped_lock lock(_readBufferMutex);
     _validJsonInBuffer = containsCompleteMessage(_readBuffer, _inBufferJsonEndIndex);
     return _validJsonInBuffer;
 }
@@ -53,7 +54,7 @@ CommString GuiCommChannel::readMessage() {
     if (!canReadMessage()) {
         return Str("");
     }
-
+    const std::scoped_lock lock(_readBufferMutex);
     CommString message = _readBuffer.substr(0, _inBufferJsonEndIndex + 1);
     _readBuffer.erase(0, _inBufferJsonEndIndex + 1);
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
@@ -93,9 +94,10 @@ bool GuiCommChannel::containsCompleteMessage(const CommString &message, size_t &
 }
 
 void GuiCommChannel::fetchDataToBuffer() {
-    while (bytesAvailable() > 0) {
+    while (isReadable()) {
         CommChar data[1024];
-        if (uint64_t charRead = readData(data, (std::min)(bytesAvailable(), static_cast<uint64_t>(1024))); charRead > 0) {
+        if (uint64_t charRead = readData(data, 1024); charRead > 0) {
+            const std::scoped_lock lock(_readBufferMutex);
             _readBuffer.append(data, charRead);
         } else {
             break;

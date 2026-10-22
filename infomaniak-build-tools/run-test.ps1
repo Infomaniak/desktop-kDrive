@@ -41,6 +41,7 @@ if (-not (Test-Path $tester -PathType Leaf)) {
     exit 1
 }
 
+$env:QT_PLUGIN_PATH = $dir
 $testProcess = Start-Process -FilePath ./$tester -NoNewWindow -Wait -PassThru
 
 if ($testProcess.ExitCode -ne 0) {

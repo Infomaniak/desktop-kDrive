@@ -111,7 +111,7 @@ conan_build_folder="$BUILD_DIR/conan"
 conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
 export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder" --clean-cache
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder" --clean-cache --update
 conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
 if [ ! -f "$conan_toolchain_file" ]; then
@@ -123,6 +123,12 @@ fi
 source "$BASEPATH/infomaniak-build-tools/conan/common-utils.sh"
 QTDIR="$(find_qt_conan_path "$conan_build_folder")"
 export QTDIR
+
+# Ensure cmake is the one provided by Conan: Qt >= 6.12 requires CMake >= 3.25 to be
+# consumed via find_package() (see QtPublicCMakeVersionHelpers.cmake), which the system
+# CMake (e.g. 3.22.1 on the CI runner) does not satisfy.
+# shellcheck disable=SC1091
+source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 
 
 extract_debug () {
@@ -217,3 +223,4 @@ if [ "$use_ccache" -eq 1 ] && command -v ccache >/dev/null 2>&1; then
 fi
 
 cp "$BASEPATH/sync-exclude-linux.lst" "$BUILD_DIR/bin/sync-exclude.lst"
+cp "$BASEPATH/sync-folder-rules-linux.csv" "$BUILD_DIR/bin/sync-folder-rules.csv"

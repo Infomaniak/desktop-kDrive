@@ -60,5 +60,9 @@
         <!-- NavigationView -->
         <controls:AppNavigationView x:Name="NavView"
                                     Grid.Row="1" />
+
+        <!-- Hosts the "too many deletes" dialogs; it has no visual footprint. -->
+        <controls:ManyDeletesDialogHost x:Name="ManyDeletesDialogHost"
+                                        Grid.Row="1" />
     </Grid>
 </Window>

@@ -32,7 +32,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 return intValue == 0;
             }
-            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedBooleanConverter: value is not a boolean.");
+            Logger.LogFatal("BooleanToInvertedBooleanConverter: value is not a boolean.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
 
@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 return !boolValue;
             }
-            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedBooleanConverter: value is not a boolean.");
+            Logger.LogFatal("BooleanToInvertedBooleanConverter: value is not a boolean.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
     }

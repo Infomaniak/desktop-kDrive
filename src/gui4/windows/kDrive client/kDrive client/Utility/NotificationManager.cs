@@ -56,7 +56,8 @@ namespace Infomaniak.kDrive
         {
             if (Availability != AppNotificationAvailability.Available)
             {
-                Logger.Log(Logger.Level.Info, $"App notifications are not available: {Availability} ({AppNotificationManager.Default.Setting})");
+                Logger.LogWarning($"App notifications are not available: {Availability}",
+                    "NotificationManager: App notifications are unavailable");
                 return;
             }
 
@@ -65,7 +66,7 @@ namespace Infomaniak.kDrive
             // be launched to handle the notification.
             if (!m_isRegistered)
             {
-                Logger.Log(Logger.Level.Info, "Registering for notifications");
+                Logger.LogInfo("Registering for notifications");
                 AppNotificationManager notificationManager = AppNotificationManager.Default;
                 notificationManager.NotificationInvoked += OnNotificationInvoked;
                 notificationManager.Register();
@@ -74,7 +75,7 @@ namespace Infomaniak.kDrive
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "Already registered for notifications");
+                Logger.LogWarning("Already registered for notifications");
             }
 
 
@@ -82,7 +83,7 @@ namespace Infomaniak.kDrive
 
         private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
         {
-            Logger.Log(Logger.Level.Info, $"Notification activated with arguments: {args.Argument}");
+            Logger.LogInfo($"Notification activated with arguments: {args.Argument}");
             AppModel.UIThreadDispatcher.TryEnqueue(() => (App.Current as App)?.CurrentWindow?.AppWindow.Show());
         }
 
@@ -106,7 +107,7 @@ namespace Infomaniak.kDrive
                 Init(); // The Notifications might have been enabled after the app start in system settings
                 if (!m_isRegistered)
                 {
-                    Logger.Log(Logger.Level.Info, "Attempted to show a notification while not registered. Call Init() first.");
+                    Logger.LogWarning("Attempted to show a notification while not registered. Call Init() first.");
                     return 0;
                 }
             }
@@ -115,14 +116,16 @@ namespace Infomaniak.kDrive
             const int maxMessageLength = 5096;
             if (title.Length > maxTitleLength)
             {
-                Logger.Log(Logger.Level.Warning, $"Notification title is too long and will be truncated to {maxTitleLength} characters.");
+                Logger.LogWarning($"Notification title is too long and will be truncated to {maxTitleLength} characters.",
+                    "NotificationManager: Notification title exceeds length limit");
                 title = title.Substring(0, maxTitleLength);
                 title += "…";
             }
 
             if (message.Length > maxMessageLength)
             {
-                Logger.Log(Logger.Level.Warning, $"Notification message is too long and will be truncated to {maxMessageLength} characters.");
+                Logger.LogWarning($"Notification message is too long and will be truncated to {maxMessageLength} characters.",
+                    "NotificationManager: Notification message exceeds length limit");
                 message = message.Substring(0, maxMessageLength);
                 message += "…";
             }
@@ -132,9 +135,17 @@ namespace Infomaniak.kDrive
             .AddText(message)
             .BuildNotification();
             appNotification.ExpiresOnReboot = true;
-            AppNotificationManager.Default.Show(appNotification);
+            try
+            {
+                AppNotificationManager.Default.Show(appNotification);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to show notification: {ex.Message}", "Failed to show notification.");
+            }
+
             if (appNotification.Id == 0)
-                Logger.Log(Logger.Level.Error, "Failed to show notification.");
+                Logger.LogError("Failed to show notification.");
 
             return appNotification.Id; // return the Id of the notification (0 if it failed to send)
         }
@@ -147,7 +158,8 @@ namespace Infomaniak.kDrive
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to open notification settings: {ex.Message}");
+                Logger.LogError($"Failed to open notification settings: {ex.Message}",
+                    "NotificationManager: Failed to open notification settings");
             }
         }
     }

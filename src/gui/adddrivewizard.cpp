@@ -185,16 +185,16 @@ void AddDriveWizard::startNextStep(bool backward) {
     } else if (_currentStep == LocalFolder) {
         _addDriveLocalFolderWidget->setDrive(QString::fromStdString(_driveInfo.name()));
         _addDriveLocalFolderWidget->setLiteSync(_liteSync);
-        QString localFolderPath = QString::fromStdString(Theme::instance()->appName());
-        if (!QDir(localFolderPath).isAbsolute()) {
-            localFolderPath = QDir::homePath() + dirSeparator + localFolderPath;
-        }
         QString goodLocalFolderPath;
         QString error;
-        ExitCode exitCode = GuiRequests::findGoodPathForNewSync(localFolderPath, goodLocalFolderPath, error);
-        if (exitCode != ExitCode::Ok) {
+        if (const auto exitCode =
+                    GuiRequests::findGoodPathForNewSync(QString::fromStdString(_driveInfo.name()), goodLocalFolderPath, error);
+            exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::findGoodPathForNewSyncFolder : " << error;
-            goodLocalFolderPath = localFolderPath;
+            CustomMessageBox msgBox(
+                    QMessageBox::Warning,
+                    tr("Failed to find a valid local folder to create your synchronisation. Please, select a folder manually."),
+                    QMessageBox::Ok, this);
         }
 
         _addDriveLocalFolderWidget->setLocalFolderPath(goodLocalFolderPath);
@@ -223,7 +223,8 @@ bool AddDriveWizard::addSync(const UserDbId userDbId, const AccountId accountId,
             KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
         } else {
             qCWarning(lcAddDriveWizard()) << "Failed to create local folder" << localFolderDir.path();
-            CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to create local folder %1").arg(localFolderDir.path()),
+            CustomMessageBox msgBox(QMessageBox::Warning,
+                                    tr("Failed to create local folder %1").arg(localFolderDir.path().toHtmlEscaped()),
                                     QMessageBox::Ok, this);
             msgBox.exec();
             return false;
@@ -267,7 +268,7 @@ void AddDriveWizard::onStepTerminated(const bool next) {
             if (found) {
                 CustomMessageBox msgBox(QMessageBox::Warning,
                                         tr("The kDrive %1 is already synchronized on this computer. Continue anyway?")
-                                                .arg(QString::fromStdString(_driveInfo.name())),
+                                                .arg(QString::fromStdString(_driveInfo.name()).toHtmlEscaped()),
                                         QMessageBox::Yes | QMessageBox::No, this);
                 if (msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this)) != QMessageBox::Yes) {
                     stayCurrentStep = true;

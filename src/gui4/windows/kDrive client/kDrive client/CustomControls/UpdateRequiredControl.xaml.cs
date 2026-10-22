@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             this.InitializeComponent();
         }
-                private Visibility UpdateButtonVisibility(bool fetchingUpdate, AppVersion? availableUpdate)
+        private Visibility UpdateButtonVisibility(bool fetchingUpdate, AppVersion? availableUpdate)
         {
             if (fetchingUpdate)
                 return Visibility.Visible;
@@ -54,7 +54,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (!await UpdateManager.StartUpdate())
             {
-                Logger.Log(Logger.Level.Error, "Update process failed to start.");
+                Logger.LogError("Update process failed to start.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
             else

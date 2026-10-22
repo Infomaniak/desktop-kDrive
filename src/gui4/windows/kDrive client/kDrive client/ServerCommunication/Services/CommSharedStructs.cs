@@ -50,7 +50,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             }
             else
             {
-                Logger.Log(Logger.Level.Error, $"Property not found. Source property: {sourcepropertyName}, Target property: {targetpropertyName} (Source type: {source.GetType().FullName}, Target type: {target.GetType().FullName})");
+                Logger.LogError($"Property not found. Source property: {sourcepropertyName}, Target property: {targetpropertyName} (Source type: {source.GetType().FullName}, Target type: {target.GetType().FullName})",
+                    "ConversionHelper: Property not found");
             }
         }
     }
@@ -89,7 +90,14 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             {
                 target.Avatar = new byte[source.Avatar.Length];
             }
-            Array.Copy(source.Avatar, target.Avatar, source.Avatar.Length);
+            try
+            {
+                Array.Copy(source.Avatar, target.Avatar, source.Avatar.Length);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error copying Avatar: {ex.Message}", "ConversionHelper: Error copying Avatar");
+            }
         }
     }
 
@@ -126,7 +134,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             set
             {
                 _color = value;
-                Logger.Log(Logger.Level.Info, $"DriveInfo color for {Name} is {_color}");
+                Logger.LogInfo($"DriveInfo color for {Name} is {_color}");
             }
         }
 

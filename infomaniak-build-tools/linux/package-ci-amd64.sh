@@ -49,6 +49,7 @@ rm -rf "$app_dir/usr/lib/x86_64-linux-gnu/"
 rm -rf "$app_dir/usr/include/"
 
 cp "$base_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
+cp "$base_dir/sync-folder-rules-linux.csv" "$app_dir/usr/bin/sync-folder-rules.csv"
 cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
 
 cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"

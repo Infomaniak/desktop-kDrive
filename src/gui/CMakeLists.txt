@@ -6,7 +6,7 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Sql Widgets SvgWidgets)
 find_package(Qt6LinguistTools)
-find_package(Poco 1.13.3 REQUIRED Foundation Net)
+find_package(Poco 1.15.2 REQUIRED Foundation Net)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -185,6 +185,8 @@ set(final_src
 # list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 include(ECMAddAppIcon)
 
+message(STATUS "theme_dir=${theme_dir}")
+message(STATUS "APPLICATION_ICON_NAME=${APPLICATION_ICON_NAME}")
 file(GLOB_RECURSE KDRIVE_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon*")
 ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEBAR_ICONS}" OUTFILE_BASENAME "${APPLICATION_ICON_NAME}")
 

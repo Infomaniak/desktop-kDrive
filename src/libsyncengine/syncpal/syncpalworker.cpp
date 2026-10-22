@@ -175,7 +175,29 @@ void SyncPalWorker::checkForMassDeletions() const {
     }
 }
 
-ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
+ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int16_t trial) {
+    LOG_DEBUG(_logger, "Ensure Blacklist is propagated (trial " << trial + 1 << ")");
+
+    if (trial) {
+        LOG_DEBUG(_logger, "Restarting blacklist propagator");
+        UserActionScopedLock lock;
+        const std::chrono::milliseconds timeout(5000);
+        if (!lock.tryLock(_syncPal, timeout)) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
+                             "running, aborting.");
+            return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+        }
+
+        _isPaused = true;
+        if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
+            _isPaused = false;
+            return exitInfo;
+        }
+        _isPaused = false;
+    }
+
     // Check if any of the Blacklisted directory still in the db, if yes, restart the blacklist propagator.
     // It might happen if it as previously been stopped or encountered a locked directory / file.
     NodeSet blacklistedNodes;
@@ -185,6 +207,19 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
         return exitInfo;
     }
 
+    // Remove temporary blacklisted nodes from the list of blacklisted nodes.
+    NodeSet tmpBlacklistedNodes;
+    if (ExitInfo exitInfo =
+                SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, tmpBlacklistedNodes);
+        !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncNodeCache::syncNodes");
+        return exitInfo;
+    }
+
+    (void) std::erase_if(blacklistedNodes,
+                         [&tmpBlacklistedNodes](const auto &value) { return tmpBlacklistedNodes.contains(value); });
+
+    // Check if any of the blacklisted nodes are still in the db.
     std::function<ExitInfo(const NodeSet &, bool &)> areBlacklistedNodesStillInDb = [this](const NodeSet &nodes, bool &found) {
         found = false;
         for (const auto &nodeId: nodes) {
@@ -205,54 +240,43 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
         return exitInfo;
     }
 
-    if (!found) return ExitCode::Ok;
-
-    LOG_WARN(_logger, "Blacklisted nodes still exist in SyncDb, restarting blacklist propagator");
-
-    {
-        UserActionScopedLock lock;
-        const std::chrono::milliseconds timeout(5000);
-        if (!lock.tryLock(_syncPal, timeout)) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
-                             "running, aborting.");
+    if (found) {
+        LOG_SYNCPAL_WARN(_logger, "Blacklisted nodes still exist in SyncDb");
+        if (trial >= 1) {
             return {ExitCode::DataError, ExitCause::BlackListPropagationError};
         }
-
-        _isPaused = true;
-        if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
-            _isPaused = false;
-            return exitInfo;
-        }
-        _isPaused = false;
-    }
-
-    if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
-        return exitInfo;
-    }
-
-    if (found) {
-        LOG_SYNCPAL_WARN(_logger, "Blacklisted nodes still exist after retry, giving up");
-        return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+        return ensureBlackListIsPropagated(trial + 1);
     }
 
     return ExitCode::Ok;
 }
 
-void SyncPalWorker::ensureMinimumPermission() {
-    std::function<void(SyncPath)> trySetFullAcess = [this](SyncPath path) {
-        if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
-            LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
-        } else {
-            LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
-        }
-    };
+void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
+    bool exists = false;
+    if (auto checkIfPathExistsError = IoError::Success;
+        !IoHelper::checkIfPathExists(path, exists, checkIfPathExistsError, IoHelper::getDefaultPathCheckOption())) {
+        LOGW_WARN(_logger, L"Failed to check if path exists - " << Utility::formatIoError(path, checkIfPathExistsError));
+        return;
+    }
 
+    if (!exists) return;
+
+    if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
+        const auto errorMsg = L"Failed to set full access rights - " + Utility::formatIoError(path, ioError);
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            LOGW_DEBUG(_logger, errorMsg);
+        } else {
+            LOGW_WARN(_logger, errorMsg);
+        }
+    } else {
+        LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
+    }
+}
+
+void SyncPalWorker::ensureMinimumPermission() {
     if (!_syncPal->isAdvancedSync()) {
-        trySetFullAcess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
-        trySetFullAcess(_syncPal->localPath() / Utility::sharedFolderName());
+        trySetFullAccess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
+        trySetFullAccess(_syncPal->localPath() / Utility::sharedFolderName());
     }
 }
 
@@ -786,75 +810,6 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
     return true;
 }
 
-bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId) {
-    // Ideally, this logic should be shared with ComputeFSOperationWorker::inferChangeFromDbNode,
-    // but for now it would require some refactoring to make it reusable, so we duplicate it here.
-    outLocalNodeId.reset();
-    FileStat fileStat;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(localAbsolutePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(localAbsolutePath, ioError));
-        return false;
-    }
-    if (ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_SYNCPAL_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(localAbsolutePath));
-        return false;
-    } else if (ioError == IoError::AccessDenied) {
-        LOGW_SYNCPAL_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(localAbsolutePath));
-        return false;
-    } else if (ioError != IoError::Success) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error accessing item: " << Utility::formatSyncPath(localAbsolutePath) << L": "
-                                                             << Utility::formatIoError(ioError));
-        return false;
-    }
-
-    outLocalNodeId = std::to_string(fileStat.inode);
-
-    DbNode dbNode;
-    bool found = false;
-    if (!_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::node for " << Utility::formatSyncPath(localAbsolutePath));
-        return false;
-    }
-
-    if (!found) {
-        return false;
-    }
-
-    if (dbNode.type() != fileStat.nodeType) {
-        return false;
-    }
-
-    SyncPath localDbRelativePath;
-    SyncPath remoteDbRelativePath;
-    if (!_syncPal->syncDb()->path(dbNode.nodeId(), localDbRelativePath, remoteDbRelativePath, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::path for DbNodeID " << dbNode.nodeId());
-        return false;
-    }
-
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "dbNodeId " << dbNode.nodeId() << " not found in SyncDb");
-        return false;
-    }
-
-    const SyncPath localRelativePath = CommonUtility::relativePath(_syncPal->localPath(), localAbsolutePath);
-
-    if (localDbRelativePath.lexically_normal() != localRelativePath.lexically_normal()) {
-        return false;
-    }
-
-    if (fileStat.nodeType == NodeType::Directory) {
-        return true;
-    }
-
-    if (dbNode.size() == fileStat.size && dbNode.lastModifiedLocal() == fileStat.modificationTime &&
-        (!dbNode.created().has_value() || dbNode.created().value() == fileStat.creationTime)) {
-        return true;
-    }
-
-    return false;
-}
-
 void SyncPalWorker::resetVfsFilesStatus() {
     if (_syncPal->vfsMode() == VirtualFileMode::Off) return;
     sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());
@@ -865,153 +820,160 @@ void SyncPalWorker::resetVfsFilesStatus() {
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    try {
-        if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator.");
+    if (!IoHelper::getRecursiveDirectoryIterator(_syncPal->localPath(), ioError, dirIt)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
+                                   << Utility::formatIoError(_syncPal->localPath(), ioError));
+        return;
+    }
+
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+        bool stopAsked_ = stopAsked();
+#ifdef KD_WINDOWS
+        stopAsked_ |= _stopResetVfsFilesStatusAsked.load();
+#endif
+
+        if (stopAsked_) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Stop asked in resetVfsFilesStatus");
             return;
         }
 
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-            bool stopAsked_ = stopAsked();
-#ifdef KD_WINDOWS
-            stopAsked_ |= _stopResetVfsFilesStatusAsked.load();
-#endif
+        std::error_code ec;
+        const auto isSymlink = entry.is_symlink(ec);
+        if (ec.value()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in std::filesystem::directory_entry::is_symlink "
+                                               << Utility::formatStdError(entry.path(), ec));
+            dirIt.disableRecursionPending();
+            continue;
+        }
 
-            if (stopAsked_) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Stop asked in resetVfsFilesStatus");
-                return;
-            }
-            SyncPath absolutePath;
-            try {
-                absolutePath = entry.path();
-                std::optional<NodeId> localNodeId;
-
-                if (!entry.is_symlink() && entry.is_directory()) {
-#ifdef KD_WINDOWS
-                    if (isLocalItemInSyncWithDb(absolutePath, localNodeId)) {
-                        // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
-                        VfsStatus status;
-                        status.isSyncing = false;
-                        if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(entry.path(), status); !exitInfo) {
-                            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path())
-                                                                                     << L": " << exitInfo);
-                        }
-                    }
-#endif // KD_WINDOWS
-                    continue;
-                }
-            } catch (std::filesystem::filesystem_error &) {
+        bool isDirectory = false;
+        if (!isSymlink) {
+            isDirectory = entry.is_directory(ec);
+            if (ec.value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in std::filesystem::directory_entry::is_directory "
+                                                   << Utility::formatStdError(entry.path(), ec));
                 dirIt.disableRecursionPending();
                 continue;
-            }
-
-            // Check if the directory entry is managed
-            bool isManaged = true;
-            auto managedEntryError = IoError::Success;
-            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, managedEntryError)) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath));
-                ok = false;
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (managedEntryError == IoError::NoSuchFileOrDirectory) {
-                LOGW_SYNCPAL_DEBUG(_logger,
-                                   L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath));
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (managedEntryError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath));
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << Utility::formatSyncPath(absolutePath));
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            VfsStatus vfsStatus;
-            if (const auto exitInfo = _syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in vfsStatus : " << Utility::formatSyncPath(entry.path()) << L": " << exitInfo);
-                ok = false;
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (!vfsStatus.isPlaceholder) {
-#if defined(KD_WINDOWS)
-                // Due to a bug introduced in kDrive 3.8.2.5, some files may have been reverted to regular files
-                // (i.e., no longer placeholders) while still being considered in sync with the database.
-                // As a corrective measure, we reconvert such files to placeholders when necessary to avoid misleading syncing
-                // status
-
-                SyncFileItem syncItem;
-                std::optional<NodeId> localNodeId;
-                if (!entry.is_symlink() && isLocalItemInSyncWithDb(absolutePath, localNodeId) && localNodeId.has_value()) {
-                    syncItem.setLocalNodeId(localNodeId.value());
-                    if (ExitInfo exitInfo = _syncPal->vfs()->convertToPlaceholder(absolutePath, syncItem); !exitInfo) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsConvertToPlaceholder : " << Utility::formatSyncPath(absolutePath)
-                                                                                          << L": " << exitInfo);
-                    }
-                }
-                continue;
-#else
-                continue;
-#endif // KD_WINDOWS
-            }
-
-            const PinState pinState = _syncPal->vfs()->pinState(entry.path());
-#ifndef KD_WINDOWS // Handle by the API on windows.
-            if (vfsStatus.isSyncing) {
-                // Force status to dehydrate
-                if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(entry.path(), VfsStatus()); !exitInfo) {
-                    LOGW_SYNCPAL_WARN(
-                            _logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path()) << L": " << exitInfo);
-                    ok = false;
-                    dirIt.disableRecursionPending();
-                    continue;
-                }
-                vfsStatus.isHydrated = false;
-            }
-
-            bool hydrationOrDehydrationInProgress = false;
-            const SyncPath relativePath =
-                    CommonUtility::relativePath(_syncPal->localPath(), entry.path()); // Get the relative path of the file
-            (void) _syncPal->fileSyncing(ReplicaSide::Local, relativePath, hydrationOrDehydrationInProgress);
-            if (hydrationOrDehydrationInProgress) {
-                _syncPal->vfs()->cancelHydrate(
-                        entry.path()); // Cancel any (de)hydration that could still be in progress on the OS side.
-            }
-#endif
-            // Fix hydration state if needed.
-            if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
-                (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
-                if (!_syncPal->vfs()->fileStatusChanged(entry.path(), SyncFileStatus::Syncing)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in fileStatusChanged: " << Utility::formatSyncPath(entry.path()));
-                    ok = false;
-                    dirIt.disableRecursionPending();
-                    continue;
-                }
             }
         }
-    } catch (std::filesystem::filesystem_error &e) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "Exception caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
-        ok = false;
-    } catch (...) {
-        LOG_SYNCPAL_WARN(_logger, "Exception caught in SyncPalWorker::resetVfsFilesStatus");
-        ok = false;
+
+        if (isDirectory) {
+#ifdef KD_WINDOWS
+            if (std::optional<NodeId> localNodeId; _syncPal->isLocalItemInSyncWithDb(entry.path(), localNodeId)) {
+                // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
+                VfsStatus status;
+                status.isSyncing = false;
+                if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(entry.path(), status); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(
+                            _logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path()) << L": " << exitInfo);
+                }
+            }
+#endif // KD_WINDOWS
+            continue;
+        }
+
+        // Check if the directory entry is managed
+        bool isManaged = true;
+        auto managedEntryError = IoError::Success;
+        if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, managedEntryError)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(entry.path()));
+            ok = false;
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        if (managedEntryError == IoError::NoSuchFileOrDirectory) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore : " << Utility::formatSyncPath(entry.path()));
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        if (managedEntryError == IoError::AccessDenied) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission : " << Utility::formatSyncPath(entry.path()));
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        if (!isManaged) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed : " << Utility::formatSyncPath(entry.path()));
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        VfsStatus vfsStatus;
+        if (const auto exitInfo = _syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus : " << Utility::formatSyncPath(entry.path()) << L": " << exitInfo);
+            ok = false;
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        if (!vfsStatus.isPlaceholder) {
+#if defined(KD_WINDOWS)
+            // Due to a bug introduced in kDrive 3.8.2.5, some files may have been reverted to regular files
+            // (i.e., no longer placeholders) while still being considered in sync with the database.
+            // As a corrective measure, we reconvert such files to placeholders when necessary to avoid misleading syncing
+            // status
+
+            SyncFileItem syncItem;
+            if (std::optional<NodeId> localNodeId;
+                !isSymlink && _syncPal->isLocalItemInSyncWithDb(entry.path(), localNodeId) && localNodeId.has_value()) {
+                syncItem.setLocalNodeId(localNodeId.value());
+                if (ExitInfo exitInfo = _syncPal->vfs()->convertToPlaceholder(entry.path(), syncItem); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsConvertToPlaceholder : " << Utility::formatSyncPath(entry.path())
+                                                                                      << L": " << exitInfo);
+                }
+
+                vfsStatus.isSyncing = false;
+                if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(entry.path(), vfsStatus); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path())
+                                                                                      << L": " << exitInfo);
+                }
+            }
+            continue;
+#else
+            continue;
+#endif // KD_WINDOWS
+        }
+
+        const PinState pinState = _syncPal->vfs()->pinState(entry.path());
+#ifndef KD_WINDOWS // Handle by the API on windows.
+        if (vfsStatus.isSyncing) {
+            // Force status to dehydrate
+            if (const ExitInfo exitInfo = _syncPal->vfs()->forceStatus(entry.path(), VfsStatus()); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path()) << L": " << exitInfo);
+                ok = false;
+                dirIt.disableRecursionPending();
+                continue;
+            }
+            vfsStatus.isHydrated = false;
+        }
+
+        bool hydrationOrDehydrationInProgress = false;
+        const SyncPath relativePath =
+                CommonUtility::relativePath(_syncPal->localPath(), entry.path()); // Get the relative path of the file
+        (void) _syncPal->fileSyncing(ReplicaSide::Local, relativePath, hydrationOrDehydrationInProgress);
+        if (hydrationOrDehydrationInProgress) {
+            _syncPal->vfs()->cancelHydrate(
+                    entry.path()); // Cancel any (de)hydration that could still be in progress on the OS side.
+        }
+#endif
+        // Fix hydration state if needed.
+        if ((vfsStatus.isHydrated && pinState == PinState::OnlineOnly) ||
+            (!vfsStatus.isHydrated && pinState == PinState::AlwaysLocal)) {
+            if (!_syncPal->vfs()->fileStatusChanged(entry.path(), SyncFileStatus::Syncing)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in fileStatusChanged: " << Utility::formatSyncPath(entry.path()));
+                ok = false;
+                dirIt.disableRecursionPending();
+                continue;
+            }
+        }
     }
 
-    if (!endOfDir || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
-                                   << Utility::formatIoError(entry.path(), ioError));
+    if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(_syncPal->localPath(), ioError));
+        ok = false;
     }
 
     if (ok) {

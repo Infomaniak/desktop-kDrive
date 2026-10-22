@@ -41,7 +41,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStrHex2Str);
         CPPUNIT_TEST(testSplitStr);
         CPPUNIT_TEST(testJoinStr);
-        CPPUNIT_TEST(testPathDepth);
         CPPUNIT_TEST(testComputeMd5Hash);
         CPPUNIT_TEST(testXxHash);
         CPPUNIT_TEST(testErrId);
@@ -53,6 +52,9 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUserName);
         CPPUNIT_TEST(testTryCreateTmpDir);
         CPPUNIT_TEST(testTryCreateTmpFile);
+#if defined(KD_MACOS) || defined(KD_LINUX)
+        CPPUNIT_TEST(testEscapePath);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -77,7 +79,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testStrHex2Str();
         void testSplitStr();
         void testJoinStr();
-        void testPathDepth();
         void testComputeMd5Hash();
         void testXxHash();
         void testErrId();
@@ -89,6 +90,9 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testUserName();
         void testTryCreateTmpDir();
         void testTryCreateTmpFile();
+#if defined(KD_MACOS) || defined(KD_LINUX)
+        void testEscapePath();
+#endif
 
     private:
         bool checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal);

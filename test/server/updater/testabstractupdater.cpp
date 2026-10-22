@@ -49,7 +49,6 @@ void TestAbstractUpdater::generateValidVersionInfo(VersionInfo &versionInfo) {
     versionInfo.tag = "3.8.2";
     versionInfo.buildVersion = 3;
     versionInfo.downloadUrl = "https://downloads/kDrive-3.8.2.3.exe";
-    versionInfo.checksum = "";
     versionInfo.minOsVersion = "";
     versionInfo.minAppVersion = "";
 }
@@ -79,7 +78,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
     CPPUNIT_ASSERT_EQUAL(testStr, ParametersCache::instance()->parameters().seenVersion());
 
     bool found = false;
-    Parameters parameters;
+    ServerParameters parameters;
     (void) ParmsDb::instance()->selectParameters(parameters, found);
     CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 

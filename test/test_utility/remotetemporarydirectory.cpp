@@ -59,7 +59,7 @@ void RemoteTemporaryDirectory::createDirectory(const DriveDbId driveDbId, const 
         _dirName = Str("kdrive_") + Str2SyncName(_testType) + Str("_unit_tests_") + Str2SyncName(woss.str() + "___" + suffix);
 
         // Create remote test dir
-        CreateDirJob job(nullptr, _driveDbId, parentId, _dirName);
+        CreateDirJob job(_driveDbId, parentId, _dirName);
         (void) job.runSynchronously();
         if (job.exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::FileExists) && retry > 0) {
             retry--;

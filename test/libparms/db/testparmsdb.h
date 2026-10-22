@@ -44,6 +44,8 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testError);
         CPPUNIT_TEST(testAppState);
         CPPUNIT_TEST(testAppStateShowV4Onboarding);
+        CPPUNIT_TEST(testAppUID);
+        CPPUNIT_TEST(testDialogGeometry);
 #if defined(KD_WINDOWS)
         CPPUNIT_TEST(testUpgradeOfShortPathNames);
 #endif
@@ -62,6 +64,8 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         void testExclusionTemplate();
         void testAppState();
         void testAppStateShowV4Onboarding();
+        void testAppUID();
+        void testDialogGeometry();
         void testUpdateExclusionTemplates();
         void testUpgradeOfExclusionTemplates();
         void testUpgrade();

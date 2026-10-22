@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 02 Sep 2026 16:24:21 +0200 
+  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Kaikki toiminnot</value> 
   </data> 
-  <data name="activitiesTypeThisComputer" xml:space="preserve">
-    <value>Tämän tietokoneen toiminta</value>
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Tämän tietokoneen toiminnot</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Tuotu</value> 
@@ -134,46 +134,7 @@
     <value>Nimetty uudelleen</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Uudelleennimetty %@</value> 
-  </data> 
-  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
-    <value>Muokattu</value> 
-  </data> 
-  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Muokattu %@</value> 
-  </data> 
-  <data name="activityInstructionGetLabel" xml:space="preserve"> 
-    <value>Tuotu</value> 
-  </data> 
-  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Tuotu %@</value> 
-  </data> 
-  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
-    <value>Ohitettu</value> 
-  </data> 
-  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
-    <value>Siirretty</value> 
-  </data> 
-  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Siirretty %@</value> 
-  </data> 
-  <data name="activityInstructionPutLabel" xml:space="preserve"> 
-    <value>Lisätty</value> 
-  </data> 
-  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Lisätty %@</value> 
-  </data> 
-  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
-    <value>Siirretty roskakoriin</value> 
-  </data> 
-  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>Siirretty roskakoriin %@</value> 
-  </data> 
-  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
-    <value>Nimetty uudelleen</value> 
-  </data> 
-  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Uudelleennimetty %@</value> 
+    <value>Nimetty uudelleen %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Muokattu</value> 
@@ -216,7 +177,7 @@ Voit käyttää kehittyneitä synkronointejasi kotisivun asemavalikosta.</value>
     <value>Muutosta sovelletaan…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Poistaa yli 7 päivää vanhat lokit levytilan säästämiseksi.</value> 
+    <value>Poistaa yli 31 päivää vanhat lokit levytilan säästämiseksi.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automaattinen siivous</value> 
@@ -783,7 +744,7 @@ Ota yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.</value
     <value>Pääsy kielletty</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Tämän %@ nimi sisältää yhden tai useamman merkin, joita kDriven Windows-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
+    <value>Tämän %@:n nimessä on yksi tai useampi merkki, joita kDrive-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelussa.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Tämä nimi sisältää vain välilyöntejä eikä sitä voi käyttää. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
@@ -800,6 +761,9 @@ Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Pääsy kielletty</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Muunna tavalliseksi tiedostoksi</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Tämä tiedosto on kiintolinkkitiedosto, jota ei voi synkronoida.</value> 
@@ -1006,8 +970,8 @@ Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value>
     <value>Yhteys kDriveen keskeytyi</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Tämä kohde ei ole käytettävissä tällä laitteella.
-Se avautuu selaimessasi.</value> 
+    <value>Tätä ominaisuutta ei ole käytettävissä tässä laitteessa.
+Se avautuu kDrive-verkkopalvelussa.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1119,7 +1083,7 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>Juuri nyt</value> 
+    <value>juuri nyt</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 
@@ -1340,6 +1304,9 @@ Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja y
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versioristiriitaa havaittu</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ poistettua kohdetta</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synkronointi on keskeytetty, jotta vältetään tahaton poisto.
 Mitä haluat tehdä?</value> 
@@ -1349,6 +1316,12 @@ Mitä haluat tehdä?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Poista myös verkosta</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>ja toinen osa</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>ja %@ muut tekijät</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Nämä tiedostot ovat edelleen palautettavissa kDrive-roskakorista.</value> 

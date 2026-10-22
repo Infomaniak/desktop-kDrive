@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
-find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
+find_package(Poco 1.15.2 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
 
@@ -30,32 +30,31 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
+    data/account.h data/account.cpp
     data/drive.h data/drive.cpp
     data/driveavailable.h data/driveavailable.cpp
-    info/userinfo.h info/userinfo.cpp
-    info/accountinfo.h info/accountinfo.cpp
-    info/syncinfo.h info/syncinfo.cpp
+    data/user.h data/user.cpp
+    data/sync.h data/sync.cpp
+    data/error.h data/error.cpp
+    data/exclusiontemplate.h data/exclusiontemplate.cpp
+    data/exclusionapp.h data/exclusionapp.cpp
+    data/proxyconfig.h data/proxyconfig.cpp
+    data/syncfileitem.h data/syncfileitem.cpp
+    data/parameters.h data/parameters.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
-    info/errorinfo.h info/errorinfo.cpp
-    info/parametersinfo.h info/parametersinfo.cpp
-    info/syncfileiteminfo.h info/syncfileiteminfo.cpp
-    info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
-    info/exclusionappinfo.h info/exclusionappinfo.cpp
-    info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     info/packinfo.h info/packinfo.cpp
+    info/maintenanceinfo.h info/maintenanceinfo.cpp
     log/sentry/handler.h log/sentry/handler.cpp
-    log/sentry/abstractptrace.h 
+    log/sentry/abstractptrace.h
     log/sentry/abstractcounterscopedptrace.h
-    log/sentry/abstractscopedptrace.h 
-    log/sentry/ptraces.h log/sentry/user.h 
+    log/sentry/abstractscopedptrace.h
+    log/sentry/ptraces.h log/sentry/user.h
     log/sentry/ptracedescriptor.h
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
     theme/theme.h theme/theme.cpp
-        info/maintenanceinfo.cpp
-        info/maintenanceinfo.h
 )
 
 if(APPLE)
@@ -113,14 +112,11 @@ if(WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/libzip/include"
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
+        "C:/Program Files (x86)/libzip/include")
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include"
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
+        ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 # Link
@@ -129,7 +125,6 @@ target_link_libraries(${libcommon_NAME}
     Poco::Foundation Poco::JSON Poco::Util
     log4cplus::log4cplus
     sentry::sentry
-    keychain
     libzip::zip)
 
 if(UNIX)
@@ -137,7 +132,8 @@ if(UNIX)
         utf8proc)
     if(NOT APPLE)
         target_link_libraries(${libcommon_NAME}
-                "uuid")   # For UUID generation
+                "uuid"  # For UUID generation
+                mount)
     endif()
 elseif(WIN32)
     target_link_libraries(${libcommon_NAME}

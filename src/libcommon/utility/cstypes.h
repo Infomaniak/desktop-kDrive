@@ -108,6 +108,7 @@ enum class ExitCode {
     LogUploadFailed,
     UpdateFailed,
     TooManyDeleteOperations,
+    SyncPaused,
     EnumEnd
 };
 
@@ -171,6 +172,9 @@ enum class ExitCause {
     SyncDeletionFailed,
     InvalidLinkTarget,
     MoveThroughSymlink, // The local move is forbidden because an intermediate component of the path is a symbolic link
+    FileNameTooLong,
+    HardlinkNotSupported, // Some operations are not supported on hard links in Windows LiteSync when two hard links point to
+                          // different LiteSync roots.
     EnumEnd
 };
 
@@ -184,6 +188,8 @@ enum class InconsistencyType {
     NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
     ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
     ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    InvalidTimestamp = 0x200, // The creation or modification time is invalid (ex: in the future)
+    EnumEnd = 0x1000
 };
 
 enum class Language {
@@ -360,8 +366,9 @@ enum class AppStateKey {
     AppUid = 7,
     NoUpdate = 8,
     ShowV4Onboarding = 9,
+    NotifyBeforeDelete = 10,
     Unknown, // Only for initialization purpose, never use it in the database
-	EnumEnd
+    EnumEnd
 };
 
 enum class TooManyDeletesNotificationType {

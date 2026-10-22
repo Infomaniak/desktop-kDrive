@@ -77,6 +77,7 @@ void TestCacheDirectory::testCleanUpCacheDir() {
         }
         count++;
     }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(3, count);
 }
 

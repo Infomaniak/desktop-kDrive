@@ -24,7 +24,6 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
-#include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 
@@ -57,7 +56,7 @@ void TestExecutorWorker::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -80,12 +79,6 @@ void TestExecutorWorker::setUp() {
     const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
     _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
-
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(_mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
@@ -715,7 +708,7 @@ void TestExecutorWorker::testCheckAlreadyExcluded() {
     std::ofstream(localFilePath2).close();
 
     // Upload file 1
-    UploadJob uploadJob1(nullptr, _driveDbId, localFilePath1, localFilePath1.filename(), remoteTmpDir.id(), 0, 0);
+    UploadJob uploadJob1(_driveDbId, localFilePath1, localFilePath1.filename(), remoteTmpDir.id(), 0, 0);
     uploadJob1.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob1.exitInfo().code());
 
@@ -726,7 +719,7 @@ void TestExecutorWorker::testCheckAlreadyExcluded() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
 
     // Upload file 2
-    UploadJob uploadJob2(nullptr, _driveDbId, localFilePath2, localFilePath2.filename(), remoteTmpDir.id(), 0, 0);
+    UploadJob uploadJob2(_driveDbId, localFilePath2, localFilePath2.filename(), remoteTmpDir.id(), 0, 0);
     uploadJob2.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob2.exitInfo().code());
 

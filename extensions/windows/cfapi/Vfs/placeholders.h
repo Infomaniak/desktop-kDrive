@@ -21,7 +21,7 @@
 #include "..\Common\framework.h"
 
 #include <cfapi.h>
-#include <winrt\windows.storage.provider.h>
+#include <winrt/Windows.Storage.Provider.h>
 
 namespace winrt {
 using namespace Windows::Storage::Provider;
@@ -32,7 +32,7 @@ class Placeholders {
         static bool create(const PCWSTR fileId, const PCWSTR relativePath, const PCWSTR destPath,
                            const WIN32_FIND_DATA *findData);
 
-        static bool convert(const PCWSTR fileId, const PCWSTR filePath);
+        static int32_t convert(const PCWSTR fileId, const PCWSTR filePath);
 
         static bool revert(const PCWSTR filePath);
 

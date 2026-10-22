@@ -37,9 +37,9 @@ namespace Infomaniak.kDrive.Pages.Errors
         private ErrorPageVM? _errorPageVM;
         public ResolveManyConflictPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to ResolveManyConflictPage - Initializing components");
+            Logger.LogInfo("Navigated to ResolveManyConflictPage - Initializing components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "ResolveManyConflictPage components initialized");
+            Logger.LogDebug("ResolveManyConflictPage components initialized");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -66,14 +66,14 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             if (e.PropertyName == nameof(ErrorPageVM.ConflictsCount) && _errorPageVM?.ConflictsCount == 0)
             {
-                Logger.Log(Logger.Level.Info, "All conflicts resolved, navigating to ActivityPage");
+                Logger.LogInfo("All conflicts resolved, navigating to ActivityPage");
                 Frame.Navigate(typeof(ActivityPage));
             }
         }
 
         private void BreadcrumbConflict_Click(object sender, object e)
         {
-            Logger.Log(Logger.Level.Debug, "Navigating to Conflict quick");
+            Logger.LogDebug("Navigating to Conflict quick");
             Frame.Navigate(typeof(ConflictQuickResolvePage));
             _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.BatchConflictResolutionBreadcrumb);
         }
@@ -93,7 +93,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             if (_errorPageVM is null)
             {
-                Logger.Log(Logger.Level.Error, "ErrorPageVM is null in ResolveManyConflictButton_Click");
+                Logger.LogError("ErrorPageVM is null in ResolveManyConflictButton_Click");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -142,7 +142,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             Control? control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Error, "Control is null in ResolveOneConflictButton_Click");
+                Logger.LogError("Control is null in ResolveOneConflictButton_Click");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -150,7 +150,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             Error? error = control.DataContext as Error;
             if (error is null)
             {
-                Logger.Log(Logger.Level.Error, "Error is null in ResolveOneConflictButton_Click");
+                Logger.LogError("Error is null in ResolveOneConflictButton_Click");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }

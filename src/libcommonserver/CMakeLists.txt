@@ -6,9 +6,10 @@ endif()
 
 find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.53.0 REQUIRED)
-find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
-find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+find_package(Poco 1.15.2 REQUIRED Foundation Net Crypto JSON Util)
+find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
 find_package(xxHash 0.8.2 REQUIRED)
+find_package(keychain REQUIRED)
 
 if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -24,6 +25,9 @@ add_definitions(-D_UNICODE)
 set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
+    utility/checksumverifier.h utility/checksumverifier.cpp
+    utility/selfsignedcert.h utility/selfsignedcert.cpp
+    utility/truststorehelper.h
     utility/stateholder.h
     utility/jsonparserutility.h
     utility/kdexception.h utility/kdexception.cpp
@@ -32,9 +36,9 @@ set(libcommonserver_SRCS
     db/sqlitequery.h db/sqlitequery.cpp
     db/db.h db/db.cpp
     db/dbdefs.h
+    # Data
+    data/serverparameters.h data/serverparameters.cpp
     # Network
-    network/proxy.h network/proxy.cpp
-    network/proxyconfig.h network/proxyconfig.cpp
     # VFS
     vfs/vfs.h vfs/vfs.cpp
     vfs/workerinfo.h vfs/vfsworker.h
@@ -58,11 +62,15 @@ if(APPLE)
 
     list(APPEND libcommonserver_SRCS utility/utility_mac.cpp utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_mac.mm)
+    set_property(SOURCE utility/truststorehelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
     list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp utility/utility_win.cpp)
     list(APPEND libcommonserver_SRCS utility/digitalsignaturechecker_win.h utility/digitalsignaturechecker_win.cpp)
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_win.cpp)
 else()
     list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_linux.cpp)
 endif()
 
 # Target
@@ -127,7 +135,6 @@ else()
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
 endif()
 
@@ -135,21 +142,29 @@ endif()
 target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
     SQLite::SQLite3
-    Poco::Foundation Poco::Net Poco::JSON Poco::Util
+    Poco::Foundation Poco::Net Poco::Crypto Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
-    xxHash::xxhash)
+    xxHash::xxhash
+    keychain::keychain)
 
 if(WIN32)
     target_link_libraries(${libcommonserver_NAME}
-        Secur32)
+        Secur32
+        Wintrust
+        Crypt32)
 elseif(APPLE)
     # utility_mac.mm
     find_library(FOUNDATION_LIBRARY NAMES Foundation)
     find_library(CORESERVICES_LIBRARY NAMES CoreServices)
     find_library(APPKIT_LIBRARY NAMES AppKit)
+    find_library(SECURITY_LIBRARY NAMES Security)
+    find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
 
     target_link_libraries(${libcommonserver_NAME}
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
-        ${APPKIT_LIBRARY})
+        ${APPKIT_LIBRARY}
+        ${SECURITY_LIBRARY}
+        ${SERVICE_MANAGEMENT_LIBRARY}
+    )
 endif()

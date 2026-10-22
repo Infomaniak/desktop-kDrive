@@ -25,6 +25,6 @@
 	<key>NSEndpointSecurityMachServiceName</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>NSSystemExtensionUsageDescription</key>
-	<string></string>
+	<string>kDrive LiteSync extension</string>
 </dict>
 </plist>

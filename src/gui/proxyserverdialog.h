@@ -23,7 +23,7 @@
 #include "customcheckbox.h"
 #include "customcombobox.h"
 #include "libcommon/utility/types.h"
-#include "libcommon/info/proxyconfiginfo.h"
+#include "libcommon/data/proxyconfig.h"
 
 #include <QBoxLayout>
 #include <QIntValidator>
@@ -53,7 +53,7 @@ class ProxyServerDialog : public CustomDialog {
                 }
         };
 
-        ProxyConfigInfo _proxyConfigInfo;
+        ProxyConfig _proxyConfig;
         CustomRadioButton *_noProxyButton = nullptr;
         CustomRadioButton *_systemProxyButton = nullptr;
         CustomRadioButton *_manualProxyButton = nullptr;

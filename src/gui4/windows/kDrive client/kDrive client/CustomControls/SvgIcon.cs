@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             // Register property change callbacks
             Foreground = null;
-           
+
             // Track Loaded state
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -147,7 +147,7 @@ namespace Infomaniak.kDrive.CustomControls
                         SolidColorBrush.ColorProperty,
                         _foregroundColorToken.Value);
                 }
-                
+
                 _foregroundColorBrush = null;
                 _foregroundColorToken = null;
             }
@@ -213,7 +213,8 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 if (!Application.Current.Resources.TryGetValue(ResourceKey, out var resource))
                 {
-                    Logger.Log(Logger.Level.Warning, $"Resource not found: {ResourceKey}");
+                    Logger.LogWarning($"Resource not found: {ResourceKey}",
+                        "SvgIcon: Resource not found");
                     if (UriSource is not null)
                     {
                         UriSource = null;
@@ -237,7 +238,8 @@ namespace Infomaniak.kDrive.CustomControls
                     }
                     catch
                     {
-                        Logger.Log(Logger.Level.Error, $"Failed to create URI from resource: {ResourceKey} -> {resourcePath}");
+                        Logger.LogError($"Failed to create URI from resource: {ResourceKey} -> {resourcePath}",
+                            "SvgIcon: Failed to create resource URI");
                         if (UriSource is not null)
                         {
                             UriSource = null;
@@ -305,11 +307,12 @@ namespace Infomaniak.kDrive.CustomControls
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Extended, $"SvgIcon refresh canceled");
+                Logger.LogExtended($"SvgIcon refresh canceled");
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to render SVG: {UriSource} - {ex.Message}");
+                Logger.LogError($"Failed to render SVG: {UriSource} - {ex.Message}",
+                    "SvgIcon: Failed to render SVG");
                 TryFallback();
             }
         }
@@ -365,7 +368,8 @@ namespace Infomaniak.kDrive.CustomControls
             }
             catch
             {
-                Logger.Log(Logger.Level.Error, $"Failed to load SVG without recoloring: {UriSource}");
+                Logger.LogError($"Failed to load SVG without recoloring: {UriSource}",
+                    "SvgIcon: Failed to load SVG without recoloring");
             }
         }
     }

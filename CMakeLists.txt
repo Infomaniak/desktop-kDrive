@@ -41,12 +41,6 @@ if(UNIX)
     add_subdirectory(src/3rdparty/utf8proc)
 endif()
 
-# keychain
-add_subdirectory(src/3rdparty/keychain)
-if (UNIX AND NOT APPLE) # Add this on linux to fix keychain problems with gcc 15
-    target_compile_options(keychain PRIVATE -Wno-uninitialized)
-endif()
-
 #####
 
 # Create an alias for the Qt6::Core target, used by the sentry recipe
@@ -108,7 +102,10 @@ include(GenerateExportHeader)
 add_definitions(
         -DQT_USE_QSTRINGBUILDER
         -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
-        -DQT_DEPRECATED_WARNINGS
+        # QT_WARN_DEPRECATED_UP_TO caps the Qt version for which deprecated annotations are emitted.
+        # Capped at 6.12.0 (0x060C00) to avoid Qt 6.13+ deprecation markers that GCC 11 cannot parse
+        # when they appear before [[nodiscard]] inside class definitions.
+        -DQT_WARN_DEPRECATED_UP_TO=0x060C00
 )
 
 if(APPLE)
@@ -183,6 +180,9 @@ endif(APPLE)
 
 if(APPLE)
     set(TEAM_IDENTIFIER_PREFIX "" CACHE STRING "Team identifier prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
+
+    # TODO: Remove when all the app will be built with the default version
+    set(XCODE_GUI4 "Xcode_26.app" CACHE STRING "Xcode version to use for building the GUI4 project")
 endif()
 
 if(BUILD_CLIENT)
@@ -271,6 +271,9 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Default sync exclude list
     install(FILES sync-exclude-osx.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/ RENAME sync-exclude.lst)
 
+    # Default sync folder rules
+    install(FILES sync-folder-rules-osx.csv DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/ RENAME sync-folder-rules.csv)
+
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
@@ -283,6 +286,7 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
             IMPORTED_LOCATION_RELEASE
     )
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
+    file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
 elseif(BUILD_CLIENT)
     if(WIN32)
@@ -294,6 +298,12 @@ elseif(BUILD_CLIENT)
         file(COPY sync-exclude-win.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
         file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-exclude-win.lst ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst)
         install(FILES ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+        # Default sync folder rules
+        message(STATUS "sync-folder-rules-win.csv copied to ${BIN_OUTPUT_DIRECTORY}")
+        file(COPY sync-folder-rules-win.csv DESTINATION ${BIN_OUTPUT_DIRECTORY})
+        file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules-win.csv ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules.csv)
+        install(FILES ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules.csv DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
@@ -336,6 +346,14 @@ elseif(BUILD_CLIENT)
             install(FILES sync-exclude-linux.lst DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
         endif()
 
+        # Default sync folder rules
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            file(COPY sync-folder-rules-linux.csv DESTINATION ${BIN_OUTPUT_DIRECTORY})
+            file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules-linux.csv ${BIN_OUTPUT_DIRECTORY}/sync-folder-rules.csv)
+        else()
+            install(FILES sync-folder-rules-linux.csv DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-folder-rules.csv)
+        endif()
+
         # Sentry
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
         message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
@@ -344,11 +362,8 @@ elseif(BUILD_CLIENT)
         if(TARGET sentry_crashpad::crashpad_handler)
             get_target_property(CRASHPAD_HANDLER_PROGRAM sentry_crashpad::crashpad_handler IMPORTED_LOCATION)
             message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
-            if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-                file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
-            else()
-                install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
-            endif()
+            file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
+            install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
         else()
             message(WARNING "crashpad_handler target not found (sentry_crashpad::crashpad_handler)")
         endif()
@@ -360,8 +375,8 @@ if(UNIX AND NOT APPLE)
         # Copy .so files to the conan dependency directory
         find_package(log4cplus 2.1.2 REQUIRED)
         find_package(xxHash 0.8.2 REQUIRED)
-        find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
-        find_package(Poco 1.13.3 REQUIRED)
+        find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
+        find_package(Poco 1.15.2 REQUIRED)
         find_package(sentry REQUIRED)
 
         # Normalize Conan variables to be build-type agnostic
@@ -376,37 +391,30 @@ if(UNIX AND NOT APPLE)
             include("${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
         endif()
 
-        # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type
-        file(COPY
+        # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type.
+        # Glob each shared library and its SONAME chain (e.g. libPocoCrypto.so and
+        # libPocoCrypto.so.<abi>) instead of hardcoding versioned file names, so that
+        # dependency SONAME bumps do not require updating this list.
+        file(GLOB _dep_shared_libs
             # log4cplus
-            "${log4cplus_LIB_DIRS}/liblog4cplus.so"
-            "${log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+            "${log4cplus_LIB_DIRS}/liblog4cplus.so*"
             # xxHash
-            "${xxhash_LIB_DIRS}/libxxhash.so"
-            "${xxhash_LIB_DIRS}/libxxhash.so.0"
-            "${xxhash_LIB_DIRS}/libxxhash.so.0.8.2"
+            "${xxhash_LIB_DIRS}/libxxhash.so*"
             # OpenSSL
-            "${openssl_LIB_DIRS}/libcrypto.so"
-            "${openssl_LIB_DIRS}/libcrypto.so.3"
-            "${openssl_LIB_DIRS}/libssl.so"
-            "${openssl_LIB_DIRS}/libssl.so.3"
+            "${openssl_LIB_DIRS}/libcrypto.so*"
+            "${openssl_LIB_DIRS}/libssl.so*"
             # sentry
-            "${sentry_LIB_DIRS}/libsentry.so"
+            "${sentry_LIB_DIRS}/libsentry.so*"
             # Poco
-            "${poco_LIB_DIRS}/libPocoCrypto.so"
-            "${poco_LIB_DIRS}/libPocoCrypto.so.103"
-            "${poco_LIB_DIRS}/libPocoFoundation.so"
-            "${poco_LIB_DIRS}/libPocoFoundation.so.103"
-            "${poco_LIB_DIRS}/libPocoJSON.so"
-            "${poco_LIB_DIRS}/libPocoJSON.so.103"
-            "${poco_LIB_DIRS}/libPocoNet.so"
-            "${poco_LIB_DIRS}/libPocoNet.so.103"
-            "${poco_LIB_DIRS}/libPocoNetSSL.so"
-            "${poco_LIB_DIRS}/libPocoNetSSL.so.103"
-            "${poco_LIB_DIRS}/libPocoUtil.so"
-            "${poco_LIB_DIRS}/libPocoUtil.so.103"
-            "${poco_LIB_DIRS}/libPocoXML.so"
-            "${poco_LIB_DIRS}/libPocoXML.so.103"
+            "${poco_LIB_DIRS}/libPocoCrypto.so*"
+            "${poco_LIB_DIRS}/libPocoFoundation.so*"
+            "${poco_LIB_DIRS}/libPocoJSON.so*"
+            "${poco_LIB_DIRS}/libPocoNet.so*"
+            "${poco_LIB_DIRS}/libPocoNetSSL.so*"
+            "${poco_LIB_DIRS}/libPocoUtil.so*"
+            "${poco_LIB_DIRS}/libPocoXML.so*"
+        )
+        file(COPY ${_dep_shared_libs}
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
         )

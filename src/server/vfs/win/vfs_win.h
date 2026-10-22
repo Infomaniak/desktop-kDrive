@@ -42,6 +42,7 @@ class VFS_EXPORT VfsWin : public Vfs {
         VirtualFileMode mode() const override;
 
         bool showPinStateActions() const override { return false; }
+        bool isRegistered() const override;
 
         ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modificationTime, int64_t size,
                                 const NodeId &fileId) override;
@@ -68,11 +69,11 @@ class VFS_EXPORT VfsWin : public Vfs {
         ExitInfo getFetchingAppList(AppTable &) final { return ExitCode::Ok; }
 
         bool isExcluded(const SyncPath &) override { return false; }
-        virtual bool setCreationDate(const QString &, time_t) { return false; }
+        virtual bool setCreationDate(const QString &, const time_t) { return false; }
 
         void dehydrate(const SyncPath &path) override;
         void hydrate(const SyncPath &path) override;
-        void cancelHydrate(const SyncPath &path) override;
+        void cancelHydrate(const SyncPath &path, const ExitInfo &exitInfo = ExitCode::Unknown) override;
 
 
     public slots:
@@ -89,6 +90,9 @@ class VFS_EXPORT VfsWin : public Vfs {
 
         void exclude(const SyncPath &path) override;
         ExitInfo setPlaceholderStatus(const SyncPath &path, bool syncOngoing);
+
+        ExitInfo handleVfsWinError(const SyncPath &itemPath, int32_t errorCode,
+                                   const std::source_location &location = std::source_location::current()) const;
 };
 
 class WinVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsWin> {

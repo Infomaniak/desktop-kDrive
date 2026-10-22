@@ -92,14 +92,17 @@ namespace Infomaniak.kDrive.CustomControls
                     sync.RemotePath = initialSync.RemotePath;
                     sync.LocalPath = initialSync.LocalPath;
                     sync.SyncType = initialSync.SyncType;
+                    sync.SupportsLiteSync = initialSync.SupportsLiteSync;
                     sync.RemoteNodeId = initialSync.RemoteNodeId;
                     sync.ExcludedNodeIds.Clear();
                     sync.ExcludedNodeIds.AddRange(initialSync.ExcludedNodeIds);
-                    await sync.SelectBestVfsMode();
+                    if (sync.SyncType == Types.SyncType.Online)
+                        await sync.SelectBestVfsMode();
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, $"No initial state found for sync with DriveId {sync.Drive?.DriveId}. Cannot revert changes for this sync.");
+                    Logger.LogWarning($"No initial state found for sync with DriveId {sync.Drive?.DriveId}. Cannot revert changes for this sync.",
+                        "DriveSetupContentDialogVM::RevertAllChanges failed");
                 }
             }
         }
@@ -111,14 +114,17 @@ namespace Infomaniak.kDrive.CustomControls
                 CurrentSync.RemotePath = PreviousCurrentSyncState.RemotePath;
                 CurrentSync.LocalPath = PreviousCurrentSyncState.LocalPath;
                 CurrentSync.SyncType = PreviousCurrentSyncState.SyncType;
+                CurrentSync.SupportsLiteSync = PreviousCurrentSyncState.SupportsLiteSync;
                 CurrentSync.RemoteNodeId = PreviousCurrentSyncState.RemoteNodeId;
                 CurrentSync.ExcludedNodeIds.Clear();
                 CurrentSync.ExcludedNodeIds.AddRange(PreviousCurrentSyncState.ExcludedNodeIds);
-                await CurrentSync.SelectBestVfsMode();
+                if (CurrentSync.SyncType == Types.SyncType.Online)
+                    await CurrentSync.SelectBestVfsMode();
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, $"CurrentSync or PreviousCurrentSyncState is null. Cannot revert changes for the current sync - CurrentSync: {CurrentSync}, PreviousCurrentSyncState: {PreviousCurrentSyncState}");
+                Logger.LogWarning($"CurrentSync or PreviousCurrentSyncState is null. Cannot revert changes for the current sync - CurrentSync: {CurrentSync}, PreviousCurrentSyncState: {PreviousCurrentSyncState}",
+                    "DriveSetupContentDialogVM::RevertCurrentSyncChanges failed");
             }
         }
     }

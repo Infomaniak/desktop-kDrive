@@ -40,9 +40,9 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         public UpdateDialogPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to UpdateDialogPage - Initializing UpdateDialogPage components");
+            Logger.LogInfo("Navigated to UpdateDialogPage - Initializing UpdateDialogPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "UpdateDialogPage components initialized");
+            Logger.LogDebug("UpdateDialogPage components initialized");
             Loaded += OnLoaded;
         }
 
@@ -74,12 +74,13 @@ namespace Infomaniak.kDrive.Pages.Settings
             {
                 try
                 {
-                    Logger.Log(Logger.Level.Info, $"Failed to load release notes from localized URL: {ex.Message}. Attempting default language URL.");
+                    Logger.LogInfo($"Failed to load release notes from localized URL: {ex.Message}. Attempting default language URL.");
                     releaseNotes = await httpClient.GetStringAsync(availableUpdate.ChangeLogUrlDefaultLanguage);
                 }
                 catch (Exception innerEx)
                 {
-                    Logger.Log(Logger.Level.Warning, $"Failed to load release notes from default language URL: {innerEx.Message}");
+                    Logger.LogWarning($"Failed to load release notes from default language URL: {innerEx.Message}",
+                        "UpdateDialogPage: Failed to load default-language release notes");
                     return;
                 }
             }
@@ -139,7 +140,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private void RemindLaterButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "User clicked 'Remind me later' on UpdateDialogPage.");
+            Logger.LogInfo("User clicked 'Remind me later' on UpdateDialogPage.");
             (App.Current as App)?.CloseUpdateWindow();
             _analyticsService.TrackClick(Analytics.Keys.Category.UpdateDialog, Analytics.Keys.EventName.Cancel);
         }
@@ -149,11 +150,11 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (sender is Button btn)
                 btn.IsEnabled = false;
 
-            Logger.Log(Logger.Level.Info, "User clicked 'Install now' on UpdateDialogPage, starting update process.");
+            Logger.LogInfo("User clicked 'Install now' on UpdateDialogPage, starting update process.");
 
             if (!await UpdateManager.StartUpdate())
             {
-                Logger.Log(Logger.Level.Error, "Update process failed to start.");
+                Logger.LogError("Update process failed to start.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
 
@@ -167,11 +168,11 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void IgnoreVersionButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "User clicked 'Ignore this version' on UpdateDialogPage.");
+            Logger.LogInfo("User clicked 'Ignore this version' on UpdateDialogPage.");
 
             if (ViewModel.Settings?.UpdateManager is null || !await ViewModel.Settings.UpdateManager.SkipVersion())
             {
-                Logger.Log(Logger.Level.Error, "Update process failed to skip update.");
+                Logger.LogError("Update process failed to skip update.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }

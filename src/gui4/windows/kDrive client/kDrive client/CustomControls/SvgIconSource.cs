@@ -87,7 +87,8 @@ namespace Infomaniak.kDrive.CustomControls
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to render SVG: {UriSource} - {ex.Message}");
+                Logger.LogError($"Failed to render SVG: {UriSource} - {ex.Message}",
+                    "SvgIconSource: Failed to render SVG");
                 TryFallback();
             }
         }
@@ -99,7 +100,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (window is null)
             {
-                Logger.Log(Logger.Level.Warning, "Unable to get current window for DPI scaling, defaulting to 1.0");
+                Logger.LogWarning("Unable to get current window for DPI scaling, defaulting to 1.0");
                 return (svgDoc.Width.Value, svgDoc.Height.Value);
             }
 
@@ -116,7 +117,8 @@ namespace Infomaniak.kDrive.CustomControls
             }
             catch
             {
-                Logger.Log(Logger.Level.Error, $"Failed to load SVG without recoloring: {UriSource}");
+                Logger.LogError($"Failed to load SVG without recoloring: {UriSource}",
+                    "SvgIconSource: Failed to load SVG without recoloring");
             }
         }
     }

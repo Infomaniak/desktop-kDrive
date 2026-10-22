@@ -42,9 +42,9 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         public ErrorPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to ErrorPage - Initializing ErrorPage components");
+            Logger.LogInfo("Navigated to ErrorPage - Initializing ErrorPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "ErrorPage components initialized");
+            Logger.LogDebug("ErrorPage components initialized");
             Loaded += ErrorPage_Loaded;
         }
 
@@ -77,7 +77,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void BreadcrumbActivity_Click(object sender, object e)
         {
-            Logger.Log(Logger.Level.Debug, "Navigating to ActivityPage");
+            Logger.LogDebug("Navigating to ActivityPage");
             Frame.Navigate(typeof(ActivityPage));
             _analyticsService.TrackClick(Analytics.Keys.Category.ErrorPage, Analytics.Keys.EventName.ActivityBreadcrumb);
         }
@@ -104,7 +104,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             var frame = Utility.GetFrame(this);
             if (frame is null)
             {
-                Logger.Log(Logger.Level.Warning, "Failed to fetch current frame.");
+                Logger.LogWarning("Failed to fetch current frame.");
                 return;
             }
 

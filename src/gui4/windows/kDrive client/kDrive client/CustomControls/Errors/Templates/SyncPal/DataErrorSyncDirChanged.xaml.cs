@@ -67,7 +67,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
                 var frame = Utility.GetFrame(this);
                 if (frame is null)
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
+                    Logger.LogError("Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
                     return;
                 }
                 _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.SyncDirChangedRecreate);

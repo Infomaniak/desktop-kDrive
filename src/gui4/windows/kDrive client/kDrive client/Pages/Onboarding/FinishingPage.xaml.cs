@@ -34,9 +34,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         public FinishingPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to FinishingPage - Initializing FinishPage components");
+            Logger.LogInfo("Navigated to FinishingPage - Initializing FinishPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "FinishingPage components initialized");
+            Logger.LogDebug("FinishingPage components initialized");
         }
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
                 if (_onBoardingViewModel.NewSyncs.Count == 0)
                 {
-                    Logger.Log(Logger.Level.Warning, "No drives selected to sync. User must select at least one drive.");
+                    Logger.LogWarning("No drives selected to sync. User must select at least one drive.");
                     Frame.GoBack();
                     return;
                 }
@@ -57,7 +57,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     Frame.Navigate(typeof(FinishPage), _onBoardingViewModel);
                 else
                 {
-                    Logger.Log(Logger.Level.Info, "Finishing onboarding failed. Returning to previous page.");
+                    Logger.LogInfo("Finishing onboarding failed. Returning to previous page.");
                     _onBoardingViewModel.NewSyncs.Clear();
                     Utility.ShowUnexpectedErrorTeachingTip();
                     Frame.GoBack();
@@ -66,7 +66,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             else
             {
                 var errorMessage = "OnBoardingViewModel parameter missing when navigating to FinishingPage";
-                Logger.Log(Logger.Level.Fatal, errorMessage);
+                Logger.LogFatal(errorMessage, "FinishingPage: Missing onboarding view model");
                 throw new Exception(errorMessage);
             }
         }

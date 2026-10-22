@@ -32,6 +32,22 @@ namespace KDC {
 
 class COMMONSERVER_EXPORT Db {
     public:
+        class ScopeGuard {
+            public:
+                ScopeGuard(std::shared_ptr<SqliteDb> sqliteDb, const std::string &id) :
+                    _sqliteDb(sqliteDb),
+                    _id(id) {}
+
+                ScopeGuard(const ScopeGuard &) = delete;
+                ScopeGuard &operator=(const ScopeGuard &) = delete;
+
+                ~ScopeGuard() { _sqliteDb->queryFree(_id); }
+
+            private:
+                std::shared_ptr<SqliteDb> _sqliteDb;
+                std::string _id;
+        };
+
         Db(const std::filesystem::path &dbPath);
         virtual ~Db();
 
@@ -81,6 +97,9 @@ class COMMONSERVER_EXPORT Db {
 
         [[nodiscard]] bool versionUpdated() const { return _versionUpdated; }
 
+        bool selectVersion(std::string &version, bool &found);
+
+
     protected:
         void startTransaction();
         void commitTransaction();
@@ -88,13 +107,26 @@ class COMMONSERVER_EXPORT Db {
         bool sqlFail(const std::string &log, const std::string &error);
         bool checkConnect();
 
-        bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
-        bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
+        bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, int64_t defaultValue);
+        bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName);
         bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
-                                const std::string &request, bool *columnAdded = nullptr);
+                                const std::string &request);
 
-        // Helpers
+        /**
+         * @brief Create and prepare a request. It is the user's responsibility to free the request.
+         * @param requestId is the request id.
+         * @param query is the request sql definition.
+         * @return true if the request was created and prepared successfully, false otherwise.
+         */
         bool createAndPrepareRequest(const char *requestId, const char *query);
+
+        /**
+         * @brief Create and prepare a request. The request will be freed when the scope is exited.
+         * @param requestId is the request id.
+         * @param query is the request sql definition.
+         * @return a unique_ptr to a ScopeGuard object if the request was created and prepared successfully, nullptr otherwise.
+         */
+        [[nodiscard]] std::unique_ptr<ScopeGuard> createAndPrepareScopedRequest(const char *requestId, const char *query);
 
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;
@@ -108,7 +140,6 @@ class COMMONSERVER_EXPORT Db {
     private:
         bool insertVersion(const std::string &version);
         bool updateVersion(const std::string &version, bool &found);
-        bool selectVersion(std::string &version, bool &found);
 
         friend class TestDb;
 };

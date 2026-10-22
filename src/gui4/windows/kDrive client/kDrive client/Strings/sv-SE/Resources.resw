@@ -6,7 +6,7 @@
   Locale: sv, Swedish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 02 Sep 2026 16:24:21 +0200 
+  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,14 +100,14 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Alla aktiviteter</value> 
   </data> 
-  <data name="activitiesTypeThisComputer" xml:space="preserve">
-    <value>Aktivitet från den här datorn</value>
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Aktiviteter från den här datorn</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importerad</value> 
   </data> 
   <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Importerat %@</value> 
+    <value>Importerad %@</value> 
   </data> 
   <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
     <value>Ignorerad</value> 
@@ -134,46 +134,7 @@
     <value>Bytt namn</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Omdöpt till %@</value> 
-  </data> 
-  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
-    <value>Ändrad</value> 
-  </data> 
-  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Ändrad %@</value> 
-  </data> 
-  <data name="activityInstructionGetLabel" xml:space="preserve"> 
-    <value>Importerad</value> 
-  </data> 
-  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Importerat %@</value> 
-  </data> 
-  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
-    <value>Ignorerad</value> 
-  </data> 
-  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
-    <value>Flyttad</value> 
-  </data> 
-  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Flyttad %@</value> 
-  </data> 
-  <data name="activityInstructionPutLabel" xml:space="preserve"> 
-    <value>Tillagd</value> 
-  </data> 
-  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Lagt till %@</value> 
-  </data> 
-  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
-    <value>Flyttad till papperskorgen</value> 
-  </data> 
-  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>Flyttad till papperskorgen %@</value> 
-  </data> 
-  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
-    <value>Bytt namn</value> 
-  </data> 
-  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Omdöpt till %@</value> 
+    <value>Bytt namn %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Ändrad</value> 
@@ -216,7 +177,7 @@ Du kan komma åt dina avancerade synkroniseringar från enhetsväljaren på star
     <value>Tillämpar ändring…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Tar bort loggar äldre än 7 dagar för att spara diskutrymme.</value> 
+    <value>Tar bort loggar äldre än 31 dagar för att spara diskutrymme.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatisk rensning</value> 
@@ -783,7 +744,7 @@ Kontakta din administratör för att öka filstorleksgränsen.</value>
     <value>Åtkomst förbjuden</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Namnet på denna %@ innehåller ett eller flera tecken som inte stöds av kDrive Windows-programmet. Byt namn på %@ från kDrive online.</value> 
+    <value>Namnet på denna %@ innehåller ett eller flera tecken som inte stöds av appen kDrive. Byt namn på %@ via kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Det här namnet innehåller bara mellanslag och kan inte användas. Byt namn på %@ från kDrive online.</value> 
@@ -800,6 +761,9 @@ Begär åtkomst från ägaren eller administratören.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Åtkomst förbjuden</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konvertera till vanlig fil</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Den här filen är en hård länk som inte kan synkroniseras.</value> 
@@ -1006,8 +970,8 @@ Synkroniseringen återuptas automatiskt när anslutningen har återställts.</va
     <value>Anslutning till kDrive avbruten</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Det här objektet är inte tillgängligt på den här enheten.
-Det öppnas i din webbläsare.</value> 
+    <value>Den här funktionen finns inte på den här enheten.
+Den öppnas i kDrive online.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1119,7 +1083,7 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>Just nu</value> 
+    <value>just nu</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 
@@ -1340,6 +1304,9 @@ Kontrollera och byt namn på filer som innehåller ovanliga tecken och försök 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versionskonflikt(er) hittades</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ borttagna element</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synkroniseringen är pausad för att förhindra att data raderas av misstag.
 Vad vill du göra?</value> 
@@ -1349,6 +1316,12 @@ Vad vill du göra?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Ta bort även online</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>och ytterligare en del</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>och %@ andra saker</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Dessa filer går fortfarande att återställa från kDrives papperskorg.</value> 

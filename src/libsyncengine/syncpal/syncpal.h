@@ -39,6 +39,7 @@
 
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <comm.h>
 
 namespace KDC {
@@ -163,7 +164,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         inline void setSendManyDeletesNotification(
-                const std::function<void(SyncDbId, TooManyDeletesNotificationType, uint64_t)> &sendManyDeletesNotification) {
+                const std::function<void(SyncDbId, TooManyDeletesNotificationType, const Count, const std::vector<SyncPath> &)>
+                        &sendManyDeletesNotification) {
             _sendManyDeletesNotification = sendManyDeletesNotification;
         }
 
@@ -263,7 +265,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
         void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
         void resolveSyncErrorsByExitCause(ExitCause cause);
-        void sendManyDeletesNotification(TooManyDeletesNotificationType notificationType, uint64_t nbFiles);
+        void sendManyDeletesNotification(TooManyDeletesNotificationType notificationType, const Count nbDeletes,
+                                         const std::vector<SyncPath> &filesPaths);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -273,7 +276,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void resetSnapshotInvalidationCounters();
 
-        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+        ExitInfo addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
                                 const SyncPath &parentFolderPath);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
@@ -308,6 +311,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] ExitInfo handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater,
                                                       std::shared_ptr<Node> &localBlacklistedNode,
                                                       std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause);
+
+        //! Handle an access unknown error on an item on the local side.
+        /*!
+         \param relativeLocalPath is the local path of the item.
+         \return The exit info of the function.
+         */
+        [[nodiscard]] ExitInfo handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath, bool deleteNodeLater);
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
@@ -375,6 +385,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _manyDeleteOpsUserChoice = manyDeleteOpsUserChoice;
         }
 
+        /* Returns true if the local item is in sync with its state in the SyncDb.
+         * Returns false if the item is not in sync, or if an error occurred while trying to determine it
+         * (e.g., file not found, I/O error, etc.).
+         */
+        [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
+        [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath);
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -404,7 +421,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::function<void(SyncDbId syncDbId, ExitCause cause)> _resolveSyncErrors;
         std::function<void(SyncDbId syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SyncDbId syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
-        std::function<void(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles)>
+        std::function<void(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, const Count nbDeletes,
+                           const std::vector<SyncPath> &filesPaths)>
                 _sendManyDeletesNotification;
         std::shared_ptr<Vfs> _vfs;
 
@@ -422,7 +440,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> _remoteUpdateTree{nullptr};
         std::shared_ptr<ConflictQueue> _conflictQueue{nullptr};
         std::shared_ptr<SyncOperationList> _syncOps{nullptr};
-        mutable std::mutex _progressInfoMutex;
         std::shared_ptr<ProgressInfo> _progressInfo{nullptr};
 
         // Workers
@@ -463,7 +480,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void stopEstimateUpdates();
         void updateEstimates();
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
-        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int progress);
+        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int16_t progress);
         [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status,
                                                const NodeId &newRemoteNodeId = {});
 
@@ -471,6 +488,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void directDownloadCallback(UniqueId jobId);
 
     private:
+        // Finalize the pin/hydration state of a direct download job and stop tracking it.
+        // _directDownloadJobsMapMutex must be locked by the caller.
+        void finalizeDirectDownload(const std::shared_ptr<DownloadJob> &downloadJob,
+                                    const std::optional<ExitInfo> &cancelExitInfo = std::nullopt);
+
         void setUpBlacklistPropagator(bool restartSync);
         void setUpExcludelistPropagator();
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
@@ -482,6 +504,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<CacheDirectory> _cacheDirectory;
 
         TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
+
+        mutable std::mutex _progressInfoMutex;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
@@ -524,6 +548,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class MockSyncPal;
         friend class TestSituationGenerator;
         friend class TestFileRescuer;
+        friend class InitialSituationSetter;
+        friend class OperationsExecutor;
+        friend class SyncpalTestHelper;
 };
 
 } // namespace KDC

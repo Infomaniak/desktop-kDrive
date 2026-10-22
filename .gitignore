@@ -1,4 +1,5 @@
 .gitmodules
+.worktrees
 *flymake*
 CMakeLists.txt.user*
 *~
@@ -210,3 +211,12 @@ enc_temp_folder
 # ImportLoco
 .import_loco_api
 /list_unresolved_pr_comments.py
+
+# QT Creator
+.qtcreator
+/src/libcommonserver/vfs/win
+
+# Skill pr-description-writer (.agents/skills/pr-description-writer)
+PR.md
+/signature-usage-*.csv
+./BundleArtifacts*

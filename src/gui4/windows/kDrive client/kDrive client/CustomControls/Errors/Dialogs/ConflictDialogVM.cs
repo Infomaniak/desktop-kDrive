@@ -96,7 +96,7 @@ public class ConflictDialogVM : UISafeObservableObject
         _errors = errors;
         if (errors.Count < 1)
         {
-            Logger.Log(Logger.Level.Error, "ConflictDialogVM initialized with an empty list of errors.");
+            Logger.LogError("ConflictDialogVM initialized with an empty list of errors.");
             return;
         }
         CurrentError = _errors[0];
@@ -106,7 +106,7 @@ public class ConflictDialogVM : UISafeObservableObject
     {
         if (CurrentError is null)
         {
-            Logger.Log(Logger.Level.Error, "Attempted to load version info but CurrentError is null.");
+            Logger.LogError("Attempted to load version info but CurrentError is null.");
             return;
         }
 
@@ -130,7 +130,8 @@ public class ConflictDialogVM : UISafeObservableObject
             }
             else
             {
-                Logger.Log(Logger.Level.Error, $"Failed to get local node version info for error at path {CurrentError?.Path}: {t.Exception}");
+                Logger.LogError($"Failed to get local node version info for error at path {CurrentError?.Path}: {t.Exception}",
+                    "ConflictDialogVM: Failed to get local node version info");
             }
         });
 
@@ -144,7 +145,8 @@ public class ConflictDialogVM : UISafeObservableObject
             }
             else
             {
-                Logger.Log(Logger.Level.Error, $"Failed to get remote node version info for error at path {CurrentError?.Path}: {t.Exception}");
+                Logger.LogError($"Failed to get remote node version info for error at path {CurrentError?.Path}: {t.Exception}",
+                    "ConflictDialogVM: Failed to get remote node version info");
             }
         });
     }
@@ -180,7 +182,7 @@ public class ConflictDialogVM : UISafeObservableObject
     {
         if (CurrentError is null)
         {
-            Logger.Log(Logger.Level.Error, "Attempted to save user choice but CurrentError is null.");
+            Logger.LogError("Attempted to save user choice but CurrentError is null.");
             return;
         }
         if (conflictResolutionStrategy == ConflictResolutionStrategy.KeepLocal)
@@ -194,7 +196,8 @@ public class ConflictDialogVM : UISafeObservableObject
             _keepRemoteIds.Add(CurrentError.DbId);
             return;
         }
-        Logger.Log(Logger.Level.Error, $"Attempted to save user choice with an invalid conflict resolution strategy: {conflictResolutionStrategy}");
+        Logger.LogError($"Attempted to save user choice with an invalid conflict resolution strategy: {conflictResolutionStrategy}",
+            "ConflictDialogVM: Invalid conflict resolution strategy");
     }
 
     public async Task<bool> ApplyUserChoices()

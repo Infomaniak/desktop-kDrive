@@ -82,9 +82,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
 
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
-        Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
+        Task<string?> GetGoodPathForNewSync(IDrive? drive, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken);
-        Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken);
+
+        struct SearchItemResult
+        {
+            public ExitCode Code { get; private set; }
+            public List<SearchItem> Items { get; private set; }
+            public string Cursor { get; private set; }
+            public bool HasMore { get; private set; }
+            public SearchItemResult(ExitCode code, List<SearchItem>? items, string cursor, bool hasMore)
+            {
+                Code = code;
+                Items = items ?? new List<SearchItem>();
+                Cursor = cursor;
+                HasMore = hasMore;
+            }
+
+            static public SearchItemResult Failed(ExitCode? code) => new SearchItemResult(code ?? ExitCode.DataError, null, "", false);
+            static public SearchItemResult Success(List<SearchItem> items, string cursor, bool hasMore) => new SearchItemResult(ExitCode.Ok, items, cursor, hasMore);
+        }
+        Task<SearchItemResult> SearchItem(Sync? sync, string searchString, string cursor, CancellationToken cancellationToken);
         Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
 
         // Node-related requests
@@ -92,12 +110,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         struct GetNodeInfoResult
         {
+            public ExitCode Code { get; private set; }
             public ExitCause Cause { get; private set; }
             public Node? Node { get; private set; }
             public bool IsSuccess => Node is not null && Cause == ExitCause.Unknown;
 
-            public GetNodeInfoResult(ExitCause cause, Node? node)
+            public GetNodeInfoResult(ExitCode code, ExitCause cause, Node? node)
             {
+                Code = code;
                 Cause = cause;
                 Node = node;
             }
@@ -150,6 +170,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken);
         Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken);
 
+        // Acknowledges the "too many deletes" notification for a sync, telling the server whether to continue or revert.
+        Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken);
+
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
         Task HandleUserRemovedAsync(object? sender, SignalEventArgs args);
@@ -183,5 +206,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Event handlers for app-related signals
         Task HandleUtilityShowNotification(object? sender, SignalEventArgs args);
+
+        // Event handlers for node-related signals
+        Task HandleSyncNotifyManyDeletesAsync(object? sender, SignalEventArgs args);
     }
 }

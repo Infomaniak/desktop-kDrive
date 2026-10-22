@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2026 Infomaniak Network SA
  *
@@ -24,6 +24,7 @@ using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using System;
@@ -42,13 +43,20 @@ namespace Infomaniak.kDrive.TrayIcon
     {
         private TaskbarIcon? _trayIcon;
         private string _currentIcon = "taskbar-ico";
+        private uint _dpi = 96;
         private UISettings? _uiSettings;
         private readonly AppModel _appModel;
         private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
+        private readonly DispatcherTimer _toolTipCycleTimer;
+        private int _toolTipCycleIndex;
+
+        private const int ToolTipMaxLength = 127;
+        private static readonly TimeSpan ToolTipCycleInterval = TimeSpan.FromSeconds(3);
 
         public void Initialize()
         {
-            Logger.Log(Logger.Level.Info, "Initializing TrayIconManager");
+            Logger.LogInfo("Initializing TrayIconManager");
+            _dpi = GetDpiForSystem();
 
             // Find resources from the app's main window or application resources
             if (Application.Current.Resources["ShowWindowCommand"] is XamlUICommand showCommand)
@@ -58,7 +66,7 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "ShowWindowCommand not found in application resources.");
+                Logger.LogError("ShowWindowCommand not found in application resources.");
             }
 
 
@@ -69,7 +77,7 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "OpenSettingsCommand not found in application resources.");
+                Logger.LogError("OpenSettingsCommand not found in application resources.");
             }
 
             if (Application.Current.Resources["ExitApplicationCommand"] is XamlUICommand exitCommand)
@@ -79,25 +87,34 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "ExitApplicationCommand not found in application resources.");
+                Logger.LogError("ExitApplicationCommand not found in application resources.");
             }
 
             if (Application.Current.Resources["TrayIcon"] is TaskbarIcon trayIcon)
             {
                 _trayIcon = trayIcon;
-                _trayIcon.ForceCreate();
-
+                try
+                {
+                    _trayIcon.ForceCreate();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to force create tray icon: {ex.Message}",
+                    "Failed to force create tray icon");
+                }
                 // Set initial icon
                 SetIconNeutral();
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "TrayIcon resource not found in application resources, unable to initialize tray icon.");
+                Logger.LogError("TrayIcon resource not found in application resources, unable to initialize tray icon.");
                 (Application.Current as App)?.CurrentWindow?.Show();
             }
 
             _uiSettings = new UISettings();
             _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
+            SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+            Utility.DpiHelper.DpiChanged += DpiHelper_DpiChanged;
         }
 
         public TrayIconManager(AppModel appModel)
@@ -114,13 +131,56 @@ namespace Infomaniak.kDrive.TrayIcon
             // Subscribe to changes in the available update
             _subscriptions.Add(_appModel.Settings.UpdateManager.WhenPropertyChanged(updateManager => updateManager.ShowNotification)
                 .Subscribe(_ => UpdateTrayIcon()));
+
+            // subscribe to changes on the mass deletion controller
+            _subscriptions.Add(_appModel.ManyDeletesController.WhenPropertyChanged(manyDeletesController => manyDeletesController.CurrentManyDeleteNotification)
+                .Subscribe(_ => UpdateTrayIcon()));
+
+            _appModel.SelectedSyncChanged += AppModel_SelectedSyncChanged;
+
+            _toolTipCycleTimer = new DispatcherTimer();
+            _toolTipCycleTimer.Interval = ToolTipCycleInterval;
+            _toolTipCycleTimer.Tick += ToolTipCycleTimer_Tick;
+        }
+
+        private void StartToolTipCycle()
+        {
+            if (_toolTipCycleTimer.IsEnabled) return;
+            _toolTipCycleTimer.Start();
+        }
+
+        private void StopToolTipCycle()
+        {
+            if (!_toolTipCycleTimer.IsEnabled) return;
+            _toolTipCycleTimer.Stop();
+        }
+
+        private void AppModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
+        {
+            _toolTipCycleIndex = 0;
+            _ = Utility.RunOnUIThread(() => UpdateToolTip());
+        }
+
+        private void ToolTipCycleTimer_Tick(object? sender, object e)
+        {
+            Interlocked.Increment(ref _toolTipCycleIndex);
+            _ = Utility.RunOnUIThread(() => UpdateToolTip());
         }
 
         private void UpdateTrayIcon()
         {
+            UpdateToolTip();
+
             if (!_appModel.IsInitialized)
             {
                 SetIconNeutral();
+                return;
+            }
+
+
+            if (_appModel.ManyDeletesController.CurrentManyDeleteNotification is not null)
+            {
+                SetIconError();
                 return;
             }
 
@@ -151,41 +211,133 @@ namespace Infomaniak.kDrive.TrayIcon
             SetIconNeutral();
         }
 
+
+        private void UpdateToolTip()
+        {
+            if (_trayIcon is null)
+                return;
+
+            if (!_appModel.IsInitialized) return;
+
+            var syncs = _appModel.AllSyncs.ToList();
+            if (syncs.Count == 0)
+            {
+                _trayIcon.ToolTipText = "kDrive";
+                return;
+            }
+
+            var selectedSync = _appModel.SelectedSync is { } selected && syncs.Contains(selected) ? selected : syncs[0];
+            var otherSyncs = syncs.Where(sync => !ReferenceEquals(sync, selectedSync)).ToList();
+
+            GetToolTipTextForSync(selectedSync, 1, 1, out string selectedLine);
+            selectedLine = $"{selectedLine}";
+
+            if (otherSyncs.Count == 0)
+            {
+                _trayIcon.ToolTipText = Truncate(selectedLine, ToolTipMaxLength);
+                StopToolTipCycle();
+                return;
+            }
+
+            if (otherSyncs.Count < 2)
+                StopToolTipCycle();
+            else
+                StartToolTipCycle();
+
+            var index = (int)((uint)Volatile.Read(ref _toolTipCycleIndex) % (uint)otherSyncs.Count);
+            GetToolTipTextForSync(otherSyncs[index], index, otherSyncs.Count, out string otherLine);
+
+            // Keep both lines within the system tooltip limit, giving priority to the selected sync
+            selectedLine = Truncate(selectedLine, ToolTipMaxLength / 2);
+            otherLine = Truncate(otherLine, ToolTipMaxLength - selectedLine.Length - 2);
+
+            _trayIcon.ToolTipText = $"{selectedLine}\n\n{otherLine}";
+        }
+
+        private static string Truncate(string text, int maxLength)
+        {
+            if (text.Length <= maxLength)
+                return text;
+            return string.Concat(text.AsSpan(0, Math.Max(0, maxLength - 1)), "\u2026");
+        }
+
+        private void GetToolTipTextForSync(Sync sync, int index, int total, out string tooltipText)
+        {
+
+            tooltipText = $"{Path.GetFileName(sync.LocalPath)}";
+            if (total > 1)
+            {
+                tooltipText = $"{tooltipText} ({index + 1}/{total})";
+            }
+
+            switch (sync.SyncStatus)
+            {
+                case SyncStatus.Running:
+                    tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitleInProgress")}";
+                    break;
+                case SyncStatus.Stopped:
+                case SyncStatus.Paused:
+                case SyncStatus.Error:
+                    tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitlePause")}";
+                    break;
+                case SyncStatus.Offline:
+                    tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitleOffline")}";
+                    break;
+                case SyncStatus.Idle:
+                    tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitleIdle")}";
+                    break;
+                default:
+                    break;
+            }
+        }
+
         private async void UISettings_ColorValuesChanged(UISettings sender, object args)
         {
-            Logger.Log(Logger.Level.Extended, "System theme or color changed, updating tray icon.");
+            Logger.LogExtended("System theme or color changed, updating tray icon.");
             await Utility.RunOnUIThread(() => RefreshTheme());
+        }
+
+        private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            _dpi = GetDpiForSystem();
+            _ = Utility.RunOnUIThread(() => SetIcon(_currentIcon));
+        }
+
+        private void DpiHelper_DpiChanged(object? sender, double newScale)
+        {
+            _dpi = GetDpiForSystem();
+            _ = Utility.RunOnUIThread(() => SetIcon(_currentIcon));
         }
 
         public void SetIconSync()
         {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'sync' state.");
+            Logger.LogDebug("Setting tray icon to 'sync' state.");
             SetIcon("sync");
         }
         public void SetIconError()
         {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
+            Logger.LogDebug("Setting tray icon to 'error' state.");
             SetIcon("error");
         }
         public void SetIconPause()
         {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'pause' state.");
+            Logger.LogDebug("Setting tray icon to 'pause' state.");
             SetIcon("pause");
         }
         public void SetIconNotification()
         {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'notification' state.");
+            Logger.LogDebug("Setting tray icon to 'notification' state.");
             SetIcon("notif");
         }
         public void SetIconNeutral()
         {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'neutral' state.");
+            Logger.LogDebug("Setting tray icon to 'neutral' state.");
             SetIcon("neutral");
         }
 
         private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
-            Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
+            Logger.LogInfo("ShowWindowCommand executed - showing and activating main window");
             if (Application.Current is App app)
             {
                 app.CreateWindow(CreateWindowOptions.Foreground);
@@ -195,14 +347,14 @@ namespace Infomaniak.kDrive.TrayIcon
 
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
-            Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");
+            Logger.LogInfo("ExitApplicationCommand executed - exiting application");
             _trayIcon?.Dispose();
             App.ExitApplicationAndShutdownServer();
         }
 
         private void OpenSettingsCommand_ExecuteRequested(XamlUICommand sender, ExecuteRequestedEventArgs args)
         {
-            Logger.Log(Logger.Level.Info, "OpenSettingsCommand executed");
+            Logger.LogInfo("OpenSettingsCommand executed");
             if (Application.Current is App app)
             {
                 app.CreateWindow(CreateWindowOptions.Foreground | CreateWindowOptions.CancelOnboarding | CreateWindowOptions.OpenSettings);
@@ -212,6 +364,14 @@ namespace Infomaniak.kDrive.TrayIcon
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
         extern static bool DestroyIcon(IntPtr handle);
 
+        private const int SM_CXSMICON = 49;
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForSystem();
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetricsForDpi(int nIndex, uint dpi);
+
         private void SetIcon(string fileName)
         {
             if (_trayIcon is null)
@@ -220,22 +380,31 @@ namespace Infomaniak.kDrive.TrayIcon
             try
             {
                 _currentIcon = fileName;
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Custom", "Icons", "TrayIcons", $"{_currentIcon}{GetThemeSuffix()}.ico");
-                using var bitmap = new Bitmap(imagePath);
-                var iconHandle = bitmap.GetHicon();
-                var icon = Icon.FromHandle(iconHandle);
+
+                var imagePath = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "Assets",
+                    "Custom",
+                    "Icons",
+                    "TrayIcons",
+                    $"{_currentIcon}{GetThemeSuffix()}.ico"
+                );
+
+                int iconSize = Math.Max(1, GetSystemMetricsForDpi(SM_CXSMICON, _dpi));
+                using var icon = new Icon(imagePath, new Size(iconSize, iconSize));
+
                 _trayIcon.UpdateIcon(icon);
-                DestroyIcon(iconHandle);
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to set tray icon: {ex.Message}");
+                Logger.LogWarning($"Failed to set tray icon: {ex.Message}",
+                    "TrayIconManager: Failed to set tray icon");
             }
         }
 
         private void RefreshTheme()
         {
-            Logger.Log(Logger.Level.Info, "Refreshing tray icon theme due to theme change");
+            Logger.LogInfo("Refreshing tray icon theme due to theme change");
             SetIcon(_currentIcon);
         }
 
@@ -260,7 +429,8 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to read system theme from registry, falling back to app theme: {ex.Message}");
+                Logger.LogWarning($"Failed to read system theme from registry, falling back to app theme: {ex.Message}",
+                				"Failed to read system theme from registry");
             }
 
             // Value not available: fall back to the app theme.
@@ -269,6 +439,10 @@ namespace Infomaniak.kDrive.TrayIcon
 
         public void Dispose()
         {
+            StopToolTipCycle();
+            _appModel.SelectedSyncChanged -= AppModel_SelectedSyncChanged;
+            SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
+            Utility.DpiHelper.DpiChanged -= DpiHelper_DpiChanged;
             foreach (var subscription in _subscriptions)
             {
                 subscription.Dispose();

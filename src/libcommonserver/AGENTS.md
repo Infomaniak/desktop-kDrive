@@ -11,7 +11,6 @@ Shared library providing server-process utilities: platform-abstracted filesyste
 - Logger setup: `src/libcommonserver/log/log.h`
 - Keychain manager: `src/libcommonserver/keychainmanager/keychainmanager.h`
 - VFS plugin interface: `src/libcommonserver/vfs/vfs.h`
-- Network proxy: `src/libcommonserver/network/proxy.h`
 - Platform utilities: `src/libcommonserver/utility/utility_mac.mm`, `utility_win.cpp`, `utility_linux.cpp`
 
 ## Patterns & Conventions

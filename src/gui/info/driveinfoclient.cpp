@@ -100,7 +100,7 @@ QString DriveInfoClient::folderPath(std::shared_ptr<std::map<int, SyncInfoClient
 
     const auto &syncInfoMapIt = syncInfoMap->find(syncDbId);
     if (syncInfoMapIt != syncInfoMap->end()) {
-        fullFilePath = syncInfoMapIt->second.localPath() + filePath;
+        fullFilePath = Path2QStr(syncInfoMapIt->second.localPath()) + filePath;
     }
 
     return fullFilePath;

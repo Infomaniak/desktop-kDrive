@@ -32,11 +32,17 @@
 #include <errno.h>
 #include <string.h>
 
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSRunningApplication.h>
+#import <ServiceManagement/ServiceManagement.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
 namespace KDC {
+
+NSString *processMatchingName(NSString *const _Nonnull processMatchName);
+bool existProcessMatchingNameAndRunning(NSString *const _Nonnull processMatchName);
 
 bool Utility::preventSleeping(bool enable) {
     static IOPMAssertionID assertionID;
@@ -93,10 +99,18 @@ void Utility::restartFinderExtension() {
     });
 }
 
-NSMutableArray *getPIDsForProcessName(NSString *processName) {
+NSString *userName() {
+    return NSProcessInfo.processInfo.environment[@"USER"];
+}
+
+NSMutableArray *getPIDsForProcessName(NSString *processName, bool rootProcess) {
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:@"/bin/ps"];
-    [task setArguments:@[ @"-axo", @"pid,comm" ]];
+    if (rootProcess) {
+        [task setArguments:@[ @"-axo", @"pid,comm" ]];
+    } else {
+        [task setArguments:@[ @"-axo", @"pid,comm", @"-u", userName() ]];
+    }
 
     NSPipe *pipe = [NSPipe pipe];
     [task setStandardOutput:pipe];
@@ -126,10 +140,8 @@ NSMutableArray *getPIDsForProcessName(NSString *processName) {
 
 void Utility::restartLoginItemAgent() {
     LOG_DEBUG(logger(), "Killing Login Item Agent");
-    NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
-    NSString *processName =
-            [NSString stringWithFormat:@"%@%@.LoginItemAgent", [NSString stringWithUTF8String:TEAM_IDENTIFIER_PREFIX], bundleID];
-    NSMutableArray *pids = getPIDsForProcessName(processName);
+    NSString *processName = processMatchingName(@"LoginItemAgentMachName");
+    NSMutableArray *pids = getPIDsForProcessName(processName, false);
     assert(pids.count <= 1);
     if (pids.count == 1) {
         NSNumber *pidNumber = [pids objectAtIndex:0];
@@ -139,12 +151,81 @@ void Utility::restartLoginItemAgent() {
     }
 }
 
-bool Utility::isLiteSyncExtRunning() {
+NSString *processMatchingName(NSString *const _Nonnull processMatchName) {
+    NSString *processName = nil;
     NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
-    NSString *processName = [NSString stringWithFormat:@"%@.LiteSyncExt", bundleID];
-    NSMutableArray *pids = getPIDsForProcessName(processName);
+    if (bundleID) {
+        processName = [NSBundle.mainBundle objectForInfoDictionaryKey:processMatchName];
+    } else {
+        // We are running in a test environment, we can use the default process name
+        if ([processMatchName isEqualToString:@"LiteSyncExtMachName"]) {
+            processName = [NSString stringWithFormat:@"%@.LiteSyncExt", [NSString stringWithUTF8String:APPLICATION_REV_DOMAIN]];
+        } else if ([processMatchName isEqualToString:@"LoginItemAgentMachName"]) {
+            processName =
+                    [NSString stringWithFormat:@"%@%@.LoginItemAgent", [NSString stringWithUTF8String:TEAM_IDENTIFIER_PREFIX],
+                                               [NSString stringWithUTF8String:APPLICATION_REV_DOMAIN]];
+        }
+    }
+    return processName;
+}
+
+bool existProcessMatchingNameAndRunning(NSString *const _Nonnull processMatchName, bool rootProcess) {
+    NSString *processName = processMatchingName(processMatchName);
+    if (!processName) {
+        return false;
+    }
+
+    NSMutableArray *pids = getPIDsForProcessName(processName, rootProcess);
     assert(pids.count <= 1);
     return pids.count == 1;
+}
+
+bool Utility::isLiteSyncExtRunning() {
+    return existProcessMatchingNameAndRunning(@"LiteSyncExtMachName", true);
+}
+
+bool Utility::isLoginItemAgentRunning() {
+    return existProcessMatchingNameAndRunning(@"LoginItemAgentMachName", false);
+}
+
+bool Utility::registerLoginItemAgent(bool enable) {
+    if (@available(macOS 13.0, *)) {
+        NSString *processName = processMatchingName(@"LoginItemAgentMachName");
+        if (!processName) {
+            LOG_WARN(logger(), "No process matching name: " << [processName UTF8String]);
+            return false;
+        }
+
+        SMAppService *service = [SMAppService loginItemServiceWithIdentifier:processName];
+        LOG_DEBUG(logger(), "SMAppService status: " << service.status);
+
+        if (service.status == SMAppServiceStatusNotFound) {
+            // We are running in a test environment, it is not possible to manage the service outside the application
+            LOG_WARN(logger(), "No SMAppService with ID=" << [processName UTF8String]);
+            return false;
+        }
+
+        if (enable && service.status == SMAppServiceStatusNotRegistered) {
+            NSError *error = nil;
+            if (![service registerAndReturnError:&error]) {
+                LOG_WARN(logger(), "Error in registerAndReturnError: " << std::to_string(error.code));
+                return false;
+            }
+
+            LOG_DEBUG(logger(), "LoginItemAgent registered successfully");
+        } else if (!enable &&
+                   (service.status == SMAppServiceStatusEnabled || service.status == SMAppServiceStatusRequiresApproval)) {
+            NSError *error = nil;
+            if (![service unregisterAndReturnError:&error]) {
+                LOG_WARN(logger(), "Error in unregisterAndReturnError: " << std::to_string(error.code));
+                return false;
+            }
+
+            LOG_DEBUG(logger(), "LoginItemAgent unregistered successfully");
+        }
+    }
+
+    return true;
 }
 
 bool Utility::hasLaunchOnStartup(const std::string &) {
@@ -256,7 +337,12 @@ bool Utility::runCommand(const std::string &launchPath, const std::vector<std::s
 
         NSMutableArray<NSString *> *args = [NSMutableArray arrayWithCapacity:arguments.size()];
         for (const auto &arg: arguments) {
-            [args addObject:[NSString stringWithUTF8String:arg.c_str()]];
+            NSString *_Nullable argStr = [NSString stringWithUTF8String:arg.c_str()];
+            if (!argStr) {
+                LOG_WARN(logger(), "Cannot run command: argument is not valid");
+                return false;
+            }
+            [args addObject:argStr];
         }
         [task setArguments:args];
 

@@ -46,12 +46,10 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
 #include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
@@ -70,6 +68,8 @@ const SyncPath remoteTestCiDirPath = "Common documents/Test kDrive/test_ci";
 
 void TestIntegration::setUp() {
     TestBase::start();
+    if (!testhelpers::isExtendedTest(false)) return;
+
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up");
@@ -82,7 +82,7 @@ void TestIntegration::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;
@@ -110,7 +110,7 @@ void TestIntegration::setUp() {
         const auto tmpFilePath = temporaryDir.path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
         testhelpers::generateOrEditTestFile(tmpFilePath);
         // Upload the temporary file to create on remote replica the file that will be used in tests.
-        UploadJob job(nullptr, _driveDbId, tmpFilePath, tmpFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
+        UploadJob job(_driveDbId, tmpFilePath, tmpFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
                       testhelpers::defaultTime);
         (void) job.runSynchronously();
         _testFileRemoteId = job.nodeId();
@@ -127,20 +127,19 @@ void TestIntegration::setUp() {
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        (void) Proxy::instance(parameters.proxyConfig());
-    }
-
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
-                                         KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->syncDb()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true); // Enable extended log to see more details in the logs
 }
 
 void TestIntegration::tearDown() {
+    if (!testhelpers::isExtendedTest()) {
+        _remoteSyncDir.setDeleted();
+        TestBase::stop();
+        return;
+    }
     if (_syncPal) _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     _remoteSyncDir.deleteDirectory();
 
@@ -198,8 +197,8 @@ void TestIntegration::inconsistencyTests() {
 
     // Rename files on remote side.
     _syncPal->pause();
-    (void) RenameJob(nullptr, _driveDbId, testForbiddenCharsRemoteId, "test:*ForbiddenChar").runSynchronously();
-    (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash").runSynchronously();
+    (void) RenameJob(_driveDbId, testForbiddenCharsRemoteId, "test:*ForbiddenChar").runSynchronously();
+    (void) RenameJob(_driveDbId, testNameClashRemoteId2, "testnameclash").runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     _syncPal->unpause();
     waitForSyncToBeIdle(std::source_location::current());
@@ -233,7 +232,7 @@ void TestIntegration::inconsistencyTests() {
     CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size); // The local edit is not propagated.
 
     // Rename again the remote file to avoid the name clash.
-    (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
+    (void) RenameJob(_driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     // Needed because when an item has remote move and local edit operations at the same time, the move operation is processed
@@ -261,12 +260,12 @@ void TestIntegration::testBreakCycle() {
     NodeId nodeIdAA;
     NodeId nodeIdAAA;
     {
-        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        CreateDirJob jobA(_driveDbId, tmpRemoteDir.id(), Str("A"));
         (void) jobA.runSynchronously();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        CreateDirJob jobAA(_driveDbId, jobA.nodeId(), Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        CreateDirJob jobAAA(_driveDbId, nodeIdAA, Str("AAA"));
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
     }
@@ -278,9 +277,9 @@ void TestIntegration::testBreakCycle() {
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
     // Rename A/AA/AAA to A/AA/AAA2 on remote replica.
-    (void) RenameJob(nullptr, _driveDbId, nodeIdAAA, Str("AAA2")).runSynchronously();
+    (void) RenameJob(_driveDbId, nodeIdAAA, Str("AAA2")).runSynchronously();
     // Create A/AA/AAA on remote replica.
-    CreateDirJob dirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+    CreateDirJob dirJob(_driveDbId, nodeIdAA, Str("AAA"));
     (void) dirJob.runSynchronously();
     // Move A/AA/AAA2 to A/AA/AAA/AAA2 on remote replica.
     testhelpers::moveRemoteItem(_driveDbId, nodeIdAAA, dirJob.nodeId());
@@ -314,7 +313,8 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(dirpath));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #endif
@@ -330,7 +330,8 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(_syncPal->localPath() / filename));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -432,7 +433,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
 
     // Rename the remote file so the exclusion template does not apply anymore.
-    (void) RenameJob(nullptr, _driveDbId, fileRemoteId, filename).runSynchronously();
+    (void) RenameJob(_driveDbId, fileRemoteId, filename).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     // The remote file is synchronized again...
@@ -445,7 +446,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
     // Rename remote directory so the exclusion template applies.
-    (void) RenameJob(nullptr, _driveDbId, exclusionTemplatesTestDir.id(), testName).runSynchronously();
+    (void) RenameJob(_driveDbId, exclusionTemplatesTestDir.id(), testName).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(dirLocalId));
@@ -474,7 +475,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
     // Rename remote directory so the exclusion template does not apply anymore.
-    (void) RenameJob(nullptr, _driveDbId, exclusionTemplatesTestDir.id(), exclusionTemplatesTestDir.name()).runSynchronously();
+    (void) RenameJob(_driveDbId, exclusionTemplatesTestDir.id(), exclusionTemplatesTestDir.name()).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(exclusionTemplatesTestDir.id()));
@@ -482,7 +483,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(dirLocalId));
 
     // Rename the remote file so the exclusion template applies.
-    (void) RenameJob(nullptr, _driveDbId, fileRemoteId, testName).runSynchronously();
+    (void) RenameJob(_driveDbId, fileRemoteId, testName).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
@@ -491,8 +492,8 @@ void TestIntegration::testExclusionTemplates() {
                                             filename)); // The local file has been moved to trash.
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() ||
-                   testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -549,13 +550,13 @@ void TestIntegration::testParentRename() {
     NodeId nodeIdAA;
     NodeId nodeIdAAA;
     {
-        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        CreateDirJob jobA(_driveDbId, tmpRemoteDir.id(), Str("A"));
         (void) jobA.runSynchronously();
         nodeIdA = jobA.nodeId();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        CreateDirJob jobAA(_driveDbId, jobA.nodeId(), Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        CreateDirJob jobAAA(_driveDbId, nodeIdAA, Str("AAA"));
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
     }
@@ -565,13 +566,13 @@ void TestIntegration::testParentRename() {
 
     _syncPal->pause();
     // Rename A to A2
-    (void) RenameJob(nullptr, _driveDbId, nodeIdA, "A2").runSynchronously();
+    (void) RenameJob( _driveDbId, nodeIdA, "A2").runSynchronously();
     // Delete A/AA/AAA
     DeleteJob deleteJob(_driveDbId, nodeIdAAA);
     deleteJob.setBypassCheck(true);
     (void) deleteJob.runSynchronously();
     // Create A/AA/AAA2
-    (void) CreateDirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA2")).runSynchronously();
+    (void) CreateDirJob(_driveDbId, nodeIdAA, Str("AAA2")).runSynchronously();
     _syncPal->unpause();
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -591,6 +592,7 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
         (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
@@ -599,7 +601,7 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
-        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
+        CPPUNIT_ASSERT_GREATEREQUAL(beforeComputeFsOperationsTime, fileInfoJob.modificationTime());
     }
     waitForSyncToBeIdle(std::source_location::current());
     {
@@ -636,6 +638,7 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
         (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
@@ -648,10 +651,10 @@ void TestIntegration::testNegativeModificationTime() {
         // Linux: Creation date cannot be changed.
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
 #else
-        // Setting both a negative creation and modification date is accepted.
+        // Setting a negative creation date is accepted.
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
 #endif
-        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
+        CPPUNIT_ASSERT_GREATEREQUAL(beforeComputeFsOperationsTime, fileInfoJob.modificationTime());
     }
 
     logStep("testNegativeModificationTime");
@@ -673,13 +676,13 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     NodeId nodeIdAAA;
     NodeId nodeIdAAAA;
     {
-        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        CreateDirJob jobA(_driveDbId, tmpRemoteDir.id(), Str("A"));
         (void) jobA.runSynchronously();
         nodeIdA = jobA.nodeId();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        CreateDirJob jobAA(_driveDbId, jobA.nodeId(), Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        CreateDirJob jobAAA(_driveDbId, nodeIdAA, Str("AAA"));
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
 
@@ -700,10 +703,10 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         testhelpers::deleteRemoteItem(_driveDbId, nodeIdAA);
 
         // Create A/AA/AAA1
-        CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
+        CreateDirJob jobAA(_driveDbId, nodeIdA, Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA1(nullptr, _driveDbId, nodeIdAA, Str("AAA1"));
+        CreateDirJob jobAAA1(_driveDbId, nodeIdAA, Str("AAA1"));
         (void) jobAAA1.runSynchronously();
 
         // Move back test file into AAA1
@@ -767,7 +770,7 @@ void TestIntegration::testDeleteAndMoveCase() {
     // Delete aa
     testhelpers::deleteRemoteItem(_driveDbId, nodeIdAA);
     // Rename a
-    (void) RenameJob(nullptr, _driveDbId, nodeIdA, Str("A2")).runSynchronously();
+    (void) RenameJob(_driveDbId, nodeIdA, Str("A2")).runSynchronously();
     // Move bb
     testhelpers::moveRemoteItem(_driveDbId, nodeIdBB, nodeIdA);
     // Delete b
@@ -798,13 +801,13 @@ void TestIntegration::initTestMoveDeleteRename(const RemoteTemporaryDirectory &r
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
 
     {
-        CreateDirJob jobA(nullptr, _driveDbId, remoteTempDir.id(), Str("A"));
+        CreateDirJob jobA(_driveDbId, remoteTempDir.id(), Str("A"));
         (void) jobA.runSynchronously();
         nodeIdA = jobA.nodeId();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        CreateDirJob jobAA(_driveDbId, jobA.nodeId(), Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobB(nullptr, _driveDbId, remoteTempDir.id(), Str("B"));
+        CreateDirJob jobB(_driveDbId, remoteTempDir.id(), Str("B"));
         (void) jobB.runSynchronously();
         nodeIdB = jobB.nodeId();
 
@@ -872,7 +875,8 @@ void TestIntegration::testMoveDeleteRename() {
         (void) LocalMoveJob(moveSourcePath, moveDestPath).runSynchronously();
         // Delete a
         const auto deletedPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
-        (void) GenericLocalDeleteJob(deletedPath, GenericLocalDeleteJob::ForceHardDelete::Yes).runSynchronously();
+        (void) GenericLocalDeleteJob(deletedPath, _syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes)
+                .runSynchronously();
         // Rename b
         const auto renameSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         const auto renameDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -910,7 +914,7 @@ void TestIntegration::testCreateMoveDeleteRename() {
 
     // Create bb
     NodeId nodeIdBB;
-    CreateDirJob jobBB(nullptr, _driveDbId, nodeIdB, Str("AA"));
+    CreateDirJob jobBB(_driveDbId, nodeIdB, Str("AA"));
     (void) jobBB.runSynchronously();
     nodeIdBB = jobBB.nodeId();
     // Move aaa
@@ -969,7 +973,7 @@ void TestIntegration::logStep(const std::string &str) {
     LOG_DEBUG(_logger, ss.str());
 }
 
-TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const int driveDbId, const NodeId &parentId,
+TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const DriveDbId driveDbId, const NodeId &parentId,
                                                                          const SyncName &name) const {
     RemoteFileInfo fileInfo;
 
@@ -1000,7 +1004,19 @@ TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const i
     return fileInfo;
 }
 
-int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const {
+TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByPath(const DriveDbId driveDbId, const NodeId &rootParentId,
+                                                                         const SyncPath &relativePath) const {
+    RemoteFileInfo fileInfo;
+    NodeId currentParentId = rootParentId;
+    for (const auto &part: relativePath) {
+        fileInfo = getRemoteFileInfoByName(driveDbId, currentParentId, part.native());
+        if (!fileInfo.isValid()) return {};
+        currentParentId = fileInfo.id;
+    }
+    return fileInfo;
+}
+
+int64_t TestIntegration::countItemsInRemoteDir(const DriveDbId driveDbId, const NodeId &parentId) const {
     GetFileListJob job(driveDbId, parentId);
     (void) job.runSynchronously();
 
@@ -1014,13 +1030,12 @@ int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &pare
 }
 
 void TestIntegration::testSynchronizationOfSymLinks() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_sync");
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_sync");
 
     waitForSyncToBeIdle(std::source_location::current());
 
-    // Create valid links with compliant target paths. These links should be synchronized to the remote replica.
-    // Absolute paths are not allowed, but relative paths are. Relative paths must be relative to the sync root.
-    // Parent traversal is not allowed, but relative paths that do not traverse the parent are allowed.
+    // Create valid and invalid links whose target paths are relative and do not use parent traversal.
+    // These links should be synchronized to the remote replica.
     testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
 
     std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "file.txt",
@@ -1042,7 +1057,8 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 
     waitForSyncToBeIdle(std::source_location::current());
 
-    // Create links with non-compliant target paths. These links should not be synchronized to the remote replica.
+    // Create links whose target paths are absolute or use parent traversal.
+    // As the backend does not reject them yet, these links should be synchronized as well.
     std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_absolute_target_path");
 
@@ -1073,7 +1089,7 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 }
 
 void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
 
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -1093,7 +1109,7 @@ void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
 }
 
 void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
 
     waitForSyncToBeIdle(std::source_location::current());
 

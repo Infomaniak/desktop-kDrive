@@ -4,8 +4,8 @@ else()
     project(libsyncengine LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation Net NetSSL JSON Util)
-find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+find_package(Poco 1.15.2 REQUIRED Foundation Net NetSSL JSON Util)
+find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -75,6 +75,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/upload/upload_session/uploadsessionchunkjob.h jobs/network/kDrive_API/upload/upload_session/uploadsessionchunkjob.cpp
     jobs/network/kDrive_API/upload/upload_session/uploadsessionfinishjob.h jobs/network/kDrive_API/upload/upload_session/uploadsessionfinishjob.cpp
     jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.cpp
+    jobs/network/kDrive_API/upload/uploadhelpers.h
     jobs/network/kDrive_API/upload/uploadjob.h jobs/network/kDrive_API/upload/uploadjob.cpp
     jobs/network/kDrive_API/upload/loguploadjob.h jobs/network/kDrive_API/upload/loguploadjob.cpp
     jobs/network/kDrive_API/upload/uploadjobreplyhandler.h jobs/network/kDrive_API/upload/uploadjobreplyhandler.cpp
@@ -150,7 +151,6 @@ set(syncengine_SRCS
     # Progress Dispatcher
     progress/estimates.h
     progress/progressitem.h
-    progress/syncfileitem.h progress/syncfileitem.cpp
     progress/progress.h progress/progress.cpp
     progress/progressinfo.h progress/progressinfo.cpp
     # Requests
@@ -233,8 +233,7 @@ if(WIN32)
 else()
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR}
-            "/usr/local/include")
+            ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 # Link
@@ -242,5 +241,4 @@ target_link_libraries(${libsyncengine_NAME}
         ${libparms_NAME}
         Poco::Foundation Poco::Net Poco::NetSSL Poco::JSON Poco::Util
         OpenSSL::SSL OpenSSL::Crypto)
-
 

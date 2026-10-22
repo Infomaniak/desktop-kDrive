@@ -44,9 +44,9 @@ class MockAppServer : public AppServer {
         };
 
     private:
-        void sendUserUpdated(const UserInfo &) const override { /* Do not try to notify the client */ };
-        void sendAccountAdded(const AccountInfo &) const override { /* Do not try to notify the client */ };
-        void sendAccountUpdated(const AccountInfo &) const override { /* Do not try to notify the client */ };
+        void sendUserUpdated(const User &) const override { /* Do not try to notify the client */ };
+        void sendAccountAdded(const Account &) const override { /* Do not try to notify the client */ };
+        void sendAccountUpdated(const Account &) const override { /* Do not try to notify the client */ };
         void sendDriveUpdated(const Drive &) const override { /* Do not try to notify the client */ };
 
         std::filesystem::path _parmsDbPath;
@@ -57,6 +57,8 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testInitAndStopSyncPal);
         CPPUNIT_TEST(testStartAndStopSync);
         CPPUNIT_TEST(testUpdateUserInfo);
+        CPPUNIT_TEST(testResolveErrorsForNode);
+        CPPUNIT_TEST(testProxyConfigUpdate);
         CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
 
@@ -66,11 +68,14 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
 
         void testInitAndStopSyncPal();
         void testStartAndStopSync();
-        void testCleanup();
         void testUpdateUserInfo();
+        void testResolveErrorsForNode();
+        void testProxyConfigUpdate();
+
+        void testCleanup();
 
     private:
-        MockAppServer *_appPtr;
+        MockAppServer *_appPtr = nullptr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestAppServer");
 
         bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;

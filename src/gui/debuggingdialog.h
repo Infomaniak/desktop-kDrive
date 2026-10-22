@@ -24,7 +24,7 @@
 #include "customtoolbutton.h"
 #include "customcheckbox.h"
 #include "libcommon/utility/types.h"
-#include "libcommon/info/parametersinfo.h"
+#include "libcommon/data/parameters.h"
 
 #include <QPushButton>
 #include <QLabel>

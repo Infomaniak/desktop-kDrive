@@ -42,13 +42,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             Frame? frame = Utility.GetFrame(this);
             if (frame is not null)
             {
-                Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                Logger.LogInfo("Navigating to ErrorPage.");
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenErrors);
                 frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Could not find Frame in visual tree to navigate to error page");
+                Logger.LogError("Could not find Frame in visual tree to navigate to error page");
             }
         }
     }

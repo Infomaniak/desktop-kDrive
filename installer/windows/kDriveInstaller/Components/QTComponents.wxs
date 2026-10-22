@@ -42,9 +42,8 @@
             </Component>
         </ComponentGroup>
         <ComponentGroup Id="TLSComponents" Directory="TLSFOLDER">
-            <Component Guid="1C1AD7E8-6298-412E-84BF-CAD372561772">
+            <Component Guid="D26EFBDD-03DA-4113-BA0F-F9598392D861">
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qcertonlybackend.dll" />
-                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qopensslbackend.dll" />
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/tls/qschannelbackend.dll" />
             </Component>
         </ComponentGroup>
@@ -82,8 +81,8 @@
             </Component>
         </ComponentGroup>
         <ComponentGroup Id="StyleComponents" Directory="STYLEFOLDER">
-            <Component Guid="5B4DBA6B-B232-442D-A862-6B05B742B6F3">
-                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/styles/qwindowsvistastyle.dll" />
+            <Component Guid="8833DFD9-0FE2-4D53-9FB3-70EF3FE47149">
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/styles/qmodernwindowsstyle.dll" />
             </Component>
         </ComponentGroup>
     </Fragment>

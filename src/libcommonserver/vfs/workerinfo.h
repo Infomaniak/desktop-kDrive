@@ -35,19 +35,6 @@
 
 namespace KDC {
 struct WorkerInfo {
-        ~WorkerInfo() {
-            // Force threads to stop if needed
-            for (QThread *const thread: std::as_const(_threadList)) {
-                if (thread) {
-                    thread->quit();
-                    if (!thread->wait(1000)) {
-                        thread->terminate();
-                        thread->wait();
-                    }
-                }
-            }
-        }
-
         QMutex _mutex;
         std::deque<SyncPath> _queue;
         QWaitCondition _queueWC;

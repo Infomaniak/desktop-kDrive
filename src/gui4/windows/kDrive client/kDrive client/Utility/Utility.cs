@@ -101,7 +101,8 @@ namespace Infomaniak.kDrive
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to open file {filePath}: {ex.Message}");
+                Logger.LogError($"Failed to open file {filePath}: {ex.Message}",
+                    "Utility: Failed to open file");
             }
         }
 
@@ -110,14 +111,15 @@ namespace Infomaniak.kDrive
             // Validate input
             if (string.IsNullOrWhiteSpace(folderPath))
             {
-                Logger.Log(Logger.Level.Warning, "Cannot open the FolderPath which is null or empty.");
+                Logger.LogWarning("Cannot open the FolderPath which is null or empty.");
                 return false;
             }
 
             // Prevent UNC paths
             if (folderPath.StartsWith(@"\\", StringComparison.OrdinalIgnoreCase))
             {
-                Logger.Log(Logger.Level.Warning, $"Access to UNC paths is restricted ({folderPath}).");
+                Logger.LogWarning($"Access to UNC paths is restricted ({folderPath}).",
+                    "Utility: UNC path access is restricted");
                 return false;
             }
 
@@ -128,7 +130,8 @@ namespace Infomaniak.kDrive
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Invalid path format provided ({folderPath}): {ex.Message}");
+                Logger.LogError($"Invalid path format provided ({folderPath}): {ex.Message}",
+                    "Utility: Invalid folder path format");
                 return false;
             }
 
@@ -361,6 +364,13 @@ namespace Infomaniak.kDrive
             return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
         }
 
+        public static string? FromBase64String(string? data)
+        {
+            if (data is null)
+                return null;
+            return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(data));
+        }
+
         public static bool IsSubPathOf(string path, string prefix)
         {
             if (!path.StartsWith(prefix))
@@ -391,13 +401,13 @@ namespace Infomaniak.kDrive
 
         public static void BringCurrentWindowToFront()
         {
-            Logger.Log(Logger.Level.Info, "Bringing current window to front");
+            Logger.LogInfo("Bringing current window to front");
 
             App? app = Application.Current as App;
 
             if (app?.CurrentWindow is null)
             {
-                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: Application?.Current?.CurrentWindow is null");
+                Logger.LogWarning("Cannot bring window to front: Application?.Current?.CurrentWindow is null");
                 return;
             }
             BringWindowToFront(app.CurrentWindow);
@@ -405,7 +415,7 @@ namespace Infomaniak.kDrive
 
         public static void BringWindowToFront(Window window)
         {
-            Logger.Log(Logger.Level.Info, "Bringing current window to front");
+            Logger.LogInfo("Bringing current window to front");
             if (!window.Visible)
             {
                 window.Activate();
@@ -415,7 +425,7 @@ namespace Infomaniak.kDrive
                 var hWnd = WindowNative.GetWindowHandle(window);
                 if (hWnd == IntPtr.Zero)
                 {
-                    Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
+                    Logger.LogWarning("Cannot bring window to front: hWnd is zero");
                     return;
                 }
 
@@ -447,7 +457,7 @@ namespace Infomaniak.kDrive
 
         public static void ShowUnexpectedErrorTeachingTip()
         {
-            Logger.Log(Logger.Level.Error, "Showing unexpected error TeachingTip");
+            Logger.LogError("Showing unexpected error TeachingTip");
             App.ServiceProvider.GetRequiredService<IAnalyticsService>().TrackOther(Analytics.Keys.Category.UnexpectedErrorTeachingTip, Analytics.Keys.EventName.Displayed);
             ShowTeachingTip(Localizer.Instance.GetString("unexpectedErrorTeachingTipTitle"), Localizer.Instance.GetString("unexpectedErrorTeachingTipContent"));
         }
@@ -459,7 +469,7 @@ namespace Infomaniak.kDrive
         {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot show TeachingTip: App.Current or CurrentWindow is null");
+                Logger.LogError("Cannot show TeachingTip: App.Current or CurrentWindow is null");
                 return;
             }
 

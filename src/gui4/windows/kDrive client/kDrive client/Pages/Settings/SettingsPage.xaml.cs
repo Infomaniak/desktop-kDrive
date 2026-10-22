@@ -57,9 +57,9 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         public SettingsPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
+            Logger.LogInfo("Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
+            Logger.LogDebug("SettingsPage components initialized");
             Loaded += SettingsPage_Loaded;
         }
 
@@ -126,7 +126,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeAutoStart, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn))
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to change AutoStart setting");
+                    Logger.LogError("Failed to change AutoStart setting");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 toggleSwitch.IsEnabled = true;
@@ -149,20 +149,22 @@ namespace Infomaniak.kDrive.Pages.Settings
                 string? selection = selectedItem.Tag as string;
                 if (!Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
                 {
-                    Logger.Log(Logger.Level.Error, $"Invalid selection for NotificationsDisabled: {selection}");
+                    Logger.LogError($"Invalid selection for NotificationsDisabled: {selection}",
+                        "SettingsPage: Invalid notification setting selection");
                     comboBox.IsEnabled = true;
                     return;
                 }
 
                 if (!await ViewModel.Settings.ChangeNotificationsDisabled(selectedNotificationsDisabled))
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to change update notifications disabled to {selectedNotificationsDisabled}");
+                    Logger.LogError($"Failed to change update notifications disabled to {selectedNotificationsDisabled}",
+                        "SettingsPage: Failed to change notification setting");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     comboBox.IsEnabled = true;
                     return;
                 }
 
-                Logger.Log(Logger.Level.Info, $"Update notifications disabled changed to {selectedNotificationsDisabled}");
+                Logger.LogInfo($"Update notifications disabled changed to {selectedNotificationsDisabled}");
                 comboBox.IsEnabled = true;
             }
         }
@@ -178,7 +180,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 toggleSwitch.IsEnabled = false;
                 if (!await ViewModel.Settings.ChangeMoveToTrash(toggleSwitch.IsOn))
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to change MoveToTrash setting");
+                    Logger.LogError("Failed to change MoveToTrash setting");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 toggleSwitch.IsEnabled = true;
@@ -190,7 +192,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             User? user = (sender as FrameworkElement)?.DataContext as User;
             if (user is null)
             {
-                Logger.Log(Logger.Level.Error, "Unable to find the user from DataContext.");
+                Logger.LogError("Unable to find the user from DataContext.");
                 return;
             }
 
@@ -199,13 +201,13 @@ namespace Infomaniak.kDrive.Pages.Settings
                 var senderExpander = sender as SettingsExpander;
                 if (senderExpander is null)
                 {
-                    Logger.Log(Logger.Level.Error, "Unable to find the SettingsExpander from sender.");
+                    Logger.LogError("Unable to find the SettingsExpander from sender.");
                     return;
                 }
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
+                Logger.LogWarning("Error while refreshing available drives for user.");
             }
         }
 
@@ -217,13 +219,13 @@ namespace Infomaniak.kDrive.Pages.Settings
             User? user = (sender as FrameworkElement)?.DataContext as User;
             if (user is null)
             {
-                Logger.Log(Logger.Level.Error, "Unable to find the user from DataContext.");
+                Logger.LogError("Unable to find the user from DataContext.");
                 return;
             }
 
             if (!await user.RefreshAvailableDrives(CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
+                Logger.LogWarning("Error while refreshing available drives for user.");
                 Utility.ShowUnexpectedErrorTeachingTip(); // Show a generic error message for now, discussion is in progress with UX team to improve this.
             }
         }
@@ -243,7 +245,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             User? user = sender is FrameworkElement fe && fe.DataContext is User u ? u : null;
             if (user is null)
             {
-                Logger.Log(Logger.Level.Error, "Unable to disconnect user: DataContext is not a User");
+                Logger.LogError("Unable to disconnect user: DataContext is not a User");
                 return;
             }
             var control = sender as Control;
@@ -267,7 +269,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.ConfirmDisconnect);
                 if (!await _viewModel.DisconnectUserAsync(user.DbId))
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to disconnect user");
+                    Logger.LogError("Failed to disconnect user");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     if (control is not null)
                         control.IsEnabled = true;
@@ -277,7 +279,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             else
             {
                 _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.CancelDisconnect);
-                Logger.Log(Logger.Level.Info, "User disconnection cancelled by user");
+                Logger.LogInfo("User disconnection cancelled by user");
             }
             if (control is not null)
                 control.IsEnabled = true;
@@ -288,19 +290,19 @@ namespace Infomaniak.kDrive.Pages.Settings
             IDrive? drive = (sender as FrameworkElement)?.Tag as IDrive;
             if (drive is not null)
             {
-                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to manage page");
+                Logger.LogInfo($"ManageDriveButton clicked for configured drive {drive.Name}, going to manage page");
                 _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.OpenDriveSettings);
                 Frame.Navigate(typeof(DriveManagementPage), drive);
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "ManageDriveButton clicked but Tag is not a valid IDrive");
+                Logger.LogError("ManageDriveButton clicked but Tag is not a valid IDrive");
             }
         }
 
         private void SyncRulesCard_Clicked(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
+            Logger.LogInfo("Navigating to Sync Rules Page from Settings Page");
             _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.OpenExclusionRules);
             Frame.Navigate(typeof(TemplateExclusionPage));
         }
@@ -316,7 +318,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeMatomoSettings, (result == ConsentResult.Allowed) ? 1 : 0);
             if (!await ViewModel.Settings.ChangeMatomoEnabled(result == ConsentResult.Allowed))
             {
-                Logger.Log(Logger.Level.Error, "Failed to change Matomo enabled setting");
+                Logger.LogError("Failed to change Matomo enabled setting");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
@@ -333,7 +335,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeSentrySettings, (result == ConsentResult.Allowed) ? 1 : 0);
             if (!await ViewModel.Settings.ChangeSentryEnabled(result == ConsentResult.Allowed))
             {
-                Logger.Log(Logger.Level.Error, "Failed to change Sentry enabled setting");
+                Logger.LogError("Failed to change Sentry enabled setting");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
@@ -359,7 +361,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Error, "control is null");
+                Logger.LogError("control is null");
                 return;
             }
 
@@ -370,7 +372,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
             if (selectedItem is null)
             {
-                Logger.Log(Logger.Level.Error, "selectedItem is null");
+                Logger.LogError("selectedItem is null");
                 control.IsEnabled = true;
                 return;
             }
@@ -378,7 +380,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (!Enum.TryParse<ProxyType>(selectedItem.Tag as string, out ProxyType selectedProxyType))
             {
                 control.IsEnabled = true;
-                Logger.Log(Logger.Level.Error, "selected item is null or invalid");
+                Logger.LogError("selected item is null or invalid");
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeProxyMode);
 
@@ -390,7 +392,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (!await ViewModel.Settings.ChangeProxyType(selectedProxyType))
             {
-                Logger.Log(Logger.Level.Error, "Failed to change proxy type");
+                Logger.LogError("Failed to change proxy type");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
 
@@ -426,7 +428,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (!await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password))
             {
-                Logger.Log(Logger.Level.Error, "Failed to change proxy configuration");
+                Logger.LogError("Failed to change proxy configuration");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
 
@@ -455,7 +457,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to open debug folder: {ex.Message}");
+                Logger.LogError($"Failed to open debug folder: {ex.Message}",
+                    "SettingsPage: Failed to open debug folder");
             }
         }
 
@@ -470,7 +473,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogIsOn, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Debug : Logger.Level.None))
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to change log level");
+                    Logger.LogError("Failed to change log level");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 toggleSwitch.IsEnabled = true;
@@ -489,7 +492,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogPurge, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch.IsOn))
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to change purge old logs setting");
+                    Logger.LogError("Failed to change purge old logs setting");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 toggleSwitch.IsEnabled = true;
@@ -515,7 +518,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogVerbosity);
                 if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Extended : Logger.Level.Debug))
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to change log level");
+                    Logger.LogError("Failed to change log level");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 toggleSwitch.IsEnabled = true;
@@ -530,7 +533,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Error, "control is null");
+                Logger.LogError("control is null");
                 return;
             }
 
@@ -542,14 +545,15 @@ namespace Infomaniak.kDrive.Pages.Settings
             var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
             if (selectedItem is null)
             {
-                Logger.Log(Logger.Level.Error, "selectedItem is null");
+                Logger.LogError("selectedItem is null");
                 control.IsEnabled = true;
                 return;
             }
 
             if (!Enum.TryParse<Logger.Level>(selectedItem.Tag as string, out Logger.Level selectedLevel))
             {
-                Logger.Log(Logger.Level.Error, $"Selected item is null or invalid : {selectedItem.Tag}");
+                Logger.LogError($"Selected item is null or invalid : {selectedItem.Tag}",
+                    "SettingsPage: Invalid log level selection");
                 control.IsEnabled = true;
                 return;
             }
@@ -557,7 +561,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (!await ViewModel.Settings.ChangeLogLevel(selectedLevel))
             {
-                Logger.Log(Logger.Level.Error, "Failed to change log level");
+                Logger.LogError("Failed to change log level");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
             control.IsEnabled = true;
@@ -571,7 +575,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Error, "control is null");
+                Logger.LogError("control is null");
                 return;
             }
 
@@ -585,21 +589,22 @@ namespace Infomaniak.kDrive.Pages.Settings
             var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
             if (selectedItem is null)
             {
-                Logger.Log(Logger.Level.Error, "selectedItem is null");
+                Logger.LogError("selectedItem is null");
                 control.IsEnabled = true;
                 return;
             }
 
             if (!Enum.TryParse<Language>(selectedItem.Tag as string, out Language selectedLanguage))
             {
-                Logger.Log(Logger.Level.Error, $"Selected item is null or invalid : {selectedItem.Tag}");
+                Logger.LogError($"Selected item is null or invalid : {selectedItem.Tag}",
+                    "SettingsPage: Invalid language selection");
                 control.IsEnabled = true;
                 return;
             }
 
             await ViewModel.Settings.ChangeLanguage(selectedLanguage);
             Frame.BackStack.Clear(); // Prevent user from going back to a page with the old language
-            Logger.Log(Logger.Level.Info, $"Language changed to {selectedLanguage}");
+            Logger.LogInfo($"Language changed to {selectedLanguage}");
             control.IsEnabled = true;
         }
 
@@ -612,7 +617,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (!await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.HelpUri))
             {
-                Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
+                Logger.LogError("Failed to launch HelpDesk URI.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
 
@@ -629,7 +634,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.OpenFeedbackWeb);
             if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("feedbackURL"))
             {
-                Logger.Log(Logger.Level.Error, "Failed to launch Feedback URI.");
+                Logger.LogError("Failed to launch Feedback URI.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
             await Task.Delay(1000);
@@ -689,7 +694,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             else if (item is Drive)
                 return ConfiguredTemplate;
             else
-                Logger.Log(Logger.Level.Error, "Unknown item type in SelectTemplateCore");
+                Logger.LogError("Unknown item type in SelectTemplateCore");
 
             return base.SelectTemplateCore(item);
         }

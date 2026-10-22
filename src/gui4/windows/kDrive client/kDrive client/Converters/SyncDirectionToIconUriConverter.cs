@@ -44,25 +44,27 @@ namespace Infomaniak.kDrive.Converters
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Error, $"Resource for SyncActivityDirection {direction} should be {resourceKey} but was not found or is not a string.");
+                        Logger.LogError($"Resource for SyncActivityDirection {direction} should be {resourceKey} but was not found or is not a string.",
+                            "SyncActivityDirectionToIconUriConverter: Missing or invalid direction resource");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to get resource for SyncActivityDirection {direction}: {ex.Message}");
+                    Logger.LogError($"Failed to get resource for SyncActivityDirection {direction}: {ex.Message}",
+                        "SyncActivityDirectionToIconUriConverter: Failed to get direction resource");
                 }
                 if (targetType == typeof(string))
                     return result;
                 else
                     return new Uri(result);
             }
-            Logger.Log(Logger.Level.Fatal, "SyncActivityDirectionToIconUriConverter: value is not a SyncActivityDirection.");
+            Logger.LogFatal("SyncActivityDirectionToIconUriConverter: value is not a SyncActivityDirection.");
             throw new ArgumentException("Invalid item type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "SyncActivityDirectionToIconUriConverter: ConvertBack is not implemented.");
+            Logger.LogFatal("SyncActivityDirectionToIconUriConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

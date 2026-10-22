@@ -44,8 +44,8 @@ void TestParmsDb::tearDown() {
 void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(ParmsDb::instance()->exists());
 
-    Parameters defaultParameters;
-    Parameters parameters;
+    ServerParameters defaultParameters;
+    ServerParameters parameters;
     bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
     CPPUNIT_ASSERT(parameters.language() == defaultParameters.language());
@@ -61,13 +61,13 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().port() == defaultParameters.proxyConfig().port());
     CPPUNIT_ASSERT(parameters.proxyConfig().needsAuth() == defaultParameters.proxyConfig().needsAuth());
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == defaultParameters.proxyConfig().user());
-    CPPUNIT_ASSERT(parameters.proxyConfig().token() == defaultParameters.proxyConfig().token());
+    CPPUNIT_ASSERT(parameters.proxyConfig().keychainKey() == defaultParameters.proxyConfig().keychainKey());
     CPPUNIT_ASSERT(parameters.darkTheme() == defaultParameters.darkTheme());
     CPPUNIT_ASSERT(parameters.dialogGeometry() == defaultParameters.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == defaultParameters.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == defaultParameters.matomoEnabled());
 
-    Parameters parameters2;
+    ServerParameters parameters2;
     parameters2.setLanguage(Language::French);
     parameters2.setMonoIcons(true);
     parameters2.setAutoStart(false);
@@ -76,11 +76,10 @@ void TestParmsDb::testParameters() {
     parameters2.setUseLog(true);
     parameters2.setLogLevel(LogLevel::Warning);
     parameters2.setPurgeOldLogs(true);
-    parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 44444444, true, "user", "token"));
+    parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 4444, true, "user", "token"));
     parameters2.setDarkTheme(true);
     std::string geometryStr("XXXXXXXXXX");
-    parameters2.setDialogGeometry(
-            std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end())));
+    parameters2.setDialogGeometry("preferencesWindow", QByteArray::fromStdString(geometryStr));
     parameters2.setSentryEnabled(true);
     parameters2.setMatomoEnabled(true);
     CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters2, found) && found);
@@ -99,9 +98,9 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().port() == parameters2.proxyConfig().port());
     CPPUNIT_ASSERT(parameters.proxyConfig().needsAuth() == parameters2.proxyConfig().needsAuth());
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == parameters2.proxyConfig().user());
-    CPPUNIT_ASSERT(parameters.proxyConfig().token() == parameters2.proxyConfig().token());
+    CPPUNIT_ASSERT(parameters.proxyConfig().keychainKey() == parameters2.proxyConfig().keychainKey());
     CPPUNIT_ASSERT(parameters.darkTheme() == parameters2.darkTheme());
-    CPPUNIT_ASSERT(*parameters.dialogGeometry() == *parameters2.dialogGeometry());
+    CPPUNIT_ASSERT(parameters.dialogGeometry() == parameters2.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == parameters2.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == parameters2.matomoEnabled());
 }
@@ -291,6 +290,7 @@ void TestParmsDb::testSync() {
         sync2.setPaused(true);
         sync2.setNotificationsDisabled(true);
         sync2.setToDelete(true);
+        sync2.setVfsRegisteredAt(1790664065256);
         bool syncIsFound = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, syncIsFound) && syncIsFound);
     }
@@ -304,6 +304,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
         CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
+        CPPUNIT_ASSERT_EQUAL(sync2.vfsRegisteredAt(), sync.vfsRegisteredAt());
     }
     // Find sync by DB path
     {
@@ -314,6 +315,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
         CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
+        CPPUNIT_ASSERT_EQUAL(sync2.vfsRegisteredAt(), sync.vfsRegisteredAt());
     }
     // Select all syncs
     {
@@ -326,6 +328,8 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
         CPPUNIT_ASSERT(syncList[0].toDelete() == sync1.toDelete());
         CPPUNIT_ASSERT(syncList[1].toDelete() == sync2.toDelete());
+        CPPUNIT_ASSERT_EQUAL(sync1.vfsRegisteredAt(), syncList[0].vfsRegisteredAt());
+        CPPUNIT_ASSERT_EQUAL(sync2.vfsRegisteredAt(), syncList[1].vfsRegisteredAt());
     }
     // Delete sync
     {
@@ -591,13 +595,13 @@ void TestParmsDb::testAppState(void) {
 }
 
 bool TestParmsDb::deleteAppState(AppStateKey key) {
-    int errId = 0;
+    int32_t errId = 0;
     std::string error;
 
     auto db = ParmsDb::instance();
     const std::string requestId = "delete_app_state_test";
     if (!db->createAndPrepareRequest(requestId.c_str(), "DELETE FROM app_state WHERE key=?1;")) return false;
-    if (!db->queryBindValue(requestId, 1, static_cast<int>(key))) {
+    if (!db->queryBindValue(requestId, 1, static_cast<int32_t>(key))) {
         db->queryFree(requestId);
         return false;
     }
@@ -635,6 +639,57 @@ void TestParmsDb::testAppStateShowV4Onboarding() {
     AppStateValue preservedValue = "";
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::ShowV4Onboarding, preservedValue, found) && found);
     CPPUNIT_ASSERT_EQUAL(std::string("0"), std::get<std::string>(preservedValue));
+}
+
+void TestParmsDb::testAppUID() {
+    // The application UID is generated when the DB is initialized and must be retrievable via the helper.
+    bool found = false;
+    AppStateValue value;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::AppUid, value, found) && found);
+    const auto &expectedAppUID = std::get<std::string>(value);
+    CPPUNIT_ASSERT(!expectedAppUID.empty());
+    CPPUNIT_ASSERT_EQUAL(expectedAppUID, ParmsDb::appUID());
+
+    // A missing key must yield an empty UID.
+    CPPUNIT_ASSERT(deleteAppState(AppStateKey::AppUid));
+    CPPUNIT_ASSERT(ParmsDb::appUID().empty());
+
+    // An uninitialized database must also yield an empty UID.
+    ParmsDb::reset();
+    CPPUNIT_ASSERT(ParmsDb::appUID().empty());
+}
+
+void TestParmsDb::testDialogGeometry() {
+    bool found = false;
+
+    // Geometry bytes containing the delimiters must survive a round-trip thanks to Base64 encoding.
+    ServerParameters parameters;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
+    const QByteArray geometryWithDelimiters("a;b\nc");
+    parameters.setDialogGeometry("preferencesWindow", geometryWithDelimiters);
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters, found) && found);
+
+    ServerParameters parameters2;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters2, found) && found);
+    CPPUNIT_ASSERT(parameters2.dialogGeometry().value("preferencesWindow") == geometryWithDelimiters);
+
+    // A value that is not valid Base64 cannot be decoded and must be ignored.
+    const char rawGeometryBytes[] = {'\x00', '\x01', '\x02', '\x03', '\x04'};
+    const QByteArray rawGeometry(rawGeometryBytes, sizeof(rawGeometryBytes));
+    const QByteArray legacyBlob = QByteArray("preferencesWindow;") + rawGeometry;
+    int errId = 0;
+    std::string error;
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryCreate("test_raw_geometry"));
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryPrepare("test_raw_geometry", "UPDATE parameters SET dialogGeometry = ?1;", false,
+                                                     errId, error));
+    const auto rawBlob = std::make_shared<std::vector<char>>(legacyBlob.begin(), legacyBlob.end());
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryBindValue("test_raw_geometry", 1, rawBlob));
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryExec("test_raw_geometry", errId, error));
+    ParmsDb::instance()->queryFree("test_raw_geometry");
+
+    ServerParameters parameters3;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters3, found) && found);
+    CPPUNIT_ASSERT(!parameters3.dialogGeometry().contains("preferencesWindow"));
 }
 
 #if defined(KD_MACOS)

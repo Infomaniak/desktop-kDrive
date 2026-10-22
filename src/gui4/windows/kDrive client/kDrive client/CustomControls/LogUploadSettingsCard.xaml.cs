@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (LogUploadManager is null)
             {
-                Logger.Log(Logger.Level.Error, "LogUploadManager is not set for LogUploadSettingsCard");
+                Logger.LogError("LogUploadManager is not set for LogUploadSettingsCard");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -71,7 +71,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Info, "Log upload canceled");
+                Logger.LogInfo("Log upload canceled");
             }
         }
 

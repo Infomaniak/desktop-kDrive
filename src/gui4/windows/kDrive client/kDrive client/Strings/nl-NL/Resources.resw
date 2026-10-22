@@ -6,7 +6,7 @@
   Locale: nl, Dutch; Flemish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 02 Sep 2026 16:24:21 +0200 
+  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Alle activiteiten</value> 
   </data> 
-  <data name="activitiesTypeThisComputer" xml:space="preserve">
-    <value>Activiteiten van deze computer</value>
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Activiteiten van deze computer</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Geïmporteerd</value> 
@@ -134,46 +134,7 @@
     <value>Hernoemd</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Hernoemd naar %@</value> 
-  </data> 
-  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
-    <value>Gewijzigd</value> 
-  </data> 
-  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Gewijzigd %@</value> 
-  </data> 
-  <data name="activityInstructionGetLabel" xml:space="preserve"> 
-    <value>Geïmporteerd</value> 
-  </data> 
-  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Geïmporteerd %@</value> 
-  </data> 
-  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
-    <value>Genegeerd</value> 
-  </data> 
-  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
-    <value>Verplaatst</value> 
-  </data> 
-  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Verplaatst %@</value> 
-  </data> 
-  <data name="activityInstructionPutLabel" xml:space="preserve"> 
-    <value>Toegevoegd</value> 
-  </data> 
-  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Toegevoegd %@</value> 
-  </data> 
-  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
-    <value>Verplaatst naar prullenbak</value> 
-  </data> 
-  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>In de prullenbak geplaatst %@</value> 
-  </data> 
-  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
-    <value>Hernoemd</value> 
-  </data> 
-  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Hernoemd naar %@</value> 
+    <value>Hernoemd %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Gewijzigd</value> 
@@ -216,7 +177,7 @@ U kunt uw geavanceerde synchronisaties openen via de schijfkiezer op de startpag
     <value>Wijziging toepassen…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Verwijdert logboeken ouder dan 7 dagen om schijfruimte te besparen.</value> 
+    <value>Verwijdert logboeken ouder dan 31 dagen om schijfruimte te besparen.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatisch opruimen</value> 
@@ -783,7 +744,7 @@ Neem contact op met uw beheerder om de bestandsgroottelimiet te verhogen.</value
     <value>Toegang geweigerd</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>De naam van dit %@ bevat een of meer tekens die niet worden ondersteund door de kDrive Windows-applicatie. Hernoem de %@ vanuit kDrive online.</value> 
+    <value>De naam van dit %@ bevat een of meer tekens die niet worden ondersteund door de kDrive-app. Hernoem het %@ via kDrive Online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Deze naam bevat alleen spaties en kan niet worden gebruikt. Hernoem de %@ vanuit kDrive online.</value> 
@@ -800,6 +761,9 @@ Vraag toegang aan bij de eigenaar of beheerder.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Toegang geweigerd</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Omzetten naar een gewoon bestand</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Dit bestand is een harde koppeling (hard link) die niet kan worden gesynchroniseerd.</value> 
@@ -1006,8 +970,8 @@ De synchronisatie wordt automatisch hervat zodra de verbinding is hersteld.</val
     <value>Verbinding met kDrive onderbroken</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Dit item is niet beschikbaar op dit apparaat.
-Het wordt geopend in uw browser.</value> 
+    <value>Deze functie is op dit apparaat niet beschikbaar.
+Het wordt online in kDrive geopend.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1119,7 +1083,7 @@ Handig als u weet dat het belangrijke werk online staat op kDrive.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>Zojuist</value> 
+    <value>zojuist</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 
@@ -1340,6 +1304,9 @@ Controleer en hernoem de bestanden met ongebruikelijke tekens en probeer het opn
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versieconflicten gedetecteerd</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ verwijderde elementen</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>De synchronisatie is onderbroken om onbedoeld verwijderen te voorkomen.
 Wat wilt u doen?</value> 
@@ -1349,6 +1316,12 @@ Wat wilt u doen?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Ook online verwijderen</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>en nog iets</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>en %@ andere elementen</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Deze bestanden blijven beschikbaar in de prullenbak van kDrive.</value> 

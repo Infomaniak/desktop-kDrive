@@ -18,17 +18,69 @@
 
 #include "parmsdb.h"
 
-
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/data/serverparameters.h"
 
 #include <sqlite3.h>
 
+#include <chrono>
 #include <fstream>
 #include <string>
+
+namespace {
+
+// Decodes a Base64-encoded value. Returns an empty byte array if the value is not valid Base64.
+QByteArray decodeBase64(const QByteArray &value) {
+    const auto result = QByteArray::fromBase64Encoding(QByteArray(value),
+                                                       QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    if (result.decodingStatus == QByteArray::Base64DecodingStatus::Ok) {
+        return result.decoded;
+    }
+    return QByteArray();
+}
+
+std::shared_ptr<std::vector<char>> dialogGeometryToBlob(const KDC::Parameters::DialogGeometry &dialogGeometry) {
+    if (dialogGeometry.isEmpty()) {
+        return nullptr;
+    }
+
+    // Values are Base64-encoded because raw geometry bytes may contain the ';' and '\n' delimiters.
+    QByteArray arr;
+    for (const QString &objectName: dialogGeometry.keys()) {
+        arr += objectName.toUtf8();
+        arr += ";";
+        arr += dialogGeometry.value(objectName).toBase64();
+        arr += "\n";
+    }
+    return std::make_shared<std::vector<char>>(arr.begin(), arr.end());
+}
+
+KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::vector<char>> &blob) {
+    KDC::Parameters::DialogGeometry dialogGeometry;
+    if (!blob) {
+        return dialogGeometry;
+    }
+
+    const QByteArray arr(blob->data(), static_cast<qsizetype>(blob->size()));
+    const QList<QByteArray> lines = arr.split('\n');
+    for (const QByteArray &line: lines) {
+        const QList<QByteArray> elts = line.split(';');
+        if (elts.size() == 2) {
+            const QByteArray value = decodeBase64(elts[1]);
+            if (value.isEmpty()) {
+                continue;
+            }
+            (void) dialogGeometry.insert(QString(elts[0]), value);
+        }
+    }
+    return dialogGeometry;
+}
+
+} // namespace
 
 //
 // parameters
@@ -68,7 +120,6 @@
     ",distributionChannel INTEGER"           \
     ",sentryEnabled INTEGER"                 \
     ",matomoEnabled INTEGER"                 \
-    ",notifyBeforeDelete INTEGER"            \
     ");"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"
@@ -77,9 +128,9 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, "    \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "     \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "               \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, notifyBeforeDelete) "                          \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled) "                                              \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, " \
-    "?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32, ?33);"
+    "?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32);"
 
 #define UPDATE_PARAMETERS_REQUEST_ID "update_parameters"
 #define UPDATE_PARAMETERS_REQUEST                                                                                               \
@@ -90,8 +141,7 @@
     "bigFolderSizeLimit=?17, darkTheme=?18, showShortcuts=?19, updateFileAvailable=?20, updateTargetVersion=?21, "              \
     "updateTargetVersionString=?22, "                                                                                           \
     "autoUpdateAttempted=?23, seenVersion=?24, dialogGeometry=?25, extendedLog=?26, maxAllowedCpu=?27, "                        \
-    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30, sentryEnabled=?31, matomoEnabled=?32, " \
-    "notifyBeforeDelete=?33;"
+    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30, sentryEnabled=?31, matomoEnabled=?32;"
 
 #define SELECT_PARAMETERS_REQUEST_ID "select_parameters"
 #define SELECT_PARAMETERS_REQUEST                                                                                          \
@@ -99,11 +149,8 @@
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, " \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "  \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, notifyBeforeDelete "                        \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled "                                            \
     "FROM parameters;"
-
-#define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
-#define UPDATE_PARAMETERS_JOB_REQUEST "UPDATE parameters SET uploadSessionParallelJobs=?1, jobPoolCapacityFactor=?2;"
 
 //
 // user
@@ -275,6 +322,7 @@
     "listingCursor TEXT,"                                                                    \
     "listingCursorTimestamp INTEGER,"                                                        \
     "toDelete INTEGER,"                                                                      \
+    "vfsRegisteredAt INTEGER,"                                                               \
     "FOREIGN KEY (driveDbId) REFERENCES drive(dbId) ON DELETE CASCADE ON UPDATE NO ACTION) " \
     "WITHOUT ROWID;"
 
@@ -282,16 +330,17 @@
 #define INSERT_SYNC_REQUEST                                                                                             \
     "INSERT INTO sync (dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, " \
     "virtualFileMode, "                                                                                                 \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete) "  \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16);"
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, "  \
+    "vfsRegisteredAt) "                                                                                                 \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17);"
 
 #define UPDATE_SYNC_REQUEST_ID "update_sync"
 #define UPDATE_SYNC_REQUEST                                                                                                \
     "UPDATE sync SET driveDbId=?1, localPath=?2, localNodeId = ?3, targetPath=?4, targetNodeId=?5, dbPath=?6, paused=?7, " \
     "supportVfs=?8, "                                                                                                      \
     "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, listingCursor=?13, "   \
-    "listingCursorTimestamp=?14, toDelete=?15 "                                                                            \
-    "WHERE dbId=?16;"
+    "listingCursorTimestamp=?14, toDelete=?15, vfsRegisteredAt=?16 "                                                       \
+    "WHERE dbId=?17;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
 #define UPDATE_SYNC_PAUSED_REQUEST \
@@ -314,30 +363,33 @@
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_REQUEST_ID "select_sync"
-#define SELECT_SYNC_REQUEST                                                                                                     \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_SYNC_REQUEST                                                                                                   \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, "        \
+    "vfsRegisteredAt FROM sync "                                                                                              \
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_BY_PATH_REQUEST_ID "select_sync_by_path"
-#define SELECT_SYNC_BY_PATH_REQUEST                                                                                             \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_SYNC_BY_PATH_REQUEST                                                                                           \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, "        \
+    "vfsRegisteredAt FROM sync "                                                                                              \
     "WHERE dbPath=?1;"
 
 
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
-#define SELECT_ALL_SYNCS_REQUEST                                                                                                \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_ALL_SYNCS_REQUEST                                                                                              \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, "        \
+    "vfsRegisteredAt FROM sync "                                                                                              \
     "ORDER BY dbId;"
 
 #define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID "select_syncs_by_drive"
-#define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST                                                                          \
-    "SELECT dbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
-    "notificationsDisabled, "                                                                                      \
-    "hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync "           \
-    "WHERE driveDbId=?1 "                                                                                          \
+#define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST                                                                                 \
+    "SELECT dbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "        \
+    "notificationsDisabled, "                                                                                             \
+    "hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, vfsRegisteredAt FROM sync " \
+    "WHERE driveDbId=?1 "                                                                                                 \
     "ORDER BY dbId;"
 
 //
@@ -372,6 +424,26 @@
 
 #define SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID "select_exclusion_templates"
 #define SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST "SELECT template, warning, def FROM exclusion_template;"
+
+
+#define CREATE_SYNC_FOLDER_RULE_TABLE_ID "create_sync_folder_rule"
+#define CREATE_SYNC_FOLDER_RULE_TABLE              \
+    "CREATE TABLE IF NOT EXISTS sync_folder_rule(" \
+    "path TEXT PRIMARY KEY,"                       \
+    "type INTEGER);"
+
+#define INSERT_SYNC_FOLDER_RULE_REQUEST_ID "insert_sync_folder_rule"
+#define INSERT_SYNC_FOLDER_RULE_REQUEST "INSERT INTO sync_folder_rule (path, type) VALUES (?1, ?2);"
+
+#define UPDATE_SYNC_FOLDER_RULE_REQUEST_ID "update_sync_folder_rule"
+#define UPDATE_SYNC_FOLDER_RULE_REQUEST "UPDATE sync_folder_rule SET type=?1 WHERE path=?2;"
+
+#define DELETE_SYNC_FOLDER_RULE_REQUEST_ID "delete_sync_folder_rule"
+#define DELETE_SYNC_FOLDER_RULE_REQUEST "DELETE FROM sync_folder_rule WHERE path=?1;"
+
+#define SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID "select_sync_folder_rules"
+#define SELECT_ALL_SYNC_FOLDER_RULE_REQUEST "SELECT path, type FROM sync_folder_rule;"
+
 
 #define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID "select_exclusion_templates_by_def"
 #define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST    \
@@ -562,10 +634,6 @@
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID "select_migration_selectivesync"
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST "SELECT syncDbId, path, type FROM migration_selectivesync;"
 
-// Check column existance
-#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
-#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('?1') WHERE name='?2';"
-
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -623,7 +691,7 @@ bool ParmsDb::insertDefaultParameters() {
         return true;
     }
 
-    Parameters parameters;
+    ServerParameters parameters;
 
     ProxyConfig proxyConfig(parameters.proxyConfig());
     proxyConfig.setType(ProxyType::None);
@@ -648,7 +716,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().port()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().needsAuth()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().user()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().token()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().keychainKey()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, false)); // useBigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.darkTheme()));
@@ -658,7 +726,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.updateTargetVersionString()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.autoUpdateAttempted()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.seenVersion()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.dialogGeometry()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, dialogGeometryToBlob(parameters.dialogGeometry())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(_test ? true : parameters.extendedLog())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.maxAllowedCpu()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.uploadSessionParallelJobs()));
@@ -666,7 +734,6 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.distributionChannel())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.sentryEnabled()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.matomoEnabled()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.notifyBeforeDelete()));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_PARAMETERS_REQUEST_ID);
@@ -797,17 +864,18 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
         return true;
     }
 
-    LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
-
-    if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
-        return false;
-
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
-    const bool successfulSelection = selectUserExclusionTemplates(dbUserExclusionTemplates);
-    queryFree(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
-    if (!successfulSelection) {
-        LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
-        return false;
+    {
+        // This upgrade helper runs before prepare(), so SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID does not exist here.
+        auto scopeGuard = createAndPrepareScopedRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
+                                                        SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
+        if (!scopeGuard) return false;
+
+        LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
+        if (!selectUserExclusionTemplates(dbUserExclusionTemplates)) {
+            LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
+            return false;
+        }
     }
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplatesOutput;
@@ -828,19 +896,154 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
         }
     }
 
-    LOG_INFO(_logger, "Normalizations prepared for updates.");
+    {
+        // This upgrade helper runs before prepare(), so DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID does not exist here.
+        auto scopeGuard1 = createAndPrepareScopedRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
+                                                         DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
+        if (!scopeGuard1) return false;
 
-    if (!createAndPrepareRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
+        // This upgrade helper runs before prepare(), so INSERT_EXCLUSION_TEMPLATE_REQUEST_ID does not exist here.
+        auto scopeGuard2 = createAndPrepareScopedRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST);
+        if (!scopeGuard2) return false;
+
+        LOG_INFO(_logger, "Normalizations prepared for updates.");
+        if (!updateUserExclusionTemplates(dbUserExclusionTemplatesOutput)) {
+            LOG_WARN(_logger, "Error in updateUserExclusionTemplates");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+namespace {
+
+void stripLineEndings(std::string &line) {
+    while (!line.empty() && (line.back() == '\n' || line.back() == '\r')) {
+        line.pop_back();
+    }
+}
+
+bool parseRuleType(const std::string_view typeStr, SyncFolderRuleType &ruleType) {
+    if (typeStr == "BlackList")
+        ruleType = SyncFolderRuleType::BlackList;
+    else if (typeStr == "WhiteList")
+        ruleType = SyncFolderRuleType::WhiteList;
+    else if (typeStr == "WhiteListSubFolder")
+        ruleType = SyncFolderRuleType::WhiteListSubFolder;
+    else
         return false;
+    return true;
+}
 
-    if (!createAndPrepareRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST)) return false;
+// Returns true if a valid rule was parsed and appended.
+bool tryParseCsvLine(const std::string &line, std::vector<SyncFolderRule> &rules, log4cplus::Logger _logger) {
+    const std::vector<std::string> columns = Utility::splitStr(line, ',');
+    if (columns.size() != 2) {
+        return false;
+    }
 
-    const bool result = updateUserExclusionTemplates(dbUserExclusionTemplatesOutput);
+    const std::string pathStr = CommonUtility::trim(columns[0]);
+    const std::string typeStr = CommonUtility::trim(columns[1]);
+    if (pathStr.empty() || typeStr.empty()) {
+        return false;
+    }
 
-    queryFree(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
-    queryFree(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
+    SyncFolderRuleType ruleType = SyncFolderRuleType::None;
+    if (!parseRuleType(typeStr, ruleType)) {
+        LOG_WARN(_logger, "Invalid sync folder rule type: " << typeStr.c_str());
+        return false;
+    }
 
-    return result;
+    (void) rules.emplace_back(SyncPath(pathStr), ruleType);
+    return true;
+}
+
+} // namespace
+
+bool ParmsDb::getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath,
+                                         std::vector<SyncFolderRule> &fileSyncFolderRules) const {
+    fileSyncFolderRules.clear();
+
+    std::ifstream rulesFile(syncFolderRulesPath);
+    if (!rulesFile.is_open()) {
+        return false;
+    }
+
+    std::string line;
+    bool headerSkipped = false;
+    while (std::getline(rulesFile, line)) {
+        stripLineEndings(line);
+        if (line.empty()) {
+            continue;
+        }
+
+        if (!headerSkipped) {
+            headerSkipped = true;
+            if (line.find("Path") != std::string::npos) {
+                continue;
+            }
+        }
+
+        if (!tryParseCsvLine(line, fileSyncFolderRules, _logger)) {
+            LOG_WARN(_logger, "Skipping malformed sync folder rule line: " << line.c_str());
+        }
+    }
+
+    return true;
+}
+
+
+bool ParmsDb::updateSyncFolderRules() {
+    std::vector<SyncFolderRule> dbSyncFolderRules;
+    if (!selectAllSyncFolderRules(dbSyncFolderRules)) {
+        LOG_WARN(_logger, "Error in selectAllSyncFolderRules");
+        return false;
+    }
+
+    std::vector<SyncFolderRule> fileSyncFolderRules;
+    if (const auto &syncFolderRulesFilePath = Utility::getSyncFolderRulesFilePath(_test);
+        !getSyncFolderRulesFromFile(syncFolderRulesFilePath, fileSyncFolderRules)) {
+        LOGW_WARN(_logger, L"Cannot open sync folder rules file " << Utility::formatSyncName(syncFolderRulesFilePath));
+        return false;
+    }
+
+    for (const auto &dbRule: dbSyncFolderRules) {
+        const auto it = std::ranges::find_if(std::as_const(fileSyncFolderRules), [&dbRule](const SyncFolderRule &fileRule) {
+            return fileRule.syncPath() == dbRule.syncPath();
+        });
+
+        if (it == fileSyncFolderRules.cend()) {
+            if (bool found = false; !deleteSyncFolderRule(dbRule.syncPath(), found)) {
+                LOG_WARN(_logger, "Error in deleteSyncFolderRule");
+                return false;
+            }
+        }
+    }
+
+    for (const auto &fileRule: fileSyncFolderRules) {
+        const auto it = std::ranges::find_if(std::as_const(dbSyncFolderRules), [&fileRule](const SyncFolderRule &dbRule) {
+            return dbRule.syncPath() == fileRule.syncPath();
+        });
+
+        if (it == dbSyncFolderRules.cend()) {
+            if (bool constraintError = false; !insertSyncFolderRule(fileRule, constraintError)) {
+                LOG_WARN(_logger, "Error in insertSyncFolderRule");
+                return false;
+            }
+            continue;
+        }
+
+        if (it->folderRuleType() != fileRule.folderRuleType()) {
+            if (bool found = false; !updateSyncFolderRule(fileRule, found)) {
+                LOG_WARN(_logger, "Error in updateSyncFolderRule");
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 #if defined(KD_MACOS)
@@ -934,79 +1137,87 @@ bool ParmsDb::create(bool &retry) {
     std::string error;
 
     // Parameters
-    if (!createAndPrepareRequest(CREATE_PARAMETERS_TABLE_ID, CREATE_PARAMETERS_TABLE)) return false;
-    if (!queryExec(CREATE_PARAMETERS_TABLE_ID, errId, error)) {
-        // In certain situations the io error can be avoided by switching
-        // to the DELETE journal mode
-        if (_journalMode != "DELETE" && errId == SQLITE_IOERR && extendedErrorCode() == SQLITE_IOERR_SHMMAP) {
-            LOG_WARN(_logger, "IO error SHMMAP on table creation, attempting with DELETE journal mode");
-            _journalMode = "DELETE";
-            queryFree(CREATE_PARAMETERS_TABLE_ID);
-            retry = true;
-            return false;
-        }
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_PARAMETERS_TABLE_ID, CREATE_PARAMETERS_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_PARAMETERS_TABLE_ID, errId, error)) {
+            // In certain situations the io error can be avoided by switching
+            // to the DELETE journal mode
+            if (_journalMode != "DELETE" && errId == SQLITE_IOERR && extendedErrorCode() == SQLITE_IOERR_SHMMAP) {
+                LOG_WARN(_logger, "IO error SHMMAP on table creation, attempting with DELETE journal mode");
+                _journalMode = "DELETE";
+                retry = true;
+                return false;
+            }
 
-        return sqlFail(CREATE_PARAMETERS_TABLE_ID, error);
+            return sqlFail(CREATE_PARAMETERS_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_PARAMETERS_TABLE_ID);
 
     // User
-    if (!createAndPrepareRequest(CREATE_USER_TABLE_ID, CREATE_USER_TABLE)) return false;
-    if (!queryExec(CREATE_USER_TABLE_ID, errId, error)) {
-        queryFree(CREATE_USER_TABLE_ID);
-        return sqlFail(CREATE_USER_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_USER_TABLE_ID, CREATE_USER_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_USER_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_USER_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_USER_TABLE_ID);
 
     // Account
-    if (!createAndPrepareRequest(CREATE_ACCOUNT_TABLE_ID, CREATE_ACCOUNT_TABLE)) return false;
-    if (!queryExec(CREATE_ACCOUNT_TABLE_ID, errId, error)) {
-        queryFree(CREATE_ACCOUNT_TABLE_ID);
-        return sqlFail(CREATE_ACCOUNT_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_ACCOUNT_TABLE_ID, CREATE_ACCOUNT_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_ACCOUNT_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_ACCOUNT_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_ACCOUNT_TABLE_ID);
 
     // Drive
-    if (!createAndPrepareRequest(CREATE_DRIVE_TABLE_ID, CREATE_DRIVE_TABLE)) return false;
-    if (!queryExec(CREATE_DRIVE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_DRIVE_TABLE_ID);
-        return sqlFail(CREATE_DRIVE_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_DRIVE_TABLE_ID, CREATE_DRIVE_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_DRIVE_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_DRIVE_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_DRIVE_TABLE_ID);
 
     // Sync
-    if (!createAndPrepareRequest(CREATE_SYNC_TABLE_ID, CREATE_SYNC_TABLE)) return false;
-    if (!queryExec(CREATE_SYNC_TABLE_ID, errId, error)) {
-        queryFree(CREATE_SYNC_TABLE_ID);
-        return sqlFail(CREATE_SYNC_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_SYNC_TABLE_ID, CREATE_SYNC_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_SYNC_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_SYNC_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_SYNC_TABLE_ID);
 
     // Exclusion Template
-    if (!createAndPrepareRequest(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, CREATE_EXCLUSION_TEMPLATE_TABLE)) return false;
-    if (!queryExec(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
-        return sqlFail(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, CREATE_EXCLUSION_TEMPLATE_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
 
 #if defined(KD_MACOS)
     // Exclusion App
-    if (!createAndPrepareRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE)) return false;
-    if (!queryExec(CREATE_EXCLUSION_APP_TABLE_ID, errId, error)) {
-        queryFree(CREATE_EXCLUSION_APP_TABLE_ID);
-        return sqlFail(CREATE_EXCLUSION_APP_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_EXCLUSION_APP_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_EXCLUSION_APP_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_EXCLUSION_APP_TABLE_ID);
 #endif
 
     // Error
-    if (!createAndPrepareRequest(CREATE_ERROR_TABLE_ID, CREATE_ERROR_TABLE)) return false;
-    if (!queryExec(CREATE_ERROR_TABLE_ID, errId, error)) {
-        queryFree(CREATE_ERROR_TABLE_ID);
-        return sqlFail(CREATE_ERROR_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_ERROR_TABLE_ID, CREATE_ERROR_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_ERROR_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_ERROR_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_ERROR_TABLE_ID);
 
     // app state
     if (!createAppState()) {
@@ -1014,14 +1225,33 @@ bool ParmsDb::create(bool &retry) {
         return false;
     }
 
-    // Migration old selectivesync table
-    if (!createAndPrepareRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE)) return false;
-    if (!queryExec(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, errId, error)) {
-        queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
-        return sqlFail(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, error);
+    // Sync folder rule
+    if (!createSyncFolderRule()) {
+        LOG_WARN(_logger, "Error in createSyncFolderRule");
+        return false;
     }
-    queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
 
+    // Migration old selectivesync table
+    {
+        auto scopeGuard =
+                createAndPrepareScopedRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, error);
+        }
+    }
+
+    return true;
+}
+
+bool ParmsDb::createSyncFolderRule() {
+    int errId = 0;
+    std::string error;
+    auto scopeGuard = createAndPrepareScopedRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE);
+    if (!scopeGuard) return false;
+    if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
+        return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
+    }
     return true;
 }
 
@@ -1073,6 +1303,11 @@ bool ParmsDb::prepare() {
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
         return false;
+    // Sync folder rule
+    if (!createAndPrepareRequest(INSERT_SYNC_FOLDER_RULE_REQUEST_ID, INSERT_SYNC_FOLDER_RULE_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID, UPDATE_SYNC_FOLDER_RULE_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_SYNC_FOLDER_RULE_REQUEST_ID, DELETE_SYNC_FOLDER_RULE_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, SELECT_ALL_SYNC_FOLDER_RULE_REQUEST)) return false;
 #if defined(KD_MACOS)
     // Exclusion App
     if (!createAndPrepareRequest(INSERT_EXCLUSION_APP_REQUEST_ID, INSERT_EXCLUSION_APP_REQUEST)) return false;
@@ -1124,42 +1359,27 @@ bool ParmsDb::upgradeTables() {
     // Parameters table
     std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName, 0)) {
         return false;
     }
 
-    bool updateParameters = false;
     columnName = "uploadSessionParallelJobs";
-    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName, ServerParameters::_uploadSessionParallelJobsDefault)) {
         return false;
     }
 
     columnName = "jobPoolCapacityFactor";
-    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName, 0)) {
         return false;
     }
 
-    if (updateParameters) {
-        int errId = 0;
-        std::string error;
-
-        if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
-        LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
-        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
-        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, 0));
-        if (!queryExec(UPDATE_PARAMETERS_JOB_REQUEST_ID, errId, error)) {
-            queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
-            return sqlFail(UPDATE_PARAMETERS_JOB_REQUEST_ID, error);
-        }
-        if (numRowsAffected() != 1) {
-            queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
-            return false;
-        }
-        queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
+    columnName = "distributionChannel";
+    if (!addIntegerColumnIfMissing(tableName, columnName, toInt(DistributionChannel::Prod))) {
+        return false;
     }
 
-    for (const auto &name: {"distributionChannel", "sentryEnabled", "matomoEnabled", "notifyBeforeDelete"}) {
-        if (!addIntegerColumnIfMissing(tableName, name)) {
+    for (const auto &name: {"sentryEnabled", "matomoEnabled"}) {
+        if (!addIntegerColumnIfMissing(tableName, name, 1)) {
             return false;
         }
     }
@@ -1175,12 +1395,31 @@ bool ParmsDb::upgradeTables() {
         }
     }
 
+    // Sync folder rule table
+    tableName = "sync_folder_rule";
+    exist = false;
+    if (!tableExists(tableName, exist)) return false;
+    if (!exist) {
+        if (!createSyncFolderRule()) {
+            LOG_WARN(_logger, "Error in createSyncFolderRule");
+            return false;
+        }
+    }
+
     // Sync table
     tableName = "sync";
     if (!addTextColumnIfMissing(tableName, "localNodeId")) {
         return false;
     }
-    if (!addIntegerColumnIfMissing(tableName, "toDelete")) {
+    if (!addIntegerColumnIfMissing(tableName, "toDelete", 0)) {
+        return false;
+    }
+
+    // Use the migration time as the reference VFS registration time of the existing syncs: a sync root registered after it
+    // means that it has been recreated (e.g. following an uninstallation of the extension), see SyncPal::start.
+    const int64_t now =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    if (!addIntegerColumnIfMissing(tableName, "vfsRegisteredAt", now)) {
         return false;
     }
 
@@ -1263,6 +1502,12 @@ bool ParmsDb::initData() {
         return false;
     }
 
+    // update sync folder rules
+    if (!updateSyncFolderRules()) {
+        LOG_WARN(_logger, "Error in updateSyncFolderRules");
+        return false;
+    }
+
 #if defined(KD_MACOS)
     // Update exclusion apps
     if (!updateExclusionApps()) {
@@ -1274,10 +1519,10 @@ bool ParmsDb::initData() {
     return true;
 }
 
-bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
+bool ParmsDb::updateParameters(const ServerParameters &parameters, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     auto index = 1;
@@ -1296,7 +1541,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().port()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().needsAuth()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().user()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().token()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().keychainKey()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, false)); // useBigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.darkTheme()));
@@ -1306,7 +1551,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.updateTargetVersionString()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.autoUpdateAttempted()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.seenVersion()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.dialogGeometry()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, dialogGeometryToBlob(parameters.dialogGeometry())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.extendedLog())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.maxAllowedCpu()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.uploadSessionParallelJobs()));
@@ -1314,7 +1559,6 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.distributionChannel())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.sentryEnabled()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.matomoEnabled()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.notifyBeforeDelete()));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_PARAMETERS_REQUEST_ID);
@@ -1330,7 +1574,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
+bool ParmsDb::selectParameters(ServerParameters &parameters, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
@@ -1376,7 +1620,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     int port = 0;
     bool needsAuth = false;
     std::string user;
-    std::string token;
+    std::string keychainKey;
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     proxyType = static_cast<ProxyType>(intResult);
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, hostName));
@@ -1384,8 +1628,10 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     needsAuth = static_cast<bool>(intResult);
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, user));
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, token));
-    parameters.setProxyConfig(ProxyConfig(proxyType, hostName, port, needsAuth, user, token));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, keychainKey));
+    auto proxyConfig = ProxyConfig(proxyType, hostName, static_cast<Port>(port), needsAuth, user);
+    proxyConfig.setKeychainKey(keychainKey);
+    parameters.setProxyConfig(proxyConfig);
 
     // 15: useBigFolderSizeLimit : not used anymore
     index++;
@@ -1416,7 +1662,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 
     std::shared_ptr<std::vector<char>> blobResult;
     LOG_IF_FAIL(queryBlobValue(SELECT_PARAMETERS_REQUEST_ID, index++, blobResult));
-    parameters.setDialogGeometry(blobResult);
+    parameters.setDialogGeometry(blobToDialogGeometry(blobResult));
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setExtendedLog(intResult);
@@ -1438,9 +1684,6 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setMatomoEnabled(intResult);
-
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult, 1));
-    parameters.setNotifyBeforeDelete(intResult);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 
@@ -1474,7 +1717,7 @@ bool ParmsDb::insertUser(const User &user) {
 bool ParmsDb::updateUser(const User &user, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_USER_REQUEST_ID));
@@ -1504,7 +1747,7 @@ bool ParmsDb::updateUser(const User &user, bool &found) {
 bool ParmsDb::deleteUser(const UserDbId dbId, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(DELETE_USER_REQUEST_ID));
@@ -1568,6 +1811,8 @@ bool ParmsDb::selectUser(const UserDbId dbId, User &user, bool &found) {
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
 
+    user.setConnected(!user.keychainKey().empty());
+
     return true;
 }
 
@@ -1615,6 +1860,8 @@ bool ParmsDb::selectUserByUserId(const UserId userId, User &user, bool &found) {
     user.setToMigrate(static_cast<bool>(setToMigrateResult));
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
+
+    user.setConnected(!user.keychainKey().empty());
 
     return true;
 }
@@ -1693,6 +1940,8 @@ bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
 
+    user.setConnected(!user.keychainKey().empty());
+
     return true;
 }
 
@@ -1732,8 +1981,9 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
         int toMigrateResult{0};
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_USERS_REQUEST_ID, 8, toMigrateResult));
 
-        userList.push_back(User(userDbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar,
-                                static_cast<bool>(toMigrateResult)));
+        User user(userDbId, userId, keychainKey, name, firstName, email, avatarUrl, avatar, static_cast<bool>(toMigrateResult));
+        user.setConnected(!keychainKey.empty());
+        userList.push_back(user);
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_USERS_REQUEST_ID));
 
@@ -2268,6 +2518,7 @@ bool ParmsDb::insertSync(const Sync &sync) {
     LOG_IF_FAIL(queryBindValue(requestId, 14, listingCursor));
     LOG_IF_FAIL(queryBindValue(requestId, 15, listingCursorTimestamp));
     LOG_IF_FAIL(queryBindValue(requestId, 16, static_cast<int>(sync.toDelete())));
+    LOG_IF_FAIL(queryBindValue(requestId, 17, sync.vfsRegisteredAt()));
 
     int errId = -1;
     std::string error;
@@ -2305,7 +2556,8 @@ bool ParmsDb::updateSync(const Sync &sync, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 13, listingCursor));
     LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 14, listingCursorTimestamp));
     LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 15, static_cast<int>(sync.toDelete())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 16, sync.dbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 16, sync.vfsRegisteredAt()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 17, sync.dbId()));
     if (!queryExec(UPDATE_SYNC_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_REQUEST_ID);
         return false;
@@ -2470,6 +2722,10 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
     int32_t toDeleteResult{0};
     LOG_IF_FAIL(queryIntValue(requestId, 15, toDeleteResult));
     sync.setToDelete(static_cast<bool>(toDeleteResult));
+
+    int64_t vfsRegisteredAtResult{0};
+    LOG_IF_FAIL(queryInt64Value(requestId, 16, vfsRegisteredAtResult));
+    sync.setVfsRegisteredAt(vfsRegisteredAtResult);
 }
 
 bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
@@ -2564,12 +2820,14 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 14, listingCursorTimestamp));
         int32_t toDelete = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 15, toDelete));
+        int64_t vfsRegisteredAt = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 16, vfsRegisteredAt));
 
         syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
                                 static_cast<bool>(paused), static_cast<bool>(supportVfs),
                                 static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
                                 SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
-                                listingCursorTimestamp, static_cast<bool>(toDelete)));
+                                listingCursorTimestamp, static_cast<bool>(toDelete), vfsRegisteredAt));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
 
@@ -2623,12 +2881,14 @@ bool ParmsDb::selectAllSyncs(const DriveDbId driveDbId, std::vector<Sync> &syncL
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 13, listingCursorTimestamp));
         int32_t toDelete = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 14, toDelete));
+        int64_t vfsRegisteredAt = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 15, vfsRegisteredAt));
 
         syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
                                 static_cast<bool>(paused), static_cast<bool>(supportVfs),
                                 static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
                                 SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
-                                listingCursorTimestamp, static_cast<bool>(toDelete)));
+                                listingCursorTimestamp, static_cast<bool>(toDelete), vfsRegisteredAt));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
 
@@ -2643,7 +2903,7 @@ bool ParmsDb::getNewSyncDbId(SyncDbId &dbId) {
     }
 
     dbId = 1;
-    for (const Sync &sync: syncList) {
+    for (const BaseSync &sync: syncList) {
         // NB: syncList is sorted by dbId
         if (sync.dbId() > dbId) {
             break;
@@ -2975,6 +3235,96 @@ bool ParmsDb::updateAllExclusionApps(const bool def, const std::vector<Exclusion
     return true;
 }
 #endif
+
+bool ParmsDb::insertSyncFolderRule(const SyncFolderRule &syncFolderRule, bool &constraintError) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+    std::string error;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_SYNC_FOLDER_RULE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_SYNC_FOLDER_RULE_REQUEST_ID, 1, syncFolderRule.syncPath()));
+    LOG_IF_FAIL(queryBindValue(INSERT_SYNC_FOLDER_RULE_REQUEST_ID, 2, static_cast<int>(syncFolderRule.folderRuleType())));
+    if (!queryExec(INSERT_SYNC_FOLDER_RULE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << INSERT_SYNC_FOLDER_RULE_REQUEST_ID);
+        constraintError = (errId == SQLITE_CONSTRAINT);
+        return false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::updateSyncFolderRule(const SyncFolderRule &syncFolderRule, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+    std::string error;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID, 1, static_cast<int>(syncFolderRule.folderRuleType())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID, 2, syncFolderRule.syncPath()));
+    if (!queryExec(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_FOLDER_RULE_REQUEST_ID);
+        return false;
+    }
+    if (numRowsAffected() == 1) {
+        found = true;
+    } else {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_FOLDER_RULE_REQUEST_ID << " - num rows affected != 1");
+        found = false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::deleteSyncFolderRule(const SyncPath &syncPath, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+    std::string error;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_SYNC_FOLDER_RULE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_SYNC_FOLDER_RULE_REQUEST_ID, 1, syncPath));
+    if (!queryExec(DELETE_SYNC_FOLDER_RULE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << DELETE_SYNC_FOLDER_RULE_REQUEST_ID);
+        return false;
+    }
+    if (numRowsAffected() == 1) {
+        found = true;
+    } else {
+        LOG_WARN(_logger, "Error running query: " << DELETE_SYNC_FOLDER_RULE_REQUEST_ID << " - num rows affected != 1");
+        found = false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::selectAllSyncFolderRules(std::vector<SyncFolderRule> &syncFolderRuleList) {
+    const std::scoped_lock lock(_mutex);
+
+    syncFolderRuleList.clear();
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID));
+    bool found = false;
+    for (;;) {
+        if (!queryNext(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID);
+            return false;
+        }
+        if (!found) {
+            break;
+        }
+        std::string syncPath;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, 0, syncPath));
+        int ruleType{0};
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, 1, ruleType));
+
+        (void) syncFolderRuleList.emplace_back(SyncPath(syncPath), static_cast<SyncFolderRuleType>(ruleType));
+    }
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID));
+
+    return true;
+}
 
 bool ParmsDb::insertError(Error &err) {
     const std::scoped_lock lock(_mutex);
@@ -3527,12 +3877,16 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 bool ParmsDb::replaceShortDbPathsWithLongPaths() {
     LOG_INFO(_logger, "Replacing short DB path names with long ones in sync table.")
 
-    if (!createAndPrepareRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
     std::vector<Sync> syncList;
-    selectAllSyncs(syncList);
-    queryFree(SELECT_ALL_SYNCS_REQUEST_ID);
+    {
+        auto scopeGuard = createAndPrepareScopedRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST);
+        if (!scopeGuard) return false;
+        selectAllSyncs(syncList);
+    }
 
-    if (!createAndPrepareRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST)) return false;
+    auto scopeGuard = createAndPrepareScopedRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST);
+    if (!scopeGuard) return false;
+
     for (auto &sync: syncList) {
         SyncPath longPathName;
         auto ioError = IoError::Success;
@@ -3553,7 +3907,6 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
         bool found = false;
         if (!updateSync(sync, found)) return false;
     }
-    queryFree(UPDATE_SYNC_REQUEST_ID);
 
     return true;
 }
@@ -3562,38 +3915,40 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
 bool ParmsDb::enableSentryAndMatomo() {
     LOG_INFO(_logger, "Enabling sentry and matomo by default")
 
-    if (!createAndPrepareRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST)) {
-        LOG_WARN(_logger, "Error creating and preparing query: " << SELECT_PARAMETERS_REQUEST_ID);
-        return false;
+    ServerParameters parameters;
+    {
+        // This upgrade helper runs before prepare(), so SELECT_PARAMETERS_REQUEST_ID does not exist here.
+        const auto scopeGuard = createAndPrepareScopedRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST);
+        if (!scopeGuard) return false;
+
+        bool found = false;
+        if (!selectParameters(parameters, found)) {
+            LOG_WARN(_logger, "Error selecting parameters");
+            return false;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "Parameters not found");
+            return false;
+        }
     }
-    Parameters parameters;
-    bool found = false;
-    if (!selectParameters(parameters, found)) {
-        LOG_WARN(_logger, "Error selecting parameters");
-        return false;
-    }
-    if (!found) {
-        LOG_WARN(_logger, "Parameters not found");
-        return false;
-    }
-    queryFree(SELECT_PARAMETERS_REQUEST_ID);
     parameters.setSentryEnabled(true);
     parameters.setMatomoEnabled(true);
 
-    if (!createAndPrepareRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST)) {
-        LOG_WARN(_logger, "Error creating and preparing query: " << UPDATE_PARAMETERS_REQUEST_ID);
-        return false;
-    }
-    if (!updateParameters(parameters, found)) {
-        LOG_WARN(_logger, "Error updating parameters");
-        return false;
-    }
-    if (!found) {
-        LOG_WARN(_logger, "Parameters not found for update");
-        return false;
-    }
+    {
+        // This upgrade helper runs before prepare(), so UPDATE_PARAMETERS_REQUEST_ID does not exist here.
+        const auto scopeGuard = createAndPrepareScopedRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST);
+        if (!scopeGuard) return false;
 
-    queryFree(UPDATE_PARAMETERS_REQUEST_ID);
+        bool found = false;
+        if (!updateParameters(parameters, found)) {
+            LOG_WARN(_logger, "Error updating parameters");
+            return false;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "Parameters not found for update");
+            return false;
+        }
+    }
 
     return true;
 }

@@ -45,7 +45,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
             if (Error.Sync is not null && !await Utility.OpenFolderSecurely(Error.Sync.RescueFolderPath))
             {
-                Logger.Log(Logger.Level.Error, $"Failed to open rescue folder at path {Error.Sync?.RescueFolderPath}");
+                Logger.LogError($"Failed to open rescue folder at path {Error.Sync?.RescueFolderPath}",
+                    "FileRescuedError: Failed to open rescue folder");
                 Utility.BringCurrentWindowToFront();
             }
         }

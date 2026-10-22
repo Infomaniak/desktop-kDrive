@@ -17,7 +17,7 @@ runs:
     using: "composite"
     steps:
       - name: Clean the log directory
-        run : rm -rf /tmp/kDrive-logdir/*
+        run : rm -rf $HOME/.local/state/kDrive/logs/*
         shell: bash
 
       - name: Run the build script
@@ -48,6 +48,27 @@ runs:
         with:
           name: linux-release-artifacts-appimage-arm64
           path: ${{ github.workspace }}/build-linux-arm64/install/kDrive-*-arm64.* # kDrive-<full_version>-arm64.<extension>
+          retention-days: 1
+        if: steps.build.outcome == 'success'
+
+      - name: Generate recovery updater SHA256
+        shell: bash
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          FILE=$(ls "${{ github.workspace }}/build-linux-arm64/install/kDriveRecoveryUpdater-"*-arm64.AppImage | head -n 1)
+
+          HASH=$(sha256sum "$FILE" | awk '{print $1}')
+
+          echo "### Linux arm64 Recovery Updater SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "$HASH" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
+
+      - name: Upload recovery updater AppImage
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: linux-release-artifacts-recovery-updater-arm64
+          path: ${{ github.workspace }}/build-linux-arm64/install/kDriveRecoveryUpdater-*-arm64.*
           retention-days: 1
         if: steps.build.outcome == 'success'
 

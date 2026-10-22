@@ -34,6 +34,7 @@ CheckHashMatchJob::CheckHashMatchJob(const DriveDbId driveDbId, const SyncPath &
     _nodeId(nodeId),
     _remoteSize(remoteSize) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 3;
 }
 
 ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
@@ -65,47 +66,26 @@ ExitInfo CheckHashMatchJob::getFileSize(const SyncPath &path, int64_t &size) {
 }
 
 ExitInfo CheckHashMatchJob::runJob() noexcept {
-    if (const ExitInfo exitInfo = getFileSize(_filePath, _localSize); !exitInfo) {
+    _hashMatch = false;
+
+    int64_t localSize = 0;
+    if (const ExitInfo exitInfo = getFileSize(_filePath, localSize); !exitInfo) {
         LOGW_DEBUG(_logger, L"Failed to get local file size for " << Utility::formatSyncPath(_filePath)
                                                                   << L", skipping hash check: " << exitInfo);
         return exitInfo;
     }
 
-    if (_localSize != _remoteSize) {
-        LOGW_DEBUG(_logger, L"File size mismatch for " << Utility::formatSyncPath(_filePath) << L": local size = " << _localSize
+    if (localSize != _remoteSize) {
+        LOGW_DEBUG(_logger, L"File size mismatch for " << Utility::formatSyncPath(_filePath) << L": local size = " << localSize
                                                        << L", remote size = " << _remoteSize << L", skipping hash check");
         return ExitCode::Ok;
     }
-    if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
+
+    if (const auto exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
         LOGW_DEBUG(_logger, L"Failed to get remote hash for " << Utility::formatSyncPath(_filePath) << L", skipping hash check: "
                                                               << exitInfo);
         return exitInfo;
     }
-
-    const IoError checksumIoError = IoHelper::getFileChecksum(_filePath, _localHash);
-    if (checksumIoError == IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(_logger, L"File doesn't exist while computing checksum: " << Utility::formatSyncPath(_filePath));
-        return {ExitCode::SystemError, ExitCause::NotFound};
-    }
-
-    if (checksumIoError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"File read permission missing while computing checksum: " << Utility::formatSyncPath(_filePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-
-    if (checksumIoError == IoError::InvalidArgument) {
-        LOGW_WARN(_logger, L"File is a symlink: " << Utility::formatSyncPath(_filePath));
-        return ExitCode::Ok;
-    }
-
-    assert(checksumIoError == IoError::Success);
-    if (checksumIoError != IoError::Success) {
-        LOGW_WARN(_logger, L"Unable to compute checksum for " << Utility::formatIoError(_filePath, checksumIoError));
-        return ExitCode::SystemError;
-    }
-
-    if (_localHash != _remoteHash) return ExitCode::Ok;
-    _shouldDownload = false;
     return ExitCode::Ok;
 }
 
@@ -118,6 +98,7 @@ std::string CheckHashMatchJob::getSpecificUrl() {
 }
 
 ExitInfo CheckHashMatchJob::handleResponse(std::istream &is) {
+    // Extract remote checksum
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
         return exitInfo;
     }
@@ -127,9 +108,34 @@ ExitInfo CheckHashMatchJob::handleResponse(std::istream &is) {
     const auto dataObj = jsonRes()->getObject(dataKey);
     if (!dataObj) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!JsonParserUtility::extractValue(dataObj, hashKey, _remoteHash))
+    std::string remoteHash;
+    if (!JsonParserUtility::extractValue(dataObj, hashKey, remoteHash)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+    size_t chunkSize = 0;
+    if (!JsonParserUtility::extractValue(dataObj, chunkSizeKey, chunkSize))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
+    // Compute local checksum
+    std::string localHash;
+    if (const auto checksumIoError = IoHelper::getFileChecksum(_filePath, localHash, chunkSize);
+        checksumIoError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"File doesn't exist while computing checksum: " << Utility::formatSyncPath(_filePath));
+        return {ExitCode::SystemError, ExitCause::NotFound};
+    } else if (checksumIoError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"File read permission missing while computing checksum: " << Utility::formatSyncPath(_filePath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    } else if (checksumIoError == IoError::InvalidArgument) {
+        LOGW_WARN(_logger, L"File is a symlink: " << Utility::formatSyncPath(_filePath));
+        return ExitCode::Ok;
+    } else if (checksumIoError != IoError::Success) {
+        LOGW_WARN(_logger, L"Unable to compute checksum for " << Utility::formatIoError(_filePath, checksumIoError));
+        return ExitCode::SystemError;
+    }
+
+    LOGW_INFO(_logger, L"Local hash:  " << CommonUtility::s2ws(localHash) << L", remote hash: " << CommonUtility::s2ws(remoteHash)
+                                        << L" for " << Utility::formatSyncPath(_filePath));
+
+    if (localHash != remoteHash) return ExitCode::Ok;
+    _hashMatch = true;
     return ExitCode::Ok;
 }
 

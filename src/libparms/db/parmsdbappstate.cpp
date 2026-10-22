@@ -17,6 +17,7 @@
  */
 
 #include "parmsdb.h"
+#include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/types.h"
@@ -45,19 +46,19 @@ constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; // KDC::LogUploadSt
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_IS_EMPTY;
 constexpr char APP_STATE_KEY_DEFAULT_NoUpdate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_NotifyBeforeDelete[] = "1";
 
 namespace KDC {
 
 bool ParmsDb::createAppState() {
     LOG_INFO(_logger, "Creating table app_state");
-    if (!createAndPrepareRequest(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE)) return false;
+    auto scopeGuard = createAndPrepareScopedRequest(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE);
+    if (!scopeGuard) return false;
     int errId = 0;
     std::string error;
     if (!queryExec(CREATE_APP_STATE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_APP_STATE_TABLE_ID);
         return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
     }
-    queryFree(CREATE_APP_STATE_TABLE_ID);
     return true;
 }
 
@@ -105,7 +106,7 @@ bool ParmsDb::insertDefaultAppState() {
     }
 
     if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateRandomStringAlphaNum(25), true)) {
-        LOG_WARN(_logger, "Error while inserting default value for LogUploadToken");
+        LOG_WARN(_logger, "Error while inserting default value for AppUid");
         return false;
     }
 
@@ -116,20 +117,25 @@ bool ParmsDb::insertDefaultAppState() {
 
     // This AppState was added in version <= 4.x. If an update needs to insert it, the application necessarily comes from a
     // version <= 4.0.0, so the OnboardingV4 banner should be shown. Otherwise, if it is not inserted during an update, there is
-    // no need to display the banner. 
+    // no need to display the banner.
     if (!insertAppState(AppStateKey::ShowV4Onboarding, _versionUpdated ? "1" : "0")) {
         LOG_WARN(_logger, "Error while inserting default value for ShowV4Onboarding");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::NotifyBeforeDelete, APP_STATE_KEY_DEFAULT_NotifyBeforeDelete)) {
+        LOG_WARN(_logger, "Error while inserting default value for NotifyBeforeDelete");
         return false;
     }
 
     return true;
 }
 
-bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bool updateOnlyIfEmpty /*= false*/) {
+bool ParmsDb::insertAppState(const AppStateKey key, const std::string &value, const bool updateOnlyIfEmpty /*= false*/) {
     const std::scoped_lock lock(_mutex);
     std::string valueStr = value;
     if (valueStr.empty()) {
-        LOG_WARN(_logger, "Value is empty for AppStateKey: " << CommonUtility::appStateKeyToString(key));
+        LOG_WARN(_logger, "Value is empty for AppStateKey: " << key);
         return false;
     }
     if (valueStr == APP_STATE_DEFAULT_IS_EMPTY) {
@@ -164,7 +170,7 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bo
     return true;
 }
 
-bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found) {
+bool ParmsDb::selectAppState(const AppStateKey key, AppStateValue &value, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
     std::string valueStr;
@@ -191,9 +197,9 @@ bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found)
     }
 
     return true;
-};
+}
 
-bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &found) {
+bool ParmsDb::updateAppState(const AppStateKey key, const AppStateValue &value, bool &found) {
     AppStateValue existingValue;
     int errId = 0;
 
@@ -228,4 +234,29 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     }
     return true;
 };
+
+std::string ParmsDb::appUID() {
+    if (!_instance) {
+        if (Log::isSet()) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "ParmsDb is not initialized, cannot retrieve AppUid (key " << AppStateKey::AppUid << ").");
+        }
+
+        return {};
+    }
+
+    auto logger = Log::isSet() ? Log::instance()->getLogger() : _instance->_logger;
+    AppStateValue appStateValue = "";
+    if (bool found = false; !_instance->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
+        LOG_WARN(logger, "Error in ParmsDb::selectAppState.");
+
+        return {};
+    } else if (!found) {
+        LOG_WARN(logger, "AppUid (key " << AppStateKey::AppUid << ") not found in appstate table.");
+
+        return {};
+    }
+
+    return std::get<std::string>(appStateValue);
+}
 } // namespace KDC

@@ -53,6 +53,7 @@ class SearchJob : public AbstractTokenNetworkJob {
         std::string _searchString;
         std::string _cursorInput;
         SyncPath _syncRootPath;
+        SyncPath _syncTargetPath; // Relative to the synchronized tree, empty for a sync of the whole drive
         VirtualFileMode _syncVfsMode{VirtualFileMode::Off};
         std::list<SearchInfo> _searchResults;
         std::string _cursorOutput;

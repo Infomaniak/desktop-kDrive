@@ -45,8 +45,8 @@ namespace Infomaniak.kDrive.Types
         AppUid = 7,
         NoUpdate = 8,
         ShowV4Onboarding = 9,
-        Unknown, // Only for initialization purpose, never use it in the database
-        EnumEnd
+        NotifyAfterDelete = 10,
+        Unknown // Only for initialization purpose, never use it in the database
     };
     public enum RequestNum
     {
@@ -318,7 +318,12 @@ namespace Infomaniak.kDrive.Types
         MissingReplyData,
         BlackListPropagationError,
         FileSystemNotSupported,
-        SyncDeletionFailed
+        SyncDeletionFailed,
+        InvalidLinkTarget,
+        MoveThroughSymlink, // The local move is forbidden because an intermediate component of the path is a symbolic link
+        FileNameTooLong,
+        HardlinkNotSupported // Some operations are not supported on hard links in Windows LiteSync when two hard links point to
+                             // different LiteSync roots.
     };
 
 
@@ -401,4 +406,19 @@ namespace Infomaniak.kDrive.Types
         Classic,
         Advanced
     };
+    public enum TooManyDeletesNotificationType
+    {
+        Unknown,
+        SoftLimit,
+        HardLimit,
+        EnumEnd
+    };
+    public enum TooManyDeletesUserChoice
+    {
+        None,
+        Continue,
+        Revert,
+        EnumEnd
+    };
+
 }

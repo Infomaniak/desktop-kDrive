@@ -4,7 +4,7 @@ else()
     project(testsyncengine LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
@@ -26,6 +26,11 @@ set(testsyncengine_SRCS
         ../mocks/mockkeychainstorage.h ../mocks/mockkeychainstorage.cpp
         ../test_classes/syncpaltest.h
         ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
+        # SyncpalTestHelper
+        ../syncpal_test_helper/syncpaltesthelper.h ../syncpal_test_helper/syncpaltesthelper.cpp
+        ../syncpal_test_helper/initialsituationsetter.h ../syncpal_test_helper/initialsituationsetter.cpp
+        ../syncpal_test_helper/operationsexecutor.h ../syncpal_test_helper/operationsexecutor.cpp
+        ../syncpal_test_helper/situationcomparator.h ../syncpal_test_helper/situationcomparator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         # Jobs
@@ -34,6 +39,7 @@ set(testsyncengine_SRCS
         ## Network jobs
         jobs/network/testsnapshotitemhandler.h jobs/network/testsnapshotitemhandler.cpp
         jobs/network/testnetworkjobs.h jobs/network/testnetworkjobs.cpp
+        jobs/network/testabstractnetworkjob.h jobs/network/testabstractnetworkjob.cpp
         jobs/network/kDrive_API/testapitranslator.h jobs/network/kDrive_API/testapitranslator.cpp
         jobs/network/kDrive_API/testloguploadjob.h jobs/network/kDrive_API/testloguploadjob.cpp
         jobs/network/kDrive_API/testsearchjob.h jobs/network/kDrive_API/testsearchjob.cpp
@@ -69,11 +75,13 @@ set(testsyncengine_SRCS
         integration/testintegration.h integration/testintegration.cpp
         integration/testintegration_basics.cpp
         integration/testintegration_conflicts.cpp
+        integration/testintegration_conflictresolver.cpp
         integration/testintegration_nodeid_reuse.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
         syncpal/testoperationprocessor.h syncpal/testoperationprocessor.cpp
+        syncpal/testconflictingfilescorrector.h syncpal/testconflictingfilescorrector.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
         requests/testsyncnodecache.h requests/testsyncnodecache.cpp
@@ -91,8 +99,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testsyncengine_NAME} ${testsyncengine_SRCS})

@@ -21,8 +21,8 @@
 #include "libcommonserver/log/log.h"
 #include "requests/serverrequests.h"
 
-// Input parameters keys
-static const auto inParamsBasePath = "basePath";
+// Input parameters key
+static const auto inputParamsDriveName = "driveName";
 
 // Output parameters keys
 static const auto outParamsGoodPath = "goodPath";
@@ -38,15 +38,12 @@ UtilityFindGoodPathForNewSyncJob::UtilityFindGoodPathForNewSyncJob(std::shared_p
 }
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::deserializeInputParms() {
-    constexpr auto logMessage = "Exception in UtilityFindGoodPathForNewSyncJob::readParamValue: error=";
-    CommString pathStr;
     try {
-        readParamValue(inParamsBasePath, pathStr);
-    } catch (const Poco::Exception &pocoException) {
-        LOG_WARN(_logger, logMessage << pocoException.message());
+        readParamValue(inputParamsDriveName, _driveName);
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger, "Exception in NodeInfoJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
-    _basePath = SyncPath(pathStr);
 
     return ExitCode::Ok;
 }
@@ -58,9 +55,8 @@ ExitInfo UtilityFindGoodPathForNewSyncJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::process() {
-    if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_basePath, _goodPath, _errorMessage); !exitInfo) {
-        LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L", basePath=" << Path2WStr(_basePath) << L", errorMessage="
-                                                              << CommonUtility::s2ws(_errorMessage));
+    if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_driveName, _goodPath, _errorMessage); !exitInfo) {
+        LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L", errorMessage=" << CommonUtility::s2ws(_errorMessage));
         return exitInfo;
     }
     return ExitCode::Ok;

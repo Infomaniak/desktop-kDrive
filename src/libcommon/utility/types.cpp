@@ -124,6 +124,8 @@ std::string toString(const ExitCode e) {
             return "UpdateFailed";
         case ExitCode::TooManyDeleteOperations:
             return "TooManyDeleteOperations";
+        case ExitCode::SyncPaused:
+            return "SyncPaused";
         default:
             return noConversionStr;
     }
@@ -249,6 +251,10 @@ std::string toString(const ExitCause e) {
             return "InvalidLinkTarget";
         case ExitCause::MoveThroughSymlink:
             return "MoveThroughSymlink";
+        case ExitCause::FileNameTooLong:
+            return "FileNameTooLong";
+        case ExitCause::HardlinkNotSupported:
+            return "HardlinkNotSupported";
         default:
             return noConversionStr;
     }
@@ -307,6 +313,8 @@ std::string toString(const InconsistencyType e) {
             return "ForbiddenCharOnlySpaces";
         case InconsistencyType::ForbiddenCharEndWithSpace:
             return "ForbiddenCharEndWithSpace";
+        case InconsistencyType::InvalidTimestamp:
+            return "InvalidTimestamp";
         default:
             return noConversionStr;
     }
@@ -669,6 +677,21 @@ std::string toString(const ExclusionTemplateComplexity e) {
     }
 }
 
+std::string toString(const SyncFolderRuleType e) {
+    switch (e) {
+        case SyncFolderRuleType::None:
+            return "None";
+        case SyncFolderRuleType::WhiteList:
+            return "WhiteList";
+        case SyncFolderRuleType::BlackList:
+            return "BlackList";
+        case SyncFolderRuleType::WhiteListSubFolder:
+            return "WhiteListSubFolder";
+        default:
+            return noConversionStr;
+    }
+}
+
 std::string toString(const LinkType e) {
     switch (e) {
         case LinkType::None:
@@ -726,6 +749,8 @@ std::string toString(const IoError e) {
             return "TooManySymbolicLinkLevels";
         case IoError::MoveThroughSymlink:
             return "MoveThroughSymlink";
+        case IoError::HardlinkNotSupported:
+            return "HardlinkNotSupported";
         case IoError::Unknown:
             return "Unknown";
         default:
@@ -755,6 +780,8 @@ std::string toString(const AppStateKey e) {
             return "NoUpdate";
         case AppStateKey::ShowV4Onboarding:
             return "ShowV4Onboarding";
+        case AppStateKey::NotifyBeforeDelete:
+            return "NotifyBeforeDelete";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
@@ -1086,7 +1113,6 @@ void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, versionInfoTag, tag);
     CommonUtility::writeValueToStruct(dstruct, versionInfoBuildVersion, buildVersion);
     CommonUtility::writeValueToStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
-    CommonUtility::writeValueToStruct(dstruct, versionInfoChecksum, checksum);
     CommonUtility::writeValueToStruct(dstruct, versionInfoMinOsVersion, minOsVersion);
     CommonUtility::writeValueToStruct(dstruct, versionInfoMinAppVersion, minAppVersion);
 }
@@ -1096,7 +1122,6 @@ void VersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, versionInfoTag, tag);
     CommonUtility::readValueFromStruct(dstruct, versionInfoBuildVersion, buildVersion);
     CommonUtility::readValueFromStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
-    CommonUtility::readValueFromStruct(dstruct, versionInfoChecksum, checksum);
     CommonUtility::readValueFromStruct(dstruct, versionInfoMinOsVersion, minOsVersion);
     CommonUtility::readValueFromStruct(dstruct, versionInfoMinAppVersion, minAppVersion);
 }

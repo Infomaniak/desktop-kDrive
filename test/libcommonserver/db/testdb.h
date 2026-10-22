@@ -27,10 +27,10 @@ namespace KDC {
 
 class TestDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestDb);
+        CPPUNIT_TEST(testCreateAndPrepareLocalRequest);
         CPPUNIT_TEST(testQueries);
         CPPUNIT_TEST(testTableExist);
         CPPUNIT_TEST(testColumnExist);
-        CPPUNIT_TEST(testAddColumnIfMissing);
         CPPUNIT_TEST(testAddIntegerColumnIfMissing);
         CPPUNIT_TEST(testWalSettings);
         CPPUNIT_TEST(testWalTruncateOnClose);
@@ -41,10 +41,10 @@ class TestDb : public CppUnit::TestFixture, public TestBase {
         void tearDown() override;
 
     protected:
+        void testCreateAndPrepareLocalRequest();
         void testQueries();
         void testTableExist();
         void testColumnExist();
-        void testAddColumnIfMissing();
         void testAddIntegerColumnIfMissing();
         void testWalSettings();
         void testWalTruncateOnClose();

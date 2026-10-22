@@ -24,7 +24,7 @@
 
 #include <shobjidl_core.h>
 #include <shlwapi.h>
-#include <winrt\base.h>
+#include <winrt/base.h>
 
 struct MenuItem {
         bool _root = false;
@@ -36,6 +36,7 @@ struct MenuItem {
 
 struct ContextMenuInfo {
         MenuItem _menuItem;
+        bool _loaded = false;
         std::vector<MenuItem> _subMenuItems;
 };
 
@@ -102,7 +103,7 @@ class ExplorerCommandHandlerEnumerator : public IEnumExplorerCommand {
     private:
         ~ExplorerCommandHandlerEnumerator() {}
 
-        HRESULT createCommandFromCommandItem(const MenuItem *menuItem, IExplorerCommand **ppExplorerCommand);
+        HRESULT createCommandFromCommandItem(const MenuItem *menuItem, IExplorerCommand **ppExplorerCommand) const;
 
         long _cRef;
         size_t _ullCurrent;

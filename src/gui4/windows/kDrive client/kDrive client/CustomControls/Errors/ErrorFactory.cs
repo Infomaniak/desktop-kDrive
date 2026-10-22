@@ -37,7 +37,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             var matchType = GetErrorCardInfos(error)?.Type;
             if (matchType is null)
             {
-                Logger.Log(Logger.Level.Warning, $"No matching control type found for error: {error}. Returning default error control.");
+                Logger.LogWarning($"No matching control type found for error: {error}. Returning default error control.",
+                    "ErrorFactory: Error Control Creation failed");
                 return new DefaultError(error);
             }
 
@@ -51,12 +52,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 // Verify that the cached entry still matches the error properties
                 if (entry.Meta.Matches(error))
                 {
-                    Logger.Log(Logger.Level.Extended, $"Cache hit for error DbId {error.DbId}. Returning cached entry: {entry}");
+                    Logger.LogExtended($"Cache hit for error DbId {error.DbId}. Returning cached entry: {entry}");
                     return entry;
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Info, $"Cached entry for error DbId {error.DbId} does not match current error properties. Cache miss.");
+                    Logger.LogInfo($"Cached entry for error DbId {error.DbId} does not match current error properties. Cache miss.");
                     _cacheByDbId.Remove(error.DbId);
                 }
             }
@@ -75,7 +76,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             var candidates = GetCandidates();
             if (candidates == null)
             {
-                Logger.Log(Logger.Level.Error, "No candidates found for best control type retrieval.");
+                Logger.LogError("No candidates found for best control type retrieval.");
                 return null;
             }
 
@@ -84,14 +85,16 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
             if (!perfectMatch.Any())
             {
-                Logger.Log(Logger.Level.Warning, $"No perfect match found for best control type retrieval (error: {error}).");
+                Logger.LogWarning($"No perfect match found for best control type retrieval (error: {error}).",
+                    "ErrorFactory: No matching error control found");
                 return null;
             }
             else if (perfectMatch.Count() > 1)
             {
-                Logger.Log(Logger.Level.Error, $"Multiple perfect matches found for best control type retrieval (error: {error}). Returning the first match {perfectMatch.First().type.FullName}.");
+                Logger.LogError($"Multiple perfect matches found for best control type retrieval (error: {error}). Returning the first match {perfectMatch.First().type.FullName}.",
+                    "ErrorFactory: Multiple matching error controls found");
             }
-            
+
             result = new ErrorCardInfos(perfectMatch.First().type, perfectMatch.First().meta);
             _cacheByDbId.TryAdd(error.DbId, result);
             return result;
@@ -119,7 +122,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
             foreach (var candidate in _cache)
             {
-                Logger.Log(Logger.Level.Extended, $"Registered error control candidate: {candidate.type.FullName} with metadata: {candidate.meta}");
+                Logger.LogExtended($"Registered error control candidate: {candidate.type.FullName} with metadata: {candidate.meta}");
             }
             return _cache;
         }

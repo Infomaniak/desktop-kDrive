@@ -20,7 +20,7 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 
-#include "libcommon/info/exclusionappinfo.h"
+#include "libcommon/data/exclusionapp.h"
 
 namespace KDC {
 
@@ -34,7 +34,7 @@ class ExclAppGetListJob : public AbstractGuiJob {
         bool _default;
 
         // Output parameters
-        std::vector<ExclusionAppInfo> _applicationList;
+        std::vector<ExclusionApp> _applicationList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

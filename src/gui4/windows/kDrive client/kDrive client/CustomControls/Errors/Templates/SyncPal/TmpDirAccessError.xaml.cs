@@ -25,7 +25,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
 {
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.SyncPal },
-        ExitCodes = new[] { ExitCode.SystemError},
+        ExitCodes = new[] { ExitCode.SystemError },
         ExitCauses = new[] { ExitCause.TmpDirAccessError },
         ShowInSystemTray = true
     )]

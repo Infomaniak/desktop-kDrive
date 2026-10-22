@@ -376,7 +376,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = (std::min) (storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
@@ -461,10 +461,15 @@ SyncPath Handler::getSentryTemporaryDir() {
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y%m");
 
-    const auto sentryDirectory = std::filesystem::temp_directory_path() / "sentry" / oss.str();
+    SyncPath tmpDir;
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
+        return {};
+    }
+
+    const auto sentryDirectory = tmpDir / "sentry" / oss.str();
+
     std::error_code ec;
     (void) std::filesystem::create_directories(sentryDirectory, ec);
-
     assert(!ec && "Sentry temporary directory failed to be created.");
 
     return sentryDirectory;

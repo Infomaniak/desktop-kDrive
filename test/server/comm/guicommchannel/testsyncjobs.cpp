@@ -19,6 +19,7 @@
 #include "testguicommchannel.h"
 
 #include "../testcommhelpers.h"
+#include "../testsocketcomm.h"
 #include "comm/guijobs/signalsyncnotifymanydeletesjob.h"
 #include "comm/guijobs/syncacknowledgemanydeletesjob.h"
 
@@ -31,7 +32,17 @@
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
+#include "appserver.h"
+#include "comm/guijobmanager.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/keychainmanager/apitoken.h"
+#include "mocks/mockkeychainstorage.h"
+#include "test_utility/testhelpers.h"
 #include "utility/jsonparserutility.h"
+
+#include <chrono>
+#include <fstream>
+#include <thread>
 
 namespace KDC {
 
@@ -82,9 +93,13 @@ void TestGuiCommChannel::testSyncInfoListJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncInfoListJob = std::dynamic_pointer_cast<SyncInfoListJob>(job);
 
-        const SyncInfo si1(1, 1, "/Users/test/kDrive1", "", "", true, VirtualFileMode::Win, "");
-        const SyncInfo si2(2, 1, "/Users/test/kDrive2", "folder1", "999", false, VirtualFileMode::Off,
-                           "{645FF040-5081-101B-9F08-00AA002F954E}");
+        Sync si1(1, 1, "/Users/test/kDrive1", "", "");
+        si1.setSupportVfs(true);
+        si1.setVirtualFileMode(VirtualFileMode::Win);
+        Sync si2(2, 1, "/Users/test/kDrive2", "123", "folder1", "999");
+        si2.setSupportVfs(false);
+        si2.setVirtualFileMode(VirtualFileMode::Off);
+        si2.setNavigationPaneClsid("{645FF040-5081-101B-9F08-00AA002F954E}");
 
         syncInfoListJob->_syncInfoList = {si1, si2};
     };
@@ -274,8 +289,8 @@ void TestGuiCommChannel::testSyncAddJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAddJob = std::dynamic_pointer_cast<SyncAddJob>(job);
 
-        syncAddJob->syncInfo() = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
-                                          "{645FF040-5081-101B-9F08-00AA002F954E}");
+        syncAddJob->sync() = Sync(1, 1, "/Users/test/kDrive1", "", "test", "999", false, true, VirtualFileMode::Win, false, "",
+                                  false, "{645FF040-5081-101B-9F08-00AA002F954E}");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -340,8 +355,8 @@ void TestGuiCommChannel::testSyncAdd2Job() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAdd2Job = std::dynamic_pointer_cast<SyncAdd2Job>(job);
 
-        syncAdd2Job->syncInfo() = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
-                                           "{645FF040-5081-101B-9F08-00AA002F954E}");
+        syncAdd2Job->sync() = Sync(1, 1, "/Users/test/kDrive1", "", "test", "999", false, true, VirtualFileMode::Win, false, "",
+                                   false, "{645FF040-5081-101B-9F08-00AA002F954E}");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -639,8 +654,9 @@ void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
 void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
     const SyncDbId syncDbId = 1;
     const TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::HardLimit;
-    const uint64_t nbFiles = 12345;
-    SignalSyncNotifyManyDeletesJob job(syncDbId, notificationType, nbFiles);
+    const std::vector<SyncPath> filesPaths = {"file1", "file2", "file3"};
+    const int32_t nbFiles = static_cast<int32_t>(10);
+    SignalSyncNotifyManyDeletesJob job(syncDbId, notificationType, nbFiles, filesPaths);
 
     checkSignalCommonMethods(job, SignalNum::SYNC_NOTIFY_MANY_DELETES);
 
@@ -658,9 +674,21 @@ void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
     (void) JsonParserUtility::extractValue(paramsObj, "notificationType", notificationTypeOut);
     CPPUNIT_ASSERT_EQUAL(TooManyDeletesNotificationType::HardLimit,
                          static_cast<TooManyDeletesNotificationType>(notificationTypeOut));
-    uint64_t nbFilesOut = 0;
+    auto nbFilesOut = 0;
     (void) JsonParserUtility::extractValue(paramsObj, "nbFiles", nbFilesOut);
     CPPUNIT_ASSERT_EQUAL(nbFiles, nbFilesOut);
+    std::vector<CommString> filesPathsOut;
+    const auto filesPathsArray = JsonParserUtility::extractArrayObject(paramsObj, "filesPaths");
+    CPPUNIT_ASSERT(filesPathsArray);
+    for (const auto &pathVar: *filesPathsArray) {
+        filesPathsOut.push_back(CommonUtility::commString2SyncPath(pathVar.convert<CommString>()));
+    }
+    CPPUNIT_ASSERT_EQUAL(filesPaths.size(), filesPathsOut.size());
+    for (size_t i = 0; i < filesPaths.size(); ++i) {
+        SyncName decoded;
+        CommonUtility::convertFromBase64Str(CommonUtility::commString2Str(filesPathsOut[i]), decoded);
+        CPPUNIT_ASSERT(filesPaths[i].native() == decoded);
+    }
 }
 
 void TestGuiCommChannel::testAcknowledgeManyDeletes() {

@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 02 Sep 2026 16:24:21 +0200 
+  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,47 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Toutes les activités</value> 
   </data> 
-  <data name="activitiesTypeThisComputer" xml:space="preserve">
-    <value>Activités de cet ordinateur</value>
-  </data> 
-  <data name="activityInstructionGetLabel" xml:space="preserve"> 
-    <value>Importé</value> 
-  </data> 
-  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Importé %@</value> 
-  </data> 
-  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
-    <value>Ignoré</value> 
-  </data> 
-  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
-    <value>Déplacé</value> 
-  </data> 
-  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Déplacé %@</value> 
-  </data> 
-  <data name="activityInstructionPutLabel" xml:space="preserve"> 
-    <value>Ajouté</value> 
-  </data> 
-  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Ajouté %@</value> 
-  </data> 
-  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
-    <value>Placé dans la corbeille</value> 
-  </data> 
-  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>Placé dans la corbeille %@</value> 
-  </data> 
-  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
-    <value>Renommé</value> 
-  </data> 
-  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Renommé %@</value> 
-  </data> 
-  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
-    <value>Modifié</value> 
-  </data> 
-  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Modifié %@</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Activités de cet ordinateur</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importé</value> 
@@ -216,7 +177,7 @@ Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur d
     <value>Appliquer le changement…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Supprime les journaux datant de plus de 7 jours pour économiser de l’espace.</value> 
+    <value>Supprime les journaux datant de plus de 31 jours pour économiser de l’espace.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Nettoyage automatique</value> 
@@ -801,6 +762,9 @@ Demandez l’accès au propriétaire ou à l’administrateur.</value>
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Accès interdit</value> 
   </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Convertir en fichier standard</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Ce fichier est un lien système (hard link) qui ne peut pas être synchronisé.</value> 
   </data> 
@@ -1007,7 +971,7 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Cet élément n’est pas disponible sur cet appareil.
-Il s’ouvrira dans votre navigateur.</value> 
+Il s’ouvrira dans kDrive en ligne.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/fr/ksuite</value> 
@@ -1119,7 +1083,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>À l’instant</value> 
+    <value>à l’instant</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 
@@ -1340,6 +1304,9 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflits de versions détectés</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ éléments supprimés</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>La synchronisation est en pause pour éviter une suppression involontaire.
 Que voulez-vous faire ?</value> 
@@ -1349,6 +1316,12 @@ Que voulez-vous faire ?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Supprimer aussi en ligne</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>et un autre élément</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>et %@ autres éléments</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Ces fichiers restent récupérables dans la corbeille de kDrive.</value> 

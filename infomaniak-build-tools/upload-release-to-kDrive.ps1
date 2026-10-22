@@ -40,6 +40,11 @@ if (-not $env:KDRIVE_DIR_ID) {
     exit 1
 }
 
+if (-not $env:KDRIVE_ORGA_ID) {
+    Write-Host "No KDRIVE_ORGA_ID found to upload recovery updater link." -f Red
+    exit 1
+}
+
 # version example 3.7.1.0
 $app = "kDrive-$version"
 
@@ -110,6 +115,8 @@ function Upload-FilesToKDrive {
         [string]$targetSubDir
     )
 
+    $uploadedFileIds = @{}
+
     Push-Location $directory
     foreach ($fileEntry in $files) {
         $file = $fileEntry
@@ -158,7 +165,7 @@ function Upload-FilesToKDrive {
                 [System.IO.Compression.ZipFile]::CreateFromDirectory($item.FullName, $zipFilePath)
             
                 # Replace $file with the zipped file for upload
-                 $file = $zipFileName            
+                 $file = $zipFileName
                 Write-Host "Directory zipped: $zipFilePath" -f Green
             }
 
@@ -176,8 +183,19 @@ function Upload-FilesToKDrive {
 
             $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$directoryPath&conflict=version"           
             Write-Host "Uploading $file to kDrive at $uri"
-            Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
+            $response = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
             Write-Host "\t\t => ✅" -f Green
+
+            if ($response.data -and $response.data.id -and $response.data.parent_id) {
+                $uploadedFileIds[$file] = @{
+                    id = $response.data.id
+                    parentId = $response.data.parent_id
+                }
+            } else {
+                Write-Host "Upload succeeded but response is missing id/parent_id for $file -> $response" -f Red
+                Pop-Location
+                exit 1
+            }
         } catch {
             if ($isMandatory) {
                 Write-Host "Failed to upload $file to kDrive -> $_" -f Red
@@ -190,6 +208,104 @@ function Upload-FilesToKDrive {
         Sleep(5)
     }
     Pop-Location
+
+    return $uploadedFileIds
+}
+
+function Compare-Versions {
+    param (
+        [string]$versionA,
+        [string]$versionB
+    )
+
+    $partsA = $versionA.Split('.')
+    $partsB = $versionB.Split('.')
+    $maxLen = [Math]::Max($partsA.Count, $partsB.Count)
+
+    for ($i = 0; $i -lt $maxLen; $i++) {
+        $a = if ($i -lt $partsA.Count) { [int]$partsA[$i] } else { 0 }
+        $b = if ($i -lt $partsB.Count) { [int]$partsB[$i] } else { 0 }
+        if ($a -gt $b) { return 1 }
+        if ($a -lt $b) { return -1 }
+    }
+    return 0
+}
+
+function Upload-RecoveryUpdaterLink {
+    param (
+        [string]$fileId,
+        [string]$parentId,
+        [string]$osName,
+        [string]$fullVersion
+    )
+
+    $kSuiteUrl = "https://ksuite.infomaniak.com/$env:KDRIVE_ORGA_ID/kdrive/app/drive/$env:KDRIVE_ID/files/$parentId/preview/unknown/$fileId"
+    $urlFileName = "kDriveRecoveryUpdater-$fullVersion-$osName.url"
+    $linkDirPath = "kDriveRecoveryUpdater"
+    if ($test) {
+        $linkDirPath = "Test/$linkDirPath"
+    }
+
+    $filesToDelete = @()
+
+    try {
+        $searchUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files/search/default?query=kDriveRecoveryUpdater-&with=path&order_by=relevance"
+        $searchResponse = Invoke-RestMethod -Method "GET" -Uri $searchUri -Header $headers
+
+        if ($searchResponse.data) {
+            $existingFiles = $searchResponse.data | Where-Object {
+                $_.name -like "kDriveRecoveryUpdater-*-$osName.url" -and
+                $_.path -like "*$linkDirPath*"
+            }
+            foreach ($existingFile in $existingFiles) {
+                $versionMatch = [regex]::Match($existingFile.name, "kDriveRecoveryUpdater-(.+)-$osName\.url")
+                if ($versionMatch.Success) {
+                    $existingVersion = $versionMatch.Groups[1].Value
+                    Write-Host "Existing recovery updater link points to version $existingVersion, new version is $fullVersion"
+                    $cmp = Compare-Versions -versionA $fullVersion -versionB $existingVersion
+                    if ($cmp -lt 0) {
+                        Write-Host "New version ($fullVersion) is lower than existing ($existingVersion). Skipping link update." -f Yellow
+                        return
+                    } elseif ($cmp -gt 0 -and $existingFile.id) {
+                        $filesToDelete += [pscustomobject]@{ id = $existingFile.id; version = $existingVersion; name = $existingFile.name }
+                    } elseif ($cmp -gt 0) {
+                        Write-Host "Warning: cannot delete older recovery updater link $($existingFile.name) (v$existingVersion) - missing file id" -f Yellow
+                    }
+                }
+            }
+        }
+    } catch {
+       Write-Host "Could not check existing recovery updater link; aborting link update -> $_" -f Red
+       return
+    }
+
+    $urlLines = @("[InternetShortcut]", "URL=$kSuiteUrl")
+    $tempLinkPath = Join-Path $env:TEMP $urlFileName
+    Set-Content -Path $tempLinkPath -Value $urlLines -Encoding UTF8
+
+    try {
+        $size = (Get-Item $tempLinkPath).length
+        $uploadUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$urlFileName&directory_path=$linkDirPath&conflict=version"
+        Write-Host "Uploading recovery updater link $urlFileName to kDrive at $uploadUri"
+        Invoke-RestMethod -Method "POST" -Uri $uploadUri -Header $headers -ContentType 'application/octet-stream' -InFile $tempLinkPath
+        Write-Host "Recovery updater link uploaded => ✅" -f Green
+
+        foreach ($oldFile in $filesToDelete) {
+            try {
+                $deleteUri = "https://api.infomaniak.com/2/drive/$env:KDRIVE_ID/files/$($oldFile.id)"
+                Invoke-RestMethod -Method "DELETE" -Uri $deleteUri -Header $headers -ContentType 'application/json'
+                Write-Host "Deleted older recovery updater link $($oldFile.name) (v$($oldFile.version)) => ✅" -f Green
+            } catch {
+                Write-Host "Warning: failed to delete older recovery updater link $($oldFile.name) -> $_" -f Yellow
+            }
+        }
+    } catch {
+        Write-Host "Warning: failed to upload recovery updater link -> $_" -f Yellow
+    } finally {
+        if (Test-Path $tempLinkPath) {
+            Remove-Item $tempLinkPath -Force
+        }
+    }
 }
 
 if ($os -eq "win") {
@@ -201,9 +317,17 @@ if ($os -eq "win") {
         @("kDrive.pdb", $true),
         @("kDrive_client.pdb", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $false)
+        @("kDrive_client.src.zip", $false),
+        @("kDriveRecoveryUpdater-$version.exe", $true),
+        @("kDriveRecoveryUpdater-$version.exe.sha256", $true)
     )
-    Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
+    $uploadedIds = Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
+
+    $recoveryFileName = "kDriveRecoveryUpdater-$version.exe"
+    if ($uploadedIds.ContainsKey($recoveryFileName)) {
+        $fileInfo = $uploadedIds[$recoveryFileName]
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -osName "windows" -fullVersion $version
+    }
     Write-Host " - Windows Files - \n"
 }
 
@@ -217,9 +341,17 @@ if ($os -eq "macos") {
         @("kDrive.dSYM", $true),
         @("kDrive_client.dSYM", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true)
+        @("kDrive_client.src.zip", $true),
+        @("kDriveRecoveryUpdater-$version.zip", $true),
+        @("kDriveRecoveryUpdater-$version.zip.sha256", $true)
     )
-    Upload-FilesToKDrive -directory build-macos -files $macos_files -targetSubDir "macos"
+    $uploadedIds = Upload-FilesToKDrive -directory build-macos -files $macos_files -targetSubDir "macos"
+
+    $recoveryFileName = "kDriveRecoveryUpdater-$version.zip"
+    if ($uploadedIds.ContainsKey($recoveryFileName)) {
+        $fileInfo = $uploadedIds[$recoveryFileName]
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -osName "macos" -fullVersion $version
+    }
     Write-Host " - macOS Files - \n"
 }
 
@@ -231,9 +363,17 @@ if ($os -eq "linux-amd") {
         @("kDrive.dbg", $true),
         @("kDrive_client.dbg", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true)
+        @("kDrive_client.src.zip", $true),
+        @("kDriveRecoveryUpdater-$version-amd64.AppImage", $true),
+        @("kDriveRecoveryUpdater-$version-amd64.AppImage.sha256", $true)
     )
-    Upload-FilesToKDrive -directory build-linux-amd64 -files $linux_amd_files -targetSubDir "linux-amd"
+    $uploadedIds = Upload-FilesToKDrive -directory build-linux-amd64 -files $linux_amd_files -targetSubDir "linux-amd"
+
+    $recoveryFileName = "kDriveRecoveryUpdater-$version-amd64.AppImage"
+    if ($uploadedIds.ContainsKey($recoveryFileName)) {
+        $fileInfo = $uploadedIds[$recoveryFileName]
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -osName "linux-amd" -fullVersion $version
+    }
     Write-Host " - Linux AMD64 Files - \n"
 }
 
@@ -245,8 +385,16 @@ if ($os -eq "linux-arm") {
         @("kDrive.dbg", $true),
         @("kDrive_client.dbg", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true)
+        @("kDrive_client.src.zip", $true),
+        @("kDriveRecoveryUpdater-$version-arm64.AppImage", $true),
+        @("kDriveRecoveryUpdater-$version-arm64.AppImage.sha256", $true)
     )
-    Upload-FilesToKDrive -directory build-linux-arm64 -files $linux_arm_files -targetSubDir "linux-arm"
+    $uploadedIds = Upload-FilesToKDrive -directory build-linux-arm64 -files $linux_arm_files -targetSubDir "linux-arm"
+
+    $recoveryFileName = "kDriveRecoveryUpdater-$version-arm64.AppImage"
+    if ($uploadedIds.ContainsKey($recoveryFileName)) {
+        $fileInfo = $uploadedIds[$recoveryFileName]
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -osName "linux-arm" -fullVersion $version
+    }
     Write-Host " - Linux ARM64 Files - \n"
 }

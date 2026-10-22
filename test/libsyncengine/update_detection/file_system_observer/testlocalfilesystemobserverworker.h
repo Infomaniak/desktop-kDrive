@@ -78,6 +78,9 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         CPPUNIT_TEST(testLFSODirReplacement);
         CPPUNIT_TEST(testInvalidateCounter);
         CPPUNIT_TEST(testInvalidateSnapshot);
+        CPPUNIT_TEST(testSlowWritingExtensionDelay);
+        CPPUNIT_TEST(testLocalChangesDetectedDoesNotAppendPendingEventsToItself);
+        CPPUNIT_TEST(testGenerateInitialSnapshotWithInvalidSnapshotAndPendingEvents);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -106,10 +109,15 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         void testLFSODirReplacement();
         void testInvalidateCounter();
         void testInvalidateSnapshot();
+        void testSlowWritingExtensionDelay();
+        void testLocalChangesDetectedDoesNotAppendPendingEventsToItself();
+        void testGenerateInitialSnapshotWithInvalidSnapshotAndPendingEvents();
         void testSyncDirChange();
         static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; }
         static bool vfsPinState(int, const SyncPath &, PinState &) { return true; }
         static bool vfsFileStatusChanged(int, const SyncPath &, SyncFileStatus) { return true; }
+
+        void populatePendingFiles(Count fileCount);
 };
 
 } // namespace KDC

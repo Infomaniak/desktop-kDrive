@@ -33,6 +33,24 @@ void TestIo::testGetNodeId() {
         CPPUNIT_ASSERT(!nodeId.empty());
     }
 
+#ifdef KD_WINDOWS
+    // A regular file with a locked parent handle (Windows only)
+    {
+        const SyncPath path = _localTestDirPath / "test_pictures/Picture-1.jpg";
+        HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), GENERIC_ALL,
+                                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+                                     FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+        CPPUNIT_ASSERT(hParent != INVALID_HANDLE_VALUE);
+        NodeId nodeId;
+        CPPUNIT_ASSERT(IoHelper::getNodeId(path, nodeId));
+        CPPUNIT_ASSERT(!nodeId.empty());
+
+        (void) CloseHandle(hParent);
+    }
+
+#endif // KD_WINDOWS
+
+
     // A regular directory
     {
         const SyncPath path = _localTestDirPath / "test_pictures";

@@ -40,11 +40,11 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         bool writeDummyTest();
         void clearDummyTest();
 
-        bool writeToken(const std::string &keychainKey, const std::string &rawData);
-        bool readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found);
-        bool deleteToken(const std::string &keychainKey);
+        bool writeData(const std::string &keychainKey, const std::string &rawData);
+        bool readData(const std::string &keychainKey, std::string &data, bool &found);
+        bool deleteData(const std::string &keychainKey);
 
-        bool readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found);
+        bool readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found);
 
         [[nodiscard]] bool isTesting() const { return _storage ? _storage->isTesting() : false; }
 

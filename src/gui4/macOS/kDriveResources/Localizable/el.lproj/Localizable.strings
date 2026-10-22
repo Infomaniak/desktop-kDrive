@@ -995,7 +995,7 @@
 "labelFolderRecreatedOrReplacedTip" = "Ο φάκελος διαγράφηκε και δημιουργήθηκε εκ νέου ή αντικαταστάθηκε από άλλον φάκελο με το ίδιο όνομα.";
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
-"labelJustNow" = "Μόλις τώρα";
+"labelJustNow" = "μόλις τώρα";
 
 /* loco:698aecc409658598f60cc334 */
 "labelKDriveVersion" = "kDrive %@";

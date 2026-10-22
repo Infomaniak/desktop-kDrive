@@ -200,7 +200,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Επιλογή φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="377"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="366"/>
+        <source>Please select a folder to continue.</source>
+        <translation>Παρακαλώ επιλέξτε έναν φάκελο για να συνεχίσετε.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="387"/>
         <source>Unable to open link %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
@@ -274,6 +279,11 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AddDriveWizard</name>
     <message>
+        <location filename="../src/gui/adddrivewizard.cpp" line="196"/>
+        <source>Failed to find a valid local folder to create your synchronisation. Please, select a folder manually.</source>
+        <translation>Δεν βρέθηκε έγκυρος τοπικός φάκελος για τη δημιουργία του συγχρονισμού σας. Παρακαλώ, επιλέξτε έναν φάκελο χειροκίνητα.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/adddrivewizard.cpp" line="226"/>
         <source>Failed to create local folder %1</source>
         <translation>Αποτυχία δημιουργίας τοπικού φακέλου %1</translation>
@@ -302,7 +312,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Ο πελάτης kDrive εκτελείται ήδη!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="724"/>
+        <location filename="../src/gui/appclient.cpp" line="723"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>Ο χρήστης %1 δεν είναι συνδεδεμένος. Παρακαλώ συνδεθείτε ξανά.</translation>
     </message>
@@ -310,12 +320,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1774"/>
+        <location filename="../src/server/appserver.cpp" line="1775"/>
         <source>Share link copied to clipboard</source>
         <translation>Ο σύνδεσμος κοινοποίησης αντιγράφηκε στο πρόχειρο</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3942"/>
+        <location filename="../src/server/appserver.cpp" line="3907"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο αφαιρέθηκαν.</numerusform>
@@ -323,13 +333,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3944"/>
+        <location filename="../src/server/appserver.cpp" line="3909"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 αφαιρέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3949"/>
+        <location filename="../src/server/appserver.cpp" line="3914"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο προστέθηκαν.</numerusform>
@@ -337,13 +347,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3951"/>
+        <location filename="../src/server/appserver.cpp" line="3916"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 προστέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3956"/>
+        <location filename="../src/server/appserver.cpp" line="3921"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο ενημερώθηκαν.</numerusform>
@@ -351,13 +361,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3958"/>
+        <location filename="../src/server/appserver.cpp" line="3923"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 ενημερώθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3963"/>
+        <location filename="../src/server/appserver.cpp" line="3928"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>Το %1 μετακινήθηκε στο %2 και %n άλλο αρχείο μετακινήθηκε.</numerusform>
@@ -365,12 +375,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3966"/>
+        <location filename="../src/server/appserver.cpp" line="3931"/>
         <source>%1 has been moved to %2.</source>
         <translation>Το %1 μετακινήθηκε στο %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3974"/>
+        <location filename="../src/server/appserver.cpp" line="3939"/>
         <source>Sync Activity</source>
         <translation>Δραστηριότητα συγχρονισμού</translation>
     </message>
@@ -551,35 +561,35 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1382"/>
         <source>%1 items have been deleted from your from your local sync folder &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. To avoid unintended deletions the synchronization have been paused.&lt;br&gt;Do you want to propagate those deletion to your kDrive?</source>
-        <translation>%1 στοιχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Για να αποφευχθούν ακούσιες διαγραφές, ο συγχρονισμός τέθηκε σε παύση.&lt;br&gt;Θέλετε να διαδώσετε αυτές τις διαγραφές στο kDrive σας;</translation>
+        <translation>%1 στοιχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Για να αποφευχθούν ακούσιες διαγραφές, ο συγχρονισμός έχει τεθεί σε παύση.&lt;br&gt;Θέλετε να μεταφέρετε αυτές τις διαγραφές στο kDrive σας;</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1420"/>
         <source>Several files have been deleted from your local sync folder &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Deleted files can be found in kDrive&apos;s &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;trash&lt;/a&gt;.</source>
-        <translation>Πολλά αρχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Τα διαγραμμένα αρχεία βρίσκονται στον &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;κάδο απορριμμάτων&lt;/a&gt; του kDrive.</translation>
+        <translation>Αρκετά αρχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Τα διαγραμμένα αρχεία βρίσκονται στον &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;κάδο ανακύκλωσης&lt;/a&gt; του kDrive.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1426"/>
         <source>Don&apos;t show again</source>
-        <translation>Να μην εμφανιστεί ξανά</translation>
+        <translation>Να μην εμφανίζεται ξανά</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1508"/>
+        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Synthesis</source>
         <translation>Σύνοψη</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1509"/>
+        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Preferences</source>
         <translation>Προτιμήσεις</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1510"/>
+        <location filename="../src/gui/clientgui.cpp" line="1511"/>
         <source>Quit</source>
         <translation>Έξοδος</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1676"/>
+        <location filename="../src/gui/clientgui.cpp" line="1677"/>
         <source>Failed to start synchronizations!</source>
         <translation>Αποτυχία εκκίνησης συγχρονισμών!</translation>
     </message>
@@ -1548,7 +1558,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Επιλογή φακέλου</translation>
     </message>
     <message>
-        <location filename="../src/gui/localfolderdialog.cpp" line="292"/>
+        <location filename="../src/gui/localfolderdialog.cpp" line="296"/>
         <source>Unable to open link %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
@@ -1577,6 +1587,124 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <location filename="../src/gui/mainmenubarwidget.cpp" line="116"/>
         <source>Help</source>
         <translation>Βοήθεια</translation>
+    </message>
+</context>
+<context>
+    <name>KDC::MainWindow</name>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="48"/>
+        <source>kDrive Recovery Updater</source>
+        <translation>kDrive Recovery Updater</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="59"/>
+        <source>Current Installation</source>
+        <translation>Τρέχουσα εγκατάσταση</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="61"/>
+        <source>Detecting version...</source>
+        <translation>Ανίχνευση έκδοσης...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="67"/>
+        <source>Desired kDrive Version</source>
+        <translation>Επιθυμητή έκδοση του kDrive</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="71"/>
+        <source>Version:</source>
+        <translation>Έκδοση:</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="73"/>
+        <source>e.g., 3.6.10</source>
+        <translation>π.χ., 3.6.10</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="95"/>
+        <source>Download &amp;&amp; Install</source>
+        <translation>Λήψη &amp;&amp; Εγκατάσταση</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="102"/>
+        <source>Status log will appear here...</source>
+        <translation>Εδώ θα εμφανιστεί το αρχείο καταγραφής κατάστασης...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="111"/>
+        <source>kDrive is not installed or the version could not be detected.</source>
+        <translation>Το kDrive δεν είναι εγκατεστημένο ή δεν ήταν δυνατή η αναγνώριση της έκδοσής του.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="115"/>
+        <source>Installed version: &lt;b&gt;%1&lt;/b&gt;</source>
+        <translation>Εγκατεστημένη έκδοση: &lt;b&gt;%1&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="150"/>
+        <source>Please enter a version number.</source>
+        <translation>Παρακαλώ εισάγετε έναν αριθμό έκδοσης.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="155"/>
+        <source>Invalid version format. Use numbers separated by dots (e.g., 3.6.10).</source>
+        <translation>Μη έγκυρη μορφή έκδοσης. Χρησιμοποιήστε αριθμούς που διαχωρίζονται με τελείες (π.χ. 3.6.10).</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="160"/>
+        <source>You cannot install a version older than the one currently installed (%1).</source>
+        <translation>Δεν μπορείτε να εγκαταστήσετε έκδοση παλαιότερη από αυτήν που είναι εγκατεστημένη αυτή τη στιγμή (%1).</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="171"/>
+        <source>Installation already in progress.</source>
+        <translation>Η εγκατάσταση βρίσκεται ήδη σε εξέλιξη.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="177"/>
+        <source>Validation Error</source>
+        <translation>Σφάλμα επικύρωσης</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="181"/>
+        <source>Starting download of kDrive %1...</source>
+        <translation>Ξεκινά η λήψη του kDrive %1...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="204"/>
+        <source>Success: %1</source>
+        <translation>Επιτυχία: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="205"/>
+        <source>Installation Complete</source>
+        <translation>Η εγκατάσταση ολοκληρώθηκε</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="208"/>
+        <source>Failed: %1</source>
+        <translation>Αποτυχία: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="209"/>
+        <source>Installation Failed</source>
+        <translation>Η εγκατάσταση απέτυχε</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="235"/>
+        <source>Failed to construct download URL for version %1.</source>
+        <translation>Δεν κατέστη δυνατή η δημιουργία της διεύθυνσης URL λήψης για την έκδοση %1.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="256"/>
+        <source>Downloading installer...</source>
+        <translation>Λήψη του προγράμματος εγκατάστασης...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/mainwindow.cpp" line="262"/>
+        <source>Failed to create OS-specific updater.</source>
+        <translation>Δεν κατέστη δυνατή η δημιουργία προγράμματος ενημέρωσης για το συγκεκριμένο λειτουργικό σύστημα.</translation>
     </message>
 </context>
 <context>
@@ -1838,145 +1966,155 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Το όνομα του στοιχείου περιέχει μόνο κενά.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="705"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="700"/>
+        <source>The item has an invalid timestamp.&lt;br&gt;It has been ignored.</source>
+        <translation>Το στοιχείο έχει μη έγκυρη χρονική σήμανση.&lt;br&gt;Έχει αγνοηθεί.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="711"/>
         <source>Either you are not allowed to create an item, or another item already exists with the same name. The item has been ignored.</source>
         <translation>Είτε δεν έχετε άδεια να δημιουργήσετε ένα στοιχείο, είτε υπάρχει ήδη ένα άλλο στοιχείο με το ίδιο όνομα. Το στοιχείο αγνοήθηκε.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="710"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="716"/>
         <source>You are not allowed to edit item.&lt;br&gt;The file containing your modifications has been renamed and excluded from synchronization.</source>
         <translation>Δεν επιτρέπεται η επεξεργασία του στοιχείου.&lt;br&gt;Το αρχείο με τις αλλαγές σας μετονομάστηκε και εξαιρέθηκε από τον συγχρονισμό.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="718"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="724"/>
         <source>You are not allowed to rename item.&lt;br&gt;It will be restored with its original name.</source>
         <translation>Δεν επιτρέπεται η μετονομασία του στοιχείου.&lt;br&gt;Θα αποκατασταθεί με το αρχικό του όνομα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="724"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="730"/>
         <source>You are not allowed to move item to &quot;%1&quot;.&lt;br&gt;It will be restored into its original parent folder.</source>
         <translation>Δεν επιτρέπεται η μετακίνηση στοιχείου στο &quot;%1&quot;.&lt;br&gt;Θα αποκατασταθεί στον αρχικό γονικό φάκελο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="729"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="735"/>
         <source>You are not allowed to delete item.&lt;br&gt;It will be restored to its original location.</source>
         <translation>Δεν επιτρέπεται η διαγραφή του στοιχείου.&lt;br&gt;Θα αποκατασταθεί στην αρχική του θέση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="734"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="740"/>
         <source>Failed to move this item to trash, it has been blacklisted.</source>
         <translation>Αποτυχία μετακίνησης στοιχείου στον κάδο, τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="737"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="743"/>
         <source>Failed to synchronize this item. It has been temporarily blacklisted.&lt;br&gt;Another attempt to sync it will be done in one hour or on next application startup.</source>
         <translation>Αποτυχία συγχρονισμού στοιχείου. Προσωρινά τέθηκε σε μαύρη λίστα.&lt;br&gt;Νέα προσπάθεια θα γίνει σε μία ώρα ή κατά την επόμενη εκκίνηση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="742"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="748"/>
         <source>This item has been excluded from sync by a custom template.&lt;br&gt;You can disable this type of notification from the Preferences</source>
         <translation>Αυτό το στοιχείο εξαιρέθηκε από τον συγχρονισμό βάσει προσαρμοσμένου προτύπου.&lt;br&gt;Μπορείτε να απενεργοποιήσετε αυτόν τον τύπο ειδοποίησης από τις Προτιμήσεις</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="747"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
         <source>This item has been excluded from sync because it is a hard link.</source>
         <translation>Αυτό το στοιχείο εξαιρέθηκε από τον συγχρονισμό επειδή είναι σκληρός σύνδεσμος.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="750"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="756"/>
         <source>The file has been modified locally while it has been deleted on the remote kDrive.&lt;br&gt;Local copy has been saved in the rescue folder.</source>
         <translation>Το αρχείο τροποποιήθηκε τοπικά ενώ διαγράφηκε στο απομακρυσμένο kDrive.&lt;br&gt;Το τοπικό αντίγραφο αποθηκεύτηκε στον φάκελο ανάκτησης.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="761"/>
         <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
-        <translation>Αυτός ο σύνδεσμος έχει εξαιρεθεί από το συγχρονισμό, καθώς η διαδρομή προορισμού του δεν πληροί τις προδιαγραφές.&lt;br&gt; Οι διαδρομές προορισμού πρέπει να είναι σχετικές. Δεν πρέπει να χρησιμοποιούν διαδρομή προς τον γονικό φάκελο, δηλαδή απαγορεύεται η χρήση στοιχείων όπως το &quot;..&quot;.</translation>
+        <translation>Αυτός ο σύνδεσμος έχει εξαιρεθεί από το συγχρονισμό, καθώς η διαδρομή προορισμού του δεν πληροί τις προδιαγραφές.&lt;br&gt; Οι διαδρομές προορισμού πρέπει να είναι σχετικές. Δεν πρέπει να χρησιμοποιούν διαδρομή προς τον γονικό φάκελο, δηλαδή απαγορεύονται στοιχεία όπως το &quot;..&quot;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="767"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="778"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Η λειτουργία που εκτελέστηκε στο στοιχείο απαγορεύεται.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="773"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="784"/>
         <source>The operation performed on this item failed.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Η λειτουργία στο στοιχείο απέτυχε.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="778"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="789"/>
         <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
         <translation>Το αρχείο είναι πολύ μεγάλο για μεταφόρτωση. Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="781"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="792"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Έχετε υπερβεί το όριο χώρου. Αυξήστε το όριο για να επανενεργοποιήσετε τη μεταφόρτωση αρχείων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="784"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="795"/>
         <source>Impossible to download the file.</source>
         <translation>Αδύνατη η λήψη του αρχείου.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="787"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="798"/>
         <source>This item is currently locked by another user online.&lt;br&gt;We will retry uploading your changes later.</source>
         <translation>Αυτό το στοιχείο είναι κλειδωμένο από άλλον χρήστη ηλεκτρονικά.&lt;br&gt;Θα επαναπροσπαθήσουμε τη μεταφόρτωση των αλλαγών αργότερα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="792"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="839"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="803"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="854"/>
         <source>Synchronization error.</source>
         <translation>Σφάλμα συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="812"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="823"/>
         <source>Can&apos;t access item.&lt;br&gt;Please fix the read and write permissions.</source>
         <translation>Δεν είναι δυνατή η πρόσβαση στο στοιχείο.&lt;br&gt;Ελέγξτε τα δικαιώματα ανάγνωσης και εγγραφής.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="816"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="827"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Δεν υπάρχει αρκετός ελεύθερος χώρος στον υπολογιστή.&lt;br&gt;Η λήψη ακυρώθηκε.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="820"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="831"/>
         <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
-        <translation>Δεν είναι δυνατή η δημιουργία του αρχείου &quot;%1&quot; επειδή δεν υποστηρίζεται από το σύστημα αρχείων σας.&lt;br&gt;Έχει εξαιρεθεί από τον συγχρονισμό.</translation>
+        <translation>Δεν είναι δυνατή η δημιουργία του αρχείου «%1», καθώς δεν υποστηρίζεται από το σύστημα αρχείων σας.&lt;br&gt;Έχει εξαιρεθεί από τον συγχρονισμό.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="823"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Δεν ήταν δυνατή η μετακίνηση του στοιχείου, καθώς η διαδρομή του περιέχει συμβολικό σύνδεσμο ή σημείο διακλάδωσης.&lt;br&gt;Έχει εξαιρεθεί προσωρινά από τον συγχρονισμό.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="838"/>
         <source>System error.</source>
         <translation>Σφάλμα συστήματος.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Το στοιχείο υπάρχει ήδη στην άλλη πλευρά.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="860"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Παρουσιάστηκε τεχνικό σφάλμα.&lt;br&gt;Εκκαθαρίστε το ιστορικό και αν το σφάλμα επιμείνει, επικοινωνήστε με την υποστήριξη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1087"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
         <source>Unable to open folder path %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1101"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1116"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Μεταφορά ολοκληρώθηκε!&lt;br&gt;Χρησιμοποιήστε τον αναγνωριστικό &lt;b&gt;%1&lt;/b&gt; σε αναφορές σφαλμάτων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1117"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Αποτυχία μεταφοράς!
 Χρησιμοποιήστε τον ακόλουθο σύνδεσμο για να στείλετε τα αρχεία καταγραφής: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1123"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1138"/>
         <source>No kDrive configured!</source>
         <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
@@ -2241,17 +2379,17 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="286"/>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="285"/>
         <source>Do you want to save your modifications?</source>
         <translation>Θέλετε να αποθηκεύσετε τις αλλαγές;</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="295"/>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="294"/>
         <source>Unable to save, all mandatory fields are not completed!</source>
         <translation>Αδύνατη η αποθήκευση, δεν έχουν συμπληρωθεί όλα τα υποχρεωτικά πεδία!</translation>
     </message>
     <message>
-        <location filename="../src/gui/proxyserverdialog.cpp" line="316"/>
+        <location filename="../src/gui/proxyserverdialog.cpp" line="315"/>
         <source>Proxy not found, save anyway?</source>
         <translation>Ο διακομιστής μεσολάβησης δεν βρέθηκε. Αποθήκευση ούτως ή άλλως;</translation>
     </message>
@@ -2552,78 +2690,78 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Δεν είναι δυνατό το άνοιγμα του URL φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="980"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="984"/>
         <source>Update</source>
         <translation>Ενημέρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="983"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="987"/>
         <source>Update download in progress</source>
         <translation>Λήψη ενημέρωσης σε εξέλιξη</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="986"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="990"/>
         <source>Looking for update...</source>
         <translation>Αναζήτηση ενημέρωσης...</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="989"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="993"/>
         <source>Manual update</source>
         <translation>Χειροκίνητη ενημέρωση</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="992"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="996"/>
         <source>Unavailable</source>
         <translation>Μη διαθέσιμο</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1135"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1182"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1139"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1186"/>
         <source>Not implemented!</source>
         <translation>Δεν έχει υλοποιηθεί!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1163"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1167"/>
         <source>Unable to open link %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα του συνδέσμου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1175"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1179"/>
         <source>Invalid link %1.</source>
         <translation>Μη έγκυρος σύνδεσμος %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1183"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
         <source>Update kDrive App</source>
         <translation>Ενημέρωση εφαρμογής kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1184"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1188"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
         <translation>Αυτή η έκδοση της εφαρμογής kDrive δεν υποστηρίζεται πλέον. Ενημερώστε για πρόσβαση στις τελευταίες λειτουργίες.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1191"/>
         <source>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Click here to download manually&lt;/a&gt;</source>
         <translation>&lt;a style= text-decoration:none; href=&quot;https://www.infomaniak.com/en/apps/download-kdrive&quot;&gt;Κάντε κλικ εδώ για χειροκίνητη λήψη&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1190"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1194"/>
         <source>Please download the latest version on the website.</source>
         <translation>Κατεβάστε την τελευταία έκδοση από τον ιστότοπο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1196"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1200"/>
         <source>No synchronized folder for this Drive!</source>
         <translation>Δεν υπάρχει συγχρονισμένος φάκελος για αυτή τη μονάδα!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1199"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1203"/>
         <source>No kDrive configured!</source>
         <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1203"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1207"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
         <translation>Μπορείτε να συγχρονίσετε αρχεία &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;από τον υπολογιστή σας&lt;/a&gt; ή στο &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</translation>
     </message>
@@ -2667,7 +2805,7 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>KDC::UserSelectionWidget</name>
     <message>
-        <location filename="../src/gui/userselectionwidget.cpp" line="131"/>
+        <location filename="../src/gui/userselectionwidget.cpp" line="130"/>
         <source>Add an account</source>
         <translation>Προσθήκη λογαριασμού</translation>
     </message>
@@ -2798,100 +2936,258 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Αδύνατη η αποθήκευση παραμέτρων!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1257"/>
         <source>Make available locally</source>
         <translation>Διαθεσιμότητα τοπικά</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1261"/>
         <source>Free up local space</source>
         <translation>Ελευθέρωση τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1265"/>
         <source>Cancel free up local space</source>
         <translation>Ακύρωση ελευθέρωσης τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1269"/>
         <source>Cancel make available locally</source>
         <translation>Ακύρωση τοπικής διαθεσιμότητας</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1262"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1273"/>
         <source>Resharing this file is not allowed</source>
         <translation>Η κοινοποίηση αυτού του αρχείου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1274"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Η κοινοποίηση αυτού του φακέλου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
         <source>Copy public share link</source>
         <translation>Αντιγραφή δημόσιου συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
         <source>Copy private share link</source>
         <translation>Αντιγραφή ιδιωτικού συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1275"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
         <source>Open in browser</source>
         <translation>Άνοιγμα στον περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="466"/>
-        <source>The parent folder is a sync folder or contained in one</source>
-        <translation>Ο γονικός φάκελος είναι φάκελος συγχρονισμού ή περιέχεται σε έναν</translation>
-    </message>
-    <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="500"/>
-        <source>Can&apos;t find a valid path</source>
-        <translation>Δεν βρέθηκε έγκυρη διαδρομή</translation>
-    </message>
-    <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2102"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2057"/>
         <source>No valid folder selected!</source>
         <translation>Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2113"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2068"/>
         <source>The selected path does not exist!</source>
         <translation>Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2118"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2073"/>
         <source>The selected path is not a folder!</source>
         <translation>Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2153"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2108"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2161"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2116"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2169"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2124"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="22"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="40"/>
+        <source>Download URL is empty.</source>
+        <translation>Η διεύθυνση URL λήψης είναι κενή.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="29"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="47"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="21"/>
+        <source>Failed to create download directory.</source>
+        <translation>Δεν κατέστη δυνατή η δημιουργία του φακέλου λήψεων.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="40"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="33"/>
+        <source>Invalid download URL.</source>
+        <translation>Η διεύθυνση URL λήψης δεν είναι έγκυρη.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="45"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="38"/>
+        <source>Downloading installer...</source>
+        <translation>Λήψη του προγράμματος εγκατάστασης...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="50"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="79"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="125"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="43"/>
+        <source>The specified version does not exist or the download failed.</source>
+        <translation>Η συγκεκριμένη έκδοση δεν υπάρχει ή η λήψη απέτυχε.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="53"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="46"/>
+        <source>Download failed: %1</source>
+        <translation>Η λήψη απέτυχε: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="60"/>
+        <source>Downloaded file not found.</source>
+        <translation>Δεν βρέθηκε το αρχείο που κατεβάσατε.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="64"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="92"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="57"/>
+        <source>Verifying file integrity...</source>
+        <translation>Έλεγχος ακεραιότητας αρχείου...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="69"/>
+        <source>Making AppImage executable...</source>
+        <translation>Δημιουργία εκτελέσιμου αρχείου AppImage...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="77"/>
+        <source>Failed to make AppImage executable: %1</source>
+        <translation>Δεν κατέστη δυνατή η μετατροπή του AppImage σε εκτελέσιμο αρχείο: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="81"/>
+        <source>Opening download folder...</source>
+        <translation>Άνοιγμα φακέλου λήψεων...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="86"/>
+        <source>AppImage saved to %1.</source>
+        <translation>Το AppImage αποθηκεύτηκε στο %1.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="88"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="115"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="73"/>
+        <source>Done.</source>
+        <translation>Έγινε.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="51"/>
+        <source>Downloading appcast...</source>
+        <translation>Λήψη του appcast...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="64"/>
+        <source>Invalid package URL: %1</source>
+        <translation>Μη έγκυρη διεύθυνση URL πακέτου: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="68"/>
+        <source>Could not determine package filename.</source>
+        <translation>Δεν ήταν δυνατό να προσδιοριστεί το όνομα του αρχείου του πακέτου.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="74"/>
+        <source>Downloading package...</source>
+        <translation>Λήψη πακέτου...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="81"/>
+        <source>Failed to download package: %1</source>
+        <translation>Αποτυχία λήψης πακέτου: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="88"/>
+        <source>Package file not found after download.</source>
+        <translation>Δεν εντοπίστηκε το αρχείο του πακέτου μετά τη λήψη.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="97"/>
+        <source>Removing old application...</source>
+        <translation>Αφαίρεση παλαιάς εφαρμογής...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="108"/>
+        <source>Opening installer...</source>
+        <translation>Έναρξη του προγράμματος εγκατάστασης...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="110"/>
+        <source>Failed to open installer. Please install manually: %1</source>
+        <translation>Δεν ήταν δυνατό το άνοιγμα του προγράμματος εγκατάστασης. Παρακαλώ, πραγματοποιήστε την εγκατάσταση χειροκίνητα: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="114"/>
+        <source>Installer opened and started</source>
+        <translation>Το πρόγραμμα εγκατάστασης άνοιξε και ξεκίνησε</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="127"/>
+        <source>Failed to download appcast: %1</source>
+        <translation>Δεν κατέστη δυνατή η λήψη του appcast: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="134"/>
+        <source>Failed to read appcast.</source>
+        <translation>Δεν κατέστη δυνατή η ανάγνωση του appcast.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="157"/>
+        <source>Could not find download link in appcast.</source>
+        <translation>Δεν βρέθηκε ο σύνδεσμος λήψης στο appcast.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="53"/>
+        <source>Installer file not found after download.</source>
+        <translation>Δεν εντοπίστηκε το αρχείο εγκατάστασης μετά τη λήψη.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="62"/>
+        <source>Starting installer...</source>
+        <translation>Εκκίνηση του προγράμματος εγκατάστασης...</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="68"/>
+        <source>Failed to launch installer.</source>
+        <translation>Δεν κατέστη δυνατή η εκκίνηση του προγράμματος εγκατάστασης.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="72"/>
+        <source>Installer launched successfully.</source>
+        <translation>Το πρόγραμμα εγκατάστασης ξεκίνησε με επιτυχία.</translation>
+    </message>
+    <message>
+        <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>Η επαλήθευση του προγράμματος εγκατάστασης απέτυχε. Το αρχείο ενδέχεται να είναι κατεστραμμένο.</translation>
     </message>
 </context>
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="140"/>
+        <location filename="../src/server/appserver.cpp" line="139"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>Η εφαρμογή kDrive θα κλείσει λόγω κρίσιμου σφάλματος.</translation>
     </message>
@@ -2972,132 +3268,138 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
     <message>
         <location filename="../src/gui/mainclient.cpp" line="49"/>
         <source>System Tray not available</source>
-        <translation>Η γραμμή συστήματος δεν είναι διαθέσιμη</translation>
+        <translation>Ο δίσκος συστήματος δεν είναι διαθέσιμος</translation>
     </message>
     <message>
         <location filename="../src/gui/mainclient.cpp" line="50"/>
         <source>%1 requires a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 απαιτεί μια λειτουργική γραμμή συστήματος. Εάν χρησιμοποιείτε XFCE, ακολουθήστε &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;αυτές τις οδηγίες&lt;/a&gt;. Διαφορετικά, εγκαταστήστε μια εφαρμογή γραμμής συστήματος όπως &apos;trayer&apos; και δοκιμάστε ξανά.</translation>
+        <translation>Το %1 απαιτεί λειτουργικό δίσκο συστήματος. Εάν χρησιμοποιείτε το XFCE, ακολουθήστε &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;αυτές τις οδηγίες&lt;/a&gt;. Διαφορετικά, εγκαταστήστε μια εφαρμογή δίσκου συστήματος, όπως το «trayer», και δοκιμάστε ξανά.</translation>
     </message>
 </context>
 <context>
     <name>utility</name>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="84"/>
+        <location filename="../src/gui/guiutility.cpp" line="85"/>
         <source>Could not open browser</source>
         <translation>Δεν ήταν δυνατό το άνοιγμα του περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="85"/>
+        <location filename="../src/gui/guiutility.cpp" line="86"/>
         <source>There was an error when launching the browser to go to URL %1. Maybe no default browser is configured?</source>
         <translation>Παρουσιάστηκε σφάλμα κατά την εκκίνηση του περιηγητή για το URL %1. Ίσως δεν έχει ρυθμιστεί προεπιλεγμένος περιηγητής;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="104"/>
+        <location filename="../src/gui/guiutility.cpp" line="105"/>
         <source>Could not open email client</source>
         <translation>Δεν ήταν δυνατό το άνοιγμα του πελάτη email</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="105"/>
+        <location filename="../src/gui/guiutility.cpp" line="106"/>
         <source>There was an error when launching the email client to create a new message. Maybe no default email client is configured?</source>
         <translation>Παρουσιάστηκε σφάλμα κατά την εκκίνηση του πελάτη email. Ίσως δεν έχει ρυθμιστεί προεπιλεγμένος πελάτης email;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="324"/>
+        <location filename="../src/gui/guiutility.cpp" line="325"/>
         <source>You are not connected anymore. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Log in&lt;/a&gt;</source>
         <translation>Δεν είστε πλέον συνδεδεμένοι. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Σύνδεση&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="329"/>
+        <location filename="../src/gui/guiutility.cpp" line="330"/>
         <source>No folder to synchronize
 You can add one from the kDrive settings.</source>
         <translation>Δεν υπάρχει φάκελος για συγχρονισμό
 Μπορείτε να προσθέσετε έναν από τις ρυθμίσεις kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="336"/>
+        <location filename="../src/gui/guiutility.cpp" line="337"/>
         <source>Sync in progress (%1 of %2)</source>
         <translation>Συγχρονισμός σε εξέλιξη (%1 από %2)</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="340"/>
+        <location filename="../src/gui/guiutility.cpp" line="341"/>
         <source>Sync in progress (%1 of %2)
 %3 left...</source>
         <translation>Συγχρονισμός σε εξέλιξη (%1 από %2)
 %3 απομένουν...</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="347"/>
+        <location filename="../src/gui/guiutility.cpp" line="348"/>
         <source>Sync in progress (Step %1/%2).</source>
         <translation>Συγχρονισμός σε εξέλιξη (Βήμα %1/%2).</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="351"/>
+        <location filename="../src/gui/guiutility.cpp" line="352"/>
         <source>Synchronization starting</source>
         <translation>Εκκίνηση συγχρονισμού</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="353"/>
+        <location filename="../src/gui/guiutility.cpp" line="354"/>
         <source>Sync in progress.</source>
         <translation>Συγχρονισμός σε εξέλιξη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="358"/>
+        <location filename="../src/gui/guiutility.cpp" line="359"/>
         <source>You are up to date, unresolved conflicts.</source>
         <translation>Είστε ενημερωμένοι, με μη επιλυμένες συγκρούσεις.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="360"/>
+        <location filename="../src/gui/guiutility.cpp" line="361"/>
         <source>You are up to date!</source>
         <translation>Είστε ενημερωμένοι!</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="364"/>
+        <location filename="../src/gui/guiutility.cpp" line="365"/>
         <source>Some files couldn&apos;t be synchronized. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
         <translation>Ορισμένα αρχεία δεν ήταν δυνατό να συγχρονιστούν. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Μάθετε περισσότερα&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="370"/>
+        <location filename="../src/gui/guiutility.cpp" line="371"/>
         <source>Synchronization pausing ...</source>
         <translation>Παύση συγχρονισμού...</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="374"/>
+        <location filename="../src/gui/guiutility.cpp" line="375"/>
         <source>Synchronization paused.</source>
         <translation>Ο συγχρονισμός ανεστάλη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="570"/>
+        <location filename="../src/gui/guiutility.cpp" line="571"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because another sync is using the same folder.</source>
         <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή χρησιμοποιείται ήδη από άλλον συγχρονισμό.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="576"/>
+        <location filename="../src/gui/guiutility.cpp" line="577"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it contains the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
         <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή περιέχει τον συγχρονισμένο φάκελο &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="584"/>
+        <location filename="../src/gui/guiutility.cpp" line="585"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected because it is contained in the synchronized folder &lt;b&gt;%2&lt;/b&gt;.</source>
         <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί επειδή περιέχεται στον συγχρονισμένο φάκελο &lt;b&gt;%2&lt;/b&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="595"/>
+        <location filename="../src/gui/guiutility.cpp" line="596"/>
+        <location filename="../src/gui/guiutility.cpp" line="631"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder.</source>
         <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί ως φάκελος συγχρονισμού. Επιλέξτε άλλον φάκελο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="599"/>
+        <location filename="../src/gui/guiutility.cpp" line="600"/>
         <source>Folder &lt;b&gt;%1&lt;/b&gt; cannot be selected as sync folder. Please, select another folder. Suggested folder: &lt;b&gt;%2&lt;/b&gt;</source>
         <translation>Ο φάκελος &lt;b&gt;%1&lt;/b&gt; δεν μπορεί να επιλεγεί ως φάκελος συγχρονισμού. Επιλέξτε άλλον. Προτεινόμενος: &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="657"/>
+        <location filename="../src/gui/guiutility.cpp" line="621"/>
+        <source>Failed to validate local folder</source>
+        <translation>Αποτυχία επαλήθευσης του τοπικού φακέλου</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/guiutility.cpp" line="684"/>
         <source>You have excluded more than %1 folders, please note that this will affect synchronization performance.</source>
         <translation>Έχετε εξαιρέσει περισσότερους από %1 φακέλους. Αυτό θα επηρεάσει τις επιδόσεις συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/guiutility.cpp" line="666"/>
+        <location filename="../src/gui/guiutility.cpp" line="693"/>
         <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source>
         <translation>Δεν μπορείτε να εξαιρέσετε περισσότερους από %1 φακέλους. Αποεπιλέξτε φακέλους υψηλότερου επιπέδου.</translation>
     </message>

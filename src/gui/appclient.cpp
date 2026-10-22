@@ -135,7 +135,7 @@ AppClient::AppClient(int &argc, char **argv) :
     // Set style
     KDC::GuiUtility::setStyle(qApp);
 
-    CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parametersInfo().language());
+    CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parameters().language());
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path
@@ -151,7 +151,7 @@ AppClient::AppClient(int &argc, char **argv) :
     setQuitOnLastWindowClosed(false);
 
     // Setup translations
-    CommonUtility::setupTranslations(this, ParametersCache::instance()->parametersInfo().language());
+    CommonUtility::setupTranslations(this, ParametersCache::instance()->parameters().language());
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
@@ -176,7 +176,7 @@ AppClient::AppClient(int &argc, char **argv) :
     _gui->init();
     GuiRequests::reportClientDisplayed();
 
-    _theme->setSystrayUseMonoIcons(ParametersCache::instance()->parametersInfo().monoIcons());
+    _theme->setSystrayUseMonoIcons(ParametersCache::instance()->parameters().monoIcons());
     connect(_theme, &Theme::systrayUseMonoIconsChanged, this, &AppClient::onUseMonoIconsChanged);
 
     // Cleanup at Quit
@@ -192,7 +192,7 @@ AppClient::AppClient(int &argc, char **argv) :
         // Ask user to log in if needed
         for (auto const &[userDbId, userInfoClient]: _gui->userInfoMap()) {
             if (!userInfoClient.connected() && _gui->isUserUsed(userDbId)) {
-                askUserToLoginAgain(userInfoClient.dbId(), userInfoClient.email(), false);
+                askUserToLoginAgain(userInfoClient.dbId(), QString::fromStdString(userInfoClient.email()), false);
             }
         }
     }
@@ -217,22 +217,22 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
 
     switch (num) {
         case SignalNum::USER_ADDED: {
-            UserInfo userInfo;
-            paramsStream >> userInfo;
+            User user;
+            paramsStream >> user;
 
-            emit userAdded(userInfo);
+            emit userAdded(user);
             break;
         }
         case SignalNum::USER_UPDATED: {
-            UserInfo userInfo;
-            paramsStream >> userInfo;
+            User user;
+            paramsStream >> user;
 
-            emit userUpdated(userInfo);
+            emit userUpdated(user);
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
             qint64 userDbId = 0;
-            bool connected;
+            bool connected = false;
             QString connexionError;
             paramsStream >> userDbId;
             paramsStream >> connected;
@@ -249,17 +249,17 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::ACCOUNT_ADDED: {
-            AccountInfo accountInfo;
-            paramsStream >> accountInfo;
+            Account account;
+            paramsStream >> account;
 
-            emit accountAdded(accountInfo);
+            emit accountAdded(account);
             break;
         }
         case SignalNum::ACCOUNT_UPDATED: {
-            AccountInfo accountInfo;
-            paramsStream >> accountInfo;
+            Account account;
+            paramsStream >> account;
 
-            emit accountUpdated(accountInfo);
+            emit accountUpdated(account);
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {
@@ -309,14 +309,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_ADDED: {
-            SyncInfo syncInfo;
+            BaseSync syncInfo;
             paramsStream >> syncInfo;
 
             emit syncAdded(syncInfo);
             break;
         }
         case SignalNum::SYNC_UPDATED: {
-            SyncInfo syncInfo;
+            BaseSync syncInfo;
             paramsStream >> syncInfo;
 
             emit syncUpdated(syncInfo);
@@ -353,11 +353,11 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
         }
         case SignalNum::SYNC_COMPLETEDITEM: {
             qint64 syncDbId = 0;
-            SyncFileItemInfo itemInfo;
+            SyncFileItem syncFileItem;
             paramsStream >> syncDbId;
-            paramsStream >> itemInfo;
+            paramsStream >> syncFileItem;
 
-            emit itemCompleted(syncDbId, itemInfo);
+            emit itemCompleted(syncDbId, syncFileItem);
             break;
         }
         case SignalNum::SYNC_VFS_CONVERSION_COMPLETED: {
@@ -574,14 +574,14 @@ void AppClient::setupLogging() {
     auto logger = KDC::Logger::instance();
     logger->setIsCLientLog(true);
     logger->enterNextLogFile();
-    logger->setMinLogLevel(toInt(ParametersCache::instance()->parametersInfo().logLevel()));
+    logger->setMinLogLevel(toInt(ParametersCache::instance()->parameters().logLevel()));
 
-    if (ParametersCache::instance()->parametersInfo().useLog()) {
+    if (ParametersCache::instance()->parameters().useLog()) {
         // Don't override other configured logging
         if (logger->isLoggingToFile()) return;
 
         logger->setupLogDir();
-        if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
+        if (ParametersCache::instance()->parameters().purgeOldLogs()) {
             logger->setLogExpire(std::chrono::days(CommonUtility::logsPurgeRate));
         } else {
             logger->setLogExpire(std::chrono::days(0));
@@ -681,8 +681,7 @@ void AppClient::updateSentryUser() const {
         return;
     }
 
-    SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
-                    std::to_string(userInfo->second.userId()));
+    SentryUser user(userInfo->second.email(), userInfo->second.name(), std::to_string(userInfo->second.userId()));
     sentry::Handler::instance()->setAuthenticatedUser(user);
 }
 

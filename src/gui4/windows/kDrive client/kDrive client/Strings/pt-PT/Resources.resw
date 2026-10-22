@@ -6,7 +6,7 @@
   Locale: pt, Portuguese
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 02 Sep 2026 16:24:21 +0200 
+  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Todas as atividades</value> 
   </data> 
-  <data name="activitiesTypeThisComputer" xml:space="preserve">
-    <value>Atividades deste computador</value>
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Atividades deste computador</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importado</value> 
@@ -116,46 +116,7 @@
     <value>Movido</value> 
   </data> 
   <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Deslocado %@</value> 
-  </data> 
-  <data name="activityInstructionPutLabel" xml:space="preserve"> 
-    <value>Adicionado</value> 
-  </data> 
-  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Adicionado %@</value> 
-  </data> 
-  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
-    <value>Movido para o lixo</value> 
-  </data> 
-  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>Colocado na lixeira %@</value> 
-  </data> 
-  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
-    <value>Renomeado</value> 
-  </data> 
-  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Renomeado %@</value> 
-  </data> 
-  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
-    <value>Modificado</value> 
-  </data> 
-  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Alterado %@</value> 
-  </data> 
-  <data name="activityInstructionGetLabel" xml:space="preserve"> 
-    <value>Importado</value> 
-  </data> 
-  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Importado %@</value> 
-  </data> 
-  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
-    <value>Ignorado</value> 
-  </data> 
-  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
-    <value>Movido</value> 
-  </data> 
-  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Deslocado %@</value> 
+    <value>Movido %@</value> 
   </data> 
   <data name="activityInstructionPutLabel" xml:space="preserve"> 
     <value>Adicionado</value> 
@@ -216,7 +177,7 @@ Pode aceder às suas sincronizações avançadas a partir do seletor de unidade 
     <value>A aplicar alteração…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Elimina registos com mais de 7 dias para poupar espaço em disco.</value> 
+    <value>Elimina registos com mais de 31 dias para poupar espaço em disco.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Limpeza automática</value> 
@@ -783,7 +744,7 @@ Contacte o seu administrador para aumentar o limite de tamanho dos ficheiros.</v
     <value>Acesso proibido</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>O nome deste %@ contém um ou mais caracteres não suportados pela aplicação kDrive do Windows. Renomeie o %@ a partir do kDrive online.</value> 
+    <value>O nome deste %@ contém um ou mais caracteres que não são suportados pela aplicação kDrive. Renomeie o %@ a partir do kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Este nome contém apenas espaços e não pode ser utilizado. Renomeie o %@ a partir do kDrive online.</value> 
@@ -800,6 +761,9 @@ Peça acesso ao proprietário ou administrador.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Acesso proibido</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Converter em ficheiro normal</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Este ficheiro é uma ligação física (hard link) que não pode ser sincronizada.</value> 
@@ -1006,8 +970,8 @@ A sincronização será retomada automaticamente quando a ligação for restabel
     <value>Ligação ao kDrive interrompida</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Este item não está disponível neste dispositivo.
-Será aberto no seu navegador.</value> 
+    <value>Este elemento não está disponível neste dispositivo.
+Será aberto no kDrive online.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1119,7 +1083,7 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>Agora mesmo</value> 
+    <value>agora mesmo</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 
@@ -1340,6 +1304,9 @@ Verifique e renomeie os ficheiros que contenham caracteres incomuns e tente nova
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflitos de versões detetados</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ elementos eliminados</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>A sincronização está em pausa para evitar uma eliminação acidental.
 O que pretende fazer?</value> 
@@ -1349,6 +1316,12 @@ O que pretende fazer?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Eliminar também online</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>e outro elemento</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>e %@ outros elementos</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Estes ficheiros continuam a poder ser recuperados na lixeira do kDrive.</value> 

@@ -166,7 +166,7 @@ namespace Infomaniak.kDrive.CustomControls
                         return;
                     }
 
-                    Logger.Log(Logger.Level.Info, "Failed to open remote node in browser, falling back to the local version of the remote version.");
+                    Logger.LogInfo("Failed to open remote node in browser, falling back to the local version of the remote version.");
                 }
 
 
@@ -193,13 +193,14 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (!IsRemote || Error is null)
             {
-                Logger.Log(Logger.Level.Warning, $"Attempted to open in browser but the version is not remote or error/sync info is missing: IsRemote={IsRemote}, Error is null={Error is null}, Sync is null={Error?.Sync is null}");
+                Logger.LogWarning($"Attempted to open in browser but the version is not remote or error/sync info is missing: IsRemote={IsRemote}, Error is null={Error is null}, Sync is null={Error?.Sync is null}",
+                    "ConflictVersionPresenter::OpenInBrowserAsync failed");
                 return false;
             }
 
             if (!App.ServiceProvider.GetRequiredService<AppModel>().NetworkAvailable)
             {
-                Logger.Log(Logger.Level.Info, "Network is not available, cannot open remote node in browser.");
+                Logger.LogInfo("Network is not available, cannot open remote node in browser.");
                 return false;
             }
 

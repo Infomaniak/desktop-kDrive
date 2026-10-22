@@ -67,11 +67,12 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     if (task.Exception is not null)
                     {
-                        Logger.Log(Logger.Level.Error, $"Failed to save exclusion templates on dispose: {task.Exception}");
+                        Logger.LogError($"Failed to save exclusion templates on dispose: {task.Exception}",
+                            "ExclusionTemplateListModel: Failed to save exclusion templates on disposal");
                     }
                     else if (!task.Result)
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to save exclusion templates on dispose: server returned failure.");
+                        Logger.LogError("Failed to save exclusion templates on dispose: server returned failure.");
                     }
                 }, TaskScheduler.Default);
         }
@@ -105,7 +106,7 @@ namespace Infomaniak.kDrive.ViewModels
             var res = await commService.GetExclusionTemplates(CancellationToken.None);
             if (res is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to load exclusion templates from server.");
+                Logger.LogError("Failed to load exclusion templates from server.");
                 return false;
             }
             _templates.Clear();
@@ -168,7 +169,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
             if (!await SaveUserTemplatesImmediateAsync())
             {
-                Logger.Log(Logger.Level.Error, "Failed to save exclusion templates.");
+                Logger.LogError("Failed to save exclusion templates.");
                 Templates.Clear();
                 await LoadTemplates();
                 Utility.ShowUnexpectedErrorTeachingTip();

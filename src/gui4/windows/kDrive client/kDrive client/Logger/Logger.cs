@@ -16,16 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Monitoring;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Sentry;
 using Serilog;
 using Serilog.Events;
 using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Nodes;
 
 namespace Infomaniak.kDrive
 {
@@ -67,7 +65,54 @@ namespace Infomaniak.kDrive
         public static Level LogLevel =>
             App.ServiceProvider.GetService<AppModel>()?.Settings.LogLevel ?? Level.Extended;
 
-        public static void Log(Level level, string message,
+        public static void LogExtended(string message,
+            [CallerFilePath] string filePath = "?",
+            [CallerLineNumber] int lineNumber = -1,
+            [CallerMemberName] string memberName = "?")
+        {
+            Log(Level.Extended, message, "", filePath, lineNumber, memberName);
+        }
+
+        public static void LogDebug(string message,
+            [CallerFilePath] string filePath = "?",
+            [CallerLineNumber] int lineNumber = -1,
+            [CallerMemberName] string memberName = "?")
+        {
+            Log(Level.Debug, message, "", filePath, lineNumber, memberName);
+        }
+
+        public static void LogInfo(string message,
+            [CallerFilePath] string filePath = "?",
+            [CallerLineNumber] int lineNumber = -1,
+            [CallerMemberName] string memberName = "?")
+        {
+            Log(Level.Info, message, "", filePath, lineNumber, memberName);
+        }
+
+        public static void LogWarning(string message, string title = "",
+            [CallerFilePath] string filePath = "?",
+            [CallerLineNumber] int lineNumber = -1,
+            [CallerMemberName] string memberName = "?")
+        {
+            Log(Level.Warning, message, title, filePath, lineNumber, memberName);
+        }
+        public static void LogError(string message, string title = "",
+                [CallerFilePath] string filePath = "?",
+                [CallerLineNumber] int lineNumber = -1,
+                [CallerMemberName] string memberName = "?")
+        {
+            Log(Level.Error, message, title, filePath, lineNumber, memberName);
+        }
+
+        public static void LogFatal(string message, string title = "",
+            [CallerFilePath] string filePath = "?",
+            [CallerLineNumber] int lineNumber = -1,
+            [CallerMemberName] string memberName = "?")
+        {
+            Log(Level.Fatal, message, title, filePath, lineNumber, memberName);
+        }
+
+        private static void Log(Level level, string message, string title = "",
             [CallerFilePath] string filePath = "?",
             [CallerLineNumber] int lineNumber = -1,
             [CallerMemberName] string memberName = "?")
@@ -76,11 +121,11 @@ namespace Infomaniak.kDrive
             string sourceContext = $"{fileName}:{lineNumber} - {memberName}";
             string shortLogEntry = $"{sourceContext}: {message}";
 
-            if (App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
-                SentrySdk.AddBreadcrumb(shortLogEntry, level: ToBreadcrumbLevel(level));
+            var monitoringService = App.ServiceProvider.GetRequiredService<IMonitoringService>();
+            monitoringService.AddBreadcrumb(shortLogEntry, ToMonitoringEventLevel(level));
 
-            if (CanSendSentryEvent(level, filePath, lineNumber))
-                SentrySdk.CaptureMessage(shortLogEntry, ToSentryLevel(level));
+            if (level is Level.Warning or Level.Error or Level.Fatal)
+                monitoringService.CaptureEvent(title, message, ToMonitoringEventLevel(level), filePath: filePath, lineNumber: lineNumber);
 
             if (LogLevel == Level.None)
                 return;
@@ -90,137 +135,6 @@ namespace Infomaniak.kDrive
 #endif
 
             _logger?.Write(ToSerilogLevel(level), "{SourceContext}: {Message}", sourceContext, message);
-        }
-
-        // Manage sentry throttling to avoid flooding the sentry server with too many events (max 3 per minute per unique log location)
-        private const int _sentryLogThrottleLimitPerMinute = 3;
-        private struct SentryLogThrottleInfo
-        {
-            public DateTime LastSentTime;
-            public int CountInLastMinute;
-        }
-        private static readonly ConcurrentDictionary<int, SentryLogThrottleInfo> _sentryLogThrottleDict
-            = new ConcurrentDictionary<int, SentryLogThrottleInfo>();
-        private static bool CanSendSentryEvent(Level level, string filePath, int lineNumber)
-        {
-
-            if (!App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
-                return false;
-
-            if (level <= Level.Info || level == Level.Extended)
-                return false; // Only send Warning and above
-
-            int hash = HashCode.Combine(filePath, lineNumber);
-            var now = DateTime.UtcNow;
-            var info = _sentryLogThrottleDict.GetOrAdd(hash, _ => new SentryLogThrottleInfo
-            {
-                LastSentTime = now,
-                CountInLastMinute = 1
-            });
-
-            if ((now - info.LastSentTime).TotalMinutes >= 1)
-            {
-                // Reset count after one minute
-                info.CountInLastMinute = 1;
-                info.LastSentTime = now;
-                _sentryLogThrottleDict[hash] = info;
-                return true;
-            }
-            else if (info.CountInLastMinute < _sentryLogThrottleLimitPerMinute)
-            {
-                // Allow sending if under the limit
-                info.CountInLastMinute++;
-                _sentryLogThrottleDict[hash] = info;
-                return true;
-            }
-            else
-            {
-                SentrySdk.AddBreadcrumb("Sentry log throttled for this location", level: BreadcrumbLevel.Info);
-                return false;
-            }
-        }
-
-        private static IDisposable? _sentryHandler;
-        public static void StartSentry([CallerMemberName] string memberName = "?")
-        {
-            if (_sentryHandler is not null)
-                return;
-
-            // Don't call from OnLaunched as stated in Sentry documentation -> https://docs.sentry.io/platforms/dotnet/guides/winui/#install
-            if (memberName == "OnLaunched")
-            {
-                Logger.Log(Logger.Level.Error, "Skipping Sentry initialization in OnLaunched to avoid potential issues with Sentry's WinUI integration.");
-#if DEBUG
-                throw new InvalidOperationException("Sentry should not be initialized in OnLaunched. Please call Logger.StartSentry() from a earlier/later point in the application lifecycle, such as after the main window has been created.");
-#else
-                return;
-#endif
-
-            }
-            // Check if sentry is allowed by the user settings before initializing
-            AppModel appModel = App.ServiceProvider.GetRequiredService<AppModel>();
-            if (appModel.IsInitialized)
-            {
-                if (!appModel.Settings.SentryEnabled)
-                {
-                    Logger.Log(Logger.Level.Info, "Sentry is disabled by user settings, skipping initialization.");
-                    return;
-                }
-            }
-            else
-            {
-                UserDefaults userDefaults = App.ServiceProvider.GetRequiredService<UserDefaults>();
-                var sentryEnabledNode = userDefaults.GetValue(nameof(AppModel.Settings.SentryEnabled));
-                if (sentryEnabledNode is null)
-                {
-                    Logger.Log(Logger.Level.Info, "Sentry enabled setting not found in user defaults, skipping initialization.");
-                    return;
-                }
-
-                if (sentryEnabledNode is JsonValue sentryEnabledValue && sentryEnabledValue.TryGetValue<bool>(out bool sentryEnabled))
-                {
-                    if (!sentryEnabled)
-                    {
-                        Logger.Log(Logger.Level.Info, "Sentry is disabled by user defaults, skipping initialization.");
-                        return;
-                    }
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Warning, "Failed to parse Sentry enabled setting from user defaults, skipping initialization.");
-                    return;
-                }
-            }
-
-            // Initialize Sentry
-            StopSentry();
-            _sentryHandler = SentrySdk.Init(options =>
-            {
-                options.Dsn = App.Constants.Sentry.Dsn;
-                options.SendDefaultPii = true;
-                options.AutoSessionTracking = true;
-                options.IsGlobalModeEnabled = true;
-                options.Environment = App.Constants.Sentry.Environment;
-            });
-            App.Current.UnhandledException += CaptureExceptionWithSentry;
-
-        }
-
-        private static void CaptureExceptionWithSentry(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
-        {
-            SentrySdk.CaptureException(e.Exception);
-        }
-
-        public static void StopSentry()
-        {
-            Sentry.SentrySdk.Close();
-            App.Current.UnhandledException -= CaptureExceptionWithSentry;
-
-            if (_sentryHandler is not null)
-            {
-                _sentryHandler.Dispose();
-                _sentryHandler = null;
-            }
         }
 
         private static LogEventLevel ToSerilogLevel(Level level) => level switch
@@ -234,26 +148,16 @@ namespace Infomaniak.kDrive
             _ => LogEventLevel.Information
         };
 
-        private static BreadcrumbLevel ToBreadcrumbLevel(Level level) => level switch
-        {
-            Level.Extended => BreadcrumbLevel.Debug,
-            Level.Debug => BreadcrumbLevel.Debug,
-            Level.Info => BreadcrumbLevel.Info,
-            Level.Warning => BreadcrumbLevel.Warning,
-            Level.Error => BreadcrumbLevel.Error,
-            Level.Fatal => BreadcrumbLevel.Fatal,
-            _ => BreadcrumbLevel.Info
-        };
 
-        private static SentryLevel ToSentryLevel(Level level) => level switch
+        private static MonitoringEventLevel ToMonitoringEventLevel(Level level) => level switch
         {
-            Level.Extended => SentryLevel.Debug,
-            Level.Debug => SentryLevel.Debug,
-            Level.Info => SentryLevel.Info,
-            Level.Warning => SentryLevel.Warning,
-            Level.Error => SentryLevel.Error,
-            Level.Fatal => SentryLevel.Fatal,
-            _ => SentryLevel.Info
+            Level.Extended => MonitoringEventLevel.Debug,
+            Level.Debug => MonitoringEventLevel.Debug,
+            Level.Info => MonitoringEventLevel.Info,
+            Level.Warning => MonitoringEventLevel.Warning,
+            Level.Error => MonitoringEventLevel.Error,
+            Level.Fatal => MonitoringEventLevel.Fatal,
+            _ => MonitoringEventLevel.Info
         };
     }
 }

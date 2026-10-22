@@ -28,7 +28,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 return intValue != 0;
             }
-            Logger.Log(Logger.Level.Fatal, "IntegerToBooleanConverter: value is not an integer.");
+            Logger.LogFatal("IntegerToBooleanConverter: value is not an integer.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
 
@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 return boolValue ? 1 : 0;
             }
-            Logger.Log(Logger.Level.Fatal, "IntegerToBooleanConverter: value is not a boolean.");
+            Logger.LogFatal("IntegerToBooleanConverter: value is not a boolean.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
     }

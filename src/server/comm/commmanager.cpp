@@ -77,7 +77,8 @@ CommManager::CommManager(AppServer &appServer) :
     // Add it again. This was needed for Mojave to trigger a load.
     // TODO: Still needed?
     SyncPath extPath(CommonUtility::getExtensionPath());
-    if (std::filesystem::exists(extPath)) {
+    std::error_code ec;
+    if (std::filesystem::exists(extPath, ec) && !ec.value()) {
         // Bundled app (i.e. not test executable)
         Utility::runCommand("/usr/bin/pluginkit", {"-v", "-a", extPath.native()});
     }

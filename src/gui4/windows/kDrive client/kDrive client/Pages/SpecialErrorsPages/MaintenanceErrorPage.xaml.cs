@@ -30,9 +30,9 @@ namespace Infomaniak.kDrive.Pages
 
         public MaintenanceErrorPage() : base([SyncErrorStates.Maintenance])
         {
-            Logger.Log(Logger.Level.Info, "Navigated to MaintenanceErrorPage - Initializing MaintenanceErrorPage components");
+            Logger.LogInfo("Navigated to MaintenanceErrorPage - Initializing MaintenanceErrorPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "MaintenanceErrorPage components initialized");
+            Logger.LogDebug("MaintenanceErrorPage components initialized");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.Pages
         }
         private async void RetryButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Retry button clicked - Starting sync");
+            Logger.LogInfo("Retry button clicked - Starting sync");
             _analyticsService.TrackClick(Analytics.Keys.Category.MaintenanceErrorPage, Analytics.Keys.EventName.StartSync);
             await RestartSync();
         }

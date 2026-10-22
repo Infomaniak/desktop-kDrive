@@ -281,8 +281,8 @@ void CustomDialog::mouseReleaseEvent(QMouseEvent *event) {
     if (!_isResizable) return;
 
     _resizeMode = false;
-    ParametersCache::instance()->parametersInfo().setDialogGeometry(this->objectName(), this->saveGeometry());
-    ParametersCache::instance()->saveParametersInfo(false);
+    ParametersCache::instance()->parameters().setDialogGeometry(this->objectName(), this->saveGeometry());
+    ParametersCache::instance()->saveParameters(false);
 }
 
 void CustomDialog::mouseHover(QHoverEvent *event) {

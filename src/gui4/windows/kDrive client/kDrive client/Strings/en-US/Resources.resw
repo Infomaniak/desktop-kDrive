@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 02 Sep 2026 16:24:21 +0200 
+  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,47 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>All activities</value> 
   </data> 
-  <data name="activitiesTypeThisComputer" xml:space="preserve">
-    <value>Activities from this computer</value>
-  </data> 
-  <data name="activityInstructionGetLabel" xml:space="preserve"> 
-    <value>Imported</value> 
-  </data> 
-  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Imported %@</value> 
-  </data> 
-  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
-    <value>Ignored</value> 
-  </data> 
-  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
-    <value>Moved</value> 
-  </data> 
-  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Moved %@</value> 
-  </data> 
-  <data name="activityInstructionPutLabel" xml:space="preserve"> 
-    <value>Added</value> 
-  </data> 
-  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Added %@</value> 
-  </data> 
-  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
-    <value>Moved to trash</value> 
-  </data> 
-  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>Moved to the trash %@</value> 
-  </data> 
-  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
-    <value>Renamed</value> 
-  </data> 
-  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Renamed %@</value> 
-  </data> 
-  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
-    <value>Modified</value> 
-  </data> 
-  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Modified %@</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Activities from this computer</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Imported</value> 
@@ -216,7 +177,7 @@ You can access your advanced syncs from the drive picker on the home page.</valu
     <value>Applying change…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Deletes logs older than 7 days to save disk space.</value> 
+    <value>Deletes logs older than 31 days to save disk space.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatic cleanup</value> 
@@ -783,7 +744,7 @@ Contact your administrator to increase the file size limit.</value>
     <value>Access forbidden</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>The name of this %@ contains one or more characters not supported by the kDrive Windows application. Rename the %@ from kDrive online.</value> 
+    <value>The name of this %@ contains one or more characters that are not supported by the kDrive app. Rename %@ using kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>This name contains only spaces and cannot be used. Rename the %@ from kDrive online.</value> 
@@ -800,6 +761,9 @@ Request access from the owner or administrator.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Access forbidden</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Convert to regular file</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>This file is a hard link that cannot be synced.</value> 
@@ -1006,8 +970,8 @@ Sync will resume automatically once the connection is restored.</value>
     <value>Connection to kDrive interrupted</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>This item is not available on this device.
-It will open in your browser.</value> 
+    <value>This feature is not available on this device.
+It will open in kDrive online.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1119,7 +1083,7 @@ Useful if you know the important work is online on kDrive.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>Just now</value> 
+    <value>just now</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 
@@ -1340,6 +1304,9 @@ Please check and rename files containing unusual characters, then try again.</va
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ version conflicts detected</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ items deleted</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synchronization is paused to prevent accidental deletion.
 What would you like to do?</value> 
@@ -1349,6 +1316,12 @@ What would you like to do?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Delete online as well</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>and another element</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>and %@ other items</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>These files can still be recovered from the kDrive Recycle Bin.</value> 

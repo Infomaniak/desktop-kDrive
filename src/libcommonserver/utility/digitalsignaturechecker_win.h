@@ -33,16 +33,16 @@ class DigitalSignatureChecker_win {
     public:
         explicit DigitalSignatureChecker_win(const SyncPath &packageAbsolutePath);
 
-        bool isSignatureValid() const {
-            return _signatureIsValid && CommonUtility::containsInsensitive(_signatureInfo._subject, Str("Infomaniak"));
-        }
+        bool isSignatureValid() const;
+
 
     private:
         bool extractSignatureInfo(DigitalSignatureInfo &signatureInfo, std::source_location &location);
+        bool verifySignatureTrustChain() const;
 
         SyncPath _packageAbsolutePath;
         DigitalSignatureInfo _signatureInfo;
-        bool _signatureIsValid{false};
+        bool _signatureInfoExtracted{false};
 };
 
 } // namespace KDC

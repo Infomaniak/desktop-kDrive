@@ -114,6 +114,7 @@ QWidget *getTopLevelWidget(QWidget *widget);
 void forceUpdate(QWidget *widget);
 void invalidateLayout(QLayout *layout);
 bool warnOnInvalidSyncFolder(const QString &dirPath, const std::map<SyncDbId, SyncInfoClient> &syncInfoMap, QWidget *parent);
+bool validateLocalFolderForNewSync(const QString &dirPath, QWidget *parent);
 
 void makePrintablePath(QString &path, const uint64_t maxSize = 50);
 

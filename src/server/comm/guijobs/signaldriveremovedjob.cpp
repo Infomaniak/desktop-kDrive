@@ -25,7 +25,7 @@ static const auto outParamsDriveDbId = "driveDbId";
 
 namespace KDC {
 
-SignalDriveRemovedJob::SignalDriveRemovedJob(int driveDbId) :
+SignalDriveRemovedJob::SignalDriveRemovedJob(const DriveDbId driveDbId) :
     _driveDbId(driveDbId) {
     _signalNum = SignalNum::DRIVE_REMOVED;
 }

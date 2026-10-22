@@ -56,8 +56,28 @@ IoError nsError2ioError(NSError *nsError) noexcept {
     }
 }
 
-bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept {
-    isAlias = false;
+std::wstring formatCFError(const SyncPath &path, CFErrorRef error) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', CF err='";
+
+    if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
+        const char *utf8Description = [(__bridge NSString *) errorDescription UTF8String];
+        if (utf8Description) {
+            ss << CommonUtility::s2ws(std::string(utf8Description));
+        } else {
+            ss << L"<unavailable (non-UTF8)>";
+        }
+        CFRelease(errorDescription);
+    } else {
+        ss << L"<unavailable>";
+    }
+
+    ss << L"'";
+    return ss.str();
+}
+
+bool IoHelper::_checkIfItemIsSymLinkOrAlias(const SyncPath &path, bool &isLink, IoError &ioError) noexcept {
+    isLink = false;
     ioError = IoError::Success;
 
     NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
@@ -89,7 +109,7 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
         return false;
     }
 
-    isAlias = [isAliasNumber boolValue];
+    isLink = [isAliasNumber boolValue];
     return true;
 }
 
@@ -109,16 +129,16 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     if (!ret) {
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
+            LOGW_DEBUG(logger(), L"Error in CFURLWriteBookmarkDataToFile: "
+                                         << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                         : Utility::formatIoError(aliasPath, ioError)));
             CFRelease(error);
-            if (ioError != IoError::Unknown) {
-                return true;
-            } else {
-                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
-                return false;
-            }
+        } else {
+            // Should not happen
+            assert(false);
+            ioError = IoError::Unknown;
         }
-        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath));
-        return false;
+        return isExpectedError(ioError);
     }
 
     return true;
@@ -140,24 +160,16 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     if (bookmarkRef == nil) {
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
-            if (ioError != IoError::Unknown) {
-                CFRelease(error);
-
-                return true;
-            } else {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
-                if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
-                    const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
-                    LOGW_WARN(logger(), L"Native CF Error description: " << CommonUtility::s2ws(errorDescriptionStdString));
-                    CFRelease(errorDescription);
-                }
-                CFRelease(error);
-
-                return false;
-            }
+            LOGW_DEBUG(logger(), L"Error in CFURLCreateBookmarkDataFromFile: "
+                                         << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                         : Utility::formatIoError(aliasPath, ioError)));
+            CFRelease(error);
+        } else {
+            // Should not happen
+            assert(false);
+            ioError = IoError::Unknown;
         }
-        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatSyncPath(aliasPath));
-        return false;
+        return isExpectedError(ioError);
     }
 
     const auto size = (uint32_t) CFDataGetLength(bookmarkRef);
@@ -172,16 +184,85 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             CFURLCreateByResolvingBookmarkData(nil, bookmarkRef, kCFBookmarkResolutionWithoutUIMask, nil, nil, &isStale, &error);
     CFRelease(bookmarkRef);
     if (targetUrl == nil) {
+        auto targetIoError = IoError::Unknown;
         if (error) {
+            targetIoError = nsError2ioError((__bridge NSError *) error);
+            LOGW_DEBUG(logger(),
+                       L"Error in CFURLCreateByResolvingBookmarkData: "
+                               << (targetIoError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                     : Utility::formatIoError(aliasPath, targetIoError)));
             CFRelease(error);
+        } else {
+            // Should not happen
+            assert(false);
+            targetIoError = IoError::Unknown;
         }
-        return true;
+
+        if (!isExpectedError(targetIoError)) ioError = targetIoError;
+        return isExpectedError(targetIoError);
     }
 
     CFStringRef targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);
     CFRelease(targetUrl);
     targetPath = SyncPath(std::string([(__bridge NSString *) targetPathStr UTF8String]));
     CFRelease(targetPathStr);
+
+    return true;
+}
+
+bool IoHelper::checkForCorruptedAlias(const SyncPath &path, bool &isCorruptedAlias, IoError &ioError) noexcept {
+    isCorruptedAlias = false;
+    ioError = IoError::Unknown;
+
+    // Check whether the item indicated by `path` is a symbolic link.
+    std::error_code ec;
+    const bool isSymlink = _isSymlink(path, ec);
+
+    ioError = stdError2ioError(ec);
+    const bool fsSupportsSymlinks =
+            ioError != IoError::InvalidArgument; // If true, we assume that the file system in use does support symlinks.
+
+    if (!isSymlink && ioError != IoError::Success && fsSupportsSymlinks) {
+        if (isExpectedError(ioError)) {
+            return true;
+        }
+        LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(path, ec));
+        return false;
+    }
+
+    if (isSymlink) {
+        isCorruptedAlias = false;
+        ioError = IoError::Success;
+        return true;
+    }
+
+    // Check whether the item indicated by `path` is an alias.
+    bool isAlias = false;
+    if (!_checkIfItemIsSymLinkOrAlias(path, isAlias, ioError)) {
+        LOGW_WARN(logger(), L"Failed to check if the item is an alias: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
+    if (ioError != IoError::Success) {
+        return isExpectedError(ioError);
+    }
+
+    if (isAlias) {
+        SyncPath targetPath;
+        auto readAliasIoError = IoError::Unknown;
+        if (!_readAlias(path, targetPath, readAliasIoError)) {
+            LOGW_WARN(logger(),
+                      L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, readAliasIoError));
+            isCorruptedAlias = true;
+            ioError = IoError::Success;
+            return true;
+        }
+
+        if (readAliasIoError != IoError::Success) {
+            ioError = readAliasIoError;
+            return isExpectedError(ioError);
+        }
+    }
 
     return true;
 }
@@ -365,7 +446,9 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
         exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
     }
 
-    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
+    if (ioError == IoError::NoSuchFileOrDirectory) ioError = IoError::Success;
+
+    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
 }
 
 bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {

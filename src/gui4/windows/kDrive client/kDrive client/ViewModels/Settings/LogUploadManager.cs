@@ -73,7 +73,7 @@ namespace Infomaniak.kDrive.ViewModels
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             if (!await commService.StartLogUpload(includeArchivedLogs, CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Error, "Log upload could not be started");
+                Logger.LogError("Log upload could not be started");
                 State = LogUploadState.Failed;
             }
         }
@@ -83,7 +83,7 @@ namespace Infomaniak.kDrive.ViewModels
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             if (!await commService.CancelLogUpload(CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Error, "Log upload could not be cancelled");
+                Logger.LogError("Log upload could not be cancelled");
                 // We do not change the state here as it will be changed by the server signal later
             }
         }

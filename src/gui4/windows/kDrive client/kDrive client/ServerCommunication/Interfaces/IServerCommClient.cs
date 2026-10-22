@@ -70,6 +70,22 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         }
 
         event EventHandler<SignalEventArgs> SignalReceived;
-        event EventHandler ConnectionLost;
+
+        public class ConnectionLostArgs : EventArgs
+        {
+            public enum ConnectionLostReason
+            {
+                Unknown,
+                ServerUnreachable,
+                ServerDisconnected
+            }
+            public ConnectionLostArgs(ConnectionLostReason reason)
+            {
+                Reason = reason;
+            }
+            public ConnectionLostReason Reason { get; }
+        }
+
+        event EventHandler<ConnectionLostArgs> ConnectionLost;
     }
 }

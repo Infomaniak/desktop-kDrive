@@ -19,8 +19,8 @@
 #pragma once
 
 #include "customdialog.h"
-#include "info/syncfileiteminfo.h"
-#include "info/errorinfo.h"
+#include "data/syncfileitem.h"
+#include "libcommon/data/error.h"
 #include "mainmenubarwidget.h"
 #include "preferencesmenubarwidget.h"
 #include "errorsmenubarwidget.h"
@@ -64,7 +64,7 @@ class ParametersDialog : public CustomDialog {
     public slots:
         void onConfigRefreshed();
         void onUpdateProgress(SyncDbId syncDbId);
-        void onItemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &item);
+        void onItemCompleted(SyncDbId syncDbId, const SyncFileItem &item);
         void onDriveQuotaUpdated(DriveDbId driveDbId);
         void onRefreshErrorList(DriveDbId driveDbId);
         void onRefreshStatusNeeded();
@@ -103,11 +103,11 @@ class ParametersDialog : public CustomDialog {
         QString getConflictText(ConflictType conflictType) const;
         QString getInconsistencyText(InconsistencyType inconsistencyType) const;
         QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const;
-        QString getErrorMessage(const ErrorInfo &errorInfo) const;
-        QString getBackErrorText(const ErrorInfo &errorInfo) const;
+        QString getErrorMessage(const Error &error) const;
+        QString getBackErrorText(const Error &error) const;
         QString getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const;
         QString getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const;
-        QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const;
+        QString getErrorLevelNodeText(const Error &error) const;
 
         void refreshErrorList(DriveDbId driveDbId);
         bool driveHasSyncs(DriveDbId driveDbId) const;

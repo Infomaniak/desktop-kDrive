@@ -155,29 +155,54 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
-    // A non-existing file
+    // The input path indicates an existing regular file but goes through a symbolic link on a parent folder.
+    // The symbolic link is followed and the file is found.
     {
-        const SyncPath path = _localTestDirPath / "non_existing.jpg";
+        // The symbolic link exists
+        const LocalTemporaryDirectory temporaryDirectory("TestIo");
+        SyncPath subDirPath = temporaryDirectory.path() / "regular_dir";
+        CPPUNIT_ASSERT(std::filesystem::create_directory(subDirPath));
+        // Create a file inside the subdirectory to check that the symbolic link on the directory is followed during existence
+        // check.
+        { std::ofstream ofs(subDirPath / "test_file.txt"); }
+        const SyncPath symlinkDirPath = temporaryDirectory.path() / "regular_dir_symbolic_link";
+        std::filesystem::create_directory_symlink(subDirPath, symlinkDirPath);
+
         bool exists = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(symlinkDirPath / "test_file.txt", exists, ioError,
+                                                   IoHelper::PathCheckOption::Insensitive));
+        CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // A non-existing file
+    {
+        for (const auto &pathCheckOption: {IoHelper::PathCheckOption::Insensitive, IoHelper::PathCheckOption::Sensitive}) {
+            const SyncPath path = _localTestDirPath / "non_existing.jpg";
+            bool exists = false;
+            IoError ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, pathCheckOption));
+            CPPUNIT_ASSERT(!exists);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        }
     }
 
     // A non-existing file whose name is too long for the OS.
     {
-        const SyncPath path = std::string(1000, 'a');
-        bool exists = false;
-        IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
-        CPPUNIT_ASSERT(!exists);
+        for (const auto &pathCheckOption: {IoHelper::PathCheckOption::Insensitive, IoHelper::PathCheckOption::Sensitive}) {
+            const SyncPath path = std::string(1000, 'a');
+            bool exists = false;
+            IoError ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, pathCheckOption));
+            CPPUNIT_ASSERT(!exists);
 #if defined(KD_WINDOWS)
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
-                                     ioError);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
+                                         ioError);
 #endif
+        }
     }
     // A dangling symbolic link
     {

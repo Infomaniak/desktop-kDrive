@@ -37,13 +37,10 @@ ExitInfo LocalCopyJob::canRun() {
     // Check that we can copy the file in destination
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_dest, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+    if (!IoHelper::checkIfPathExists(_dest, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_dest));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     if (exists) {
@@ -52,13 +49,10 @@ ExitInfo LocalCopyJob::canRun() {
     }
 
     // Check that source file still exists
-    if (!IoHelper::checkIfPathExists(_source, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+    if (!IoHelper::checkIfPathExists(_source, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_source));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     if (!exists) {
@@ -76,18 +70,12 @@ ExitInfo LocalCopyJob::runJob() {
     }
 
     IoError ioError = IoError::Success;
-    if (!IoHelper::copyFileOrDirectory(_source, _dest, ioError)) {
-        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L", error="
+    if (!IoHelper::copyFileOrDirectory(_source, _dest, ioError) || ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Failed to copy item " << Utility::formatSyncPath(_source) << L" to "
+                                                   << Utility::formatSyncPath(_dest) << L", error="
                                                    << Utility::formatIoError(ioError));
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_source));
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_source));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        } else {
-            return ExitCode::SystemError;
-        }
+
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     LOGW_INFO(_logger, L"Item " << Path2WStr(_source) << L" copied to " << Path2WStr(_dest));

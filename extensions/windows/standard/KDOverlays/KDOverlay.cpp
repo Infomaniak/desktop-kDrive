@@ -148,7 +148,23 @@ IFACEMETHODIMP KDOverlay::IsMemberOf(PCWSTR pwszPath, DWORD dwAttrib) {
 IFACEMETHODIMP KDOverlay::GetOverlayInfo(PWSTR pwszIconFile, int cchMax, int *pIndex, DWORD *pdwFlags) {
     *pIndex = 0;
     *pdwFlags = ISIOI_ICONFILE | ISIOI_ICONINDEX;
-    *pIndex = _state;
+    switch (_state) {
+        case State_Error:
+            *pIndex = -IDI_STATE_ERROR;
+            break;
+        case State_OK:
+        case State_OKShared:
+            *pIndex = -IDI_STATE_OK;
+            break;
+        case State_Sync:
+            *pIndex = -IDI_STATE_SYNC;
+            break;
+        case State_Warning:
+            *pIndex = -IDI_STATE_WARNING;
+            break;
+        default:
+            return E_INVALIDARG;
+    }
 
     if (GetModuleFileName(instanceHandle, pwszIconFile, cchMax) == 0) {
         HRESULT hResult = HRESULT_FROM_WIN32(GetLastError());

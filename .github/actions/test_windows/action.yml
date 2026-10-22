@@ -18,7 +18,7 @@ runs:
 
       - name: Load cached dependencies
         id: cache
-        uses: herve-er/local-cache@v2
+        uses: herve-er/local-cache@v3
         with:
           path: build-windows/cache
           base: ${{ github.workspace }}/../local-cache

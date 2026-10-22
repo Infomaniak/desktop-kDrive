@@ -120,8 +120,8 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
         CPPUNIT_ASSERT(exclTemplGetListJob);
         CPPUNIT_ASSERT(exclTemplGetListJob->_default);
 
-        exclTemplGetListJob->_exclusionTemplateList = {ExclusionTemplateInfo("template1", true, true),
-                                                       ExclusionTemplateInfo("template2", false, true)};
+        exclTemplGetListJob->_exclusionTemplateList = {ExclusionTemplate("template1", true, true),
+                                                       ExclusionTemplate("template2", false, true)};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -177,8 +177,8 @@ void TestGuiCommChannel::testExclTemplSetUserListJob() {
         auto exclTemplSetListJob = std::dynamic_pointer_cast<ExclTemplSetUserListJob>(job);
         CPPUNIT_ASSERT(exclTemplSetListJob);
         CPPUNIT_ASSERT_EQUAL(size_t{2}, exclTemplSetListJob->_exclusionTemplateList.size());
-        CPPUNIT_ASSERT(ExclusionTemplateInfo("template1", true, false) == exclTemplSetListJob->_exclusionTemplateList.at(0));
-        CPPUNIT_ASSERT(ExclusionTemplateInfo("template2", false, false) == exclTemplSetListJob->_exclusionTemplateList.at(1));
+        CPPUNIT_ASSERT(ExclusionTemplate("template1", true, false) == exclTemplSetListJob->_exclusionTemplateList.at(0));
+        CPPUNIT_ASSERT(ExclusionTemplate("template2", false, false) == exclTemplSetListJob->_exclusionTemplateList.at(1));
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

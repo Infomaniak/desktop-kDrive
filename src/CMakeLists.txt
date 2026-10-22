@@ -34,6 +34,7 @@ add_subdirectory(libsyncengine)
 add_subdirectory(libparms)
 
 if(NOT BUILD_LIBRARIES_ONLY)
+    add_subdirectory(manualupdater)  #This is the updater that is used when kDrive crash on startup
     add_subdirectory(server)
 
     # At most one GUI type can be built, fail if both are enabled
@@ -61,6 +62,14 @@ if(NOT BUILD_LIBRARIES_ONLY)
         else()
             # delete the client build directory if GUI is disabled to avoid confusion
             file(REMOVE_RECURSE "${CLIENT_DEST}")
+        endif()
+
+        if(BUILD_GUI_LEGACY)
+            add_subdirectory(gui)
+        endif()
+    elseif(APPLE)
+        if(BUILD_GUI)
+            add_subdirectory(gui4)
         endif()
 
         if(BUILD_GUI_LEGACY)

@@ -44,20 +44,20 @@ public sealed partial class SyncStartPauseButton : UserControl
     {
         if (ViewModel?.SelectedSync is not null && (ViewModel.SelectedSync.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync.SyncStatus == SyncStatus.Idle))
         {
-            Logger.Log(Logger.Level.Info, "Pausing sync...");
+            Logger.LogInfo("Pausing sync...");
             if (!await ViewModel.SelectedSync.Pause())
             {
-                Logger.Log(Logger.Level.Error, "Failed to pause sync.");
+                Logger.LogError("Failed to pause sync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.StartPauseButton, Analytics.Keys.EventName.PauseSync);
         }
         else if (ViewModel?.SelectedSync is not null)
         {
-            Logger.Log(Logger.Level.Info, "Starting sync...");
+            Logger.LogInfo("Starting sync...");
             if (!await ViewModel.SelectedSync.Start())
             {
-                Logger.Log(Logger.Level.Error, "Failed to start sync.");
+                Logger.LogError("Failed to start sync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.StartPauseButton, Analytics.Keys.EventName.StartSync);

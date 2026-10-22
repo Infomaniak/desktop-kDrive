@@ -59,11 +59,17 @@ class JobManager {
 
         void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
+        uint64_t capacity() const { return static_cast<uint64_t>(_threadPool.capacity()); }
+        uint64_t highPriorityCapacity() const { return 1; }
+        uint64_t normalPriorityCapacity() const { return capacity() - highPriorityCapacity(); }
 
         const JobManagerData &data() const { return _data; }
 
     protected:
-        int availableThreadsInPool() const;
+        uint64_t availableThreadsInPool() const {
+            const auto availableThreads = _threadPool.available();
+            return availableThreads > 0 ? static_cast<uint64_t>(availableThreads) : 0;
+        }
         virtual bool canRunJob(const std::shared_ptr<AbstractJob> job) const;
 
     private:

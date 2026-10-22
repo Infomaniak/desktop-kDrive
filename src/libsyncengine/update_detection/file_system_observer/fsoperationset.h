@@ -21,7 +21,7 @@
 #include "syncpal/sharedobject.h"
 #include "fsoperation.h"
 #include "libcommon/utility/types.h"
-#include "libcommonserver/utility/utility.h"
+#include "libcommon/utility/utility.h"
 
 #include <mutex>
 #include <unordered_set>
@@ -52,8 +52,8 @@ class CmpOp {
                 path2 = opIt2->second->path();
             }
 
-            const auto pathDepth1 = Utility::pathDepth(path1);
-            const auto pathDepth2 = Utility::pathDepth(path2);
+            const auto pathDepth1 = CommonUtility::pathDepth(path1);
+            const auto pathDepth2 = CommonUtility::pathDepth(path2);
 
             return pathDepth1 == pathDepth2 ? id1 < id2 : pathDepth1 < pathDepth2;
         }

@@ -188,7 +188,8 @@ void TestTypes::testExitInfo() {
             "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) + "[KDC::TestTypes::testExitInfo])}";
     std::string expectedString2 = "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) +
                                   "[testExitInfo])}"; // Some compilers may not include the namespace in the function name, so we
-                                                      // allow for that possibility as well.
+    // allow for that possibility as well.
+
     CPPUNIT_ASSERT_MESSAGE(expectedString, toString(exitInfo) == expectedString || toString(exitInfo) == expectedString2);
 }
 
@@ -199,7 +200,8 @@ void testToStringIntValues() {
         if (fromInt<T>(i) == T::EnumEnd) {
             break;
         }
-        if (toString(fromInt<T>(i)) == noConversionStr || toString(fromInt<T>(i)) == "") {
+        auto convertedStr = toString(fromInt<T>(i));
+        if (convertedStr == noConversionStr || convertedStr == "") {
             const std::string failStr = std::string("No string conversion for value ") + std::to_string(i) + std::string(" of ") +
                                         std::string(typeid(T).name());
             CPPUNIT_FAIL(failStr);

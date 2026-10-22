@@ -50,6 +50,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
 #include "libparms/db/parmsdb.h"
 
 #include "tmpblacklistmanager.h"
@@ -390,9 +391,10 @@ void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
     }
 }
 
-void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const uint64_t nbFiles) {
+void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const Count nbDeletes,
+                                          const std::vector<SyncPath> &filesPaths) {
     if (_sendManyDeletesNotification) {
-        _sendManyDeletesNotification(syncDbId(), notificationType, nbFiles);
+        _sendManyDeletesNotification(syncDbId(), notificationType, nbDeletes, filesPaths);
     }
 }
 
@@ -405,7 +407,7 @@ bool SyncPal::wipeVirtualFiles() {
     VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, vfs());
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
-        addError(Error(syncDbId(), ERR_ID, virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+        addError(Error(syncDbId(), ERR_ID, virtualFileCleaner.exitInfo()));
         return false;
     }
     return true;
@@ -419,7 +421,7 @@ bool SyncPal::wipeOldPlaceholders() {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
         for (auto &failedItem: failedToRemovePlaceholders) {
             addError(Error(syncDbId(), "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None,
-                           CancelType::None, "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+                           CancelType::None, "", virtualFileCleaner.exitInfo().code(), virtualFileCleaner.exitInfo().cause()));
         }
         return false;
     }
@@ -607,7 +609,7 @@ bool SyncPal::initProgress(const SyncFileItem &item) {
     return currentProgressInfo && currentProgressInfo->initProgress(item);
 }
 
-bool SyncPal::setProgress(const SyncPath &relativePath, int progress) {
+bool SyncPal::setProgress(const SyncPath &relativePath, int16_t progress) {
     const auto currentProgressInfo = progressInfo();
     if (!currentProgressInfo) {
         return false;
@@ -669,33 +671,62 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
     return true;
 }
 
-void SyncPal::directDownloadCallback(UniqueId jobId) {
+void SyncPal::directDownloadCallback(const UniqueId jobId) {
     const std::scoped_lock lock(_directDownloadJobsMapMutex);
-    auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
+    const auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
     if (directDownloadJobsMapIt == _directDownloadJobsMap.end()) {
         // No need to send a warning, the job might have been canceled, and therefor not in the map anymore
         return;
     }
 
     const auto downloadJob = directDownloadJobsMapIt->second;
-    if (downloadJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+    finalizeDirectDownload(downloadJob);
+}
+
+void SyncPal::finalizeDirectDownload(const std::shared_ptr<DownloadJob> &downloadJob,
+                                     const std::optional<ExitInfo> &cancelExitInfo) {
+    const auto localPath = downloadJob->localPath();
+    bool downloadSucceeded = true;
+    if (cancelExitInfo) {
+        vfs()->cancelHydrate(localPath, *cancelExitInfo);
+        downloadSucceeded = false;
+    } else if (downloadJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         Error error;
         error.setLevel(ErrorLevel::Node);
         error.setSyncDbId(syncDbId());
         error.setRemoteNodeId(downloadJob->remoteNodeId());
-        error.setPath(downloadJob->localPath());
+        error.setPath(localPath);
         error.setExitCode(ExitCode::BackError);
         error.setExitCause(ExitCause::NotFound);
         addError(error);
 
-        vfs()->cancelHydrate(downloadJob->localPath());
+        vfs()->cancelHydrate(localPath, {ExitCode::BackError, ExitCause::NotFound});
+        downloadSucceeded = false;
+    } else if (!downloadJob->exitInfo() || downloadJob->isAborted() ||
+               downloadJob->exitInfo().cause() == ExitCause::OperationCanceled) {
+        vfs()->cancelHydrate(localPath, downloadJob->exitInfo());
+        downloadSucceeded = false;
     }
 
-    (void) _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
-    (void) _directDownloadJobsMap.erase(directDownloadJobsMapIt);
+    PinState newPinState = downloadSucceeded ? PinState::AlwaysLocal : PinState::OnlineOnly;
+    int16_t progress = downloadSucceeded ? 100 : 0;
+    VfsStatus newVfsStatus(
+            {.isHydrated = downloadSucceeded, .isSyncing = !isLocalItemInSyncWithDb(localPath), .progress = progress});
+
+    if (const ExitInfo exitInfo = _vfs->setPinState(localPath, newPinState); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(localPath) << L": " << exitInfo);
+    }
+
+    if (const ExitInfo exitInfo = _vfs->forceStatus(localPath, newVfsStatus); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(localPath) << L": " << exitInfo);
+    }
+
+    SyncPath absoluteLocalPath = this->localPath() / downloadJob->affectedFilePath();
+    (void) _syncPathToDownloadJobMap.erase(absoluteLocalPath);
+    (void) _directDownloadJobsMap.erase(downloadJob->jobId());
     for (auto it = _folderHydrationInProgress.begin(); it != _folderHydrationInProgress.end();) {
         const auto &parentFolderPath = it->first;
-        if (it->second.erase(downloadJob->affectedFilePath())) {
+        if (it->second.erase(absoluteLocalPath)) {
             LOGW_INFO(_logger, L"Download of item " << Utility::formatSyncPath(downloadJob->affectedFilePath())
                                                     << L" from parent folder " << Utility::formatSyncPath(parentFolderPath)
                                                     << L" terminated.");
@@ -725,14 +756,14 @@ void SyncPal::resetSnapshotInvalidationCounters() {
     _remoteFSObserverWorker->resetInvalidateCounter();
 }
 
-ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
                                  const SyncPath &parentFolderPath) {
     // Get the nodeId from the File System (not from the DB).
     // It is possible that an element of the path has been renamed and that the change has not yet been synchronized.
     NodeId localNodeId;
     if (!IoHelper::getNodeId(absoluteLocalPath, localNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(absoluteLocalPath));
-        return ExitCode::DataError;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     NodeId remoteNodeId;
@@ -743,7 +774,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     }
     if (!found) {
         LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(localNodeId));
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
     int64_t expectedSize = -1;
@@ -753,7 +784,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     }
     if (!found) {
         LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(localNodeId));
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
     // Hydration job
@@ -785,7 +816,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     // from the job map, resulting in a memory leak.
     std::weak_ptr<SyncJob> weakJobPtr = job;
     const auto progressPercentCallback = [weakJobPtr, this](UniqueId,
-                                                            int progress // %
+                                                            int16_t progress // %
                                          ) {
         auto job = weakJobPtr.lock();
         if (!job) {
@@ -800,15 +831,15 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
 
     job->setProgressPercentCallback(progressPercentCallback);
 
-    // Queue job
-    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
-
     const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);
     (void) _syncPathToDownloadJobMap.try_emplace(absoluteLocalPath, job->jobId());
     if (!parentFolderPath.empty() && _folderHydrationInProgress.contains(parentFolderPath)) {
         (void) _folderHydrationInProgress[parentFolderPath].emplace(absoluteLocalPath);
     }
+
+    // Queue job
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
     return ExitCode::Ok;
 }
@@ -825,10 +856,11 @@ ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
 
         if (const auto itId = _syncPathToDownloadJobMap.find(filePath); itId != _syncPathToDownloadJobMap.end()) {
             if (const auto itJob = _directDownloadJobsMap.find(itId->second); itJob != _directDownloadJobsMap.end()) {
-                itJob->second->abort();
-                (void) _directDownloadJobsMap.erase(itJob);
+                // Finalize now since an aborted job might be discarded by the job manager without its callback being called
+                const auto downloadJob = itJob->second;
+                downloadJob->abort();
+                finalizeDirectDownload(downloadJob, ExitInfo(ExitCode::Ok, ExitCause::OperationCanceled));
             }
-            (void) _syncPathToDownloadJobMap.erase(itId);
         }
         if (_folderHydrationInProgress.contains(filePath)) {
             _vfs->cancelHydrate(filePath);
@@ -843,17 +875,19 @@ ExitCode SyncPal::cancelAllDlDirectJobs() {
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs");
 
     const std::scoped_lock<std::mutex> lock(_directDownloadJobsMapMutex);
-    for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
-        LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
-        directDownloadJobsMapElt.second->abort();
-    }
-
-    _directDownloadJobsMap.clear();
-    _syncPathToDownloadJobMap.clear();
     for (const auto &[parentFolderPath, _]: _folderHydrationInProgress) {
         _vfs->cancelHydrate(parentFolderPath);
     }
     _folderHydrationInProgress.clear();
+
+    // Copy the map since finalizeDirectDownload removes the jobs from it
+    const auto directDownloadJobsMap = _directDownloadJobsMap;
+    for (const auto &[jobId, downloadJob]: directDownloadJobsMap) {
+        LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << jobId);
+        downloadJob->abort();
+        // Finalize now since an aborted job might be discarded by the job manager without its callback being called
+        finalizeDirectDownload(downloadJob, ExitCode::SyncPaused);
+    }
 
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs done");
 
@@ -1045,7 +1079,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     exists = false;
 
-    if (!_remoteFSObserverWorker) return {ExitCode::LogicError};
+    if (!_remoteFSObserverWorker) return {ExitCode::SyncPaused};
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -1071,7 +1105,7 @@ ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) cons
 ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
-    if (!_remoteFSObserverWorker) return ExitCode::LogicError;
+    if (!_remoteFSObserverWorker) return ExitCode::SyncPaused;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -1254,6 +1288,35 @@ void SyncPal::start(const std::chrono::seconds &startDelay) {
         return;
     }
     setVfsMode(sync.virtualFileMode());
+
+    // When the Windows shell extension is uninstalled, the sync root is unregistered and all placeholders are deleted.
+    // The sync root is then registered again (with a new registration time) on next VFS start. To avoid propagating those
+    // deletions to the server, all local deletes are reverted if the registration time is later than the stored reference
+    // (the last known registration time, or the DB migration time for syncs created before this field existed).
+    // A stored reference of 0 (new sync or VFS mode change) means that the current registration is legitimate.
+    // The stored reference is only updated once the revert succeeded, so that an interruption (e.g. app closed before
+    // reaching this point) is handled on the next start.
+    // An empty (0) registration time (macOS, VFS off, or unknown) means nothing to do.
+    if (const SyncTime vfsRegisteredAt = vfs() ? vfs()->registeredAt() : 0;
+        vfsRegisteredAt != 0 && vfsRegisteredAt != sync.vfsRegisteredAt()) {
+        if (sync.vfsRegisteredAt() != 0 && vfsRegisteredAt > sync.vfsRegisteredAt()) {
+            LOG_SYNCPAL_INFO(_logger, "VFS sync root registered at " << vfsRegisteredAt << ", after reference time "
+                                                                     << sync.vfsRegisteredAt()
+                                                                     << ", reverting all local deletes");
+            if (!syncDb()->revertAllLocalDeletes()) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::revertAllLocalDeletes");
+                addError(Error(syncDbId(), ERR_ID, ExitCode::SystemError, ExitCause::UnableToStartVfs));
+                return;
+            }
+        }
+
+        sync.setVfsRegisteredAt(vfsRegisteredAt);
+        if (!ParmsDb::instance()->updateSync(sync, found)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
+        } else if (!found) {
+            LOG_SYNCPAL_WARN(_logger, "Sync not found in sync table for syncDbId=" << syncDbId());
+        }
+    }
 
     // Clear tmp blacklist
     SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpRemoteBlacklist, NodeSet());
@@ -1470,9 +1533,9 @@ void SyncPal::fixInconsistentFileNames() {
             }
 
             GenericLocalDeleteJob deleteJob(
-                    oldLocalPath,
-                    GenericLocalDeleteJob::ForceHardDelete::Yes); // Hard delete to make sure we do not put dehydrated placeholder
-                                                                  // in the trash.
+                    oldLocalPath, _cacheDirectory,
+                    GenericLocalDeleteJob::ForceHardDelete::Yes); // Hard delete to make sure we do not put
+                                                                  // dehydrated placeholder in the trash.
             deleteJob.runSynchronously();
         }
     }
@@ -1549,24 +1612,22 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
     }
 
-    LOG_IF_FAIL(_localFSObserverWorker)
-    LOG_IF_FAIL(_remoteFSObserverWorker)
-    if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
-
     NodeId localNodeId;
-    if (const auto exitInfo = liveSnapshot(ReplicaSide::Local).getItemId(relativeLocalPath, localNodeId);
-        !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
-        return exitInfo;
-    }
     NodeId remoteNodeId;
-    if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, remoteNodeId);
-        !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
-        return exitInfo;
+    if (_localFSObserverWorker && _remoteFSObserverWorker) {
+        if (const auto exitInfo = liveSnapshot(ReplicaSide::Local).getItemId(relativeLocalPath, localNodeId);
+            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+            return exitInfo;
+        }
+        if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, remoteNodeId);
+            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+            return exitInfo;
+        }
     }
 
     // File type cannot be fetched for an access denied item, using File as default.
-    Error error(syncDbId(), localNodeId, remoteNodeId, NodeType::File, relativeLocalPath, ConflictType::None,
-                InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
+    const Error error(syncDbId(), localNodeId, remoteNodeId, NodeType::File, relativeLocalPath, ConflictType::None,
+                      InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
 
     if (localNodeId.empty()) {
@@ -1597,7 +1658,12 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
-    // Blacklist the item
+    if (!_tmpBlacklistManager) {
+        // Can happen if the sync is restarting
+        return ExitCode::Ok;
+    }
+
+    // Tmp blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
     }
@@ -1627,6 +1693,222 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
     }
 
     return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath, bool deleteNodeLater) {
+    if (relativeLocalPath.empty()) {
+        LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
+        return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
+    }
+
+    // Get the node ids from the DB if possible, otherwise get the local node id from the file system and the remote node id
+    // from the DB
+    NodeId localNodeId;
+    NodeId remoteNodeId;
+    if (_localFSObserverWorker && _remoteFSObserverWorker) {
+        if (const auto exitInfo = liveSnapshot(ReplicaSide::Local).getItemId(relativeLocalPath, localNodeId);
+            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+            return exitInfo;
+        }
+        if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, remoteNodeId);
+            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+            return exitInfo;
+        }
+    }
+
+    const SyncPath absolutePath = localPath() / relativeLocalPath;
+    if (localNodeId.empty()) {
+        if (!IoHelper::getNodeId(absolutePath, localNodeId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(absolutePath));
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        }
+    }
+
+    if (auto found = false; remoteNodeId.empty() && !localNodeId.empty() &&
+                            !_syncDb->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+        return {ExitCode::DbError, ExitCause::Unknown};
+    }
+
+    bool isCorruptedAlias = false;
+#if defined(KD_MACOS)
+    // Check if the file is a corrupted alias
+    if (auto ioError = IoError::Unknown; !IoHelper::checkForCorruptedAlias(absolutePath, isCorruptedAlias, ioError)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in checkForCorruptedAlias: " << Utility::formatIoError(relativeLocalPath, ioError));
+        return ExitCode::SystemError;
+    }
+#endif
+
+    auto tmpBlacklistItem = false;
+    if (isCorruptedAlias && !remoteNodeId.empty()) {
+        //
+        // Delete the file & clear the DB to allow the alias to be re-downloaded
+        //
+
+        // Delete the file
+        SyncLocalDeleteJob job(shared_from_this(), absolutePath);
+        job.setBypassCheck(true);
+        job.runSynchronously();
+        if (!job.exitInfo()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item with " << Utility::formatExitInfo(absolutePath, job.exitInfo())
+                                                                      << L" (" << CommonUtility::s2ws(localNodeId)
+                                                                      << L"), it will be temporarily blacklisted.");
+            tmpBlacklistItem = true;
+        } else {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                      << CommonUtility::s2ws(localNodeId) << L") removed from local replica.");
+
+            // Remove the file node from DB
+            DbNodeId dbNodeId = -1;
+            auto found = false;
+            if (!_syncDb->dbId(ReplicaSide::Local, relativeLocalPath, dbNodeId, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
+                return {ExitCode::DbError, ExitCause::Unknown};
+            }
+
+            if (found) {
+                if (!_syncDb->deleteNode(dbNodeId, found)) {
+                    LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::deleteNode");
+                    return {ExitCode::DbError, ExitCause::Unknown};
+                }
+
+                LOGW_SYNCPAL_DEBUG(_logger, L"Node with " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                          << CommonUtility::s2ws(localNodeId) << L") removed from DB.");
+            }
+        }
+    } else {
+        tmpBlacklistItem = true;
+    }
+
+    if (tmpBlacklistItem) {
+        //
+        // Notifies the user and tmp blacklists the file
+        //
+
+        const Error error(syncDbId(), localNodeId, remoteNodeId,
+                          NodeType::File, // File type cannot be fetched for an unknown error, using NodeType::File as default.
+                          relativeLocalPath, ConflictType::None, InconsistencyType::None, CancelType::None, "",
+                          ExitCode::SystemError, ExitCause::Unknown);
+        addError(error);
+
+        // Tmp blacklist the item
+        if (!_tmpBlacklistManager) {
+            // Can happen if the sync is restarting
+            return ExitCode::Ok;
+        }
+
+        if (!localNodeId.empty()) {
+            _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
+        }
+
+        if (!remoteNodeId.empty()) {
+            _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
+        }
+
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
+                                             << CommonUtility::s2ws(localNodeId)
+                                             << L" is blacklisted temporarily because of an unknown error.");
+    }
+
+    // Delete nodes from update trees
+    if (!localNodeId.empty() || !remoteNodeId.empty()) {
+        // Copy the update trees shared ptrs to protect their access
+        auto localUpdateTree = updateTree(ReplicaSide::Local);
+        auto remoteUpdateTree = updateTree(ReplicaSide::Remote);
+        if (!localUpdateTree || !remoteUpdateTree) {
+            // Can happen if the sync is restarting
+            return ExitCode::Ok;
+        }
+
+        // deleteNode can fail if the UpdateTreeWorker has never been launched or the node has been deleted by a concurrent
+        // worker
+        if (!localNodeId.empty()) {
+            (void) localUpdateTree->deleteNode(localNodeId, deleteNodeLater);
+        }
+
+        if (!remoteNodeId.empty()) {
+            (void) remoteUpdateTree->deleteNode(remoteNodeId, deleteNodeLater);
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
+bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath) {
+    std::optional<NodeId> localNodeId;
+    return isLocalItemInSyncWithDb(localAbsolutePath, localNodeId);
+}
+
+bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId) {
+    // Ideally, this logic should be shared with ComputeFSOperationWorker::inferChangeFromDbNode,
+    // but for now it would require some refactoring to make it reusable, so we duplicate it here.
+    outLocalNodeId.reset();
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getFileStat(localAbsolutePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(localAbsolutePath, ioError));
+        return false;
+    }
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_SYNCPAL_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(localAbsolutePath));
+        return false;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_SYNCPAL_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(localAbsolutePath));
+        return false;
+    } else if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error accessing item: " << Utility::formatSyncPath(localAbsolutePath) << L": "
+                                                             << Utility::formatIoError(ioError));
+        return false;
+    }
+
+    outLocalNodeId = std::to_string(fileStat.inode);
+
+    DbNode dbNode;
+    bool found = false;
+    if (!syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::node for " << Utility::formatSyncPath(localAbsolutePath));
+        return false;
+    }
+
+    if (!found) {
+        return false;
+    }
+
+    if (dbNode.type() != fileStat.nodeType) {
+        return false;
+    }
+
+    SyncPath localDbRelativePath;
+    SyncPath remoteDbRelativePath;
+    if (!syncDb()->path(dbNode.nodeId(), localDbRelativePath, remoteDbRelativePath, found)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::path for DbNodeID " << dbNode.nodeId());
+        return false;
+    }
+
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "dbNodeId " << dbNode.nodeId() << " not found in SyncDb");
+        return false;
+    }
+
+    const SyncPath localRelativePath = CommonUtility::relativePath(localPath(), localAbsolutePath);
+
+    if (localDbRelativePath.lexically_normal() != localRelativePath.lexically_normal()) {
+        return false;
+    }
+
+    if (fileStat.nodeType == NodeType::Directory) {
+        return true;
+    }
+
+    const bool sameModifiedTime = CommonUtility::modificationTimesAreEqual(localPath(), dbNode.lastModifiedLocal().value_or(0),
+                                                                           fileStat.modificationTime);
+
+    if (dbNode.size() == fileStat.size && sameModifiedTime &&
+        (!dbNode.created().has_value() || dbNode.created().value() == fileStat.creationTime)) {
+        return true;
+    }
+
+    return false;
 }
 
 void SyncPal::copySnapshots() {

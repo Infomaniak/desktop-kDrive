@@ -177,8 +177,11 @@ if ($CI)
     # Activate the python virtual environment.
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 
-    # Call vcvarsall.bat to set up the environment for MSVC
-    & "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+    # Call Launch-VsDevShell.ps1 to set up the environment for MSVC
+    & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
+            -Arch amd64 `
+            -HostArch amd64 `
+            -SkipAutomaticLocation
     Log "CI mode enabled."
     $env:SSL_CERT_FILE = (& python -m certifi).Trim() # Because of the CI User on Windows, we need to set the SSL_CERT_FILE environment variable to the certifi bundle.
     Log "SSL_CERT_FILE set to $( $env:SSL_CERT_FILE )"
@@ -237,69 +240,18 @@ else
 }
 
 # Define a Conan "Remote" pointing at the on-disk recipe folder.
-$NormalizeRemoteUrl = {
-    param([string]$Url)
-    if ( [string]::IsNullOrWhiteSpace($Url))
-    {
-        return ""
-    }
-    return ($Url -replace '\\', '/').TrimEnd('/')
-}
-
-$ExpectedRemoteUrl = try
-{
-    (Resolve-Path -Path $ConanRemoteBaseFolder).Path
-}
-catch
-{
-    $ConanRemoteBaseFolder
-}
-$ExpectedRemoteUrlNormalized = & $NormalizeRemoteUrl $ExpectedRemoteUrl
-
-$remotesJson = & $ConanExe remote list --format=json
+# The remote is re-registered on every run: this clears any stale state (package
+# filters, URL, enabled flag) left behind by a previous setup on persistent machines.
+Log "Registering Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
+# Windows PowerShell turns native stderr into a terminating error when
+# '$ErrorActionPreference' is 'Stop', so tolerate a missing remote explicitly.
+$ErrorActionPreference = "Continue"
+& $ConanExe remote remove $LocalRemoteName 2> $null
+$ErrorActionPreference = "Stop"
+& $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
 if ($LASTEXITCODE -ne 0)
 {
-    Err "Failed to list Conan remotes."
-}
-
-try
-{
-    $remotes = $remotesJson | ConvertFrom-Json
-}
-catch
-{
-    Err "Failed to parse Conan remotes JSON output."
-}
-
-$matchingRemote = $remotes | Where-Object {
-    $_.name -eq $LocalRemoteName -and
-            $_.enabled -eq $true -and
-            (& $NormalizeRemoteUrl $_.url) -eq $ExpectedRemoteUrlNormalized
-} | Select-Object -First 1
-
-if ($matchingRemote)
-{
-    Log "Conan remote '$LocalRemoteName' already exists, has the expected URL and is enabled."
-}
-else
-{
-    $remoteWithSameName = $remotes | Where-Object { $_.name -eq $LocalRemoteName } | Select-Object -First 1
-    if ($remoteWithSameName)
-    {
-        Log "Removing Conan remote '$LocalRemoteName' because URL/enabled state does not match the expected configuration."
-        & $ConanExe remote remove $LocalRemoteName
-        if ($LASTEXITCODE -ne 0)
-        {
-            Err "Failed to remove existing Conan remote '$LocalRemoteName'."
-        }
-    }
-
-    Log "Adding Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
-    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
-    if ($LASTEXITCODE -ne 0)
-    {
-        Err "Failed to add local Conan remote."
-    }
+    Err "Failed to add local Conan remote."
 }
 
 # Ensure output directory exists

@@ -111,7 +111,7 @@ namespace Infomaniak.kDrive.CustomControls
             NavigationViewItem? settingItem = SettingsItem as NavigationViewItem;
             if (settingItem is null)
             {
-                Logger.Log(Logger.Level.Error, "SettingsItem is not a NavigationViewItem. Cannot add InfoBadge.");
+                Logger.LogError("SettingsItem is not a NavigationViewItem. Cannot add InfoBadge.");
                 return;
             }
 

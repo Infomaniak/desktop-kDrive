@@ -24,11 +24,11 @@ namespace KDC {
 
 class SignalDriveRemovedJob : public AbstractGuiJob {
     public:
-        explicit SignalDriveRemovedJob(int driveDbId);
+        explicit SignalDriveRemovedJob(DriveDbId driveDbId);
 
     private:
         // Output parameters
-        int _driveDbId;
+        DriveDbId _driveDbId;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

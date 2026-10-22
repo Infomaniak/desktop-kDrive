@@ -128,7 +128,7 @@ build_release() {
   QTDIR="$(find_qt_conan_path "$build_dir")"
   export QTDIR
   export QMAKE="$QTDIR/bin/qmake"
-  export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:$HOME/.local/bin:$PATH"
   export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
   export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
@@ -159,6 +159,7 @@ build_release() {
   make DESTDIR="$app_dir" install
 
   cp "$src_dir/sync-exclude-linux.lst" "$build_dir/build/bin/sync-exclude.lst"
+  cp "$src_dir/sync-folder-rules-linux.csv" "$build_dir/build/bin/sync-folder-rules.csv"
 } 
 
 package_release() {
@@ -184,7 +185,6 @@ package_release() {
   cp -P "$QTDIR/lib/libQt6WaylandClient.so"* "$app_dir/usr/lib"
   cp -P "$QTDIR/lib/libQt6WaylandEglClientHwIntegration.so"* "$app_dir/usr/lib"
 
-  rm "$app_dir/usr/lib/libkeychain.a"
   rm -rf "$app_dir/usr/lib/x86_64-linux-gnu/"
   rm -rf "$app_dir/usr/include/"
 
@@ -192,11 +192,68 @@ package_release() {
 
   cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
-  "$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
+  linuxdeploy --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   app_name="kDrive-${full_version}-amd64.AppImage"
   mv kDrive*.AppImage "$app_dir/$app_name"
+}
+
+package_recovery_updater() {
+  updater_bin="$app_dir/usr/bin/kDriveRecoveryUpdater"
+  if [ ! -f "$updater_bin" ]; then
+    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
+    return 0
+  fi
+
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+  updater_appdir="$build_dir/updater-app"
+  rm -rf "$updater_appdir"
+  mkdir -p "$updater_appdir/usr/bin"
+  mkdir -p "$updater_appdir/usr/lib"
+  mkdir -p "$updater_appdir/usr/plugins/platforms"
+
+  cp "$updater_bin" "$updater_appdir/usr/bin/kDriveRecoveryUpdater"
+
+  # Copy Conan dependencies (Poco, xxhash, log4cplus, openssl, sentry, etc.)
+  cp -P "$conan_dependencies_folder/"* "$updater_appdir/usr/lib" 2>/dev/null || true
+
+  # Copy Qt plugins (platforms are required for a GUI app)
+  cp -P -r "$QTDIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
+
+  # Create a minimal .desktop file (required by linuxdeploy/appimagetool)
+  cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=kDriveRecoveryUpdater
+Exec=kDriveRecoveryUpdater
+Icon=kDriveRecoveryUpdater
+Categories=Utility;
+EOF
+
+  # Use the recovery updater icon
+  updater_icon="$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
+  if [ -f "$updater_icon" ]; then
+    cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
+  fi
+
+  export NO_STRIP=1
+  linuxdeploy --appdir "$updater_appdir" \
+    -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
+    -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
+    -i "$updater_appdir/kDriveRecoveryUpdater.png" \
+    --plugin qt --output appimage -v0
+
+  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
+  updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
+  mv kDriveRecoveryUpdater*.AppImage "$app_dir/$updater_appimage"
+
+  echo "Recovery updater AppImage created: $app_dir/$updater_appimage"
 }
 
 echo "Building ..."
@@ -206,6 +263,11 @@ echo
 
 echo "Packaging ..."
 package_release
+
+echo
+
+echo "Packaging recovery updater ..."
+package_recovery_updater
 
 echo
 

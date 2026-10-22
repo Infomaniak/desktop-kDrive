@@ -95,9 +95,9 @@ namespace Infomaniak.kDrive.OnBoarding
             for (double i = 0; i <= 10; ++i)
             {
                 if (inElement is not null)
-                    inElement.Opacity = i/10.0;
+                    inElement.Opacity = i / 10.0;
                 if (outElement is not null)
-                    outElement.Opacity = (1 - i)/10.0;
+                    outElement.Opacity = (1 - i) / 10.0;
                 await Task.Delay(30);
             }
         }

@@ -56,6 +56,10 @@ int runTestSuite(const std::string &logFileName) {
         LOG_INFO(KDC::Log::instance()->getLogger(), "Running extended tests.");
     }
 
+#if defined(KD_LINUX)
+    if (!KDC::testhelpers::hasTrashInfo()) KDC::testhelpers::createTrashInfo();
+#endif
+
     // Informs test-listener about testresults
     CPPUNIT_NS::TestResult testresult;
 

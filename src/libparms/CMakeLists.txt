@@ -4,7 +4,7 @@ else()
     project(libparms LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -12,20 +12,12 @@ add_definitions(-D_UNICODE)
 # Sources
 set(parms_SRCS
     db/parmsdb.h db/parmsdb.cpp
-    db/parameters.h db/parameters.cpp
-    db/user.h db/user.cpp
-    db/account.h db/account.cpp
-    db/sync.h db/sync.cpp
-    db/exclusiontemplate.h db/exclusiontemplate.cpp
-    db/error.h db/error.cpp
     db/migrationselectivesync.h db/migrationselectivesync.cpp
     db/uploadsessiontoken.h db/uploadsessiontoken.cpp
-    db/parmsdbappstate.cpp
+    db/parmsdbappstate.cpp db/syncfolderrule.h db/syncfolderrule.cpp
 )
 
-if(APPLE)
-    list(APPEND parms_SRCS db/exclusionapp.h db/exclusionapp.cpp)
-endif()
+
 
 # Target
 add_library(${libparms_NAME} STATIC ${parms_SRCS})
@@ -58,8 +50,7 @@ if(WIN32)
 else()
     target_include_directories(${libparms_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include")
+        ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 # Link

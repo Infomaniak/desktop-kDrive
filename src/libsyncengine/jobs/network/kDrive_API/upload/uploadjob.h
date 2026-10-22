@@ -1,18 +1,20 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2026 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #pragma once
 
@@ -31,12 +33,11 @@ namespace KDC {
 class UploadJob : public AbstractTokenNetworkJob {
     public:
         // Using file name and parent ID, for file creation only.
-        UploadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
+        UploadJob(DriveDbId driveDbId, const SyncPath &absoluteFilePath, const SyncName &filename,
                   const NodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime);
         // Using file ID, for file edition only.
-        UploadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                  SyncTime modificationTime);
-        ~UploadJob() override;
+        UploadJob(DriveDbId driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
+                  SyncTime modificationTime, int64_t remoteSize = -1);
 
         const NodeId &nodeId() const { return _nodeIdOut; }
         SyncTime creationTime() const { return _creationTimeOut; }
@@ -49,6 +50,7 @@ class UploadJob : public AbstractTokenNetworkJob {
         [[nodiscard]] ExitInfo handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &uri) override;
 
     private:
+        ExitInfo runJob() noexcept override;
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &) override;
         ExitInfo setData() override;
@@ -74,7 +76,9 @@ class UploadJob : public AbstractTokenNetworkJob {
         SyncPath _linkTarget;
         NodeType _targetType = NodeType::File;
 
-        const std::shared_ptr<Vfs> _vfs;
+        int64_t _remoteSize = -1;
+
+        friend class TestNetworkJobs;
 };
 
 } // namespace KDC

@@ -23,6 +23,8 @@
 
 #include "test_utility/testhelpers.h"
 
+#include "libsyncengine/update_detection/update_detector/updatetreeworker.h"
+
 #include <memory>
 
 using namespace CppUnit;
@@ -1232,15 +1234,7 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setId(std::nullopt);
-    bool integrityExceptionCaught = false;
-    try {
-        (void) _localUpdateTreeWorker->checkTreeIntegrity();
-        CPPUNIT_ASSERT(false); // Should not happen because the previous call should throw an exception
-    } catch (UpdateTreeWorker::IntegrityError &) {
-        // Expected behavior
-        integrityExceptionCaught = true;
-    }
-    CPPUNIT_ASSERT(integrityExceptionCaught);
+    CPPUNIT_ASSERT_THROW(_localUpdateTreeWorker->checkTreeIntegrity(), UpdateTreeWorker::IntegrityError);
 
     newNode->setId(NodeId{});
     CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity());
@@ -1261,15 +1255,8 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->parentNode()->setId(NodeId{"tmp_123"});
-    integrityExceptionCaught = false;
-    try {
-        (void) _localUpdateTreeWorker->checkTreeIntegrity();
-        CPPUNIT_ASSERT(false); // Should not happen because the previous call should throw an exception
-    } catch (UpdateTreeWorker::IntegrityError &) {
-        // Expected behavior
-        integrityExceptionCaught = true;
-    }
-    CPPUNIT_ASSERT(integrityExceptionCaught);
+
+    CPPUNIT_ASSERT_THROW(_localUpdateTreeWorker->checkTreeIntegrity(), UpdateTreeWorker::IntegrityError);
 }
 
 void TestUpdateTreeWorker::testResetNodes() {
@@ -1322,19 +1309,27 @@ void TestUpdateTreeWorker::testResetNodesRecursiveDelete() {
     _remoteUpdateTree->insertNode(node2);
 
 
-    auto parent = _remoteUpdateTree->_validNodes.begin();
-    if (parent->second == _remoteUpdateTree->rootNode()) ++parent;
+    auto parent = std::ranges::find_if(_remoteUpdateTree->_validNodes.begin(), _remoteUpdateTree->_validNodes.end(),
+                                       [](const auto &pair) { return pair.second->name() == Str("node1"); });
+    CPPUNIT_ASSERT(parent != _remoteUpdateTree->_validNodes.end());
 
-    auto children = parent++;
-    if (children->second == _remoteUpdateTree->rootNode()) ++children;
+    auto child = std::ranges::find_if(_remoteUpdateTree->_validNodes.begin(), _remoteUpdateTree->_validNodes.end(),
+                                      [](const auto &pair) { return pair.second->name() == Str("node2"); });
+    CPPUNIT_ASSERT(child != _remoteUpdateTree->_validNodes.end());
 
-    CPPUNIT_ASSERT(children->second->setParentNode(parent->second));
+    // Make sure the parent will be listed before its child.
+    if (std::distance(child, parent) < 0) std::swap(child, parent);
 
+    CPPUNIT_ASSERT(child->second->setParentNode(parent->second));
     parent->second->setStatus(NodeStatus::ToDelete);
-    CPPUNIT_ASSERT(parent->second->insertChild(children->second));
+    CPPUNIT_ASSERT(parent->second->insertChild(child->second));
 
-    auto parentId = *parent->second->id();
-    auto childrenId = *children->second->id();
+    const auto parentId = *parent->second->id();
+    const auto childrenId = *child->second->id();
+
+    CPPUNIT_ASSERT(_remoteUpdateTree->exists(parentId));
+    CPPUNIT_ASSERT(_remoteUpdateTree->exists(childrenId));
+
     CPPUNIT_ASSERT(_remoteUpdateTreeWorker->resetNodes());
 
     CPPUNIT_ASSERT(!_remoteUpdateTree->exists(parentId));

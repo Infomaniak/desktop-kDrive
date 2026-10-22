@@ -64,14 +64,14 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             {
                 if (Error.Sync is null)
                 {
-                    Logger.Log(Logger.Level.Error, "Error.Sync is null in SystemErrorSyncDirDiskMissing. Cannot proceed with action click.");
+                    Logger.LogError("Error.Sync is null in SystemErrorSyncDirDiskMissing. Cannot proceed with action click.");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
                 _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.SyncDirDiskMissingRestartSync);
                 if (!await Error.Sync.Start())
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to restart sync in SystemErrorSyncDirDiskMissing.");
+                    Logger.LogError("Failed to restart sync in SystemErrorSyncDirDiskMissing.");
                     Utility.ShowTeachingTip(Localizer.Instance.GetString("errDialogSystemSyncDirDiskMissingTitle"));
                 }
             }

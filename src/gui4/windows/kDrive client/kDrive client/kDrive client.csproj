@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>4.0.0.14</AssemblyVersion>
+    <AssemblyVersion>4.0.0.16</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -20,6 +20,7 @@
     <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
     <TrimMode>None</TrimMode>
     <PublishTrimmed>false</PublishTrimmed>
+    <CetCompat>false</CetCompat>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Custom\Animations\Readme.md" />
@@ -42,7 +43,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.2.250604" />
     <PackageReference Include="DynamicData" Version="9.4.31" />
-    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.0" />
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
@@ -357,6 +358,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="CustomControls\ManyDeletesDialogHost.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <None Update="CustomControls\LocalizedHyperlinkText.xaml">

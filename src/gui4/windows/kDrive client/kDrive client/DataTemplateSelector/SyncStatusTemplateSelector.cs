@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.TemplateSelectors
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Unexpected type in SelectTemplateCore");
+                Logger.LogError("Unexpected type in SelectTemplateCore");
                 return SyncLoadingTemplate;
             }
 

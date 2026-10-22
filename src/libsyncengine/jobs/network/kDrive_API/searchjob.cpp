@@ -20,15 +20,17 @@
 
 #include "info/searchinfo.h"
 #include "jobs/network/abstracttokennetworkjob.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/jobexceptions.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-static constexpr auto privateFolder = Str("/Private/");
-static constexpr auto sharedFolder = Str("/Shared/");
+// Results per page. The API returns 10 without it; the iOS app requests 200 on the same endpoint.
+static constexpr auto searchPageSize = "50";
 
 SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const std::string &searchString,
                      const std::string &cursorInput /*= {}*/) :
@@ -58,6 +60,8 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const s
 
     _syncVfsMode = sync.virtualFileMode();
     _syncRootPath = sync.localPath();
+    // The target path of an advanced sync is already expressed in the synchronized tree, e.g. "/Common documents/Project".
+    _syncTargetPath = sync.targetPath().relative_path();
 }
 
 SearchJob::SearchJob(const DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
@@ -84,11 +88,13 @@ void SearchJob::setQueryParameters(Poco::URI &uri) {
         uri.addQueryParameter("name", _searchString);
     }
     uri.addQueryParameter("order_by", "relevance");
+    uri.addQueryParameter("limit", searchPageSize);
     if (!_cursorInput.empty()) {
         uri.addQueryParameter("cursor", _cursorInput);
     }
 
     uri.addQueryParameter("with", "path");
+    uri.addQueryParameter("order", "desc");
 }
 
 
@@ -97,34 +103,63 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
 
     if (_syncRootPath.empty()) return ExitCode::Ok; // If sync root path is not set, skip local properties check.
 
-    if (localProperties.path.native().starts_with(privateFolder)) {
-        localProperties.path = localProperties.path.native().substr(
-                std::char_traits<std::remove_cvref_t<decltype(*privateFolder)>>::length(privateFolder));
-    } else if (localProperties.path.native().starts_with(sharedFolder)) {
-        localProperties.path = localProperties.path.native().substr(
-                std::char_traits<std::remove_cvref_t<decltype(*sharedFolder)>>::length(sharedFolder));
-    }
+    // The API returns paths of the v3 drive tree ("/Private/...", "/Common documents/...", "/Shared/..."): translate them to
+    // the synchronized tree, where the private space is the root while "Common documents" and "Shared" stay folders.
+    localProperties.path = localProperties.path.relative_path();
+    ApiTranslator::translateV3ToV2(localProperties.path);
 
-    if (localProperties.path.native().starts_with(Str("/")) || localProperties.path.native().starts_with(Str("\\"))) {
-        localProperties.path = localProperties.path.relative_path();
+    // An advanced sync only mirrors its target folder: results outside of it are never available locally, and results
+    // inside of it are located relative to the target folder. The target folder itself is the local sync root.
+    if (!_syncTargetPath.empty()) {
+        if (!CommonUtility::isDescendantOrEqual(localProperties.path, _syncTargetPath)) {
+            return ExitCode::Ok;
+        }
+
+        localProperties.path = localProperties.path.lexically_relative(_syncTargetPath);
+        if (localProperties.path == SyncPath(Str("."))) {
+            localProperties.path.clear();
+        }
     }
 
     const SyncPath absolutePath = _syncRootPath / localProperties.path;
 
     if (_syncVfsMode == VirtualFileMode::Off) {
         if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
-                                                                             ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+                                                                             ioError, IoHelper::PathCheckOption::Insensitive) ||
+                                                ioError != IoError::Success) {
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            } else if (ioError == IoError::FileNameTooLong) {
+                LOGW_WARN(_logger, L"Item name or path is too long: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileNameTooLong};
+            } else {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
+                return ExitCode::SystemError;
+            }
         }
         localProperties.isHydrated = localProperties.isAvailableLocally;
     } else {
-        IoError ioError = IoError::Success;
         bool isDehydrated = false;
-        if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
-            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory)) {
-            LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        if (auto ioError = IoError::Success; !IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
+                                             (ioError != IoError::Success && ioError != IoError::AttrNotFound)) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
+                localProperties.isAvailableLocally = false;
+                localProperties.isHydrated = false;
+            } else if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            } else if (ioError == IoError::FileNameTooLong) {
+                LOGW_WARN(_logger, L"Item name or path is too long: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileNameTooLong};
+            } else if (ioError == IoError::InvalidFileName) {
+                LOGW_WARN(_logger, L"Item name is invalid: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::InvalidName};
+            } else {
+                LOGW_WARN(_logger,
+                          L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(absolutePath, ioError));
+                return ExitCode::SystemError;
+            }
         } else {
             localProperties.isAvailableLocally = ioError != IoError::NoSuchFileOrDirectory;
             localProperties.isHydrated = localProperties.isAvailableLocally && !isDehydrated;
@@ -135,6 +170,9 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
 }
 
 ExitInfo SearchJob::handleResponse(std::istream &is) {
+    // AbstractNetworkJob::runJob() sends the whole request again after a failed response: start from scratch each time.
+    _searchResults.clear();
+
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
     if (!jsonRes()) {
@@ -194,7 +232,19 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
                                            localProperties.path, modifiedTime, size, localProperties.isAvailableLocally,
                                            localProperties.isHydrated);
 
-        if (!itemExitInfo) exitInfo = itemExitInfo; // Stores only the last error for the final return value.
+        if (!itemExitInfo) {
+            LOGW_WARN(_logger, L"Error in getLocalProperties: " << Utility::formatExitInfo(path, itemExitInfo));
+            if (!(itemExitInfo.code() == ExitCode::SystemError &&
+                  (itemExitInfo.cause() == ExitCause::FileAccessError || itemExitInfo.cause() == ExitCause::FileNameTooLong ||
+                   itemExitInfo.cause() == ExitCause::InvalidName))) {
+                exitInfo = itemExitInfo; // Stores only the last error for the final return value.
+            }
+        }
+    }
+
+    // Only a local metadata failure reaches this point: sending the request again would fail the same way.
+    if (!exitInfo) {
+        disableRetry();
     }
 
     return exitInfo;

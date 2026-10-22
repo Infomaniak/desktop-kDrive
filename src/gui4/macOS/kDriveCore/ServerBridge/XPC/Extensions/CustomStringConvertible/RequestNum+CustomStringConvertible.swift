@@ -78,8 +78,8 @@ extension RequestNum: CustomStringConvertible {
             return "BLACKLISTED_NODE_SETLIST"
         case .NODE_PATH:
             return "NODE_PATH"
-        case .NODE_INFO:
-            return "NODE_INFO"
+        case .NODE_INFO_REMOTE:
+            return "NODE_INFO_REMOTE"
         case .NODE_SUBFOLDERS:
             return "NODE_SUBFOLDERS"
         case .NODE_SUBFOLDERS2:

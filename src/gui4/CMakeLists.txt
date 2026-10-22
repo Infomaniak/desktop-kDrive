@@ -32,12 +32,12 @@ if(WIN32)
         USES_TERMINAL  
     )
 
-    add_custom_target(build_kDrive_client ALL
+    add_custom_target(kdriveclient ALL
         DEPENDS "${CLIENT_STAMP}"
     )
 
     # Ensure the main executable always triggers the client build
-    add_dependencies(${APPLICATION_EXECUTABLE} build_kDrive_client)
+    add_dependencies(${APPLICATION_EXECUTABLE} kdriveclient)
 
     install(DIRECTORY ${CLIENT_DEST}/ DESTINATION ${CMAKE_INSTALL_BINDIR}/client
         PATTERN "${CLIENT_STAMP_NAME}" EXCLUDE

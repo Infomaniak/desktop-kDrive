@@ -22,6 +22,7 @@
 #include "config.h"
 #include "version.h"
 
+#include <QBuffer>
 #include <system_error>
 #include <sys/types.h>
 
@@ -46,6 +47,7 @@
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
 #include <Poco/StreamCopier.h>
+#include <Poco/Dynamic/Struct.h>
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
 #include <sys/statvfs.h>
@@ -163,7 +165,11 @@ std::string CommonUtility::generateUUID() {
 
 void CommonUtility::crash() {
     volatile int *a = (int *) (NULL);
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnull-dereference"
     *a = 1;
+#pragma clang diagnostic pop
 }
 
 QString CommonUtility::platformName() {
@@ -207,48 +213,145 @@ uint64_t CommonUtility::versionBuild() {
     return KDRIVE_VERSION_BUILD;
 }
 
-std::string CommonUtility::getRootFsType(const SyncPath &targetPath) {
-    static std::unordered_map<std::string, std::string> rootFsTypeMap;
-
-    auto it = rootFsTypeMap.find(targetPath.root_name().string());
-    if (it == rootFsTypeMap.end()) {
-        const std::string fsType = CommonUtility::fileSystemName(targetPath);
-        const auto [it2, inserted] = rootFsTypeMap.try_emplace(targetPath.root_name().string(), CommonUtility::toUpper(fsType));
-        if (!inserted) return {};
-
-        it = it2;
-    }
-    return it->second;
+std::string CommonUtility::fallbackFileSystemType() {
+#if defined(KD_WINDOWS)
+    return fsType::NTFS;
+#elif defined(KD_MACOS)
+    return fsType::APFS;
+#else
+    return fsType::EXT234;
+#endif
 }
 
+std::string CommonUtility::underlyingFileSystemType(const SyncPath &targetPath) {
+    SyncPath targetDirPath;
+    std::error_code ec;
+    if (std::filesystem::is_directory(targetPath, ec)) {
+        targetDirPath = targetPath;
+    } else {
+        if (ec.value() != 0) {
+            return {};
+        }
+        targetDirPath = targetPath.parent_path();
+    }
+
+    // We try a temporary directory creation with an invalid FAT32/exFAT name
+    if (const SyncPath invalidExFatFileName{"a:b" + generateRandomStringAlphaNum()};
+        !std::filesystem::create_directory(targetDirPath / invalidExFatFileName, ec)) {
+#if defined(KD_WINDOWS)
+        if (ec.value() == ERROR_INVALID_NAME) {
+#else
+        if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
+#endif
+            // Invalid name for FAT32/exFAT, we assume that the underlying FS is exFAT as we cannot distinguish between FAT32 and
+            // exFAT and both have the same naming rules
+            return fsType::EXFAT;
+        }
+
+        return {};
+    } else {
+        (void) std::filesystem::remove(targetDirPath / invalidExFatFileName, ec);
+    }
+
+    return fallbackFileSystemType();
+}
+
+std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::string &fsType,
+                                          const UseCache useCache /*UseCache::Yes*/) {
+    fsType.clear();
+
+    // Cache of FS type & fallback type by mount point ordered by decreasing path depth.
+    struct Cache {
+            std::map<SyncPath, std::pair<std::string, std::string>, CmpPath> fsTypeMap{CmpPath(CmpPath::SortByDepth::Decreasing)};
+            std::mutex fsTypeMapMutex;
+    };
+
+    static Cache cache;
+    const std::scoped_lock lock(cache.fsTypeMapMutex);
+
+    if (useCache == UseCache::Yes) {
+        // Search in cache first.
+#if defined(KD_WINDOWS)
+        const SyncPath rootPath = targetPath.root_path().native();
+        if (const auto it = cache.fsTypeMap.find(rootPath); it != cache.fsTypeMap.end()) {
+            fsType = it->second.first;
+            return it->second.second;
+        }
+#else
+        for (const auto &it: cache.fsTypeMap) {
+            if (CommonUtility::isDescendantOrEqual(targetPath, it.first)) {
+                fsType = it.second.first;
+                return it.second.second;
+            }
+        }
+#endif
+    }
+
+    // If not found in cache, get the FS type and mount point from the OS.
+    SyncPath mountPoint;
+    if (!CommonUtility::fileSystemInfo(targetPath, fsType, mountPoint)) {
+        return fallbackFileSystemType();
+    }
+
+    fsType = CommonUtility::toUpper(fsType);
+
+    std::string fallbackFSType;
+    if (isManagedFS(fsType)) {
+        fallbackFSType = fsType;
+    } else {
+        fallbackFSType = underlyingFileSystemType(targetPath);
+        if (fallbackFSType.empty()) {
+            return fallbackFileSystemType();
+        }
+    }
+
+    (void) cache.fsTypeMap.insert_or_assign(mountPoint, std::make_pair(fsType, fallbackFSType));
+
+    return fallbackFSType;
+}
+
+bool CommonUtility::isManagedFS(const std::string &fsType) {
+    return fsType == fsType::NTFS || fsType == fsType::APFS || fsType == fsType::HFS || fsType == fsType::FAT ||
+           fsType == fsType::EXFAT || fsType == fsType::EXT234;
+}
 
 bool CommonUtility::isNTFS(const SyncPath &targetPath) {
-    static const std::string ntfs("NTFS");
-    return getRootFsType(targetPath) == ntfs;
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::NTFS;
 }
 
 bool CommonUtility::isAPFS(const SyncPath &targetPath) {
-    static const std::string apfs("APFS");
-    return getRootFsType(targetPath) == apfs;
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::APFS;
 }
 
 bool CommonUtility::isHFS(const SyncPath &targetPath) {
-    static const std::string hfs("HFS");
-    return getRootFsType(targetPath) == hfs;
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::HFS;
 }
 
 bool CommonUtility::isFAT(const SyncPath &targetPath) {
-    static const std::string fat("FAT");
-    return contains(getRootFsType(targetPath), fat);
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::FAT;
+}
+
+bool CommonUtility::isEXFAT(const SyncPath &targetPath) {
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::EXFAT;
+}
+
+bool CommonUtility::isEXT234(const SyncPath &targetPath) {
+    std::string fsType;
+    return fileSystemType(targetPath, fsType) == fsType::EXT234;
 }
 
 bool CommonUtility::isSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
 #if defined(KD_MACOS)
-    // Tested OK: APFS, HFS+, exFAT
+    // Tested OK: APFS, HFS+, ExFAT
     // Tested KO: FAT32
     return !CommonUtility::isFAT(targetPath);
 #elif defined(KD_WINDOWS)
-    // Tested OK: NTFS, exFAT, FAT32
+    // Tested OK: NTFS, ExFAT, FAT32
     return true;
 #else
     // Tested OK: EXT4
@@ -520,6 +623,13 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
     if (std::holds_alternative<std::string>(appStateValueTo)) {
         appStateValueTo = stringFrom;
         appStateValueType = "std::string";
+    } else if (std::holds_alternative<bool>(appStateValueTo)) {
+        appStateValueType = "bool";
+        try {
+            appStateValueTo = static_cast<bool>(std::stoi(stringFrom));
+        } catch (const std::invalid_argument &) {
+            res = false;
+        }
     } else if (std::holds_alternative<int>(appStateValueTo)) {
         appStateValueType = "int";
         try {
@@ -556,6 +666,8 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
 bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
     if (std::holds_alternative<std::string>(appStateValueFrom)) {
         stringTo = std::get<std::string>(appStateValueFrom);
+    } else if (std::holds_alternative<bool>(appStateValueFrom)) {
+        stringTo = std::to_string(static_cast<int>(std::get<bool>(appStateValueFrom)));
     } else if (std::holds_alternative<int>(appStateValueFrom)) {
         stringTo = std::to_string(std::get<int>(appStateValueFrom));
     } else if (std::holds_alternative<LogUploadState>(appStateValueFrom)) {
@@ -567,33 +679,6 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     }
 
     return true;
-}
-
-std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
-    switch (appStateValue) {
-        case AppStateKey::LastServerSelfRestartDate:
-            return "LastServerSelfRestartDate";
-        case AppStateKey::LastClientSelfRestartDate:
-            return "LastClientSelfRestartDate";
-        case AppStateKey::LastSuccessfulLogUploadDate:
-            return "LastSuccessfulLogUploadDate";
-        case AppStateKey::LastLogUploadArchivePath:
-            return "LastLogUploadArchivePath";
-        case AppStateKey::LogUploadState:
-            return "LogUploadState";
-        case AppStateKey::LogUploadPercent:
-            return "LogUploadPercent";
-        case AppStateKey::LogUploadToken:
-            return "LogUploadToken";
-        case AppStateKey::AppUid:
-            return "AppUid";
-        case AppStateKey::NoUpdate:
-            return "NoUpdate";
-        case AppStateKey::Unknown:
-            return "Unknown";
-        default:
-            return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";
-    }
 }
 
 bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName,
@@ -1052,11 +1137,16 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 }
 
 SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
+    SyncPath tmpDir;
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
+        return {};
+    }
+
     using namespace KDC::event_dump_files;
-    auto sigFilePath =
-            std::filesystem::temp_directory_path() /
-            (appType == AppType::Server ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
-                                        : (signalCategory == SignalCategory::Crash ? clientCrashFileName : clientKillFileName));
+    auto sigFilePath = tmpDir / (appType == AppType::Server
+                                         ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
+                                         : (signalCategory == SignalCategory::Crash ? clientCrashFileName : clientKillFileName));
+
     return sigFilePath;
 }
 
@@ -1209,7 +1299,7 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
         signalType = KDC::fromInt<SignalType>(value);
 
         // Remove file
-        (void) std::filesystem::remove(sigFilePath);
+        (void) std::filesystem::remove(sigFilePath, ec);
     }
 }
 
@@ -1238,15 +1328,13 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
-                                  .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr.data()));
+                                  .arg(serviceStr, liteSyncExtBundleIdStr.data()));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
-                                  .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr.data()));
+                                  .arg(serviceStr, liteSyncExtBundleIdStr.data()));
         }
 
         query.exec();
@@ -1463,6 +1551,29 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
     }
 }
 
+std::shared_ptr<CommBLOB> CommonUtility::toCommBlob(const QImage &image) {
+    std::shared_ptr<CommBLOB> blob;
+    if (!image.isNull()) {
+        QByteArray avatarQBA;
+        QBuffer buffer(&avatarQBA);
+        if (buffer.open(QIODevice::WriteOnly) && image.save(&buffer, "PNG")) {
+            buffer.close();
+            blob = std::make_shared<CommBLOB>(avatarQBA.begin(), avatarQBA.end());
+        }
+    }
+    return blob;
+}
+
+QImage CommonUtility::toQImage(const std::shared_ptr<CommBLOB> blob) {
+    QImage image;
+    if (blob) {
+        QByteArray avatarQBA;
+        (void) std::copy(blob->begin(), blob->end(), std::back_inserter(avatarQBA));
+        (void) image.loadFromData(avatarQBA);
+    }
+    return image;
+}
+
 bool CommonUtility::modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2) {
     // Resolution for the modification time is 2s on FAT filesystems:
     // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
@@ -1470,6 +1581,15 @@ bool CommonUtility::modificationTimesAreEqual(const SyncPath &path, SyncTime tim
                                                                                : 0;
     const auto diff = time1 > time2 ? time1 - time2 : time2 - time1;
     return diff <= timeDifferenceThresholdForEdit;
+}
+
+SyncTime CommonUtility::getCurrentSyncTime() {
+    return getCurrentSyncTimeWithOffset(std::chrono::seconds(0));
+}
+
+SyncTime CommonUtility::getCurrentSyncTimeWithOffset(const std::chrono::seconds offset) {
+    return std::chrono::duration_cast<std::chrono::seconds>((std::chrono::system_clock::now() + offset).time_since_epoch())
+            .count();
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
@@ -1545,18 +1665,33 @@ bool CommonUtility::isLinux() {
 #endif
 }
 
-ExitInfo CommonUtility::deviceTempDirectoryPath(SyncPath &directoryPath) noexcept {
+ExitInfo CommonUtility::tempDirectoryPath(SyncPath &directoryPath) noexcept {
     // Warning: never log anything in this method. If the logger is not set, the app will crash.
+    directoryPath = SyncPath();
+
     std::error_code ec;
     if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
         directoryPath = SyncPath(value);
+
         (void) std::filesystem::create_directories(directoryPath, ec);
+        if (ec.value()) return stdErrorToExitInfo(ec);
     } else {
-        directoryPath =
-                std::filesystem::temp_directory_path(ec); // The std::filesystem implementation returns an empty path on error.
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        directoryPath = std::filesystem::temp_directory_path(ec);
+        if (ec.value()) return stdErrorToExitInfo(ec);
+#else
+        if (const auto value = CommonUtility::envVarValue("XDG_RUNTIME_DIR"); !value.empty()) {
+            directoryPath = SyncPath(value);
+        } else {
+            // Fallback (not user-private)
+            // Docker containers etc.
+            directoryPath = std::filesystem::temp_directory_path(ec);
+            if (ec.value()) return stdErrorToExitInfo(ec);
+        }
+#endif
     }
 
-    return stdErrorToExitInfo(ec);
+    return ExitCode::Ok;
 }
 
 ExitInfo CommonUtility::stdErrorToExitInfo(const int64_t error) noexcept {

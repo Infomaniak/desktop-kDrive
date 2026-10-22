@@ -38,8 +38,8 @@ public struct UtilityJobs: Sendable {
         return decodedMessage.body.bestMode
     }
 
-    public func getGoodPathForNewSynchro(basePath: String) async throws -> String {
-        let query = UtilityGoodPathNewSyncQuery(basePath: basePath)
+    public func getGoodPathForNewSynchro(driveName: String) async throws -> String {
+        let query = UtilityGoodPathNewSyncQuery(driveName: driveName)
         let request = await RequestMessage<UtilityGoodPathNewSyncQuery>(
             num: RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC,
             body: query

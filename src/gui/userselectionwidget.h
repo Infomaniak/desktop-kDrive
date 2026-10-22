@@ -19,7 +19,7 @@
 #pragma once
 
 #include "gui/menuwidget.h"
-#include "libcommon/info/userinfo.h"
+#include "libcommon/data/user.h"
 #include "libcommon/theme/theme.h"
 
 #include <map>
@@ -46,7 +46,7 @@ class UserSelectionWidget : public QPushButton {
         QSize sizeHint() const override;
 
         void clear();
-        void addOrUpdateUser(UserDbId userDbId, const UserInfo &userInfo);
+        void addOrUpdateUser(UserDbId userDbId, const User &user);
         void selectUser(UserDbId userDbId);
 
     signals:
@@ -57,12 +57,12 @@ class UserSelectionWidget : public QPushButton {
         QSize _downIconSize;
         QColor _downIconColor;
         QSize _menuRightIconSize;
-        std::map<UserDbId, UserInfo> _userMap;
+        std::map<UserDbId, User> _userMap;
         UserDbId _currentUserDbId{0};
         QLabel *_userIconLabel{nullptr};
         QLabel *_downIconLabel{nullptr};
 
-        void addMenuItem(MenuWidget *menu, UserInfo &userInfo, bool current);
+        void addMenuItem(MenuWidget *menu, const User &userInfo, bool current);
 
         inline QSize downIconSize() const { return _downIconSize; }
         inline void setDownIconSize(QSize size) {

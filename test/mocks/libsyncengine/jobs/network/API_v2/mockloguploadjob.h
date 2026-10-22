@@ -65,5 +65,11 @@ class MockLogUploadJob : public LogUploadJob {
         std::function<ExitInfo(SyncPath &generatedArchivePath)> _archive;
         std::function<ExitInfo(const SyncPath &archivePath)> _upload;
         std::function<void()> _finalize;
+
+#if defined(KD_MACOS)
+        void extractExtensionsLog() const override {
+            // Do nothing in the mock since this can take a long time
+        }
+#endif
 };
 } // namespace KDC

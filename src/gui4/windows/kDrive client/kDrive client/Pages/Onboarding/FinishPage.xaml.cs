@@ -34,9 +34,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         public AppModel ViewModel { get { return _viewModel; } }
         public FinishPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to FinishPage - Initializing FinishPage components");
+            Logger.LogInfo("Navigated to FinishPage - Initializing FinishPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "FinishPage components initialized");
+            Logger.LogDebug("FinishPage components initialized");
         }
         protected async override void OnNavigatedTo(NavigationEventArgs e)
         {

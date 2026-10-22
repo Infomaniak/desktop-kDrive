@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         {
             if (Error.Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                Logger.LogError("Error.Sync is null");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }

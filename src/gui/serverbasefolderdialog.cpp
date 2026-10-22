@@ -184,7 +184,7 @@ void ServerBaseFolderDialog::onContinueButtonTriggered(bool checked) {
             continue;
         }
 
-        QString currentFolderPath = remotePathTrailingSlash(syncInfoMapIt.second.targetPath());
+        QString currentFolderPath = remotePathTrailingSlash(Path2QStr(syncInfoMapIt.second.targetPath()));
 
         if (QDir::cleanPath(folderPath) == QDir::cleanPath(currentFolderPath)) {
             warnStrings.append(tr("This folder is already being synced."));

@@ -20,7 +20,7 @@
 #include "..\Common\pipeclient.h"
 
 #include <guiddef.h>
-#include <winrt\Windows.Storage.Provider.h>
+#include <winrt/Windows.Storage.Provider.h>
 
 namespace winrt {
 using namespace winrt::Windows::Storage;
@@ -38,7 +38,6 @@ IFACEMETHODIMP ExplorerCommandHandler::GetTitle(IShellItemArray *psiItemArray, L
 
 IFACEMETHODIMP ExplorerCommandHandler::GetState(IShellItemArray *psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE *pCmdState) {
     if (!_contextMenuInfo._menuItem._enabled) {
-        // Following Windows11 update, we need to make sure it is really disabled
         loadCommandItems(psiItemArray);
     }
     *pCmdState = _contextMenuInfo._menuItem._enabled ? ECS_ENABLED : ECS_DISABLED;
@@ -128,7 +127,7 @@ ExplorerCommandHandler::ExplorerCommandHandler(const MenuItem *menuItem) {
 }
 
 void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
-    if (_contextMenuInfo._subMenuItems.empty()) {
+    if (!_contextMenuInfo._loaded) {
         // Make file list
         std::wstring files;
         DWORD dwNumItems;
@@ -185,7 +184,7 @@ void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
             return;
         }
 
-        do {
+        while (!response.empty()) {
             // Read next menu item info
             std::wstring commandName;
             if (!Utilities::readNextValue(response, commandName)) {
@@ -207,20 +206,20 @@ void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
             MenuItem menuItem{false, title, L"", true /*enabled*/,
                               commandName}; // enabled flag not supported by new Windows 11 menu
             _contextMenuInfo._subMenuItems.push_back(menuItem);
-        } while (!response.empty());
+        }
 
         GetModuleFileNameW(nullptr, _contextMenuInfo._menuItem._iconPath, MAX_FULL_PATH);
         _contextMenuInfo._menuItem._enabled = _contextMenuInfo._subMenuItems.size() > 0;
+        _contextMenuInfo._loaded = true;
     }
 }
 
 HRESULT ExplorerCommandHandlerEnumerator::createCommandFromCommandItem(const MenuItem *menuItem,
-                                                                       IExplorerCommand **ppExplorerCommand) {
-    ExplorerCommandHandler *pCommand = new (std::nothrow) ExplorerCommandHandler(menuItem);
+                                                                       IExplorerCommand **ppExplorerCommand) const {
+    const auto pCommand = winrt::make_self<ExplorerCommandHandler>(menuItem);
     HRESULT hr = pCommand ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr)) {
         hr = pCommand->QueryInterface(IID_PPV_ARGS(ppExplorerCommand));
-        pCommand->Release();
     }
     return hr;
 }

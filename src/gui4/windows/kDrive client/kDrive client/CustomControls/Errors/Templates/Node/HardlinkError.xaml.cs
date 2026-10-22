@@ -24,7 +24,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        CancelTypes = new[] { CancelType.Hardlink }
+        ExitCodes = new[] { ExitCode.SystemError},
+        ExitCauses = new[] { ExitCause.HardlinkNotSupported }
     )]
     public sealed partial class HardlinkError : UserControl
     {

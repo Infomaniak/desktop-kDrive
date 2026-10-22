@@ -112,10 +112,24 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _getSubFolderQueue = new RequestQueue(_commClient, 5);
         }
 
-        private void OnConnectionLost(object? sender, EventArgs e)
+        private void OnConnectionLost(object? sender, ConnectionLostArgs e)
         {
-            Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
-            App.ExitApplication();
+            if (e.Reason == ConnectionLostArgs.ConnectionLostReason.ServerDisconnected)
+            {
+                Logger.LogFatal("Connection to server lost, this application will close.");
+                App.ExitApplication();
+            }
+            else if (e.Reason == ConnectionLostArgs.ConnectionLostReason.ServerUnreachable)
+            {
+                Logger.LogInfo("Connection to server lost due to server being unreachable. Starting it");
+                App.StartServer();
+                App.ExitApplication();
+            }
+            else
+            {
+                Logger.LogError("Connection to server lost due to unknown reason.");
+                App.ExitApplication();
+            }
         }
 
         public async Task<bool> Init(CancellationToken cancellationToken)
@@ -128,7 +142,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             if (data.Params is null || !data.Params.ContainsKey(key))
             {
-                Logger.Log(Logger.Level.Error, $"{callerName}: {key} not found in response.");
+                Logger.LogError($"{callerName}: {key} not found in response.",
+                    "ServerCommService: Required response parameter missing");
                 return false;
             }
             return true;
@@ -138,25 +153,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.Log(Logger.Level.Info, $"Job cancelled at {callerName}.");
+                Logger.LogInfo($"Job cancelled at {callerName}.");
                 return false;
             }
 
             if (data is null)
             {
-                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName}, CommData is null.");
+                Logger.LogError($"Job result check failed at {callerName}, CommData is null.");
                 return false;
             }
 
             if (data.Params is null)
             {
-                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName}, Params is null.");
+                Logger.LogError($"Job result check failed at {callerName}, Params is null.");
                 return false;
             }
 
             if (data.Code != ExitCode.Ok)
             {
-                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName}, exit code: {data.Code}, exit cause: {data.Cause}.");
+                Logger.LogError($"Job result check failed at {callerName}, exit code: {data.Code}, exit cause: {data.Cause}.");
                 return false;
             }
             return true;
@@ -168,7 +183,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, [], cancellationToken);
             if (data.Params is null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbIds} not found in response.");
+                Logger.LogError($"{JsonKeys.UserDbIds} not found in response.",
+                    "ServerCommService: User database IDs missing from response");
                 return null;
             }
             return data.Params[JsonKeys.UserDbIds].Deserialize<List<DbId>>();
@@ -197,7 +213,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse UserDbId from response: {ex.Message}");
+                Logger.LogError($"Failed to parse UserDbId from response: {ex.Message}",
+                    "ServerCommService: Failed to parse user database ID");
                 return null;
             }
 
@@ -211,13 +228,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     user = _viewModel.Users.FirstOrDefault(u => u?.DbId == userDbId, null);
                     if (user != null)
                     {
-                        Logger.Log(Logger.Level.Info, $"AddOrRelogUser: User with DbId {userDbId} already exists in the application.");
+                        Logger.LogInfo($"AddOrRelogUser: User with DbId {userDbId} already exists in the application.");
                         return;
                     }
                     await Task.Delay(100, cancellationToken);
                     --maxRetries;
                 } while (!cancellationToken.IsCancellationRequested && maxRetries > 0);
-                Logger.Log(Logger.Level.Error, $"AddOrRelogUser: Timeout waiting for user with DbId {userDbId} to be added to the application.");
+                Logger.LogError($"AddOrRelogUser: Timeout waiting for user with DbId {userDbId} to be added to the application.",
+                    "ServerCommService: Timed out waiting for user addition");
             }).ConfigureAwait(false);
             return user;
         }
@@ -240,7 +258,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<UserInfo>? userInfos = data.Params[JsonKeys.UserInfoList].Deserialize<List<UserInfo>>(options);
             if (userInfos is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to deserialize UserInfoList.");
+                Logger.LogError("Failed to deserialize UserInfoList.");
                 return false;
             }
 
@@ -249,7 +267,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (userInfo.DbId is null)
                 {
-                    Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
+                    Logger.LogError("userInfo.DbId is null.");
                     continue;
                 }
                 await AddOrUpdateUserInModel(userInfo).ConfigureAwait(false);
@@ -261,7 +279,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 var usersToRemove = _viewModel.Users.Where(u => !userDbIds.Contains(u.DbId)).ToList();
                 _viewModel.Users.RemoveMany(usersToRemove);
-                Logger.Log(Logger.Level.Info, $"{usersToRemove.Count} users removed from the application.");
+                Logger.LogInfo($"{usersToRemove.Count} users removed from the application.");
             }).ConfigureAwait(false);
             return true;
         }
@@ -277,13 +295,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             // If the user is not found on the server, we assume it is already deleted and remove it from the model
             if (commData?.Code == ExitCode.DataError && commData?.Cause == ExitCause.DbEntryNotFound)
             {
-                Logger.Log(Logger.Level.Warning, $"User with DbId {userDbId} not found on server, assuming already deleted.");
+                Logger.LogWarning($"User with DbId {userDbId} not found on server, assuming already deleted.",
+                    "ServerCommService: User not found on server");
                 await Utility.RunOnUIThread(() =>
                 {
                     var userToRemove = _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId);
                     if (userToRemove is not null)
                         _viewModel.Users.Remove(userToRemove);
-                    Logger.Log(Logger.Level.Info, $"User with DbId {userDbId} removed.");
+                    Logger.LogInfo($"User with DbId {userDbId} removed.");
                 }).ConfigureAwait(false);
                 return true;
             }
@@ -308,7 +327,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<AccountInfo>? accountInfos = data.Params[JsonKeys.AccountInfoList].Deserialize<List<AccountInfo>>(options);
             if (accountInfos is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to deserialize AccountInfoList.");
+                Logger.LogError("Failed to deserialize AccountInfoList.");
                 return false;
             }
 
@@ -317,7 +336,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (accountInfo.DbId is null)
                 {
-                    Logger.Log(Logger.Level.Error, "accountInfo.DbId is null.");
+                    Logger.LogError("accountInfo.DbId is null.");
                     continue;
                 }
                 await AddOrUpdateAccountInModel(accountInfo).ConfigureAwait(false);
@@ -342,7 +361,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (parentUser != null)
                     {
                         parentUser.Accounts.Remove(account);
-                        Logger.Log(Logger.Level.Info, $"Account with DbId {account.DbId} removed from user DbId {parentUser.DbId}.");
+                        Logger.LogInfo($"Account with DbId {account.DbId} removed from user DbId {parentUser.DbId}.");
                     }
                 }
             }).ConfigureAwait(false);
@@ -367,7 +386,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<DriveInfo>? driveInfos = data.Params[JsonKeys.DriveInfoList].Deserialize<List<DriveInfo>>(options);
             if (driveInfos is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to deserialize DriveInfoList.");
+                Logger.LogError("Failed to deserialize DriveInfoList.");
                 return false;
             }
 
@@ -376,7 +395,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (driveInfo.DbId is null)
                 {
-                    Logger.Log(Logger.Level.Error, "driveInfo.DbId is null.");
+                    Logger.LogError("driveInfo.DbId is null.");
                     continue;
                 }
                 await AddOrUpdateDriveInModel(driveInfo).ConfigureAwait(false);
@@ -401,7 +420,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (parentAccount != null)
                     {
                         parentAccount.Drives.Remove(drive);
-                        Logger.Log(Logger.Level.Info, $"Drive with DbId {drive.DbId} removed from account DbId {parentAccount.DbId}.");
+                        Logger.LogInfo($"Drive with DbId {drive.DbId} removed from account DbId {parentAccount.DbId}.");
                     }
                 }
             }).ConfigureAwait(false);
@@ -430,7 +449,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<DriveAvailableInfo>? driveAvailableInfoList = data.Params[JsonKeys.DriveAvailableInfoList].Deserialize<List<DriveAvailableInfo>>(options);
             if (driveAvailableInfoList is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to deserialize DriveAvailableInfoList.");
+                Logger.LogError("Failed to deserialize DriveAvailableInfoList.");
                 return false;
             }
 
@@ -439,7 +458,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() => user = _viewModel.Users.FirstOrDefault<User>(u => u.DbId == userDbId));
             if (user is null)
             {
-                Logger.Log(Logger.Level.Error, $"User not found with dbID {userDbId}.");
+                Logger.LogError($"User not found with dbID {userDbId}.",
+                    "ServerCommService: User not found in model");
                 return false;
             }
 
@@ -516,7 +536,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<SyncInfo>? syncInfos = data.Params[JsonKeys.SyncInfoList].Deserialize<List<SyncInfo>>(options);
             if (syncInfos is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to deserialize SyncInfoList.");
+                Logger.LogError("Failed to deserialize SyncInfoList.");
                 return false;
             }
 
@@ -525,7 +545,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (syncInfo.DbId is null)
                 {
-                    Logger.Log(Logger.Level.Error, "syncInfo.DbId is null.");
+                    Logger.LogError("syncInfo.DbId is null.");
                     continue;
                 }
                 await AddOrUpdateSyncInModel(syncInfo).ConfigureAwait(false);
@@ -551,7 +571,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (parentDrive != null)
                     {
                         parentDrive.Syncs.Remove(sync);
-                        Logger.Log(Logger.Level.Info, $"Sync with DbId {sync.DbId} removed from drive DbId {parentDrive.DbId}.");
+                        Logger.LogInfo($"Sync with DbId {sync.DbId} removed from drive DbId {parentDrive.DbId}.");
                     }
                 }
             }).ConfigureAwait(false);
@@ -561,7 +581,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             if (newSync.Drive is null)
             {
-                Logger.Log(Logger.Level.Error, "NewSync Drive is null.");
+                Logger.LogError("NewSync Drive is null.");
                 return false;
             }
 
@@ -593,7 +613,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() => sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId));
             if (sync is null)
             {
-                Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
+                Logger.LogError($"Sync with DbId {syncDbId} not found in model.",
+                    "ServerCommService: Sync not found in model");
                 return false;
             }
 
@@ -603,7 +624,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 bool? supportsLiteSync = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
                 if (!supportsLiteSync.HasValue || !supportsLiteSync.Value)
                 {
-                    Logger.Log(Logger.Level.Warning, $"Cannot set sync DbId {syncDbId} to online mode, local path does not support it.");
+                    Logger.LogWarning($"Cannot set sync DbId {syncDbId} to online mode, local path does not support it.",
+                        "ServerCommService: Local path does not support online mode");
                     return false;
                 }
             }
@@ -632,13 +654,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             // If the sync is not found on the server, we assume it is already deleted and remove it from the model
             if (commData?.Code == ExitCode.DataError && commData?.Cause == ExitCause.DbEntryNotFound)
             {
-                Logger.Log(Logger.Level.Info, $"Sync with DbId {syncDbId} not found on server, assuming already deleted.");
+                Logger.LogInfo($"Sync with DbId {syncDbId} not found on server, assuming already deleted.");
                 await Utility.RunOnUIThread(() =>
                 {
                     var syncToRemove = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
                     if (syncToRemove is not null)
                         syncToRemove.Drive.Syncs.Remove(syncToRemove);
-                    Logger.Log(Logger.Level.Info, $"Sync with DbId {syncDbId} removed.");
+                    Logger.LogInfo($"Sync with DbId {syncDbId} removed.");
                 }).ConfigureAwait(false);
                 return true;
             }
@@ -656,7 +678,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() => sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId));
             if (sync is null)
             {
-                Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
+                Logger.LogError($"Sync with DbId {syncDbId} not found in model.",
+                    "ServerCommService: Sync not found in model");
                 return false;
             }
             var previousStatus = sync.SyncStatus;
@@ -682,7 +705,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() => sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId));
             if (sync is null)
             {
-                Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
+                Logger.LogError($"Sync with DbId {syncDbId} not found in model.",
+                    "ServerCommService: Sync not found in model");
                 return false;
             }
             var previousStatus = sync.SyncStatus;
@@ -718,18 +742,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             VirtualFileMode? bestMode = (VirtualFileMode?)(data.Params[JsonKeys.BestMode]?.GetValue<int>());
             if (!bestMode.HasValue)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.BestMode} from response: {data.Params}");
+                Logger.LogError($"Failed to parse {JsonKeys.BestMode} from response: {data.Params}",
+                    "ServerCommService: Failed to parse best virtual file mode");
                 return null;
             }
 
             return bestMode == VirtualFileMode.Win;
         }
 
-        public async Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
+        public async Task<string?> GetGoodPathForNewSync(IDrive? drive, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
-                [JsonKeys.BasePath] = Utility.ToBase64String(desiredPath)
+                [JsonKeys.DriveName] = Utility.ToBase64String(drive?.Name)
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken).ConfigureAwait(false);
@@ -750,7 +775,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (result is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.GoodPath} from response: {data.Params}");
+                Logger.LogError($"Failed to deserialize {JsonKeys.GoodPath} from response: {data.Params}",
+                    "ServerCommService: Failed to deserialize recommended sync path");
                 return null;
             }
 
@@ -774,33 +800,41 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             bool? result = data.Params[JsonKeys.IsValid]?.GetValue<bool>();
             if (result is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.IsValid} from response: {data.Params}");
+                Logger.LogError($"Failed to parse {JsonKeys.IsValid} from response: {data.Params}",
+                    "ServerCommService: Failed to parse path validity");
                 return null;
             }
 
             return result;
         }
 
-        public async Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken)
+        public async Task<SearchItemResult> SearchItem(Sync? sync, string searchString, string cursor, CancellationToken cancellationToken)
         {
             if (sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Sync is null.");
-                return null;
+                Logger.LogError("Sync is null.");
+                return SearchItemResult.Failed(ExitCode.DataError);
             }
 
             var parms = new JsonObject
             {
                 [JsonKeys.SyncDbId] = sync.DbId,
-                [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
+                [JsonKeys.SearchString] = Utility.ToBase64String(searchString),
+                [JsonKeys.Cursor] = Utility.ToBase64String(cursor)
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_SEARCH, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, cancellationToken))
-                return null;
+                return SearchItemResult.Failed(data.Code);
 
-            if (!HasRequiredParam(data, JsonKeys.SearchInfoList))
-                return null;
+            if (!HasRequiredParam(data, JsonKeys.SearchInfoList) || !HasRequiredParam(data, JsonKeys.Cursor))
+                return SearchItemResult.Failed(ExitCode.DataError);
+
+            if (data.Params[JsonKeys.HasMore] is not JsonValue hasMoreValue || !hasMoreValue.TryGetValue<bool>(out bool hasMore))
+            {
+                Logger.LogError("Missing or invalid hasMore in search response.");
+                return SearchItemResult.Failed(ExitCode.DataError);
+            }
 
             var options = new JsonSerializerOptions
             {
@@ -809,11 +843,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
             List<SearchInfo>? resultInfos = data.Params[JsonKeys.SearchInfoList]?.Deserialize<List<SearchInfo>>(options);
+            string resultCursor = Utility.FromBase64String(data.Params[JsonKeys.Cursor]?.GetValue<string>() ?? "") ?? "";
 
             if (resultInfos is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize SearchInfo list from ${data.Params[JsonKeys.SearchInfoList]}.");
-                return null;
+                Logger.LogError($"Failed to deserialize SearchInfo list from ${data.Params[JsonKeys.SearchInfoList]}.",
+                    "ServerCommService: Failed to deserialize search results");
+                return SearchItemResult.Failed(ExitCode.DataError);
             }
 
             var resultItems = new List<SearchItem>();
@@ -822,7 +858,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (typeof(SearchInfo).GetProperties().Any(p => p.GetValue(item) is null))
                 {
-                    Logger.Log(Logger.Level.Error, $"SearchInfo contains null properties for item with NodeId {item.Id}. Skipping this item.");
+                    Logger.LogError($"SearchInfo contains null properties for item with NodeId {item.Id}. Skipping this item.",
+                        "ServerCommService: Search result contains null properties");
                     continue;
                 }
 
@@ -837,7 +874,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     item.IsAvailableLocally!.Value
                 ));
             }
-            return resultItems;
+
+            return SearchItemResult.Success(resultItems, resultCursor, hasMore);
         }
         public async Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken)
         {
@@ -856,7 +894,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             UInt64? size = data.Params[JsonKeys.Size]?.GetValue<UInt64>();
             if (!size.HasValue)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.Size} from response: {data.Params}");
+                Logger.LogError($"Failed to parse {JsonKeys.Size} from response: {data.Params}",
+                    "ServerCommService: Failed to parse offline files size");
                 return null;
             }
             return size;
@@ -887,7 +926,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<NodeInfo>? nodeList = data.Params[JsonKeys.NodeSubFolderInfoList].Deserialize<List<NodeInfo>>(options);
             if (nodeList is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeList from ${data.Params[JsonKeys.NodeSubFolderInfoList]}.");
+                Logger.LogError($"Failed to deserialize nodeList from ${data.Params[JsonKeys.NodeSubFolderInfoList]}.",
+                    "ServerCommService: Failed to deserialize node list");
                 return null;
             }
 
@@ -898,6 +938,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             return nodes;
         }
+
         public async Task<GetNodeInfoResult> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -909,10 +950,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_INFO, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, cancellationToken))
-                return new GetNodeInfoResult(data.Cause, null);
+                return new GetNodeInfoResult(data.Code, data.Cause, null);
 
             if (!HasRequiredParam(data, JsonKeys.NodeInfo))
-                return new GetNodeInfoResult(data.Cause, null);
+                return new GetNodeInfoResult(data.Code, data.Cause, null);
 
             var options = new JsonSerializerOptions
             {
@@ -922,10 +963,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             NodeInfo? nodeInfo = data.Params[JsonKeys.NodeInfo].Deserialize<NodeInfo>(options);
             if (nodeInfo is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.");
-                return new GetNodeInfoResult(data.Cause, null);
+                Logger.LogError($"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.",
+                    "ServerCommService: Failed to deserialize node info");
+                return new GetNodeInfoResult(data.Code, data.Cause, null);
             }
-            return new GetNodeInfoResult(data.Cause, new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false));
+            return new GetNodeInfoResult(data.Code, data.Cause, new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false));
         }
 
         private readonly RequestQueue _getFolderSizeQueue;
@@ -947,7 +989,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             Int64? folderSize = data.Params[JsonKeys.FolderSize]?.GetValue<Int64>();
             if (!folderSize.HasValue)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.FolderSize} from response: {data.Params}");
+                Logger.LogError($"Failed to parse {JsonKeys.FolderSize} from response: {data.Params}",
+                    "ServerCommService: Failed to parse folder size");
                 return null;
             }
 
@@ -975,7 +1018,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<NodeId>? result = data.Params[JsonKeys.NodeIdList].Deserialize<List<NodeId>>(options);
             if (result is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.NodeIdList} from response: {data.Params}");
+                Logger.LogError($"Failed to parse {JsonKeys.NodeIdList} from response: {data.Params}",
+                    "ServerCommService: Failed to parse excluded node IDs");
                 return null;
             }
             return result;
@@ -1017,7 +1061,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             NodeId? nodeId = data.Params[JsonKeys.NodeId].Deserialize<NodeId>(options);
             if (string.IsNullOrEmpty(nodeId))
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.NodeId} from response: {data.Params}");
+                Logger.LogError($"Failed to deserialize {JsonKeys.NodeId} from response: {data.Params}",
+                    "ServerCommService: Failed to deserialize created node ID");
                 return null;
             }
 
@@ -1043,7 +1088,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             string? linkStr = data.Params[JsonKeys.LinkUrl].Deserialize<string>(options);
             if (linkStr is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize {JsonKeys.LinkUrl} from response: {data.Params}");
+                Logger.LogError($"Failed to deserialize {JsonKeys.LinkUrl} from response: {data.Params}",
+                    "ServerCommService: Failed to deserialize public link URL");
                 return null;
             }
 
@@ -1053,7 +1099,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (UriFormatException)
             {
-                Logger.Log(Logger.Level.Error, $"Invalid URI format received: {linkStr}");
+                Logger.LogError($"Invalid URI format received: {linkStr}",
+                    "ServerCommService: Invalid public link URI");
                 return null;
             }
         }
@@ -1083,7 +1130,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             NodeConflictInfo? nodeVersionInfo = data.Params[JsonKeys.NodeConflictInfo].Deserialize<NodeConflictInfo>(options);
             if (nodeVersionInfo is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeVersionInfo from {data.Params[JsonKeys.NodeConflictInfo]}.");
+                Logger.LogError($"Failed to deserialize nodeVersionInfo from {data.Params[JsonKeys.NodeConflictInfo]}.",
+                    "ServerCommService: Failed to deserialize node conflict info");
                 return null;
             }
 
@@ -1101,7 +1149,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var availableUpdate = _viewModel.Settings?.UpdateManager?.AvailableUpdate;
             if (availableUpdate is null)
             {
-                Logger.Log(Logger.Level.Warning, "SkipVersion called but no available update.");
+                Logger.LogWarning("SkipVersion called but no available update.");
                 return false;
             }
 
@@ -1130,7 +1178,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 if (updateState is null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.UpdateState} from response: {data.Params}");
+                    Logger.LogError($"Failed to parse {JsonKeys.UpdateState} from response: {data.Params}",
+                        "ServerCommService: Failed to parse update state");
                     return false;
                 }
             }
@@ -1193,7 +1242,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             AppVersion? versionInfo = data2.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
             if (versionInfo is null || versionInfo.Tag == "")
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize VersionInfo from ${data2.Params[JsonKeys.VersionInfo]}.");
+                Logger.LogError($"Failed to deserialize VersionInfo from ${data2.Params[JsonKeys.VersionInfo]}.",
+                    "ServerCommService: Failed to deserialize version info");
                 return false;
             }
 
@@ -1238,7 +1288,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             ParmsInfo? parametersInfo = data.Params[JsonKeys.ParmsInfo].Deserialize<ParmsInfo>(options);
             if (parametersInfo is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
+                Logger.LogError($"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.",
+                    "ServerCommService: Failed to deserialize settings");
                 return false;
             }
             CommStruct.ConversionHelper.CopyToSettings(parametersInfo, _viewModel.Settings);
@@ -1309,7 +1360,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (parms[JsonKeys.ParmsInfo] is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to serialize ParmsInfo for saving settings.");
+                Logger.LogError("Failed to serialize ParmsInfo for saving settings.");
                 return false;
             }
 
@@ -1345,7 +1396,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 List<ExclusionTemplateInfo>? exclusionTemplateInfos = data.Params[JsonKeys.ExclusionTemplatesList].Deserialize<List<ExclusionTemplateInfo>>(options);
                 if (exclusionTemplateInfos is null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to deserialize ExclusionTemplatesList from ${data.Params[JsonKeys.ExclusionTemplatesList]}.");
+                    Logger.LogError($"Failed to deserialize ExclusionTemplatesList from ${data.Params[JsonKeys.ExclusionTemplatesList]}.",
+                        "ServerCommService: Failed to deserialize exclusion templates");
                     return null;
                 }
                 foreach (var info in exclusionTemplateInfos)
@@ -1379,6 +1431,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (!HasRequiredParam(data, JsonKeys.ErrorInfoList))
                 return false;
 
+            if (data.Params[JsonKeys.HasMore] is not JsonValue hasMoreValue || !hasMoreValue.TryGetValue<bool>(out bool hasMore))
+            {
+                Logger.LogError("Missing or invalid hasMore in error list response.");
+                return false;
+            }
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -1388,12 +1446,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<ErrorInfo>? errorInfos = data.Params[JsonKeys.ErrorInfoList].Deserialize<List<ErrorInfo>>(options);
             if (errorInfos is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfoList from ${data.Params[JsonKeys.ErrorInfoList]}.");
+                Logger.LogError($"Failed to deserialize errorInfoList from ${data.Params[JsonKeys.ErrorInfoList]}.",
+                    "ServerCommService: Failed to deserialize error list");
                 return false;
             }
             lock (_errorLock)
             {
-                _hasMoreError = errorInfos.Count == _maxErrorLimit;
+                _hasMoreError = hasMore;
                 _errorCount = errorInfos.Count;
             }
             await Utility.RunOnUIThread(async () =>
@@ -1417,16 +1476,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         }
                         else
                         {
-                            Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, {errorInfo}");
+                            Logger.LogError($"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, {errorInfo}");
                         }
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} has invalid SyncDbId {errorInfo.SyncDbId}, {errorInfo}.");
+                        Logger.LogError($"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.",
+                            "ServerCommService: Error references missing sync");
                     }
                 }
             });
-
             return true;
         }
 
@@ -1439,7 +1498,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_DELETE, parms, cancellationToken).ConfigureAwait(false);
             if (data?.Code == ExitCode.InvalidOperation)
             {
-                Logger.Log(Logger.Level.Info, $"Error with DbId {errorDbId} cannot be deleted as it is kept by the server.");
+                Logger.LogInfo($"Error with DbId {errorDbId} cannot be deleted as it is kept by the server.");
                 return false;
             }
             return CheckJobResultAndLogIfError(data, cancellationToken);
@@ -1477,6 +1536,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
+        public async Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.UserChoice] = (int)userChoice
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ACKNOWLEDGE_MANY_DELETES, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -1510,6 +1580,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case SignalNum.SYNC_REMOVED:
                     await HandleSyncRemovedAsync(sender, args);
                     break;
+                case SignalNum.SYNC_NOTIFY_MANY_DELETES:
+                    await HandleSyncNotifyManyDeletesAsync(sender, args);
+                    break;
                 case SignalNum.UPDATER_SHOW_DIALOG:
                     await HandleUpdaterShowDialog(sender, args);
                     break;
@@ -1541,7 +1614,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await HandleUtilityShowSettings(sender, args);
                     break;
                 default:
-                    Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
+                    Logger.LogWarning($"Unhandled signal received: {args.SignalNum}",
+                        "ServerCommService: Unhandled signal received");
                     break;
             }
         }
@@ -1552,7 +1626,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.UserInfo))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserInfo} not found in parameters.");
+                Logger.LogError($"{JsonKeys.UserInfo} not found in parameters.",
+                    "ServerCommService: User info missing from signal");
                 return;
             }
 
@@ -1564,12 +1639,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             UserInfo? newUserInfo = signalData[JsonKeys.UserInfo].Deserialize<UserInfo>(options);
             if (newUserInfo == null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize userInfo from ${signalData["userInfo"]}.");
+                Logger.LogError($"Failed to deserialize userInfo from ${signalData["userInfo"]}.",
+                    "ServerCommService: Failed to deserialize user info");
                 return;
             }
             if (newUserInfo?.DbId is null)
             {
-                Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
+                Logger.LogError("userInfo.DbId is null.");
                 return;
             }
             await AddOrUpdateUserInModel(newUserInfo);
@@ -1581,7 +1657,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.AccountInfo))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.AccountInfo} not found in parameters.");
+                Logger.LogError($"{JsonKeys.AccountInfo} not found in parameters.",
+                    "ServerCommService: Account info missing from signal");
                 return;
             }
 
@@ -1594,7 +1671,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (accountInfo.DbId is null)
             {
-                Logger.Log(Logger.Level.Error, "accountInfo.DbId is null.");
+                Logger.LogError("accountInfo.DbId is null.");
                 return;
             }
             await AddOrUpdateAccountInModel(accountInfo);
@@ -1605,7 +1682,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.AccountDbId))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.AccountDbId} not found in parameters.");
+                Logger.LogError($"{JsonKeys.AccountDbId} not found in parameters.",
+                    "ServerCommService: Account database ID missing from signal");
                 return;
             }
 
@@ -1613,7 +1691,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (accountDbId is null)
             {
-                Logger.Log(Logger.Level.Error, "accountDbId is null.");
+                Logger.LogError("accountDbId is null.");
                 return;
             }
 
@@ -1622,7 +1700,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Account? deletedAccount = _viewModel.Users.SelectMany(u => u.Accounts).FirstOrDefault(a => a.DbId == accountDbId);
                 if (deletedAccount == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Account with dbID {accountDbId} not found in the model.");
+                    Logger.LogError($"Account with dbID {accountDbId} not found in the model.");
                     return;
                 }
                 deletedAccount.User.Accounts.Remove(deletedAccount);
@@ -1634,7 +1712,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.DriveInfo))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveInfo} not found in parameters.");
+                Logger.LogError($"{JsonKeys.DriveInfo} not found in parameters.",
+                    "ServerCommService: Drive info missing from signal");
                 return;
             }
 
@@ -1648,7 +1727,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (driveInfo.DbId is null)
             {
-                Logger.Log(Logger.Level.Error, "driveInfo.DbId is null.");
+                Logger.LogError("driveInfo.DbId is null.");
                 return;
             }
             await AddOrUpdateDriveInModel(driveInfo);
@@ -1659,7 +1738,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.DriveDbId))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveDbId} not found in parameters.");
+                Logger.LogError($"{JsonKeys.DriveDbId} not found in parameters.",
+                    "ServerCommService: Drive database ID missing from signal");
                 return;
             }
 
@@ -1667,7 +1747,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (driveDbId is null)
             {
-                Logger.Log(Logger.Level.Error, "driveDbId is null.");
+                Logger.LogError("driveDbId is null.");
                 return;
             }
 
@@ -1676,7 +1756,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Drive? deletedDrive = _viewModel.AllDrives.FirstOrDefault(d => d.DbId == driveDbId);
                 if (deletedDrive == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Drive with dbID {driveDbId} not found in the model.");
+                    Logger.LogError($"Drive with dbID {driveDbId} not found in the model.");
                     return;
                 }
                 deletedDrive.Account.Drives.Remove(deletedDrive);
@@ -1689,7 +1769,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncInfo))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncInfo} not found in parameters.");
+                Logger.LogError($"{JsonKeys.SyncInfo} not found in parameters.",
+                    "ServerCommService: Sync info missing from signal");
                 return;
             }
 
@@ -1702,7 +1783,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (syncInfo.DbId is null)
             {
-                Logger.Log(Logger.Level.Error, "syncInfo.DbId is null.");
+                Logger.LogError("syncInfo.DbId is null.");
                 return;
             }
             await AddOrUpdateSyncInModel(syncInfo);
@@ -1717,7 +1798,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
+                Logger.LogError($"{JsonKeys.SyncDbId} not found in parameters.",
+                    "ServerCommService: Sync database ID missing from signal");
                 return;
             }
 
@@ -1725,7 +1807,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (syncDbID is null)
             {
-                Logger.Log(Logger.Level.Error, "syncDbID is null.");
+                Logger.LogError("syncDbID is null.");
                 return;
             }
 
@@ -1734,7 +1816,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Sync? deletedSync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID);
                 if (deletedSync == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
+                    Logger.LogError($"Sync with dbID {syncDbID} not found in the model.");
                     return;
                 }
                 deletedSync.Drive.Syncs.Remove(deletedSync);
@@ -1747,12 +1829,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
+                Logger.LogError($"{JsonKeys.SyncDbId} not found in parameters.",
+                    "ServerCommService: Sync database ID missing from signal");
                 return;
             }
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncStatus))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncStatus} not found in parameters.");
+                Logger.LogError($"{JsonKeys.SyncStatus} not found in parameters.",
+                    "ServerCommService: Sync status missing from signal");
                 return;
             }
 
@@ -1761,12 +1845,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (syncDbID is null)
             {
-                Logger.Log(Logger.Level.Error, "syncDbID is null.");
+                Logger.LogError("syncDbID is null.");
                 return;
             }
             if (syncStatus is null)
             {
-                Logger.Log(Logger.Level.Error, "syncStatus is null.");
+                Logger.LogError("syncStatus is null.");
                 return;
             }
 
@@ -1774,7 +1858,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() => updatedSync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID));
             if (updatedSync == null)
             {
-                Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
+                Logger.LogError($"Sync with dbID {syncDbID} not found in the model.",
+                    "ServerCommService: Sync not found in model");
                 return;
             }
             updatedSync.SyncStatus = syncStatus ?? SyncStatus.Undefined;
@@ -1787,19 +1872,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
+                Logger.LogError($"{JsonKeys.SyncDbId} not found in parameters.",
+                    "ServerCommService: Sync database ID missing from signal");
                 return;
             }
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncFileItemInfo))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncFileItemInfo} not found in parameters.");
+                Logger.LogError($"{JsonKeys.SyncFileItemInfo} not found in parameters.",
+                    "ServerCommService: Sync file item info missing from signal");
                 return;
             }
 
             DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
             if (syncDbID is null)
             {
-                Logger.Log(Logger.Level.Error, "syncDbID is null.");
+                Logger.LogError("syncDbID is null.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -1810,7 +1897,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             SyncFileItemInfo? fileItemInfo = signalData[JsonKeys.SyncFileItemInfo]?.Deserialize<SyncFileItemInfo>(options);
             if (fileItemInfo is null)
             {
-                Logger.Log(Logger.Level.Error, "fileItemInfo is null.");
+                Logger.LogError("fileItemInfo is null.");
                 return;
             }
 
@@ -1819,7 +1906,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID);
                 if (sync == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
+                    Logger.LogError($"Sync with dbID {syncDbID} not found in the model.");
                     return;
                 }
 
@@ -1840,7 +1927,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     // Ignore duplicate completion signals
                     if (existing.Status != SyncFileStatus.Syncing)
                     {
-                        Logger.Log(Logger.Level.Warning, $"Received completion for already finished item. OperationId: {existing.OperationId}, Existing: {existing.Status}, New: {fileItemInfo.Status}");
+                        Logger.LogWarning($"Received completion for already finished item. OperationId: {existing.OperationId}, Existing: {existing.Status}, New: {fileItemInfo.Status}",
+                            "ServerCommService: Completion received for already finished item");
                         return;
                     }
 
@@ -1848,7 +1936,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     CommStruct.ConversionHelper.CopyToSyncFileItem(fileItemInfo, existing);
                     existing.Timestamp = DateTime.Now;
 
-                    Logger.Log(Logger.Level.Extended, $"Updated item {existing.OperationId} to {existing.Status}");
+                    Logger.LogExtended($"Updated item {existing.OperationId} to {existing.Status}");
 
                     // Still syncing -> nothing more to do
                     if (existing.Status == SyncFileStatus.Syncing)
@@ -1886,7 +1974,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return false;
                 };
 
-                // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
+                // Remove any item with the same remote or local node id which is not syncing or done (ie errored)
                 var toBeRemoved = activities.Where(a => shouldBeRemoved(fileItemInfo, a)).ToList();
                 activities.RemoveMany(toBeRemoved);
 
@@ -1920,19 +2008,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.State) || !signalData.ContainsKey(JsonKeys.Percentage))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.State} or {JsonKeys.Percentage} not found in parameters ${signalData}.");
+                Logger.LogError($"{JsonKeys.State} or {JsonKeys.Percentage} not found in parameters ${signalData}.",
+                    "ServerCommService: Log upload progress parameters missing");
                 return Task.CompletedTask;
             }
             LogUploadState? state = signalData[JsonKeys.State]?.Deserialize<LogUploadState>();
             int? percentage = signalData[JsonKeys.Percentage]?.GetValue<int>();
             if (state is null)
             {
-                Logger.Log(Logger.Level.Error, "state is null.");
+                Logger.LogError("state is null.");
                 return Task.CompletedTask;
             }
             if (percentage is null)
             {
-                Logger.Log(Logger.Level.Error, "percentage is null.");
+                Logger.LogError("percentage is null.");
                 return Task.CompletedTask;
             }
             _viewModel.Settings.LogUploadManager.State = state ?? LogUploadState.Failed;
@@ -1946,7 +2035,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.UserDbId))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbId} not found in parameters.");
+                Logger.LogError($"{JsonKeys.UserDbId} not found in parameters.",
+                    "ServerCommService: User database ID missing from signal");
                 return;
             }
             DbId dbId = signalData[JsonKeys.UserDbId]?.GetValue<DbId>() ?? -1;
@@ -1955,7 +2045,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 User? user = _viewModel.Users.FirstOrDefault(u => u.DbId == dbId);
                 if (user == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"User with dbId {dbId} not found");
+                    Logger.LogError($"User with dbId {dbId} not found");
                     return;
                 }
                 _viewModel.Users.Remove(user);
@@ -1969,7 +2059,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.ErrorInfo))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.ErrorInfo} not found in parameters.");
+                Logger.LogError($"{JsonKeys.ErrorInfo} not found in parameters.",
+                    "ServerCommService: Error info missing from signal");
                 return;
             }
 
@@ -1982,7 +2073,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             ErrorInfo? errorInfo = signalData[JsonKeys.ErrorInfo]?.Deserialize<ErrorInfo>(options);
             if (errorInfo is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from {signalData[JsonKeys.ErrorInfo]}.");
+                Logger.LogError($"Failed to deserialize errorInfo from {signalData[JsonKeys.ErrorInfo]}.",
+                    "ServerCommService: Failed to deserialize error info");
                 return;
             }
             await Utility.RunOnUIThread(async () =>
@@ -2012,7 +2104,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, ErrorInfo: {signalData[JsonKeys.ErrorInfo] ?? "null"}");
+                    Logger.LogError($"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, ErrorInfo: {signalData[JsonKeys.ErrorInfo] ?? "null"}");
                 }
             });
         }
@@ -2028,11 +2120,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (!await RefreshErrors(CancellationToken.None).ConfigureAwait(false))
                 {
-                    Logger.Log(Logger.Level.Warning, "Failed to refresh errors"); // If the refresh fails, we must continue to at least remove the error in response to the signal
+                    Logger.LogWarning("Failed to refresh errors"); // If the refresh fails, we must continue to at least remove the error in response to the signal
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Info, "Errors refreshed successfully in response to error removed signal.");
+                    Logger.LogInfo("Errors refreshed successfully in response to error removed signal.");
                     return;
                 }
             }
@@ -2041,14 +2133,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.ErrorDbId))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.ErrorDbId} not found in parameters.");
+                Logger.LogError($"{JsonKeys.ErrorDbId} not found in parameters.",
+                    "ServerCommService: Error database ID missing from signal");
                 return;
             }
 
             DbId? errorDbId = signalData[JsonKeys.ErrorDbId]?.AsValue().GetValue<DbId>();
             if (errorDbId is null)
             {
-                Logger.Log(Logger.Level.Error, "errorDbId is null.");
+                Logger.LogError("errorDbId is null.");
                 return;
             }
             await Utility.RunOnUIThread(async () =>
@@ -2064,7 +2157,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.Title) || !signalData.ContainsKey(JsonKeys.Message))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.Title} or {JsonKeys.Message} not found in parameters.");
+                Logger.LogError($"{JsonKeys.Title} or {JsonKeys.Message} not found in parameters.",
+                    "ServerCommService: Notification title or message missing");
                 return Task.CompletedTask;
             }
             string? title = signalData[JsonKeys.Title]?.GetValue<string>();
@@ -2078,18 +2172,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (FormatException ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to decode title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                Logger.LogError($"Failed to decode title or message from base64. Title: {title}, Message: {message}. Exception: {ex}",
+                    "ServerCommService: Invalid base64 notification content");
                 return Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Unexpected error while decoding title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                Logger.LogError($"Unexpected error while decoding title or message from base64. Title: {title}, Message: {message}. Exception: {ex}",
+                    "ServerCommService: Unexpected notification decoding error");
                 return Task.CompletedTask;
             }
 
             if (title is null || message is null)
             {
-                Logger.Log(Logger.Level.Error, "title or message is null.");
+                Logger.LogError("title or message is null.");
                 return Task.CompletedTask;
             }
 
@@ -2097,9 +2193,53 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return Task.CompletedTask;
         }
 
+        public async Task HandleSyncNotifyManyDeletesAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData is null || !signalData.ContainsKey(JsonKeys.SyncDbId) || !signalData.ContainsKey(JsonKeys.NotificationType) || !signalData.ContainsKey(JsonKeys.NbFiles) || !signalData.ContainsKey(JsonKeys.FilesPaths))
+            {
+                Logger.LogError($"One or more required parameters are missing in signal data: {JsonKeys.SyncDbId}, {JsonKeys.NotificationType}, {JsonKeys.NbFiles}, {JsonKeys.FilesPaths}. Signal data: {signalData}",
+                    "ServerCommService: Missing parameters for SYNC_NOTIFY_MANY_DELETES signal");
+                return;
+            }
+
+            DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
+            TooManyDeletesNotificationType? notificationType = signalData[JsonKeys.NotificationType]?.Deserialize<TooManyDeletesNotificationType>();
+            Int32? nbFiles = signalData[JsonKeys.NbFiles]?.AsValue().GetValue<Int32>();
+            List<string>? filesPaths = null;
+            if (signalData[JsonKeys.FilesPaths]?.AsArray() is { } filesPathsArray)
+            {
+                filesPaths = new List<string>(filesPathsArray.Count);
+                foreach (var node in filesPathsArray)
+                {
+                    var decoded = Utility.FromBase64String(node!.GetValue<string>());
+                    if (!string.IsNullOrEmpty(decoded))
+                    {
+                        filesPaths.Add(decoded);
+                    }
+                }
+            }
+            if (syncDbID is null || notificationType is null || nbFiles is null || filesPaths is null)
+            {
+                Logger.LogError($"required parameter is null: syncDbID={syncDbID}, notificationType={notificationType}, nbFiles={nbFiles}, filesPaths.Count={filesPaths?.Count}",
+                    "ServerCommService: Null parameter for SYNC_NOTIFY_MANY_DELETES signal");
+                return;
+            }
+
+            await Utility.RunOnUIThread(() =>
+            {
+                _viewModel.ManyDeletesController.AddOrMergeManyDeletes(new ManyDeletesInfo(
+                    syncDbID.Value,
+                    notificationType.Value,
+                    nbFiles.Value,
+                    filesPaths
+                ));
+            });
+        }
+
         public async Task HandleUpdaterShowDialog(object? sender, SignalEventArgs args)
         {
-            Logger.Log(Logger.Level.Info, "Received UPDATER_SHOW_DIALOG signal - showing update window");
+            Logger.LogInfo("Received UPDATER_SHOW_DIALOG signal - showing update window");
             if (Application.Current is App app)
                 await Utility.RunOnUIThread(() => app.ShowUpdateWindow());
 
@@ -2108,14 +2248,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task HandleUtilityShowSynthesis(object? sender, SignalEventArgs args)
         {
-            Logger.Log(Logger.Level.Info, "Received UTILITY_SHOW_SYNTHESIS signal - bringing main window to foreground");
+            Logger.LogInfo("Received UTILITY_SHOW_SYNTHESIS signal - bringing main window to foreground");
             if (Application.Current is App app)
                 await Utility.RunOnUIThread(() => app.CreateWindow(App.CreateWindowOptions.Foreground));
         }
 
         public async Task HandleUtilityShowSettings(object? sender, SignalEventArgs args)
         {
-            Logger.Log(Logger.Level.Info, "Received UTILITY_SHOW_SETTINGS signal - bringing main window to foreground and navigating to settings");
+            Logger.LogInfo("Received UTILITY_SHOW_SETTINGS signal - bringing main window to foreground and navigating to settings");
             if (Application.Current is App app)
             {
                 await Utility.RunOnUIThread(() =>
@@ -2138,7 +2278,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (!userInfo.DbId.HasValue)
                 {
-                    Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
+                    Logger.LogError("userInfo.DbId is null.");
                     return;
                 }
                 DbId dbId = userInfo.DbId.Value;
@@ -2146,9 +2286,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 User? user = _viewModel.Users.FirstOrDefault(u => u?.DbId == dbId, null);
                 if (user is not null)
                 {
-                    Logger.Log(Logger.Level.Extended, $"User with DbId {dbId} already exists in the application, updating...");
+                    Logger.LogExtended($"User with DbId {dbId} already exists in the application, updating...");
                     ConversionHelper.CopyToUser(userInfo, user);
-                    Logger.Log(Logger.Level.Info, $"User with DbId {dbId} updated.");
+                    Logger.LogInfo($"User with DbId {dbId} updated.");
                 }
                 else
                 {
@@ -2157,7 +2297,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                     _viewModel.Users.Add(newUser);
 
-                    Logger.Log(Logger.Level.Info, $"New user added with DbId {newUser.DbId}.");
+                    Logger.LogInfo($"New user added with DbId {newUser.DbId}.");
                 }
             });
         }
@@ -2176,7 +2316,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                             continue;
                         }
                         ConversionHelper.CopyToAccount(accountInfo, account);
-                        Logger.Log(Logger.Level.Info, $"Account with DbId {accountInfo.DbId} updated.");
+                        Logger.LogInfo($"Account with DbId {accountInfo.DbId} updated.");
                         return Task.FromResult(true);
                     }
 
@@ -2186,14 +2326,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (parentUser == null)
                     {
                         // This might happen due to asynchronous signal processing
-                        Logger.Log(Logger.Level.Error, $"Parent user with DbId {userDbId} not found for account DbId {accountInfo.DbId}.");
+                        Logger.LogError($"Parent user with DbId {userDbId} not found for account DbId {accountInfo.DbId}.",
+                            "ServerCommService: Parent user not found for account");
                         return Task.FromResult(false);
                     }
 
                     var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
                     ConversionHelper.CopyToAccount(accountInfo, newAccount);
                     parentUser.Accounts.Add(newAccount);
-                    Logger.Log(Logger.Level.Info, $"New account added to user with DbId {userDbId}.");
+                    Logger.LogInfo($"New account added to user with DbId {userDbId}.");
                     return Task.FromResult(true);
                 });
             });
@@ -2215,7 +2356,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                             continue;
                         }
                         ConversionHelper.CopyToDrive(driveInfo, drive);
-                        Logger.Log(Logger.Level.Info, $"Drive with DbId {driveInfo.DbId} updated.");
+                        Logger.LogInfo($"Drive with DbId {driveInfo.DbId} updated.");
                         return Task.FromResult(true);
                     }
                     // Drive not found, add it to the correct account
@@ -2230,7 +2371,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (parentAccount == null)
                     {
                         // This might happen due to asynchronous signal processing
-                        Logger.Log(Logger.Level.Error, $"Parent account with DbId {accountDbId} not found for drive DbId {driveInfo.DbId}.");
+                        Logger.LogError($"Parent account with DbId {accountDbId} not found for drive DbId {driveInfo.DbId}.",
+                            "ServerCommService: Parent account not found for drive");
                         return Task.FromResult(false);
                     }
 
@@ -2239,7 +2381,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     parentAccount.Drives.Add(newDrive);
 
 
-                    Logger.Log(Logger.Level.Info, $"New drive added to account with DbId {accountDbId}.");
+                    Logger.LogInfo($"New drive added to account with DbId {accountDbId}.");
                     return Task.FromResult(true);
                 });
             });
@@ -2265,7 +2407,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                             continue;
                         }
                         ConversionHelper.CopyToSync(syncInfo, sync);
-                        Logger.Log(Logger.Level.Info, $"Sync with DbId {syncInfo.DbId} updated.");
+                        Logger.LogInfo($"Sync with DbId {syncInfo.DbId} updated.");
                         return Task.FromResult(true);
                     }
 
@@ -2275,7 +2417,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (parentDrive == null)
                     {
                         // This might happen due to asynchronous signal processing
-                        Logger.Log(Logger.Level.Error, $"Parent drive with DbId {driveDbId} not found for sync DbId {syncInfo.DbId}.");
+                        Logger.LogError($"Parent drive with DbId {driveDbId} not found for sync DbId {syncInfo.DbId}.",
+                            "ServerCommService: Parent drive not found for sync");
                         return Task.FromResult(false);
                     }
 
@@ -2283,7 +2426,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     ConversionHelper.CopyToSync(syncInfo, newSync);
                     parentDrive.Syncs.Add(newSync);
 
-                    Logger.Log(Logger.Level.Info, $"New sync added to drive with DbId {driveDbId}.");
+                    Logger.LogInfo($"New sync added to drive with DbId {driveDbId}.");
                     return Task.FromResult(true);
                 });
             });
@@ -2303,10 +2446,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (attempt < maxRetries)
                 {
                     await Task.Delay(delayMilliseconds);
-                    Logger.Log(Logger.Level.Info, $"AutoRetry: Attempt {attempt} failed for action in {callerName}, retrying after {delayMilliseconds}ms...");
+                    Logger.LogInfo($"AutoRetry: Attempt {attempt} failed for action in {callerName}, retrying after {delayMilliseconds}ms...");
                 }
             }
-            Logger.Log(Logger.Level.Error, $"AutoRetry: Failed to complete action in {callerName} after {maxRetries} attempts separated by {delayMilliseconds}ms.");
+            Logger.LogError($"AutoRetry: Failed to complete action in {callerName} after {maxRetries} attempts separated by {delayMilliseconds}ms.",
+                "ServerCommService: Retry attempts exhausted");
         }
     }
 }

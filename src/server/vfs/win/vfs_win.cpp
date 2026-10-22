@@ -18,6 +18,7 @@
 
 #include "vfs_win.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/handler.h"
 #include "version.h"
 #include "config.h"
 #include "libcommonserver/log/log.h"
@@ -51,7 +52,7 @@ VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
         return;
     }
 
-    starVfsWorkers();
+    startVfsWorkers();
 }
 
 void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
@@ -80,16 +81,43 @@ ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
 
     wchar_t clsid[39] = L"";
     unsigned long clsidSize = sizeof(clsid);
+    int64_t registeredAt = 0;
     if (vfsStart(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.userId).c_str(),
                  std::to_wstring(_vfsSetupParams.syncDbId).c_str(), _vfsSetupParams.localPath.filename().native().c_str(),
-                 _vfsSetupParams.localPath.lexically_normal().native().c_str(), clsid, &clsidSize) != S_OK) {
+                 _vfsSetupParams.localPath.lexically_normal().native().c_str(), clsid, &clsidSize, &registeredAt) != S_OK) {
         LOG_WARN(logger(), "Error in vfsStart: syncDbId=" << _vfsSetupParams.syncDbId);
         return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
     _vfsSetupParams.namespaceCLSID = CommonUtility::ws2s(std::wstring(clsid));
+    setRegisteredAt(registeredAt);
+    LOG_DEBUG(logger(), "Sync root registered at " << registeredAt << ": syncDbId=" << _vfsSetupParams.syncDbId);
+    if (registeredAt == 0) {
+        // The protection against the propagation of the placeholders deletions following a sync root re-registration is
+        // disabled for this start (see SyncPal::start).
+        LOG_WARN(logger(), "Unable to get the sync root registration time: syncDbId=" << _vfsSetupParams.syncDbId);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "VfsWin::startImpl",
+                                        "Unable to get the sync root registration time");
+    }
 
     return ExitCode::Ok;
+}
+
+bool VfsWin::isRegistered() const {
+    bool registered = true;
+    if (vfsIsRegistered(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.userId).c_str(),
+                        std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
+                        _vfsSetupParams.localPath.lexically_normal().native().c_str(), &registered) != S_OK) {
+        // Unable to know, don't block the sync on a transient error
+        LOGW_WARN(logger(), L"Error in vfsIsRegistered: " << Utility::formatSyncPath(_vfsSetupParams.localPath));
+        return true;
+    }
+
+    if (!registered) {
+        LOGW_WARN(logger(), L"Sync root is not registered anymore: " << Utility::formatSyncPath(_vfsSetupParams.localPath));
+    }
+
+    return registered;
 }
 
 void VfsWin::stopImpl(bool unregister) {
@@ -137,11 +165,21 @@ void VfsWin::hydrate(const SyncPath &pathStd) {
     _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
 }
 
-void VfsWin::cancelHydrate(const SyncPath &pathStd) {
+void VfsWin::cancelHydrate(const SyncPath &pathStd, const ExitInfo &exitInfo) {
     LOGW_DEBUG(logger(), L"cancelHydrate: " << Utility::formatSyncPath(pathStd));
     const QString path = SyncName2QStr(pathStd.native());
+
+    auto status = STATUS_UNSUCCESSFUL;
+    if (exitInfo.cause() == ExitCause::NotFound) {
+        status = STATUS_CLOUD_FILE_NOT_IN_SYNC;
+    } else if (exitInfo.code() == ExitCode::SyncPaused) {
+        status = STATUS_CLOUD_FILE_PROVIDER_NOT_RUNNING;
+    } else if (exitInfo.code() == ExitCode::NetworkError) {
+        status = STATUS_CLOUD_FILE_NETWORK_UNAVAILABLE;
+    }
+
     if (vfsCancelFetch(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
-                       QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
+                       QStr2Path(QDir::toNativeSeparators(path)).c_str(), status) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCancelFetch: " << Utility::formatSyncPath(QStr2Path(path)));
         return;
     }
@@ -174,6 +212,23 @@ ExitInfo VfsWin::setPlaceholderStatus(const SyncPath &path, bool syncOngoing) {
         return handleVfsError(path);
     }
     return ExitCode::Ok;
+}
+
+ExitInfo VfsWin::handleVfsWinError(const SyncPath &itemPath, int32_t errorCode, const std::source_location &location) const {
+    LOGW_WARN(logger(), L"VFS error: " << Utility::formatSyncPath(itemPath) << L" code=" << errorCode << L" from ("
+                                       << Str2SyncName(location.file_name()) << L":" << location.line() << L"["
+                                       << Str2SyncName(location.function_name()) << L"])");
+    switch (errorCode) {
+        case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
+            return {ExitCode::SystemError, ExitCause::NotFound, location};
+        case ERROR_ACCESS_DENIED:
+            return {ExitCode::SystemError, ExitCause::FileAccessError, location};
+        case ERROR_CLOUD_FILE_INCOMPATIBLE_HARDLINKS:
+            return {ExitCode::SystemError, ExitCause::HardlinkNotSupported, location};
+        default:
+            return handleVfsError(itemPath, location);
+    }
 }
 
 ExitInfo VfsWin::updateMetadata(const SyncPath &filePathStd, time_t creationTime, time_t modificationTime, int64_t size,
@@ -308,10 +363,16 @@ ExitInfo VfsWin::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
         return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
-    if (!isPlaceholder && (vfsConvertToPlaceHolder(CommonUtility::s2ws(item.localNodeId().value()).c_str(),
-                                                   fullPath.lexically_normal().native().c_str()) != S_OK)) {
-        LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath));
-        return handleVfsError(fullPath);
+    if (isPlaceholder) {
+        LOGW_DEBUG(logger(), L"Already a placeholder: " << Utility::formatSyncPath(fullPath));
+        return ExitCode::Ok;
+    }
+
+    if (int32_t res = vfsConvertToPlaceHolder(CommonUtility::s2ws(item.localNodeId().value()).c_str(),
+                                              fullPath.lexically_normal().native().c_str());
+        res != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath) << L" code=" << res);
+        return handleVfsWinError(fullPath, res);
     }
     return ExitCode::Ok;
 }
@@ -361,13 +422,14 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
             }
 
             // Convert to placeholder
-            {
-                if (vfsConvertToPlaceHolder(std::to_wstring(fileStat.inode).c_str(),
-                                            fullPath.lexically_normal().native().c_str()) != S_OK) {
-                    LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath));
-                    break;
-                }
+            if (int32_t res = vfsConvertToPlaceHolder(std::to_wstring(fileStat.inode).c_str(),
+                                                      fullPath.lexically_normal().native().c_str());
+                res != S_OK) {
+                LOGW_WARN(logger(),
+                          L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath) << L" code=" << res);
+                break;
             }
+
 
             if (tmpInfo.isDir()) {
                 convertDirContentToPlaceholder(tmpPath, isHydratedIn);
@@ -465,9 +527,11 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
         NodeId localNodeId = std::to_string(filestat.inode);
 
         // Convert to placeholder
-        if (vfsConvertToPlaceHolder(CommonUtility::s2ws(localNodeId).c_str(), absolutePathStd.native().c_str()) != S_OK) {
-            LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(absolutePathStd));
-            return handleVfsError(absolutePathStd);
+        if (int32_t res = vfsConvertToPlaceHolder(CommonUtility::s2ws(localNodeId).c_str(), absolutePathStd.native().c_str());
+            res != S_OK) {
+            LOGW_WARN(logger(),
+                      L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(absolutePathStd) << L" code=" << res);
+            return handleVfsWinError(absolutePathStd, res);
         }
     }
 
@@ -597,26 +661,8 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
         case SyncFileStatus::Ignored:
             exclude(fullPath);
             break;
-        case SyncFileStatus::Success: {
-            bool isDirectory = false;
-
-            if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
-                LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError));
-                return false;
-            }
-
-            if (!isDirectory) {
-                // File
-                bool isDehydrated = false;
-                if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
-                    LOGW_WARN(logger(),
-                              L"Error in isDehydratedPlaceholder: " << Utility::formatSyncPath(fullPath) << L" - " << exitInfo);
-                    return false;
-                }
-                VfsStatus vfsStatus = {.isHydrated = !isDehydrated, .progress = 100};
-                forceStatus(fullPath, vfsStatus);
-            }
-        } break;
+        case SyncFileStatus::Success:
+            break;
         case SyncFileStatus::Syncing: {
             bool isDirectory = false;
 
@@ -642,18 +688,20 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
 
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
-                _workerInfo[workerDehydration]._mutex.lock();
-                _workerInfo[workerDehydration]._queue.push_front(fullPath);
-                _workerInfo[workerDehydration]._mutex.unlock();
+                {
+                    QMutexLocker locker(&_workerInfo[workerDehydration]._mutex);
+                    _workerInfo[workerDehydration]._queue.push_front(fullPath);
+                }
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated && !syncing) {
                 // Set hydrating indicator (avoid double hydration)
                 _setSyncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, true);
 
                 // Add file path to hydration queue
-                _workerInfo[workerHydration]._mutex.lock();
-                _workerInfo[workerHydration]._queue.push_front(fullPath);
-                _workerInfo[workerHydration]._mutex.unlock();
+                {
+                    QMutexLocker locker(&_workerInfo[workerHydration]._mutex);
+                    _workerInfo[workerHydration]._queue.push_front(fullPath);
+                }
                 _workerInfo[workerHydration]._queueWC.wakeOne();
             }
 

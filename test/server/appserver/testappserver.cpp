@@ -52,7 +52,7 @@ void TestAppServer::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Insert user, account, drive & sync
     const int userId(atoi(testVariables.userId.c_str()));
@@ -152,7 +152,7 @@ void TestAppServer::testStartAndStopSync() {
     const auto syncDbPath = _appPtr->syncPalMap[syncDbId]->syncDb()->dbPath();
 
     // Stop sync & clear maps
-    _appPtr->stopSyncTask(syncDbId);
+    CPPUNIT_ASSERT(_appPtr->stopSyncTask(syncDbId));
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 
@@ -166,7 +166,7 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(startedSyncDbIds.contains(syncDbId));
 
     // Stop syncs & clear maps for all users
-    _appPtr->stopAllSyncsTask({syncDbId});
+    CPPUNIT_ASSERT(_appPtr->stopAllSyncsTask({syncDbId}));
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     auto exists = false;
@@ -210,7 +210,7 @@ void TestAppServer::testStartAndStopSync() {
 
     // Check that DB file is removed when sync is deleted
     CPPUNIT_ASSERT(_appPtr->startSyncs());
-    _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove);
+    CPPUNIT_ASSERT(_appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove));
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
@@ -218,9 +218,18 @@ void TestAppServer::testStartAndStopSync() {
 }
 
 void TestAppServer::testCleanup() {
+    CPPUNIT_ASSERT(_appPtr->_loadSyncsProgressTimer.isActive());
+    CPPUNIT_ASSERT(_appPtr->_sendFilesNotificationsTimer.isActive());
+    CPPUNIT_ASSERT(_appPtr->_restartSyncsTimer.isActive());
+
     _appPtr->cleanup();
+
+    // Timers must be stopped, their slots access resources released by cleanup
+    CPPUNIT_ASSERT(!_appPtr->_loadSyncsProgressTimer.isActive());
+    CPPUNIT_ASSERT(!_appPtr->_sendFilesNotificationsTimer.isActive());
+    CPPUNIT_ASSERT(!_appPtr->_restartSyncsTimer.isActive());
+
     delete _appPtr;
-    CPPUNIT_ASSERT(true);
 }
 
 /**
@@ -294,17 +303,181 @@ void TestAppServer::testUpdateUserInfo() {
     CPPUNIT_ASSERT_EQUAL(accountDbIdB, static_cast<uint64_t>(drive.accountDbId()));
 }
 
-bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {
-    int count = 0;
+void TestAppServer::testResolveErrorsForNode() {
+    const SyncDbId syncDbId = 1;
+    const NodeId localId = "resolve_local_1";
+    const NodeId remoteId = "resolve_remote_1";
+    const SyncPath path = "dir/file.txt";
+
+    // Resolvable: FileAccessError
+    Error errAccess(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
+                    CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errAccess));
+
+    // Resolvable: TmpBlacklisted
+    Error errTmp(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
+                 CancelType::TmpBlacklisted);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errTmp));
+
+    // Resolvable: ForbiddenChar
+    Error errChar(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::ForbiddenChar);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errChar));
+
+    // Non-resolvable: EditEdit conflict — must survive
+    Error errConflict(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::EditEdit, InconsistencyType::None);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errConflict));
+
+    // Call the actual function under test
+    SyncFileItem item;
+    item.setLocalNodeId(localId);
+    item.setRemoteNodeId(remoteId);
+    item.setPath(path);
+    _appPtr->resolveItemErrors(syncDbId, item);
+
+    // Only the conflict error must remain
+    std::vector<Error> errorList;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(syncDbId, localId, remoteId, std::nullopt, std::nullopt, errorList,
+                                                              found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
+    CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, errorList[0].conflictType());
+}
+
+void TestAppServer::testProxyConfigUpdate() {
+    // Set proxy configuration without authentication
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
+
+        auto newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
+
+        ServerParameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.hostName(), parametersFromDb.proxyConfig().hostName());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().user().empty());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().pwd().empty());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().keychainKey().empty());
+    }
+
+    // Modify the configuration to require authentication
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, true, "user", "password");
+
+        ServerParameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
+
+        ServerParameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.hostName(), parametersFromDb.proxyConfig().hostName());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.user(), parametersFromDb.proxyConfig().user());
+        CPPUNIT_ASSERT(!parametersFromDb.proxyConfig().keychainKey().empty()); // Keychain key should be set
+
+        std::string pwdFromKeychain;
+        CPPUNIT_ASSERT(
+                KeyChainManager::instance()->readData(parametersFromDb.proxyConfig().keychainKey(), pwdFromKeychain, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.pwd(), pwdFromKeychain); // Password retrieved from keychain should match
+    }
+
+    // Keep the authentication required but change the password
+    std::string previousKeychainKey;
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, true, "user", "newpassword");
+
+        ServerParameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
+
+        ServerParameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.hostName(), parametersFromDb.proxyConfig().hostName());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.user(), parametersFromDb.proxyConfig().user());
+        CPPUNIT_ASSERT(!parametersFromDb.proxyConfig().keychainKey().empty()); // Keychain key should be set
+
+        std::string pwdFromKeychain;
+        CPPUNIT_ASSERT(
+                KeyChainManager::instance()->readData(parametersFromDb.proxyConfig().keychainKey(), pwdFromKeychain, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.pwd(), pwdFromKeychain); // Password retrieved from keychain should match
+        previousKeychainKey = parametersFromDb.proxyConfig().keychainKey();
+    }
+
+    // Disable authentication again
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
+
+        ServerParameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
+
+        ServerParameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.hostName(), parametersFromDb.proxyConfig().hostName());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().user().empty());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().keychainKey().empty()); // Keychain key should be cleared
+
+        std::string pwdFromKeychain;
+        CPPUNIT_ASSERT(KeyChainManager::instance()->readData(previousKeychainKey, pwdFromKeychain, found));
+        CPPUNIT_ASSERT(!found);
+        CPPUNIT_ASSERT(pwdFromKeychain.empty());
+    }
+
+    // Disable proxy
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::None, "", 0, false);
+
+        ServerParameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
+
+        ServerParameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.type(), parametersFromDb.proxyConfig().type());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().hostName().empty());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().user().empty());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().keychainKey().empty()); // Keychain key should be cleared
+    }
+}
+
+bool TestAppServer::waitForSyncStatus(const int syncDbId, const SyncStatus targetStatus) const {
+    auto count = 0;
     while (count++ < 100) {
-        if (auto status = _appPtr->syncPalMap[syncDbId]->status(); status == targetStatus) return true;
+        if (const auto status = _appPtr->syncPalMap[syncDbId]->status(); status == targetStatus) return true;
         Utility::msleep(100);
     }
     return false;
 }
 
-bool TestAppServer::syncIsActive(int syncDbId) const {
-    SyncStatus status = _appPtr->syncPalMap[syncDbId]->status();
+bool TestAppServer::syncIsActive(const int syncDbId) const {
+    const auto status = _appPtr->syncPalMap[syncDbId]->status();
     return status == SyncStatus::Starting || status == SyncStatus::Running || status == SyncStatus::Idle;
 }
 

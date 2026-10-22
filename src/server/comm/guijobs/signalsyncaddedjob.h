@@ -19,17 +19,17 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 
 namespace KDC {
 
 class SignalSyncAddedJob : public AbstractGuiJob {
     public:
-        explicit SignalSyncAddedJob(const SyncInfo &syncInfo);
+        explicit SignalSyncAddedJob(const BaseSync &syncInfo);
 
     private:
         // Output parameters
-        SyncInfo _syncInfo;
+        BaseSync _syncInfo;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

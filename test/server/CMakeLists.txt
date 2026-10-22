@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.13.3 REQUIRED XML Net)
+find_package(Poco 1.15.2 REQUIRED XML Net NetSSL Crypto)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -24,6 +24,7 @@ set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
+    ${server_srcs_path}/comm/securecontextsingleton.h ${server_srcs_path}/comm/securecontextsingleton.cpp
     ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp
     ${server_srcs_path}/comm/commmanager.h ${server_srcs_path}/comm/commmanager.cpp
     ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp
@@ -67,7 +68,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.h ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.cpp
-    ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/errorlistjob.h ${server_srcs_path}/comm/guijobs/errorlistjob.cpp
     ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.cpp
     ${server_srcs_path}/comm/guijobs/errordeletejob.h ${server_srcs_path}/comm/guijobs/errordeletejob.cpp
     ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.h ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.cpp
@@ -124,6 +125,7 @@ set(server_SRCS
 
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
+    ${server_srcs_path}/requests/syncfolderallowedchecker.h ${server_srcs_path}/requests/syncfolderallowedchecker.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/versionretriever.h ${server_srcs_path}/updater/versionretriever.cpp
     ${server_srcs_path}/requests/offlinefilessizeestimator.h ${server_srcs_path}/requests/offlinefilessizeestimator.cpp
@@ -192,8 +194,15 @@ set(testserver_SRCS
     ../test_utility/testbase.h
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
     ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
+    ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
     ../test.cpp
     ../mocks/mockkeychainstorage.h ../mocks/mockkeychainstorage.cpp
+    # SyncpalTestHelper
+    ../syncpal_test_helper/mocksyncpal.h
+    ../syncpal_test_helper/syncpaltesthelper.h ../syncpal_test_helper/syncpaltesthelper.cpp
+    ../syncpal_test_helper/initialsituationsetter.h ../syncpal_test_helper/initialsituationsetter.cpp
+    ../syncpal_test_helper/operationsexecutor.h ../syncpal_test_helper/operationsexecutor.cpp
+    ../syncpal_test_helper/situationcomparator.h ../syncpal_test_helper/situationcomparator.cpp
 
     test.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
@@ -228,6 +237,7 @@ elseif(UNIX)
     list(APPEND testserver_SRCS ../test_utility/testhelpers_linux.cpp)
 elseif(WIN32)
     list(APPEND testserver_SRCS updater/testwindowsupdater.h updater/testwindowsupdater.cpp)
+    list(APPEND testserver_SRCS vfs/win/testvfswinregistration.h vfs/win/testvfswinregistration.cpp)
     list(APPEND testserver_SRCS ../test_utility/testhelpers_win.cpp)
 endif()
 
@@ -238,8 +248,6 @@ endif()
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/libzip/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testserver_NAME}

@@ -369,6 +369,7 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
         case ExitCode::InvalidOperation:
         case ExitCode::UpdateFailed:
         case ExitCode::TooManyDeleteOperations:
+        case ExitCode::SyncPaused:
             break;
         case ExitCode::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
@@ -592,6 +593,7 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
         case ExitCode::LogUploadFailed:
         case ExitCode::UpdateFailed:
         case ExitCode::TooManyDeleteOperations:
+        case ExitCode::SyncPaused:
             break;
         case ExitCode::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
@@ -694,6 +696,12 @@ QString ParametersDialog::getInconsistencyText(const InconsistencyType inconsist
                 tr("The item name contains only spaces.<br>"
                    "It has been temporarily blacklisted.");
     }
+    if (bitWiseEnumToBool(inconsistencyType & InconsistencyType::InvalidTimestamp)) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+                tr("The item has an invalid timestamp.<br>"
+                   "It has been ignored.");
+    }
 
     return text;
 }
@@ -723,7 +731,7 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
             // Move
             return tr("You are not allowed to move item to \"%1\".<br>"
                       "It will be restored into its original parent folder.")
-                    .arg(destinationPath);
+                    .arg(destinationPath.toHtmlEscaped());
         }
         case CancelType::Delete: {
             return tr(
@@ -766,8 +774,8 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
     return {};
 }
 
-QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
-    switch (errorInfo.exitCause()) {
+QString ParametersDialog::getBackErrorText(const Error &error) const {
+    switch (error.exitCause()) {
         case ExitCause::HttpErrForbidden: {
             return tr(
                     "The operation performed on item is forbidden.<br>"
@@ -798,33 +806,33 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
     }
 }
 
-QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const {
-    if (errorInfo.conflictType() != ConflictType::None) {
-        return getConflictText(errorInfo.conflictType());
+QString ParametersDialog::getErrorLevelNodeText(const Error &error) const {
+    if (error.conflictType() != ConflictType::None) {
+        return getConflictText(error.conflictType());
     }
 
-    if (errorInfo.inconsistencyType() != InconsistencyType::None) {
-        return getInconsistencyText(errorInfo.inconsistencyType());
+    if (error.inconsistencyType() != InconsistencyType::None) {
+        return getInconsistencyText(error.inconsistencyType());
     }
 
-    if (errorInfo.cancelType() != CancelType::None) {
-        return getCancelText(errorInfo.cancelType(), errorInfo.path(), errorInfo.destinationPath());
+    if (error.cancelType() != CancelType::None) {
+        return getCancelText(error.cancelType(), Path2QStr(error.path()), Path2QStr(error.destinationPath()));
     }
 
-    switch (errorInfo.exitCode()) {
+    switch (error.exitCode()) {
         case ExitCode::SystemError: {
-            if (errorInfo.exitCause() == ExitCause::FileAccessError) {
+            if (error.exitCause() == ExitCause::FileAccessError) {
                 return tr(
                         "Can't access item.<br>"
                         "Please fix the read and write permissions.");
-            } else if (errorInfo.exitCause() == ExitCause::NotEnoughDiskSpace) {
+            } else if (error.exitCause() == ExitCause::NotEnoughDiskSpace) {
                 return tr(
                         "There is not enough space left on your computer.<br>"
                         "The download has been canceled.");
-            } else if (errorInfo.exitCause() == ExitCause::FileSystemNotSupported) {
+            } else if (error.exitCause() == ExitCause::FileSystemNotSupported) {
                 return tr(R"(Impossible to create file "%1" because it is not supported on your filesystem.<br>It has been excluded from synchronization.)")
-                        .arg(errorInfo.path());
-            } else if (errorInfo.exitCause() == ExitCause::MoveThroughSymlink) {
+                        .arg(Path2QStr(error.path()).toHtmlEscaped());
+            } else if (error.exitCause() == ExitCause::MoveThroughSymlink) {
                 return tr(
                         "The item could not be moved because its path contains a symbolic link or junction.<br>"
                         "It has been temporarily excluded from synchronization.");
@@ -832,10 +840,10 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
             return tr("System error.");
         }
         case ExitCode::BackError: {
-            return getBackErrorText(errorInfo);
+            return getBackErrorText(error);
         }
         case ExitCode::DataError: {
-            if (errorInfo.exitCause() == ExitCause::FileExists) {
+            if (error.exitCause() == ExitCause::FileExists) {
                 return tr(
                         "Item already exists on other side.<br>"
                         "It has been temporarily blacklisted.");
@@ -848,18 +856,18 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
     return tr("Synchronization error.");
 }
 
-QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
-    switch (errorInfo.level()) {
+QString ParametersDialog::getErrorMessage(const Error &error) const {
+    switch (error.level()) {
         case ErrorLevel::Unknown: {
             return tr(
                     "A technical error has occurred.<br>"
                     "Please empty the history and if the error persists, contact our support team.");
         }
         case ErrorLevel::Server: {
-            return getAppErrorText(errorInfo.functionName(), errorInfo.exitCode(), errorInfo.exitCause());
+            return getAppErrorText(QString::fromStdString(error.functionName()), error.exitCode(), error.exitCause());
         }
         case ErrorLevel::SyncPal: {
-            if (const auto &syncInfoMapIt = _gui->syncInfoMap().find(errorInfo.syncDbId());
+            if (const auto &syncInfoMapIt = _gui->syncInfoMap().find(error.syncDbId());
                 syncInfoMapIt != _gui->syncInfoMap().end()) {
                 const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
                 if (driveInfoMapIt == _gui->driveInfoMap().end()) {
@@ -867,20 +875,20 @@ QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
                             << "Drive not found in drive map for driveDbId=" << syncInfoMapIt->second.driveDbId();
                     return {};
                 }
-                return getSyncPalErrorText(errorInfo.workerName(), errorInfo.exitCode(), errorInfo.exitCause(),
+                return getSyncPalErrorText(QString::fromStdString(error.workerName()), error.exitCode(), error.exitCause(),
                                            driveInfoMapIt->second.admin());
             }
-            qCDebug(lcParametersDialog()) << "Sync not found in sync map for syncDbId=" << errorInfo.syncDbId();
+            qCDebug(lcParametersDialog()) << "Sync not found in sync map for syncDbId=" << error.syncDbId();
             return {};
         }
         case ErrorLevel::Node:
-            return getErrorLevelNodeText(errorInfo);
+            return getErrorLevelNodeText(error);
         case ErrorLevel::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
         }
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged error level : " << errorInfo.level();
+    qCDebug(lcParametersDialog()) << "Unmanaged error level : " << error.level();
 
     return {};
 }
@@ -981,9 +989,9 @@ void ParametersDialog::onRefreshStatusNeeded() {
     _drivePreferencesWidget->refreshStatus();
 }
 
-void ParametersDialog::onItemCompleted(const SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) {
-    if (itemInfo.status() != SyncFileStatus::Error && itemInfo.status() != SyncFileStatus::Conflict &&
-        itemInfo.status() != SyncFileStatus::Inconsistency) {
+void ParametersDialog::onItemCompleted(const SyncDbId syncDbId, const SyncFileItem &syncFileItem) {
+    if (syncFileItem.status() != SyncFileStatus::Error && syncFileItem.status() != SyncFileStatus::Conflict &&
+        syncFileItem.status() != SyncFileStatus::Inconsistency) {
         return;
     }
 
@@ -1093,7 +1101,8 @@ void ParametersDialog::onSetStyle(bool darkTheme) {
 
 void ParametersDialog::onOpenFolder(const QString &filePath) {
     if (!KDC::GuiUtility::openFolder(filePath)) {
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath), QMessageBox::Ok, this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath.toHtmlEscaped()),
+                                QMessageBox::Ok, this);
         msgBox.exec();
     }
 }
@@ -1101,7 +1110,7 @@ void ParametersDialog::onOpenFolder(const QString &filePath) {
 void ParametersDialog::onDebugReporterDone(bool retCode, const QString &debugId) {
     EnableStateHolder _(this);
 
-    Language language = ParametersCache::instance()->parametersInfo().language();
+    Language language = ParametersCache::instance()->parameters().language();
     QString languageCode = CommonUtility::languageCode(language);
     QString swistranferUrl = QString(MANUALTRANSFER_URL).arg(languageCode.left(2));
 
@@ -1198,7 +1207,7 @@ void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
     ErrorTabWidget *errorTabWidget = nullptr;
     QListWidget *autoresolvedErrorsListWidget = nullptr;
     QListWidget *unresolvedErrorsListWidget = nullptr;
-    QList<ErrorInfo> errorInfoList;
+    QList<Error> errorList;
 
     if (driveDbId == 0) {
         // Server level error
@@ -1224,7 +1233,7 @@ void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
         unresolvedErrorsListWidget = errorTabWidget->unresolvedErrorsListWidget();
     }
 
-    _gui->errorInfoList(driveDbId, errorInfoList);
+    _gui->errorList(driveDbId, errorList);
 
     auto vb = errorTabWidget->currentIndex() == 0 ? unresolvedErrorsListWidget->verticalScrollBar()
                                                   : autoresolvedErrorsListWidget->verticalScrollBar();
@@ -1239,10 +1248,10 @@ void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
     unresolvedErrorsListWidget->clear();
     errorTabWidget->showResolveConflicts(false);
     errorTabWidget->showResolveUnsupportedCharacters(false);
-    for (const auto &errorInfo: errorInfoList) {
+    for (const auto &error: errorList) {
         // Find list to update and increase drive error counters
         QListWidget *list = nullptr;
-        if (errorInfo.autoResolved()) {
+        if (error.isAutoResolved()) {
             list = autoresolvedErrorsListWidget;
             autoresolvedErrorCount++;
         } else {
@@ -1256,22 +1265,22 @@ void ParametersDialog::refreshErrorList(const DriveDbId driveDbId) {
         listWidgetItem->setForeground(Qt::transparent);
         list->insertItem(0, listWidgetItem);
 
-        if (isConflictsWithLocalRename(errorInfo.conflictType())) {
+        if (isConflictsWithLocalRename(error.conflictType())) {
             errorTabWidget->showResolveConflicts(true);
         }
-        if (errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar ||
-            errorInfo.inconsistencyType() == InconsistencyType::ForbiddenCharEndWithSpace) {
+        if (error.inconsistencyType() == InconsistencyType::ForbiddenChar ||
+            error.inconsistencyType() == InconsistencyType::ForbiddenCharEndWithSpace) {
             errorTabWidget->showResolveUnsupportedCharacters(true);
         }
 
         GenericErrorItemWidget *widget = nullptr;
         try {
             // Get user friendly error message
-            const QString errorMsg = getErrorMessage(errorInfo);
-            widget = new GenericErrorItemWidget(_gui, errorMsg, errorInfo, this);
+            const QString errorMsg = getErrorMessage(error);
+            widget = new GenericErrorItemWidget(_gui, errorMsg, error, this);
         } catch (std::exception const &) {
             qCWarning(lcParametersDialog()) << "Error in GenericErrorItemWidget::GenericErrorItemWidget for syncDbId="
-                                            << errorInfo.syncDbId();
+                                            << error.syncDbId();
             continue;
         }
 

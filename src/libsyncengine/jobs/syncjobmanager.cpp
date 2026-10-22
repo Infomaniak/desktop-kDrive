@@ -21,6 +21,7 @@
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 
 #include <memory>
+#include <algorithm>
 
 namespace KDC {
 SyncJobManager::SyncJobManager() :
@@ -59,8 +60,7 @@ bool SyncJobManager::canRunJob(const std::shared_ptr<AbstractJob> job) const {
         if (currentJobIsBigFileDownloadJob && isBigFileDownloadJob(getJob(runningJobId))) {
             // Another big download job is running.
             bigDownloadCounter++;
-            if (bigDownloadCounter >= maxNumberParallelBigDownloads) {
-                // Allow max 3 big file download jobs in parallel.
+            if (bigDownloadCounter >= std::min(maxNumberParallelBigDownloads, normalPriorityCapacity())) {
                 return false;
             }
         }

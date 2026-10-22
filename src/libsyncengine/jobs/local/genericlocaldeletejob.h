@@ -20,6 +20,8 @@
 
 namespace KDC {
 
+class CacheDirectory;
+
 /**
  * @brief Generic delete job used to delete a local file without any checks.
  */
@@ -29,7 +31,8 @@ class GenericLocalDeleteJob : public SyncJob {
             Yes,
             No
         };
-        explicit GenericLocalDeleteJob(SyncPath absolutePath, ForceHardDelete forceHardDelete = ForceHardDelete::No);
+        explicit GenericLocalDeleteJob(SyncPath absolutePath, const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                       ForceHardDelete forceHardDelete = ForceHardDelete::No);
 
         [[nodiscard]] const SyncPath &absoluteLocalPath() const { return _absoluteLocalPath; }
 
@@ -40,6 +43,7 @@ class GenericLocalDeleteJob : public SyncJob {
 
     private:
         SyncPath _absoluteLocalPath;
+        std::shared_ptr<CacheDirectory> _cacheDirectory{nullptr};
         bool _forceHardDelete{false};
 };
 

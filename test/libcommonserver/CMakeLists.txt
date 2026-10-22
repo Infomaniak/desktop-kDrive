@@ -4,9 +4,8 @@ else()
     project(testcommonserver LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
-find_package(SQLite3 3.53.0 REQUIRED)
 
 set(testcommonserver_NAME ${APPLICATION_NAME}_test_common_server)
 
@@ -20,6 +19,8 @@ set(testcommonserver_SRCS
         utility/testutility.h utility/testutility.cpp
         # db
         db/testdb.h db/testdb.cpp
+        # data
+        data/testserverparameters.h data/testserverparameters.cpp
 )
 
 if(APPLE)
@@ -32,8 +33,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testcommonserver_NAME} ${testcommonserver_SRCS})
@@ -51,7 +50,6 @@ set_target_properties(${testcommonserver_NAME} PROPERTIES
 
 target_link_libraries(${testcommonserver_NAME}
         ${libcommonserver_NAME}
-        SQLite::SQLite3
 )
 
 if(WIN32)

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using System;
-using System.Windows.Forms;
 
 namespace Infomaniak.kDrive
 {
@@ -38,7 +37,6 @@ namespace Infomaniak.kDrive
     internal interface ISentryConstants
     {
         string Dsn { get; }
-        string Environment { get; }
     }
 
     internal interface IMatomoConstants
@@ -119,8 +117,6 @@ namespace Infomaniak.kDrive
     {
         public string Dsn { get; } =
             "https://c6ee7ba768d4f7fcd3a6f787f8cc569e@sentry-desktop.infomaniak.com/5";
-
-        public string Environment { get; } = "production";
     }
     internal sealed class ProductionMatomo : IMatomoConstants
     {
