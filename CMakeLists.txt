@@ -180,9 +180,6 @@ endif(APPLE)
 
 if(APPLE)
     set(TEAM_IDENTIFIER_PREFIX "" CACHE STRING "Team identifier prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
-
-    # TODO: Remove when all the app will be built with the default version
-    set(XCODE_GUI4 "Xcode_26.app" CACHE STRING "Xcode version to use for building the GUI4 project")
 endif()
 
 if(BUILD_CLIENT)
