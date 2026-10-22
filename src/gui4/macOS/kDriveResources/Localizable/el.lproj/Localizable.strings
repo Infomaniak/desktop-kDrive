@@ -1552,12 +1552,6 @@
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "Ο συγχρονισμός βρίσκεται σε εξέλιξη";
 
-/* loco:6ad232f65d64577ad6084542 */
-"syncStatusAnalysing" = "Αναζήτηση αλλαγών";
-
-/* loco:6ad232ecab975477a3093ee2 */
-"syncStatusExploring" = "Προετοιμασία των αρχείων σας";
-
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Συγχρονίστηκε";
 

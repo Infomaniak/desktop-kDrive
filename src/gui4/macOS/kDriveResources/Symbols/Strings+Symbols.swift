@@ -1174,10 +1174,6 @@ public enum KDriveLocalizable {
   public static let syncShortStatusPaused = KDriveLocalizable.tr("Localizable", "syncShortStatusPaused", fallback: "Sync is paused")
   /// loco:69ca84494136086fe60cebf2
   public static let syncShortStatusRunning = KDriveLocalizable.tr("Localizable", "syncShortStatusRunning", fallback: "Sync is running")
-  /// loco:6ad232f65d64577ad6084542
-  public static let syncStatusAnalysing = KDriveLocalizable.tr("Localizable", "syncStatusAnalysing", fallback: "Search for Changes")
-  /// loco:6ad232ecab975477a3093ee2
-  public static let syncStatusExploring = KDriveLocalizable.tr("Localizable", "syncStatusExploring", fallback: "Preparing Your Files")
   /// loco:698a08137065b2ad54014e72
   public static let syncSuccessTooltip = KDriveLocalizable.tr("Localizable", "syncSuccessTooltip", fallback: "Synced")
   /// loco:699db0830c3ab713a500b433
