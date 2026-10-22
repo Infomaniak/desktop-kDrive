@@ -59,11 +59,12 @@ jobs:
   build-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_26_5.app/Contents/Developer
     steps:
       - name: Set up Xcode 26
         shell: bash
         run: |
+          sw_vers
           if [[ ! -d "$DEVELOPER_DIR" ]]; then
             echo "::error::Missing Xcode 26 installation: $DEVELOPER_DIR"
             ls -d /Applications/Xcode*.app
