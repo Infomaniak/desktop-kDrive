@@ -6,8 +6,8 @@ project(gui4 LANGUAGES C CXX)
 set(CLIENT_PATH "${CMAKE_SOURCE_DIR}/src/gui4/macOS")
 set(CLIENT_PROJECT "${CLIENT_PATH}/kDrive.xcodeproj")
 set(CLIENT_SCHEME "kDrive")
-set(CLIENT_OUTPUT_DIRECTORY "${CLIENT_PATH}/build/${CMAKE_BUILD_TYPE}")
-set(CLIENT_DEST "${BIN_OUTPUT_DIRECTORY}/kDrive_client4.app")
+set(CLIENT_OUTPUT_DIRECTORY "${CLIENT_PATH}/build/Release")
+set(CLIENT_DEST "$<TARGET_FILE_DIR:${APPLICATION_EXECUTABLE}>/kDrive.app")
 set(CLIENT_STAMP "${CMAKE_BINARY_DIR}/client_build.stamp")
 
 file(GLOB_RECURSE CLIENT_SOURCES
@@ -26,7 +26,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CLIENT_DEST}"
     COMMAND xcodebuild -version
     COMMAND xcodebuild -project "${CLIENT_PROJECT}" -scheme "${CLIENT_SCHEME}" -configuration Release -arch x86_64 -arch arm64 ONLY_ACTIVE_ARCH=NO SYMROOT=${CLIENT_PATH}/build build
-    COMMAND cp -RP "${CLIENT_PATH}/build/Release/kDrive.app" "${CLIENT_DEST}"
+    COMMAND cp -RP "${CLIENT_OUTPUT_DIRECTORY}/kDrive.app" "${CLIENT_DEST}"
     COMMAND ${CMAKE_COMMAND} -E touch "${CLIENT_STAMP}"
     COMMAND xcodebuild -version
     DEPENDS "${CLIENT_PROJECT}" ${CLIENT_SOURCES}
@@ -37,14 +37,15 @@ add_custom_target(build_kDrive_client ALL
 )
 
 # Install the Swift client as kDrive.app so macOS displays kDrive in the Dock.
+# Copy the original Xcode product because CLIENT_DEST may already be the install destination.
 install(CODE "
-    file(REMOVE_RECURSE \"${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/kDrive_client4.app\")
-    file(REMOVE_RECURSE \"${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/kDrive.app\")
-    execute_process(
-        COMMAND cp -RP \"${CLIENT_DEST}\" \"${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/kDrive.app\"
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
+    file(REMOVE_RECURSE \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/kDrive_client4.app\")
+    file(REMOVE_RECURSE \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/kDrive.app\")
 ")
+install(DIRECTORY "${CLIENT_OUTPUT_DIRECTORY}/kDrive.app"
+    DESTINATION "kDrive.app/Contents/MacOS"
+    USE_SOURCE_PERMISSIONS
+)
 
 # Ensure all C++ libraries and executables are built before the Swift GUI.
 add_dependencies(build_kDrive_client
