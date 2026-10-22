@@ -100,6 +100,16 @@ void ExecutorWorker::execute() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name());
 
+    // If the sync root (Windows) has been unregistered (e.g. shell extension uninstalled), the OS has deleted the
+    // placeholders: these local deletions must not be propagated.
+    if (_syncPal->vfs() && !_syncPal->vfs()->isRegistered()) {
+        LOG_SYNCPAL_WARN(_logger, "Sync root is not registered anymore, stopping sync and VFS");
+        _syncPal->vfs()->stop(false);
+        setExitCause(ExitCause::UnableToStartVfs);
+        setDone(ExitCode::SystemError);
+        return;
+    }
+
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
     initProgressManager();

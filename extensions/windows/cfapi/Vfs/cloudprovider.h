@@ -30,7 +30,7 @@ class CloudProvider {
         ~CloudProvider();
 
         inline ProviderInfo *getProviderInfo() const { return _providerInfo; }
-        bool start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
+        bool start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize, int64_t *registeredAt);
         bool stop();
         static bool dehydrate(const wchar_t *path);
         bool hydrate(const wchar_t *path);

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>4.0.0.14</AssemblyVersion>
+    <AssemblyVersion>4.0.0.17</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -20,6 +20,7 @@
     <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
     <TrimMode>None</TrimMode>
     <PublishTrimmed>false</PublishTrimmed>
+    <CetCompat>false</CetCompat>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Custom\Animations\Readme.md" />

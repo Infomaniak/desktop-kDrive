@@ -18,6 +18,7 @@
 
 #include "vfs_win.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/handler.h"
 #include "version.h"
 #include "config.h"
 #include "libcommonserver/log/log.h"
@@ -80,16 +81,43 @@ ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
 
     wchar_t clsid[39] = L"";
     unsigned long clsidSize = sizeof(clsid);
+    int64_t registeredAt = 0;
     if (vfsStart(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.userId).c_str(),
                  std::to_wstring(_vfsSetupParams.syncDbId).c_str(), _vfsSetupParams.localPath.filename().native().c_str(),
-                 _vfsSetupParams.localPath.lexically_normal().native().c_str(), clsid, &clsidSize) != S_OK) {
+                 _vfsSetupParams.localPath.lexically_normal().native().c_str(), clsid, &clsidSize, &registeredAt) != S_OK) {
         LOG_WARN(logger(), "Error in vfsStart: syncDbId=" << _vfsSetupParams.syncDbId);
         return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
     _vfsSetupParams.namespaceCLSID = CommonUtility::ws2s(std::wstring(clsid));
+    setRegisteredAt(registeredAt);
+    LOG_DEBUG(logger(), "Sync root registered at " << registeredAt << ": syncDbId=" << _vfsSetupParams.syncDbId);
+    if (registeredAt == 0) {
+        // The protection against the propagation of the placeholders deletions following a sync root re-registration is
+        // disabled for this start (see SyncPal::start).
+        LOG_WARN(logger(), "Unable to get the sync root registration time: syncDbId=" << _vfsSetupParams.syncDbId);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "VfsWin::startImpl",
+                                        "Unable to get the sync root registration time");
+    }
 
     return ExitCode::Ok;
+}
+
+bool VfsWin::isRegistered() const {
+    bool registered = true;
+    if (vfsIsRegistered(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.userId).c_str(),
+                        std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
+                        _vfsSetupParams.localPath.lexically_normal().native().c_str(), &registered) != S_OK) {
+        // Unable to know, don't block the sync on a transient error
+        LOGW_WARN(logger(), L"Error in vfsIsRegistered: " << Utility::formatSyncPath(_vfsSetupParams.localPath));
+        return true;
+    }
+
+    if (!registered) {
+        LOGW_WARN(logger(), L"Sync root is not registered anymore: " << Utility::formatSyncPath(_vfsSetupParams.localPath));
+    }
+
+    return registered;
 }
 
 void VfsWin::stopImpl(bool unregister) {

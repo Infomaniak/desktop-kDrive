@@ -139,21 +139,23 @@ void TestDb::testColumnExist() {
 void TestDb::testAddColumnIfMissing() {
     const std::string requestId = "test_request_id";
     std::string request = "ALTER TABLE test ADD COLUMN intValue INTEGER;";
-    bool columnAdded = false;
-    CPPUNIT_ASSERT(_testObj->addColumnIfMissing("test", "intValue", requestId, request, &columnAdded) && !columnAdded);
+    CPPUNIT_ASSERT(_testObj->addColumnIfMissing("test", "intValue", requestId, request));
 
     request = "ALTER TABLE test ADD COLUMN intValue2 INTEGER;";
-    CPPUNIT_ASSERT(_testObj->addColumnIfMissing("test", "intValue2", requestId, request, &columnAdded) && columnAdded);
+    CPPUNIT_ASSERT(_testObj->addColumnIfMissing("test", "intValue2", requestId, request));
+    bool exist = false;
+    CPPUNIT_ASSERT(_testObj->columnExists("test", "intValue2", exist) && exist);
 
     request = "ALTER TABLE not_existing_table_name ADD COLUMN intValue3 INTEGER;";
-    CPPUNIT_ASSERT(!_testObj->addColumnIfMissing("not_existing_table_name", "intValue3", requestId, request, &columnAdded));
+    CPPUNIT_ASSERT(!_testObj->addColumnIfMissing("not_existing_table_name", "intValue3", requestId, request));
 }
 
 void TestDb::testAddIntegerColumnIfMissing() {
-    bool columnAdded = false;
-    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue", &columnAdded) && !columnAdded);
-    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue2", &columnAdded) && columnAdded);
-    CPPUNIT_ASSERT(!_testObj->addIntegerColumnIfMissing("not_existing_table_name", "intValue3", &columnAdded));
+    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue", 0));
+    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue2", 0));
+    bool exist = false;
+    CPPUNIT_ASSERT(_testObj->columnExists("test", "intValue2", exist) && exist);
+    CPPUNIT_ASSERT(!_testObj->addIntegerColumnIfMissing("not_existing_table_name", "intValue3", 0));
 }
 
 TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) :

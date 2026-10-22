@@ -85,8 +85,14 @@ namespace Infomaniak.kDrive.TrayIcon
             if (Application.Current.Resources["TrayIcon"] is TaskbarIcon trayIcon)
             {
                 _trayIcon = trayIcon;
-                _trayIcon.ForceCreate();
-
+                try
+                {
+                    _trayIcon.ForceCreate();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to force create tray icon: {ex.Message}");
+                }
                 // Set initial icon
                 SetIconNeutral();
             }
@@ -220,12 +226,19 @@ namespace Infomaniak.kDrive.TrayIcon
             try
             {
                 _currentIcon = fileName;
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Custom", "Icons", "TrayIcons", $"{_currentIcon}{GetThemeSuffix()}.ico");
-                using var bitmap = new Bitmap(imagePath);
-                var iconHandle = bitmap.GetHicon();
-                var icon = Icon.FromHandle(iconHandle);
+
+                var imagePath = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "Assets",
+                    "Custom",
+                    "Icons",
+                    "TrayIcons",
+                    $"{_currentIcon}{GetThemeSuffix()}.ico"
+                );
+
+                using var icon = new Icon(imagePath);
+
                 _trayIcon.UpdateIcon(icon);
-                DestroyIcon(iconHandle);
             }
             catch (Exception ex)
             {
