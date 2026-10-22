@@ -20,13 +20,13 @@
 "accessibilityMoreInformation" = "Visa mer information";
 
 /* loco:69fa0b22dbdab357240dcb12 */
-"accessibilitySearchClear" = "Clear search";
+"accessibilitySearchClear" = "Rensa sökning";
 
 /* loco:69fa0b2668d2d58f030a2422 */
-"accessibilitySearchSheetLabel" = "Search your files";
+"accessibilitySearchSheetLabel" = "Sök i dina filer";
 
 /* loco:69fa0b2455ed5e00570ecf12 */
-"accessibilitySearching" = "Searching…";
+"accessibilitySearching" = "Söker…";
 
 /* loco:69b275fb3440db13f0011c03 */
 "accessibilitySelectSynchroMode" = "Välj ett synkroniseringsläge";
@@ -50,7 +50,7 @@
 "activitiesTypeAllActivities" = "Alla aktiviteter";
 
 /* loco:6981b68a1e51fbe933040213 */
-"activitiesTypeThisComputer" = "Aktivitet från den här datorn";
+"activitiesTypeThisComputer" = "Aktiviteter från den här datorn";
 
 /* loco:6a69c2a7fb376e733f092008 */
 "activityInstructionGetLabel" = "Importerad";
@@ -736,6 +736,10 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Det verkar som att vi inte kan läsa in appen…";
 
+/* loco:6ac60bf864441a81870fc9d2
+ * kDrive Desktop macOS redesign. General failure message when a share link could not be copied to the clipboard. */
+"errorCopyingShareLink" = "Ett fel uppstod när länken kopierades.";
+
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Ett fel uppstod när ditt konto togs bort.";
 
@@ -901,10 +905,10 @@
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Öppna och tillägg";
 
-/* loco:69305849f1fb5be2c7093fa2 */
+/* loco:6ad7140e17c71fcc16055532 */
 "instructionOpenSystemSettings" = "Öppna Systeminställningar > Allmänt";
 
-/* loco:6930588953221ff00608e983 */
+/* loco:6ad7141185062f3cbf0caf52 */
 "instructionOpenSystemSettingsLink" = "Systeminställningar";
 
 /* loco:6a16da43bc4d91f15c0416e2 */
@@ -1432,7 +1436,11 @@
 
 /* loco:69eb8137c1ea8e116a0ba282
  * Search field placeholder in SearchSheetView. */
-"searchPlaceholder" = "Search…";
+"searchPlaceholder" = "Sök…";
+
+/* loco:6ac604dd665bcc5b3402f332
+ * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online. */
+"searchResultOpenInBrowserSyncPausedTooltip" = "Synkronisering pausad.\nDen här filen öppnas i kDrive online.";
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
@@ -1440,7 +1448,7 @@
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
-"searchYourFiles" = "Search your files";
+"searchYourFiles" = "Sök i dina filer";
 
 /* loco:698b06dd2a4fff6e66027c92 */
 "selectFoldersToSync" = "Välj mapparna att synkronisera på den här datorn.";
@@ -1458,7 +1466,7 @@
 "sentryDescription" = "Sentry är ett verktyg som driftas och hanteras exklusivt av Infomaniak för att övervaka programmets stabilitet i realtid och automatiskt rapportera eventuella tekniska fel till våra utvecklare.\n\nDessa data gör det möjligt för vårt team att snabbt åtgärda och optimera programmet, vilket ger en bättre användarupplevelse för dig.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Konton och synkroniseringar";
+"sidebarItemAccounts" = "Synkroniseringar";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Avancerat";
@@ -1615,11 +1623,11 @@
 
 /* loco:69eb7b41376492d2de0d0242
  * Empty search state subtitle when no result matches the user query in SearchSheetView. */
-"tryDifferentSearchTerm" = "Try a different search term";
+"tryDifferentSearchTerm" = "Prova ett annat sökord";
 
 /* loco:69eb809ce1364c763a050862
  * Empty search state subtitle in SearchSheetView before the user enters a query. */
-"typeToStartSearching" = "Type to start searching";
+"typeToStartSearching" = "Skriv för att börja söka";
 
 /* loco:6981e8f0b024a7b4e00f7262 */
 "unavailableContentNoActivityDescription" = "Dina filer är tillgängliga och synkroniserade.";

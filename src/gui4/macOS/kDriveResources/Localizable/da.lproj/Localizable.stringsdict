@@ -5,27 +5,11 @@
  Project: kDrive Desktop
  Locale: da, Danish
  Tagged: macOS-stringsdict
- Exported by: Adrien Coye
- Exported at: Thu, 24 Sep 2026 16:00:23 +0200
+ Exported by: Clément Kunz
+ Exported at: Wed, 21 Oct 2026 12:00:04 +0200
 -->
 <plist version="1.0">
   <dict>
-    <key>informationBlockSynchroErrorTitle</key>
-    <dict>
-      <key>NSStringLocalizedFormatKey</key>
-      <string>%#@value@</string>
-      <key>value</key>
-      <dict>
-        <key>NSStringFormatSpecTypeKey</key>
-        <string>NSStringPluralRuleType</string>
-        <key>NSStringFormatValueTypeKey</key>
-        <string>d</string>
-        <key>one</key>
-        <string>Du har **en synkroniseringsfejl**</string>
-        <key>other</key>
-        <string>Du har **%d synkroniseringsfejl**</string>
-      </dict>
-    </dict>
     <key>buttonRemoveFileExclusionRule</key>
     <dict>
       <key>NSStringLocalizedFormatKey</key>
@@ -40,6 +24,22 @@
         <string>Fjern (%lld element)</string>
         <key>other</key>
         <string>Fjern (%lld elementer)</string>
+      </dict>
+    </dict>
+    <key>informationBlockSynchroErrorTitle</key>
+    <dict>
+      <key>NSStringLocalizedFormatKey</key>
+      <string>%#@value@</string>
+      <key>value</key>
+      <dict>
+        <key>NSStringFormatSpecTypeKey</key>
+        <string>NSStringPluralRuleType</string>
+        <key>NSStringFormatValueTypeKey</key>
+        <string>d</string>
+        <key>one</key>
+        <string>Du har **en synkroniseringsfejl**</string>
+        <key>other</key>
+        <string>Du har **%d synkroniseringsfejl**</string>
       </dict>
     </dict>
   </dict>

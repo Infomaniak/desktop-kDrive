@@ -44,7 +44,7 @@
 <context>
     <name>KDC::AbstractFileItemWidget</name>
     <message>
-        <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
+        <location filename="../src/gui/abstractfileitemwidget.cpp" line="181"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kan ikke åbne mappestien %1.</translation>
     </message>
@@ -52,27 +52,27 @@
 <context>
     <name>KDC::AddDriveConfirmationWidget</name>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="55"/>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="56"/>
         <source>Synchronization will start and you will be able to add files to your %1 folder.</source>
         <translation>Synkronisering starter, og du vil kunne tilføje filer til din %1-mappe.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="99"/>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="100"/>
         <source>Your kDrive is ready!</source>
         <translation>Din kDrive er klar!</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="123"/>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="124"/>
         <source>OPEN FOLDER</source>
         <translation>ÅBEN MAPPE</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="130"/>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="131"/>
         <source>PARAMETERS</source>
         <translation>INDSTILLINGER</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="138"/>
+        <location filename="../src/gui/adddriveconfirmationwidget.cpp" line="139"/>
         <source>Synchronize another drive</source>
         <translation>Synkroniser et andet drev</translation>
     </message>
@@ -156,37 +156,37 @@
 <context>
     <name>KDC::AddDriveLocalFolderWidget</name>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="65"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="66"/>
         <source>Location of your %1 kDrive</source>
         <translation>Placering af din %1 kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="155"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="156"/>
         <source>Edit folder</source>
         <translation>Rediger mappe</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="212"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="213"/>
         <source>You will find all your files in this folder when the configuration is complete. You can drop new files there to sync them to your kDrive.</source>
         <translation>Du vil finde alle dine filer i denne mappe, når konfigurationen er afsluttet. Du kan placere nye filer der for at synkronisere dem til din kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="247"/>
         <source>END</source>
         <translation>AFSLUT</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="246"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="247"/>
         <source>CONTINUE</source>
         <translation>FORTSÆT</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="264"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="267"/>
         <source>The contents of the &lt;b&gt;%1&lt;/b&gt; folder will be synchronized in your kDrive</source>
         <translation>Indholdet af mappen &lt;b&gt;%1&lt;/b&gt; vil blive synkroniseret i din kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="284"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="288"/>
         <source>This folder is not compatible with Lite Sync.&lt;br&gt; 
 Please select another folder. If you continue Lite Sync will be disabled.&lt;br&gt; 
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
@@ -195,17 +195,17 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
 &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Læs mere&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="297"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="301"/>
         <source>Select folder</source>
         <translation>Vælg mappe</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="366"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="370"/>
         <source>Please select a folder to continue.</source>
         <translation>Vælg venligst en mappe for at fortsætte.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="387"/>
+        <location filename="../src/gui/adddrivelocalfolderwidget.cpp" line="391"/>
         <source>Unable to open link %1.</source>
         <translation>Kan ikke åbne linket %1.</translation>
     </message>
@@ -284,17 +284,17 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         <translation>Det var ikke muligt at finde en gyldig lokal mappe til at oprette din synkronisering. Vælg venligst en mappe manuelt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="226"/>
+        <location filename="../src/gui/adddrivewizard.cpp" line="227"/>
         <source>Failed to create local folder %1</source>
         <translation>Kunne ikke oprette lokal mappe %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="237"/>
+        <location filename="../src/gui/adddrivewizard.cpp" line="238"/>
         <source>Failed to create new synchronization</source>
         <translation>Kunne ikke oprette ny synkronisering</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="269"/>
+        <location filename="../src/gui/adddrivewizard.cpp" line="270"/>
         <source>The kDrive %1 is already synchronized on this computer. Continue anyway?</source>
         <translation>kDrive %1 er allerede synkroniseret på denne computer. Fortsæt alligevel?</translation>
     </message>
@@ -320,12 +320,12 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1775"/>
+        <location filename="../src/server/appserver.cpp" line="1836"/>
         <source>Share link copied to clipboard</source>
         <translation>Delingslink kopieret til udklipsholderen</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3907"/>
+        <location filename="../src/server/appserver.cpp" line="3970"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet fjernet.</numerusform>
@@ -333,13 +333,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3909"/>
+        <location filename="../src/server/appserver.cpp" line="3972"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet fjernet.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3914"/>
+        <location filename="../src/server/appserver.cpp" line="3977"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet tilføjet.</numerusform>
@@ -347,13 +347,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3916"/>
+        <location filename="../src/server/appserver.cpp" line="3979"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet tilføjet.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3921"/>
+        <location filename="../src/server/appserver.cpp" line="3984"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet opdateret.</numerusform>
@@ -361,13 +361,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3923"/>
+        <location filename="../src/server/appserver.cpp" line="3986"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet opdateret.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3928"/>
+        <location filename="../src/server/appserver.cpp" line="3991"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 er blevet flyttet til %2 og %n anden fil er blevet flyttet.</numerusform>
@@ -375,12 +375,12 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3931"/>
+        <location filename="../src/server/appserver.cpp" line="3994"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 er blevet flyttet til %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3939"/>
+        <location filename="../src/server/appserver.cpp" line="4002"/>
         <source>Sync Activity</source>
         <translation>Synkroniseringsaktivitet</translation>
     </message>
@@ -607,12 +607,12 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         <translation>Indholdet af mappen på din computer vil blive synkroniseret til mappen på den valgte kDrive og omvendt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="184"/>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="186"/>
         <source>CANCEL</source>
         <translation>ANNULLER</translation>
     </message>
     <message>
-        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="191"/>
+        <location filename="../src/gui/confirmsynchronizationdialog.cpp" line="193"/>
         <source>SYNCHRONIZE</source>
         <translation>SYNKRONISER</translation>
     </message>
@@ -1115,12 +1115,12 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
 <context>
     <name>KDC::DriveSelectionWidget</name>
     <message>
-        <location filename="../src/gui/driveselectionwidget.cpp" line="151"/>
+        <location filename="../src/gui/driveselectionwidget.cpp" line="152"/>
         <source>Add a kDrive</source>
         <translation>Tilføj en kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/driveselectionwidget.cpp" line="218"/>
+        <location filename="../src/gui/driveselectionwidget.cpp" line="219"/>
         <source>Synchronize a kDrive</source>
         <translation>Synkroniser en kDrive</translation>
     </message>
@@ -1214,7 +1214,7 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         <translation> (%1 fejl og %2 information(er))</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/gui/errorspopup.cpp" line="147"/>
+        <location filename="../src/gui/errorspopup.cpp" line="148"/>
         <source>Generic errors (%n warning(s) or error(s))</source>
         <comment>Number of warnings or errors</comment>
         <translation>
@@ -1366,68 +1366,68 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
 <context>
     <name>KDC::FolderItemWidget</name>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="188"/>
-        <location filename="../src/gui/folderitemwidget.cpp" line="476"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="190"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="479"/>
         <source>Synchronized into &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Synkroniseret i &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="343"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="345"/>
         <source>Activate Lite Sync</source>
         <translation>Aktivér Lite Sync</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="345"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="347"/>
         <source>Activate Lite Sync (Beta)</source>
         <translation>Aktivér Lite Sync (Beta)</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="354"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="356"/>
         <source>Deactivate Lite Sync</source>
         <translation>Deaktivér Lite Sync</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="365"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="367"/>
         <source>Pause synchronization</source>
         <translation>Sæt synkronisering på pause</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="375"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="377"/>
         <source>Resume synchronization</source>
         <translation>Genoptag synkronisering</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="386"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="388"/>
         <source>Remove synchronization</source>
         <translation>Fjern synkronisering</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="458"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="460"/>
         <source>More actions</source>
         <translation>Flere handlinger</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="481"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="484"/>
         <source>Unselected folders will be moved to trash provided they contain offline items. Folders synced to kDrive will remain available online.</source>
         <translation>Ikke-valgte mapper flyttes til papirkurven, forudsat at de indeholder offline-elementer. Mapper synkroniseret til kDrive forbliver tilgængelige online.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="485"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="488"/>
         <source>Unselected folders will be moved to trash. Folders synced to kDrive will remain available online.</source>
         <translation>Ikke-valgte mapper flyttes til papirkurven. Mapper synkroniseret til kDrive forbliver tilgængelige online.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="488"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="491"/>
         <source>Unselected folders will be &lt;b&gt;permanently&lt;/b&gt; deleted from the computer. Folders synced to kDrive will remain available online.</source>
         <translation>Ikke-valgte mapper vil blive &lt;b&gt;permanent&lt;/b&gt; slettet fra computeren. Mapper synkroniseret til kDrive forbliver tilgængelige online.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="493"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="496"/>
         <source>Cancel</source>
         <translation>Annuller</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="494"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="497"/>
         <source>VALIDATE</source>
         <translation>GODKEND</translation>
     </message>
@@ -1716,16 +1716,16 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="330"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="488"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="489"/>
         <source>A technical error has occurred.&lt;br&gt;Synchronization will resume as soon as possible. Please contact our support team if the error persists.</source>
         <translation>Der er opstået en teknisk fejl.&lt;br&gt;Synkronisering genoptages hurtigst muligt. Kontakt venligst vores supportteam, hvis fejlen fortsætter.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="337"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="441"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="507"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="547"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="561"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="442"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="508"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="548"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="562"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Der er opstået en teknisk fejl (fejl %1).&lt;br&gt;Ryd venligst historikken, og hvis fejlen fortsætter, kontakt vores supportteam.</translation>
     </message>
@@ -1736,7 +1736,7 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="347"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="517"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="518"/>
         <source>Cannot connect to kDrive server (error %1).&lt;br&gt;Attempting reconnection. Please check your Internet connection and your firewall.</source>
         <translation>Kan ikke oprette forbindelse til kDrive-serveren (fejl %1).&lt;br&gt;Forsøger at genoprette forbindelsen. Kontroller venligst din internetforbindelse og firewall.</translation>
     </message>
@@ -1756,365 +1756,365 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         <translation>Log-upload mislykkedes (fejl %1).&lt;br&gt;Prøv venligst igen senere.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="386"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="387"/>
         <source>The synchronization folder is no longer accessible (error %1).&lt;br&gt;Synchronization will resume as soon as the folder is accessible.</source>
         <translation>Synkroniseringsmappen er ikke længere tilgængelig (fejl %1).&lt;br&gt;Synkronisering genoptages, så snart mappen er tilgængelig.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="390"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="391"/>
         <source>The drive containing your synchronization folder is no longer connected (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
         <translation>Drevet, der indeholder din synkroniseringsmappe, er ikke længere tilsluttet (fejl %1).&lt;br&gt;Tilslut det venligst igen for at genoptage synkroniseringen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="394"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="395"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The synchronization has been stopped.</source>
         <translation>Der er ikke nok plads tilbage på din computer.&lt;br&gt;Synkronisering er stoppet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="398"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="399"/>
         <source>There is not enough memory left on your machine.&lt;br&gt;The synchronization has been stopped.</source>
         <translation>Der er ikke nok hukommelse tilbage på din maskine.&lt;br&gt;Synkronisering er stoppet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="402"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="403"/>
         <source>The number of inotify watches is insufficient (error %1).&lt;br&gt;You can raise this number by editing &apos;/etc/sysctl.conf&apos;.</source>
         <translation>Antallet af inotify-overvågninger er utilstrækkeligt (fejl %1).&lt;br&gt;Du kan hæve dette antal ved at redigere &apos;/etc/sysctl.conf&apos;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="407"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="408"/>
         <source>Unable to start synchronization (error %1).&lt;br&gt;You must allow:&lt;br&gt;- kDrive in System Settings &gt;&gt; General &gt;&gt; Login Items &amp; Extensions &gt;&gt; Endpoint Security Extensions&lt;br&gt;- kDrive LiteSync Extension in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Full Disk Access.</source>
         <translation>Kan ikke starte synkronisering (fejl %1).&lt;br&gt;Du skal tillade:&lt;br&gt;- kDrive i Systemindstillinger &gt;&gt; Generelt &gt;&gt; Login-emner og udvidelser &gt;&gt; Endpoint Security Extensions&lt;br&gt;- kDrive LiteSync Extension i Systemindstillinger &gt;&gt; Privatliv og sikkerhed &gt;&gt; Fuld diskadgang.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="414"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="415"/>
         <source>Unable to start synchronization (error %1).&lt;br&gt;The LiteSyncExt process is not currently running. Synchronization will resume as soon as it is started.</source>
         <translation>Kan ikke starte synkronisering (fejl %1).&lt;br&gt;LiteSyncExt-processen kører ikke i øjeblikket. Synkronisering genoptages, så snart den er startet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="420"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="421"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension is installed and Windows Search service is enabled.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
         <translation>Kan ikke starte Lite Sync-plugin (fejl %1).&lt;br&gt;Kontroller, at Lite Sync-udvidelsen er installeret, og at Windows Search-tjenesten er aktiveret.&lt;br&gt;Ryd venligst historikken, genstart, og hvis fejlen fortsætter, kontakt vores supportteam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="425"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="426"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension has the correct permissions and is running.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
         <translation>Kan ikke starte Lite Sync-plugin (fejl %1).&lt;br&gt;Kontroller, at Lite Sync-udvidelsen har de korrekte tilladelser og kører.&lt;br&gt;Ryd venligst historikken, genstart, og hvis fejlen fortsætter, kontakt vores supportteam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="430"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="431"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
         <translation>Kan ikke starte Lite Sync-plugin (fejl %1).&lt;br&gt;Ryd venligst historikken, genstart, og hvis fejlen fortsætter, kontakt vores supportteam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="436"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="437"/>
         <source>A file or folder inside your synchronisation folder appears to be corrupted.&lt;br&gt;The synchronization has been stopped.</source>
         <translation>En fil eller mappe inde i din synkroniseringsmappe ser ud til at være beskadiget.&lt;br&gt;Synkronisering er stoppet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="450"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="451"/>
         <source>The kDrive is in maintenance mode.&lt;br&gt;Synchronization will begin again as soon as possible. Please contact our support team if the error persists.</source>
         <translation>kDrive er i vedligeholdelsestilstand.&lt;br&gt;Synkronisering begynder igen hurtigst muligt. Kontakt venligst vores supportteam, hvis fejlen fortsætter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="456"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="457"/>
         <source>The kDrive is blocked.&lt;br&gt;Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
         <translation>kDrive er blokeret.&lt;br&gt;Forny venligst kDrive. Hvis der ikke handles, vil dataene blive slettet permanent og det vil være umuligt at gendanne dem.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="461"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="462"/>
         <source>The kDrive is blocked.&lt;br&gt;Please contact an administrator to renew the kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
         <translation>kDrive er blokeret.&lt;br&gt;Kontakt venligst en administrator for at forny kDrive. Hvis der ikke handles, vil dataene blive slettet permanent og det vil være umuligt at gendanne dem.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="467"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="468"/>
         <source>The kDrive is waking up.&lt;br&gt;Synchronization will begin again as soon as possible. Please contact our support team if the error persists.</source>
         <translation>kDrive vågner.&lt;br&gt;Synkronisering begynder igen hurtigst muligt. Kontakt venligst vores supportteam, hvis fejlen fortsætter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="476"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="477"/>
         <source>The kDrive is asleep.&lt;br&gt;Please, login to the &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;web version&lt;/a&gt; to check your kDrive&apos;s status, or contact your administrator.</source>
         <translation>kDrive er i dvaletilstand.&lt;br&gt;Log venligst ind på &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;webversionen&lt;/a&gt; for at kontrollere din kDrive-status, eller kontakt din administrator.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="480"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="481"/>
         <source>The kDrive is asleep.&lt;br&gt;Please, login to the web version to check your kDrive&apos;s status, or contact your administrator.</source>
         <translation>kDrive er i dvaletilstand.&lt;br&gt;Log venligst ind på webversionen for at kontrollere din kDrive-status, eller kontakt din administrator.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="484"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="485"/>
         <source>You are not authorised to access this kDrive.&lt;br&gt;Synchronization has been paused. Please contact an administrator.</source>
         <translation>Du har ikke adgang til denne kDrive.&lt;br&gt;Synkronisering er sat på pause. Kontakt venligst en administrator.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="494"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="495"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization will resume as soon as possible. Please contact our support team if the error persists.</source>
         <translation>Der er opstået en teknisk fejl (fejl %1).&lt;br&gt;Synkronisering genoptages hurtigst muligt. Kontakt venligst vores supportteam, hvis fejlen fortsætter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="513"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="514"/>
         <source>The network connections have been dropped by the kernel (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Netværksforbindelserne er blevet afbrudt af kernen (fejl %1).&lt;br&gt;Ryd venligst historikken, og hvis fejlen fortsætter, kontakt vores supportteam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="523"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="524"/>
         <source>Unfortunately your old configuration could not be migrated.&lt;br&gt;The application will use a blank configuration.</source>
         <translation>Desværre kunne din gamle konfiguration ikke migreres.&lt;br&gt;Applikationen vil bruge en tom konfiguration.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="527"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="528"/>
         <source>Unfortunately your old proxy configuration could not be migrated, SOCKS5 proxies are not supported at this time.&lt;br&gt;The application will use system proxy settings instead.</source>
         <translation>Desværre kunne din gamle proxykonfiguration ikke migreres, SOCKS5-proxyer understøttes ikke i øjeblikket.&lt;br&gt;Applikationen vil i stedet bruge systemets proxyindstillinger.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="533"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="534"/>
         <source>The synchronization folder has been replaced or moved in a way that prevents syncing (error %1).&lt;br&gt;This can happen after copying, moving, or restoring the folder.&lt;br&gt;To fix this, please create a new synchronization with a new folder.&lt;br&gt;Note: if you have unsynced changes in the old folder, you will need to copy them manually into the new one.</source>
         <translation>Synkroniseringsmappen er blevet erstattet eller flyttet på en måde, der forhindrer synkronisering (fejl %1).&lt;br&gt;Dette kan ske efter kopiering, flytning eller gendannelse af mappen.&lt;br&gt;For at løse dette, opret venligst en ny synkronisering med en ny mappe.&lt;br&gt;Bemærk: Hvis du har usynkroniserede ændringer i den gamle mappe, skal du kopiere dem manuelt til den nye.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="540"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="541"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization has been restarted. Please empty the history and if the error persists, please contact our support team.</source>
         <translation>Der er opstået en teknisk fejl (fejl %1).&lt;br&gt;Synkronisering er genstartet. Ryd venligst historikken, og hvis fejlen fortsætter, kontakt vores supportteam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="551"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="552"/>
         <source>An error accessing the synchronization database has happened (error %1).&lt;br&gt;Synchronization has been stopped.</source>
         <translation>Der er opstået en fejl ved adgang til synkroniseringsdatabasen (fejl %1).&lt;br&gt;Synkronisering er stoppet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="565"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="566"/>
         <source>A login problem has occurred (error %1).&lt;br&gt;Token invalid or revoked.</source>
         <translation>Der er opstået et loginproblem (fejl %1).&lt;br&gt;Token er ugyldigt eller tilbagekaldt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="570"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="571"/>
         <source>Nested synchronizations are prohibited (error %1).&lt;br&gt;You should only keep synchronizations whose folders are not nested.</source>
         <translation>Indlejrede synkroniseringer er forbudte (fejl %1).&lt;br&gt;Du bør kun beholde synkroniseringer, hvis mapper ikke er indlejrede.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="574"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="575"/>
         <source>The sync folder on the remote kDrive no longer exists or is no longer accessible (error %1).&lt;br&gt;You need to restore it or give it back access rights or delete/recreate the synchronization.</source>
         <translation>Synkroniseringsmappen på den fjernliggende kDrive eksisterer ikke længere eller er ikke længere tilgængelig (fejl %1).&lt;br&gt;Du skal gendanne den eller give den adgangsrettigheder tilbage eller slette/genoprette synkroniseringen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="581"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="582"/>
         <source>File name parsing error (error %1).&lt;br&gt;Special characters such as double quotes, backslashes or line returns can cause parsing failures.</source>
         <translation>Filnavnfejl ved parsing (fejl %1).&lt;br&gt;Specialtegn som anførselstegn, omvendte skråstreger eller linjeskift kan forårsage parsing-fejl.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="611"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="613"/>
         <source>This element has been moved somewhere else.&lt;br&gt;The local operation has been canceled.</source>
         <translation>Dette element er blevet flyttet et andet sted hen.&lt;br&gt;Den lokale handling er annulleret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="616"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="618"/>
         <source>An element with the same name already exists in this location.&lt;br&gt;The local operation has been canceled.</source>
         <translation>Et element med samme navn eksisterer allerede på denne placering.&lt;br&gt;Den lokale handling er annulleret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="620"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="622"/>
         <source>An element with the same name already exists in this location.&lt;br&gt;The local element has been renamed.</source>
         <translation>Et element med samme navn eksisterer allerede på denne placering.&lt;br&gt;Det lokale element er omdøbt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="624"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="626"/>
         <source>The file was modified at the same time by another user.&lt;br&gt;Your modifications have been saved in a copy.</source>
         <translation>Filen blev ændret på samme tid af en anden bruger.&lt;br&gt;Dine ændringer er gemt i en kopi.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="628"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="630"/>
         <source>Another user has moved a parent folder of the destination.&lt;br&gt;The local operation has been canceled.</source>
         <translation>En anden bruger har flyttet en overordnet mappe til destinationen.&lt;br&gt;Den lokale handling er annulleret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="651"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="653"/>
         <source>An existing item has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Et eksisterende element har et identisk navn med de samme store og små bogstaver.&lt;br&gt;Det er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="658"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="660"/>
         <source>The item name contains an unsupported character.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Elementnavnet indeholder et ikke-understøttet tegn.&lt;br&gt;Det er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="664"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="666"/>
         <source>The item name ends with a space, which is forbidden on your operating system.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Elementnavnet afsluttes med et mellemrum, hvilket er forbudt på dit operativsystem.&lt;br&gt;Det er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="670"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="672"/>
         <source>This item name is reserved by your operating system.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Dette elementnavn er reserveret af dit operativsystem.&lt;br&gt;Det er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="676"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="678"/>
         <source>The item name is too long.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Elementnavnet er for langt.&lt;br&gt;Det er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="682"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="684"/>
         <source>The item path is too long.&lt;br&gt;It has been ignored.</source>
         <translation>Elementstien er for lang.&lt;br&gt;Det er ignoreret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="688"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="690"/>
         <source>The item name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
         <translation>Elementnavnet indeholder et nyere UNICODE-tegn, der endnu ikke understøttes af dit filsystem.&lt;br&gt;Det er udelukket fra synkronisering.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="694"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="696"/>
         <source>The item name contains only spaces.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Elementnavnet indeholder kun mellemrum.&lt;br&gt;Det er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="700"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="702"/>
         <source>The item has an invalid timestamp.&lt;br&gt;It has been ignored.</source>
         <translation>Elementet har et ugyldigt tidsstempel.&lt;br&gt;Det er blevet ignoreret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="711"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="713"/>
         <source>Either you are not allowed to create an item, or another item already exists with the same name. The item has been ignored.</source>
         <translation>Du har enten ikke tilladelse til at oprette et element, eller der findes allerede et andet element med samme navn. Elementet er blevet ignoreret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="716"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="718"/>
         <source>You are not allowed to edit item.&lt;br&gt;The file containing your modifications has been renamed and excluded from synchronization.</source>
         <translation>Du har ikke tilladelse til at redigere elementet.&lt;br&gt;Filen med dine ændringer er omdøbt og udelukket fra synkronisering.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="724"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="726"/>
         <source>You are not allowed to rename item.&lt;br&gt;It will be restored with its original name.</source>
         <translation>Du har ikke tilladelse til at omdøbe elementet.&lt;br&gt;Det vil blive gendannet med sit originale navn.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="730"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="732"/>
         <source>You are not allowed to move item to &quot;%1&quot;.&lt;br&gt;It will be restored into its original parent folder.</source>
         <translation>Du har ikke tilladelse til at flytte elementet til &quot;%1&quot;.&lt;br&gt;Det vil blive gendannet i sin originale overordnede mappe.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="735"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="737"/>
         <source>You are not allowed to delete item.&lt;br&gt;It will be restored to its original location.</source>
         <translation>Du har ikke tilladelse til at slette elementet.&lt;br&gt;Det vil blive gendannet på sin originale placering.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="740"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="742"/>
         <source>Failed to move this item to trash, it has been blacklisted.</source>
         <translation>Kunne ikke flytte dette element til papirkurven, det er sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="743"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="745"/>
         <source>Failed to synchronize this item. It has been temporarily blacklisted.&lt;br&gt;Another attempt to sync it will be done in one hour or on next application startup.</source>
         <translation>Kunne ikke synkronisere dette element. Det er midlertidigt sortlistet.&lt;br&gt;Et nyt forsøg på at synkronisere det vil blive foretaget om en time eller ved næste opstart af applikationen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="748"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="750"/>
         <source>This item has been excluded from sync by a custom template.&lt;br&gt;You can disable this type of notification from the Preferences</source>
         <translation>Dette element er udelukket fra synkronisering af en brugerdefineret skabelon.&lt;br&gt;Du kan deaktivere denne type meddelelse fra Indstillinger</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="755"/>
         <source>This item has been excluded from sync because it is a hard link.</source>
         <translation>Dette element er udelukket fra synkronisering, fordi det er et hårdt link.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="756"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="758"/>
         <source>The file has been modified locally while it has been deleted on the remote kDrive.&lt;br&gt;Local copy has been saved in the rescue folder.</source>
         <translation>Filen er blevet ændret lokalt, mens den er blevet slettet på den fjernliggende kDrive.&lt;br&gt;Den lokale kopi er gemt i redningmappen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="761"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="763"/>
         <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
         <translation>Dette link er blevet udelukket fra synkroniseringen, da dets målsti ikke overholder kravene.&lt;br&gt; Målstier skal være relative. De må ikke indeholde opadgående navigering, dvs. komponenter som »..« er ikke tilladt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="778"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="780"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Handlingen udført på elementet er forbudt.&lt;br&gt;Elementet er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="784"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="786"/>
         <source>The operation performed on this item failed.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Handlingen udført på dette element mislykkedes.&lt;br&gt;Elementet er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="789"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="791"/>
         <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
         <translation>Filen er for stor til at blive uploadet. Den er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="792"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="794"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Du har overskredet din kvota. Øg din pladskvota for at genaktivere filuploads.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="795"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="797"/>
         <source>Impossible to download the file.</source>
         <translation>Kan ikke downloade filen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="798"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="800"/>
         <source>This item is currently locked by another user online.&lt;br&gt;We will retry uploading your changes later.</source>
         <translation>Dette element er i øjeblikket låst af en anden bruger online.&lt;br&gt;Vi vil forsøge at uploade dine ændringer igen senere.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="803"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="854"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="805"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="856"/>
         <source>Synchronization error.</source>
         <translation>Synkroniseringsfejl.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="823"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="825"/>
         <source>Can&apos;t access item.&lt;br&gt;Please fix the read and write permissions.</source>
         <translation>Kan ikke tilgå elementet.&lt;br&gt;Ret venligst læse- og skrivetilladelserne.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="827"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="829"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Der er ikke nok plads tilbage på din computer.&lt;br&gt;Downloaden er annulleret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="831"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="833"/>
         <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
         <translation>Det er ikke muligt at oprette filen »%1«, da den ikke understøttes af dit filsystem.&lt;br&gt;Den er blevet udelukket fra synkroniseringen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="836"/>
         <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
         <translation>Elementet kunne ikke flyttes, da dets sti indeholder et symbolsk link eller en junction.&lt;br&gt;Det er blevet midlertidigt udelukket fra synkroniseringen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="838"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="840"/>
         <source>System error.</source>
         <translation>Systemfejl.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="847"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Elementet eksisterer allerede på den anden side.&lt;br&gt;Det er midlertidigt sortlistet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="860"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="862"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Der er opstået en teknisk fejl.&lt;br&gt;Ryd venligst historikken, og hvis fejlen fortsætter, kontakt vores supportteam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1104"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kan ikke åbne mappestien %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1116"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1119"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Transmission gennemført!&lt;br&gt;Referer venligst til id&apos;et &lt;b&gt;%1&lt;/b&gt; i fejlrapporter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1117"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1120"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Transmission mislykkedes!
 Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1138"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1141"/>
         <source>No kDrive configured!</source>
         <translation>Ingen kDrive konfigureret!</translation>
     </message>
@@ -2278,32 +2278,32 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
         <translation>Nederlandsk</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="517"/>
         <source>Advanced</source>
         <translation>Avanceret</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="519"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="518"/>
         <source>Debugging information</source>
         <translation>Fejlretningsoplysninger</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="520"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Åbn fejlretningsmappe&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="521"/>
         <source>Files to exclude</source>
         <translation>Filer der skal ekskluderes</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="523"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="522"/>
         <source>Proxy server</source>
         <translation>Proxyserver</translation>
     </message>
     <message>
-        <location filename="../src/gui/preferenceswidget.cpp" line="525"/>
+        <location filename="../src/gui/preferenceswidget.cpp" line="524"/>
         <source>Lite Sync</source>
         <translation>Lite Sync</translation>
     </message>
@@ -2463,7 +2463,7 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
 <context>
     <name>KDC::ServerFoldersDialog</name>
     <message>
-        <location filename="../src/gui/serverfoldersdialog.cpp" line="80"/>
+        <location filename="../src/gui/serverfoldersdialog.cpp" line="79"/>
         <source>The &lt;b&gt;%1&lt;/b&gt; folder contains subfolders,&lt;br&gt; select the ones you want to synchronize</source>
         <translation>Mappen &lt;b&gt;%1&lt;/b&gt; indeholder undermapper,&lt;br&gt; vælg dem, du vil synkronisere</translation>
     </message>
@@ -2516,32 +2516,32 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
 <context>
     <name>KDC::SynchronizedItemWidget</name>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="317"/>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="318"/>
         <source>Open</source>
         <translation>Åbn</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="325"/>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="326"/>
         <source>Add to favorites</source>
         <translation>Føj til favoritter</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="333"/>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="334"/>
         <source>Copy share link</source>
         <translation>Kopiér delingslink</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="342"/>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="343"/>
         <source>Display on kdrive.infomaniak.com</source>
         <translation>Vis på kdrive.infomaniak.com</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="387"/>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="388"/>
         <source>Show in folder</source>
         <translation>Vis i mappe</translation>
     </message>
     <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="388"/>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="389"/>
         <source>More actions</source>
         <translation>Flere handlinger</translation>
     </message>
@@ -2926,92 +2926,92 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
         <translation>Lite Sync er deaktiveret. kDrive-filerne bruger din computers lagerplads.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parameterscache.cpp" line="59"/>
+        <location filename="../src/gui/parameterscache.cpp" line="58"/>
         <source>Unable to save parameters, please retry later.</source>
         <translation>Kan ikke gemme parametre. Prøv venligst igen senere.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parameterscache.cpp" line="60"/>
+        <location filename="../src/gui/parameterscache.cpp" line="59"/>
         <source>Unable to save parameters!</source>
         <translation>Kan ikke gemme parametre!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1257"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1261"/>
         <source>Make available locally</source>
         <translation>Gør tilgængeligt lokalt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1261"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1265"/>
         <source>Free up local space</source>
         <translation>Frigør lokal plads</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1265"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1269"/>
         <source>Cancel free up local space</source>
         <translation>Annuller frigørelse af lokal plads</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1269"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1273"/>
         <source>Cancel make available locally</source>
         <translation>Annuller gør tilgængeligt lokalt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1273"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1277"/>
         <source>Resharing this file is not allowed</source>
         <translation>Gendeling af denne fil er ikke tilladt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1274"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Gendeling af denne mappe er ikke tilladt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
         <source>Copy public share link</source>
         <translation>Kopiér offentligt delingslink</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
         <source>Copy private share link</source>
         <translation>Kopiér privat delingslink</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1290"/>
         <source>Open in browser</source>
         <translation>Åbn i browser</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2057"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2101"/>
         <source>No valid folder selected!</source>
         <translation>Ingen gyldig mappe valgt!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2068"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
         <source>The selected path does not exist!</source>
         <translation>Den valgte sti eksisterer ikke!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2073"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2117"/>
         <source>The selected path is not a folder!</source>
         <translation>Den valgte sti er ikke en mappe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2122"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Du har ikke tilladelse til at skrive til den valgte mappe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2108"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 indeholder en mappe, der allerede er synkroniseret. Vælg venligst en anden!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2116"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 er indeholdt i en mappe, der allerede er synkroniseret. Vælg venligst en anden!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2124"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 er allerede synkroniseret. Vælg venligst en anden!</translation>
     </message>
@@ -3024,19 +3024,19 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="29"/>
         <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="47"/>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="21"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="22"/>
         <source>Failed to create download directory.</source>
         <translation>Det lykkedes ikke at oprette download-mappen.</translation>
     </message>
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="40"/>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="33"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="34"/>
         <source>Invalid download URL.</source>
         <translation>Ugyldig download-URL.</translation>
     </message>
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="45"/>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="38"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="39"/>
         <source>Downloading installer...</source>
         <translation>Henter installationsprogrammet...</translation>
     </message>
@@ -3044,13 +3044,13 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="50"/>
         <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="79"/>
         <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="125"/>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="43"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="44"/>
         <source>The specified version does not exist or the download failed.</source>
         <translation>Den angivne version findes ikke, eller downloadet mislykkedes.</translation>
     </message>
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="53"/>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="46"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="47"/>
         <source>Download failed: %1</source>
         <translation>Download mislykkedes: %1</translation>
     </message>
@@ -3062,7 +3062,7 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="64"/>
         <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="92"/>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="57"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="58"/>
         <source>Verifying file integrity...</source>
         <translation>Kontrollerer filens integritet...</translation>
     </message>
@@ -3089,7 +3089,7 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="88"/>
         <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="115"/>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="73"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="79"/>
         <source>Done.</source>
         <translation>Færdig.</translation>
     </message>
@@ -3159,27 +3159,28 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
         <translation>Det var ikke muligt at finde downloadlinket i Appcast.</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="53"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="54"/>
         <source>Installer file not found after download.</source>
         <translation>Installationsfilen kan ikke findes efter download.</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="62"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="68"/>
         <source>Starting installer...</source>
         <translation>Installationsprogrammet starter...</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="68"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="74"/>
         <source>Failed to launch installer.</source>
         <translation>Det lykkedes ikke at starte installationsprogrammet.</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="72"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="78"/>
         <source>Installer launched successfully.</source>
         <translation>Installationsprogrammet blev startet uden problemer.</translation>
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
+        <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="64"/>
         <source>Installer verification failed. The file may be corrupted.</source>
         <translation>Kontrollen af installationsprogrammet mislykkedes. Filen er muligvis beskadiget.</translation>
     </message>
@@ -3187,7 +3188,7 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="139"/>
+        <location filename="../src/server/appserver.cpp" line="141"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>kDrive-applikationen lukker på grund af en kritisk fejl.</translation>
     </message>
