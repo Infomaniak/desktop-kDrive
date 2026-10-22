@@ -223,29 +223,7 @@ final class ManyDeletesModalPresenter {
         @InjectService var settingsCache: SettingsCaching
         Task {
             do {
-                guard let parametersInfo = await settingsCache.getSettings() else {
-                    IKLogger.general.warning("[KD] Disable askBeforeDelete skipped reason=settingsUnavailable")
-                    return
-                }
-                let newParametersInfo = ParametersInfo(
-                    language: parametersInfo.language,
-                    monoIcons: parametersInfo.monoIcons,
-                    autoStart: parametersInfo.autoStart,
-                    moveToTrash: parametersInfo.moveToTrash,
-                    notificationsDisabled: parametersInfo.notificationsDisabled,
-                    useLog: parametersInfo.useLog,
-                    logLevel: parametersInfo.logLevel,
-                    extendedLog: parametersInfo.extendedLog,
-                    purgeOldLogs: parametersInfo.purgeOldLogs,
-                    proxyConfigInfo: parametersInfo.proxyConfigInfo,
-                    darkTheme: parametersInfo.darkTheme,
-                    maxAllowedCpu: parametersInfo.maxAllowedCpu,
-                    distributionChannel: parametersInfo.distributionChannel,
-                    sentryEnabled: parametersInfo.sentryEnabled,
-                    matomoEnabled: parametersInfo.matomoEnabled,
-                    askBeforeDelete: false
-                )
-                try await ParametersJobs().updateParameters(parametersInfo: newParametersInfo)
+                try await UtilityJobs().setAppState(key: KDC.AppStateKey.NotifyBeforeDelete, value: false)
                 IKLogger.general.info("[KD] Disable askBeforeDelete accepted")
             } catch {
                 SentrySDK.capture(error: error)
