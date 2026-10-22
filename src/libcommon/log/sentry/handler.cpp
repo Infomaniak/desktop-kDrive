@@ -30,7 +30,6 @@
 #include <random>
 
 #if defined(KD_WINDOWS)
-#include <io.h>
 #include <windows.h>
 #else
 #include <fcntl.h>
@@ -67,7 +66,11 @@ std::size_t copyToBuffer(const std::basic_string<CharT> &src, CharT (&dst)[N]) n
 // Async-signal-safe, see https://man7.org/linux/man-pages/man7/signal-safety.7.html
 void writeToStdErr(const char *str, const std::size_t size) noexcept {
 #if defined(KD_WINDOWS)
-    (void) _write(2, str, static_cast<unsigned int>(size));
+    // Not _write: it takes CRT locks that a suspended thread may hold during crash handling.
+    const HANDLE stdErr = GetStdHandle(STD_ERROR_HANDLE);
+    if (stdErr == nullptr || stdErr == INVALID_HANDLE_VALUE) return;
+    DWORD written = 0;
+    (void) WriteFile(stdErr, str, static_cast<DWORD>(size), &written, nullptr);
 #else
     (void) ::write(STDERR_FILENO, str, size);
 #endif
