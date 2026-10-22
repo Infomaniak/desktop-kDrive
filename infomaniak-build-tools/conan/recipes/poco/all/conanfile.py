@@ -42,11 +42,6 @@ class PocoConan(ConanFile):
         "log_debug": False,
         "with_sql_parser": False,
         "sharedlibrary_debug_suffix": False,
-        # Force pcre2 as shared to avoid duplicate symbols: Poco POCO_UNBUNDLED still
-        # compiles pcre2_ucd.c / pcre2_tables.c internally (upstream "HACK"), which
-        # conflicts with the same symbols present in the static libpcre2-8.a archive.
-        # Using a shared dylib for pcre2 prevents those symbols from being embedded twice.
-        "pcre2/*:shared": True,
     }
 
     _PocoComponent = namedtuple("_PocoComponent", ("option",                    "default_option",   "dependencies", "external_dependencies", "is_lib"))
@@ -128,7 +123,12 @@ class PocoConan(ConanFile):
 
     # Crypto, Foundation, JSON, Net, NetSSL, Util, XML
     def requirements(self):
-        self.requires("pcre2/[>=10.42 <11]")
+        if self.settings.os == "Macos":
+            # Avoid duplicate PCRE2 symbols from Poco's embedded tables and the static archive.
+            # Keep other platforms' defaults so Windows does not require an additional runtime DLL.
+            self.requires("pcre2/[>=10.42 <11]", options={"shared": True})
+        else:
+            self.requires("pcre2/[>=10.42 <11]")
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # Since Poco 1.15.x, Foundation's Unicode support is unbundled onto utf8proc.
         self.requires("utf8proc/[>=2.5.0 <3]")
