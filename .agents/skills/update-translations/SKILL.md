@@ -1,6 +1,6 @@
 ---
 name: update-translations
-description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server / legacy Qt GUI strings are refreshed with Qt lupdate from the Conan-managed Qt. By default the skill is scoped to the current PR: lupdate runs over every file, but only the strings the PR adds or changes are translated or imported, and out-of-scope unfinished entries are left unfinished; translating every entry runs only when explicitly requested. This skill is never triggered automatically: invoke it only when the user explicitly asks to use the translation skill (e.g. \"utilise le skill de traduction\" or \"use the update-translations skill\"). Use when the user explicitly requests it: update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
+description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server / legacy Qt GUI strings are refreshed with Qt lupdate from the Conan-managed Qt. By default the skill is scoped to the current PR: lupdate runs over every file, but only the strings the PR adds or changes are translated or imported, and out-of-scope unfinished entries are left unfinished; translating every entry runs only when explicitly requested. This skill is never triggered automatically: invoke it only when the user explicitly asks to use the translation skill (e.g. \"utilise le skill de traduction\" or \"use the update-translations skill\"). Use when the user explicitly requests it: update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, import only the Loco keys the GUI code actually references, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
 ---
 
 # Update translations
@@ -80,9 +80,8 @@ sure every language is translated", or similar):**
   `client_en.ts` file.
 - Loco: every locale of the Loco project must have zero untranslated assets. If a language of the enum is missing from
   `list_locales`, report it: the locale itself must be added in the Loco project, which the MCP server cannot do.
-- GUI imports: each GUI imports the languages of its own `.import_loco.yml` config (see Part 1): the Windows config
-  lists every language of the enum, the macOS config uses the importloco default (today `de, en, es, fr, it`, the
-  locales the macOS app ships). When the enum grows, extend the configs as described in Part 1.
+- GUI imports: each GUI imports the languages of its own `.import_loco.yml` config (see Part 1); today both configs
+  list every language of the `Language` enum. When the enum grows, extend the configs as described in Part 1.
 
 ## Part 1 — GUI redesigns: Loco via import_loco
 
@@ -91,13 +90,40 @@ import CLI. One config per GUI is already committed to the repository; run `impo
 
 | GUI | Config directory | Imported files | Languages |
 | --- | --- | --- | --- |
-| macOS | `src/gui4/macOS/` | `kDriveResources/Localizable/<code>.lproj/Localizable.strings` (+ `.stringsdict`) | config default: `de, en, es, fr, it` |
+| macOS | `src/gui4/macOS/` | `kDriveResources/Localizable/<code>.lproj/Localizable.strings` (+ `.stringsdict`) | every language of the `Language` enum, listed in the config |
 | Windows | `src/gui4/windows/kDrive client/kDrive client/` | `Strings/<locale>/Resources.resw` | every language of the `Language` enum, listed in the config |
 
 Setup:
 - Install: `pipx install pipx:infomaniak/importloco` (the macOS project pins the version in `src/gui4/macOS/mise.toml`).
 - API key: export `LOCO_API_KEY`, or write the key into a `.import_loco_api` file (gitignored). A read-only key is
   enough: importing only reads from Loco.
+
+### Import only keys the GUI code actually uses
+
+Loco also holds legacy keys the GUIs no longer reference, and every import brings them back. A Loco key is imported
+and kept only if the GUI code actually references it. After any import (scoped or full), audit every key the import
+adds or restores against the GUI code and remove the unused ones from every locale file:
+
+- macOS: the key must be referenced by the code (`KDriveLocalizable.<key>` or the key literal) anywhere under
+  `src/gui4/macOS/` **except** in the generated accessor `kDriveResources/Symbols/Strings+Symbols.swift` — the
+  accessor is generated from the `.strings` files, so a key referenced only there is unused. After adding or
+  removing keys, regenerate it with `cd src/gui4/macOS && mise exec -- swiftgen`.
+- Windows: the key must appear in the C# code (`GetString("<key>")`) or in XAML (`x:Uid="<base key>"`; the resw key
+  is the `x:Uid` value plus a property suffix such as `.Label` or `.Text`) under
+  `src/gui4/windows/kDrive client/kDrive client/`.
+
+Quick check for a suspect key:
+
+```bash
+rg -n 'KDriveLocalizable\.<key>|"<key>"' src/gui4/macOS --glob '!**/Symbols/Strings+Symbols.swift' --glob '!**/Localizable/**'
+rg -n 'GetString\("<key>"\)|x:Uid="<base key>"' 'src/gui4/windows/kDrive client/kDrive client' --glob '!**/Strings/**'
+```
+
+Rule out dynamic key construction (key names assembled at runtime) before declaring a key unused. Removing a key
+means removing its whole entry from **every** locale file — `/* loco:<id> */` comment plus entry in `.strings`,
+whole `<data>` block in `.resw` — everywhere or nowhere, or the next import leaves the locales inconsistent. The
+Loco asset itself stays: unused keys come back on every import until the code uses them again; that is expected and
+must be said in the report.
 
 ### Scoped run (default)
 
@@ -113,7 +139,8 @@ Work only on the keys the PR adds or changes:
 4. Run `import_loco` from the config directory of each GUI the PR touches (quote the Windows path).
 5. Review `git diff` on the imported files: keep only the PR's entries. If the import brought unrelated entries
    (Loco drift since the last import), revert the files that contain no PR key and report the drift; if a file mixes
-   PR keys with unrelated changes, tell the user before keeping it.
+   PR keys with unrelated changes, tell the user before keeping it. Apply the usage rule above to the PR's own
+   entries too: a key the PR adds is imported only if the PR's code actually references it.
 
 Exception: if the PR itself adds a language to the `Language` enum or changes an `.import_loco.yml`, the config and
 Loco-locale work of full-run step 3 is part of the PR scope.
@@ -128,8 +155,14 @@ Loco-locale work of full-run step 3 is part of the PR scope.
    ```
    `import_loco` rewrites the exported files wholesale: each entry keeps its `loco:<id>` comment and `.resw` files
    get a fresh export header. The manual web-export header and the extended asset notes are not carried over. Never
-   hand-edit these files: every entry is anchored to a Loco asset ID that only Loco provides, and the next import
-   would overwrite local edits. Never rename, reorder or delete existing loco IDs.
+   hand-edit translations in these files: every entry is anchored to a Loco asset ID that only Loco provides, and
+   the next import would overwrite local edits — fix the text in Loco, then re-import. The one sanctioned local edit
+   is removing whole entries of keys the code does not use (see the usage rule above); they come back on the next
+   import until the code uses the key again. Never rename, reorder or delete the `loco:<id>` anchor of a kept entry.
+   `import_loco` also strips the manual export header from `.stringsdict` files; restore each header from
+   `git show HEAD:<path>` with refreshed `Exported by`/`Exported at` metadata after every import. Then apply the
+   usage rule: check every key the import added or restored against the GUI code and remove the entries of the
+   unused keys from every locale, regenerating the macOS accessor afterwards.
 2. The **mcp-loco MCP server remains available if needed**; it is the only way this skill can inspect or change Loco
    itself, and writing requires a full-access key (a read-only key answers 403 on any write):
     - Inspect: `list_locales` shows per-locale `untranslated` counts; `list_assets` and `get_translations` identify
@@ -140,9 +173,8 @@ Loco-locale work of full-run step 3 is part of the PR scope.
     - New keys used by the GUI code but absent from Loco must first be created as Loco assets (Loco dashboard, or
       mcp-loco `create_asset` when available) with the English source text, tagged like the existing assets of that
       platform (`macOS` or `windows`), then translated and imported.
-3. When a language is added to the `Language` enum: add its code to the `languages` list of the Windows config, and
-   add a `languages` key to the macOS config if the macOS app is to ship that language; the Loco locale itself must
-   exist (create it in the Loco dashboard, which the MCP server cannot do).
+3. When a language is added to the `Language` enum: add its code to the `languages` list of both `.import_loco.yml`
+   configs; the Loco locale itself must exist (create it in the Loco dashboard, which the MCP server cannot do).
 4. Report, per GUI, what was imported, which translations were still missing in Loco, and what (if anything) was
    written to Loco.
 
@@ -207,6 +239,10 @@ Translation rules (apply to whichever entries are translated):
   ellipses, trailing spaces and language-specific punctuation before they ship. It can produce false positives on
   strings that contain file paths with colons (e.g. `D:/`), which the French space-before-colon rule flags; verify
   the string before reporting a real error.
+- Usage rule: every Loco key the run added or kept must be referenced by the GUI code — macOS: outside the
+  generated `Strings+Symbols.swift` accessor; Windows: `GetString(...)` or `x:Uid` under `src/gui4/windows/`. An
+  imported key with no code reference must have its entries removed from every locale (macOS accessor regenerated
+  afterwards) and be listed in the report.
 - Verify the `.ts` files are still well-formed XML:
   ```bash
   python3 -c "import glob, xml.dom.minidom; [xml.dom.minidom.parse(f) for f in glob.glob('translations/client_*.ts')]"
