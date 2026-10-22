@@ -29,6 +29,8 @@ public enum Constants {
 public enum URLConstants {
     public static let help = URL(string: "https://www.infomaniak.com/gtl/help")!
 
+    private static let faqBase = URL(string: "https://faq.infomaniak.com")!
+
     private static let desktopClientStorage = URL(string: "https://download.storage.infomaniak.com/drive/desktopclient")!
 
     public static func kDrive(for driveID: Int) -> URL {
@@ -41,5 +43,7 @@ public enum URLConstants {
 
     public static let matomo = URL(string: "https://analytics.infomaniak.com/matomo.php")!
 
-    public static let faq = URL(string: "https://faq.infomaniak.com/2923")!
+    public static let faq = faqBase.appendingPathComponent("2923")
+
+    public static let permissionsFaq = faqBase.appendingPathComponent("2935")
 }
