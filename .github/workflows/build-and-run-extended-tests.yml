@@ -137,6 +137,7 @@ jobs:
   MacOS-extended-tests:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     env:
+      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     steps:
       - name: Clean-up XCode DerivedData
@@ -147,6 +148,16 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
+
+      - name: Set up Xcode 26
+        uses: ./.github/actions/setup_xcode
+
+      - name: Prepare Python environment
+        shell: bash
+        run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python -m pip install 'conan==2.25.2'
 
       - name: Grant empty trash script execute permission
         run : chmod +x ./infomaniak-build-tools/empty_drive_trash.sh

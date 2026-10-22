@@ -65,6 +65,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 
 ### Local Norms
 - The macOS desktop CI runner's runnable Xcode 26 installation is `/Applications/Xcode_26.app`; select it with job-scoped `DEVELOPER_DIR`.
+- macOS build and test workflows use `.github/actions/setup_xcode` to verify Xcode 26 and export job-scoped `DEVELOPER_DIR`; hosted runners can use their versioned Xcode 26 app paths.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
 - Authenticate Qt in CI using `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`, with `--no-save-account`; keep INI authentication for local builds.
 - Keep ad hoc Conan recipe verification scripts local; do not include them in a PR unless explicitly requested.
