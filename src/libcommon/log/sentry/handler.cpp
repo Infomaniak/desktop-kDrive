@@ -47,15 +47,29 @@ bool Handler::_debugBeforeSendCallback = false;
 
 namespace {
 // Precomputed in Handler::init so that crashCallback does not need to allocate.
-SyncPath crashSignalFilePath;
-std::string crashMessage;
+// Plain arrays have no destructor: they stay valid if a crash happens during static destruction.
+SyncChar crashSignalFilePath[4096]{};
+char crashMessage[128]{};
+std::size_t crashMessageSize = 0;
+
+// Copies `src` with a terminating null character, or leaves `dst` empty if `src` does not fit.
+template<typename CharT, std::size_t N>
+std::size_t copyToBuffer(const std::basic_string<CharT> &src, CharT (&dst)[N]) noexcept {
+    if (src.size() >= N) {
+        dst[0] = CharT{};
+        return 0;
+    }
+    std::copy(src.begin(), src.end(), dst);
+    dst[src.size()] = CharT{};
+    return src.size();
+}
 
 // Async-signal-safe, see https://man7.org/linux/man-pages/man7/signal-safety.7.html
-void writeToStdErr(const std::string &str) noexcept {
+void writeToStdErr(const char *str, const std::size_t size) noexcept {
 #if defined(KD_WINDOWS)
-    (void) _write(2, str.data(), static_cast<unsigned int>(str.size()));
+    (void) _write(2, str, static_cast<unsigned int>(size));
 #else
-    (void) ::write(STDERR_FILENO, str.data(), str.size());
+    (void) ::write(STDERR_FILENO, str, size);
 #endif
 }
 
@@ -65,13 +79,13 @@ void writeCrashSignalFile() noexcept {
     static constexpr char signalValue[] = "0\n";
 #if defined(KD_WINDOWS)
     const HANDLE file =
-            CreateFileW(crashSignalFilePath.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+            CreateFileW(crashSignalFilePath, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (file == INVALID_HANDLE_VALUE) return;
     DWORD written = 0;
     (void) WriteFile(file, signalValue, sizeof(signalValue) - 1, &written, nullptr);
     (void) CloseHandle(file);
 #else
-    const int fd = ::open(crashSignalFilePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    const int fd = ::open(crashSignalFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) return;
     (void) ::write(fd, signalValue, sizeof(signalValue) - 1);
     (void) ::close(fd);
@@ -94,7 +108,7 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
     (void) user_data;
 
     // This callback may run inside a signal handler: only async-signal-safe calls are allowed.
-    writeToStdErr(crashMessage);
+    writeToStdErr(crashMessage, crashMessageSize);
     writeCrashSignalFile();
 
     if (Handler::debugCrashCallback()) {
@@ -145,8 +159,8 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     }
 
     _appType = appType;
-    crashSignalFilePath = CommonUtility::signalFilePath(appType, SignalCategory::Kill);
-    crashMessage = "Sentry detected a crash in the app " + toString(appType) + "\n";
+    (void) copyToBuffer(CommonUtility::signalFilePath(appType, SignalCategory::Kill).native(), crashSignalFilePath);
+    crashMessageSize = copyToBuffer("Sentry detected a crash in the app " + toString(appType) + "\n", crashMessage);
 
     // For debugging: if the following environment variable is set, the crash event will be printed into a debug file
     bool isSet = false;
