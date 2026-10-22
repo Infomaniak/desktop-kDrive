@@ -22,12 +22,22 @@
 #include "utility/utility.h"
 
 #include <algorithm>
+#include <array>
+#include <string_view>
+#include <type_traits>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 #include <cassert>
 #include <random>
+
+#if defined(KD_WINDOWS)
+#include <windows.h>
+#else
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 
 namespace KDC::sentry {
 
@@ -36,144 +46,100 @@ std::shared_ptr<Handler> Handler::_instance = nullptr;
 AppType Handler::_appType = AppType::None;
 bool Handler::_debugCrashCallback = false;
 bool Handler::_debugBeforeSendCallback = false;
-/*
- *  sentry_value_t reader implementation - begin
- *  Used for debbuging
- */
 
-#define TAG_MASK 0x3
+namespace {
+// Precomputed in Handler::init so that crashCallback does not need to allocate.
+// Trivially destructible: it stays valid if a crash happens during static destruction.
+struct CrashContext {
+        std::array<SyncChar, 4096> signalFilePath{};
+        std::array<char, 128> message{};
+        std::size_t messageSize = 0;
+};
 
-typedef struct {
-        union {
-                void *_ptr;
-                double _double;
-        } payload;
-        long refcount;
-        uint8_t type;
-} thing_t;
-
-typedef struct {
-        char *k;
-        sentry_value_t v;
-} obj_pair_t;
-
-typedef struct {
-        obj_pair_t *pairs;
-        size_t len;
-        size_t allocated;
-} obj_t;
-
-typedef struct {
-        sentry_value_t *items;
-        size_t len;
-        size_t allocated;
-} list_t;
-
-static thing_t *valueAsThing(sentry_value_t value) {
-    if (value._bits & TAG_MASK) {
-        return nullptr;
-    }
-    return (thing_t *) (size_t) value._bits;
+// Constant-initialized: reading it from a signal handler needs no initialization guard.
+CrashContext &crashContext() noexcept {
+    static CrashContext context;
+    return context;
 }
 
-static void readObject(const sentry_value_t event, std::stringstream &ss, int level = 0);
-static void readList(const sentry_value_t event, std::stringstream &ss, int level = 0);
-
-static void printValue(std::stringstream &ss, const sentry_value_t value, int level) {
-    switch (sentry_value_get_type(value)) {
-        case SENTRY_VALUE_TYPE_NULL:
-            ss << "NULL" << std::endl;
-            break;
-        case SENTRY_VALUE_TYPE_BOOL:
-            ss << (sentry_value_is_true(value) ? "true" : "false") << std::endl;
-            break;
-        case SENTRY_VALUE_TYPE_INT32:
-            ss << sentry_value_as_int32(value) << std::endl;
-            break;
-        case SENTRY_VALUE_TYPE_DOUBLE:
-            ss << sentry_value_as_double(value) << std::endl;
-            break;
-        case SENTRY_VALUE_TYPE_STRING:
-            ss << sentry_value_as_string(value) << std::endl;
-            break;
-        case SENTRY_VALUE_TYPE_LIST: {
-            ss << "LIST" << std::endl;
-            readList(value, ss, level + 1);
-            break;
-        }
-        case SENTRY_VALUE_TYPE_OBJECT: {
-            ss << "OBJECT" << std::endl;
-            readObject(value, ss, level + 1);
-            break;
-        }
+// Copies `src` with a terminating null character, or leaves `dst` empty if `src` does not fit.
+template<typename CharT, std::size_t N>
+std::size_t copyToBuffer(const std::type_identity_t<std::basic_string_view<CharT>> src, std::array<CharT, N> &dst) noexcept {
+    if (src.size() >= N) {
+        dst[0] = CharT{};
+        return 0;
     }
+    std::ranges::copy(src, dst.begin());
+    dst[src.size()] = CharT{};
+    return src.size();
 }
 
-static void readList(const sentry_value_t event, std::stringstream &ss, int level) {
-    if (sentry_value_get_type(event) != SENTRY_VALUE_TYPE_LIST) {
-        return;
-    }
-
-    const list_t *l = (list_t *) valueAsThing(event)->payload._ptr;
-    const std::string indent(static_cast<size_t>(level), ' ');
-    for (size_t i = 0; i < l->len; i++) {
-        ss << indent.c_str() << "val=";
-        printValue(ss, l->items[i], level);
-    }
+// Async-signal-safe, see https://man7.org/linux/man-pages/man7/signal-safety.7.html
+void writeToStdErr(const char *str, const std::size_t size) noexcept {
+#if defined(KD_WINDOWS)
+    // Not _write: it takes CRT locks that a suspended thread may hold during crash handling.
+    const HANDLE stdErr = GetStdHandle(STD_ERROR_HANDLE);
+    if (stdErr == nullptr || stdErr == INVALID_HANDLE_VALUE) return;
+    DWORD written = 0;
+    (void) WriteFile(stdErr, str, static_cast<DWORD>(size), &written, nullptr);
+#else
+    // GCC ignores a (void) cast on warn_unused_result: keep the result in a variable instead.
+    [[maybe_unused]] const ssize_t written = ::write(STDERR_FILENO, str, size);
+#endif
 }
 
-static void readObject(const sentry_value_t event, std::stringstream &ss, int level) {
-    if (sentry_value_get_type(event) != SENTRY_VALUE_TYPE_OBJECT) {
-        return;
-    }
-
-    const thing_t *thing = valueAsThing(event);
-    if (!thing) {
-        return;
-    }
-
-    const obj_t *obj = (obj_t *) thing->payload._ptr;
-    const std::string indent(static_cast<size_t>(level), ' ');
-    for (size_t i = 0; i < obj->len; i++) {
-        char *key = obj->pairs[i].k;
-        ss << indent.c_str() << "key=" << key << " val=";
-        printValue(ss, obj->pairs[i].v, level);
-    }
-}
-
-/*
- *  sentry_value_t reader implementation - end
- */
-
-static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
-    (void) uctx;
-    (void) closure;
-
-    std::cerr << "Sentry detected a crash in the app " << Handler::appType() << std::endl;
-
+// Async-signal-safe equivalent of CommonUtility::writeSignalFile.
+void writeCrashSignalFile(const SyncChar *path) noexcept {
     // As `signum` is unknown, a crash is considered as a kill.
-    const int signum{0};
-    KDC::CommonUtility::writeSignalFile(Handler::appType(), KDC::fromInt<KDC::SignalType>(signum));
+    static constexpr char signalValue[] = "0\n";
+#if defined(KD_WINDOWS)
+    const HANDLE file = CreateFileW(path, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (file == INVALID_HANDLE_VALUE) return;
+    DWORD written = 0;
+    (void) WriteFile(file, signalValue, sizeof(signalValue) - 1, &written, nullptr);
+    (void) CloseHandle(file);
+#else
+    const auto fd = ::open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) return;
+    [[maybe_unused]] const ssize_t written = ::write(fd, signalValue, sizeof(signalValue) - 1);
+    (void) ::close(fd);
+#endif
+}
+
+// Used for debugging only: not async-signal-safe.
+std::string toJson(const sentry_value_t value) {
+    char *json = sentry_value_to_json(value);
+    if (!json) return {};
+    std::string str(json);
+    sentry_free(json);
+    return str;
+}
+} // namespace
+
+static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_t event, sentry_hint_t *hint, void *user_data) {
+    (void) uctx;
+    (void) hint;
+
+    // This callback may run inside a signal handler: only async-signal-safe calls are allowed.
+    const auto *context = static_cast<const CrashContext *>(user_data);
+    writeToStdErr(context->message.data(), context->messageSize);
+    writeCrashSignalFile(context->signalFilePath.data());
 
     if (Handler::debugCrashCallback()) {
-        std::stringstream ss;
-        readObject(event, ss);
-        Handler::writeCrashEvent(ss.str());
+        Handler::writeCrashEvent(toJson(event));
     }
 
     return event;
 }
 
-sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closure) {
+sentry_value_t beforeSendCallback(sentry_value_t event, sentry_hint_t *hint, void *user_data) {
     (void) hint;
-    (void) closure;
+    (void) user_data;
 
     std::cout << "Sentry will send an event for the app " << Handler::appType() << std::endl;
 
     if (Handler::debugBeforeSendCallback()) {
-        std::stringstream ss;
-        readObject(event, ss);
-        Handler::writeEvent(ss.str());
+        Handler::writeEvent(toJson(event));
     }
 
     return event;
@@ -207,6 +173,9 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     }
 
     _appType = appType;
+    CrashContext &context = crashContext();
+    (void) copyToBuffer(CommonUtility::signalFilePath(appType, SignalCategory::Kill).native(), context.signalFilePath);
+    context.messageSize = copyToBuffer("Sentry detected a crash in the app " + toString(appType) + "\n", context.message);
 
     // For debugging: if the following environment variable is set, the crash event will be printed into a debug file
     bool isSet = false;
@@ -272,7 +241,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     if (_debugBeforeSendCallback) {
         sentry_options_set_before_send(options, beforeSendCallback, nullptr);
     } else {
-        sentry_options_set_on_crash(options, crashCallback, nullptr);
+        sentry_options_set_on_crash(options, crashCallback, &crashContext());
     }
 
     // Set the environment
@@ -305,6 +274,8 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
         std::cerr << "sentry_init returned " << res << std::endl;
     }
     assert(res == 0);
+    // Set the Anonymous user right away, otherwise sentry-native sends a persistent installation id as user id.
+    _instance->updateEffectiveSentryUser();
     _instance->setDistributionChannel(DistributionChannel::Unknown);
 }
 
@@ -376,7 +347,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min) (storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago

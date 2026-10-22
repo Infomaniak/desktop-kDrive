@@ -70,11 +70,11 @@ The exact set of redistributed binaries can vary by platform:
 
 ### Sentry Native
 
-- **Version:** 0.7.10
+- **Version:** 0.17.4
 - **License:** MIT
 - **Copyright:** Copyright (c) 2019 Sentry
 - **Repository:** https://github.com/getsentry/sentry-native
-- **Note:** Declared in `conanfile.py` as `sentry/0.7.10` (local recipe) and managed via the Conan-based workflow on
+- **Note:** Declared in `conanfile.py` as `sentry/0.17.4` (local recipe) and managed via the Conan-based workflow on
   all platforms (see `infomaniak-build-tools/*/Readme.md`). Redistributed with the application.
 
 ### Crashpad
@@ -84,6 +84,14 @@ The exact set of redistributed binaries can vary by platform:
 - **Copyright:** Copyright 2014 The Crashpad Authors
 - **Repository:** https://chromium.googlesource.com/crashpad/crashpad/
 - **Note:** Declared in `conanfile.py`. The `crashpad_handler` executable is redistributed with the application.
+
+### libunwind
+
+- **Version:** 1.8.3 (vendored by Sentry Native)
+- **License:** MIT
+- **Copyright:** Copyright (c) 2002 Hewlett-Packard Co.
+- **Repository:** https://github.com/libunwind/libunwind
+- **Note:** Statically linked into the Sentry Native library on Linux only. Redistributed with the application.
 
 ### keychain
 
