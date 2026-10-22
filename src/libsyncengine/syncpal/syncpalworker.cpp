@@ -104,12 +104,11 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
 
     const std::shared_ptr<RemoteFileSystemObserverWorker> r1 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w1);
     const std::shared_ptr<RemoteFileSystemObserverWorker> r2 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w2);
-    const auto rfsoError = (r1 != nullptr && (r1->exitCode() != ExitCode::Ok && r1->exitCode() != ExitCode::NetworkError)) ||
-                           (r2 != nullptr && (r2->exitCode() != ExitCode::Ok && r2->exitCode() != ExitCode::NetworkError));
+    const auto rfsoError = (r1 != nullptr && r1->exitCode() != ExitCode::Ok) || (r2 != nullptr && r2->exitCode() != ExitCode::Ok);
 
     if (handleRateLimited(w1, w2)) return true;
 
-    if (httpBlockingError || rfsoError) {
+    if (httpBlockingError || (rfsoError && !networkIssue)) {
         handleBackError();
         return true;
     }
