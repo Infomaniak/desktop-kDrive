@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: en, English
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Fri, 16 Oct 2026 16:18:52 +0200 
+  Exported by: Clément Kunz
+  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1549,7 +1549,7 @@ This data allows our team to quickly fix and optimize the application, resulting
     <value>Settings</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Accounts &amp; Sync</value> 
+    <value>Syncs</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Advanced</value> 

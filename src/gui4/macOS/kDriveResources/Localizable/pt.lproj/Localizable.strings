@@ -20,13 +20,13 @@
 "accessibilityMoreInformation" = "Ver mais informações";
 
 /* loco:69fa0b22dbdab357240dcb12 */
-"accessibilitySearchClear" = "Clear search";
+"accessibilitySearchClear" = "Limpar pesquisa";
 
 /* loco:69fa0b2668d2d58f030a2422 */
-"accessibilitySearchSheetLabel" = "Search your files";
+"accessibilitySearchSheetLabel" = "Pesquisar nos seus ficheiros";
 
 /* loco:69fa0b2455ed5e00570ecf12 */
-"accessibilitySearching" = "Searching…";
+"accessibilitySearching" = "A pesquisar…";
 
 /* loco:69b275fb3440db13f0011c03 */
 "accessibilitySelectSynchroMode" = "Selecionar um modo de sincronização";
@@ -736,6 +736,10 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Parece que não conseguimos carregar a aplicação…";
 
+/* loco:6ac60bf864441a81870fc9d2
+ * kDrive Desktop macOS redesign. General failure message when a share link could not be copied to the clipboard. */
+"errorCopyingShareLink" = "Ocorreu um erro ao copiar o link.";
+
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Ocorreu um erro ao eliminar a sua conta.";
 
@@ -901,10 +905,10 @@
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Abertura e Extensões";
 
-/* loco:69305849f1fb5be2c7093fa2 */
+/* loco:6ad7140e17c71fcc16055532 */
 "instructionOpenSystemSettings" = "Abra as Definições do Sistema > Geral";
 
-/* loco:6930588953221ff00608e983 */
+/* loco:6ad7141185062f3cbf0caf52 */
 "instructionOpenSystemSettingsLink" = "Definições do Sistema";
 
 /* loco:6a16da43bc4d91f15c0416e2 */
@@ -1432,7 +1436,11 @@
 
 /* loco:69eb8137c1ea8e116a0ba282
  * Search field placeholder in SearchSheetView. */
-"searchPlaceholder" = "Search…";
+"searchPlaceholder" = "Pesquisar…";
+
+/* loco:6ac604dd665bcc5b3402f332
+ * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online. */
+"searchResultOpenInBrowserSyncPausedTooltip" = "Sincronização pausada.\nEste ficheiro será aberto no kDrive online.";
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
@@ -1440,7 +1448,7 @@
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
-"searchYourFiles" = "Search your files";
+"searchYourFiles" = "Pesquisar nos seus ficheiros";
 
 /* loco:698b06dd2a4fff6e66027c92 */
 "selectFoldersToSync" = "Selecione as pastas a sincronizar neste computador.";
@@ -1458,7 +1466,7 @@
 "sentryDescription" = "O Sentry é uma ferramenta alojada e gerida exclusivamente pela Infomaniak para monitorizar em tempo real a estabilidade da aplicação e reportar automaticamente erros técnicos aos nossos programadores.\n\nEstes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicação, resultando numa melhor experiência de utilização para si.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Contas e sincronizações";
+"sidebarItemAccounts" = "Sincronizações";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Avançadas";
@@ -1615,11 +1623,11 @@
 
 /* loco:69eb7b41376492d2de0d0242
  * Empty search state subtitle when no result matches the user query in SearchSheetView. */
-"tryDifferentSearchTerm" = "Try a different search term";
+"tryDifferentSearchTerm" = "Experimente um termo de pesquisa diferente";
 
 /* loco:69eb809ce1364c763a050862
  * Empty search state subtitle in SearchSheetView before the user enters a query. */
-"typeToStartSearching" = "Type to start searching";
+"typeToStartSearching" = "Escreva para começar a pesquisar";
 
 /* loco:6981e8f0b024a7b4e00f7262 */
 "unavailableContentNoActivityDescription" = "Os seus ficheiros estão acessíveis e sincronizados.";
