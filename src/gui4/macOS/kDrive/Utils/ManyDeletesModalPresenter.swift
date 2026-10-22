@@ -223,7 +223,7 @@ final class ManyDeletesModalPresenter {
         @InjectService var settingsCache: SettingsCaching
         Task {
             do {
-                try await UtilityJobs().setAppState(key: KDC.AppStateKey.NotifyBeforeDelete, value: "0")
+                try await UtilityJobs().setAppState(key: KDC.AppStateKey.NotifyBeforeDelete, value: false)
                 IKLogger.general.info("[KD] Disable askBeforeDelete accepted")
             } catch {
                 SentrySDK.capture(error: error)
