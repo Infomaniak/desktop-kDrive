@@ -156,7 +156,10 @@ check_dylibs_minos() (
   fi
 )
 
-check_dylibs_minos "$MACOSX_DEPLOYMENT_TARGET" "."
+check_dylibs_minos "$MACOSX_DEPLOYMENT_TARGET" "$install_dir/$app_name.app"
+if [ -d "$install_dir/kDriveRecoveryUpdater.app" ]; then
+	check_dylibs_minos "$MACOSX_DEPLOYMENT_TARGET" "$install_dir/kDriveRecoveryUpdater.app"
+fi
 popd
 
 # Sign

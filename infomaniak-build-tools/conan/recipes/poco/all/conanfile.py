@@ -177,6 +177,10 @@ class PocoConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["CMAKE_BUILD_TYPE"] = self.settings.build_type
+        if self.settings.os == "Macos" and self.settings.os.get_safe("version"):
+            # Poco sets its deployment-target cache default before project() loads the toolchain.
+            # Pass it on the configure command line so the Conan target takes precedence.
+            tc.cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = str(self.settings.os.version)
         for comp in self._poco_component_tree.values():
             if comp.option:
                 tc.variables[comp.option.upper()] = self.options.get_safe(comp.option, False)
