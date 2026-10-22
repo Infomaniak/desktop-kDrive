@@ -3,7 +3,7 @@
 ## Package Identity
 
 C++ dependency management system using Conan 2.x for the kDrive desktop client.
-Contains custom recipes (Qt, OpenSSL, Sentry, Poco, xxHash) and cross-platform build scripts.
+Contains custom recipes (Qt, OpenSSL, Sentry, Poco, xxHash, keychain) and cross-platform build scripts.
 
 ## Structure
 
@@ -19,7 +19,8 @@ conan/
     ├── openssl-macos/all/conanfile.py  # OpenSSL universal binary for macOS (lipo)
     ├── sentry/all/conanfile.py         # Sentry Native SDK + Crashpad
     ├── poco/all/conanfile.py           # Poco C++ libraries (22+ components)
-    └── xxhash/all/conanfile.py         # xxHash hashing library
+    ├── xxhash/all/conanfile.py         # xxHash hashing library
+    └── keychain/all/conanfile.py       # keychain credentials library (hrantzsch/keychain)
 ```
 
 ## Setup & Run
@@ -86,7 +87,9 @@ Several recipes remove `build_type` from package_id to avoid unnecessary rebuild
 ```
 qt/6.x (standalone)
 
-openssl-macos/3.2.4 (macOS only)
+keychain/1.3.1 (custom recipe; no Conan dependencies, links system frameworks/libs; replaces the former `src/3rdparty/keychain` submodule)
+
+openssl-macos/3.6.5 (macOS only)
   └── zlib [>=1.2.11 <2]
 
 xxhash/0.8.2
@@ -96,11 +99,11 @@ sentry/0.7.10
   ├── qt [>=6 <7] (headers only, private)
   └── zlib [>=1.2.11 <2] (Linux)
 
-poco/1.13.3
+poco/1.15.4
   ├── pcre2 [>=10.42 <11]
   ├── zlib [>=1.2.11 <2]
   ├── expat [>=2.6.2 <2.7.4]
-  └── openssl(-macos)/3.2.4
+  └── openssl(-macos)/3.6.5
 ```
 
 ## Platform-Specific Details
@@ -112,7 +115,7 @@ poco/1.13.3
 - `install_name_tool` for rpath fixes (`@loader_path`)
 
 ### Linux
-- System package manager detection for Sentry dependencies (apt, yum, dnf, pacman, zypper, apk)
+- System package manager detection for Sentry and keychain dependencies (apt, yum, dnf, pacman, zypper, apk)
 - Additional QtSerialPort module installation
 - No universal binary support
 

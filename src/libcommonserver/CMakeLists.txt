@@ -9,6 +9,7 @@ find_package(SQLite3 3.53.0 REQUIRED)
 find_package(Poco 1.15.2 REQUIRED Foundation Net Crypto JSON Util)
 find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
 find_package(xxHash 0.8.2 REQUIRED)
+find_package(keychain REQUIRED)
 
 if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -143,7 +144,8 @@ target_link_libraries(${libcommonserver_NAME}
     SQLite::SQLite3
     Poco::Foundation Poco::Net Poco::Crypto Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
-    xxHash::xxhash)
+    xxHash::xxhash
+    keychain::keychain)
 
 if(WIN32)
     target_link_libraries(${libcommonserver_NAME}

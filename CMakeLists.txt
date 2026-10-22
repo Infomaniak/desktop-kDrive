@@ -41,12 +41,6 @@ if(UNIX)
     add_subdirectory(src/3rdparty/utf8proc)
 endif()
 
-# keychain
-add_subdirectory(src/3rdparty/keychain)
-if (UNIX AND NOT APPLE) # Add this on linux to fix keychain problems with gcc 15
-    target_compile_options(keychain PRIVATE -Wno-uninitialized)
-endif()
-
 #####
 
 # Create an alias for the Qt6::Core target, used by the sentry recipe

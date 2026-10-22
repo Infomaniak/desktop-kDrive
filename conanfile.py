@@ -228,6 +228,7 @@ class KDriveDesktop(ConanFile):
             self.requires("openssl/3.6.5", options={ "shared": True }) # Otherwise, using the conan center recipe.
 
         self.requires("sentry/0.7.10", options={ "shared": True, "qt_version": qt_version })
+        self.requires("keychain/1.3.1", options={ "shared": False })
         self.requires("poco/1.15.4", options={ "shared": True })
 
     def _append_conan_vars_normalization(self):
