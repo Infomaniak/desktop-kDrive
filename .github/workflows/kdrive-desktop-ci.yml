@@ -64,14 +64,24 @@ jobs:
         with:
           submodules: recursive
       - name: Set up Xcode 26
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '26'
-      - name: Verify Xcode 26 toolchain
         shell: bash
         run: |
-          xcodebuild -version
-          xcodebuild -version | /usr/bin/grep -Eq '^Xcode 26([.]|$)'
+          for developer_dir in "$(xcode-select -p)" /Applications/Xcode*.app/Contents/Developer; do
+            if [[ ! -d "$developer_dir" ]]; then
+              continue
+            fi
+            version=$(DEVELOPER_DIR="$developer_dir" xcodebuild -version)
+            if [[ "$version" =~ ^Xcode\ 26([.]|$|[[:space:]]) ]]; then
+              export DEVELOPER_DIR="$developer_dir"
+              echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+              echo "$version"
+              break
+            fi
+          done
+          if [[ -z "${DEVELOPER_DIR:-}" ]]; then
+            echo "::error::Xcode 26 is required on the macOS build runner."
+            exit 1
+          fi
           xcrun --find clang
           xcrun --sdk macosx --show-sdk-path
       - name: Build macOS
