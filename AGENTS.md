@@ -64,7 +64,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
 
 ### Local Norms
-- The macOS desktop CI runner's Xcode 26.5 installation is `/Applications/Xcode_26_5.app`; select it with job-scoped `DEVELOPER_DIR`.
+- The macOS desktop CI runner's runnable Xcode 26 installation is `/Applications/Xcode_26.app`; select it with job-scoped `DEVELOPER_DIR`.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
 - Authenticate Qt in CI using `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`, with `--no-save-account`; keep INI authentication for local builds.
 - Keep ad hoc Conan recipe verification scripts local; do not include them in a PR unless explicitly requested.
