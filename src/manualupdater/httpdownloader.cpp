@@ -20,6 +20,7 @@
 #include "libcommon/utility/urlhelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/certificateblocklist.h"
 #include "libcommonserver/utility/truststorehelper.h"
 
 #include <Poco/JSON/Parser.h>
@@ -44,7 +45,7 @@ Poco::Net::Context::Ptr createSslContext() {
     Poco::Net::Context::Ptr context =
             new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_STRICT, 9, false);
     context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
-
+    CertificateBlocklist::install(context->sslContext());
 
     if (!TrustStoreHelper::loadSystemCAs(context->sslContext())) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to load system CAs, peer verification may fail");

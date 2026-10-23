@@ -40,6 +40,7 @@ rg -n "virtual" src/libcommonserver/vfs/vfs.h
 ## Common Gotchas
 - `IoHelper` methods return `bool` + set an `IoError` out-param. Always check the return value AND the error code.
 - On macOS, file operations may require security-scoped bookmarks for sandboxed contexts (Finder extension).
+- Every client TLS `SSL_CTX` must call `CertificateBlocklist::install` in addition to `TrustStoreHelper::loadSystemCAs`: only roots are loaded from the OS, so its blocks of compromised intermediates do not apply.
 - `SqliteDb` is not thread-safe. Each thread that uses SQLite must have its own `SqliteDb` instance or serialize access.
 
 ## Pre-PR Checks
