@@ -75,7 +75,7 @@ public struct DriveJobs: Sendable {
         let query = DriveUpdateQuery(driveInfo: driveInfo)
         let request = await RequestMessage<DriveUpdateQuery>(num: RequestNum.DRIVE_UPDATE, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         // TODO: update cache by drive update signal
         // await coherentCache.updateDrive(drive: driveInfo.asDrive)
@@ -86,7 +86,7 @@ public struct DriveJobs: Sendable {
         let query = DriveDeleteQuery(driveDbId: driveDbId)
         let request = await RequestMessage<DriveDeleteQuery>(num: RequestNum.DRIVE_DELETE, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         await coherentCache.removeDrive(driveDbId: driveDbId, accountDbId: accountId, userDbId: userDbId)
 
