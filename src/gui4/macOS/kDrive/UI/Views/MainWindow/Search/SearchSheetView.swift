@@ -32,43 +32,37 @@ struct SearchSheetView: View {
                 focusState: $isSearchFieldFocused
             )
 
-            List {
-                ForEach(Array(viewModel.displayedResults.enumerated()), id: \.element.id) { index, file in
-                    Button {
-                        viewModel.openFile(file)
-                    } label: {
-                        SearchResultRowView(
-                            file: file,
-                            opensLocally: viewModel.opensLocally(file),
-                            isSynchroPaused: viewModel.isSynchroPaused
-                        )
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(viewModel.displayedResults, id: \.id) { file in
+                        Button {
+                            viewModel.openFile(file)
+                        } label: {
+                            SearchResultRowView(
+                                file: file,
+                                opensLocally: viewModel.opensLocally(file),
+                                isSynchroPaused: viewModel.isSynchroPaused
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, AppPadding.padding8)
                     }
-                    .buttonStyle(.plain)
-                    .listRowInsets(
-                        EdgeInsets(top: 0, leading: AppPadding.padding8, bottom: 0, trailing: AppPadding.padding8)
-                    )
-                    .hideRowSeparatorIfAvailable()
-                    .onAppear {
-                        if index == viewModel.displayedResults.count - 1 {
+
+                    if viewModel.hasMorePages || viewModel.isLoadingNextPage {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .controlSize(.small)
+                            Spacer()
+                        }
+                        .padding(.vertical, AppPadding.padding8)
+                        .onAppear {
                             viewModel.loadNextPage()
                         }
                     }
                 }
-
-                if viewModel.isLoadingNextPage {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .controlSize(.small)
-                        Spacer()
-                    }
-                    .listRowInsets(
-                        EdgeInsets(top: AppPadding.padding8, leading: AppPadding.padding8, bottom: AppPadding.padding8, trailing: AppPadding.padding8)
-                    )
-                }
             }
-            .listStyle(.plain)
             .redacted(reason: viewModel.shouldRedact ? .placeholder : [])
             .disabled(viewModel.shouldRedact)
             .opacity(viewModel.displayedResults.isEmpty ? 0 : 1)
