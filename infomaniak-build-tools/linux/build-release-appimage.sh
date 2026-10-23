@@ -167,7 +167,7 @@ function move_dependencies() {
 
   cd /app
 
-  mkdir -p ./usr/plugins
+  mkdir -p ./usr/plugins ./usr/lib
   cp -P -r $QT_BASE_DIR/plugins/* ./usr/plugins/
 
   cp -P -r $QT_BASE_DIR/libexec ./usr

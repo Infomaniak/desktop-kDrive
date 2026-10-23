@@ -170,7 +170,7 @@ package_release() {
   export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
   export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-  mkdir -p "$app_dir/usr/plugins"
+  mkdir -p "$app_dir/usr/plugins" "$app_dir/usr/lib"
   cd "$app_dir"
 
   cp -P -r "$QTDIR/plugins/"* "$app_dir/usr/plugins/"
