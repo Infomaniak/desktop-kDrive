@@ -183,7 +183,6 @@ package_release() {
   cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
 
   cp -P "$QTDIR/lib/libQt6WaylandClient.so"* "$app_dir/usr/lib"
-  cp -P "$QTDIR/lib/libQt6WaylandEglClientHwIntegration.so"* "$app_dir/usr/lib"
 
   rm -rf "$app_dir/usr/lib/x86_64-linux-gnu/"
   rm -rf "$app_dir/usr/include/"
