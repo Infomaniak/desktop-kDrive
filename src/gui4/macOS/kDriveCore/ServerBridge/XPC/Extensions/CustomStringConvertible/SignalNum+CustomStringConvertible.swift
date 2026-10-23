@@ -19,7 +19,7 @@
 import CppInterop
 import Foundation
 
-extension SignalNum: CustomStringConvertible {
+extension SignalNum: @retroactive CustomStringConvertible {
     public var description: String {
         switch self {
         case .Unknown:
@@ -42,6 +42,8 @@ extension SignalNum: CustomStringConvertible {
             return "DRIVE_ADDED"
         case .DRIVE_UPDATED:
             return "DRIVE_UPDATED"
+        case .DRIVE_QUOTAUPDATED_LEGACY:
+            return "DRIVE_QUOTAUPDATED_LEGACY"
         case .DRIVE_REMOVED:
             return "DRIVE_REMOVED"
         case .DRIVE_DELETE_FAILED:
@@ -88,6 +90,8 @@ extension SignalNum: CustomStringConvertible {
             return "UTILITY_LOG_UPLOAD_STATUS_UPDATED"
         case .UTILITY_QUIT:
             return "UTILITY_QUIT"
+        case .LOGIN_SEND_AUTHORIZATION_CODE:
+            return "LOGIN_SEND_AUTHORIZATION_CODE"
         case .EnumEnd:
             return "EnumEnd"
         @unknown default:

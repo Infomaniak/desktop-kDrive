@@ -36,6 +36,8 @@ extension KDC.ExitCause: CustomStringConvertible {
             return "SyncDirDoesntExist"
         case .SyncDirAccessError:
             return "SyncDirAccessError"
+        case .SyncDirDiskMissing:
+            return "SyncDirDiskMissing"
         case .SyncDirNestingError:
             return "SyncDirNestingError"
         case .SyncDirChanged:
@@ -52,6 +54,8 @@ extension KDC.ExitCause: CustomStringConvertible {
             return "InvalidSize"
         case .FileExists:
             return "FileExists"
+        case .DirExists:
+            return "DirExists"
         case .FileAccessError:
             return "FileAccessError"
         case .FileLocked:
@@ -126,6 +130,20 @@ extension KDC.ExitCause: CustomStringConvertible {
             return "UpdateTreeIntegrityCheckFailed"
         case .MissingReplyData:
             return "MissingReplyData"
+        case .BlackListPropagationError:
+            return "BlackListPropagationError"
+        case .FileSystemNotSupported:
+            return "FileSystemNotSupported"
+        case .SyncDeletionFailed:
+            return "SyncDeletionFailed"
+        case .InvalidLinkTarget:
+            return "InvalidLinkTarget"
+        case .MoveThroughSymlink:
+            return "MoveThroughSymlink"
+        case .FileNameTooLong:
+            return "FileNameTooLong"
+        case .HardlinkNotSupported:
+            return "HardlinkNotSupported"
         case .EnumEnd:
             return "EnumEnd"
         @unknown default:
