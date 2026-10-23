@@ -1119,7 +1119,7 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>Agora mesmo</value> 
+    <value>agora mesmo</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 

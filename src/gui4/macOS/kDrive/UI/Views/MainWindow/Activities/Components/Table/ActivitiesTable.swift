@@ -42,10 +42,18 @@ struct ActivitiesTable: View {
                     VStack(alignment: .leading) {
                         Text(context.node.relevantPath, format: .node)
                             .foregroundStyle(ColorToken.Text.primary.asColor)
-                        if let instruction = context.node.instruction {
-                            Text(instruction.label)
+                        if context.node.status == .syncing {
+                            Text(KDriveLocalizable.labelSynchronisation)
                                 .font(.Tokens.callout)
                                 .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                        } else if let instruction = context.node.instruction {
+                            HStack(alignment: .center, spacing: AppPadding.padding2) {
+                                Text(instruction.label)
+                                    .font(.Tokens.callout)
+                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                                Text(context.node.syncDate, format: .friendlyRelative)
+                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                            }
                         }
                     }
                 } icon: {
@@ -68,12 +76,6 @@ struct ActivitiesTable: View {
                 .buttonStyle(.borderless)
                 .tint(ColorToken.Text.tertiary.asColor)
             }
-
-            TableColumn(KDriveLocalizable.labelTime) { context in
-                Text(context.node.syncDate, format: .friendlyRelative)
-                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-            }
-            .width(ideal: 50)
 
             TableColumn(KDriveLocalizable.labelSize) { context in
                 Text(context.node.size, format: .byteCount(style: .file))
@@ -99,5 +101,5 @@ struct ActivitiesTable: View {
 }
 
 #Preview {
-    ActivitiesTable(contexts: [PreviewHelper.synchroNodeContext])
+    ActivitiesTable(contexts: [PreviewHelper.synchroNodeContext, PreviewHelper.synchroNodeContext2])
 }

@@ -1119,7 +1119,7 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>Juuri nyt</value> 
+    <value>juuri nyt</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 

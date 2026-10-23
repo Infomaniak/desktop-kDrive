@@ -1119,7 +1119,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
     <comment>Unit abbreviation for gigabytes, used in file size and storage displays.</comment> 
   </data> 
   <data name="labelJustNow" xml:space="preserve"> 
-    <value>À l’instant</value> 
+    <value>à l’instant</value> 
   </data> 
   <data name="labelKDriveVersion" xml:space="preserve"> 
     <value>kDrive %@</value> 
