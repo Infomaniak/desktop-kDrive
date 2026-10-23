@@ -23,7 +23,7 @@ enum CallbackError: Error, Equatable {
     case serverError(code: KDC.ExitCode, cause: KDC.ExitCause)
 }
 
-public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible, Sendable {
+public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible {
     public let code: KDC.ExitCode
     public let cause: KDC.ExitCause
     public let id: Int32
@@ -47,6 +47,8 @@ public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible, 
         "CallbackMessage(cause: \(cause.rawValue), code: \(code.rawValue), id: \(id), body: \(body))"
     }
 }
+
+extension CallbackMessage: Sendable where Body: Sendable {}
 
 public extension CallbackMessage {
     func validate() throws {
