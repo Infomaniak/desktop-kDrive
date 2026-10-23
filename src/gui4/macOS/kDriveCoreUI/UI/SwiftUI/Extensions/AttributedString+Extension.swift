@@ -18,6 +18,10 @@
 
 import SwiftUI
 
+// Accepted risk: retain AppKit's pointing-hand cursor in Sendable attributed strings used by the UI.
+// This module-wide conformance bypasses the SDK's restriction; it does not make NSCursor thread-safe.
+extension NSCursor: @unchecked @retroactive Sendable {}
+
 public extension AttributedString {
     static func withLink(_ string: String, pattern: String, url: URL) -> AttributedString {
         var attributedString = AttributedString(stringLiteral: string)
