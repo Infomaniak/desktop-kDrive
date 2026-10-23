@@ -1465,7 +1465,7 @@
 "sentryDescription" = "Sentry es una herramienta alojada y gestionada exclusivamente por Infomaniak para monitorear la estabilidad de la aplicación en tiempo real e informar automáticamente de cualquier error técnico a nuestros desarrolladores.\n\nEstos datos permiten a nuestro equipo corregir y optimizar rápidamente la aplicación, lo que se traduce en una mejor experiencia de usuario para ti.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Cuentas y sincronizaciones";
+"sidebarItemAccounts" = "Sincronizaciones";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Avanzado";

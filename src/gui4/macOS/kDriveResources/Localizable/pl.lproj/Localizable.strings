@@ -1458,7 +1458,7 @@
 "sentryDescription" = "Sentry to narzędzie hostowane i zarządzane wyłącznie przez Infomaniak do monitorowania stabilności aplikacji w czasie rzeczywistym i automatycznego zgłaszania wszelkich błędów technicznych naszym deweloperom.\n\nDane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację aplikacji, co przekłada się na lepsze doświadczenie użytkownika dla Ciebie.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Konta i synchronizacje";
+"sidebarItemAccounts" = "Synchronizacje";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Zaawansowane";
