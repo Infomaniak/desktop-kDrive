@@ -28,15 +28,21 @@ if ($args.Count -lt 1) {
     exit 1
 }
 
-# Get the message
-$message = $args[0]
+# Get the message. A message read with Get-Content in Windows PowerShell 5.1
+# carries ETS note properties (PSPath, PSParentPath, ...) that ConvertTo-Json
+# serializes as an object, making kChat reject the webhook with
+# "The text must be a string.": interpolate it into a plain string first.
+$message = "$($args[0])"
 
 # Format the JSON payload
 $payload = @{ text = $message } | ConvertTo-Json -Compress
 
-# Send the POST request using Invoke-RestMethod
+# Send the POST request using Invoke-RestMethod. The body is sent as UTF-8
+# bytes: Windows PowerShell 5.1 encodes string bodies as ISO-8859-1, which
+# turns the emojis of the message into '?'.
 try {
-    $response = Invoke-RestMethod -Uri $env:KCHAT_WEBHOOK_URL -Method Post -Body $payload -ContentType "application/json"
+    $body = [System.Text.Encoding]::UTF8.GetBytes($payload)
+    $response = Invoke-RestMethod -Uri $env:KCHAT_WEBHOOK_URL -Method Post -Body $body -ContentType "application/json; charset=utf-8"
     Write-Host "Webhook sent successfully."
 } catch {
     Write-Host "Error sending webhook: $_"
