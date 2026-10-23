@@ -1458,7 +1458,7 @@
 "sentryDescription" = "Sentry on Infomaniakin yksinomaan isännöimä ja hallinnoima työkalu, joka seuraa sovelluksen vakautta reaaliajassa ja raportoi automaattisesti mahdolliset tekniset virheet kehittäjillemme.\n\nNäiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, mikä tarkoittaa parempaa käyttökokemusta sinulle.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Tilit ja synkronoinnit";
+"sidebarItemAccounts" = "Synkronoinnit";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Lisäasetukset";
