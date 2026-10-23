@@ -1570,7 +1570,10 @@ void TestUtility::testApplicationDirPath() {
     CPPUNIT_ASSERT_EQUAL(QFileInfo("/proc/self/exe").canonicalPath().toStdString(), applicationDirPath.toStdString());
 }
 
-int TestUtility::printApplicationDirPath(int argc, char **argv) {
+int32_t TestUtility::printApplicationDirPath() {
+    int32_t argc = 1;
+    char argv0[] = "kDrive_test_common";
+    char *argv[] = {argv0, nullptr};
     const QCoreApplication app(argc, argv);
     std::cout << CommonUtility::applicationDirPath().toStdString() << std::endl;
     return 0;
