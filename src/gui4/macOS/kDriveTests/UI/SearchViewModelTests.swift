@@ -78,7 +78,9 @@ extension SharedDITests.SearchViewModelTests {
         /// The fixture must be kept alive by the caller: its deinit restores the DI overrides the fake relies on.
         @MainActor
         func makePaginatedViewModel(firstPageParams: String, nextPageParams: String, nextPageCode: Int) -> (
-            viewModel: SearchViewModel, queries: AsyncStream<DriveSearchQuery>, queriesContinuation: AsyncStream<DriveSearchQuery>.Continuation
+            viewModel: SearchViewModel,
+            queries: AsyncStream<DriveSearchQuery>,
+            queriesContinuation: AsyncStream<DriveSearchQuery>.Continuation
         ) {
             let (queries, queriesContinuation) = AsyncStream<DriveSearchQuery>.makeStream()
             let server = PaginatedSearchServer(receivedQueries: queriesContinuation,
