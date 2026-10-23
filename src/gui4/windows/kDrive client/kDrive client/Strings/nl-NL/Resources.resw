@@ -1576,7 +1576,7 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
     <value>Instellingen</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Accounts &amp; synchronisatiess</value> 
+    <value>Synchronisaties</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Geavanceerd</value> 

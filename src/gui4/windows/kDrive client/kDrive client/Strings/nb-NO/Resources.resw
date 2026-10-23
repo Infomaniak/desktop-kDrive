@@ -1576,7 +1576,7 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <value>Innstillinger</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Kontoer og synkroniseringer</value> 
+    <value>Synkroniseringer</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avansert</value> 
