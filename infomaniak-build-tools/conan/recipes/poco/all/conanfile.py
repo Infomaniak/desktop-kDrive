@@ -42,6 +42,11 @@ class PocoConan(ConanFile):
         "log_debug": False,
         "with_sql_parser": False,
         "sharedlibrary_debug_suffix": False,
+        # Force pcre2 as shared to avoid duplicate symbols: Poco POCO_UNBUNDLED still
+        # compiles pcre2_ucd.c / pcre2_tables.c internally (upstream "HACK"), which
+        # conflicts with the same symbols present in the static libpcre2-8.a archive.
+        # Using a shared dylib for pcre2 prevents those symbols from being embedded twice.
+        "pcre2/*:shared": True,
     }
 
     _PocoComponent = namedtuple("_PocoComponent", ("option",                    "default_option",   "dependencies", "external_dependencies", "is_lib"))

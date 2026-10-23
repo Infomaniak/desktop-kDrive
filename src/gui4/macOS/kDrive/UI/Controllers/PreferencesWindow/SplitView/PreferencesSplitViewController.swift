@@ -69,7 +69,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
         sidebarItem.maximumThickness = Self.sidebarWidth
         addSplitViewItem(sidebarItem)
 
-        let generalViewController = NSViewController()
+        let generalViewController = BaseViewController()
         let contentItem = NSSplitViewItem(viewController: generalViewController)
         addSplitViewItem(contentItem)
     }
