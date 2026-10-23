@@ -174,6 +174,8 @@ package_release() {
   cd "$app_dir"
 
   cp -P -r "$QTDIR/plugins/"* "$app_dir/usr/plugins/"
+  # No Qt SQL driver is used on Linux, and most of them need client libraries that are not bundled
+  rm -rf "$app_dir/usr/plugins/sqldrivers"
   cp -P -r "$QTDIR/libexec" "$app_dir/usr"
   cp -P -r "$QTDIR/resources" "$app_dir/usr" || true # resources folder is not always present in the Qt installation, but we want to copy it when it is
   cp -P -r "$QTDIR/translations" "$app_dir/usr"
@@ -191,6 +193,8 @@ package_release() {
 
   cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
+  # The Qt plugin deploys every SQL driver from the Qt installation, but no Qt SQL driver is used on Linux
+  export LINUXDEPLOY_EXCLUDED_LIBRARIES="libqsql*.so"
   linuxdeploy --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
