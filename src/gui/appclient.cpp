@@ -603,7 +603,7 @@ bool AppClient::serverHasCrashed() {
 
 void AppClient::startServerAndDie() {
     // Start the client
-    QString pathToExecutable = QCoreApplication::applicationDirPath();
+    QString pathToExecutable = CommonUtility::applicationDirPath();
 
 #if defined(Q_OS_WIN)
     pathToExecutable += QString("/%1.exe").arg(APPLICATION_EXECUTABLE);
