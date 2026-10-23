@@ -87,6 +87,10 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 - When importing GUI translations from Loco, only keep keys actually referenced by the GUI code; never add a translation just because the key exists in Loco. Unused Loco keys are removed from the imported files and reappear on every import until the code starts using them.
+- Do not modify the recovery updater as part of Linux v4 GUI release work unless the user explicitly requests it.
+- For Linux v4 release work, package the recovery updater as a separate AppImage and never include its binary or
+  AppImage in the main kDrive AppImage. Limit recovery updater changes to build and packaging fixes unless explicitly
+  requested.
 <!-- Add project-specific user corrections here -->
 - Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
@@ -94,8 +98,9 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 - Do not run `clang-format` on `CMakeLists.txt` files (it can break formatting/structure unexpectedly in this project).
 - Keep the Linux v4 frameless header and custom shadow on native Wayland without introducing a `Qt6::GuiPrivate`
   dependency; accept the transparent shadow margin during Wayland edge snapping.
-- For any branch named `linux-v4/*`: create it from `linux-v4/main`, and compute diffs against `linux-v4/main` by
-  default. `linux-v4/main` is the feature-integration branch regularly rebased on `develop`.
+- For any branch named `linux-v4/*`: create it from `protected/linux-v4`, and compute diffs against
+  `protected/linux-v4` by default. `protected/linux-v4` is the feature-integration branch regularly rebased on
+  `develop`.
 
 ## JIT Index
 
