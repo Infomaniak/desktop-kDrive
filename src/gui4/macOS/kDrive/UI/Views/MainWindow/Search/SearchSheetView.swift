@@ -32,21 +32,41 @@ struct SearchSheetView: View {
                 focusState: $isSearchFieldFocused
             )
 
-            List(viewModel.displayedResults) { file in
-                Button {
-                    viewModel.openFile(file)
-                } label: {
-                    SearchResultRowView(
-                        file: file,
-                        opensLocally: viewModel.opensLocally(file),
-                        isSynchroPaused: viewModel.isSynchroPaused
+            List {
+                ForEach(Array(viewModel.displayedResults.enumerated()), id: \.element.id) { index, file in
+                    Button {
+                        viewModel.openFile(file)
+                    } label: {
+                        SearchResultRowView(
+                            file: file,
+                            opensLocally: viewModel.opensLocally(file),
+                            isSynchroPaused: viewModel.isSynchroPaused
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .listRowInsets(
+                        EdgeInsets(top: 0, leading: AppPadding.padding8, bottom: 0, trailing: AppPadding.padding8)
+                    )
+                    .hideRowSeparatorIfAvailable()
+                    .onAppear {
+                        if index == viewModel.displayedResults.count - 1 {
+                            viewModel.loadNextPage()
+                        }
+                    }
+                }
+
+                if viewModel.isLoadingNextPage {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .controlSize(.small)
+                        Spacer()
+                    }
+                    .listRowInsets(
+                        EdgeInsets(top: AppPadding.padding8, leading: AppPadding.padding8, bottom: AppPadding.padding8, trailing: AppPadding.padding8)
                     )
                 }
-                .buttonStyle(.plain)
-                .listRowInsets(
-                    EdgeInsets(top: 0, leading: AppPadding.padding8, bottom: 0, trailing: AppPadding.padding8)
-                )
-                .hideRowSeparatorIfAvailable()
             }
             .listStyle(.plain)
             .redacted(reason: viewModel.shouldRedact ? .placeholder : [])
