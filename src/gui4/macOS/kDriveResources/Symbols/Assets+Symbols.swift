@@ -78,6 +78,7 @@ public enum KDriveResources {
   public static let star = ImageAsset(name: "star")
   public static let sun = ImageAsset(name: "sun")
   public static let trash = ImageAsset(name: "trash")
+  public static let userSync = ImageAsset(name: "user-sync")
   public static let warning = ImageAsset(name: "warning")
   public static let wrench = ImageAsset(name: "wrench")
   public static let foldersStackArrowsCounterclockwise = ImageAsset(name: "folders-stack-arrows-counterclockwise")
