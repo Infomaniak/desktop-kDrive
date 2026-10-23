@@ -69,6 +69,25 @@ extension SharedDITests.SearchViewModelTests {
         func makeViewModel(syncDbId: Int32 = CacheData.expectedSynchroDbId) -> SearchViewModel {
             SearchViewModel(syncDbId: syncDbId, driveId: 1, synchroLocalPath: URL(fileURLWithPath: "/test"))
         }
+
+        func overrideQueryFetcher(_ fetcher: XPCQueryFetcherProtocol) {
+            register(XPCQueryFetcherProtocol.self, service: fetcher)
+        }
+
+        /// Overrides the query fetcher with a fake server serving a first page and a configured reply for the next pages.
+        /// The fixture must be kept alive by the caller: its deinit restores the DI overrides the fake relies on.
+        @MainActor
+        func makePaginatedViewModel(firstPageParams: String, nextPageParams: String, nextPageCode: Int) -> (
+            viewModel: SearchViewModel, queries: AsyncStream<DriveSearchQuery>, queriesContinuation: AsyncStream<DriveSearchQuery>.Continuation
+        ) {
+            let (queries, queriesContinuation) = AsyncStream<DriveSearchQuery>.makeStream()
+            let server = PaginatedSearchServer(receivedQueries: queriesContinuation,
+                                               firstPageParams: firstPageParams,
+                                               nextPageParams: nextPageParams,
+                                               nextPageCode: nextPageCode)
+            overrideQueryFetcher(XPCQueryFetcher(xpcConnectionProvider: server))
+            return (makeViewModel(), queries, queriesContinuation)
+        }
     }
 
     private func makeResult(isHydrated: Bool = false, type: UINodeType = .file) -> UISearchResponse {
@@ -137,5 +156,136 @@ extension SharedDITests.SearchViewModelTests {
         #expect(state.syncDbId == synchro.dbId)
         #expect(!state.isStatusKnown)
         #expect(!UISynchroState(fromSynchro: nil, syncDbId: synchro.dbId).isStatusKnown)
+    }
+}
+
+extension SharedDITests.SearchViewModelTests {
+    /// Fake server serving a first page for a cursor-less DRIVE_SEARCH query and a configured reply for the next pages.
+    private struct PaginatedSearchServer: XPCConnectionProvider {
+        let receivedQueries: AsyncStream<DriveSearchQuery>.Continuation
+        let firstPageParams: String
+        let nextPageParams: String
+        let nextPageCode: Int
+
+        var guiConnectionState: XPCConnectionState {
+            .connected
+        }
+
+        var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {
+            Just(.connected).eraseToAnyPublisher()
+        }
+
+        var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState {
+            .connected
+        }
+
+        var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> {
+            Just(.connected).eraseToAnyPublisher()
+        }
+
+        func reconnectToLoginAgent() async {}
+
+        func sendQuery(_ requestData: Data) async throws -> Data {
+            let request = try JSONDecoder().decode(RequestMessage<DriveSearchQuery>.self, from: requestData)
+            guard request.num == .DRIVE_SEARCH else {
+                Issue.record("Unexpected request: \(request.num)")
+                return Self.reply(id: request.id, code: 0, params: "{}")
+            }
+            receivedQueries.yield(request.body)
+            let isFirstPage = request.body.cursor.isEmpty
+            return Self.reply(id: request.id,
+                              code: isFirstPage ? 0 : nextPageCode,
+                              params: isFirstPage ? firstPageParams : nextPageParams)
+        }
+
+        private static func reply(id: Int32, code: Int, params: String) -> Data {
+            Data(#"{"cause":0,"code":\#(code),"id":\#(id),"params":\#(params)}"#.utf8)
+        }
+    }
+
+    private static let firstPageParams = #"{"cursor":"Y3Vyc29yMQ==","hasMore":true,"searchInfoList":["# +
+        #"{"id":"MQ==","isAvailableLocally":true,"isHydrated":true,"modifiedTime":1032584949,"name":"ZG9jMS50eHQ=","path":"L2RvYzEudHh0","size":10,"type":1},"# +
+        #"{"id":"Mg==","isAvailableLocally":true,"isHydrated":true,"modifiedTime":1032584950,"name":"ZG9jMi50eHQ=","path":"L2RvYzIudHh0","size":20,"type":1}]}"#
+
+    private static let secondPageParams = #"{"cursor":"","hasMore":false,"searchInfoList":["# +
+        #"{"id":"Mw==","isAvailableLocally":true,"isHydrated":true,"modifiedTime":1032584951,"name":"ZG9jMy50eHQ=","path":"L2RvYzMudHh0","size":30,"type":1}]}"#
+
+    /// Waits until no search or page load is in flight, so the pagination state can be asserted deterministically.
+    @MainActor
+    private func waitUntilSearchSettles(_ viewModel: SearchViewModel) async throws {
+        while viewModel.isSearching || viewModel.isLoadingNextPage {
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+    }
+
+    @Test("Pagination loads the next page with the cursor of the previous one and appends its results")
+    func paginationAppendsNextPageResults() async throws {
+        // GIVEN
+        let fixture = try await Fixture(status: .Idle)
+        let (viewModel, queries, queriesContinuation) = fixture.makePaginatedViewModel(
+            firstPageParams: Self.firstPageParams,
+            nextPageParams: Self.secondPageParams,
+            nextPageCode: 0
+        )
+        var queryIterator = queries.makeAsyncIterator()
+        defer {
+            queriesContinuation.finish()
+            _ = fixture // Keeps the DI override alive until the test ends
+        }
+
+        // WHEN the first page is searched
+        viewModel.searchText = "document"
+
+        // THEN it is requested without a cursor
+        let firstQuery = await queryIterator.next()
+        #expect(firstQuery?.syncDbId == CacheData.expectedSynchroDbId)
+        #expect(firstQuery?.searchString == "document")
+        #expect(firstQuery?.cursor == "")
+        try await waitUntilSearchSettles(viewModel)
+        #expect(viewModel.searchResults.map(\.name) == ["doc1.txt", "doc2.txt"])
+
+        // WHEN the next page is loaded
+        viewModel.loadNextPage()
+
+        // THEN it is requested with the cursor of the first page and its results are appended
+        let secondQuery = await queryIterator.next()
+        #expect(secondQuery?.searchString == "document")
+        #expect(secondQuery?.cursor == "cursor1")
+        try await waitUntilSearchSettles(viewModel)
+        #expect(viewModel.searchResults.map(\.name) == ["doc1.txt", "doc2.txt", "doc3.txt"])
+
+        // WHEN the search is exhausted, loading the next page does nothing
+        viewModel.loadNextPage()
+        #expect(!viewModel.isLoadingNextPage)
+    }
+
+    @Test("A failed next page keeps the already displayed results")
+    func failedNextPageKeepsDisplayedResults() async throws {
+        // GIVEN
+        let fixture = try await Fixture(status: .Idle)
+        let (viewModel, queries, queriesContinuation) = fixture.makePaginatedViewModel(
+            firstPageParams: Self.firstPageParams,
+            nextPageParams: "{}",
+            nextPageCode: 2 // KDC.ExitCode.NetworkError
+        )
+        var queryIterator = queries.makeAsyncIterator()
+        defer {
+            queriesContinuation.finish()
+            _ = fixture // Keeps the DI override alive until the test ends
+        }
+
+        // WHEN the first page is displayed and the next page fails to load
+        viewModel.searchText = "document"
+        _ = await queryIterator.next()
+        try await waitUntilSearchSettles(viewModel)
+        #expect(viewModel.searchResults.map(\.name) == ["doc1.txt", "doc2.txt"])
+
+        viewModel.loadNextPage()
+        _ = await queryIterator.next()
+        try await waitUntilSearchSettles(viewModel)
+
+        // THEN the displayed results are kept and paging stops
+        #expect(viewModel.searchResults.map(\.name) == ["doc1.txt", "doc2.txt"])
+        #expect(!viewModel.isLoadingNextPage)
     }
 }
