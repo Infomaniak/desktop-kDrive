@@ -31,6 +31,8 @@
 #include "io/testcachedirectory.h"
 #include "io/testdeleteitematomically.h"
 
+#include <string_view>
+
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
@@ -46,6 +48,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestCacheDirectory);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestDeleteItemAtomically);
 } // namespace KDC
 
-int main(int, char **) {
+int main(int argc, char **argv) {
+#if defined(KD_LINUX)
+    // TestUtility::testApplicationDirPath restarts this binary through a symlink with this option: print the application
+    // directory and exit instead of running the test suite.
+    if (argc > 1 && std::string_view(argv[1]) == KDC::TestUtility::printApplicationDirPathOption) {
+        return KDC::TestUtility::printApplicationDirPath(argc, argv);
+    }
+#endif
     return runTestSuite("_kDriveTestCommon.log");
 }
