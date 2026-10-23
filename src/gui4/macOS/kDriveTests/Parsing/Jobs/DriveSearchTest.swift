@@ -51,6 +51,8 @@ struct DriveSearchTest {
         #expect(response.cause == KDC.ExitCause.Unknown)
         #expect(response.id == 29)
         #expect(response.body.searchInfoList.count == 10)
+        #expect(response.body.hasMore == true)
+        #expect(response.body.cursor == "cursor1")
 
         let firstResult = response.body.searchInfoList.first
         #expect(firstResult?.id == "134929")

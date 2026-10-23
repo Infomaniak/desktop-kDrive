@@ -34,6 +34,10 @@ final class SearchViewModel: ObservableObject {
         currentSearchTask != nil
     }
 
+    var isLoadingNextPage: Bool {
+        nextPageTask != nil
+    }
+
     var hasResults: Bool {
         !searchResults.isEmpty
     }
@@ -74,6 +78,10 @@ final class SearchViewModel: ObservableObject {
     private let synchroLocalPath: URL
     private var bindStore = Set<AnyCancellable>()
     @Published private var currentSearchTask: Task<Void, Never>?
+    @Published private var nextPageTask: Task<Void, Never>?
+    private var currentQuery = ""
+    private var nextCursor = ""
+    @Published private(set) var hasMorePages = false
 
     init(syncDbId: Int32, driveId: Int, synchroLocalPath: URL) {
         self.syncDbId = syncDbId
@@ -156,30 +164,72 @@ final class SearchViewModel: ObservableObject {
 
     private func performSearch(query: String) {
         currentSearchTask?.cancel()
+        nextPageTask?.cancel()
         currentSearchTask = nil
+        nextPageTask = nil
 
         guard !query.isEmpty else {
+            currentQuery = ""
+            nextCursor = ""
+            hasMorePages = false
             searchResults = []
             return
         }
 
+        currentQuery = query
+        nextCursor = ""
+        hasMorePages = false
+
         currentSearchTask = Task { @MainActor in
             await fetchSearchResults(query: query)
+            // A cancelled task must not clear the handle of the search that replaced it.
+            guard !Task.isCancelled else { return }
             currentSearchTask = nil
+        }
+    }
+
+    func loadNextPage() {
+        guard currentSearchTask == nil, nextPageTask == nil, hasMorePages, searchText == currentQuery else { return }
+
+        let cursor = nextCursor
+        nextPageTask = Task { @MainActor in
+            await fetchNextPage(cursor: cursor)
+            // A cancelled task must not clear the handle of the page load that replaced it.
+            guard !Task.isCancelled else { return }
+            nextPageTask = nil
         }
     }
 
     private func fetchSearchResults(query: String) async {
         do {
-            let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query)
+            let page = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query, cursor: "")
 
             guard !Task.isCancelled else { return }
 
-            searchResults = results.map { UISearchResponse(searchResponse: $0) }
+            searchResults = page.items.map { UISearchResponse(searchResponse: $0) }
+            nextCursor = page.nextCursor
+            hasMorePages = page.hasMore
         } catch {
             guard !Task.isCancelled else { return }
 
             searchResults = []
+        }
+    }
+
+    private func fetchNextPage(cursor: String) async {
+        do {
+            let page = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: currentQuery, cursor: cursor)
+
+            guard !Task.isCancelled else { return }
+
+            searchResults.append(contentsOf: page.items.map { UISearchResponse(searchResponse: $0) })
+            nextCursor = page.nextCursor
+            hasMorePages = page.hasMore
+        } catch {
+            // A failed page keeps the already displayed results and stops paging.
+            guard !Task.isCancelled else { return }
+
+            hasMorePages = false
         }
     }
 }
