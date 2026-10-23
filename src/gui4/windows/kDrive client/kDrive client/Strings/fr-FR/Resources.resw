@@ -1576,7 +1576,7 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
     <value>Paramètres</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Comptes &amp; Synchronisations</value> 
+    <value>Synchronisations</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avancés</value> 
