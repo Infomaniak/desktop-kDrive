@@ -23,8 +23,11 @@
 #include "app/mainwindow/syncerroractionhandler.h"
 #include "app/navigation/activitiesnavigation.h"
 #include "app/services/syncerrorservice.h"
+#include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/types.h"
 
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QLoggingCategory>
 
 #include <algorithm>
@@ -87,6 +90,30 @@ void ErrorsPageController::invokeAction(const QString &rowId) {
         return;
     }
     _actionHandler.trigger(*classified, context.value());
+}
+
+void ErrorsPageController::copyPath(const QString &rowId) const {
+    const auto *const classified = currentError(rowId);
+    const auto context = _selectionStore.currentSyncContext();
+    if (!classified || !context.has_value() || classified->error.destinationPath().empty()) {
+        qCWarning(lcErrorsPageController) << "Path not copied, error unavailable | rowId:" << rowId;
+        return;
+    }
+
+    const auto path = absoluteSyncPath(context->syncInfo.localPath(), classified->error.destinationPath());
+    QGuiApplication::clipboard()->setText(Path2QStr(path));
+    qCInfo(lcErrorsPageController) << "Path copied to the clipboard | errorDbId:" << classified->error.dbId();
+}
+
+void ErrorsPageController::copyTechnicalDetails(const QString &rowId) const {
+    const auto text = _model.technicalDetailsText(rowId);
+    if (text.isEmpty()) {
+        qCWarning(lcErrorsPageController) << "Technical details not copied, row unavailable | rowId:" << rowId;
+        return;
+    }
+
+    QGuiApplication::clipboard()->setText(text);
+    qCInfo(lcErrorsPageController) << "Technical details copied to the clipboard | rowId:" << rowId;
 }
 
 // The error of a row, looked up again in the current errors: a row can disappear between its display and a click.
