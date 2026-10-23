@@ -169,6 +169,11 @@ function build_client_via_cmake_v4() {
     return 1
   fi
 
+  # Ensure cmake is the one provided by Conan: Qt >= 6.12 requires CMake >= 3.25 to be
+  # consumed via find_package() (see QtPublicCMakeVersionHelpers.cmake).
+  # shellcheck disable=SC1091
+  source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
+
   cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DQT_FEATURE_neon=OFF \
