@@ -84,7 +84,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_LINUX)
         static constexpr const char *printApplicationDirPathOption = "--print-application-dir-path";
         // Child mode of testApplicationDirPath: prints CommonUtility::applicationDirPath().
-        static int printApplicationDirPath(int argc, char **argv);
+        static int32_t printApplicationDirPath();
 #endif
         void setUp(void) override { TestBase::start(); }
         void tearDown(void) override { TestBase::stop(); }
