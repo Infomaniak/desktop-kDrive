@@ -39,7 +39,7 @@ struct COMMONSERVER_EXPORT CertificateBlocklist {
         static int verifyChain(X509_STORE_CTX *storeCtx, void *arg);
 
         /// @return true if the SHA-256 of the certificate's SubjectPublicKeyInfo is blocked.
-        static bool isBlocked(X509 *cert);
+        static bool isBlocked(const X509 *cert);
 };
 
 } // namespace KDC

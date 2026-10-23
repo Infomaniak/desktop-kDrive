@@ -53,25 +53,22 @@ constexpr std::array<std::string_view, 8> blockedSpkiSha256s = {
         "ec4ffa1ad0ac88081314b7aaffef6a91f97cd57291bb5ba686c5415f5eb4f6b6", // EM OV CS CA - G3B (code signing)
 };
 
-// Sentry is notified once per process: a rejection likely means an active interception.
-std::atomic_flag sentryNotified;
-
 // Returns the lowercase hex SHA-256 of the certificate's DER-encoded SubjectPublicKeyInfo, or an empty string on error.
-std::string spkiSha256Hex(X509 *const cert) {
+std::string spkiSha256Hex(const X509 *const cert) {
     unsigned char *der = nullptr;
     const int32_t derLen = i2d_X509_PUBKEY(X509_get_X509_PUBKEY(cert), &der);
     if (derLen <= 0 || !der) return {};
 
-    unsigned char digest[EVP_MAX_MD_SIZE];
-    unsigned int digestLen = 0;
-    const int32_t rc = EVP_Digest(der, static_cast<size_t>(derLen), digest, &digestLen, EVP_sha256(), nullptr);
+    std::array<unsigned char, EVP_MAX_MD_SIZE> digest{};
+    uint32_t digestLen = 0;
+    const int32_t rc = EVP_Digest(der, static_cast<size_t>(derLen), digest.data(), &digestLen, EVP_sha256(), nullptr);
     OPENSSL_free(der);
     if (rc != 1) return {};
 
     static constexpr char hexDigits[] = "0123456789abcdef";
     std::string hex;
     hex.reserve(digestLen * 2);
-    for (unsigned int i = 0; i < digestLen; ++i) {
+    for (uint32_t i = 0; i < digestLen; ++i) {
         hex.push_back(hexDigits[digest[i] >> 4]);
         hex.push_back(hexDigits[digest[i] & 0x0F]);
     }
@@ -80,24 +77,27 @@ std::string spkiSha256Hex(X509 *const cert) {
 
 std::string nameToString(const X509_NAME *const name) {
     if (!name) return {};
-    char buffer[512];
-    return X509_NAME_oneline(name, buffer, sizeof(buffer)) ? std::string(buffer) : std::string();
+    std::array<char, 512> buffer{};
+    if (!X509_NAME_oneline(name, buffer.data(), static_cast<int32_t>(buffer.size()))) return {};
+    return std::string(buffer.data());
 }
 
 // Returns the SNI host of the connection being verified, empty when there is none (e.g. in tests).
-std::string serverName(X509_STORE_CTX *const storeCtx) {
+std::string serverName(const X509_STORE_CTX *const storeCtx) {
     const auto *const ssl = static_cast<const SSL *>(X509_STORE_CTX_get_ex_data(storeCtx, SSL_get_ex_data_X509_STORE_CTX_idx()));
     if (!ssl) return {};
     const char *const host = SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name);
     return host ? std::string(host) : std::string();
 }
 
-void reportRejection(X509_STORE_CTX *const storeCtx, X509 *const cert, const int32_t depth) {
+void reportRejection(const X509_STORE_CTX *const storeCtx, const X509 *const cert, const int32_t depth) {
     const std::string message = "Rejected TLS chain with blocked certificate (host=" + serverName(storeCtx) +
                                 ", depth=" + std::to_string(depth) + ", subject=" + nameToString(X509_get_subject_name(cert)) +
                                 ", issuer=" + nameToString(X509_get_issuer_name(cert)) + ")";
     LOG_WARN(Log::instance()->getLogger(), message);
 
+    // Sentry is notified once per process: a rejection likely means an active interception.
+    static std::atomic_flag sentryNotified;
     if (!sentryNotified.test_and_set()) {
         sentry::Handler::captureMessage(sentry::Level::Error, "CertificateBlocklist::verifyChain", message);
     }
@@ -122,7 +122,7 @@ int CertificateBlocklist::verifyChain(X509_STORE_CTX *storeCtx, void * /*arg*/) 
     STACK_OF(X509) *const chain = X509_STORE_CTX_get0_chain(storeCtx);
     const int32_t count = chain ? sk_X509_num(chain) : 0;
     for (int32_t depth = 0; depth < count; ++depth) {
-        X509 *const cert = sk_X509_value(chain, depth);
+        auto *const cert = sk_X509_value(chain, depth);
         if (!isBlocked(cert)) continue;
 
         reportRejection(storeCtx, cert, depth);
@@ -134,11 +134,11 @@ int CertificateBlocklist::verifyChain(X509_STORE_CTX *storeCtx, void * /*arg*/) 
     return 1;
 }
 
-bool CertificateBlocklist::isBlocked(X509 *cert) {
+bool CertificateBlocklist::isBlocked(const X509 *cert) {
     if (!cert) return false;
     const std::string hash = spkiSha256Hex(cert);
     if (hash.empty()) return false;
-    return std::find(blockedSpkiSha256s.begin(), blockedSpkiSha256s.end(), hash) != blockedSpkiSha256s.end();
+    return std::ranges::find(blockedSpkiSha256s, hash) != blockedSpkiSha256s.end();
 }
 
 } // namespace KDC

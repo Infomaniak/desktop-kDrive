@@ -106,32 +106,38 @@ struct X509StackDeleter {
 };
 using UniqueX509Stack = std::unique_ptr<STACK_OF(X509), X509StackDeleter>;
 
+struct BioDeleter {
+        void operator()(BIO *const b) const { BIO_free_all(b); }
+};
+using UniqueBio = std::unique_ptr<BIO, BioDeleter>;
+
 UniqueX509 loadCert(const char *const pem) {
-    BIO *const bio = BIO_new_mem_buf(pem, -1);
-    UniqueX509 cert(PEM_read_bio_X509(bio, nullptr, nullptr, nullptr));
-    BIO_free(bio);
-    return cert;
+    const UniqueBio bio(BIO_new_mem_buf(pem, -1));
+    return UniqueX509(PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr));
 }
 
 UniqueEvpPkey loadKey(const char *const pem) {
-    BIO *const bio = BIO_new_mem_buf(pem, -1);
-    UniqueEvpPkey key(PEM_read_bio_PrivateKey(bio, nullptr, nullptr, nullptr));
-    BIO_free(bio);
-    return key;
+    const UniqueBio bio(BIO_new_mem_buf(pem, -1));
+    return UniqueEvpPkey(PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr));
 }
 
 // Builds a certificate for `key`, signed by `signingKey` on behalf of `issuer` (self-signed when null).
-UniqueX509 makeCert(EVP_PKEY *const key, const char *const commonName, X509 *const issuer, EVP_PKEY *const signingKey) {
+// Returns null if any step fails.
+UniqueX509 makeCert(EVP_PKEY *const key, const char *const commonName, const X509 *const issuer, EVP_PKEY *const signingKey) {
     UniqueX509 cert(X509_new());
-    X509_set_version(cert.get(), X509_VERSION_3);
-    ASN1_INTEGER_set(X509_get_serialNumber(cert.get()), 1);
-    X509_gmtime_adj(X509_getm_notBefore(cert.get()), -3600);
-    X509_gmtime_adj(X509_getm_notAfter(cert.get()), 3600);
-    X509_set_pubkey(cert.get(), key);
+    if (!cert) return nullptr;
+    if (X509_set_version(cert.get(), X509_VERSION_3) != 1 || ASN1_INTEGER_set(X509_get_serialNumber(cert.get()), 1) != 1 ||
+        !X509_gmtime_adj(X509_getm_notBefore(cert.get()), -3600) || !X509_gmtime_adj(X509_getm_notAfter(cert.get()), 3600) ||
+        X509_set_pubkey(cert.get(), key) != 1) {
+        return nullptr;
+    }
 
     X509_NAME *const name = X509_get_subject_name(cert.get());
-    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>(commonName), -1, -1, 0);
-    X509_set_issuer_name(cert.get(), issuer ? X509_get_subject_name(issuer) : name);
+    const auto *const cn = reinterpret_cast<const unsigned char *>(commonName);
+    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, cn, -1, -1, 0) != 1 ||
+        X509_set_issuer_name(cert.get(), issuer ? X509_get_subject_name(issuer) : name) != 1) {
+        return nullptr;
+    }
 
     if (X509_sign(cert.get(), signingKey, EVP_sha384()) <= 0) return nullptr;
     return cert;
@@ -139,15 +145,16 @@ UniqueX509 makeCert(EVP_PKEY *const key, const char *const commonName, X509 *con
 
 // Runs CertificateBlocklist::verifyChain on `leaf`, with `trusted` as the only trust anchor (if any)
 // and `intermediate` as an untrusted certificate sent by the peer (if any).
+// Returns -1 if the verification context cannot be set up.
 int32_t verify(X509 *const leaf, X509 *const trusted, X509 *const intermediate, int32_t &error) {
     const UniqueX509Store store(X509_STORE_new());
-    if (trusted) X509_STORE_add_cert(store.get(), trusted);
+    if (!store || (trusted && X509_STORE_add_cert(store.get(), trusted) != 1)) return -1;
 
     const UniqueX509Stack untrusted(sk_X509_new_null());
-    if (intermediate) sk_X509_push(untrusted.get(), intermediate);
+    if (!untrusted || (intermediate && sk_X509_push(untrusted.get(), intermediate) <= 0)) return -1;
 
     const UniqueX509StoreCtx storeCtx(X509_STORE_CTX_new());
-    X509_STORE_CTX_init(storeCtx.get(), store.get(), leaf, untrusted.get());
+    if (!storeCtx || X509_STORE_CTX_init(storeCtx.get(), store.get(), leaf, untrusted.get()) != 1) return -1;
     const int32_t result = CertificateBlocklist::verifyChain(storeCtx.get(), nullptr);
     error = X509_STORE_CTX_get_error(storeCtx.get());
     return result;
