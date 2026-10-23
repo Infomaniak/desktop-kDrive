@@ -62,6 +62,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/activitylistmodel.h
         app/mainwindow/blockingerrorcontroller.cpp
         app/mainwindow/blockingerrorcontroller.h
+        app/mainwindow/errorlistmodel.cpp
+        app/mainwindow/errorlistmodel.h
+        app/mainwindow/errorspagecontroller.cpp
+        app/mainwindow/errorspagecontroller.h
         app/mainwindow/homecontroller.cpp
         app/mainwindow/homecontroller.h
         app/mainwindow/homestateresolver.cpp
@@ -76,6 +80,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/storagecontroller.h
         app/mainwindow/storagescanner.cpp
         app/mainwindow/storagescanner.h
+        app/mainwindow/syncerroractionhandler.cpp
+        app/mainwindow/syncerroractionhandler.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/activitiesnavigation.cpp
