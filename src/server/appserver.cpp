@@ -535,10 +535,6 @@ void AppServer::init() {
         return;
     }
 
-#if defined(KD_MACOS)
-    if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
-#endif
-
     // Start syncs
     LOG_DEBUG(_logger, "Start syncs");
     QTimer::singleShot(0, this, [this]() { startSyncsAndRetryOnError(); });
