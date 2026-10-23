@@ -4038,16 +4038,18 @@ bool AppServer::startClient() {
 #endif
 
         auto getPathToExecutable = [](const SyncPath &executableName) {
-            auto pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
+            auto pathToExecutable = QStr2Path(CommonUtility::applicationDirPath()) / executableName;
             auto ioError = IoError::Success;
-            if (auto exists = false; !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+            if (auto exists = false;
+                !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
                 !exists || ioError != IoError::Success) {
                 return SyncPath();
             }
             return pathToExecutable;
         };
 
-        auto pathToExecutable = getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
+        auto pathToExecutable =
+                getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
         if (pathToExecutable.empty()) {
             if (useClientV4) {
                 useClientV4 = false;
