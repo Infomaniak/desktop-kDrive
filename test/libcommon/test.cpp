@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     // TestUtility::testApplicationDirPath restarts this binary through a symlink with this option: print the application
     // directory and exit instead of running the test suite.
     if (argc > 1 && std::string_view(argv[1]) == KDC::TestUtility::printApplicationDirPathOption) {
-        return KDC::TestUtility::printApplicationDirPath(argc, argv);
+        return KDC::TestUtility::printApplicationDirPath();
     }
 #endif
     return runTestSuite("_kDriveTestCommon.log");
