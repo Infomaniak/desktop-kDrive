@@ -1458,7 +1458,7 @@
 "sentryDescription" = "Sentry er et værktøj hostet og administreret udelukkende af Infomaniak for at overvåge stabiliteten af programmet i realtid og automatisk rapportere tekniske fejl til vores udviklere.\n\nDisse data giver vores team mulighed for hurtigt at rette og optimere programmet, hvilket resulterer i en bedre brugeroplevelse for dig.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Konti & synkroniseringer";
+"sidebarItemAccounts" = "Synkroniseringer";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Avanceret";
