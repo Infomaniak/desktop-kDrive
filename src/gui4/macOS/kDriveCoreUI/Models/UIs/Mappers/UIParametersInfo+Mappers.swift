@@ -33,6 +33,9 @@ public extension UIAppLanguage {
             self = .spanish
         case .Italian:
             self = .italian
+        case .Dutch, .Swedish, .Portuguese, .Polish, .Norwegian, .Finnish, .Danish, .Greek:
+            // These server languages are not localized in the macOS GUI.
+            self = .system
         case .EnumEnd:
             ReportHelper.reportToSentryIfProd(message: "UIAppLanguage init received KDC.Language.EnumEnd case")
             self = .system

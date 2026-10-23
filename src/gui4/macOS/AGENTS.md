@@ -202,6 +202,8 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 - AppKit views (`NSView`) needing SwiftUI content: wrap with `NSHostingView<ContentView>`.
 - SwiftLint's `unused_import` analyzer rule is active — remove unused imports before committing.
 - The project has a `kDrive` scheme that runs `kDriveTests`; there is no separate `kDriveTests` scheme.
+- Expose C/Objective-C headers through `kDriveCore.h` and the target's `publicHeaders` list; framework targets cannot combine a Clang module with a Swift bridging header.
+- Project-level `LM_SKIP_METADATA_EXTRACTION=YES` skips unused App Intents metadata tasks in Debug/Release, including CI and CMake invocations. This internal setting was verified with Xcode 26.5; recheck after Xcode upgrades and remove it for targets introducing App Intents.
 
 ## Pre-PR Checks
 ```bash

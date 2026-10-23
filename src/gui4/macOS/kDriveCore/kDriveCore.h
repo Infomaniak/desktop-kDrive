@@ -16,6 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Bridging-Header.h
-#import "ServerBridge/XPC/xpcGuiProtocol.h"
-#import "ServerBridge/XPC/xpcLoginItemProtocol.h"
+#pragma once
+
+#import <Foundation/Foundation.h>
+
+#import <kDriveCore/xpcGuiProtocol.h>
+#import <kDriveCore/xpcLoginItemProtocol.h>
+#import <kDriveCore/FinderSidebarLegacy.h>
