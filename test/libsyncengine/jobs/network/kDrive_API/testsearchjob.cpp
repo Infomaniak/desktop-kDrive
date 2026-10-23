@@ -34,7 +34,10 @@
 #include "libparms/db/parmsdb.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
+#include <Poco/URI.h>
+
 #include <filesystem>
+#include <map>
 #include <sstream>
 
 using namespace CppUnit;
@@ -86,10 +89,16 @@ void TestSearchJob::setUp() {
 #endif
     syncWithVfsOff.setVirtualFileMode(VirtualFileMode::Off);
 
+    // Advanced sync of the "Docs" folder of the private space, mirrored into the same local root
+    auto advancedSync = Sync(_advancedSyncDbId, drive.dbId(), _localTempDir.path(), NodeId{}, SyncPath(Str("/Docs")));
+    advancedSync.setVirtualFileMode(VirtualFileMode::Off);
+
     syncWithVfsOn.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
     syncWithVfsOff.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
+    advancedSync.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
     (void) ParmsDb::instance()->insertSync(syncWithVfsOn);
     (void) ParmsDb::instance()->insertSync(syncWithVfsOff);
+    (void) ParmsDb::instance()->insertSync(advancedSync);
 }
 
 void TestSearchJob::tearDown() {
@@ -119,8 +128,8 @@ void TestSearchJob::testHandleResponsePrivatePath() {
 }
 
 void TestSearchJob::testHandleResponseSharedPath() {
-    // Paths returned by the API for "Shared" files are prefixed with "/Shared/".
-    // handleResponse() should strip this prefix so SearchInfo::path() is relative.
+    // Paths returned by the API for files shared with the user are prefixed with "/Shared/". Unlike "Private", "Shared" is
+    // a folder of the synchronized tree, so handleResponse() keeps it in SearchInfo::path().
     SearchJob job(_driveDbId, "doc");
     job._syncRootPath = _localTempDir.path();
 
@@ -131,7 +140,18 @@ void TestSearchJob::testHandleResponseSharedPath() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
     const auto results = job.searchResults();
     CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
-    CPPUNIT_ASSERT_EQUAL(SyncPath(Str("testdir")), results.front().path());
+    CPPUNIT_ASSERT_EQUAL(SyncPath(Str("Shared/testdir")), results.front().path());
+
+    // A shared item synchronized under the local "Shared" folder is available locally.
+    std::error_code ec;
+    (void) std::filesystem::create_directories(_localTempDir.path() / "Shared" / "testdir", ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create test directory", !ec);
+
+    SearchJob availableJob(_driveDbId, "doc");
+    availableJob._syncRootPath = _localTempDir.path();
+    std::istringstream availableIs(json);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), availableJob.handleResponse(availableIs));
+    CPPUNIT_ASSERT(availableJob.searchResults().front().isAvailableLocally());
 }
 
 void TestSearchJob::testHandleResponseLeadingSlash() {
@@ -197,6 +217,102 @@ void TestSearchJob::testHandleResponseIsHydratedWithVfsOff() {
     CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
     CPPUNIT_ASSERT(results.front().isAvailableLocally());
     CPPUNIT_ASSERT(results.front().isHydrated());
+}
+
+void TestSearchJob::testHandleResponseAdvancedSync() {
+    // The local root of the advanced sync mirrors the remote "Docs" folder.
+    const SyncPath localFile = _localTempDir.path() / "inside.txt";
+    { std::ofstream ofs(localFile); }
+
+    {
+        // A result below the target folder is located relative to it.
+        SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/Docs/inside.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("inside.txt")), results.front().path());
+        CPPUNIT_ASSERT(results.front().isAvailableLocally());
+    }
+
+    {
+        // A result outside of the target folder is never available locally, even if a homonym exists locally.
+        SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/inside.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT(!results.front().isAvailableLocally());
+    }
+
+    {
+        // The target folder itself is the local sync root, which is available locally.
+        SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/Docs");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT_EQUAL(SyncPath{}, results.front().path());
+        CPPUNIT_ASSERT(results.front().isAvailableLocally());
+    }
+
+    {
+        // A sibling folder sharing the target name as a prefix is outside of the target folder.
+        SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/Docs2/inside.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT(!results.front().isAvailableLocally());
+    }
+}
+
+void TestSearchJob::testHandleResponseTwice() {
+    // A retried request handles a second response: its results replace those of the first one instead of piling up.
+    SearchJob job(_driveDbId, "doc");
+    job._syncRootPath = _localTempDir.path();
+    const std::string json = makeSearchResponseJson("/Private/testdir");
+
+    for (int32_t attempt = 0; attempt < 2; ++attempt) {
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+    }
+
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, job.searchResults().size());
+}
+
+void TestSearchJob::testSetQueryParameters() {
+    const auto queryParameters = [](SearchJob &job) {
+        Poco::URI uri("https://api.example/search");
+        job.setQueryParameters(uri);
+        std::map<std::string, std::string> parameters;
+        for (const auto &[key, value]: uri.getQueryParameters()) {
+            parameters[key] = value;
+        }
+        return parameters;
+    };
+
+    // A search string of 3 characters or less is searched by name. A first page is requested without cursor.
+    SearchJob firstPageJob(_driveDbId, "doc");
+    auto parameters = queryParameters(firstPageJob);
+    CPPUNIT_ASSERT_EQUAL(std::string("doc"), parameters["name"]);
+    CPPUNIT_ASSERT(!parameters.contains("query"));
+    CPPUNIT_ASSERT(!parameters.contains("cursor"));
+    CPPUNIT_ASSERT_EQUAL(std::string("relevance"), parameters["order_by"]);
+    CPPUNIT_ASSERT_EQUAL(std::string("desc"), parameters["order"]);
+    CPPUNIT_ASSERT_EQUAL(std::string("50"), parameters["limit"]);
+    CPPUNIT_ASSERT_EQUAL(std::string("path"), parameters["with"]);
+
+    // A longer search string is a full-text query. A next page is requested with the cursor of the previous one.
+    SearchJob nextPageJob(_driveDbId, "document", "cursor1");
+    parameters = queryParameters(nextPageJob);
+    CPPUNIT_ASSERT_EQUAL(std::string("document"), parameters["query"]);
+    CPPUNIT_ASSERT(!parameters.contains("name"));
+    CPPUNIT_ASSERT_EQUAL(std::string("cursor1"), parameters["cursor"]);
 }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
