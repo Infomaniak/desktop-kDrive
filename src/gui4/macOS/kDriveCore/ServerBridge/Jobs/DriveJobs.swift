@@ -76,9 +76,6 @@ public struct DriveJobs: Sendable {
         let request = await RequestMessage<DriveUpdateQuery>(num: RequestNum.DRIVE_UPDATE, body: query)
 
         _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
-        // TODO: update cache by drive update signal
-        // await coherentCache.updateDrive(drive: driveInfo.asDrive)
     }
 
     // TODO: Simplify parameters requirements once I checked with team how to get a `driveDbId` all the time
@@ -89,8 +86,6 @@ public struct DriveJobs: Sendable {
         _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         await coherentCache.removeDrive(driveDbId: driveDbId, accountDbId: accountId, userDbId: userDbId)
-
-        // TODO: also implement signal
     }
 
     public func driveSearch(syncDbId: Int32, searchString: String) async throws -> [SearchResponse] {
