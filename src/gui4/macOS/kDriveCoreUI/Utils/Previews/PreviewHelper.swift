@@ -44,6 +44,13 @@ public enum PreviewHelper {
         synchro: PreviewHelper.synchro,
         node: PreviewHelper.synchroNode1
     )
+    public static let synchroNodeContext2 = UISynchroNodeContext(
+        user: PreviewHelper.user,
+        account: PreviewHelper.account,
+        drive: PreviewHelper.drive1,
+        synchro: PreviewHelper.synchro,
+        node: PreviewHelper.synchroNode2
+    )
 
     public static let user = UIUser(
         dbId: 95014,
