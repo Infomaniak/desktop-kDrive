@@ -542,6 +542,16 @@ release_flavor="$(get_linux_release_flavor /src)" || {
 }
 echo "Release flavor: $release_flavor"
 
+# The sentry recipe requires libc-ares-dev, which the build image does not provide.
+# TODO: Remove once the build image ships libc-ares-dev.
+if ! dpkg-query -W -f='${Status}' libc-ares-dev 2>/dev/null | grep -q "install ok installed"; then
+    echo "Installing libc-ares-dev..."
+    if ! { apt-get update -qq && apt-get install -y -qq libc-ares-dev; }; then
+        echo "Unable to install libc-ares-dev." >&2
+        exit 1
+    fi
+fi
+
 echo "Detecting Qt and building Conan dependencies for ${architecture}..."
 find_qt_from_conan "$build_type"
 
