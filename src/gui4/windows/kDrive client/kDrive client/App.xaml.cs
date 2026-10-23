@@ -164,8 +164,12 @@ namespace Infomaniak.kDrive
         {
             if (CurrentWindow is OnBoardingWindow && options.HasFlag(CreateWindowOptions.CancelOnboarding))
             {
+                // Creating a new Window synchronously while the XAML framework is still tearing down the
+                // closing one races with the teardown and can crash with a stowed exception (0xc000027b).
                 CurrentWindow.Close();
                 CurrentWindow = null;
+                AppModel.UIThreadDispatcher.TryEnqueue(() => CreateWindow(options));
+                return;
             }
 
             if (CurrentWindow is null)
@@ -241,7 +245,10 @@ namespace Infomaniak.kDrive
             var onboardingWindow = (OnBoarding.OnBoardingWindow)sender;
             onboardingWindow.Closed -= OnOnboardingClosed;
             CurrentWindow = null;
-            CreateWindow(CreateWindowOptions.CancelOnboarding | CreateWindowOptions.Foreground);
+            // Creating a new Window inside the Closed handler races with the XAML teardown of the
+            // closing window and can crash with a stowed exception (0xc000027b). Defer the creation.
+            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                CreateWindow(CreateWindowOptions.CancelOnboarding | CreateWindowOptions.Foreground));
         }
 
         public bool StartOnboardingIfNeeded()
@@ -265,7 +272,8 @@ namespace Infomaniak.kDrive
             var previousWindow = app.CurrentWindow;
             app.CurrentWindow = null;
             previousWindow?.Close();
-            app.CreateWindow(CreateWindowOptions.Foreground);
+            // Defer window creation to avoid racing with the XAML teardown of the closed window.
+            AppModel.UIThreadDispatcher.TryEnqueue(() => app.CreateWindow(CreateWindowOptions.Foreground));
         }
         public static void ExitApplication()
         {
@@ -310,7 +318,7 @@ namespace Infomaniak.kDrive
                 {
                     _updateWindow = new UpdateWindow();
                     _updateWindow.Closed += (s, e) => {
-                        CreateWindow(CreateWindowOptions.None);
+                        AppModel.UIThreadDispatcher.TryEnqueue(() => CreateWindow(CreateWindowOptions.None));
                         _updateWindow = null;
                     };
                     _updateWindow.Activate();
