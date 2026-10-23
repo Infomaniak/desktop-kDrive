@@ -70,7 +70,6 @@ public enum KDriveResources {
   public static let pencil = ImageAsset(name: "pencil")
   public static let people = ImageAsset(name: "people")
   public static let person = ImageAsset(name: "person")
-  public static let persons = ImageAsset(name: "persons")
   public static let play = ImageAsset(name: "play")
   public static let settings = ImageAsset(name: "settings")
   public static let squareArrowDiagonalUp = ImageAsset(name: "square-arrow-diagonal-up")
