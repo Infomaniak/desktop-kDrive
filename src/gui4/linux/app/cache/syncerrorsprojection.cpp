@@ -23,6 +23,7 @@
 #include "app/errors/blockingerrorresolver.h"
 #include "app/errors/syncerrorcatalog.h"
 #include "app/errors/syncerrorclassifier.h"
+#include "app/services/sentryservice.h"
 
 #include <QLoggingCategory>
 
@@ -43,8 +44,8 @@ Q_LOGGING_CATEGORY(lcSyncErrorsProjection, "gui.v4.syncerrors", QtInfoMsg)
 // signals of a pair were observed up to about 100 ms apart on reception.
 constexpr auto refreshInterval = std::chrono::milliseconds{150};
 
-const char *blockingErrorName(const std::optional<BlockingErrorKind> kind) {
-    return kind ? toString(*kind).data() : "none";
+std::string blockingErrorName(const std::optional<BlockingErrorKind> kind) {
+    return kind ? toString(*kind) : "none";
 }
 
 // Logs a new or reclassified error. File paths are never logged.
@@ -57,13 +58,23 @@ void logClassification(const ClassifiedSyncError &classified) {
                                           << "/ nodeType:" << error.nodeType() << "/ cancelType:" << error.cancelType()
                                           << "/ inconsistencyType:" << error.inconsistencyType()
                                           << "/ conflictType:" << error.conflictType();
+        // One issue per code and cause, whatever the user: tells which unexpected errors deserve a kind of their own.
+        // The simulator's errors (negative ids, real ones are SQLite rowids) are not reported.
+        if (error.dbId() > 0) {
+            SentryService::reportWarning(
+                    "Unclassified sync error: " + toString(error.exitCode()) + " / " + toString(error.exitCause()),
+                    "level: " + toString(error.level()) + ", cancelType: " + toString(error.cancelType()) +
+                            ", inconsistencyType: " + toString(error.inconsistencyType()) +
+                            ", conflictType: " + toString(error.conflictType()) + ", function: " + error.functionName() +
+                            ", worker: " + error.workerName());
+        }
         return;
     }
 
     qCInfo(lcSyncErrorsProjection) << "Sync error classified | dbId:" << error.dbId() << "/ syncDbId:" << error.syncDbId()
-                                   << "/ kind:" << toString(classified.kind).data()
-                                   << "/ category:" << static_cast<int32_t>(classified.category) << "/ level:" << error.level()
-                                   << "/ exitCode:" << error.exitCode() << "/ exitCause:" << error.exitCause();
+                                   << "/ kind:" << classified.kind << "/ category:" << static_cast<int32_t>(classified.category)
+                                   << "/ level:" << error.level() << "/ exitCode:" << error.exitCode()
+                                   << "/ exitCause:" << error.exitCause();
 }
 
 } // namespace
@@ -167,8 +178,8 @@ void SyncErrorsProjection::refreshCurrentErrors() {
 
     if (blockingError != _currentBlockingError) {
         qCInfo(lcSyncErrorsProjection) << "Blocking error of the selected sync changed | syncDbId:" << syncDbId
-                                       << "/ from:" << blockingErrorName(_currentBlockingError)
-                                       << "/ to:" << blockingErrorName(blockingError);
+                                       << "/ from:" << blockingErrorName(_currentBlockingError).c_str()
+                                       << "/ to:" << blockingErrorName(blockingError).c_str();
         _currentBlockingError = blockingError;
         emit currentBlockingErrorChanged();
     }
