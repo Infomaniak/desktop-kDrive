@@ -37,6 +37,7 @@ namespace Infomaniak.kDrive.ViewModels
         private ProxyConfig _proxyConfig = new ProxyConfig();
         private bool _matomoEnabled = false;
         private bool _sentryEnabled = false;
+        private bool _askBeforeDelete = true;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
         public LogUploadManager LogUploadManager { get; } = new LogUploadManager();
 
@@ -119,6 +120,12 @@ namespace Infomaniak.kDrive.ViewModels
                     else
                         Logger.StopSentry();
             }
+        }
+
+        public bool AskBeforeDelete
+        {
+            get => _askBeforeDelete;
+            set => SetPropertyInUIThread(ref _askBeforeDelete, value);
         }
 
         public AppNotificationAvailability AppNotificationAvailability => App.ServiceProvider.GetRequiredService<NotificationManager>().Availability;

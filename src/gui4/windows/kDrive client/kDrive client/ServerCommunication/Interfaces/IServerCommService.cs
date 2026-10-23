@@ -84,7 +84,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
         Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken);
-        Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken);
+
+        struct SearchItemResult
+        {
+            public ExitCode Code { get; private set; }
+            public List<SearchItem> Items { get; private set; }
+            public string Cursor { get; private set; }
+            public bool HasMore { get; private set; }
+            public SearchItemResult(ExitCode code, List<SearchItem>? items, string cursor, bool hasMore)
+            {
+                Code = code;
+                Items = items ?? new List<SearchItem>();
+                Cursor = cursor;
+                HasMore = hasMore;
+            }
+
+            static public SearchItemResult Failed(ExitCode? code) => new SearchItemResult(code ?? ExitCode.DataError, null, "", false);
+            static public SearchItemResult Success(List<SearchItem> items, string cursor, bool hasMore) => new SearchItemResult(ExitCode.Ok, items, cursor, hasMore);
+        }
+        Task<SearchItemResult> SearchItem(Sync? sync, string searchString, string cursor, CancellationToken cancellationToken);
         Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
 
         // Node-related requests
