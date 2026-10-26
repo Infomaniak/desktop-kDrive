@@ -33,18 +33,23 @@ Item {
     // One component per page of the ActivitiesNavigation chain, in chain order: the stack depth of a page is its index + 1.
     readonly property list<Component> pageComponents: [listPageComponent, errorsPageComponent]
 
-    function syncStack(operation) {
+    // `moveFocus`: a page change requested by the user gives the keyboard focus to the new page, so that it does not stay
+    // on a control that disappeared, such as the toolbar back button. Rebuilding the view leaves the focus where it is.
+    function syncStack(operation, moveFocus) {
         if (stack.busy) {
             return;
         }
 
         const targetDepth = Math.min(root.navigation.currentPage + 1, root.pageComponents.length);
+        const changed = stack.depth !== targetDepth;
         if (stack.depth > targetDepth) {
             stack.pop(stack.get(targetDepth - 1), operation);
-            return;
         }
         while (stack.depth < targetDepth) {
             stack.push(root.pageComponents[stack.depth], {}, operation);
+        }
+        if (moveFocus && changed && stack.currentItem) {
+            stack.currentItem.focusDefault();
         }
     }
 
@@ -58,7 +63,7 @@ Item {
         // A page change during a transition is applied once it ends.
         onBusyChanged: {
             if (!busy) {
-                root.syncStack(StackView.Transition);
+                root.syncStack(StackView.Transition, true);
             }
         }
     }
@@ -67,12 +72,12 @@ Item {
         target: root.navigation
 
         function onCurrentPageChanged() {
-            root.syncStack(StackView.Transition);
+            root.syncStack(StackView.Transition, true);
         }
     }
 
     // Builds the whole stack, list included, without animation: the view is recreated when the tab or the window comes back.
-    Component.onCompleted: root.syncStack(StackView.Immediate)
+    Component.onCompleted: root.syncStack(StackView.Immediate, false)
 
     Component {
         id: listPageComponent
