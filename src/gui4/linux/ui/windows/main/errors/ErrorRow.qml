@@ -217,47 +217,11 @@ Rectangle {
             }
         }
 
-        Rectangle {
+        ErrorCopyablePath {
             Layout.fillWidth: true
-            implicitHeight: IKActivities.errorsCopyFieldHeight
             visible: root.variant === SyncErrors.CopyablePath && root.copyablePath.length > 0
-            radius: IKRadius.r4
-            color: IKColors.errorsCopyFieldSurface
-            border.width: 1
-            border.color: IKColors.errorsCopyFieldBorder
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: IKSpacing.s8
-                anchors.rightMargin: IKSpacing.s4
-                spacing: IKSpacing.s4
-
-                Text {
-                    id: pathLabel
-
-                    Layout.fillWidth: true
-                    text: root.copyablePath
-                    textFormat: Text.PlainText
-                    color: IKColors.textSecondary
-                    font.pixelSize: IKFonts.bodySize
-                    elide: Text.ElideMiddle
-
-                    HoverHandler {
-                        id: pathHover
-                    }
-
-                    IKToolTip {
-                        text: root.copyablePath
-                        showRequested: pathHover.hovered && pathLabel.truncated
-                    }
-                }
-
-                ErrorCopyButton {
-                    text: qsTrId("buttonCopyPath")
-                    copiedText: qsTrId("pathCopiedToClipboard")
-                    onCopyRequested: root.copyRequested(root.rowId)
-                }
-            }
+            value: root.copyablePath
+            onCopyRequested: root.copyRequested(root.rowId)
         }
 
         ColumnLayout {
