@@ -577,6 +577,11 @@ IKShadowedWindow {
             root.selectAdvanced();
             advancedPane.push(fileExclusionsComponent);
         }
+
+        function onAccountsRequested() {
+            accountsPane.reset(accountsRootComponent);
+            root.selectAccounts();
+        }
     }
 
     Connections {
