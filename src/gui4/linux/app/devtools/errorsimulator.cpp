@@ -49,7 +49,8 @@ namespace {
 Q_LOGGING_CATEGORY(lcErrorSimulator, "gui.v4.errorsimulator", QtInfoMsg)
 
 constexpr char simulatorName[] = "ErrorSimulator";
-constexpr char acceptedScenarios[] = "all, asleep, wakingup, maintenance, notrenew, accessdenied, loggedout, update-required";
+constexpr char acceptedScenarios[] =
+        "all, inotify, asleep, wakingup, maintenance, notrenew, accessdenied, loggedout, update-required";
 
 // Longer than the 255-byte file name limit of common Linux filesystems.
 constexpr size_t tooLongNameLength = 260;
@@ -201,6 +202,13 @@ std::optional<std::vector<Error>> scenarioErrors(const std::string_view scenario
             }
         }
         return errors;
+    }
+
+    // The inotify watches error alone, to try its explanation dialog and the restart.
+    if (scenario == "inotify") {
+        const auto fixture = std::ranges::find(allFixtures, SyncErrorKind::NotEnoughINotifyWatches, &Fixture::kind);
+        assert(fixture != allFixtures.end() && "No simulated inotify watches error");
+        return std::vector<Error>{fixture->error};
     }
 
     if (scenario == "update-required") {
