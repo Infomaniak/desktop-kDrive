@@ -23,6 +23,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/certificateblocklist.h"
 #include "libcommonserver/utility/truststorehelper.h"
 #include "libparms/db/parmsdb.h"
 #include "utility/timerutility.h"
@@ -72,6 +73,9 @@ AbstractNetworkJob::AbstractNetworkJob() :
                 _context = new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
                                                   Poco::Net::Context::VERIFY_STRICT, 9, false);
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+                // Installed first so that it stays active even if loading the system CAs fails.
+                CertificateBlocklist::install(_context->sslContext());
 
                 // Load the platform-native trust store (macOS keychain / Windows cert store /
                 // Linux ca-certificates) into the underlying OpenSSL SSL_CTX.
