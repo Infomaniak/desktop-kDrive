@@ -59,7 +59,6 @@ bool isActionShown(const SyncErrorAction action) {
     switch (action) {
         case SyncErrorAction::None:
         case SyncErrorAction::ChooseVersion:
-        case SyncErrorAction::Explain:
         case SyncErrorAction::EnumEnd:
             return false;
         default:
