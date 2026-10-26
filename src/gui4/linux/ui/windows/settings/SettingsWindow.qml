@@ -623,6 +623,11 @@ IKShadowedWindow {
         function onFileExclusionsRequested() {
             root.selectAdvanced(fileExclusionsComponent);
         }
+
+        function onAccountsRequested() {
+            accountsPane.reset(accountsRootComponent);
+            root.selectAccounts();
+        }
     }
 
     Connections {
