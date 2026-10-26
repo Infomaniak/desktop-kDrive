@@ -32,6 +32,9 @@ Item {
     required property var homeController
     required property var mainSidebarController
     required property var storageController
+    // Bounds of the dimmed background of the modals opened from the pages: the window surface, without its shadow.
+    property real modalScrimInset: 0
+    property real modalScrimRadius: 0
 
     readonly property int tabHome: AppRouter.Home
     readonly property int tabActivities: AppRouter.Activities
@@ -146,6 +149,8 @@ Item {
             controller: root.activitiesController
             errorsPageController: root.errorsPageController
             navigation: root.appRouter.activitiesNavigation
+            modalScrimInset: root.modalScrimInset
+            modalScrimRadius: root.modalScrimRadius
         }
     }
 
