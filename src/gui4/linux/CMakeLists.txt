@@ -321,7 +321,9 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/blockingerror/BlockingErrorView.qml
         ui/windows/main/errors/ErrorCopyButton.qml
         ui/windows/main/errors/ErrorCopyablePath.qml
+        ui/windows/main/errors/ErrorExplanationDialog.qml
         ui/windows/main/errors/ErrorItemChip.qml
+        ui/windows/main/errors/ErrorLinkText.qml
         ui/windows/main/errors/ErrorRow.qml
         ui/windows/main/errors/ErrorsPage.qml
         ui/windows/main/home/HomeGreeting.qml
@@ -420,6 +422,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities/source-web.svg
         ui/assets/main/activities/status-error.svg
         ui/assets/main/activities/status-synchronized-outline.svg
+        ui/assets/main/arrow-right.svg
         ui/assets/main/blockingerror/door-arrow-right.svg
         ui/assets/main/blockingerror/moon-sleep.svg
         ui/assets/main/blockingerror/sun.svg
