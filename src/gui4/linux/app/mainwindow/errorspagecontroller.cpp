@@ -67,6 +67,8 @@ ErrorsPageController::ErrorsPageController(const SyncErrorsProjection &projectio
     // Another synchronization may have its own refresh in flight.
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this,
                    &ErrorsPageController::refreshPendingChanged);
+    // A request the page did not consume concerns the previous synchronization.
+    (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, [this] { _revealErrorDbIds.clear(); });
 }
 
 int32_t ErrorsPageController::errorCount() const {
@@ -128,6 +130,27 @@ const ClassifiedSyncError *ErrorsPageController::currentError(const QString &row
     const auto classifiedIt = std::ranges::find_if(
             errors, [&errorDbId](const ClassifiedSyncError &classified) { return classified.error.dbId() == *errorDbId; });
     return classifiedIt == errors.end() ? nullptr : std::to_address(classifiedIt);
+}
+
+void ErrorsPageController::reveal(const std::vector<ErrorDbId> &errorDbIds) {
+    _revealErrorDbIds = errorDbIds;
+}
+
+// Resolved when the page asks: the rows may have changed since the request.
+int32_t ErrorsPageController::takeRevealRow() {
+    if (_revealErrorDbIds.empty()) {
+        return -1;
+    }
+
+    const auto row = _model.firstRowOf(_revealErrorDbIds);
+    if (row < 0) {
+        qCInfo(lcErrorsPageController) << "Requested error gone, showing the top of the page | errorCount:"
+                                       << _revealErrorDbIds.size();
+    } else {
+        qCInfo(lcErrorsPageController) << "Bringing the requested error into view | row:" << row;
+    }
+    _revealErrorDbIds.clear();
+    return row;
 }
 
 void ErrorsPageController::showActivities() {
