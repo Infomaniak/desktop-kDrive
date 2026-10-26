@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/mainwindow/errorlistmodel.h"
+#include "app/mainwindow/syncerrorexplanationcontroller.h"
 
 #include <QObject>
 #include <QString>
@@ -44,6 +45,7 @@ class SyncService;
 class ErrorsPageController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(ErrorListModel *model READ model CONSTANT)
+        Q_PROPERTY(SyncErrorExplanationController *explanation READ explanation CONSTANT)
         Q_PROPERTY(int32_t errorCount READ errorCount NOTIFY errorCountChanged)
         Q_PROPERTY(bool refreshPending READ refreshPending NOTIFY refreshPendingChanged)
 
@@ -54,6 +56,7 @@ class ErrorsPageController final : public QObject {
                              QObject *parent = nullptr);
 
         [[nodiscard]] ErrorListModel *model() { return &_model; }
+        [[nodiscard]] SyncErrorExplanationController *explanation() { return &_explanation; }
         [[nodiscard]] int32_t errorCount() const;
         [[nodiscard]] bool refreshPending() const;
 
@@ -86,6 +89,7 @@ class ErrorsPageController final : public QObject {
         SyncErrorActionHandler &_actionHandler;
         ActivitiesNavigation &_activitiesNavigation;
         ErrorListModel _model;
+        SyncErrorExplanationController _explanation;
         int32_t _errorCount{0};
         std::vector<ErrorDbId> _revealErrorDbIds;
 };
