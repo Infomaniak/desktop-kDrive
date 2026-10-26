@@ -56,6 +56,7 @@ Rectangle {
                                                                    : root.fullDescription.slice(0, root.adviceSeparator)
     readonly property string advice: root.adviceSeparator < 0 ? "" : root.fullDescription.slice(root.adviceSeparator + 1)
     property bool detailsExpanded: false
+    property bool revealed: false
 
     // One cell per name, then one per value: the details grid fills its rows in that order. The details arrive as a Qt
     // sequence, which has no `flatMap`.
@@ -74,6 +75,18 @@ Rectangle {
         return cells;
     }
 
+    // Brings the attention to this row: the keyboard focus goes to its action, or to the card itself when it has none,
+    // and the card is outlined for a moment, since a focus ring alone is hard to notice after a mouse click.
+    function reveal() {
+        if (actionButton.visible) {
+            actionButton.forceActiveFocus();
+        } else {
+            root.forceActiveFocus();
+        }
+        root.revealed = true;
+        revealTimer.restart();
+    }
+
     signal actionTriggered(string rowId)
     signal copyRequested(string rowId)
     signal technicalDetailsCopyRequested(string rowId)
@@ -81,9 +94,18 @@ Rectangle {
     implicitHeight: card.implicitHeight + 2 * IKActivities.errorsCardVerticalPadding
     radius: IKActivities.errorsCardRadius
     color: IKColors.errorsCardSurface
+    border.width: root.revealed || root.activeFocus ? IKActivities.errorsRevealBorderWidth : 0
+    border.color: IKColors.accentPrimary
     Accessible.role: Accessible.ListItem
     Accessible.name: root.title
     Accessible.description: root.description
+
+    Timer {
+        id: revealTimer
+
+        interval: IKActivities.errorsRevealDuration
+        onTriggered: root.revealed = false
+    }
 
     ColumnLayout {
         id: card

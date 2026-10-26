@@ -80,6 +80,9 @@ QtObject {
     // Below this width, the technical details show one name and value pair per row instead of two.
     readonly property real errorsDetailsTwoPairsMinWidth: 480
     readonly property int errorsDetailsChevronDuration: 150
+    // Outline of the row the "Fix errors" action of an activity brought into view.
+    readonly property real errorsRevealBorderWidth: 2
+    readonly property int errorsRevealDuration: 2000
     // How long the copy button of a path shows its confirmation.
     readonly property int errorsCopiedFeedbackDuration: 3000
 }
