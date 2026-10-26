@@ -24,6 +24,7 @@
 #include <QString>
 
 #include <cstdint>
+#include <vector>
 
 namespace KDC {
 
@@ -64,6 +65,11 @@ class ErrorsPageController final : public QObject {
         Q_INVOKABLE void copyPath(const QString &rowId) const;
         /** Copies the technical details of a row to the clipboard, to be sent to the support. */
         Q_INVOKABLE void copyTechnicalDetails(const QString &rowId) const;
+        /** Asks the page to bring the first row of `errorDbIds` into view when it is shown next ("Fix errors" of an
+         * activity row). */
+        void reveal(const std::vector<ErrorDbId> &errorDbIds);
+        /** Returns the row to bring into view, or -1, and clears the request: a later opening shows the top of the page. */
+        Q_INVOKABLE int32_t takeRevealRow();
         /** Returns to the activity list ("View activities" of the empty state). */
         Q_INVOKABLE void showActivities();
 
@@ -81,6 +87,7 @@ class ErrorsPageController final : public QObject {
         ActivitiesNavigation &_activitiesNavigation;
         ErrorListModel _model;
         int32_t _errorCount{0};
+        std::vector<ErrorDbId> _revealErrorDbIds;
 };
 
 } // namespace KDC

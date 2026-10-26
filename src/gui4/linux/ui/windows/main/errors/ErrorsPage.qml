@@ -31,12 +31,29 @@ FocusScope {
 
     readonly property bool hasErrors: root.controller.errorCount > 0
 
-    // Gives the keyboard focus to the main control of the page, once it is shown.
+    // Gives the keyboard focus to the main control of the page, once it is shown, or brings into view the row the
+    // "Fix errors" action of an activity asked for.
     function focusDefault() {
+        const revealRow = root.controller.takeRevealRow();
+        if (revealRow >= 0) {
+            // Once the page has its size: the view positions its rows from it.
+            Qt.callLater(root.reveal, revealRow);
+            return;
+        }
         if (root.hasErrors) {
             refreshButton.forceActiveFocus();
         } else {
             seeActivitiesButton.forceActiveFocus();
+        }
+    }
+
+    function reveal(row) {
+        list.positionViewAtIndex(row, ListView.Center);
+        const rowItem = list.itemAtIndex(row);
+        if (rowItem) {
+            rowItem.reveal();
+        } else {
+            refreshButton.forceActiveFocus();
         }
     }
 
