@@ -583,9 +583,9 @@ Z",file,4,1789735691,1789735698,1,)csv";
             static_cast<SyncTime>(1788263590), NodeType::File, static_cast<int64_t>(0), false, true, true);
 
     struct ParsedItem {
-            ParsedItem(const bool ignore_, RemoteSnapshotItem item_) :
+            ParsedItem(const bool ignore_, const RemoteSnapshotItem &item_) :
                 ignore{ignore_},
-                item(std::move(item_)){};
+                item(item_){};
             bool ignore{false};
             RemoteSnapshotItem item;
     };
