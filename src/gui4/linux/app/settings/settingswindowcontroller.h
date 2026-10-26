@@ -64,6 +64,11 @@ class SettingsWindowController final : public QObject {
             emit openRequested();
             emit fileExclusionsRequested();
         }
+        // Opens Settings on the accounts and synchronizations, where a new synchronization is created, for the errors page.
+        void requestOpenAccounts() {
+            emit openRequested();
+            emit accountsRequested();
+        }
 
         void refreshUpdates() const;
 
@@ -71,6 +76,7 @@ class SettingsWindowController final : public QObject {
         void openRequested();
         void accountConnectionRequested();
         void fileExclusionsRequested();
+        void accountsRequested();
 
     private:
         GeneralSettingsController &_generalController;
