@@ -75,9 +75,17 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testPathDepth);
         CPPUNIT_TEST(testHomeDirectoryPath);
         CPPUNIT_TEST(testGetSyncTime);
+#if defined(KD_LINUX)
+        CPPUNIT_TEST(testApplicationDirPath);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
+#if defined(KD_LINUX)
+        static constexpr const char *printApplicationDirPathOption = "--print-application-dir-path";
+        // Child mode of testApplicationDirPath: prints CommonUtility::applicationDirPath().
+        static int32_t printApplicationDirPath();
+#endif
         void setUp(void) override { TestBase::start(); }
         void tearDown(void) override { TestBase::stop(); }
 
@@ -131,6 +139,9 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testPathDepth();
         void testHomeDirectoryPath();
         void testGetSyncTime();
+#if defined(KD_LINUX)
+        void testApplicationDirPath();
+#endif
 
     private:
         /* Generate all the possible path for a set of items and separators
