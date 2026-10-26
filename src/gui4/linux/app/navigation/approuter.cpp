@@ -72,6 +72,9 @@ void AppRouter::navigateToMainTab(const int32_t tabIndex) {
             setCurrentMainTab(MainTab::Home);
             return;
         case static_cast<int32_t>(MainTab::Activities):
+            // The sidebar entry always leads to the activity list, even from the errors page; the error banners and
+            // actions open that page through showErrors().
+            _activitiesNavigation.reset();
             setCurrentMainTab(MainTab::Activities);
             return;
         case static_cast<int32_t>(MainTab::Storage):
