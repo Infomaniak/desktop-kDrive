@@ -72,6 +72,7 @@ QtObject {
     readonly property real errorsChipSpacing: 6
     readonly property real errorsChipMaximumWidthRatio: 0.7
     readonly property real errorsCopyFieldHeight: 28
+    readonly property real errorsCopyFieldWrappedPadding: IKSpacing.s4
     readonly property real errorsCopyIconSize: 14
     readonly property real errorsInfoIconSize: 16
     readonly property real errorsDetailsLineSpacing: IKSpacing.s2
