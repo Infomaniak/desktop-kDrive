@@ -31,6 +31,15 @@ FocusScope {
 
     readonly property bool hasErrors: root.controller.errorCount > 0
 
+    // Gives the keyboard focus to the main control of the page, once it is shown.
+    function focusDefault() {
+        if (root.hasErrors) {
+            refreshButton.forceActiveFocus();
+        } else {
+            seeActivitiesButton.forceActiveFocus();
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: IKActivities.pagePadding
