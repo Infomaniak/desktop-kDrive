@@ -441,6 +441,10 @@ std::string toString(const SyncErrorAction action) {
             return "OpenExclusions";
         case Explain:
             return "Explain";
+        case OpenSyncParentFolder:
+            return "OpenSyncParentFolder";
+        case CreateNewSync:
+            return "CreateNewSync";
         case RestartSync:
             return "RestartSync";
         case WakeUp:

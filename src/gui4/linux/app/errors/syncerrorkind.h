@@ -93,6 +93,8 @@ enum class SyncErrorAction : uint8_t {
     ManageStorage,
     OpenExclusions,
     Explain,
+    OpenSyncParentFolder, // Parent folder of the synchronization root
+    CreateNewSync, // Settings, on the accounts and synchronizations
     RestartSync,
     WakeUp,
     RefreshErrors,
@@ -118,10 +120,6 @@ enum class SyncErrorRowVariant : uint8_t {
 };
 Q_ENUM_NS(SyncErrorRowVariant)
 
-} // namespace SyncErrors
-
-using SyncErrors::SyncErrorRowVariant;
-
 // Explanation dialog opened by the `Explain` action.
 enum class SyncErrorExplanation : uint8_t {
     None,
@@ -133,6 +131,12 @@ enum class SyncErrorExplanation : uint8_t {
     INotifyWatches,
     EnumEnd
 };
+Q_ENUM_NS(SyncErrorExplanation)
+
+} // namespace SyncErrors
+
+using SyncErrors::SyncErrorExplanation;
+using SyncErrors::SyncErrorRowVariant;
 
 // Dedicated namespace so that Q_NAMESPACE does not cover the whole KDC namespace: QML reads these values as
 // `BlockingErrors.Asleep`, ... (registered in AppClientLinux::setupQmlEngine).
