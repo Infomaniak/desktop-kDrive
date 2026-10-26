@@ -51,6 +51,7 @@ ErrorsPageController::ErrorsPageController(const SyncErrorsProjection &projectio
     _actionHandler(actionHandler),
     _activitiesNavigation(activitiesNavigation),
     _model(projection, selectionStore, syncService, syncErrorService),
+    _explanation(projection, selectionStore, actionHandler),
     _errorCount(projection.currentErrorCount()) {
     (void) connect(&_projection, &SyncErrorsProjection::currentErrorsChanged, this, [this] {
         if (const auto errorCount = _projection.currentErrorCount(); errorCount != _errorCount) {
@@ -68,6 +69,8 @@ ErrorsPageController::ErrorsPageController(const SyncErrorsProjection &projectio
                    &ErrorsPageController::refreshPendingChanged);
     // A request the page did not consume concerns the previous synchronization.
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, [this] { _revealErrorDbIds.clear(); });
+    (void) connect(&_actionHandler, &SyncErrorActionHandler::explanationRequested, &_explanation,
+                   &SyncErrorExplanationController::open);
 }
 
 int32_t ErrorsPageController::errorCount() const {
