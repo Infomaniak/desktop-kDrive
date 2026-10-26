@@ -37,6 +37,7 @@ class SnapshotItem {
         SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt, SyncTime lastModified,
                      NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
         SnapshotItem(const SnapshotItem &other);
+        SnapshotItem(SnapshotItem &&other) noexcept = default;
 
         [[nodiscard]] const NodeId &id() const { return _id; }
         [[nodiscard]] const NodeId &parentId() const { return _parentId; }
@@ -73,6 +74,7 @@ class SnapshotItem {
             _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
         }
         SnapshotItem &operator=(const SnapshotItem &other);
+        SnapshotItem &operator=(SnapshotItem &&other) noexcept = default;
         bool operator==(const SnapshotItem &other) const {
             return _id == other._id && _parentId == other._parentId && _name == other._name &&
                    _normalizedName == other._normalizedName && _createdAt == other._createdAt &&

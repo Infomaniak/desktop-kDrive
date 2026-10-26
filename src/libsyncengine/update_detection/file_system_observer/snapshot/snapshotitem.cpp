@@ -20,7 +20,15 @@
 
 #include "jobs/network/kDrive_API/apitranslator.h"
 
+#include <type_traits>
+
 namespace KDC {
+
+// SonarCloud cpp:S5018: moving a SnapshotItem (and thus a RemoteSnapshotItem) must be noexcept.
+static_assert(std::is_nothrow_move_constructible_v<SnapshotItem>);
+static_assert(std::is_nothrow_move_assignable_v<SnapshotItem>);
+static_assert(std::is_nothrow_move_constructible_v<RemoteSnapshotItem>);
+static_assert(std::is_nothrow_move_assignable_v<RemoteSnapshotItem>);
 
 SnapshotItem::SnapshotItem(const NodeId &id) :
     _id(id),
