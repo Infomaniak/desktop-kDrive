@@ -468,7 +468,8 @@
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
   locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
   transient feedback independent from projected row lifetime. The errors banner and the "fix errors" row action open the
-  errors page through `AppRouter::showErrors()`.
+  errors page through `AppRouter::showErrors()`; the row action first emits `fixErrorsRequested` with the row's errors,
+  which `ErrorsPageController::reveal` brings into view.
 - `app/mainwindow/blockingerrorcontroller.*`: QML-facing state of the blocking error screen of the selected
   synchronization (`SyncErrorsProjection::currentBlockingError`: drive asleep, waking up, not renewed, in maintenance,
   access denied, or user logged out). Only that synchronization is blocked: the controller switches `AppRouter` to the
@@ -492,7 +493,8 @@
   synchronization resets the model.
 - `app/mainwindow/errorspagecontroller.*`: QML-facing state of the errors page (`errorCount`, `refreshPending`,
   `refresh()`). Every row action is revalidated against the current errors before reaching `SyncErrorActionHandler`. It
-  copies a path or the technical details to the clipboard.
+  copies a path or the technical details to the clipboard, and keeps a pending `reveal` request that the page consumes
+  when it is shown, to bring the error of an activity row into view; a change of synchronization drops it.
 - `app/mainwindow/syncerroractionhandler.*`: the only place that knows what each error button does: rename or open the
   item online, open a local folder below the synchronization root, open the volume (disk space), open the shop
   (`renewalUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
@@ -528,11 +530,13 @@
   allocated blocks so sparse files reflect their physical footprint.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive`, the selected main tab, and
   the `ActivitiesNavigation` exposed as `activitiesNavigation`; `showErrors()` is the only shortcut that crosses both.
+  `navigateToMainTab`, called only by the sidebar, resets the Activities sub-page: the Activities entry always leads to
+  the activity list.
   It must not read `AppCache`, call backend services, or decide whether onboarding is required.
 - `app/navigation/activitiesnavigation.*`: current sub-page of the Activities tab in a fixed chain (`List`, `Errors`,
-  `ConflictsQuick`, `ConflictsList`); `back()` goes to the parent page, with no history. Switching tabs keeps the
-  sub-page, like macOS; `AppClientLinux` resets it only with the unconfigured Home. It holds no business rule: a
-  controller that must close a page (for example when the conflicts drop) calls it.
+  `ConflictsQuick`, `ConflictsList`); `back()` goes to the parent page, with no history. Other tab changes keep the
+  sub-page; the sidebar Activities entry and the unconfigured Home (`AppClientLinux`) reset it. It holds no business
+  rule: a controller that must close a page (for example when the conflicts drop) calls it.
 - `app/navigation/mainwindowactivationdecision.*`: pure post-bootstrap choice between onboarding, the unconfigured Home,
   and the configured Home. Closing onboarding or removing the last configured sync selects the unconfigured Home on the
   next activation.
@@ -663,9 +667,10 @@
       presentation, and empty state. `ActivitiesView` hosts the sub-pages in a `StackView` that follows
       `ActivitiesNavigation.currentPage` (one component per chain page, rebuilt without animation when the view is
       recreated); the list itself is `ActivitiesListPage`. The toolbar shows the back button and the page title, and
-      Alt+Left or the mouse back button go back too. Size and status columns have fixed widths; only the name/folder boundary is
-      draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
-      history.
+      Alt+Left or the mouse back button go back too. A page change requested by the user gives the focus to the new
+      page through its `focusDefault()`, which every chain page provides, so it never stays on a control that
+      disappeared. Size and status columns have fixed widths; only the name/folder boundary is draggable. It consumes
+      `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity history.
     - `ui/windows/main/errors/`: "Errors to fix" sub-page of Activities (`ErrorsPage`), titled `errorPageTitle` in the
       toolbar: header with the error count and Refresh, one card per error in sections (`ErrorRow`), empty state with
       "View activities". A row shows its button only once its action exists: "Choose a version", "Manage" (conflicts)
