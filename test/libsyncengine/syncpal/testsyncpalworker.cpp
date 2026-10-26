@@ -433,8 +433,7 @@ void TestSyncPalWorker::testShouldBePausedWithNetworkError() {
 
     const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
     CPPUNIT_ASSERT(mockSyncPal);
-    const auto syncPalWorker =
-            std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
+    const auto syncPalWorker = std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
 
     // Simulate a RFSO worker that exits with NetworkError, e.g. an incomplete listing reply received when the computer wakes up.
     const auto rfso = std::make_shared<MockRemoteFileSystemObserverWorker>(_syncPal, "Mock RFSO NetworkError", "M_RFSONE");
@@ -450,8 +449,9 @@ void TestSyncPalWorker::testShouldBePausedWithNetworkError() {
 
     // The sync must be paused, but the pause duration must stay at its default value and the consecutive back errors counter must
     // not grow, no matter how many times the error repeats.
+    const SyncPalWorker::Worker rfsoWorker(ReplicaSide::Remote, rfso);
     for (auto i = 0; i < 5; ++i) {
-        CPPUNIT_ASSERT(syncPalWorker->shouldBePaused(rfso, nullptr));
+        CPPUNIT_ASSERT(syncPalWorker->shouldBePaused({{ReplicaSide::Remote, rfsoWorker}}));
         CPPUNIT_ASSERT_EQUAL(defaultPauseDuration, syncPalWorker->pauseDuration());
         CPPUNIT_ASSERT_EQUAL(int64_t{1}, _syncPal->consecutiveBackErrors());
     }
@@ -465,8 +465,9 @@ void TestSyncPalWorker::testShouldBePausedWithNetworkError() {
     const auto httpBackErrorWorker = makeHttpBackErrorWorker();
     httpBackErrorWorker->start();
     httpBackErrorWorker->waitForExit();
+    const SyncPalWorker::Worker httpBackErrorWorker_(ReplicaSide::Remote, httpBackErrorWorker);
 
-    CPPUNIT_ASSERT(syncPalWorker->shouldBePaused(httpBackErrorWorker, nullptr));
+    CPPUNIT_ASSERT(syncPalWorker->shouldBePaused({{ReplicaSide::Remote, httpBackErrorWorker_}}));
     CPPUNIT_ASSERT_EQUAL(int64_t{2}, _syncPal->consecutiveBackErrors());
     CPPUNIT_ASSERT_EQUAL(backoffVariable::baseDelay * 2, syncPalWorker->pauseDuration()); // jitter is mocked to 1.0
 }
