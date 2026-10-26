@@ -33,6 +33,9 @@
 #include <QStorageInfo>
 #include <QUrl>
 
+#include <filesystem>
+#include <system_error>
+
 namespace KDC {
 
 namespace {
@@ -69,6 +72,21 @@ void openItem(const Error &error, const SyncContext &context) {
     openLocalFolder(context, parentFolder(error.path()));
 }
 
+// Opens the folder that contains the synchronization root, which may itself be gone (moved, deleted or on an unplugged
+// disk). It is above the root, so it is not resolved below it.
+void openSyncParentFolder(const SyncContext &context) {
+    auto syncRoot = context.syncInfo.localPath().lexically_normal();
+    if (!syncRoot.has_filename()) {
+        syncRoot = syncRoot.parent_path(); // Trailing separator
+    }
+    const auto folder = syncRoot.parent_path();
+    if (std::error_code errorCode; folder.empty() || !std::filesystem::is_directory(folder, errorCode)) {
+        qCWarning(lcSyncErrorActionHandler) << "Synchronization parent folder unavailable | syncDbId:" << context.syncInfo.dbId();
+        return;
+    }
+    openUrl(QUrl::fromLocalFile(Path2QStr(folder)));
+}
+
 } // namespace
 
 SyncErrorActionHandler::SyncErrorActionHandler(SyncService &syncService, SyncErrorService &syncErrorService,
@@ -79,8 +97,12 @@ SyncErrorActionHandler::SyncErrorActionHandler(SyncService &syncService, SyncErr
     _settingsWindowController(settingsWindowController) {}
 
 void SyncErrorActionHandler::trigger(const ClassifiedSyncError &classified, const SyncContext &context) {
+    run(describeSyncError(classified.kind, context.drive.admin()).action, classified, context);
+}
+
+void SyncErrorActionHandler::run(const SyncErrorAction action, const ClassifiedSyncError &classified,
+                                 const SyncContext &context) {
     const auto &error = classified.error;
-    const auto action = describeSyncError(classified.kind, context.drive.admin()).action;
     const auto syncDbId = context.syncInfo.dbId();
     qCInfo(lcSyncErrorActionHandler) << "Sync error action requested | kind:" << classified.kind << "| action:" << action
                                      << "| errorDbId:" << error.dbId() << "| syncDbId:" << syncDbId;
@@ -108,8 +130,17 @@ void SyncErrorActionHandler::trigger(const ClassifiedSyncError &classified, cons
             openUrl(AppConstants::WebDrive::destinationUri(context.drive.driveId(),
                                                            AppConstants::WebDrive::Destination::OnlineDrive));
             break;
+        case SyncErrorAction::OpenSyncParentFolder:
+            openSyncParentFolder(context);
+            break;
         case SyncErrorAction::OpenExclusions:
             _settingsWindowController.requestOpenFileExclusions();
+            break;
+        case SyncErrorAction::CreateNewSync:
+            _settingsWindowController.requestOpenAccounts();
+            break;
+        case SyncErrorAction::Explain:
+            emit explanationRequested(error.dbId());
             break;
         case SyncErrorAction::RestartSync:
             _syncService.startSync(syncDbId);
@@ -124,7 +155,6 @@ void SyncErrorActionHandler::trigger(const ClassifiedSyncError &classified, cons
             AppRouter::openSupport();
             break;
         case SyncErrorAction::ChooseVersion:
-        case SyncErrorAction::Explain:
         case SyncErrorAction::None:
         case SyncErrorAction::EnumEnd:
             // The rows of these actions have no button yet.
