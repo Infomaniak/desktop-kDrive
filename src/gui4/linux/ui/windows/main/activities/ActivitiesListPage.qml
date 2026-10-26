@@ -22,10 +22,19 @@ import QtQuick
 import QtQuick.Layouts
 import kDrive.UI
 
-Item {
+FocusScope {
     id: root
 
     required property var controller
+
+    // Gives the keyboard focus back to the errors banner, which opens the errors page, when it is shown.
+    function focusDefault() {
+        if (errorBanner.visible) {
+            errorBanner.focusAction();
+        } else {
+            root.forceActiveFocus();
+        }
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -39,6 +48,8 @@ Item {
         }
 
         IKErrorBanner {
+            id: errorBanner
+
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? implicitHeight : 0
             errorCount: root.controller.errorCount
