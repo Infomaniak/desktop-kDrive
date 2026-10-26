@@ -947,9 +947,9 @@ Veuillez réessayer dans quelques minutes.</translation>
             <translation>Fichier récupéré</translation> 
         </message> 
         <message id="errFileTooBigAdminDescription"> 
-            <source>This file exceeds the maximum allowed size (50 GB).
+            <source>This file exceeds the maximum allowed size (1 TB).
 Contact support to unlock the limit.</source> 
-            <translation>Ce fichier dépasse la taille maximale autorisée (50 Go).
+            <translation>Ce fichier dépasse la taille maximale autorisée (1 To).
 Contactez le support pour débloquer la limite.</translation> 
         </message> 
         <message id="errFileTooBigTitle"> 
@@ -1785,6 +1785,26 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</translati
             <source>Link copied to clipboard</source> 
             <translation>Lien copié dans le presse-papiers</translation> 
         </message> 
+        <message id="linuxButtonCopyCommand"> 
+            <source>Copy command</source> 
+            <extracomment>Linux desktop app, explanation dialog of the inotify watches limit error: icon button (tooltip and accessible name) that copies the shell command raising the limit. Same style as "Copy path".</extracomment> 
+            <translation>Copier la commande</translation> 
+        </message> 
+        <message id="linuxCommandCopiedToClipboard"> 
+            <source>Command copied to clipboard</source> 
+            <extracomment>Linux desktop app, explanation dialog of the inotify watches limit error: confirmation shown after the shell command was copied. Same style as "Path copied to clipboard".</extracomment> 
+            <translation>Commande copiée dans le presse-papiers</translation> 
+        </message> 
+        <message id="linuxDialogINotifyWatchesCommand"> 
+            <source>To raise it, run this command in a terminal, then resume the synchronization:</source> 
+            <extracomment>Linux desktop app, explanation dialog of the error shown when the Linux system limit on watched folders (inotify) is reached. Shown above a shell command the user copies and runs to raise the limit. "it" is the limit.</extracomment> 
+            <translation>Pour l’augmenter, exécutez cette commande dans un terminal, puis reprenez la synchronisation :</translation> 
+        </message> 
+        <message id="linuxDialogINotifyWatchesCurrentLimit"> 
+            <source>Current limit: %1 folders</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page, explanation dialog of the error shown when the Linux system limit on watched folders (inotify) is reached. %1 is the current limit, a number of folders (e.g. 65536).</extracomment> 
+            <translation>Limite actuelle : %1 dossiers</translation> 
+        </message> 
         <message id="linuxErrINotifyWatchesDescription"> 
             <source>Your system limits the number of folders kDrive can watch. Changes made on this computer are no longer detected.</source> 
             <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrINotifyWatchesTitle. "This computer" is the computer running the kDrive app.</extracomment> 
@@ -1804,6 +1824,11 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</translati
             <source>Sync folder not writable</source> 
             <extracomment>Linux desktop app, "Errors to fix" page: title of the row shown when kDrive cannot write to its hidden working folder (.kDrive-cache) inside the sync folder, for example after its permissions changed. The row offers a "Retry" button.</extracomment> 
             <translation>Dossier de synchronisation inaccessible en écriture</translation> 
+        </message> 
+        <message id="linuxLabelRemoteAccessRightsModifiedTip"> 
+            <source>You may no longer have access rights to this folder on kDrive.</source> 
+            <extracomment>Linux desktop app, explanation dialog "A change has been detected in your configuration" (the synchronized folder is no longer accessible on kDrive online): advice under the reason "Access rights modified". "This folder" is the synchronized folder on kDrive.</extracomment> 
+            <translation>Vous n’avez peut-être plus les droits d’accès à ce dossier sur kDrive.</translation> 
         </message> 
         <message id="linuxStorageLocationUnavailableDescription"> 
             <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
@@ -2864,9 +2889,9 @@ Vos modifications seront synchronisées ultérieurement.</translation>
     <context>
         <name></name> 
         <message id="errFileTooBigDescription"> 
-            <source>This file exceeds the maximum allowed size (50 GB).
+            <source>This file exceeds the maximum allowed size (1 TB).
 Contact your administrator to increase the file size limit.</source> 
-            <translation>Ce fichier dépasse la taille maximale autorisée (50 Go).
+            <translation>Ce fichier dépasse la taille maximale autorisée (1 To).
 Contactez votre administrateur pour augmenter la limite de taille des fichiers.</translation> 
         </message> 
     </context> 
