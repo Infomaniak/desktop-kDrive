@@ -256,6 +256,8 @@ IKShadowedWindow {
             homeController: mainWindow.homeController
             mainSidebarController: mainWindow.mainSidebarController
             storageController: mainWindow.storageController
+            modalScrimInset: mainWindow.effectiveShadowMargin
+            modalScrimRadius: mainWindow.surfaceRadius
         }
     }
 

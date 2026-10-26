@@ -84,6 +84,15 @@ QtObject {
     // Outline of the row the "Fix errors" action of an activity brought into view.
     readonly property real errorsRevealBorderWidth: 2
     readonly property int errorsRevealDuration: 2000
+    // Explanation dialog ("Understand the problem").
+    readonly property real errorsExplanationWidth: 532
+    readonly property real errorsExplanationChromeHeight: 160
+    readonly property real errorsExplanationReasonSpacing: IKSpacing.s16
+    readonly property real errorsExplanationReasonPadding: IKSpacing.s8
+    readonly property real errorsExplanationReasonRadius: IKRadius.r8
+    readonly property real errorsExplanationReasonContentSpacing: IKSpacing.s8
+    readonly property real errorsExplanationArrowSize: 12
+    readonly property real errorsExplanationArrowSpacing: IKSpacing.s4
     // How long the copy button of a path shows its confirmation.
     readonly property int errorsCopiedFeedbackDuration: 3000
 }
