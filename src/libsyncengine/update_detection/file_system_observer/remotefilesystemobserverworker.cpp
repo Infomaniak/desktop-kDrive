@@ -981,6 +981,27 @@ bool shouldBeIgnored(const ActionCode actionCode) {
 }
 } // namespace
 
+ExitInfo RemoteFileSystemObserverWorker::handleMovedItems(const MoveItemMap &movedItems) {
+    for (const auto &[nodeId, actionCode]: movedItems) {
+        switch (actionCode) {
+            case ActionCode::ActionCodeMoveIn: {
+                if (_liveSnapshot.type(nodeId) != NodeType::Directory) break; // Do not explore if moved item is a file
+                const sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
+                if (const auto exitInfo = exploreDirectory(nodeId); !exitInfo) return exitInfo;
+                break;
+            }
+            case ActionCode::ActionCodeMoveOut: {
+                if (const auto exitInfo = removeItemFromSnapshot(nodeId); !exitInfo) return exitInfo;
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array::Ptr actionArray,
                                                         const Poco::JSON::Array::Ptr actionsFilesArray) {
     if (!actionArray) return ExitCode::Ok;
@@ -1018,26 +1039,10 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
         }
     }
 
-    for (const auto &[nodeId, actionCode]: movedItems) {
-        // Items remaining in "movedItems" have been either
-        // blacklisted or whitelisted.
-        switch (actionCode) {
-            case ActionCode::ActionCodeMoveIn: {
-                if (_liveSnapshot.type(nodeId) != NodeType::Directory) break; // Do not explore if moved item is a file
-                const sentry::pTraces::scoped::RFSOChangeDetected perfMonitor(syncDbId());
-                if (const auto exitInfo = exploreDirectory(nodeId); !exitInfo) return exitInfo;
-                break;
-            }
-            case ActionCode::ActionCodeMoveOut: {
-                if (const auto exitInfo = removeItemFromSnapshot(nodeId); !exitInfo) return exitInfo;
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-    return ExitCode::Ok;
+    // Items remaining in "movedItems" have been either
+    // blacklisted or whitelisted. A special handling is required for these items, as they have been moved in or out of the
+    // watched folder.
+    return handleMovedItems(movedItems);
 }
 
 ExitInfo RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo) {

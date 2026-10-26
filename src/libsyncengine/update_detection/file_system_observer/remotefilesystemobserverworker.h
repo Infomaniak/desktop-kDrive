@@ -44,7 +44,6 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         Count listingFullCount() const { return _listingFullCount.load(); };
         RemoteNodeIdSet blackList() const;
-        void setBlackList(RemoteNodeIdSet blackList);
         [[nodiscard]] ExitInfo checkIfValidListingSyncFolderCursorExists(bool &validListingSyncFolderCursorExist) const;
 
     protected:
@@ -107,6 +106,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj, ActionInfoList &actionInfoList);
 
         using MoveItemMap = std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>>;
+        [[nodiscard]] ExitInfo handleMovedItems(const MoveItemMap &movedItems);
         ExitInfo processAction(ActionInfo &actionInfo, MoveItemMap &movedItems);
         ExitInfo processActions(const Poco::JSON::Array::Ptr actionsArray, const Poco::JSON::Array::Ptr actionFilesArray);
 
