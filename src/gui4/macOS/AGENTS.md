@@ -138,7 +138,7 @@ Server sends unsolicited signals decoded by `XPCSignalHandler` → dispatched to
 - Signal DTOs in `kDriveCore/ServerBridge/Signal/DTOs/`
 
 ### Localization
-5 languages: `fr` / `en` / `de` / `es` / `it`.
+Supported languages are listed in `.import_loco.yml`; keep `UIAppLanguage` and its server mappings aligned with them.
 Strings live in `kDriveResources/Localizable/<lang>.lproj/`.
 ```swift
 // Use NSLocalizedString with a key from the resource bundle

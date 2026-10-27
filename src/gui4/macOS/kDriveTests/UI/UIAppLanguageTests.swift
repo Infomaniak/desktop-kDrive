@@ -21,10 +21,13 @@ import kDriveCoreUI
 import Testing
 
 struct UIAppLanguageTests {
-    @Test("Unsupported server languages use the system language", arguments: [
-        KDC.Language.Dutch, .Swedish, .Portuguese, .Polish, .Norwegian, .Finnish, .Danish, .Greek
+    @Test("Language preferences preserve the server language", arguments: [
+        KDC.Language.Default, .English, .French, .German, .Spanish, .Italian,
+        .Dutch, .Swedish, .Portuguese, .Polish, .Norwegian, .Finnish, .Danish, .Greek
     ])
-    func unsupportedLanguageUsesSystem(_ language: KDC.Language) {
-        #expect(UIAppLanguage(language: language) == .system)
+    func serverLanguageIsPreserved(_ language: KDC.Language) {
+        let uiLanguage = UIAppLanguage(language: language)
+
+        #expect(uiLanguage.toKDCLanguage() == language)
     }
 }
