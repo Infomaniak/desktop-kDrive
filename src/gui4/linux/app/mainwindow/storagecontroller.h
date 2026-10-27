@@ -81,6 +81,8 @@ class StorageController final : public QObject {
         [[nodiscard]] double availableRatio() const;
         Q_INVOKABLE void setViewActive(bool active);
         Q_INVOKABLE void retry();
+        /** Rescans while keeping the current presentation; acts as retry when Storage is unavailable. */
+        Q_INVOKABLE void refresh();
         /** Notifies views that locale-dependent storage labels must be read again. */
         void retranslate();
 
@@ -92,6 +94,7 @@ class StorageController final : public QObject {
         enum class ScanTrigger : uint8_t {
             Automatic = 0,
             Retry,
+            Refresh,
         };
 
         struct CachedSnapshot {
@@ -112,6 +115,7 @@ class StorageController final : public QObject {
         [[nodiscard]] uint64_t usedBytes() const;
         [[nodiscard]] uint64_t otherBytes() const;
         [[nodiscard]] static bool isActiveStatus(SyncStatus status);
+        [[nodiscard]] static const char *scanTriggerName(ScanTrigger trigger);
         [[nodiscard]] static QString formatBytes(uint64_t bytes);
         [[nodiscard]] double ratio(uint64_t bytes) const;
 
