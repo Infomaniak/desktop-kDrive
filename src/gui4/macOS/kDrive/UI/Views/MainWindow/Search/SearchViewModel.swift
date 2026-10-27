@@ -81,7 +81,7 @@ final class SearchViewModel: ObservableObject {
     @Published private var nextPageTask: Task<Void, Never>?
     private var currentQuery = ""
     private var nextCursor = ""
-    @Published private(set) var hasMorePages = false
+    private var hasMorePages = false
 
     init(syncDbId: Int32, driveId: Int, synchroLocalPath: URL) {
         self.syncDbId = syncDbId
