@@ -79,7 +79,7 @@ SyncErrorExplanationController::SyncErrorExplanationController(const SyncErrorsP
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, &SyncErrorExplanationController::close);
 }
 
-void SyncErrorExplanationController::open(const ErrorDbId errorDbId) {
+void SyncErrorExplanationController::open(const ErrorDbId errorDbId, const WatchLimitRaiseFailure raiseFailure) {
     _errorDbId = errorDbId;
     const auto *const classified = currentError();
     const auto kind = classified ? syncErrorTraits(classified->kind).explanation : SyncErrorExplanation::None;
@@ -94,6 +94,7 @@ void SyncErrorExplanationController::open(const ErrorDbId errorDbId) {
     _copyablePath = displayLocalPath(absolutePath(*classified));
     const auto &error = classified->error;
     _isDirectory = error.nodeType() == NodeType::Directory;
+    _raiseFailure = raiseFailure;
     _itemName = Path2QStr(error.path().filename());
     _itemPath = Path2QStr(error.path().relative_path().lexically_normal());
     _itemIconName = _itemName.isEmpty() ? QString{} : _fileIconResolver.iconName(_itemName, error.nodeType());
@@ -103,7 +104,8 @@ void SyncErrorExplanationController::open(const ErrorDbId errorDbId) {
         qCInfo(lcSyncErrorExplanation) << "Inotify watches limit | current:" << _watchLimit
                                        << "| proposed:" << proposedWatchLimit(_watchLimit);
     }
-    qCInfo(lcSyncErrorExplanation) << "Explanation dialog opened | kind:" << classified->kind << "| errorDbId:" << errorDbId;
+    qCInfo(lcSyncErrorExplanation) << "Explanation dialog opened | kind:" << classified->kind << "| errorDbId:" << errorDbId
+                                   << "| raiseFailure:" << static_cast<int32_t>(raiseFailure);
     emit changed();
 }
 
@@ -112,6 +114,7 @@ void SyncErrorExplanationController::close() {
         return;
     }
     _errorDbId.reset();
+    _raiseFailure = WatchLimitRaiseFailure::None;
     emit changed();
 }
 

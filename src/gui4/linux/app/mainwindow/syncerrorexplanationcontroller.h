@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/errors/inotifywatchlimit.h"
 #include "app/errors/syncerrorkind.h"
 #include "app/fileiconresolver.h"
 #include "libcommon/utility/types.h"
@@ -52,6 +53,8 @@ class SyncErrorExplanationController final : public QObject {
         Q_PROPERTY(bool isDirectory READ isDirectory NOTIFY changed)
         Q_PROPERTY(qint64 watchLimit READ watchLimit NOTIFY changed)
         Q_PROPERTY(QString watchLimitCommand READ watchLimitCommand NOTIFY changed)
+        Q_PROPERTY(bool raiseWatchLimitCancelled READ raiseWatchLimitCancelled NOTIFY changed)
+        Q_PROPERTY(bool raiseWatchLimitFailed READ raiseWatchLimitFailed NOTIFY changed)
 
     public:
         SyncErrorExplanationController(const SyncErrorsProjection &projection, const MainSelectionStore &selectionStore,
@@ -69,9 +72,14 @@ class SyncErrorExplanationController final : public QObject {
         [[nodiscard]] qint64 watchLimit() const { return _watchLimit; }
         /** Shell command that raises the inotify watches limit for good, to be run by the user. */
         [[nodiscard]] QString watchLimitCommand() const { return _watchLimitCommand; }
+        /** The dialog opened because the user dismissed the authentication of "Raise the limit". */
+        [[nodiscard]] bool raiseWatchLimitCancelled() const { return _raiseFailure == WatchLimitRaiseFailure::Cancelled; }
+        /** The dialog opened because "Raise the limit" failed. */
+        [[nodiscard]] bool raiseWatchLimitFailed() const { return _raiseFailure == WatchLimitRaiseFailure::Failed; }
 
-        /** Opens the dialog of `errorDbId`, an error of the selected synchronization; ignored when it has none. */
-        void open(ErrorDbId errorDbId);
+        /** Opens the dialog of `errorDbId`, an error of the selected synchronization; ignored when it has none.
+         * `raiseFailure` tells why the inotify watches dialog replaces "Raise the limit". */
+        void open(ErrorDbId errorDbId, WatchLimitRaiseFailure raiseFailure = WatchLimitRaiseFailure::None);
         Q_INVOKABLE void close();
         /** Runs the main button of the dialog, then closes it. */
         Q_INVOKABLE void triggerMainAction();
@@ -105,6 +113,7 @@ class SyncErrorExplanationController final : public QObject {
         // Inotify watches dialog.
         qint64 _watchLimit{0};
         QString _watchLimitCommand;
+        WatchLimitRaiseFailure _raiseFailure{WatchLimitRaiseFailure::None};
         FileIconResolver _fileIconResolver;
 };
 

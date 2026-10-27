@@ -145,6 +145,12 @@ IKModal {
     // The page can go away while the dialog is open (sidebar, window closed): the next "Understand the problem" must
     // open it again.
     Component.onDestruction: root.controller.close()
+    // A failed "Raise the limit" can open the controller while the page is away; the dialog shows on its return.
+    Component.onCompleted: {
+        if (root.controller.isOpen) {
+            root.open();
+        }
+    }
     onClosed: {
         root.controller.close();
         // The row button may be gone or busy (its action is running): the page then picks a usable control.
@@ -323,6 +329,18 @@ IKModal {
                 Layout.fillWidth: true
                 visible: root.kind === SyncErrors.INotifyWatches
                 spacing: IKActivities.errorsExplanationReasonContentSpacing
+
+                // Why the dialog replaces "Raise the limit".
+                Text {
+                    Layout.fillWidth: true
+                    visible: root.controller.raiseWatchLimitCancelled || root.controller.raiseWatchLimitFailed
+                    text: root.controller.raiseWatchLimitCancelled ? qsTrId("linuxDialogINotifyWatchesRaiseCancelled")
+                                                                   : qsTrId("linuxDialogINotifyWatchesRaiseFailed")
+                    textFormat: Text.PlainText
+                    color: IKColors.textPrimary
+                    font.pixelSize: IKFonts.bodySize
+                    wrapMode: Text.WordWrap
+                }
 
                 Text {
                     Layout.fillWidth: true
