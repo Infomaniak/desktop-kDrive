@@ -820,8 +820,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (resultInfos is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize SearchInfo list from ${data.Params[JsonKeys.SearchInfoList]}.",
-                    "ServerCommService: Failed to deserialize search results");
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize SearchInfo list from ${data.Params[JsonKeys.SearchInfoList]}.");
                 return SearchItemResult.Failed(ExitCode.DataError);
             }
 

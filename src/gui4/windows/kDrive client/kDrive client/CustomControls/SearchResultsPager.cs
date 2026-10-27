@@ -120,7 +120,7 @@ namespace Infomaniak.kDrive.CustomControls
                     return null;
 
                 if (page.Code != ExitCode.Ok)
-                    Logger.Log(Logger.Level.Warning, $"SearchItem failed with cause {page.Code}.", "SearchResultsPager: SearchItem failed.");
+                    Logger.Log(Logger.Level.Warning, $"SearchItem failed with cause {page.Code}.");
 
                 _cursor = page.Cursor;
                 _hasMore = page.Code == ExitCode.Ok && page.HasMore;
