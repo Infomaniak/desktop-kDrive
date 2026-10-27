@@ -65,6 +65,13 @@ Button {
         return IKColors.actionOnPrimary;
     }
 
+    // A held key must not repeat the action.
+    function activateFromKey(event) {
+        if (!event.isAutoRepeat) {
+            root.clicked();
+        }
+    }
+
     enabled: actionEnabled && !busy
     implicitWidth: Math.max(IKModalTokens.buttonMinimumWidth,
                             buttonText.implicitWidth + externalIconAllowance + 2 * IKModalTokens.buttonHorizontalPadding)
@@ -73,6 +80,9 @@ Button {
     leftPadding: IKModalTokens.buttonHorizontalPadding
     rightPadding: IKModalTokens.buttonHorizontalPadding
     focusPolicy: Qt.StrongFocus
+    // Qt Quick buttons only react to Space: Return and Enter activate the focused action too.
+    Keys.onReturnPressed: event => root.activateFromKey(event)
+    Keys.onEnterPressed: event => root.activateFromKey(event)
     Accessible.role: Accessible.Button
     Accessible.name: text
     hoverEnabled: true
