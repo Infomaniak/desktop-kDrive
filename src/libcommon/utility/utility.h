@@ -567,6 +567,16 @@ struct COMMON_EXPORT CommonUtility {
          */
         static ExitInfo logDirectoryPath(SyncPath &directoryPath) noexcept;
 
+#if defined(KD_LINUX)
+        //! Returns the state directory path of the application, which holds the log directory.
+        /*!
+         \param directoryPath is set with `$XDG_STATE_HOME/kDrive` when the variable is an absolute path, otherwise with
+         `~/.local/state/kDrive`. The directory is not created.
+         \return An ExitInfo representing the return value of the underlying OS API call.
+         */
+        static ExitInfo stateDirectoryPath(SyncPath &directoryPath) noexcept;
+#endif
+
         //! Returns the user's home directory path.
         /*!
          \param directoryPath is set with the path to the user's home directory. Empty if there is an error.

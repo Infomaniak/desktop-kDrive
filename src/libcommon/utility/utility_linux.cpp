@@ -180,7 +180,7 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
     return true;
 }
 
-ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+ExitInfo CommonUtility::stateDirectoryPath(SyncPath &directoryPath) noexcept {
     // XDG Base Directory Specification: use $XDG_STATE_HOME if it is absolute,
     // otherwise fallback to ~/.local/state
     const auto xdgStateHome = envVarValue("XDG_STATE_HOME");
@@ -193,6 +193,11 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     }
 
     directoryPath /= Str2SyncName(APPLICATION_NAME);
+    return ExitCode::Ok;
+}
+
+ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+    if (const auto exitInfo = stateDirectoryPath(directoryPath); !exitInfo) return exitInfo;
     directoryPath /= "logs";
 
     std::error_code ec;
