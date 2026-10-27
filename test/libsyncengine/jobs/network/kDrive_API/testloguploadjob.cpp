@@ -161,10 +161,10 @@ void TestLogUploadJob::testLogUploadSingleConcurrentJob() {
         return ExitCode::Ok;
     });
     std::thread t1([&job1]() { job1->runSynchronously(); });
-    int counter = 0;
+    Count counter = 0;
     while (!job1->isRunning()) {
         Utility::msleep(10);
-        CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
+        CPPUNIT_ASSERT_LESS(Count{500}, ++counter); // Wait at most 5sec
     }
 
     // Start a second job that should not run if the first one is running

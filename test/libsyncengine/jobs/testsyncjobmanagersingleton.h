@@ -26,6 +26,8 @@
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 
+#include "libsyncengine/testbasewithparmsdb.h"
+
 #include "utility/types.h"
 #include "jobs/syncjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
@@ -37,7 +39,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestSyncJobManagerSingleton : public CppUnit::TestFixture, public TestBase {
+class TestSyncJobManagerSingleton : public CppUnit::TestFixture, public TestBaseWithParmsDb {
     public:
         CPPUNIT_TEST_SUITE(TestSyncJobManagerSingleton);
         CPPUNIT_TEST(testWithoutCallback);

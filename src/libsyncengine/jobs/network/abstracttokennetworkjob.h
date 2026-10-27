@@ -50,13 +50,14 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         /// @throw DbError
         /// @throw DataError
         /// @throw InvalidArgumentError
-        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId,
-                                bool returnJson = true);
+        AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, DriveDbId driveDbId, DriveId driveId, bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
         ExitCause getExitCause() const;
-        DriveDbId driveDbId() const { return _driveDbId; };
+        [[nodiscard]] DriveDbId driveDbId() const { return _driveDbId; };
+        [[nodiscard]] UserDbId userDbId() const { return _userDbId; }
+        [[nodiscard]] DriveId driveId() const { return _driveId; }
 
         static void updateLoginByUserDbId(const Login &login, UserDbId userDbId);
 
@@ -66,6 +67,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ExitInfo refreshToken();
         long tokenUpdateDurationFromNow();
         [[nodiscard]] bool hasAccessToken() const { return !_apiToken.accessToken().empty(); }
+
+        [[nodiscard]] DriveId getDriveId(const DriveId driveId);
 
     protected:
         std::string getSpecificUrl() override;
@@ -77,7 +80,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
                 const std::string &replyBody) override; // TODO : this method should be private and called for every job.
 
         [[nodiscard]] UserId userId() const { return _userId; }
-        [[nodiscard]] DriveId driveId() const { return _driveId; }
         [[nodiscard]] ApiType getApiType() const { return _apiType; }
 
     private:
@@ -123,7 +125,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         ApiToken retrieveApiTokenFromUserCache();
         Account getAccount(const Drive &drive) const;
-        Drive getDrive(DriveDbId driveDbId) const;
+        [[nodiscard]] Drive getDrive(DriveDbId driveDbId) const;
 
         /// @throw InvalidArgumentError
         void checkParametersValidity();

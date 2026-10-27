@@ -146,7 +146,8 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
     if (!downloadJob->exitInfo() || downloadJob->isAborted()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Unable to download update to: " << downloadJob->getDestinationFile().c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Unable to download update to: " << Utility::formatSyncPath(downloadJob->getDestinationFilePath()));
         setState(UpdateState::DownloadError);
         return;
     }

@@ -25,6 +25,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
+#include "requests/exclusiontemplatecache.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "utility/kdexception.h"
 #if defined(KD_WINDOWS)
@@ -510,8 +511,17 @@ void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
             new LocalFileSystemObserverWorker_unix(shared_from_this(), "Local File System Observer", "LFSO"));
 #endif
-    _remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-            new RemoteFileSystemObserverWorker(shared_from_this(), "Remote File System Observer", "RFSO"));
+    // The lifetime of the remote FS observer is the same as the lifetime of the SyncPal. It is not freed when the SyncPal is
+    // stopped, as it keeps a backup of the last remote snapshot, which is needed for the next sync. The backup allows to perform
+    // a lightweight listing request instead of a costly full listing request on the remote server. Its reference to the SyncPal
+    // is released in freeWorkers() to avoid a shared_ptr reference cycle that would prevent the destruction of both objects; it
+    // is re-armed here before the worker is restarted.
+    if (!_remoteFSObserverWorker) {
+        _remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
+                new RemoteFileSystemObserverWorker(shared_from_this(), "Remote File System Observer", "RFSO"));
+    } else {
+        _remoteFSObserverWorker->setSyncPal(shared_from_this());
+    }
     _computeFSOperationsWorker = std::shared_ptr<ComputeFSOperationWorker>(
             new ComputeFSOperationWorker(shared_from_this(), "Compute FS Operations", "COOP"));
     _localUpdateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
@@ -537,7 +547,19 @@ void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
 void SyncPal::freeWorkers() {
     LOG_SYNCPAL_DEBUG(_logger, "Free workers");
     _localFSObserverWorker.reset();
-    _remoteFSObserverWorker.reset();
+
+    // The remote FS observer is not freed as it keeps a backup of the last remote snapshot, which is needed for the next sync.
+    // This backup allows to perform a lightweight listing request instead of a costly full listing request on the remote server.
+    // The remote FS observer will be freed when the SyncPal is destroyed.
+    if (_remoteFSObserverWorker) {
+        _remoteFSObserverWorker->stop();
+        // Break the SyncPal <-> remote FS observer shared_ptr reference cycle: the worker object is kept alive but must not keep
+        // the SyncPal alive. Its reference to the SyncPal is restored in createWorkers() when the SyncPal is restarted.
+        _remoteFSObserverWorker->setSyncPal(nullptr);
+    } else {
+        LOG_SYNCPAL_WARN(_logger, "Remote FS Observer worker is null. This should not happen.");
+    }
+
     _computeFSOperationsWorker.reset();
     _localUpdateTreeWorker.reset();
     _remoteUpdateTreeWorker.reset();
@@ -955,9 +977,10 @@ ExitInfo SyncPal::setLocalNodeId(const NodeId &localNodeId) {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
-    Sync sync;
-    bool found;
+ExitInfo SyncPal::selectSync(Sync &sync) {
+    sync = {};
+    bool found = false;
+
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -967,7 +990,12 @@ ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
-    sync.setListingCursor(value, timestamp);
+    return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::updateSync(const Sync &sync) {
+    bool found = false;
+
     if (!ParmsDb::instance()->updateSync(sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
         return {ExitCode::DbError, ExitCause::DbAccessError};
@@ -980,19 +1008,21 @@ ExitInfo SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
+ExitInfo SyncPal::setRootFolderCursor(const CursorData &cursorData) {
     Sync sync;
-    bool found;
-    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
-        LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        return {ExitCode::DbError, ExitCause::DbAccessError};
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
-    }
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
 
-    sync.listingCursor(value, timestamp);
+    sync.setRootFolderCursor(cursorData);
+
+    return updateSync(sync);
+}
+
+ExitInfo SyncPal::getRootFolderCursor(CursorData &cursorData) {
+    Sync sync;
+    if (const auto exitInfo = selectSync(sync); !exitInfo) return exitInfo;
+
+    cursorData = sync.rootFolderCursor();
+
     return ExitCode::Ok;
 }
 
@@ -1079,7 +1109,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     exists = false;
 
-    if (!_remoteFSObserverWorker) return {ExitCode::SyncPaused};
+    if (!isRunning() || !_remoteFSObserverWorker) return {ExitCode::SyncPaused};
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -1105,7 +1135,7 @@ ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) cons
 ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
-    if (!_remoteFSObserverWorker) return ExitCode::SyncPaused;
+    if (!isRunning() || !_remoteFSObserverWorker) return ExitCode::SyncPaused;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -1419,6 +1449,9 @@ void SyncPal::stop(PauseCaller caller, DbBehaviorAfterStop behavior) {
 
     // Free workers
     freeWorkers();
+
+    // The Remote File System Observer Worker has the lifetime of SyncPal.
+    if (behavior == DbBehaviorAfterStop::Remove) _remoteFSObserverWorker.reset();
 
     // Free shared objects
     freeSharedObjects();
@@ -1936,9 +1969,18 @@ void SyncPal::tryToInvalidateSnapshots() {
 }
 
 void SyncPal::forceInvalidateSnapshots() {
-    _localFSObserverWorker->invalidateSnapshot();
-    _remoteFSObserverWorker->forceUpdate();
-    _remoteFSObserverWorker->invalidateSnapshot();
+    if (_localFSObserverWorker)
+        _localFSObserverWorker->invalidateSnapshot();
+    else {
+        LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for local snapshot, but local FS observer worker is not available.");
+    }
+
+    if (_remoteFSObserverWorker) {
+        _remoteFSObserverWorker->forceUpdate();
+        _remoteFSObserverWorker->invalidateSnapshot();
+    } else {
+        LOG_SYNCPAL_DEBUG(_logger, "Invalidation requested for remote snapshot, but remote FS observer worker is not available.");
+    }
 }
 
 } // namespace KDC
