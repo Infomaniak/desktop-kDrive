@@ -28,7 +28,7 @@ Please note that these are strictly out of scope and any report based on one or 
 - Unofficial Clients: Any issue that relies on the user installing or using an unofficial, modified, or malicious version of our mobile or desktop applications.
 - Symlink Synchronization: We request an exception to maintain absolute paths and directory traversal in symlinks, as these are required for legitimate macOS/Linux workflows. Only the link itself is synchronized, not the targeted file content.
 
-GitHub source — End-to-end validation on the distributed build
+### GitHub source — End-to-end validation on the distributed build
 
 *Findings on desktop and mobile applications are eligible only if demonstrated end to end on the build currently distributed to users*. Local builds and standalone harnesses are legitimate research starting points, but testing and demonstration must be validated against the current production build to make the report eligible.
 
