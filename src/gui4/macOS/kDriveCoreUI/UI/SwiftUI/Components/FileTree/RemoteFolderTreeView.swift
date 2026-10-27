@@ -23,15 +23,15 @@ import SwiftUI
 public struct RemoteFolderTreeView: NSViewRepresentable {
     public let rootItems: [FileTreeItem]
 
-    public let loadChildren: @MainActor (FileTreeItem) async -> [FileTreeItem]
+    public let loadChildren: @MainActor @Sendable (FileTreeItem) async -> [FileTreeItem]
     public let onSelectionChange: (FileTreeItem?) -> Void
-    public let createFolder: @MainActor (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?
+    public let createFolder: @MainActor @Sendable (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?
 
     public init(
         rootItems: [FileTreeItem],
-        loadChildren: @escaping @MainActor (FileTreeItem) async -> [FileTreeItem],
+        loadChildren: @escaping @MainActor @Sendable (FileTreeItem) async -> [FileTreeItem],
         onSelectionChange: @escaping (FileTreeItem?) -> Void,
-        createFolder: @escaping @MainActor (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?
+        createFolder: @escaping @MainActor @Sendable (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?
     ) {
         self.rootItems = rootItems
         self.loadChildren = loadChildren
@@ -41,18 +41,18 @@ public struct RemoteFolderTreeView: NSViewRepresentable {
 
     public func makeNSView(context: Context) -> RemoteFolderOutlineView {
         let view = RemoteFolderOutlineView()
-        view.loadChildren = loadChildren
+        view.loadChildren = { [loadChildren] item in await loadChildren(item) }
         view.onSelectionChange = onSelectionChange
-        view.createFolder = createFolder
+        view.createFolder = { [createFolder] parent, name in await createFolder(parent, name) }
         view.setRootItems(rootItems)
         context.coordinator.appliedRootIDs = rootItems.map(\.id)
         return view
     }
 
     public func updateNSView(_ nsView: RemoteFolderOutlineView, context: Context) {
-        nsView.loadChildren = loadChildren
+        nsView.loadChildren = { [loadChildren] item in await loadChildren(item) }
         nsView.onSelectionChange = onSelectionChange
-        nsView.createFolder = createFolder
+        nsView.createFolder = { [createFolder] parent, name in await createFolder(parent, name) }
 
         let ids = rootItems.map(\.id)
         if context.coordinator.appliedRootIDs != ids {
@@ -114,9 +114,9 @@ final class RemoteFolderNode {
 
 @MainActor
 public final class RemoteFolderOutlineView: NSView {
-    var loadChildren: (@MainActor (FileTreeItem) async -> [FileTreeItem])?
+    var loadChildren: (@MainActor @Sendable (FileTreeItem) async -> [FileTreeItem])?
     var onSelectionChange: ((FileTreeItem?) -> Void)?
-    var createFolder: (@MainActor (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?)?
+    var createFolder: (@MainActor @Sendable (_ parent: FileTreeItem, _ name: String) async -> FileTreeItem?)?
 
     private let scrollView = NSScrollView()
     private let outlineView = NSOutlineView()

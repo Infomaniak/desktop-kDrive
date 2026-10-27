@@ -54,8 +54,6 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
             return .dataManagement
         case .network:
             return .network
-        default:
-            fatalError("Not yet implemented")
         }
     }
 }

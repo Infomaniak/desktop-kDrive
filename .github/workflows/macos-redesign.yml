@@ -13,6 +13,84 @@ defaults:
     working-directory: src/gui4/macOS
 
 jobs:
+  release-warnings:
+    name: Release build warnings
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+      - name: Show release toolchain
+        run: xcodebuild -version
+      - name: Setup Mise
+        # jdx/mise-action@v3.6.1
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
+        with:
+          working_directory: src/gui4/macOS
+          install_args: swiftlint
+      - name: Check Release build warnings
+        shell: bash
+        run: |
+          set -uo pipefail
+          log_path="$RUNNER_TEMP/kdrive-gui4-release.log"
+          set +e
+          xcodebuild \
+            -project kDrive.xcodeproj \
+            -scheme kDrive \
+            -configuration Release \
+            -destination "platform=macOS,arch=arm64" \
+            -derivedDataPath "$RUNNER_TEMP/kdrive-gui4-release" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="" \
+            ENABLE_HARDENED_RUNTIME=NO \
+            clean build 2>&1 | tee "$log_path"
+          build_status=${PIPESTATUS[0]}
+          set -e
+
+          python3 - "$log_path" "$build_status" <<'PY'
+          import os
+          from pathlib import Path
+          import re
+          import sys
+
+          warnings = []
+          todos = []
+          for line in Path(sys.argv[1]).read_text(errors="replace").splitlines():
+              diagnostic = re.search(r"\bwarning:\s*(.*)", line, re.IGNORECASE)
+              if not diagnostic:
+                  continue
+              if re.fullmatch(r"Todo Violation: TODOs should be resolved .*\(todo\)", diagnostic[1]):
+                  todos.append(line)
+              else:
+                  warnings.append(line)
+
+          build_status = int(sys.argv[2])
+          summary = (
+              f"Release build exit code: {build_status}\n\n"
+              f"Warnings: {len(warnings)}\n\n"
+              f"Allowed SwiftLint TODO warnings: {len(todos)}\n"
+          )
+          print(summary)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as output:
+              output.write("## macOS GUI Release warnings\n\n" + summary)
+          if warnings:
+              print("Disallowed Release build warnings:")
+              print("\n".join(warnings))
+          sys.exit(1 if build_status or warnings else 0)
+          PY
+      - name: Upload Release build log
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: macos-gui4-release-build-log
+          path: ${{ runner.temp }}/kdrive-gui4-release.log
+          if-no-files-found: ignore
+
   run-tests:
     name: Run tests
     runs-on: [ self-hosted, iOS ]
