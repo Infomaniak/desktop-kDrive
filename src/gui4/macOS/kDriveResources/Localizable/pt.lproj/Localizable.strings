@@ -995,7 +995,7 @@
 "labelFolderRecreatedOrReplacedTip" = "A pasta foi eliminada e recriada, ou substituída por outra pasta com o mesmo nome.";
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
-"labelJustNow" = "Agora mesmo";
+"labelJustNow" = "agora mesmo";
 
 /* loco:698aecc409658598f60cc334 */
 "labelKDriveVersion" = "kDrive %@";

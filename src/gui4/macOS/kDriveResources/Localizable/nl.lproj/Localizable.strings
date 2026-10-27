@@ -995,7 +995,7 @@
 "labelFolderRecreatedOrReplacedTip" = "De map is verwijderd en opnieuw aangemaakt, of vervangen door een andere map met dezelfde naam.";
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
-"labelJustNow" = "Zojuist";
+"labelJustNow" = "zojuist";
 
 /* loco:698aecc409658598f60cc334 */
 "labelKDriveVersion" = "kDrive %@";

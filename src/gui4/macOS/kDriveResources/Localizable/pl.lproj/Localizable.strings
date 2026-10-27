@@ -995,7 +995,7 @@
 "labelFolderRecreatedOrReplacedTip" = "Folder został usunięty i odtworzony lub zastąpiony przez inny folder o tej samej nazwie.";
 
 /* loco:698c656e3e4e4bbf4f02bde2 */
-"labelJustNow" = "Przed chwilą";
+"labelJustNow" = "przed chwilą";
 
 /* loco:698aecc409658598f60cc334 */
 "labelKDriveVersion" = "kDrive %@";
