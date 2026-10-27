@@ -34,6 +34,14 @@ public enum UIAppLanguage: String, CaseIterable, Sendable, Equatable, Preference
     case german
     case spanish
     case italian
+    case dutch
+    case swedish
+    case portuguese
+    case polish
+    case norwegian
+    case finnish
+    case danish
+    case greek
 
     public var label: String {
         switch self {
@@ -49,6 +57,22 @@ public enum UIAppLanguage: String, CaseIterable, Sendable, Equatable, Preference
             return "Español"
         case .italian:
             return "Italiano"
+        case .dutch:
+            return "Nederlands"
+        case .swedish:
+            return "Svenska"
+        case .portuguese:
+            return "Português"
+        case .polish:
+            return "Polski"
+        case .norwegian:
+            return "Norsk bokmål"
+        case .finnish:
+            return "Suomi"
+        case .danish:
+            return "Dansk"
+        case .greek:
+            return "Ελληνικά"
         }
     }
 }

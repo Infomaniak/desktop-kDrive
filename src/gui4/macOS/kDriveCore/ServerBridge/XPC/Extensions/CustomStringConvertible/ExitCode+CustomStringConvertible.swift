@@ -57,6 +57,10 @@ extension KDC.ExitCode: CustomStringConvertible {
             return "LogUploadFailed"
         case .UpdateFailed:
             return "UpdateFailed"
+        case .TooManyDeleteOperations:
+            return "TooManyDeleteOperations"
+        case .SyncPaused:
+            return "SyncPaused"
         case .EnumEnd:
             return "EnumEnd"
         @unknown default:
