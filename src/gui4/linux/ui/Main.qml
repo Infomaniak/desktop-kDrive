@@ -44,6 +44,8 @@ IKShadowedWindow {
                                                            && appRouter.mainWindowActive
                                                            && visible
     readonly property bool waitingActive: !onboardingActive && !appRouter.mainWindowActive
+    readonly property bool mainShellActive: !onboardingActive && appRouter.mainWindowActive
+    readonly property bool tabNavigationActive: mainShellActive && appRouter.currentMainTabIndex !== AppRouter.BlockingError
 
     visible: false
     contentWidth: 900
@@ -109,6 +111,8 @@ IKShadowedWindow {
             appRouter: mainWindow.appRouter
             controller: mainWindow.homeController
             searchAvailable: mainWindow.searchController.available
+            searchShortcutText: searchShortcut.nativeText
+            settingsShortcutText: preferencesShortcut.nativeText
             onSearchRequested: mainWindow.openSearch()
         }
     }
@@ -119,12 +123,104 @@ IKShadowedWindow {
         }
     }
 
+    // Activities and Storage need a sync root, as in the sidebar. Navigation wraps around.
+    function accessibleMainTabs() {
+        if (!mainWindow.mainSidebarController.hasCurrentSyncRoot) {
+            return [ AppRouter.Home ];
+        }
+        return [ AppRouter.Home, AppRouter.Activities, AppRouter.Storage ];
+    }
+
+    function navigateToAdjacentMainTab(step) {
+        const tabs = accessibleMainTabs();
+        const index = tabs.indexOf(mainWindow.appRouter.currentMainTabIndex);
+        mainWindow.appRouter.navigateToMainTab(tabs[(Math.max(index, 0) + step + tabs.length) % tabs.length]);
+    }
+
+    function navigateToMainTabIfAccessible(tab) {
+        if (accessibleMainTabs().indexOf(tab) >= 0) {
+            mainWindow.appRouter.navigateToMainTab(tab);
+        }
+    }
+
     Shortcut {
-        sequences: [ StandardKey.Find ]
+        id: searchShortcut
+
+        sequences: [ StandardKey.Find ] // Ctrl+F
         enabled: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
                  && mainWindow.searchController.available
         context: Qt.WindowShortcut
         onActivated: mainWindow.openSearch()
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.Quit ] // Ctrl+Q
+        autoRepeat: false
+        context: Qt.WindowShortcut
+        onActivated: globalModalHost.requestQuitConfirmation()
+    }
+
+    Shortcut {
+        id: preferencesShortcut
+
+        // GNOME binds no key to Preferences.
+        sequences: [ "Ctrl+,", StandardKey.Preferences ] // KDE: Ctrl+Shift+,
+        autoRepeat: false
+        enabled: mainWindow.mainShellActive
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.settingsController.requestOpen()
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.Open ] // Ctrl+O
+        autoRepeat: false
+        enabled: mainWindow.mainShellActive && mainWindow.mainSidebarController.canOpenCurrentSyncFolder
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.mainSidebarController.openCurrentSyncFolder()
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.NextChild, "Ctrl+PgDown" ] // Ctrl+Tab
+        enabled: mainWindow.tabNavigationActive
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.navigateToAdjacentMainTab(1)
+    }
+
+    Shortcut {
+        // StandardKey.PreviousChild only holds Ctrl+Shift+Backtab, which Qt never matches on Wayland.
+        sequences: [ "Ctrl+Shift+Tab", "Ctrl+PgUp" ]
+        enabled: mainWindow.tabNavigationActive
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.navigateToAdjacentMainTab(-1)
+    }
+
+    Shortcut {
+        sequence: "Alt+1"
+        enabled: mainWindow.tabNavigationActive
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.navigateToMainTabIfAccessible(AppRouter.Home)
+    }
+
+    Shortcut {
+        sequence: "Alt+2"
+        enabled: mainWindow.tabNavigationActive
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.navigateToMainTabIfAccessible(AppRouter.Activities)
+    }
+
+    Shortcut {
+        sequence: "Alt+3"
+        enabled: mainWindow.tabNavigationActive
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.navigateToMainTabIfAccessible(AppRouter.Storage)
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.Refresh ] // F5, Ctrl+R
+        autoRepeat: false
+        enabled: mainWindow.tabNavigationActive && mainWindow.appRouter.currentMainTabIndex === AppRouter.Storage
+        context: Qt.WindowShortcut
+        onActivated: mainWindow.storageController.refresh()
     }
 
     SearchDialog {
