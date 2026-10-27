@@ -326,7 +326,7 @@ IKModal {
                 Text {
                     Layout.fillWidth: true
                     visible: root.controller.watchLimit > 0
-                    text: qsTrId("linuxDialogINotifyWatchesCurrentLimit").arg(root.controller.watchLimit)
+                    text: qsTrId("linuxDialogINotifyWatchesCurrentLimit").arg(root.controller.watchLimit.toLocaleString(Qt.locale(), "f", 0))
                     textFormat: Text.PlainText
                     color: IKColors.textPrimary
                     font.pixelSize: IKFonts.bodySize
