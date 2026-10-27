@@ -31,6 +31,8 @@ Rectangle {
     required property var appRouter
     required property var controller
     property bool searchAvailable: false
+    property string searchShortcutText: ""
+    property string settingsShortcutText: ""
 
     readonly property int currentTab: root.appRouter.currentMainTabIndex
     readonly property int tabActivities: AppRouter.Activities
@@ -39,6 +41,10 @@ Rectangle {
     readonly property bool canGoBack: root.currentTab === root.tabActivities && root.activitiesNavigation.canGoBack
 
     color: "transparent"
+
+    function tooltipWithShortcut(label, shortcutText) {
+        return shortcutText.length > 0 ? label + " (" + shortcutText + ")" : label;
+    }
 
     HeaderIconButton {
         id: backButton
@@ -114,6 +120,7 @@ Rectangle {
                 GroupedIconButton {
                     iconSource: "qrc:/assets/main/home/cog.svg"
                     text: qsTrId("buttonSettings")
+                    tooltipText: root.tooltipWithShortcut(text, root.settingsShortcutText)
                     onClicked: root.settingsRequested()
                 }
             }
@@ -124,6 +131,7 @@ Rectangle {
             iconSource: "qrc:/assets/main/home/search.svg"
             iconSize: IKMainWindow.toolbarSearchIconSize
             text: qsTrId("buttonSearch")
+            tooltipText: root.tooltipWithShortcut(text, root.searchShortcutText)
             onClicked: root.searchRequested()
         }
     }
@@ -168,6 +176,7 @@ Rectangle {
         id: groupedButton
 
         required property url iconSource
+        property string tooltipText: text
 
         width: IKMainWindow.toolbarActionGroupButtonSize
         height: IKMainWindow.toolbarActionGroupButtonSize
@@ -191,7 +200,7 @@ Rectangle {
 
         IKToolTip {
             targetButton: groupedButton
-            text: groupedButton.text
+            text: groupedButton.tooltipText
         }
     }
 }
