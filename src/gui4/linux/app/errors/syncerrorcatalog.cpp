@@ -329,10 +329,12 @@ CatalogEntry catalogEntry(const SyncErrorKind kind) {
                     .traits = {.category = Category::SystemAndPermissions,
                                .explanation = Explanation::INotifyWatches,
                                .showsInTray = true},
+                    // The row shows the current limit (`ErrorListModel`); without `pkexec` or when the raise fails, the
+                    // explanation dialog gives the command to run instead.
                     .presentation = {.title = {"linuxErrINotifyWatchesTitle"},
-                                     .description = {"linuxErrINotifyWatchesDescription"},
-                                     .action = Action::Explain,
-                                     .actionLabel = kExplainLabel},
+                                     .description = {"linuxErrINotifyWatchesLimitDescription"},
+                                     .action = Action::RaiseWatchLimit,
+                                     .actionLabel = {"linuxButtonRaiseLimit"}},
             };
 
         case Unknown:
@@ -447,6 +449,8 @@ std::string toString(const SyncErrorAction action) {
             return "CreateNewSync";
         case RestartSync:
             return "RestartSync";
+        case RaiseWatchLimit:
+            return "RaiseWatchLimit";
         case WakeUp:
             return "WakeUp";
         case RefreshErrors:

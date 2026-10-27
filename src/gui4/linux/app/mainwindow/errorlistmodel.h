@@ -33,6 +33,7 @@
 namespace KDC {
 
 class MainSelectionStore;
+class SyncErrorActionHandler;
 class SyncErrorService;
 class SyncErrorsProjection;
 class SyncService;
@@ -58,6 +59,7 @@ class ErrorListModel final : public QAbstractListModel {
             TitleCountRole,
             DescriptionIdRole,
             DescriptionArgCountRole,
+            DescriptionCountRole,
             NodeLabelIdRole,
             ItemNameRole,
             ItemPathRole,
@@ -74,7 +76,8 @@ class ErrorListModel final : public QAbstractListModel {
         Q_ENUM(Role)
 
         ErrorListModel(const SyncErrorsProjection &projection, const MainSelectionStore &selectionStore,
-                       const SyncService &syncService, const SyncErrorService &syncErrorService, QObject *parent = nullptr);
+                       const SyncService &syncService, const SyncErrorService &syncErrorService,
+                       const SyncErrorActionHandler &actionHandler, QObject *parent = nullptr);
 
         [[nodiscard]] int rowCount(const QModelIndex &parent = QModelIndex()) const override;
         [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -97,6 +100,8 @@ class ErrorListModel final : public QAbstractListModel {
                 int32_t titleCount{0};
                 QString descriptionId;
                 uint8_t descriptionArgCount{0};
+                // Number shown in the description, such as the inotify watches limit; 0 when it has none.
+                qint64 descriptionCount{0};
                 QString nodeLabelId;
                 QString itemName;
                 QString itemPath;
@@ -128,6 +133,7 @@ class ErrorListModel final : public QAbstractListModel {
         const MainSelectionStore &_selectionStore;
         const SyncService &_syncService;
         const SyncErrorService &_syncErrorService;
+        const SyncErrorActionHandler &_actionHandler;
         FileIconResolver _fileIconResolver;
         std::vector<Row> _rows;
 };

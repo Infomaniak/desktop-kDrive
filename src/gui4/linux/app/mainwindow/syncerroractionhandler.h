@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/cache/cachetypes.h"
+#include "app/errors/inotifywatchlimit.h"
 #include "app/errors/syncerrorkind.h"
 #include "libcommon/utility/types.h"
 
@@ -26,6 +27,7 @@
 
 namespace KDC {
 
+class ServiceActionTracker;
 class SettingsWindowController;
 class SyncErrorService;
 class SyncService;
@@ -43,24 +45,33 @@ class SyncErrorActionHandler final : public QObject {
 
     public:
         SyncErrorActionHandler(SyncService &syncService, SyncErrorService &syncErrorService,
-                               SettingsWindowController &settingsWindowController, QObject *parent = nullptr);
+                               SettingsWindowController &settingsWindowController, ServiceActionTracker &serviceActionTracker,
+                               QObject *parent = nullptr);
 
         /** Runs the action of `classified`, an error of the synchronization described by `context`. */
         void trigger(const ClassifiedSyncError &classified, const SyncContext &context);
         /** Runs `action` on `classified`: the row button goes through `trigger`, the explanation dialog buttons call it
          * directly. */
         void run(SyncErrorAction action, const ClassifiedSyncError &classified, const SyncContext &context);
+        /** Whether "Raise the limit" waits for the authentication or the script, for the synchronization `syncDbId`. */
+        [[nodiscard]] bool isWatchLimitRaisePending(qint64 syncDbId) const;
 
     signals:
         // The user must log in again; handled like the logged-out blocking screen.
         void loginRequested();
-        // The "Understand the problem" button: the errors page opens the explanation dialog of this error.
-        void explanationRequested(ErrorDbId errorDbId);
+        // The "Understand the problem" button: the errors page opens the explanation dialog of this error. Also emitted
+        // when "Raise the limit" is not available or fails (`raiseFailure`): the dialog then gives the command to run.
+        void explanationRequested(ErrorDbId errorDbId, WatchLimitRaiseFailure raiseFailure = WatchLimitRaiseFailure::None);
+        void watchLimitRaisePendingChanged(qint64 syncDbId);
 
     private:
+        void raiseWatchLimit(const ClassifiedSyncError &classified, const SyncContext &context);
+        void finishWatchLimitRaise(ErrorDbId errorDbId, qint64 syncDbId, WatchLimitRaiseFailure raiseFailure);
+
         SyncService &_syncService;
         SyncErrorService &_syncErrorService;
         SettingsWindowController &_settingsWindowController;
+        ServiceActionTracker &_serviceActionTracker;
 };
 
 } // namespace KDC

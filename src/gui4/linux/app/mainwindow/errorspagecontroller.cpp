@@ -50,7 +50,7 @@ ErrorsPageController::ErrorsPageController(const SyncErrorsProjection &projectio
     _syncErrorService(syncErrorService),
     _actionHandler(actionHandler),
     _activitiesNavigation(activitiesNavigation),
-    _model(projection, selectionStore, syncService, syncErrorService),
+    _model(projection, selectionStore, syncService, syncErrorService, actionHandler),
     _explanation(projection, selectionStore, actionHandler),
     _errorCount(projection.currentErrorCount()) {
     (void) connect(&_projection, &SyncErrorsProjection::currentErrorsChanged, this, [this] {

@@ -96,6 +96,7 @@ enum class SyncErrorAction : uint8_t {
     OpenSyncParentFolder, // Parent folder of the synchronization root
     CreateNewSync, // Settings, on the accounts and synchronizations
     RestartSync,
+    RaiseWatchLimit, // Inotify watches limit, raised as root through `pkexec`
     WakeUp,
     RefreshErrors,
     RenewSubscription,

@@ -20,7 +20,9 @@
 
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/syncerrorsprojection.h"
+#include "app/errors/inotifywatchlimit.h"
 #include "app/errors/syncerrorcatalog.h"
+#include "app/mainwindow/syncerroractionhandler.h"
 #include "app/services/syncerrorservice.h"
 #include "app/services/syncservice.h"
 #include "app/syncconfiguration/localpaths.h"
@@ -156,12 +158,14 @@ QVariantList technicalDetailsVariant(const std::vector<std::pair<QString, QStrin
 } // namespace
 
 ErrorListModel::ErrorListModel(const SyncErrorsProjection &projection, const MainSelectionStore &selectionStore,
-                               const SyncService &syncService, const SyncErrorService &syncErrorService, QObject *const parent) :
+                               const SyncService &syncService, const SyncErrorService &syncErrorService,
+                               const SyncErrorActionHandler &actionHandler, QObject *const parent) :
     QAbstractListModel(parent),
     _projection(projection),
     _selectionStore(selectionStore),
     _syncService(syncService),
-    _syncErrorService(syncErrorService) {
+    _syncErrorService(syncErrorService),
+    _actionHandler(actionHandler) {
     (void) connect(&_projection, &SyncErrorsProjection::currentErrorsChanged, this, &ErrorListModel::refresh);
     // The admin rights and the synchronization root change the texts, actions and item chips of some rows.
     (void) connect(&_selectionStore, &MainSelectionStore::currentContextChanged, this, &ErrorListModel::refresh);
@@ -173,6 +177,7 @@ ErrorListModel::ErrorListModel(const SyncErrorsProjection &projection, const Mai
     };
     (void) connect(&_syncService, &SyncService::syncActionPendingChanged, this, refreshPendingRows);
     (void) connect(&_syncErrorService, &SyncErrorService::refreshPendingChanged, this, refreshPendingRows);
+    (void) connect(&_actionHandler, &SyncErrorActionHandler::watchLimitRaisePendingChanged, this, refreshPendingRows);
     _rows = buildRows();
 }
 
@@ -229,6 +234,8 @@ QVariant ErrorListModel::data(const QModelIndex &index, const int role) const {
             return row.descriptionId;
         case DescriptionArgCountRole:
             return static_cast<int32_t>(row.descriptionArgCount);
+        case DescriptionCountRole:
+            return row.descriptionCount;
         case NodeLabelIdRole:
             return row.nodeLabelId;
         case ItemNameRole:
@@ -267,6 +274,7 @@ QHash<int, QByteArray> ErrorListModel::roleNames() const {
             {TitleCountRole, "titleCount"},
             {DescriptionIdRole, "descriptionId"},
             {DescriptionArgCountRole, "descriptionArgCount"},
+            {DescriptionCountRole, "descriptionCount"},
             {NodeLabelIdRole, "nodeLabelId"},
             {ItemNameRole, "itemName"},
             {ItemPathRole, "itemPath"},
@@ -393,6 +401,14 @@ ErrorListModel::Row ErrorListModel::makeErrorRow(const ClassifiedSyncError &clas
     row.titleArgCount = presentation.title.nodeLabelArgs;
     row.descriptionId = textId(presentation.description.id);
     row.descriptionArgCount = presentation.description.nodeLabelArgs;
+    if (classified.kind == SyncErrorKind::NotEnoughINotifyWatches) {
+        // The limit is read again with each refresh: it can be raised while the error is listed. Unreadable, the row
+        // keeps the description without a number.
+        row.descriptionCount = readWatchLimit();
+        if (row.descriptionCount == 0) {
+            row.descriptionId = u"linuxErrINotifyWatchesDescription"_s;
+        }
+    }
     row.nodeLabelId = textId(syncErrorNodeLabelId(error.nodeType()));
     row.variant = variant;
 
@@ -447,6 +463,8 @@ bool ErrorListModel::isActionPending(const SyncErrorAction action) const {
             return _syncService.isStartSyncPending(syncDbId);
         case SyncErrorAction::RefreshErrors:
             return _syncErrorService.isRefreshPending(syncDbId);
+        case SyncErrorAction::RaiseWatchLimit:
+            return _actionHandler.isWatchLimitRaisePending(syncDbId);
         default:
             return false;
     }
@@ -469,6 +487,7 @@ void ErrorListModel::updateRow(const int32_t rowIndex, Row nextRow) {
     addRoleIf(row.titleCount != nextRow.titleCount, TitleCountRole);
     addRoleIf(row.descriptionId != nextRow.descriptionId, DescriptionIdRole);
     addRoleIf(row.descriptionArgCount != nextRow.descriptionArgCount, DescriptionArgCountRole);
+    addRoleIf(row.descriptionCount != nextRow.descriptionCount, DescriptionCountRole);
     addRoleIf(row.nodeLabelId != nextRow.nodeLabelId, NodeLabelIdRole);
     addRoleIf(row.itemName != nextRow.itemName, ItemNameRole);
     addRoleIf(row.itemPath != nextRow.itemPath, ItemPathRole);

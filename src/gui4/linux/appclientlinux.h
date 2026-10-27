@@ -202,7 +202,8 @@ class AppClientLinux : public QApplication {
                                                            this};
         // Declared after SettingsWindowController, which opens the file exclusions, and after SyncErrorsProjection, which
         // must apply a change of synchronization before the error list reads it.
-        SyncErrorActionHandler _syncErrorActionHandler{_syncService, _syncErrorService, _settingsWindowController, this};
+        SyncErrorActionHandler _syncErrorActionHandler{_syncService, _syncErrorService, _settingsWindowController,
+                                                       _serviceActionTracker, this};
         ErrorsPageController _errorsPageController{_syncErrorsProjection,
                                                    _mainSelectionStore,
                                                    _syncService,

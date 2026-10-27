@@ -22,25 +22,37 @@
 #include "app/cache/syncerrorsprojection.h"
 #include "app/errors/syncerrorcatalog.h"
 #include "app/navigation/approuter.h"
+#include "app/services/serviceactiontracker.h"
 #include "app/services/syncerrorservice.h"
 #include "app/services/syncservice.h"
 #include "app/settings/settingswindowcontroller.h"
 #include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 #include <QDesktopServices>
+#include <QFile>
 #include <QLoggingCategory>
+#include <QProcess>
+#include <QSaveFile>
+#include <QStandardPaths>
 #include <QStorageInfo>
 #include <QUrl>
 
 #include <filesystem>
+#include <optional>
 #include <system_error>
 
 namespace KDC {
 
 namespace {
 
+using namespace Qt::StringLiterals;
+
 Q_LOGGING_CATEGORY(lcSyncErrorActionHandler, "gui.v4.syncerroractions", QtInfoMsg)
+
+constexpr char serviceKeyWatchLimit[] = "inotifyWatchLimit";
+constexpr char actionRaiseWatchLimit[] = "raiseWatchLimit";
 
 void openUrl(const QUrl &url) {
     if (!QDesktopServices::openUrl(url)) {
@@ -87,14 +99,95 @@ void openSyncParentFolder(const SyncContext &context) {
     openUrl(QUrl::fromLocalFile(Path2QStr(folder)));
 }
 
+
+// Run as root through `pkexec`, so it trusts nothing: one numeric argument, a fixed file. Exit codes 126 and 127 are
+// taken by pkexec itself.
+constexpr char watchLimitScript[] = R"KDRIVE(#!/bin/sh
+# Written by kDrive before each use, do not edit.
+# Raises the inotify watches limit: kDrive watches every folder of a synchronization.
+# Exit codes: 2 invalid limit, 3 write failed, 4 sysctl failed, 5 limit not applied, 6 not run as root by pkexec.
+set -u
+
+# Only through pkexec, as root.
+[ -n "${PKEXEC_UID:-}" ] && [ "$(id -u)" -eq 0 ] || exit 6
+
+# A single number, between the minimum default of the kernel and the int maximum.
+[ "$#" -eq 1 ] || exit 2
+limit=$1
+case "$limit" in
+    '' | *[!0-9]*) exit 2 ;;
+esac
+[ "${#limit}" -le 10 ] || exit 2
+[ "$limit" -ge 8192 ] && [ "$limit" -le 2147483647 ] || exit 2
+
+conf=/etc/sysctl.d/90-kdrive.conf
+mkdir -p /etc/sysctl.d || exit 3
+tmp=$(mktemp /etc/sysctl.d/.90-kdrive.conf.XXXXXX) || exit 3
+trap 'rm -f "$tmp"' EXIT
+printf '# Written by kDrive: raises the inotify watches limit.\nfs.inotify.max_user_watches=%s\n' "$limit" > "$tmp" || exit 3
+chmod 644 "$tmp" || exit 3
+mv -f "$tmp" "$conf" || exit 3
+
+sysctl -p "$conf" > /dev/null || exit 4
+[ "$(cat /proc/sys/fs/inotify/max_user_watches)" = "$limit" ] || exit 5
+)KDRIVE";
+
+// Exit code of pkexec when the user dismisses the authentication dialog.
+constexpr uint8_t pkexecCancelledExitCode = 126;
+
+// Writes the script to the state directory of the app, executable by its owner only, then reads it back. pkexec runs a
+// file, so that polkit shows its path rather than a shell command line; a file inside the AppImage is not readable by
+// root.
+std::optional<QString> writeWatchLimitScript() {
+    SyncPath directory;
+    if (const auto exitInfo = CommonUtility::stateDirectoryPath(directory); !exitInfo) {
+        qCWarning(lcSyncErrorActionHandler) << "State directory unavailable | code:" << exitInfo.code()
+                                            << "| cause:" << exitInfo.cause();
+        return std::nullopt;
+    }
+    if (std::error_code errorCode; !std::filesystem::create_directories(directory, errorCode) && errorCode) {
+        qCWarning(lcSyncErrorActionHandler) << "Cannot create the state directory | error:" << errorCode.message();
+        return std::nullopt;
+    }
+    const SyncPath scriptPath = directory / "update_inotify_limit";
+    const auto path = Path2QStr(scriptPath);
+    const QByteArray content(watchLimitScript);
+
+    QSaveFile file(path);
+    if (!file.open(QIODevice::WriteOnly) || file.write(content) != content.size() || !file.commit()) {
+        qCWarning(lcSyncErrorActionHandler) << "Cannot write the inotify watches script | path:" << path
+                                            << "| error:" << file.errorString();
+        return std::nullopt;
+    }
+    if (!QFile::setPermissions(path, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner)) {
+        qCWarning(lcSyncErrorActionHandler) << "Cannot make the inotify watches script executable | path:" << path;
+        return std::nullopt;
+    }
+    if (QFile written(path); !written.open(QIODevice::ReadOnly) || written.readAll() != content) {
+        qCWarning(lcSyncErrorActionHandler) << "Inotify watches script changed after writing | path:" << path;
+        return std::nullopt;
+    }
+    return path;
+}
+
 } // namespace
 
 SyncErrorActionHandler::SyncErrorActionHandler(SyncService &syncService, SyncErrorService &syncErrorService,
-                                               SettingsWindowController &settingsWindowController, QObject *const parent) :
+                                               SettingsWindowController &settingsWindowController,
+                                               ServiceActionTracker &serviceActionTracker, QObject *const parent) :
     QObject(parent),
     _syncService(syncService),
     _syncErrorService(syncErrorService),
-    _settingsWindowController(settingsWindowController) {}
+    _settingsWindowController(settingsWindowController),
+    _serviceActionTracker(serviceActionTracker) {
+    (void) connect(&_serviceActionTracker, &ServiceActionTracker::actionPendingChanged, this,
+                   [this](const ServiceActionTracker::ServiceKey &serviceKey, const ServiceActionTracker::ActionKey &actionKey,
+                          const ServiceActionTracker::ScopeId scopeId, const bool) {
+                       if (serviceKey == serviceKeyWatchLimit && actionKey == actionRaiseWatchLimit) {
+                           emit watchLimitRaisePendingChanged(scopeId);
+                       }
+                   });
+}
 
 void SyncErrorActionHandler::trigger(const ClassifiedSyncError &classified, const SyncContext &context) {
     run(describeSyncError(classified.kind, context.drive.admin()).action, classified, context);
@@ -145,6 +238,9 @@ void SyncErrorActionHandler::run(const SyncErrorAction action, const ClassifiedS
         case SyncErrorAction::RestartSync:
             _syncService.startSync(syncDbId);
             break;
+        case SyncErrorAction::RaiseWatchLimit:
+            raiseWatchLimit(classified, context);
+            break;
         case SyncErrorAction::RefreshErrors:
             _syncErrorService.refreshErrors(syncDbId);
             break;
@@ -161,6 +257,78 @@ void SyncErrorActionHandler::run(const SyncErrorAction action, const ClassifiedS
             qCWarning(lcSyncErrorActionHandler)
                     << "Sync error action not available | action:" << action << "| errorDbId:" << error.dbId();
             break;
+    }
+}
+
+bool SyncErrorActionHandler::isWatchLimitRaisePending(const qint64 syncDbId) const {
+    return _serviceActionTracker.isActionPending(serviceKeyWatchLimit, actionRaiseWatchLimit, syncDbId);
+}
+
+// Raises the limit with the script, as root through pkexec, then restarts the synchronization. Without pkexec or when the
+// raise fails, the explanation dialog gives the command to run in a terminal.
+void SyncErrorActionHandler::raiseWatchLimit(const ClassifiedSyncError &classified, const SyncContext &context) {
+    const auto errorDbId = classified.error.dbId();
+    const qint64 syncDbId = context.syncInfo.dbId();
+    // The limit is the same for every synchronization: one raise at a time.
+    if (_serviceActionTracker.isServicePending(serviceKeyWatchLimit)) {
+        qCInfo(lcSyncErrorActionHandler) << "Inotify watches limit raise already running | syncDbId:" << syncDbId;
+        return;
+    }
+    const auto pkexecPath = QStandardPaths::findExecutable(u"pkexec"_s);
+    if (pkexecPath.isEmpty()) {
+        qCInfo(lcSyncErrorActionHandler) << "pkexec not found, showing the inotify watches command";
+        emit explanationRequested(errorDbId);
+        return;
+    }
+    const auto scriptPath = writeWatchLimitScript();
+    if (!scriptPath.has_value()) {
+        emit explanationRequested(errorDbId, WatchLimitRaiseFailure::Failed);
+        return;
+    }
+
+    const auto limit = proposedWatchLimit(readWatchLimit());
+    auto *const process = new QProcess(this);
+    // The script prints nothing on success; pkexec and the commands it runs explain their failures on stderr, logged
+    // with the exit code.
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    (void) connect(process, &QProcess::finished, this,
+                   [this, process, errorDbId, syncDbId](const int exitCode, const QProcess::ExitStatus exitStatus) {
+                       process->deleteLater();
+                       const bool raised = exitStatus == QProcess::NormalExit && exitCode == 0;
+                       qCInfo(lcSyncErrorActionHandler)
+                               << "Inotify watches limit raise finished | exitCode:" << exitCode << "| exitStatus:" << exitStatus
+                               << "| limit:" << readWatchLimit() << "| output:" << process->readAll().trimmed();
+                       if (raised) {
+                           finishWatchLimitRaise(errorDbId, syncDbId, WatchLimitRaiseFailure::None);
+                           _syncService.startSync(syncDbId);
+                           return;
+                       }
+                       const bool cancelled = exitStatus == QProcess::NormalExit && exitCode == pkexecCancelledExitCode;
+                       finishWatchLimitRaise(errorDbId, syncDbId,
+                                             cancelled ? WatchLimitRaiseFailure::Cancelled : WatchLimitRaiseFailure::Failed);
+                   });
+    (void) connect(process, &QProcess::errorOccurred, this,
+                   [this, process, errorDbId, syncDbId](const QProcess::ProcessError error) {
+                       // The other errors end with `finished`.
+                       if (error != QProcess::FailedToStart) {
+                           return;
+                       }
+                       qCWarning(lcSyncErrorActionHandler) << "pkexec failed to start | error:" << process->errorString();
+                       process->deleteLater();
+                       finishWatchLimitRaise(errorDbId, syncDbId, WatchLimitRaiseFailure::Failed);
+                   });
+
+    _serviceActionTracker.beginAction(serviceKeyWatchLimit, actionRaiseWatchLimit, syncDbId);
+    qCInfo(lcSyncErrorActionHandler) << "Raising the inotify watches limit | script:" << *scriptPath << "| limit:" << limit
+                                     << "| syncDbId:" << syncDbId;
+    process->start(pkexecPath, {*scriptPath, QString::number(limit)});
+}
+
+void SyncErrorActionHandler::finishWatchLimitRaise(const ErrorDbId errorDbId, const qint64 syncDbId,
+                                                   const WatchLimitRaiseFailure raiseFailure) {
+    _serviceActionTracker.endAction(serviceKeyWatchLimit, actionRaiseWatchLimit, syncDbId);
+    if (raiseFailure != WatchLimitRaiseFailure::None) {
+        emit explanationRequested(errorDbId, raiseFailure);
     }
 }
 

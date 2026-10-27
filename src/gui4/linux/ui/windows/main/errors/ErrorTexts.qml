@@ -23,7 +23,7 @@ import QtQuick
 // Translates the texts of the errors page, which ErrorListModel exposes as translation ids.
 QtObject {
     // Fills each of the `argCount` placeholders with the translated node label ("file" or "folder"), or the first one
-    // with `count` for the aggregated conflicts row. A text that starts with the node label ("%1 name too long") gets
+    // with `count` (the conflicts of the aggregated row, the inotify watches limit), grouped like the language does. A text that starts with the node label ("%1 name too long") gets
     // a capital first letter; the others keep theirs, so that "kDrive" keeps its lowercase "k".
     function text(id, argCount, nodeLabelId, count) {
         if (!id) {
@@ -31,7 +31,7 @@ QtObject {
         }
 
         const translation = qsTrId(id);
-        let result = count > 0 ? translation.arg(count) : translation;
+        let result = count > 0 ? translation.arg(count.toLocaleString(Qt.locale(), "f", 0)) : translation;
         const nodeLabel = nodeLabelId ? qsTrId(nodeLabelId) : "";
         for (let index = 0; index < argCount; ++index) {
             result = result.arg(nodeLabel);
