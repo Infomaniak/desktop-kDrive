@@ -19,7 +19,7 @@ When reporting, include:
 - potential impact
 - any proof of concept or sample payload if available
 
-## Programm scope Exclusion related to Apps
+## Program scope exclusions related to apps
 
 Please note that these are strictly out of scope and any report based on one or several exclusions will be closed as `Informative` or `Not Applicable` without reward:
 
