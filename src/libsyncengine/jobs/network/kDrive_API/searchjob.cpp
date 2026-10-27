@@ -32,13 +32,12 @@ namespace KDC {
 // Results per page. The API returns 10 without it; the iOS app requests 200 on the same endpoint.
 static constexpr auto searchPageSize = "50";
 
-SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const std::string &searchString,
-                     const std::string &cursorInput /*= {}*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _searchString(searchString),
-    _cursorInput(cursorInput) {
+SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, std::string searchString, Cursor cursorInput /*= {}*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _searchString(std::move(searchString)),
+    _cursorInput(std::move(cursorInput)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
+
 
     if (!ParmsDb::instance()) {
         assert(false);
@@ -64,18 +63,18 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const s
     _syncTargetPath = sync.targetPath().relative_path();
 }
 
-SearchJob::SearchJob(const DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _searchString(searchString),
-    _cursorInput(cursorInput) {
+SearchJob::SearchJob(const DriveDbId driveDbId, std::string searchString, Cursor cursorInput /*= {}*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _searchString(std::move(searchString)),
+    _cursorInput(std::move(cursorInput)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-    _apiVersion = 3;
 }
 
 
 std::string SearchJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/search/default";
+
     return str;
 }
 

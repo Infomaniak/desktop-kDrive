@@ -103,7 +103,7 @@ class KDriveDesktop(ConanFile):
 
     def configure(self):
         if self.settings.os == "Macos":
-            self.settings.os.version = "10.15"
+            self.settings.os.version = "12.4"
 
     def _set_linux_package_runpath(self, package_name):
         """
@@ -168,7 +168,7 @@ class KDriveDesktop(ConanFile):
 
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
-            tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = self.settings.os.version
+            tc.variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = self.settings.os.version
 
         if self.settings.os == "Linux":
             self._set_linux_package_runpath("openssl")

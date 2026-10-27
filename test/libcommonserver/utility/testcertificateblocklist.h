@@ -16,29 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "initfilelistwithcursorjob.h"
+#pragma once
 
-#include <Poco/Net/HTTPRequest.h>
+#include "testincludes.h"
 
 namespace KDC {
 
-InitFileListWithCursorJob::InitFileListWithCursorJob(const DriveDbId driveDbId, const NodeId &dirId) :
-    AbstractListingJob(ApiType::Drive, driveDbId),
-    _dirId(dirId) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
-}
+class TestCertificateBlocklist : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestCertificateBlocklist);
+        CPPUNIT_TEST(testCompromisedIntermediateIsRejected);
+        CPPUNIT_TEST(testUnblockedChainIsAccepted);
+        CPPUNIT_TEST(testUntrustedChainIsStillRejected);
+        CPPUNIT_TEST_SUITE_END();
 
-std::string InitFileListWithCursorJob::getSpecificUrl() {
-    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/files/listing";
-    return str;
-}
+    public:
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
 
-void InitFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
-    uri.addQueryParameter("directory_id", _dirId);
-    uri.addQueryParameter("recursive", "true");
-    uri.addQueryParameter("with", "files.capabilities");
-    uri.addQueryParameter("limit", nbItemPerPage);
-}
+    protected:
+        void testCompromisedIntermediateIsRejected();
+        void testUnblockedChainIsAccepted();
+        void testUntrustedChainIsStillRejected();
+};
 
 } // namespace KDC

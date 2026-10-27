@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "snapshotitemhandler.h"
+#include "remotesnapshotitemhandler.h"
 
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 
@@ -24,11 +24,14 @@ namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");
 
-SnapshotItemHandler::SnapshotItemHandler(const log4cplus::Logger &logger) :
+RemoteSnapshotItemHandler::RemoteSnapshotItemHandler(const UserDbId userDbId, const DriveId driveId,
+                                                     const log4cplus::Logger &logger) :
+    _userDbId(userDbId),
+    _driveId(driveId),
     _logger(logger) {}
 
-void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
-                                   const std::exception &exc) {
+void RemoteSnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
+                                         const std::exception &exc) {
     const std::wstring header = L"Error in SnapshotItem::" + methodName;
     const std::wstring strStr = L"str='" + CommonUtility::s2ws(str) + L"', ";
     const std::wstring excStr = L"exc='" + stdErrorType + L"', " + L"err=" + CommonUtility::s2ws(exc.what()) + L"'.";
@@ -38,14 +41,20 @@ void SnapshotItemHandler::logError(const std::wstring &methodName, const std::ws
     LOGW_WARN(_logger, msg);
 }
 
-bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIndex index, SnapshotItem &item) {
+bool RemoteSnapshotItemHandler::updateRemoteSnapshotItem(const std::string &str, const CsvIndex index, RemoteSnapshotItem &item) {
     switch (index) {
         case CsvIndexId: {
-            item.setId(str);
+            if (const auto exitInfo = item.setV2Id(_userDbId, _driveId, str); !exitInfo) {
+                LOG_WARN(_logger, "Error in SnapshotItem::setV2Id");
+                return false;
+            }
             break;
         }
         case CsvIndexParentId: {
-            item.setParentId(str);
+            if (const auto exitInfo = item.setV2ParentId(_userDbId, _driveId, str); !exitInfo) {
+                LOG_WARN(_logger, "Error in SnapshotItem::setV2ParentId");
+                return false;
+            };
             break;
         }
         case CsvIndexName: {
@@ -125,7 +134,8 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, const CsvIn
     return true;
 }
 
-void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state) {
+void RemoteSnapshotItemHandler::readRemoteSnapshotItemFields(RemoteSnapshotItem &item, const std::string &line, bool &error,
+                                                             ParsingState &state) {
     for (const char c: line) {
         if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
             if (c != ',' && c != '"') {
@@ -143,7 +153,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
         if (c == ',' && (!state.readingDoubleQuotedValue || state.prevCharDoubleQuotes)) {
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
-            if (!updateSnapshotItem(state.tmp, state.index, item)) {
+            if (!updateRemoteSnapshotItem(state.tmp, state.index, item)) {
                 LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << CommonUtility::s2ws(line) << L"'.");
                 error = true;
                 return;
@@ -175,17 +185,14 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
     }
 }
 
-bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof) {
+bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof) {
     error = false;
     ignore = false;
-
-    item = SnapshotItem();
+    item = RemoteSnapshotItem();
 
     std::string line;
     (void) std::getline(ss, line);
-    if (line.empty()) {
-        return false;
-    }
+    if (line.empty()) return false;
 
     if (_ignoreFirstLine) {
         // The first line of the CSV full listing consists of the column names:
@@ -193,9 +200,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         _ignoreFirstLine = false;
         line.clear();
         (void) std::getline(ss, line);
-        if (line.empty()) {
-            return false;
-        }
+        if (line.empty()) return false;
     }
 
     if (line == endOfFileDelimiter) {
@@ -208,7 +213,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     while (state.readNextLine) {
         state.readNextLine = false;
 
-        readSnapshotItemFields(item, line, error, state);
+        readRemoteSnapshotItemFields(item, line, error, state);
 
         // Ignore the lines containing escaped double quotes
         if (line.find(R"(\")") != std::string::npos) {
@@ -243,8 +248,8 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     }
 
     // Update last value
-    if (!updateSnapshotItem(state.tmp, state.index, item)) {
-        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << CommonUtility::s2ws(line));
+    if (!updateRemoteSnapshotItem(state.tmp, state.index, item)) {
+        LOGW_WARN(_logger, L"Error in updateRemoteSnapshotItem - line=" << CommonUtility::s2ws(line));
         error = true;
         return true;
     }

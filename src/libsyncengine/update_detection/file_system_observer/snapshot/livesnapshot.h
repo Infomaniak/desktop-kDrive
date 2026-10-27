@@ -23,6 +23,7 @@
 #include "snapshotrevisionhandler.h"
 #include "db/dbnode.h"
 
+#include <atomic>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -41,7 +42,7 @@ class LiveSnapshot : public Snapshot, public SharedObject {
 
         bool updateItem(const SnapshotItem &newItem);
         bool updateItem(const SnapshotItem &newItem, NodeId &removedNodeId);
-        bool removeItem(const NodeId itemId); // Do not pass by reference to avoid dangling references
+        bool removeItem(NodeId itemId); // Do not pass by reference to avoid dangling references
 
         bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept override;
         bool setName(const NodeId &itemId, const SyncName &newName);
@@ -56,10 +57,10 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         SnapshotRevision revision() const override;
 
     private:
-        std::shared_ptr<SnapshotRevisionHandler> _revisionHandlder;
+        std::shared_ptr<SnapshotRevisionHandler> _revisionHandler;
         bool removeItem(std::shared_ptr<SnapshotItem> &item);
-        void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> parent);
-        bool _isValid = false;
+        void removeChildrenRecursively(std::shared_ptr<SnapshotItem> parent);
+        std::atomic<bool> _isValid = false;
 
         friend class TestSnapshot;
 };

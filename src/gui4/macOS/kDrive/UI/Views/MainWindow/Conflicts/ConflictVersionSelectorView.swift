@@ -52,11 +52,13 @@ struct ConflictVersionSelectorView: View {
 
     let errors: [SynchroError]
 
-    private var currentError: SynchroError {
+    var currentError: SynchroError? {
+        guard errors.indices.contains(currentErrorIndex) else { return nil }
         return errors[currentErrorIndex]
     }
 
     private var currentSelection: ConflictType {
+        guard let currentError else { return .local }
         return selection[currentError.metadata.dbId, default: .local]
     }
 
@@ -84,30 +86,32 @@ struct ConflictVersionSelectorView: View {
                 }
             }
 
-            PathInfoChipView(
-                pathInfo: .init(path: currentError.metadata.path, nodeType: .file),
-                backgroundColor: ColorToken.Surface.primary.asColor
-            )
+            if let currentError {
+                PathInfoChipView(
+                    pathInfo: .init(path: currentError.metadata.path, nodeType: .file),
+                    backgroundColor: ColorToken.Surface.primary.asColor
+                )
 
-            Text(KDriveLocalizable.labelConflictDialogQuestion)
-                .font(.Tokens.body)
+                Text(KDriveLocalizable.labelConflictDialogQuestion)
+                    .font(.Tokens.body)
 
-            HStack(spacing: AppPadding.padding24) {
-                if let currentConflict {
-                    ForEach(ConflictType.allCases, id: \.rawValue) { type in
-                        ConflictBoxView(
-                            type: type,
-                            isMostRecent: isMostRecent(type),
-                            isSelected: currentSelection == type,
-                            info: currentConflict[type]
-                        ) {
-                            previewVersion(type, error: currentError)
-                        } toggleState: {
-                            selectVersion(type)
+                HStack(spacing: AppPadding.padding24) {
+                    if let currentConflict {
+                        ForEach(ConflictType.allCases, id: \.rawValue) { type in
+                            ConflictBoxView(
+                                type: type,
+                                isMostRecent: isMostRecent(type),
+                                isSelected: currentSelection == type,
+                                info: currentConflict[type]
+                            ) {
+                                previewVersion(type, error: currentError)
+                            } toggleState: {
+                                selectVersion(type)
+                            }
                         }
+                    } else {
+                        placeholder
                     }
-                } else {
-                    placeholder
                 }
             }
         }
@@ -127,6 +131,11 @@ struct ConflictVersionSelectorView: View {
         }
         .genericErrorAlert(isPresented: $isShowingGenericErrorAlert)
         .task(id: currentErrorIndex) {
+            guard let currentError else {
+                dismiss()
+                return
+            }
+
             await fetchConflictInfo(currentError)
         }
     }
@@ -171,6 +180,7 @@ struct ConflictVersionSelectorView: View {
     }
 
     private func selectVersion(_ type: ConflictType) {
+        guard let currentError else { return }
         selection[currentError.metadata.dbId] = type
     }
 
@@ -212,6 +222,11 @@ struct ConflictVersionSelectorView: View {
     }
 
     private func didClickConfirmButton() async {
+        guard currentError != nil else {
+            dismiss()
+            return
+        }
+
         if currentErrorIndex == errors.indices.last {
             isLoadingConfirmButton = true
             await confirmResolution()
