@@ -32,7 +32,6 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BooleanToIntegerConverter x:Key="BooleanToIntegerConverter" />
-        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />

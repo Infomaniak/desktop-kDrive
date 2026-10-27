@@ -24,12 +24,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:utilities="using:Infomaniak.kDrive.Utilities"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
-        <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
     </UserControl.Resources>
 
@@ -188,7 +188,7 @@
                                             IsLoading="{x:Bind NodeInfo, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
                                             HorizontalAlignment="Right">
                         <controls:ContentLoader.LoaderContent>
-                            <TextBlock Text="{x:Bind NodeInfo.LastModificationDate, Converter={StaticResource DateTimeToStringConverter}, ConverterParameter='format=g', Mode=OneWay}"
+                            <TextBlock Text="{x:Bind utilities:Time.DateTimeToString(NodeInfo.LastModificationDate, 'g'), Mode=OneWay}"
                                        FontWeight="SemiBold"
                                        HorizontalAlignment="Right"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
