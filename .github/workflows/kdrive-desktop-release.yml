@@ -9,7 +9,7 @@ on:
         options:
           - Do not build
           - Legacy client
-          - Native client
+          - New client
         default: Legacy client
       use_ksp_cert:
         type: boolean
@@ -218,7 +218,7 @@ jobs:
           debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
           use_ksp_cert: ${{ inputs.use_ksp_cert }}
           release_build: true
-          build_new_client: ${{ inputs.build_windows == 'Native client' }}
+          build_new_client: ${{ inputs.build_windows == 'New client' }}
 
   build-Linux-amd:
     if: ${{ inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)' }}
@@ -319,7 +319,7 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-windows\kDrive.pdb 
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-windows\kDrive.src.zip
           
-          if ("${{ inputs.build_windows }}" -eq "Native client") {
+          if ("${{ inputs.build_windows }}" -eq "New client") {
             .\sentry-cli.exe debug-files upload --project kdrive-win-client .\build-windows\kDrive_client.pdb
           } else {
             .\sentry-cli.exe debug-files upload --project kdrive-client .\build-windows\kDrive_client.pdb

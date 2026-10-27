@@ -64,7 +64,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
 
 ### Local Norms
-- Label redesigned release client choices "Native client", not "New client".
+- Label the redesigned macOS release client choice "Native client", not "New client"; keep Windows choices unchanged in macOS-only work.
 - The macOS desktop CI runner's runnable Xcode 26 installation is `/Applications/Xcode_26.app`; select it with job-scoped `DEVELOPER_DIR`.
 - macOS server build and test workflows use the desktop CI stack on M2-3 and `.github/actions/setup_xcode` to verify Xcode 26. Keep the redesigned Swift UI workflow on the iOS runners with `Xcode-Latest.app`.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
