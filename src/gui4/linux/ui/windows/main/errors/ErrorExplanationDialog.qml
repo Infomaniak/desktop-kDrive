@@ -160,9 +160,10 @@ IKModal {
         target: root.controller
 
         function onChanged() {
-            if (root.controller.isOpen && !root.opened) {
+            // `visible` rather than `opened`, which stays false during the opening transition.
+            if (root.controller.isOpen && !root.visible) {
                 root.open();
-            } else if (!root.controller.isOpen && root.opened) {
+            } else if (!root.controller.isOpen && root.visible) {
                 root.close();
             }
         }
