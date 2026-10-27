@@ -217,14 +217,21 @@ final class SearchViewModel: ObservableObject {
     }
 
     private func fetchNextPage(cursor: String) async {
+        var cursor = cursor
         do {
-            let page = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: currentQuery, cursor: cursor)
+            while true {
+                let page = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: currentQuery, cursor: cursor)
 
-            guard !Task.isCancelled else { return }
+                guard !Task.isCancelled else { return }
 
-            searchResults.append(contentsOf: page.items.map { UISearchResponse(searchResponse: $0) })
-            nextCursor = page.nextCursor
-            hasMorePages = page.hasMore
+                searchResults.append(contentsOf: page.items.map { UISearchResponse(searchResponse: $0) })
+                nextCursor = page.nextCursor
+                hasMorePages = page.hasMore
+
+                // An empty page adds no new last row whose appearance would request the next one.
+                guard page.items.isEmpty, page.hasMore, page.nextCursor != cursor else { return }
+                cursor = page.nextCursor
+            }
         } catch {
             // A failed page keeps the already displayed results and stops paging.
             guard !Task.isCancelled else { return }
