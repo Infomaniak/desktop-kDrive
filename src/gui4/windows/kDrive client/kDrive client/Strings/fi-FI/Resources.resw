@@ -1576,7 +1576,7 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Asetukset</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Tilit ja synkronoinnit</value> 
+    <value>Synkronoinnit</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Lisäasetukset</value> 

@@ -1576,7 +1576,7 @@ Dessa data gör det möjligt för vårt team att snabbt åtgärda och optimera p
     <value>Inställningar</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Konton och synkroniseringar</value> 
+    <value>Synkroniseringar</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avancerat</value> 

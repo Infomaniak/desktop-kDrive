@@ -1576,7 +1576,7 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente lâ
     <value>Impostazioni</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Account e sincronizzazioni</value> 
+    <value>Sincronizzazioni</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avanzate</value> 
