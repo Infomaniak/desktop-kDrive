@@ -1084,7 +1084,7 @@ public enum KDriveLocalizable {
   /// loco:698b2df25c57be025b0ecfd2
   public static let sentryDescription = KDriveLocalizable.tr("Localizable", "sentryDescription", fallback: "Sentry is a tool hosted and managed exclusively by Infomaniak to monitor the stability of the application in real time and automatically report any technical errors to our developers.\n\nThis data allows our team to quickly fix and optimize the application, resulting in a better user experience for you.")
   /// loco:68cd386502633dee14000352
-  public static let sidebarItemAccounts = KDriveLocalizable.tr("Localizable", "sidebarItemAccounts", fallback: "Accounts & Sync")
+  public static let sidebarItemAccounts = KDriveLocalizable.tr("Localizable", "sidebarItemAccounts", fallback: "Syncs")
   /// loco:68cd389fcc36238762040074
   public static let sidebarItemAdvanced = KDriveLocalizable.tr("Localizable", "sidebarItemAdvanced", fallback: "Advanced")
   /// loco:68cd3843fbf0b4c60d0c9c82

@@ -1458,7 +1458,7 @@
 "sentryDescription" = "Sentry er et verktøy som er driftet og administrert utelukkende av Infomaniak for å overvåke stabiliteten til programmet i sanntid og automatisk rapportere eventuelle tekniske feil til utviklerne våre.\n\nDisse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som gir en bedre brukeropplevelse for deg.";
 
 /* loco:68cd386502633dee14000352 */
-"sidebarItemAccounts" = "Kontoer og synkroniseringer";
+"sidebarItemAccounts" = "Synkroniseringer";
 
 /* loco:68cd389fcc36238762040074 */
 "sidebarItemAdvanced" = "Avansert";
