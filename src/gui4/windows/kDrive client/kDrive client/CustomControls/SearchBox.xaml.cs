@@ -120,10 +120,10 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            // Prefer the chosen suggestion, then an exact name match, then the first result.
             if (args.ChosenSuggestion is ISearchBoxResultItem { IsSelectable: false })
                 return;
-
+            
+            // Prefer the chosen suggestion, then an exact name match, then the first result.
             var results = _pager.Items.Where(i => i.IsSelectable).ToList();
             var searchItem = (args.ChosenSuggestion as ISearchBoxResultItem)?.SearchItem
                 ?? results.FirstOrDefault(i => i.SearchItem?.Name == sender.Text)?.SearchItem
