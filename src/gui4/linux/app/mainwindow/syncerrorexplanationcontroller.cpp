@@ -121,11 +121,10 @@ void SyncErrorExplanationController::open(const ErrorDbId errorDbId) {
     _itemIconName = _itemName.isEmpty() ? QString{} : _fileIconResolver.iconName(_itemName, error.nodeType());
     if (kind == SyncErrorExplanation::INotifyWatches) {
         _watchLimit = readWatchLimit();
-        // Named to sort after the usual `99-inotify.conf`, and applied alone: `sysctl --system` would let an older value of
-        // another file win.
+        // Applied alone so the value takes effect now; a higher sysctl file set by the administrator still wins at boot.
         _watchLimitCommand =
-                u"echo \"fs.inotify.max_user_watches=%1\" | sudo tee /etc/sysctl.d/99-kdrive.conf"
-                u" && sudo sysctl -p /etc/sysctl.d/99-kdrive.conf"_s.arg(proposedWatchLimit(_watchLimit));
+                u"echo \"fs.inotify.max_user_watches=%1\" | sudo tee /etc/sysctl.d/90-kdrive.conf"
+                u" && sudo sysctl -p /etc/sysctl.d/90-kdrive.conf"_s.arg(proposedWatchLimit(_watchLimit));
         qCInfo(lcSyncErrorExplanation) << "Inotify watches limit | current:" << _watchLimit
                                        << "| proposed:" << proposedWatchLimit(_watchLimit);
     }
