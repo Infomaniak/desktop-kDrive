@@ -24,12 +24,16 @@ namespace KDC {
 
 class SnapshotRevisionHandler {
     public:
-        SnapshotRevisionHandler& operator=(const SnapshotRevisionHandler& other) {
-            const std::scoped_lock lock(_mutex);
+        SnapshotRevisionHandler &operator=(const SnapshotRevisionHandler &other) {
+            if (this == &other) return *this;
+
+            const std::scoped_lock lock(_mutex, other._mutex);
             _revision = other._revision;
+
             return *this;
         }
-        const SnapshotRevision& revision() const {
+
+        SnapshotRevision revision() const {
             const std::scoped_lock lock(_mutex);
             return _revision;
         }
@@ -46,13 +50,18 @@ class SnapshotRevisionHandler {
 #undef max
             if (++_revision == std::numeric_limits<SnapshotRevision>::max()) {
                 /* Throw an exception if the revision number is too high.This is
-                 * acceptable because the revision number is a 64  bit integer.
+                 * acceptable because the revision number is a 64-bit integer.
                  * Even at the insane rate of 500,000 snapshot changes per second,
                  * it would take 1,169,884 years to reach this limit. */
                 throw std::overflow_error("Snapshot revision number overflow");
             }
 #pragma pop_macro("max")
             return _revision;
+        }
+
+        void setRevision(const SnapshotRevision &newRevision) {
+            const std::scoped_lock lock(_mutex);
+            _revision = newRevision;
         }
 
     private:

@@ -40,6 +40,9 @@ final class PermissionsViewModel: ObservableObject {
 
     private var bindStore = Set<AnyCancellable>()
     private var didRequestExtensionInstall = false
+    private var refreshTask: Task<Void, Never>?
+    private var permissionCheckTask: Task<Void, Never>?
+    private var extensionInstallTask: Task<Void, Never>?
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
@@ -56,29 +59,68 @@ final class PermissionsViewModel: ObservableObject {
             }
     }
 
-    func updatePermissionStatus() {
-        Task {
-            let isAuthorized = await permissionHander.isAuthorized(for: currentPermission)
-            if isAuthorized {
-                currentState = .done
-            } else {
-                currentState = .warning
+    deinit {
+        refreshTask?.cancel()
+        permissionCheckTask?.cancel()
+        extensionInstallTask?.cancel()
+    }
+
+    func startRefreshing() {
+        guard refreshTask == nil else { return }
+
+        refreshTask = Task { [weak self] in
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(nanoseconds: 2_000_000_000)
+                } catch {
+                    return
+                }
+                guard !Task.isCancelled else { return }
+                self?.updatePermissionStatus()
             }
+        }
+        updatePermissionStatus()
+        installLiteSyncExtensionIfNeeded()
+    }
+
+    func stopRefreshing() {
+        refreshTask?.cancel()
+        refreshTask = nil
+        permissionCheckTask?.cancel()
+        permissionCheckTask = nil
+        extensionInstallTask?.cancel()
+        extensionInstallTask = nil
+    }
+
+    func updatePermissionStatus() {
+        guard refreshTask != nil, permissionCheckTask == nil else { return }
+        let permission = currentPermission
+        let permissionHandler = permissionHander
+        permissionCheckTask = Task { [weak self] in
+            guard !Task.isCancelled else { return }
+            let isAuthorized = await permissionHandler.isAuthorized(for: permission)
+            // The XPC request may still reply after its waiting task has been cancelled.
+            guard !Task.isCancelled, let self, refreshTask != nil, currentPermission == permission else { return }
+            currentState = isAuthorized ? .done : .warning
+            permissionCheckTask = nil
         }
     }
 
-    func installLiteSyncExtensionIfNeeded() {
+    private func installLiteSyncExtensionIfNeeded() {
         guard case .endpointSecurityExtension = currentPermission else { return }
         guard !didRequestExtensionInstall else { return }
         didRequestExtensionInstall = true
 
-        Task {
+        extensionInstallTask = Task { [weak self] in
+            guard !Task.isCancelled else { return }
             do {
                 try await UtilityJobs().installLiteSyncExtension()
             } catch {
                 IKLogger.general.error("Failed to install Lite Sync extension: \(error)")
                 didRequestExtensionInstall = false
             }
+            guard !Task.isCancelled else { return }
+            self?.updatePermissionStatus()
         }
     }
 

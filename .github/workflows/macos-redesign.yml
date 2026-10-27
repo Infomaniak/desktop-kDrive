@@ -8,9 +8,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode-Latest.app/Contents/Developer
-
 defaults:
   run:
     working-directory: src/gui4/macOS
@@ -19,6 +16,8 @@ jobs:
   run-tests:
     name: Run tests
     runs-on: [ self-hosted, iOS ]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode-Latest.app/Contents/Developer
 
     # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
     # More info here: https://github.com/orgs/community/discussions/175498
@@ -58,6 +57,8 @@ jobs:
           working_directory: src/gui4/macOS
       - name: SwiftLint
         run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging --reporter json .
+      - name: Test controller compatibility lint rules
+        run: python3 scripts/test-controller-lint.py
 
   swiftformat:
     name: SwiftFormat
@@ -73,4 +74,3 @@ jobs:
           working_directory: src/gui4/macOS
       - name: SwiftFormat
         run: swiftformat --lint . --reporter github-actions-log --reporter json
-
