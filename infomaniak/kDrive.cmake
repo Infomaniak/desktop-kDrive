@@ -23,9 +23,9 @@ set( FEEDBACK_IT_URL "https://feedback.userreport.com/191a0beb-797d-4ec1-b1ff-31
 
 set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
 if( APPLE )
-    set( APPLICATION_CLIENTV4_EXECUTABLE "kDrive.app" )
+    set( APPLICATION_CLIENTV4_EXECUTABLE "kDrive.app/Contents/MacOS/kDrive.gui" )
     set( APPLICATION_ICON_NAME  "kdrive-mac" )
-    set( MINIMUM_SYSTEM_VERSION "10.15" )
+    set( MINIMUM_SYSTEM_VERSION "12.4" )
 elseif( WIN32 )
     set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive.exe" )
     set( APPLICATION_ICON_NAME  "kdrive-win" )
