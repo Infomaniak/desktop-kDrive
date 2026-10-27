@@ -19,6 +19,19 @@ When reporting, include:
 - potential impact
 - any proof of concept or sample payload if available
 
+## Programm scope Exclusion related to Apps
+
+Please note that these are strictly out of scope and any report based on one or several exclusions will be closed as `Informative` or `Not Applicable` without reward:
+
+- Local Access Requirements: Vulnerabilities in Infomaniak desktop applications that require the attacker to have local user access on the same machine.
+- Third-Party Dependencies: Exploits that are only possible when a malicious third-party application is already installed by the victim.
+- Unofficial Clients: Any issue that relies on the user installing or using an unofficial, modified, or malicious version of our mobile or desktop applications.
+- Symlink Synchronization: We request an exception to maintain absolute paths and directory traversal in symlinks, as these are required for legitimate macOS/Linux workflows. Only the link itself is synchronized, not the targeted file content.
+
+GitHub source — End-to-end validation on the distributed build
+
+*Findings on desktop and mobile applications are eligible only if demonstrated end to end on the build currently distributed to users*. Local builds and standalone harnesses are legitimate research starting points, but testing and demonstration must be validated against the current production build to make the report eligible.
+
 ## Responsible disclosure
 
 Please:
