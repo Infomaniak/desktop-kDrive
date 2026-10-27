@@ -505,7 +505,15 @@
   (`loginRequested`, as on the blocking screen), or contact the support. `Explain` emits `explanationRequested`;
   `OpenSyncParentFolder` opens the folder above the synchronization root, and `CreateNewSync` opens Settings on the
   accounts. `trigger` runs the row action from the catalog, `run` any action (the dialog buttons).
-  Logs name the kind, the action and the opened URL.
+  Logs name the kind, the action and the opened URL. `RaiseWatchLimit` writes the `update_inotify_limit` script (a raw
+  string in the `.cpp`, which is the reference for its exit codes) to `CommonUtility::stateDirectoryPath()`, owner-only
+  and executable, then runs it through `pkexec` so that polkit shows its path; a script inside the AppImage is not
+  readable by root. Success restarts the synchronization; without `pkexec`, or when the raise is cancelled or fails,
+  `explanationRequested` carries the reason and the dialog gives the command to run. The pending raise goes through
+  `ServiceActionTracker`, one at a time for every synchronization, and drives the row button
+  (`isWatchLimitRaisePending`).
+- `app/errors/inotifywatchlimit.*`: free functions shared by the row, the dialog and the action handler: the current
+  inotify watches limit, the proposed one (always above it) and the command to copy.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
@@ -682,8 +690,9 @@
       "View activities". A row shows its button only once its action exists: "Choose a version" and "Manage"
       (conflicts) stay hidden until their pages land. "Understand the issue" opens `ErrorExplanationDialog` (an
       `IKModal`), whose texts, reason boxes and links are chosen in QML from the explanation kind; a link inside a
-      sentence is an `ErrorLinkText`, focusable as a whole. The inotify watches dialog shows the current limit and a
-      `sysctl` command to copy, whose value is always above that limit; the app never raises it itself. Variants: the
+      sentence is an `ErrorLinkText`, focusable as a whole. The inotify watches row shows the current limit and "Raise the
+      limit"; its dialog, the fallback when the raise is unavailable or fails, shows the reason, the current limit and a
+      `sysctl` command to copy, whose value is always above that limit. Variants: the
       item chip (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the tooltip), the information
       icon (first line of the description, advice in the tooltip), the copyable path, and the folded technical details
       (two name and value pairs per row on wide cards, values elided on the left) with their copy button
