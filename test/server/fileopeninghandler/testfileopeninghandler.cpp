@@ -31,16 +31,16 @@ void TestFileOpeningHandler::tearDown() {
 }
 
 void TestFileOpeningHandler::testIsOpenFileUrl() {
-    CPPUNIT_ASSERT(FileOpeningHandler::isOpenFileUrl("kdrive://open/drive/1234/file/456"));
-    CPPUNIT_ASSERT(FileOpeningHandler::isOpenFileUrl("KDRIVE://OPEN/drive/1234/file/456")); // Scheme and host are
-                                                                                            // case-insensitive.
+    CPPUNIT_ASSERT(FileOpeningHandler::isFileOpeningDeeplink("kdrive://open/drive/1234/file/456"));
+    CPPUNIT_ASSERT(FileOpeningHandler::isFileOpeningDeeplink("KDRIVE://OPEN/drive/1234/file/456")); // Scheme and host are
+                                                                                                    // case-insensitive.
 
-    CPPUNIT_ASSERT(!FileOpeningHandler::isOpenFileUrl(""));
-    CPPUNIT_ASSERT(!FileOpeningHandler::isOpenFileUrl("kdrive://auth-desktop?code=1&state=2")); // OAuth redirection.
-    CPPUNIT_ASSERT(!FileOpeningHandler::isOpenFileUrl("kdrive://other/drive/1234/file/456"));
-    CPPUNIT_ASSERT(!FileOpeningHandler::isOpenFileUrl("https://open/drive/1234/file/456"));
-    CPPUNIT_ASSERT(!FileOpeningHandler::isOpenFileUrl("drive/1234/file/456"));
-    CPPUNIT_ASSERT(!FileOpeningHandler::isOpenFileUrl("kdrive://open/drive/1234/file/%")); // Invalid percent-encoding.
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink(""));
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("kdrive://auth-desktop?code=1&state=2")); // OAuth redirection.
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("kdrive://other/drive/1234/file/456"));
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("https://open/drive/1234/file/456"));
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("drive/1234/file/456"));
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("kdrive://open/drive/1234/file/%")); // Invalid percent-encoding.
 }
 
 void TestFileOpeningHandler::testParseUrl() {

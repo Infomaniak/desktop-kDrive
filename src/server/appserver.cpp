@@ -3808,7 +3808,7 @@ void AppServer::parseOptions(const QStringList &options) {
                 _authorizationCodeStr = option;
                 break;
             }
-        } else if (FileOpeningHandler::isOpenFileUrl(option.toStdString())) {
+        } else if (FileOpeningHandler::isFileOpeningDeeplink(option.toStdString())) {
             _openFileUrlStr = option;
             break;
         } else if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
