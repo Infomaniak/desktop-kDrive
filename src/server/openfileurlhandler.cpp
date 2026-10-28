@@ -32,9 +32,14 @@
 #include <QDesktopServices>
 #include <QSet>
 
+#include <Poco/Exception.h>
+#include <Poco/URI.h>
+
 #include <log4cplus/loggingmacros.h>
 
 #include <algorithm>
+#include <charconv>
+#include <vector>
 
 namespace KDC {
 
@@ -44,9 +49,25 @@ namespace {
 constexpr std::chrono::milliseconds syncWaitTickInterval(2000);
 constexpr std::chrono::milliseconds syncWaitTimeout(std::chrono::minutes(10));
 constexpr std::chrono::milliseconds hydrationTimeout(std::chrono::hours(1));
+
+//! Parses `urlStr` into `uri`. Returns false if `urlStr` is not a syntactically valid URI.
+bool parseUri(const std::string &urlStr, Poco::URI &uri) {
+    try {
+        uri = Poco::URI(urlStr);
+        return true;
+    } catch (const Poco::URISyntaxException &) {
+        return false;
+    }
+}
+
+//! Returns true if `uri` is a file opening URI, i.e. "kdrive://open/...". Poco::URI stores the scheme and the host
+//! in lowercase, making the comparisons case-insensitive.
+bool isOpenFileUri(const Poco::URI &uri) {
+    return uri.getScheme() == "kdrive" && uri.getHost() == "open";
+}
 } // namespace
 
-OpenFileUrlHandler::OpenFileUrlHandler(AppServer *appServer, const QUrl &url, QObject *parent) :
+OpenFileUrlHandler::OpenFileUrlHandler(AppServer *appServer, const std::string &url, QObject *parent) :
     QObject(parent),
     _appServer(appServer),
     _url(url) {
@@ -56,10 +77,10 @@ OpenFileUrlHandler::OpenFileUrlHandler(AppServer *appServer, const QUrl &url, QO
 }
 
 void OpenFileUrlHandler::start() {
-    LOG_INFO(Log::instance()->getLogger(), "Processing file opening URL - url=" << _url.toString().toStdString());
+    LOG_INFO(Log::instance()->getLogger(), "Processing file opening URL - url=" << _url);
 
     if (!parseUrl(_url, _request)) {
-        LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url.toString().toStdString());
+        LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
         fail(tr("This kDrive link is invalid."));
         return;
     }
@@ -68,24 +89,34 @@ void OpenFileUrlHandler::start() {
     processResolvePhase();
 }
 
-bool OpenFileUrlHandler::isOpenFileUrl(const QUrl &url) {
-    return url.isValid() && url.scheme() == "kdrive" && url.host() == "open";
+bool OpenFileUrlHandler::isOpenFileUrl(const std::string &urlStr) {
+    Poco::URI uri;
+    return parseUri(urlStr, uri) && isOpenFileUri(uri);
 }
 
-bool OpenFileUrlHandler::parseUrl(const QUrl &url, Request &request) {
-    if (!isOpenFileUrl(url)) return false;
+bool OpenFileUrlHandler::parseUrl(const std::string &urlStr, Request &request) {
+    Poco::URI uri;
+    if (!parseUri(urlStr, uri) || !isOpenFileUri(uri)) return false;
 
-    const QStringList segments = url.path(QUrl::ComponentFormattingOption::FullyDecoded).split('/', Qt::SkipEmptyParts);
+    // Poco::URI decodes the path and excludes the query and the fragment while parsing, and getPathSegments drops the
+    // empty segments produced by the leading, doubled, and trailing slashes.
+    std::vector<std::string> segments;
+    uri.getPathSegments(segments);
     if (segments.size() != 4 || segments[0] != "drive" || segments[2] != "file") return false;
 
-    bool ok = false;
-    request.driveId = segments[1].toLongLong(&ok);
-    if (!ok || request.driveId <= 0) return false;
+    // std::from_chars parses the whole string strictly (no whitespace, no leading '+', no trailing garbage) and never
+    // throws.
+    const std::string &driveIdStr = segments[1];
+    DriveId driveId = 0;
 
-    request.nodeId = segments[3].toStdString();
-    if (request.nodeId.empty()) return false;
+    const auto result = std::from_chars(driveIdStr.data(), driveIdStr.data() + driveIdStr.size(), driveId);
+    if (result.ec || result.ptr != driveIdStr.data() + driveIdStr.size()) return false;
+    if (driveId <= 0) return false;
 
-    return true;
+    request.driveId = driveId;
+    request.nodeId = segments[3];
+
+    return !request.nodeId.empty();
 }
 
 bool OpenFileUrlHandler::shouldOpenParentFolder(const SyncPath &path) {
@@ -409,7 +440,7 @@ void OpenFileUrlHandler::succeed() {
 
 void OpenFileUrlHandler::fail(const QString &userMessage) {
     setPhase(Phase::Done, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
-    LOG_WARN(Log::instance()->getLogger(), "Failed to open item from URL - url=" << _url.toString().toStdString());
+    LOG_WARN(Log::instance()->getLogger(), "Failed to open item from URL - url=" << _url);
     notifyUser(userMessage);
     emit finished(false);
 }

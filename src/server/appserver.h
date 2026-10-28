@@ -84,8 +84,10 @@ class UrlSchemeEventFilter : public QObject {
                     return true;
                 }
 
-                if (OpenFileUrlHandler::isOpenFileUrl(url)) {
-                    emit openFileUrlReceived(url.toString());
+                const auto urlStr = url.toString().toStdString();
+
+                if (OpenFileUrlHandler::isOpenFileUrl(urlStr)) {
+                    emit openFileUrlReceived(QString::fromStdString(urlStr));
                     return true;
                 }
             }

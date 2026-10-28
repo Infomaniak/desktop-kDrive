@@ -2832,7 +2832,7 @@ void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
 void AppServer::onOpenFileUrlReceived(const QString &urlStr) {
     LOG_INFO(_logger, "File opening URL received: '" << urlStr.toStdString() << "'");
 
-    auto *handler = new OpenFileUrlHandler(this, QUrl(urlStr), this);
+    auto *handler = new OpenFileUrlHandler(this, urlStr.toStdString(), this);
     (void) connect(handler, &OpenFileUrlHandler::finished, handler, &QObject::deleteLater);
     handler->start();
 }
@@ -3808,7 +3808,7 @@ void AppServer::parseOptions(const QStringList &options) {
                 _authorizationCodeStr = option;
                 break;
             }
-        } else if (OpenFileUrlHandler::isOpenFileUrl(QUrl(option))) {
+        } else if (OpenFileUrlHandler::isOpenFileUrl(option.toStdString())) {
             _openFileUrlStr = option;
             break;
         } else if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
