@@ -3903,4 +3903,40 @@ bool ParmsDb::enableSentryAndMatomo() {
 
     return true;
 }
+
+bool ParmsDb::driveDbIds(const UserId userId, const DriveId driveId, std::unordered_set<DriveDbId> &driveDbIds) {
+    std::vector<Drive> drives;
+    if (!ParmsDb::instance()->selectAllDrives(drives)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives.");
+
+
+        return false;
+    }
+
+    User user;
+    if (bool userFound = false; !ParmsDb::instance()->selectUserByUserId(userId, user, userFound) || !userFound) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId: userId=" << userId);
+
+        return false;
+    }
+
+    std::vector<Account> accounts;
+    if (!ParmsDb::instance()->selectAllAccounts(accounts)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllAccounts.");
+
+        return false;
+    }
+
+    std::unordered_set<AccountDbId> userAccountDbIds;
+    for (const auto &account: accounts) {
+        if (account.userDbId() == user.dbId()) userAccountDbIds.insert(account.dbId());
+    }
+
+    for (const auto &drive: drives) {
+        if (drive.driveId() == driveId && userAccountDbIds.contains(drive.accountDbId())) (void) driveDbIds.insert(drive.dbId());
+    }
+
+    return true;
+}
+
 } // namespace KDC
