@@ -128,31 +128,54 @@ bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
 }
 
 void FileOpeningHandler::processResolvePhase() {
+    constexpr auto failureMessage = "The element requested from this kDrive deeplink could not be opened.";
     // The drive lookup is performed once: the drive configuration cannot appear while the request is being processed.
-    if (_driveDbId == 0) {
-        Drive drive;
-        bool found = false;
-        if (!ParmsDb::instance()->selectDriveByDriveId(_request.driveId, drive, found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDriveByDriveId - driveId=" << _request.driveId);
-            handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
+    if (_driveDbIds.empty()) {
+        std::vector<Drive> drives;
+        if (!ParmsDb::instance()->selectAllDrives(drives)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives.");
+            handleFileOpeningFailure(failureMessage);
+
             return;
         }
-        if (!found) {
-            // No sync of this drive is configured on this machine.
-            handleFileOpeningFailure(
-                    "The drive of the element requested from this kDrive link is not synchronized on this machine.");
+
+        User user;
+        if (bool userFound = false; !ParmsDb::instance()->selectUserByUserId(_request.userId, user, userFound) || !userFound) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId: userId=" << _request.userId);
+            handleFileOpeningFailure(failureMessage);
+
             return;
         }
-        _driveDbId = drive.dbId();
+
+        std::vector<Account> accounts;
+        if (!ParmsDb::instance()->selectAllAccounts(accounts)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllAccounts.");
+            handleFileOpeningFailure(failureMessage);
+
+            return;
+        }
+
+        std::unordered_set<AccountDbId> userAccountDbIds;
+        for (const auto &account: accounts) {
+            if (account.userDbId() == user.dbId()) userAccountDbIds.insert(account.dbId());
+        }
+
+        for (const auto &drive: drives) {
+            if (drive.driveId() == _request.driveId && userAccountDbIds.contains(drive.accountDbId()))
+                _driveDbIds.insert(drive.dbId());
+        }
     }
 
-    bool found = false;
-    if (!resolveDeeplink(found)) {
-        handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
+    bool itemFound = false;
+    if (!resolveDeeplink(itemFound)) {
+        handleFileOpeningFailure(failureMessage);
+
         return;
     }
-    if (found) {
+
+    if (itemFound) {
         openResolvedItem();
+
         return;
     }
 
@@ -160,36 +183,48 @@ void FileOpeningHandler::processResolvePhase() {
     checkRemoteExistence();
 }
 
-ExitInfo FileOpeningHandler::resolveDeeplink(bool &found) {
-    found = false;
+void FileOpeningHandler::sortSyncsByDbId(std::vector<Sync> &syncs) const {
+    const std::scoped_lock lock(_appServer->syncPalMapMutex);
+
+    std::stable_sort(syncs.begin(), syncs.end(), [this](const Sync &sync1, const Sync &sync2) {
+        const bool running1 = _appServer->syncPalMap.contains(sync1.dbId());
+        const bool running2 = _appServer->syncPalMap.contains(sync2.dbId());
+
+        if (running1 != running2) return running1;
+
+        return sync1.dbId() < sync2.dbId();
+    });
+}
+
+std::shared_ptr<SyncDb> FileOpeningHandler::getSyncDb(SyncDbId syncDbId) const {
+    std::shared_ptr<SyncDb> syncDb;
+
+    const std::scoped_lock lock(_appServer->syncPalMapMutex);
+
+    if (const auto syncPalMapIt = _appServer->syncPalMap.find(syncDbId);
+        syncPalMapIt != _appServer->syncPalMap.end() && syncPalMapIt->second)
+        syncDb = syncPalMapIt->second->syncDb();
+
+    return syncDb;
+}
+
+ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
+    itemFound = false;
 
     std::vector<Sync> syncs;
-    if (!ParmsDb::instance()->selectAllSyncs(_driveDbId, syncs)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs - driveDbId=" << _driveDbId);
+    if (!ParmsDb::instance()->selectAllSyncs(syncs)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs.");
 
         return ExitCode::DbError;
     }
 
+    std::erase_if(syncs, [this](const Sync &sync) { return !_driveDbIds.contains(sync.driveDbId()); });
+
     // Examine the syncs whose engine is running first, and make the examination order deterministic.
-    {
-        const std::scoped_lock lock(_appServer->syncPalMapMutex);
-        std::stable_sort(syncs.begin(), syncs.end(), [this](const Sync &sync1, const Sync &sync2) {
-            const bool running1 = _appServer->syncPalMap.contains(sync1.dbId());
-            const bool running2 = _appServer->syncPalMap.contains(sync2.dbId());
-            if (running1 != running2) return running1;
-            return sync1.dbId() < sync2.dbId();
-        });
-    }
+    sortSyncsByDbId(syncs);
 
     for (const auto &sync: syncs) {
-        std::shared_ptr<SyncDb> syncDb;
-        {
-            const std::scoped_lock lock(_appServer->syncPalMapMutex);
-            const auto syncPalMapIt = _appServer->syncPalMap.find(sync.dbId());
-            if (syncPalMapIt != _appServer->syncPalMap.end() && syncPalMapIt->second) {
-                syncDb = syncPalMapIt->second->syncDb();
-            }
-        }
+        std::shared_ptr<SyncDb> syncDb = getSyncDb(sync.dbId());
         if (!syncDb) {
             // The engine of this sync is not running: read its DB directly.
             auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId());
@@ -199,7 +234,7 @@ ExitInfo FileOpeningHandler::resolveDeeplink(bool &found) {
                                            .try_emplace(sync.dbId(),
                                                         std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId()))
                                            .first;
-                } catch (const std::exception &e) {
+                } catch (const std::runtime_error &e) {
                     LOG_WARN(Log::instance()->getLogger(),
                              "Failed to open the sync DB - syncDbId=" << sync.dbId() << ": " << e.what());
                     continue;
@@ -212,15 +247,18 @@ ExitInfo FileOpeningHandler::resolveDeeplink(bool &found) {
         bool nodeFound = false;
         if (!syncDb->path(ReplicaSide::Remote, _request.nodeId, relativePath, nodeFound)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::path - syncDbId=" << sync.dbId());
+
             continue;
         }
 
         if (!nodeFound) continue;
 
-        found = true;
+        itemFound = true;
+        _driveDbId = sync.driveDbId();
         _syncDbId = sync.dbId();
         _relativePath = relativePath;
         _localPath = relativePath.empty() ? sync.localPath() : sync.localPath() / relativePath;
+
         break;
     }
 
