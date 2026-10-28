@@ -27,6 +27,7 @@ Rectangle {
 
     required property var appRouter
     required property var controller
+    required property var storageController
     readonly property int currentTab: appRouter.currentMainTabIndex
     readonly property int tabActivities: AppRouter.Activities
     readonly property int tabHome: AppRouter.Home
@@ -71,6 +72,7 @@ Rectangle {
                 enabled: root.controller.hasCurrentSyncRoot
                 iconSource: "qrc:/assets/main/storage.svg"
                 label: qsTrId("tabTitleStorage")
+                notificationDot: root.storageController.storageWarning
                 selected: root.currentTab === root.tabStorage
                 width: parent.width
 

@@ -287,7 +287,12 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
+        ui/windows/main/storage/StorageActionCard.qml
         ui/windows/main/storage/StorageErrorState.qml
+        ui/windows/main/storage/StorageLegendEntry.qml
+        ui/windows/main/storage/StorageSegment.qml
+        ui/windows/main/storage/StorageSyncCard.qml
+        ui/windows/main/storage/StorageSyncChip.qml
         ui/windows/main/storage/StorageUsageCard.qml
         ui/windows/main/storage/StorageView.qml
         ui/windows/main/activities/ActivitiesEmptyState.qml
@@ -414,6 +419,8 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/search/empty.svg
         ui/assets/main/search/empty-dark.svg
         ui/assets/main/storage.svg
+        ui/assets/main/storage/cart-add.svg
+        ui/assets/main/storage/computer.svg
         ui/assets/main/storage/unavailable.svg
         ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg

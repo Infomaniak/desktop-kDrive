@@ -157,6 +157,8 @@ void AppClientLinux::setupSignalConnections() {
                    &AppClientLinux::openOnboardingLoginFromSettings);
     (void) connect(&_systemTrayController, &SystemTrayController::openSettingsWindowRequested, this,
                    &AppClientLinux::openSettingsWindow);
+    (void) connect(&_storageController, &StorageController::manageSynchronizationRequested, &_settingsWindowController,
+                   &SettingsWindowController::requestManageSynchronization);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);

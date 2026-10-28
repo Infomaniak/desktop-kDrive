@@ -49,6 +49,7 @@ Item {
             height: parent.height
             appRouter: root.appRouter
             controller: root.mainSidebarController
+            storageController: root.storageController
         }
 
         Rectangle {
@@ -125,6 +126,7 @@ Item {
 
         StorageView {
             controller: root.storageController
+            selection: root.mainSidebarController
         }
     }
 }

@@ -20,7 +20,7 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-    readonly property real cardHeight: 190
+    readonly property real cardSpacing: 32
     readonly property real cardHorizontalPadding: 10
     readonly property real headerHeight: 64
     readonly property real rowHeight: 42
@@ -39,4 +39,24 @@ QtObject {
     readonly property real loadingSpinnerSize: 16
     readonly property real loadingPlaceholderWidth: 64
     readonly property real loadingPlaceholderHeight: 12
+    readonly property real headerAccessorySpacing: 8
+    readonly property real cartIconSize: 14
+    readonly property real chipHeight: 24
+    readonly property real chipPadding: 4
+    readonly property real chipRadius: 4
+    readonly property real chipSpacing: 6
+    readonly property real chipIconSize: 12
+    readonly property real chipMaxWidth: 200
+    readonly property real legendLabelSpacing: 6
+    readonly property real actionCardPadding: 10
+    readonly property real actionContentSpacing: 8
+    readonly property real actionTextSpacing: 2
+    readonly property real actionIconTileSize: 26
+    readonly property real actionIconTileRadius: 5
+    readonly property real actionIconSize: 14
+    readonly property real actionButtonHeight: 24
+    readonly property real actionSubtitleLineHeight: 14
+    readonly property real actionButtonSpacing: 16
+    readonly property real unavailableCardPadding: 32
+    readonly property int segmentAnimationDuration: 450
 }
