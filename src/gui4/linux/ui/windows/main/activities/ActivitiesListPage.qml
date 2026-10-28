@@ -27,13 +27,18 @@ FocusScope {
 
     required property var controller
 
-    // Gives the keyboard focus back to the errors banner, which opens the errors page, when it is shown.
+    // Gives the keyboard focus back to the errors banner, which opens the errors page, when it is shown. Otherwise a
+    // plain item takes it: the scope itself would hand it back to the hidden banner button, its last focused child.
     function focusDefault() {
         if (errorBanner.visible) {
             errorBanner.focusAction();
         } else {
-            root.forceActiveFocus();
+            focusFallback.forceActiveFocus();
         }
+    }
+
+    Item {
+        id: focusFallback
     }
 
     ColumnLayout {
