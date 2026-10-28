@@ -70,7 +70,7 @@ class OpenFileUrlHandler : public QObject {
         enum class Phase {
             Resolve, // Look for the node in the syncs configured for the drive.
             CheckRemoteExistence, // The node is not synchronized yet, check whether it exists on the remote side.
-            WaitForSync, // The node exists on the remote side only, wait for it to be synchronized.
+            WaitForItemToSynchronize, // The node exists on the remote side only, wait for it to be synchronized.
             WaitForHydration, // The node is being hydrated, wait for the download to complete.
             Done
         };
@@ -78,19 +78,19 @@ class OpenFileUrlHandler : public QObject {
         void processResolvePhase();
         //! Tries to resolve the node id into one of the syncs of the drive. Returns false on DB access error, and sets
         //! `found` with true if the node has been resolved.
-        bool resolveNode(bool &found);
+        bool resolveUrl(bool &found);
         void checkRemoteExistence();
         void onRemoteExistenceChecked(const ExitInfo &exitInfo, bool exists);
         void onSyncWaitTick();
         void onDeadlineReached();
-        void openOrHydrate();
-        bool triggerHydration();
+        void openOrHydrateResolvedItem();
+        bool hydrateResolvedPlaceholder()();
         void onHydrationFinished(bool success);
         void openResolvedItem();
         void setPhase(Phase phase, std::chrono::milliseconds tickInterval, std::chrono::milliseconds timeout);
         void notifyUser(const QString &message) const;
         void succeed();
-        void fail(const QString &userMessage);
+        void handleFailure(const QString &userMessage);
 
         AppServer *_appServer{nullptr};
         std::string _url;
