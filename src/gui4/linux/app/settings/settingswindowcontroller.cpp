@@ -18,6 +18,10 @@
 
 #include "settingswindowcontroller.h"
 
+#include <utility>
+
+using namespace Qt::StringLiterals;
+
 namespace KDC {
 
 SettingsWindowController::SettingsWindowController(GeneralSettingsController &general, AdvancedSettingsController &advanced,
@@ -31,6 +35,18 @@ SettingsWindowController::SettingsWindowController(GeneralSettingsController &ge
     _networkController(network),
     _syncActivationController(syncActivation),
     _driveManagementController(driveManagement) {}
+
+void SettingsWindowController::requestManageSynchronization(const qint64 driveDbId, const qint64 syncDbId,
+                                                            const bool advancedSync) {
+    _pendingManageSynchronizationRequest = {
+            {u"driveDbId"_s, driveDbId}, {u"syncDbId"_s, syncDbId}, {u"advancedSync"_s, advancedSync}};
+    emit openRequested();
+    emit manageSynchronizationRequested();
+}
+
+QVariantMap SettingsWindowController::takeManageSynchronizationRequest() {
+    return std::exchange(_pendingManageSynchronizationRequest, {});
+}
 
 void SettingsWindowController::refreshUpdates() const {
     _generalController.refreshUpdates();

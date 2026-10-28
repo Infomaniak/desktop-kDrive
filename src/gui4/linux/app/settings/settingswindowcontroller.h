@@ -26,6 +26,7 @@
 #include "app/settings/settingssyncactivationcontroller.h"
 
 #include <QObject>
+#include <QVariantMap>
 
 namespace KDC {
 
@@ -59,12 +60,20 @@ class SettingsWindowController final : public QObject {
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
         Q_INVOKABLE void requestAccountConnection() { emit accountConnectionRequested(); }
+        /**
+         * Opens Settings on the "Manage synchronization" page of a synchronization. The request stays pending until the
+         * window takes it, so a window created by this very request can still read it once it is complete.
+         */
+        void requestManageSynchronization(qint64 driveDbId, qint64 syncDbId, bool advancedSync);
+        /** Returns and clears the pending request: `driveDbId`, `syncDbId`, `advancedSync`, or an empty map. */
+        Q_INVOKABLE QVariantMap takeManageSynchronizationRequest();
 
         void refreshUpdates() const;
 
     signals:
         void openRequested();
         void accountConnectionRequested();
+        void manageSynchronizationRequested();
 
     private:
         GeneralSettingsController &_generalController;
@@ -73,6 +82,7 @@ class SettingsWindowController final : public QObject {
         NetworkSettingsController &_networkController;
         SettingsSyncActivationController &_syncActivationController;
         DriveManagementController &_driveManagementController;
+        QVariantMap _pendingManageSynchronizationRequest;
 };
 
 } // namespace KDC

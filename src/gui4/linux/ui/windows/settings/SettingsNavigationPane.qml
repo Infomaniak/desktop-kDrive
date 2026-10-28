@@ -37,7 +37,7 @@ Item {
     }
 
     property var _focusHistory: []
-    property Component _pendingResetComponent: null
+    property var _pendingResetEntries: null
 
     signal focusRestorationRequested(var target)
 
@@ -62,16 +62,27 @@ Item {
     }
 
     function reset(component) {
+        resetTo([{"component": component}]);
+    }
+
+    // Replaces the whole stack with `entries`, each a {component, properties} pair, without transitions. Pages pushed
+    // this way have no focus to restore when they are popped.
+    function resetTo(entries) {
         // A reset can come from an asynchronous event: defer it until the transition ends rather than dropping it.
         if (stack.busy) {
-            root._pendingResetComponent = component;
+            root._pendingResetEntries = entries;
             return;
         }
 
-        root._pendingResetComponent = null;
+        root._pendingResetEntries = null;
         root._focusHistory = [];
         stack.clear(StackView.Immediate);
-        stack.push(component, {}, StackView.Immediate);
+        for (const entry of entries) {
+            if (stack.depth > 0) {
+                root._focusHistory.push(null);
+            }
+            stack.push(entry.component, entry.properties || {}, StackView.Immediate);
+        }
     }
 
     StackView {
@@ -82,8 +93,8 @@ Item {
         initialItem: root.initialItem
 
         onBusyChanged: {
-            if (!busy && root._pendingResetComponent) {
-                root.reset(root._pendingResetComponent);
+            if (!busy && root._pendingResetEntries) {
+                root.resetTo(root._pendingResetEntries);
             }
         }
     }
