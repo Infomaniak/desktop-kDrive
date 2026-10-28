@@ -31,6 +31,7 @@
 #include <QLoggingCategory>
 
 #include <algorithm>
+#include <memory>
 
 namespace KDC {
 
@@ -147,7 +148,7 @@ const ClassifiedSyncError *SyncErrorExplanationController::currentError() const 
     const auto &errors = _projection.currentErrors();
     const auto classifiedIt = std::ranges::find_if(
             errors, [this](const ClassifiedSyncError &classified) { return classified.error.dbId() == *_errorDbId; });
-    return classifiedIt == errors.end() ? nullptr : &*classifiedIt;
+    return classifiedIt == errors.end() ? nullptr : std::to_address(classifiedIt);
 }
 
 void SyncErrorExplanationController::runAndClose(const SyncErrorAction action) {
