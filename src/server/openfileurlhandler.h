@@ -21,9 +21,9 @@
 #include "libcommon/utility/types.h"
 
 #include <QTimer>
-#include <QUrl>
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 namespace KDC {
@@ -50,14 +50,15 @@ class OpenFileUrlHandler : public QObject {
                 NodeId nodeId;
         };
 
-        OpenFileUrlHandler(AppServer *appServer, const QUrl &url, QObject *parent = nullptr);
+        OpenFileUrlHandler(AppServer *appServer, const std::string &url, QObject *parent = nullptr);
 
         void start();
 
-        //! Returns true if `url` is a file opening URL, i.e. "kdrive://open/...".
-        static bool isOpenFileUrl(const QUrl &url);
-        //! Extracts the drive id and the node id from `url`. Returns false if the URL is not a valid file opening URL.
-        static bool parseUrl(const QUrl &url, Request &request);
+        //! Returns true if `urlStr` is a file opening URL, i.e. "kdrive://open/...".
+        static bool isOpenFileUrl(const std::string &urlStr);
+        //! Extracts the drive id and the node id from `urlStr`. Returns false if the URL is not a valid file opening
+        //! URL.
+        static bool parseUrl(const std::string &urlStr, Request &request);
         //! Returns true if `path` designates executable content that must be revealed in its parent folder instead of
         //! being launched.
         static bool shouldOpenParentFolder(const SyncPath &path);
@@ -92,7 +93,7 @@ class OpenFileUrlHandler : public QObject {
         void fail(const QString &userMessage);
 
         AppServer *_appServer{nullptr};
-        QUrl _url;
+        std::string _url;
         Request _request;
         Phase _phase{Phase::Resolve};
 
