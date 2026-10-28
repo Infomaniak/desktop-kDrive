@@ -781,26 +781,33 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return result;
         }
 
-        public async Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken)
+        public async Task<SearchItemResult> SearchItem(Sync? sync, string searchString, string cursor, CancellationToken cancellationToken)
         {
             if (sync is null)
             {
                 Logger.Log(Logger.Level.Error, "Sync is null.");
-                return null;
+                return SearchItemResult.Failed(ExitCode.DataError);
             }
 
             var parms = new JsonObject
             {
                 [JsonKeys.SyncDbId] = sync.DbId,
-                [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
+                [JsonKeys.SearchString] = Utility.ToBase64String(searchString),
+                [JsonKeys.Cursor] = Utility.ToBase64String(cursor)
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_SEARCH, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, cancellationToken))
-                return null;
+                return SearchItemResult.Failed(data.Code);
 
-            if (!HasRequiredParam(data, JsonKeys.SearchInfoList))
-                return null;
+            if (!HasRequiredParam(data, JsonKeys.SearchInfoList) || !HasRequiredParam(data, JsonKeys.Cursor))
+                return SearchItemResult.Failed(ExitCode.DataError);
+
+            if (data.Params[JsonKeys.HasMore] is not JsonValue hasMoreValue || !hasMoreValue.TryGetValue<bool>(out bool hasMore))
+            {
+                Logger.Log(Logger.Level.Error, "Missing or invalid hasMore in search response.");
+                return SearchItemResult.Failed(ExitCode.DataError);
+            }
 
             var options = new JsonSerializerOptions
             {
@@ -809,11 +816,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
             List<SearchInfo>? resultInfos = data.Params[JsonKeys.SearchInfoList]?.Deserialize<List<SearchInfo>>(options);
+            string resultCursor = Utility.FromBase64String(data.Params[JsonKeys.Cursor]?.GetValue<string>() ?? "") ?? "";
 
             if (resultInfos is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize SearchInfo list from ${data.Params[JsonKeys.SearchInfoList]}.");
-                return null;
+                return SearchItemResult.Failed(ExitCode.DataError);
             }
 
             var resultItems = new List<SearchItem>();
@@ -837,7 +845,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     item.IsAvailableLocally!.Value
                 ));
             }
-            return resultItems;
+
+            return SearchItemResult.Success(resultItems, resultCursor, hasMore);
         }
         public async Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken)
         {

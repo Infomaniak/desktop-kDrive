@@ -25,6 +25,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.ComponentModel;
+using System.Windows.Input;
+using Windows.System;
 
 namespace Infomaniak.kDrive
 {
