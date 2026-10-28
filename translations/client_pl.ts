@@ -1978,6 +1978,11 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <translation>Błąd systemu.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Nie można przenieść elementu, ponieważ jego ścieżka zawiera łącze symboliczne lub junction.&lt;br&gt;Został tymczasowo wykluczony z synchronizacji.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Ten element istnieje już po drugiej stronie.&lt;br&gt;Został tymczasowo umieszczony na czarnej liście.</translation>

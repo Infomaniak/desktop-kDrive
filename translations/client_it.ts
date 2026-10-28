@@ -1972,6 +1972,11 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Errore di sistema.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Impossibile spostare l&apos;elemento perché il suo percorso contiene un link simbolico o una junction.&lt;br&gt;È stato temporaneamente escluso dalla sincronizzazione.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>L&apos;elemento esiste già dall&apos;altra parte.&lt;br&gt;È stato temporaneamente messo nella lista nera.</translation>

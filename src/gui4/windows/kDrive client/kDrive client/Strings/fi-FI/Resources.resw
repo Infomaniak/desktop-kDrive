@@ -801,6 +801,9 @@ Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value>
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Pääsy kielletty</value> 
   </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Muunna tavalliseksi tiedostoksi</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Tämä tiedosto on kiintolinkkitiedosto, jota ei voi synkronoida.</value> 
   </data> 
@@ -1141,6 +1144,9 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Uusin</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Tilaukseni</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nimi</value> 
   </data> 
@@ -1340,6 +1346,9 @@ Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja y
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versioristiriitaa havaittu</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ poistettua kohdetta</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synkronointi on keskeytetty, jotta vältetään tahaton poisto.
 Mitä haluat tehdä?</value> 
@@ -1349,6 +1358,12 @@ Mitä haluat tehdä?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Poista myös verkosta</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>ja toinen osa</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>ja %@ muut tekijät</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Nämä tiedostot ovat edelleen palautettavissa kDrive-roskakorista.</value> 
@@ -1602,6 +1617,12 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Muut tietokoneella olevat tiedostot</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Tilauksesi vapaa tallennustila</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Verkossa tallennetut kDrive-tiedostot</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synkronointi</value> 
   </data> 
@@ -1645,6 +1666,18 @@ Internet-yhteys vaaditaan niiden käyttämiseen.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synkronointi on käynnissä</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Muutosten haku</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Tiedostojen valmistelu</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@-elementti on synkronoitu %@:n kanssa</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ synkronoitua kohdetta %@:sta</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkronoitu</value> 

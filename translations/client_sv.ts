@@ -1973,6 +1973,11 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Systemfel.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Elementet kunde inte flyttas eftersom dess sökväg innehåller en symbolisk länk eller junction.&lt;br&gt;Det har tillfälligt uteslutits från synkronisering.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Objektet finns redan på den andra sidan.&lt;br&gt;Det har tillfälligt blockerats.</translation>

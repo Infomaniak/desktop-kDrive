@@ -801,6 +801,9 @@ Be om tilgang fra eieren eller administratoren.</value>
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Tilgang forbudt</value> 
   </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konverter til vanlig fil</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Denne filen er en hardlenke som ikke kan synkroniseres.</value> 
   </data> 
@@ -1141,6 +1144,9 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Nyeste</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Abonnementet mitt</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Navn</value> 
   </data> 
@@ -1340,6 +1346,9 @@ Kontroller og gi nytt navn til filer som inneholder uvanlige tegn, og prøv dere
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versjonskonflikt(er) oppdaget</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ elementer slettet</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synkroniseringen er satt på pause for å unngå utilsiktet sletting.
 Hva vil du gjøre?</value> 
@@ -1349,6 +1358,12 @@ Hva vil du gjøre?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Slett også på nettet</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>og et annet element</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>og %@ andre elementer</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Disse filene kan fortsatt gjenopprettes fra papirkurven i kDrive.</value> 
@@ -1602,6 +1617,12 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <value>Andre filer på datamaskinen</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Ledig lagringsplass i abonnementet ditt</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>kDrive-filer lagret på nettet</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synkronisering</value> 
   </data> 
@@ -1645,6 +1666,18 @@ Internettforbindelse kreves for å åpne dem.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synkronisering pågår</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Søk etter endringer</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Forberedelse av filene dine</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ element synkronisert med %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ elementer synkronisert på %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkronisert</value> 

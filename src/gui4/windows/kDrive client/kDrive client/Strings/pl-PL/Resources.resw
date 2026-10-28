@@ -801,6 +801,9 @@ Poproś właściciela lub administratora o dostęp.</value>
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Dostęp zabroniony</value> 
   </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konwertuj na zwykły plik</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Ten plik jest twardym dowiązaniem (hard link), które nie może być synchronizowane.</value> 
   </data> 
@@ -1141,6 +1144,9 @@ Przydatne, gdy wiesz, że ważna praca jest online w kDrive.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Najnowsza</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Moja subskrypcja</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nazwa</value> 
   </data> 
@@ -1340,6 +1346,9 @@ Sprawdź i zmień nazwy plików zawierających nietypowe znaki, a następnie spr
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>Wykryto %@ konfliktów wersji</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ usuniętych elementów</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synchronizacja została wstrzymana, aby zapobiec przypadkowemu usunięciu danych.
 Co chcesz zrobić?</value> 
@@ -1349,6 +1358,12 @@ Co chcesz zrobić?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Usuń również online</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>oraz kolejny element</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>oraz %@ inne elementy</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Pliki te można odzyskać z kosza w kDrive.</value> 
@@ -1602,6 +1617,12 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
     <value>Inne pliki na komputerze</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Wolne miejsce w ramach Twojej subskrypcji</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Pliki kDrive przechowywane w chmurze</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronizacja</value> 
   </data> 
@@ -1645,6 +1666,18 @@ Do ich dostępu wymagane jest połączenie z Internetem.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synchronizacja jest w toku</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Wyszukiwanie zmian</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Przygotowanie plików</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ element zsynchronizowany z %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ elementów zsynchronizowanych z %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Zsynchronizowano</value> 

@@ -1949,6 +1949,11 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         <translation>Järjestelmävirhe.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Elementtiä ei voitu siirtää, koska sen polku sisältää symbolisen linkin tai junctionin.&lt;br&gt;Se on jätetty väliaikaisesti pois synkronoinnista.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Kohde on jo olemassa toisella puolella.&lt;br&gt;Se on lisätty väliaikaisesti estolistalle.</translation>
