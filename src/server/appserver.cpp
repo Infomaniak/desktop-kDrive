@@ -128,7 +128,7 @@ static const char optionsC[] =
         "  -v --version         : show the application version.\n"
         "  --settings           : show the Settings window (if the application is running).\n"
         "  --synthesis          : show the Synthesis window (if the application is running).\n"
-        "  kdrive://open/user/<user id>/drive/<drive id>/file/<node id> : open an item of your kDrive\n"
+        "  kdrive://open/user/<user id>/drive/<drive id>/file/<file id> : open an item of your kDrive\n"
         "                                                                 (downloading or synchronizing it first if needed).\n";
 
 } // namespace
