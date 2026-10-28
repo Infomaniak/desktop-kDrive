@@ -21,6 +21,21 @@ import Foundation
 
 struct SearchInfoList: Codable, Sendable {
     let searchInfoList: [SearchResponse]
+    let hasMore: Bool
+    @Base64CodedString var cursor: String
+}
+
+/// A single page of drive search results returned by the `DRIVE_SEARCH` job.
+public struct DriveSearchPage: Sendable {
+    public let items: [SearchResponse]
+    public let hasMore: Bool
+    public let nextCursor: String
+
+    public init(items: [SearchResponse], hasMore: Bool, nextCursor: String) {
+        self.items = items
+        self.hasMore = hasMore
+        self.nextCursor = nextCursor
+    }
 }
 
 public struct SearchResponse: Codable, Sendable {
