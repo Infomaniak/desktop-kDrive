@@ -75,10 +75,11 @@ Rectangle {
         return cells;
     }
 
-    // Brings the attention to this row: the keyboard focus goes to its action, or to the card itself when it has none,
-    // and the card is outlined for a moment, since a focus ring alone is hard to notice after a mouse click.
+    // Brings the attention to this row: the keyboard focus goes to its action, or to the card itself when it has none or
+    // the action is running, and the card is outlined for a moment, since a focus ring alone is hard to notice after a
+    // mouse click.
     function reveal() {
-        if (actionButton.visible) {
+        if (actionButton.visible && actionButton.enabled) {
             actionButton.forceActiveFocus();
         } else {
             root.forceActiveFocus();
