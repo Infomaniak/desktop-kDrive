@@ -31,10 +31,10 @@ namespace KDC {
 class AppServer;
 class SyncDb;
 
-//! Handles "kdrive://open/drive/<drive id>/file/<node id>" URLs (e.g. clicked in a web browser).
+//! Handles "kdrive://open/user/<user id>/drive/<drive id>/file/<node id>" URLs (e.g. clicked in a web browser).
 /*!
-  The drive id is the server-side drive id, as displayed in the web application URLs. The node id is the
-  server-side id of the file or folder to open.
+  The user id and the drive id are the server-side kDrive user id and drive id, as displayed in the web application
+  URLs. The node id is the server-side id of the file or folder to open.
 
   The handler resolves the node id against the syncs configured for the drive, then:
   - opens the item directly if it is available locally,
@@ -46,6 +46,7 @@ class FileOpeningHandler : public QObject {
 
     public:
         struct Request {
+                UserId userId{0};
                 DriveId driveId{0};
                 NodeId nodeId;
         };
@@ -56,8 +57,8 @@ class FileOpeningHandler : public QObject {
 
         //! Returns true if `urlStr` is a file opening URL, i.e. "kdrive://open/...".
         static bool isFileOpeningDeeplink(const std::string &urlStr);
-        //! Extracts the drive id and the node id from `urlStr`. Returns false if the URL is not a valid file opening
-        //! URL.
+        //! Extracts the user id, the drive id, and the node id from `urlStr`. Returns false if the URL is not a valid
+        //! file opening URL.
         static bool parseDeeplinkUrl(const std::string &urlStr, Request &request);
         //! Returns true if `path` designates executable content that must be revealed in its parent folder instead of
         //! being launched.
