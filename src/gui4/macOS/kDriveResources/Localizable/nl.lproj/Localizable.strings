@@ -736,7 +736,7 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Het lijkt erop dat we de app niet kunnen laden…";
 
-/* loco:6ac60bf864441a81870fc9d2
+/* loco:6ac60bf864441a81870fc9d2 */
 "errorCopyingShareLink" = "Er is een fout opgetreden bij het kopiëren van de link.";
 
 /* loco:69aa7fb3753c400c81087842 */
@@ -1438,6 +1438,7 @@
 "searchPlaceholder" = "Search…";
 
 /* loco:6ac604dd665bcc5b3402f332
+ * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online. */
 "searchResultOpenInBrowserSyncPausedTooltip" = "Synchronisatie gepauzeerd.\nDit bestand wordt geopend in kDrive online.";
 
 /* loco:69eb8290d3fa21c4fb096d82

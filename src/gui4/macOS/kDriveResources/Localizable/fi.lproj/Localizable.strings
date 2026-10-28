@@ -736,7 +736,7 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Sovellusta ei näytä voivan ladata…";
 
-/* loco:6ac60bf864441a81870fc9d2
+/* loco:6ac60bf864441a81870fc9d2 */
 "errorCopyingShareLink" = "Linkin kopioinnissa tapahtui virhe.";
 
 /* loco:69aa7fb3753c400c81087842 */
@@ -1438,6 +1438,7 @@
 "searchPlaceholder" = "Search…";
 
 /* loco:6ac604dd665bcc5b3402f332
+ * Tooltip shown on search results when the file is on this device but not downloaded (online-only) and sync is paused, so it will open in kDrive online. */
 "searchResultOpenInBrowserSyncPausedTooltip" = "Synkronointi keskeytetty.\nTämä tiedosto avautuu kDrive-verkkopalvelussa.";
 
 /* loco:69eb8290d3fa21c4fb096d82
