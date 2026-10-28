@@ -18,9 +18,13 @@
 
 #include "testfolderwatcherlinux.h"
 
+#include "config.h"
+#include "requests/parameterscache.h"
+#include "test_classes/syncpaltest.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "update_detection/file_system_observer/folderwatcher_linux.h"
+#include "update_detection/file_system_observer/localfilesystemobserverworker.h"
 
 #include <Poco/File.h>
 #include <ranges>
@@ -28,9 +32,56 @@
 
 namespace KDC {
 
+void TestFolderWatcherLinux::setUp() {
+    TestBase::start();
+    (void) ParametersCache::instance(true);
+}
+
+void TestFolderWatcherLinux::tearDown() {
+    ParametersCache::reset();
+    TestBase::stop();
+}
+
 void TestFolderWatcherLinux::testMakeSyncPath() {
     CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "file.txt").filename().empty());
     CPPUNIT_ASSERT(!FolderWatcher_linux::makeSyncPath("/A/B", "").filename().empty());
+}
+
+void TestFolderWatcherLinux::testQueueOverflowInvalidatesSnapshot() {
+    class LocalFileSystemObserverWorkerMock : public LocalFileSystemObserverWorker {
+        public:
+            using LocalFileSystemObserverWorker::LocalFileSystemObserverWorker;
+
+            void setSnapshotValid() { _liveSnapshot.setValid(true); }
+            const auto &pendingFileEvents() const { return _pendingFileEvents; }
+    };
+
+    const LocalTemporaryDirectory tempDir;
+    const auto syncPal = std::make_shared<SyncPalTest>(tempDir.path() / "sync.db", KDRIVE_VERSION_STRING, true);
+    LocalFileSystemObserverWorkerMock parent(syncPal, "Local File System Observer", "LFSO");
+    FolderWatcher_linux testObj(&parent, tempDir.path());
+    parent.setSnapshotValid();
+    syncPal->setRestart(false);
+
+    const inotify_event overflow{.wd = -1, .mask = IN_Q_OVERFLOW, .cookie = 0, .len = 0};
+    CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.processEvent(overflow));
+    CPPUNIT_ASSERT(!parent.liveSnapshot().isValid());
+    CPPUNIT_ASSERT(syncPal->restart());
+
+    // The next event is still delivered and queued until the snapshot has been rebuilt.
+    (void) testObj._watchToPath.emplace(1, tempDir.path());
+    const inotify_event event{.wd = 1, .mask = IN_ATTRIB, .cookie = 0, .len = 0};
+    CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.processEvent(event));
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, parent.pendingFileEvents().size());
+    CPPUNIT_ASSERT(parent.pendingFileEvents().front().first == tempDir.path());
+    CPPUNIT_ASSERT_EQUAL(OperationType::Edit, parent.pendingFileEvents().front().second);
+
+    // A later overflow must also invalidate a snapshot that has become valid again.
+    parent.setSnapshotValid();
+    syncPal->setRestart(false);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.processEvent(overflow));
+    CPPUNIT_ASSERT(!parent.liveSnapshot().isValid());
+    CPPUNIT_ASSERT(syncPal->restart());
 }
 
 void TestFolderWatcherLinux::testAddFolderRecursive() {
