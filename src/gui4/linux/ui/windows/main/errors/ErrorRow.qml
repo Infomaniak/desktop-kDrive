@@ -34,6 +34,8 @@ Rectangle {
     required property int titleCount
     required property string descriptionId
     required property int descriptionArgCount
+    // A 64-bit count (the inotify watches limit): `real` keeps it whole.
+    required property real descriptionCount
     required property string nodeLabelId
     required property string itemName
     required property string itemPath
@@ -49,7 +51,7 @@ Rectangle {
 
     readonly property string title: ErrorTexts.text(root.titleId, root.titleArgCount, root.nodeLabelId, root.titleCount)
     readonly property string fullDescription: ErrorTexts.text(root.descriptionId, root.descriptionArgCount,
-                                                              root.nodeLabelId, 0)
+                                                              root.nodeLabelId, root.descriptionCount)
     // The information variant keeps the first line as description and shows the advice that follows in its tooltip.
     readonly property int adviceSeparator: root.variant === SyncErrors.InfoTooltip ? root.fullDescription.indexOf("\n") : -1
     readonly property string description: root.adviceSeparator < 0 ? root.fullDescription

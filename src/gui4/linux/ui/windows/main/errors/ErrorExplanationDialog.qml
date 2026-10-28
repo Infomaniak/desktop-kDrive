@@ -201,7 +201,10 @@ IKModal {
                         case SyncErrors.SyncDirChangedRemotely:
                             return qsTrId("dialogDataErrorSyncDirChangeDescription");
                         case SyncErrors.INotifyWatches:
-                            return qsTrId("linuxErrINotifyWatchesDescription");
+                            // Same text as the error row, without the number when the limit cannot be read.
+                            return ErrorTexts.text(root.controller.watchLimit > 0 ? "linuxErrINotifyWatchesLimitDescription"
+                                                                                  : "linuxErrINotifyWatchesDescription",
+                                                   0, "", root.controller.watchLimit);
                         default:
                             return qsTrId("dialogSystemErrorSyncDirAccessErrorDescription");
                         }
@@ -318,21 +321,11 @@ IKModal {
                 }
             }
 
-            // Inotify watches: the current limit and the command that raises it, run by the user in a terminal.
+            // Inotify watches: the command that raises the limit, run by the user in a terminal.
             ColumnLayout {
                 Layout.fillWidth: true
                 visible: root.kind === SyncErrors.INotifyWatches
                 spacing: IKActivities.errorsExplanationReasonContentSpacing
-
-                Text {
-                    Layout.fillWidth: true
-                    visible: root.controller.watchLimit > 0
-                    text: qsTrId("linuxDialogINotifyWatchesCurrentLimit").arg(root.controller.watchLimit.toLocaleString(Qt.locale(), "f", 0))
-                    textFormat: Text.PlainText
-                    color: IKColors.textPrimary
-                    font.pixelSize: IKFonts.bodySize
-                    wrapMode: Text.WordWrap
-                }
 
                 Text {
                     Layout.fillWidth: true
