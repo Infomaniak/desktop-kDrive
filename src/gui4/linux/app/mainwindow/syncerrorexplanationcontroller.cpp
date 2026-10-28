@@ -20,13 +20,13 @@
 
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/syncerrorsprojection.h"
+#include "app/errors/inotifywatchlimit.h"
 #include "app/errors/syncerrorcatalog.h"
 #include "app/mainwindow/syncerroractionhandler.h"
 #include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/types.h"
 
 #include <QClipboard>
-#include <QFile>
 #include <QGuiApplication>
 #include <QLoggingCategory>
 
@@ -35,8 +35,6 @@
 namespace KDC {
 
 namespace {
-
-using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcSyncErrorExplanation, "gui.v4.syncerrorexplanation", QtInfoMsg)
 
@@ -58,28 +56,6 @@ SyncErrorAction mainAction(const SyncErrorExplanation kind) {
             break;
     }
     return SyncErrorAction::None;
-}
-
-// Readable without any privilege. The server watches each folder of the synchronization (`FolderWatcher_linux`).
-qint64 readWatchLimit() {
-    QFile file(u"/proc/sys/fs/inotify/max_user_watches"_s);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qCWarning(lcSyncErrorExplanation) << "Cannot read the inotify watches limit | error:" << file.errorString();
-        return 0;
-    }
-    bool ok = false;
-    const auto limit = file.readAll().trimmed().toLongLong(&ok);
-    return ok && limit > 0 ? limit : 0;
-}
-
-// Always above the current limit, otherwise the command would change nothing: since Linux 5.11, the default depends on
-// the memory (8192 to 1048576), so a fixed value alone could be lower than the current one.
-qint64 proposedWatchLimit(const qint64 currentLimit) {
-    // 524288 (2^19) is the value commonly recommended for tools that watch large trees, such as VS Code and the
-    // JetBrains IDEs. The limit is only a cap: the kernel uses about 1 KiB per watch actually registered, and the server
-    // registers one per folder, so a high limit costs nothing until the synchronization needs it.
-    constexpr qint64 minimumProposedLimit = 524288;
-    return std::max(2 * currentLimit, minimumProposedLimit);
 }
 
 } // namespace
@@ -121,10 +97,7 @@ void SyncErrorExplanationController::open(const ErrorDbId errorDbId) {
     _itemIconName = _itemName.isEmpty() ? QString{} : _fileIconResolver.iconName(_itemName, error.nodeType());
     if (kind == SyncErrorExplanation::INotifyWatches) {
         _watchLimit = readWatchLimit();
-        // Applied alone so the value takes effect now; a higher sysctl file set by the administrator still wins at boot.
-        _watchLimitCommand =
-                u"echo \"fs.inotify.max_user_watches=%1\" | sudo tee /etc/sysctl.d/90-kdrive.conf"
-                u" && sudo sysctl -p /etc/sysctl.d/90-kdrive.conf"_s.arg(proposedWatchLimit(_watchLimit));
+        _watchLimitCommand = buildWatchLimitCommand(proposedWatchLimit(_watchLimit));
         qCInfo(lcSyncErrorExplanation) << "Inotify watches limit | current:" << _watchLimit
                                        << "| proposed:" << proposedWatchLimit(_watchLimit);
     }
