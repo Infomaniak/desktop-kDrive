@@ -188,6 +188,11 @@ final class SearchViewModel: ObservableObject {
         }
     }
 
+    func loadNextPageIfNeeded(currentItem: UISearchResponse) {
+        guard currentItem.id == searchResults.last?.id else { return }
+        loadNextPage()
+    }
+
     func loadNextPage() {
         guard currentSearchTask == nil, nextPageTask == nil, hasMorePages, searchText == currentQuery else { return }
 

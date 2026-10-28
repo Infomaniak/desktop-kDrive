@@ -49,10 +49,7 @@ struct SearchSheetView: View {
                         .buttonStyle(.plain)
                         .padding(.horizontal, AppPadding.padding8)
                         .onAppear {
-                            // Each appended page brings a new last row whose appearance requests the next one.
-                            if file.id == viewModel.displayedResults.last?.id {
-                                viewModel.loadNextPage()
-                            }
+                            viewModel.loadNextPageIfNeeded(currentItem: file)
                         }
                     }
 
