@@ -55,9 +55,10 @@ IKShadowedWindow {
         users.refresh();
     }
 
-    function selectAdvanced() {
+    // `pushedComponent`, when given, opens over the Advanced root (file exclusions).
+    function selectAdvanced(pushedComponent) {
         accountsPane.reset(accountsRootComponent);
-        advancedPane.reset(advancedRootComponent);
+        advancedPane.reset(advancedRootComponent, pushedComponent);
         selectedCategory = SettingsWindow.Category.Advanced;
     }
 
@@ -574,8 +575,7 @@ IKShadowedWindow {
         target: root.controller
 
         function onFileExclusionsRequested() {
-            root.selectAdvanced();
-            advancedPane.push(fileExclusionsComponent);
+            root.selectAdvanced(fileExclusionsComponent);
         }
     }
 
