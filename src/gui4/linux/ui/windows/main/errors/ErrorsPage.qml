@@ -37,27 +37,39 @@ FocusScope {
     // Gives the keyboard focus to the main control of the page, once it is shown, or brings into view the row the
     // "Fix errors" action of an activity asked for.
     function focusDefault() {
-        const revealRow = root.controller.takeRevealRow();
-        if (revealRow >= 0) {
-            // Once the page has its size: the view positions its rows from it.
-            Qt.callLater(root.reveal, revealRow);
-            return;
-        }
-        if (root.hasErrors) {
-            refreshButton.forceActiveFocus();
-        } else {
-            seeActivitiesButton.forceActiveFocus();
-        }
+        // Once the page has its size: the view positions its rows from it. The row is resolved only then, since the rows
+        // or the selected synchronization can change meanwhile.
+        Qt.callLater(root.revealOrFocus);
     }
 
-    function reveal(row) {
-        list.positionViewAtIndex(row, ListView.Center);
-        const rowItem = list.itemAtIndex(row);
+    function revealOrFocus() {
+        const revealRow = root.controller.takeRevealRow();
+        if (revealRow < 0) {
+            root.focusMainControl();
+            return;
+        }
+        list.positionViewAtIndex(revealRow, ListView.Center);
+        const rowItem = list.itemAtIndex(revealRow);
         if (rowItem) {
             rowItem.reveal();
         } else {
-            refreshButton.forceActiveFocus();
+            root.focusMainControl();
         }
+    }
+
+    // Refresh is disabled while it runs: the page itself then takes the focus, so that it stays on a visible item.
+    function focusMainControl() {
+        if (!root.showsList) {
+            seeActivitiesButton.forceActiveFocus();
+        } else if (refreshButton.enabled) {
+            refreshButton.forceActiveFocus();
+        } else {
+            focusFallback.forceActiveFocus();
+        }
+    }
+
+    Item {
+        id: focusFallback
     }
 
     ColumnLayout {
