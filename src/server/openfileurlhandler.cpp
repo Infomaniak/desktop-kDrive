@@ -20,6 +20,7 @@
 
 #include "appserver.h"
 #include "libcommon/theme/theme.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
@@ -30,7 +31,6 @@
 #include "libsyncengine/syncpal/syncpal.h"
 
 #include <QDesktopServices>
-#include <QSet>
 
 #include <Poco/Exception.h>
 #include <Poco/URI.h>
@@ -39,6 +39,7 @@
 
 #include <algorithm>
 #include <charconv>
+#include <unordered_set>
 #include <vector>
 
 namespace KDC {
@@ -110,7 +111,7 @@ bool OpenFileUrlHandler::parseUrl(const std::string &urlStr, Request &request) {
     DriveId driveId = 0;
 
     const auto result = std::from_chars(driveIdStr.data(), driveIdStr.data() + driveIdStr.size(), driveId);
-    if (result.ec || result.ptr != driveIdStr.data() + driveIdStr.size()) return false;
+    if (result.ec != std::errc{} || result.ptr != driveIdStr.data() + driveIdStr.size()) return false;
     if (driveId <= 0) return false;
 
     request.driveId = driveId;
@@ -120,9 +121,9 @@ bool OpenFileUrlHandler::parseUrl(const std::string &urlStr, Request &request) {
 }
 
 bool OpenFileUrlHandler::shouldOpenParentFolder(const SyncPath &path) {
-    static const QSet<QString> executableExtensions = {".exe", ".bat", ".cmd", ".com", ".scr", ".msi", ".ps1",
-                                                       ".vbs", ".js",  ".jar", ".sh",  ".app", ".apk"};
-    return executableExtensions.contains(Path2QStr(path.extension()).toLower());
+    static const std::unordered_set<std::string> executableExtensions = {".exe", ".bat", ".cmd", ".com", ".scr", ".msi", ".ps1",
+                                                                         ".vbs", ".js",  ".jar", ".sh",  ".app", ".apk"};
+    return executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
 }
 
 void OpenFileUrlHandler::processResolvePhase() {
