@@ -207,7 +207,7 @@ final class SearchViewModel: ObservableObject {
 
     private func fetchSearchResults(query: String) async {
         do {
-            let page = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query, cursor: "")
+            let page = try await fetchPageSkippingEmptyPages(query: query, cursor: "")
 
             guard !Task.isCancelled else { return }
 
@@ -222,26 +222,34 @@ final class SearchViewModel: ObservableObject {
     }
 
     private func fetchNextPage(cursor: String) async {
-        var cursor = cursor
         do {
-            while true {
-                let page = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: currentQuery, cursor: cursor)
+            let page = try await fetchPageSkippingEmptyPages(query: currentQuery, cursor: cursor)
 
-                guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else { return }
 
-                searchResults.append(contentsOf: page.items.map { UISearchResponse(searchResponse: $0) })
-                nextCursor = page.nextCursor
-                hasMorePages = page.hasMore
-
-                // An empty page adds no new last row whose appearance would request the next one.
-                guard page.items.isEmpty, page.hasMore, page.nextCursor != cursor else { return }
-                cursor = page.nextCursor
-            }
+            searchResults.append(contentsOf: page.items.map { UISearchResponse(searchResponse: $0) })
+            nextCursor = page.nextCursor
+            hasMorePages = page.hasMore
         } catch {
             // A failed page keeps the already displayed results and stops paging.
             guard !Task.isCancelled else { return }
 
             hasMorePages = false
         }
+    }
+
+    private func fetchPageSkippingEmptyPages(query: String, cursor: String) async throws -> DriveSearchPage {
+        var nextCursor = cursor
+        var requestedCursor: String
+        var page: DriveSearchPage
+        // Empty pages provide no result row whose appearance could trigger the next request.
+        repeat {
+            try Task.checkCancellation()
+            requestedCursor = nextCursor
+            page = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query, cursor: requestedCursor)
+            try Task.checkCancellation()
+            nextCursor = page.nextCursor
+        } while page.items.isEmpty && page.hasMore && nextCursor != requestedCursor
+        return page
     }
 }

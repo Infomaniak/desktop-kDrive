@@ -330,6 +330,31 @@ extension SharedDITests.SearchViewModelTests {
         #expect(viewModel.searchResults.map(\.name) == ["doc1.txt", "doc2.txt", "doc3.txt"])
     }
 
+    @Test("Empty initial pages are skipped before displaying search results")
+    func emptyInitialPagesKeepSearching() async throws {
+        let fixture = try await Fixture(status: .Idle)
+        let (viewModel, queries, queriesContinuation) = fixture.makePaginatedViewModel(
+            firstPageParams: #"{"cursor":"Y3Vyc29yMQ==","hasMore":true,"searchInfoList":[]}"#,
+            nextPagesParams: ["cursor1": Self.emptyIntermediatePageParams, "cursor2": Self.secondPageParams],
+            nextPageCode: 0
+        )
+        var queryIterator = queries.makeAsyncIterator()
+        defer {
+            queriesContinuation.finish()
+            _ = fixture // Keeps the DI override alive until the test ends
+        }
+
+        viewModel.searchText = "document"
+        #expect(await queryIterator.next()?.cursor.isEmpty == true)
+        try await waitUntilSearchSettles(viewModel)
+
+        #expect(await queryIterator.next()?.cursor == "cursor1")
+        #expect(await queryIterator.next()?.cursor == "cursor2")
+        #expect(viewModel.searchResults.map(\.name) == ["doc3.txt"])
+        viewModel.loadNextPage()
+        #expect(!viewModel.isLoadingNextPage)
+    }
+
     @Test("An empty intermediate page does not stall pagination")
     func emptyIntermediatePageKeepsPaging() async throws {
         // GIVEN
