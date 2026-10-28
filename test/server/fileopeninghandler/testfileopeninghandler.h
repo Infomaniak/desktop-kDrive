@@ -22,8 +22,8 @@
 
 namespace KDC {
 
-class TestOpenFileUrlHandler : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestOpenFileUrlHandler);
+class TestFileOpeningHandler : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestFileOpeningHandler);
         CPPUNIT_TEST(testIsOpenFileUrl);
         CPPUNIT_TEST(testParseUrl);
         CPPUNIT_TEST(testShouldOpenParentFolder);

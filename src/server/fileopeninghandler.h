@@ -41,7 +41,7 @@ class SyncDb;
   - triggers its hydration first if it is a dehydrated LiteSync placeholder,
   - waits for its synchronization if it exists on the remote side only.
 */
-class OpenFileUrlHandler : public QObject {
+class FileOpeningHandler : public QObject {
         Q_OBJECT
 
     public:
@@ -50,7 +50,7 @@ class OpenFileUrlHandler : public QObject {
                 NodeId nodeId;
         };
 
-        OpenFileUrlHandler(AppServer *appServer, const std::string &url, QObject *parent = nullptr);
+        FileOpeningHandler(AppServer *appServer, const std::string &url, QObject *parent = nullptr);
 
         void start();
 
