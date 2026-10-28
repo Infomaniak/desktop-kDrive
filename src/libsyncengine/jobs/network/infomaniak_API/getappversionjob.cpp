@@ -21,6 +21,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 #include "utility/utility.h"
+#include "version.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -60,6 +61,7 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("os_version", CommonUtility::osVersion());
     uri.addQueryParameter("store", "kStore");
     uri.addQueryParameter("name", "com.infomaniak.drive");
+    uri.addQueryParameter("app_version", KDRIVE_VERSION_STRING);
     for (const auto &id: _userIdList) {
         uri.addQueryParameter("user_ids[]", std::to_string(id));
     }
