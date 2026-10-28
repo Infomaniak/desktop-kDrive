@@ -28,6 +28,7 @@
 #include <QLoggingCategory>
 
 #include <algorithm>
+#include <memory>
 
 namespace KDC {
 
@@ -99,7 +100,7 @@ const ClassifiedSyncError *ErrorsPageController::currentError(const QString &row
     const auto &errors = _projection.currentErrors();
     const auto classifiedIt = std::ranges::find_if(
             errors, [&errorDbId](const ClassifiedSyncError &classified) { return classified.error.dbId() == *errorDbId; });
-    return classifiedIt == errors.end() ? nullptr : &*classifiedIt;
+    return classifiedIt == errors.end() ? nullptr : std::to_address(classifiedIt);
 }
 
 void ErrorsPageController::showActivities() {

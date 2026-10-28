@@ -36,7 +36,7 @@ using namespace Qt::StringLiterals;
 
 namespace {
 
-const auto conflictsRowId = u"conflicts"_s;
+constexpr auto conflictsRowId = "conflicts"_L1;
 
 QString errorRowId(const ErrorDbId errorDbId) {
     return u"error:%1"_s.arg(static_cast<qlonglong>(errorDbId));
