@@ -603,6 +603,11 @@ Du kan öppna dem när som helst, även utan internetanslutning.</translation>
             <source>Upgrade</source> 
             <translation>Uppgradera</translation> 
         </message> 
+        <message id="buttonUpgradeSubscription"> 
+            <source>Upgrade my subscription</source> 
+            <extracomment>Storage page, subscription card: link shown when the kDrive subscription storage is full, and tooltip and accessible name of the cart icon button otherwise. Opens the Infomaniak shop for the drive, admins only.</extracomment> 
+            <translation>Uppgradera mitt abonnemang</translation> 
+        </message> 
         <message id="buttonValidate"> 
             <source>Confirm</source> 
             <translation>Bekräfta</translation> 
@@ -1547,6 +1552,10 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</translat
             <source>Most recent</source> 
             <translation>Senaste</translation> 
         </message> 
+        <message id="labelMySubscription"> 
+            <source>My Subscription</source> 
+            <translation>Mitt abonnemang</translation> 
+        </message> 
         <message id="labelName"> 
             <source>Name</source> 
             <translation>Namn</translation> 
@@ -2269,9 +2278,19 @@ Dessa data gör det möjligt för vårt team att snabbt åtgärda och optimera p
             <extracomment>Label for the other files segment in the local storage usage chart.</extracomment> 
             <translation>Övriga filer på datorn</translation> 
         </message> 
+        <message id="storageComputerUsedByOtherSyncs"> 
+            <source>kDrive files from other syncs</source> 
+            <extracomment>Storage page, local disk card: legend row for the space used on the same disk by the other kDrive synchronizations of the computer.</extracomment> 
+            <translation>kDrive-filer från andra synkroniseringar</translation> 
+        </message> 
         <message id="storageDeviceNameMac"> 
             <source>Macintosh</source> 
             <translation>Macintosh</translation> 
+        </message> 
+        <message id="storageDiskAlmostFullDescription"> 
+            <source>Your disk is almost full. Delete or move personal files from this disk to keep syncing your data.</source> 
+            <extracomment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</extracomment> 
+            <translation>Din disk är nästan full. Radera eller flytta personliga filer från den här disken för att fortsätta synkronisera dina data.</translation> 
         </message> 
         <message id="storageLoadingHint"> 
             <source>Loading space usage…</source> 
@@ -2301,6 +2320,24 @@ olåst och tillgänglig från din dator.</translation>
             <source>The volume is not accessible</source> 
             <translation>Volymen är inte tillgänglig</translation> 
         </message> 
+        <message id="storageOnlineFree"> 
+            <source>Available space on your subscription</source> 
+            <translation>Återstående utrymme på ditt abonnemang</translation> 
+        </message> 
+        <message id="storageOnlineUsed"> 
+            <source>kDrive files stored online</source> 
+            <translation>kDrive-filer som lagras online</translation> 
+        </message> 
+        <message id="storageSubscriptionTitle"> 
+            <source>%1 subscription</source> 
+            <extracomment>Storage page: title of the subscription card. %@ is the offer name of the drive, e.g. "kDrive Team" or "kSuite Business". labelMySubscription is shown instead when the offer is unknown.</extracomment> 
+            <translation>%1-abonnemang</translation> 
+        </message> 
+        <message id="storageSyncBlockDescription"> 
+            <source>Manage synchronized folders to free up space on your computer.</source> 
+            <extracomment>Storage page: description of the Sync card (storageSyncBlockTitle), next to the titleManageSynchronization link. Computer variant of storageSyncBlockMacDescription.</extracomment> 
+            <translation>Hantera synkroniserade mappar för att frigöra utrymme på din dator.</translation> 
+        </message> 
         <message id="storageSyncBlockMacDescription"> 
             <source>Manage synchronized folders to free up space on your Mac.</source> 
             <translation>Hantera synkroniserade mappar för att frgöra utrymme på din Mac.</translation> 
@@ -2320,7 +2357,7 @@ olåst och tillgänglig från din dator.</translation>
             <translation>Den här datorn - %1 - %2</translation> 
         </message> 
         <message id="storageUsageLabel"> 
-            <source>%1 on %2 used</source> 
+            <source>%1 of %2 used</source> 
             <translation>%1 av %2 använt</translation> 
         </message> 
         <message id="storedOnline"> 
