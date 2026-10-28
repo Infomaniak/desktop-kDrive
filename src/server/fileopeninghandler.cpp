@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "openfileurlhandler.h"
+#include "fileopeninghandler.h"
 
 #include "appserver.h"
 #include "libcommon/theme/theme.h"
@@ -68,16 +68,16 @@ bool isOpenFileUri(const Poco::URI &uri) {
 }
 } // namespace
 
-OpenFileUrlHandler::OpenFileUrlHandler(AppServer *appServer, const std::string &url, QObject *parent) :
+FileOpeningHandler::FileOpeningHandler(AppServer *appServer, const std::string &url, QObject *parent) :
     QObject(parent),
     _appServer(appServer),
     _url(url) {
     _deadlineTimer.setSingleShot(true);
-    (void) connect(&_syncWaitTimer, &QTimer::timeout, this, &OpenFileUrlHandler::onSyncWaitTick);
-    (void) connect(&_deadlineTimer, &QTimer::timeout, this, &OpenFileUrlHandler::onDeadlineReached);
+    (void) connect(&_syncWaitTimer, &QTimer::timeout, this, &FileOpeningHandler::onSyncWaitTick);
+    (void) connect(&_deadlineTimer, &QTimer::timeout, this, &FileOpeningHandler::onDeadlineReached);
 }
 
-void OpenFileUrlHandler::start() {
+void FileOpeningHandler::start() {
     LOG_INFO(Log::instance()->getLogger(), "Processing file opening URL - url=" << _url);
 
     if (!parseUrl(_url, _request)) {
@@ -90,12 +90,12 @@ void OpenFileUrlHandler::start() {
     processResolvePhase();
 }
 
-bool OpenFileUrlHandler::isOpenFileUrl(const std::string &urlStr) {
+bool FileOpeningHandler::isOpenFileUrl(const std::string &urlStr) {
     Poco::URI uri;
     return parseUri(urlStr, uri) && isOpenFileUri(uri);
 }
 
-bool OpenFileUrlHandler::parseUrl(const std::string &urlStr, Request &request) {
+bool FileOpeningHandler::parseUrl(const std::string &urlStr, Request &request) {
     Poco::URI uri;
     if (!parseUri(urlStr, uri) || !isOpenFileUri(uri)) return false;
 
@@ -120,13 +120,13 @@ bool OpenFileUrlHandler::parseUrl(const std::string &urlStr, Request &request) {
     return !request.nodeId.empty();
 }
 
-bool OpenFileUrlHandler::shouldOpenParentFolder(const SyncPath &path) {
+bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
     static const std::unordered_set<std::string> executableExtensions = {".exe", ".bat", ".cmd", ".com", ".scr", ".msi", ".ps1",
                                                                          ".vbs", ".js",  ".jar", ".sh",  ".app", ".apk"};
     return executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
 }
 
-void OpenFileUrlHandler::processResolvePhase() {
+void FileOpeningHandler::processResolvePhase() {
     // The drive lookup is performed once: the drive configuration cannot appear while the request is being processed.
     if (_driveDbId == 0) {
         Drive drive;
@@ -158,7 +158,7 @@ void OpenFileUrlHandler::processResolvePhase() {
     checkRemoteExistence();
 }
 
-bool OpenFileUrlHandler::resolveUrl(bool &found) {
+bool FileOpeningHandler::resolveUrl(bool &found) {
     found = false;
 
     std::vector<Sync> syncs;
@@ -223,7 +223,7 @@ bool OpenFileUrlHandler::resolveUrl(bool &found) {
     return true;
 }
 
-void OpenFileUrlHandler::checkRemoteExistence() {
+void FileOpeningHandler::checkRemoteExistence() {
     setPhase(Phase::CheckRemoteExistence, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
 
     const NodeId nodeId = _request.nodeId;
@@ -242,7 +242,7 @@ void OpenFileUrlHandler::checkRemoteExistence() {
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
 
-void OpenFileUrlHandler::onRemoteExistenceChecked(const ExitInfo &exitInfo, bool exists) {
+void FileOpeningHandler::onRemoteExistenceChecked(const ExitInfo &exitInfo, bool exists) {
     if (_phase != Phase::CheckRemoteExistence) return; // Stale callback.
 
     if (!exitInfo) {
@@ -264,7 +264,7 @@ void OpenFileUrlHandler::onRemoteExistenceChecked(const ExitInfo &exitInfo, bool
     setPhase(Phase::WaitForItemToSynchronize, syncWaitTickInterval, syncWaitTimeout);
 }
 
-void OpenFileUrlHandler::onSyncWaitTick() {
+void FileOpeningHandler::onSyncWaitTick() {
     if (_phase != Phase::WaitForItemToSynchronize) return;
 
     bool found = false;
@@ -277,7 +277,7 @@ void OpenFileUrlHandler::onSyncWaitTick() {
     }
 }
 
-void OpenFileUrlHandler::onDeadlineReached() {
+void FileOpeningHandler::onDeadlineReached() {
     switch (_phase) {
         case Phase::WaitForItemToSynchronize:
             handleFailure("The element requested from this kDrive link could not be synchronized. Please try again later.");
@@ -290,7 +290,7 @@ void OpenFileUrlHandler::onDeadlineReached() {
     }
 }
 
-void OpenFileUrlHandler::openOrHydrateResolvedItem() {
+void FileOpeningHandler::openOrHydrateResolvedItem() {
     ItemType itemType;
     if (!IoHelper::getItemType(_localPath, itemType)) {
         LOGW_WARN(Log::instance()->getLogger(),
@@ -341,7 +341,7 @@ void OpenFileUrlHandler::openOrHydrateResolvedItem() {
     setPhase(Phase::WaitForHydration, std::chrono::milliseconds(0), hydrationTimeout);
 }
 
-bool OpenFileUrlHandler::hydrateResolvedPlaceholder() {
+bool FileOpeningHandler::hydrateResolvedPlaceholder() {
     std::shared_ptr<SyncPal> syncPal;
     {
         const std::scoped_lock lock(_appServer->syncPalMapMutex);
@@ -387,7 +387,7 @@ bool OpenFileUrlHandler::hydrateResolvedPlaceholder() {
     return true;
 }
 
-void OpenFileUrlHandler::onHydrationFinished(bool success) {
+void FileOpeningHandler::onHydrationFinished(bool success) {
     if (_phase != Phase::WaitForHydration) return; // Stale callback.
 
     if (!success) {
@@ -398,7 +398,7 @@ void OpenFileUrlHandler::onHydrationFinished(bool success) {
     openResolvedItem();
 }
 
-void OpenFileUrlHandler::openResolvedItem() {
+void FileOpeningHandler::openResolvedItem() {
     SyncPath pathToOpen = _localPath;
     if (shouldOpenParentFolder(_localPath)) {
         LOGW_INFO(Log::instance()->getLogger(),
@@ -416,7 +416,7 @@ void OpenFileUrlHandler::openResolvedItem() {
     succeed();
 }
 
-void OpenFileUrlHandler::setPhase(Phase phase, std::chrono::milliseconds tickInterval, std::chrono::milliseconds timeout) {
+void FileOpeningHandler::setPhase(Phase phase, std::chrono::milliseconds tickInterval, std::chrono::milliseconds timeout) {
     _phase = phase;
     if (tickInterval.count() > 0) {
         _syncWaitTimer.start(tickInterval);
@@ -430,16 +430,16 @@ void OpenFileUrlHandler::setPhase(Phase phase, std::chrono::milliseconds tickInt
     }
 }
 
-void OpenFileUrlHandler::notifyUser(const std::string &message) const {
+void FileOpeningHandler::notifyUser(const std::string &message) const {
     _appServer->sendShowNotification(QString::fromStdString(Theme::instance()->appName()), QString::fromStdString(message));
 }
 
-void OpenFileUrlHandler::succeed() {
+void FileOpeningHandler::succeed() {
     setPhase(Phase::Done, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
     emit finished(true);
 }
 
-void OpenFileUrlHandler::handleFailure(const std::string &userMessage) {
+void FileOpeningHandler::handleFailure(const std::string &userMessage) {
     setPhase(Phase::Done, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
     LOG_WARN(Log::instance()->getLogger(), "Failed to open item from URL - url=" << _url);
     notifyUser(userMessage);

@@ -42,7 +42,7 @@ endif()
 
 set(server_SRCS
     appserver.h appserver.cpp
-    openfileurlhandler.h openfileurlhandler.cpp
+    fileopeninghandler.h fileopeninghandler.cpp
     comm/oldcommserver.h comm/oldcommserver.cpp
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/abstractcommserver.h
