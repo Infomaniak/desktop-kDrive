@@ -84,13 +84,13 @@ class OpenFileUrlHandler : public QObject {
         void onSyncWaitTick();
         void onDeadlineReached();
         void openOrHydrateResolvedItem();
-        bool hydrateResolvedPlaceholder()();
+        bool hydrateResolvedPlaceholder();
         void onHydrationFinished(bool success);
         void openResolvedItem();
         void setPhase(Phase phase, std::chrono::milliseconds tickInterval, std::chrono::milliseconds timeout);
-        void notifyUser(const QString &message) const;
+        void notifyUser(const std::string &message) const;
         void succeed();
-        void handleFailure(const QString &userMessage);
+        void handleFailure(const std::string &userMessage);
 
         AppServer *_appServer{nullptr};
         std::string _url;
