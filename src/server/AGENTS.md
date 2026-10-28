@@ -21,7 +21,7 @@ VFS plugin, manages auto-updates, and dispatches GUI-requested operations via ty
 ## kdrive:// URL scheme
 The `kdrive` scheme is registered at server startup by `Utility::registerLoginRedirection()` (registry keys on Windows, `lsregister` on macOS, `.desktop` + `xdg-mime` on Linux). Incoming URLs reach the server as a command-line argument (Windows/Linux, forwarded to the running instance through the `QtSingleApplication` message channel) or as a `QEvent::FileOpen` caught by `UrlSchemeEventFilter` (macOS). Two hosts are handled:
 - `kdrive://auth-desktop?...` — OAuth login redirect (see `AppServer::onAuthorizationCodeReceived`).
-- `kdrive://open/drive/<drive id>/file/<node id>` — open an item of a sync identified by the server-side drive id and the server-side node id of the item (see `FileOpeningHandler`).
+- `kdrive://open/user/<user id>/drive/<drive id>/file/<node id>` — open an item of a sync identified by the server-side user id, drive id, and node id of the item (see `FileOpeningHandler`).
 
 ## IPC Architecture
 

@@ -66,6 +66,15 @@ bool parseUri(const std::string &urlStr, Poco::URI &uri) {
 bool isOpenFileUri(const Poco::URI &uri) {
     return uri.getScheme() == "kdrive" && uri.getHost() == "open";
 }
+
+//! Parses a strictly positive integer identifier (e.g. a user id or a drive id) into `id`. Returns false if `idStr`
+//! does not exactly represent one.
+bool parsePositiveId(const std::string &idStr, int64_t &id) {
+    // std::from_chars parses the whole string strictly (no whitespace, no leading '+', no trailing garbage) and never
+    // throws.
+    const auto result = std::from_chars(idStr.data(), idStr.data() + idStr.size(), id);
+    return result.ec == std::errc{} && result.ptr == idStr.data() + idStr.size() && id > 0;
+}
 } // namespace
 
 FileOpeningHandler::FileOpeningHandler(AppServer *appServer, std::string url, QObject *parent) :
@@ -103,19 +112,11 @@ bool FileOpeningHandler::parseDeeplinkUrl(const std::string &urlStr, Request &re
     // empty segments produced by the leading, doubled, and trailing slashes.
     std::vector<std::string> segments;
     uri.getPathSegments(segments);
-    if (segments.size() != 4 || segments[0] != "drive" || segments[2] != "file") return false;
+    if (segments.size() != 6 || segments[0] != "user" || segments[2] != "drive" || segments[4] != "file") return false;
 
-    // std::from_chars parses the whole string strictly (no whitespace, no leading '+', no trailing garbage) and never
-    // throws.
-    const std::string &driveIdStr = segments[1];
-    DriveId driveId = 0;
-
-    const auto result = std::from_chars(driveIdStr.data(), driveIdStr.data() + driveIdStr.size(), driveId);
-    if (result.ec != std::errc{} || result.ptr != driveIdStr.data() + driveIdStr.size()) return false;
-    if (driveId <= 0) return false;
-
-    request.driveId = driveId;
-    request.nodeId = segments[3];
+    if (!parsePositiveId(segments[1], request.userId)) return false;
+    if (!parsePositiveId(segments[3], request.driveId)) return false;
+    request.nodeId = segments[5];
 
     return !request.nodeId.empty();
 }
