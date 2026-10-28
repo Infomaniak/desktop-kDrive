@@ -28,7 +28,7 @@
 #endif
 #include "config.h"
 #include "version.h"
-#include "openfileurlhandler.h"
+#include "fileopeninghandler.h"
 #include "requests/serverrequests.h"
 #include "comm/oldcommserver.h"
 #include "comm/commmanager.h"
@@ -88,7 +88,7 @@ class UrlSchemeEventFilter : public QObject {
 
                 const auto urlStr = url.toString().toStdString();
 
-                if (OpenFileUrlHandler::isOpenFileUrl(urlStr)) {
+                if (FileOpeningHandler::isOpenFileUrl(urlStr)) {
                     emit openFileUrlReceived(QString::fromStdString(urlStr));
                     return true;
                 }
@@ -432,7 +432,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void crash() const;
 
 
-        friend class OpenFileUrlHandler;
+        friend class FileOpeningHandler;
         friend class TestAppServer;
 
     private slots:

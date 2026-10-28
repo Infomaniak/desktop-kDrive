@@ -36,7 +36,7 @@ extern "C" {
 #endif
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
-#include "openfileurlhandler/testopenfileurlhandler.h"
+#include "fileopeninghandler/testfileopeninghandler.h"
 #include "comm/guicommchannel/testguicommchannel.h"
 #include "comm/testsocketcomm.h"
 #if defined(KD_WINDOWS)
@@ -59,7 +59,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsWinRegistration);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestOpenFileUrlHandler);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFileOpeningHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketComm);
 #if defined(KD_WINDOWS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
