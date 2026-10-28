@@ -69,10 +69,9 @@ IKShadowedWindow {
         advancedSyncDeleteDialog.closeWithoutRestoringFocus();
     }
 
-    // Shows the page requested from outside the window, such as the Home avatar: the card of a user, the management
-    // page of a drive, or the advanced synchronizations of a drive with one of them focused. The navigation is animated
-    // when Accounts is already displayed.
-    function showAccountsTarget(userDbId, driveDbId, syncDbId) {
+    // Prepares a navigation requested from outside the window. Returns whether to animate it: only when Accounts is
+    // already displayed.
+    function prepareAccountsTarget() {
         const animated = root.visible && root.selectedCategory === SettingsWindow.Category.Accounts;
         // Selecting Accounts again would request the available drives once more; a hidden window requests them when it
         // is shown.
@@ -80,6 +79,13 @@ IKShadowedWindow {
             root.selectAccounts();
         }
         root.closeSyncDeletionDialogs();
+        return animated;
+    }
+
+    // Shows the page requested from outside the window, such as the Home avatar: the card of a user, the management
+    // page of a drive, or the advanced synchronizations of a drive with one of them focused.
+    function showAccountsTarget(userDbId, driveDbId, syncDbId) {
+        const animated = root.prepareAccountsTarget();
         if (userDbId !== 0) {
             accountsPane.showAboveRoot([], animated,
                                        () => (accountsPane.rootItem() as UsersSettingsView).revealUser(userDbId));
@@ -104,6 +110,26 @@ IKShadowedWindow {
             pages.push({"component": advancedSyncsComponent,
                         "properties": {"driveDbId": driveDbId, "revealSyncDbId": syncDbId}});
         }
+        accountsPane.showAboveRoot(pages, animated);
+    }
+
+    // Shows "Manage synchronization" above the pages the user would have crossed to reach it, so Back leads to them.
+    function showSyncManagement(driveDbId, syncDbId, advancedSync) {
+        const animated = root.prepareAccountsTarget();
+
+        // Already on the requested page: replaying the navigation would drop its draft. A queued navigation is older
+        // than this request, which must replace it through showAboveRoot.
+        const currentPage = accountsPane.navigationPending ? null : accountsPane.currentItem;
+        if (currentPage instanceof ExcludedFoldersView && currentPage.syncDbId === syncDbId) {
+            return;
+        }
+
+        const pages = [{"component": driveManagementComponent, "properties": {"driveDbId": driveDbId}}];
+        if (advancedSync) {
+            pages.push({"component": advancedSyncsComponent, "properties": {"driveDbId": driveDbId}});
+        }
+        pages.push({"component": excludedFoldersComponent,
+                    "properties": advancedSync ? {"syncDbId": syncDbId, "advancedSync": true} : {"syncDbId": syncDbId}});
         accountsPane.showAboveRoot(pages, animated);
     }
 
@@ -714,6 +740,10 @@ IKShadowedWindow {
 
         function onAdvancedSyncShowRequested(driveDbId, syncDbId) {
             root.showAccountsTarget(0, driveDbId, syncDbId);
+        }
+
+        function onSyncManagementShowRequested(driveDbId, syncDbId, advancedSync) {
+            root.showSyncManagement(driveDbId, syncDbId, advancedSync);
         }
     }
 
