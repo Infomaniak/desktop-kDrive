@@ -82,7 +82,7 @@ void OpenFileUrlHandler::start() {
 
     if (!parseUrl(_url, _request)) {
         LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
-        handleFailure(tr("This kDrive link is invalid."));
+        handleFailure("This kDrive link is invalid.");
         return;
     }
 
@@ -133,12 +133,12 @@ void OpenFileUrlHandler::processResolvePhase() {
         bool found = false;
         if (!ParmsDb::instance()->selectDriveByDriveId(_request.driveId, drive, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDriveByDriveId - driveId=" << _request.driveId);
-            handleFailure(tr("The element requested from this kDrive link could not be opened."));
+            handleFailure("The element requested from this kDrive link could not be opened.");
             return;
         }
         if (!found) {
             // No sync of this drive is configured on this machine.
-            handleFailure(tr("The drive of the element requested from this kDrive link is not synchronized on this machine."));
+            handleFailure("The drive of the element requested from this kDrive link is not synchronized on this machine.");
             return;
         }
         _driveDbId = drive.dbId();
@@ -146,7 +146,7 @@ void OpenFileUrlHandler::processResolvePhase() {
 
     bool found = false;
     if (!resolveUrl(found)) {
-        handleFailure(tr("The element requested from this kDrive link could not be opened."));
+        handleFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
     if (found) {
@@ -247,18 +247,18 @@ void OpenFileUrlHandler::onRemoteExistenceChecked(const ExitInfo &exitInfo, bool
 
     if (!exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ItemsExistJob - nodeId=" << _request.nodeId << ": " << exitInfo);
-        handleFailure(tr("The element requested from this kDrive link could not be opened."));
+        handleFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
 
     if (!exists) {
-        handleFailure(tr("The element requested from this kDrive link could not be found."));
+        handleFailure("The element requested from this kDrive link could not be found.");
         return;
     }
 
     if (!_waitingNotificationSent) {
         _waitingNotificationSent = true;
-        notifyUser(tr("The requested element is being synchronized. It will open once available."));
+        notifyUser("The requested element is being synchronized. It will open once available.");
     }
 
     setPhase(Phase::WaitForItemToSynchronize, syncWaitTickInterval, syncWaitTimeout);
@@ -269,7 +269,7 @@ void OpenFileUrlHandler::onSyncWaitTick() {
 
     bool found = false;
     if (!resolveUrl(found)) {
-        handleFailure(tr("The element requested from this kDrive link could not be opened."));
+        handleFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
     if (found) {
@@ -280,10 +280,10 @@ void OpenFileUrlHandler::onSyncWaitTick() {
 void OpenFileUrlHandler::onDeadlineReached() {
     switch (_phase) {
         case Phase::WaitForItemToSynchronize:
-            handleFailure(tr("The element requested from this kDrive link could not be synchronized. Please try again later."));
+            handleFailure("The element requested from this kDrive link could not be synchronized. Please try again later.");
             break;
         case Phase::WaitForHydration:
-            handleFailure(tr("The download of the element requested from this kDrive link took too long."));
+            handleFailure("The download of the element requested from this kDrive link took too long.");
             break;
         default:
             break;
@@ -295,7 +295,7 @@ void OpenFileUrlHandler::openOrHydrateResolvedItem() {
     if (!IoHelper::getItemType(_localPath, itemType)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(_localPath, itemType.ioError));
-        handleFailure(tr("The element requested from this kDrive link could not be opened."));
+        handleFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
 
@@ -317,7 +317,7 @@ void OpenFileUrlHandler::openOrHydrateResolvedItem() {
     VfsStatus vfsStatus;
     if (const auto exitInfo = vfs->status(_localPath, vfsStatus); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatSyncPath(_localPath));
-        handleFailure(tr("The element requested from this kDrive link could not be opened."));
+        handleFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
 
@@ -328,7 +328,7 @@ void OpenFileUrlHandler::openOrHydrateResolvedItem() {
     }
 
     // The item is a dehydrated placeholder: download it before opening it.
-    if (!hydrateResolvedPlaceholder()()) {
+    if (!hydrateResolvedPlaceholder()) {
         // The download could not be triggered: open the item anyway, the system hydrates it on access.
         openResolvedItem();
         return;
@@ -336,12 +336,12 @@ void OpenFileUrlHandler::openOrHydrateResolvedItem() {
 
     if (!_waitingNotificationSent) {
         _waitingNotificationSent = true;
-        notifyUser(tr("The requested element is being downloaded. It will open once available."));
+        notifyUser("The requested element is being downloaded. It will open once available.");
     }
     setPhase(Phase::WaitForHydration, std::chrono::milliseconds(0), hydrationTimeout);
 }
 
-bool OpenFileUrlHandler::hydrateResolvedPlaceholder()() {
+bool OpenFileUrlHandler::hydrateResolvedPlaceholder() {
     std::shared_ptr<SyncPal> syncPal;
     {
         const std::scoped_lock lock(_appServer->syncPalMapMutex);
@@ -391,7 +391,7 @@ void OpenFileUrlHandler::onHydrationFinished(bool success) {
     if (_phase != Phase::WaitForHydration) return; // Stale callback.
 
     if (!success) {
-        handleFailure(tr("The download of the element requested from this kDrive link handleFailureed."));
+        handleFailure("The download of the element requested from this kDrive link failed.");
         return;
     }
 
@@ -408,7 +408,7 @@ void OpenFileUrlHandler::openResolvedItem() {
 
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(pathToOpen)))) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in QDesktopServices::openUrl - " << Utility::formatSyncPath(pathToOpen));
-        handleFailure(tr("The element requested from this kDrive link could not be opened."));
+        handleFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
 
@@ -430,8 +430,8 @@ void OpenFileUrlHandler::setPhase(Phase phase, std::chrono::milliseconds tickInt
     }
 }
 
-void OpenFileUrlHandler::notifyUser(const QString &message) const {
-    _appServer->sendShowNotification(QString::fromStdString(Theme::instance()->appName()), message);
+void OpenFileUrlHandler::notifyUser(const std::string &message) const {
+    _appServer->sendShowNotification(QString::fromStdString(Theme::instance()->appName()), QString::fromStdString(message));
 }
 
 void OpenFileUrlHandler::succeed() {
@@ -439,7 +439,7 @@ void OpenFileUrlHandler::succeed() {
     emit finished(true);
 }
 
-void OpenFileUrlHandler::handleFailure(const QString &userMessage) {
+void OpenFileUrlHandler::handleFailure(const std::string &userMessage) {
     setPhase(Phase::Done, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
     LOG_WARN(Log::instance()->getLogger(), "Failed to open item from URL - url=" << _url);
     notifyUser(userMessage);
