@@ -203,9 +203,10 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
 
 FolderWatcher_linux::AddWatchOutcome FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
     AddWatchOutcome result;
+    // Only subscribe to events handled by processEvent(). IN_Q_OVERFLOW, IN_IGNORED and IN_UNMOUNT
+    // are reported automatically by the kernel.
     result.returnValue = inotify_add_watch(static_cast<int>(_fileDescriptor), path.string().c_str(),
-                                           IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY |
-                                                   IN_DELETE_SELF | IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+                                           IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_ONLYDIR | IN_DONT_FOLLOW);
     result.errorNumber = errno;
 
     return result;
