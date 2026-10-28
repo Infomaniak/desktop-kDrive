@@ -50,6 +50,12 @@ void SettingsWindowController::requestOpenAdvancedSync(const DriveDbId driveDbId
     requestOpenTarget({.kind = TargetKind::AdvancedSync, .driveDbId = driveDbId, .syncDbId = syncDbId});
 }
 
+void SettingsWindowController::requestOpenSyncManagement(const DriveDbId driveDbId, const SyncDbId syncDbId,
+                                                         const bool advancedSync) {
+    requestOpenTarget(
+            {.kind = TargetKind::SyncManagement, .driveDbId = driveDbId, .syncDbId = syncDbId, .advancedSync = advancedSync});
+}
+
 void SettingsWindowController::takePendingTarget() {
     const auto target = std::exchange(_pendingTarget, std::nullopt);
     if (!target.has_value()) {
@@ -65,6 +71,9 @@ void SettingsWindowController::takePendingTarget() {
             return;
         case TargetKind::AdvancedSync:
             emit advancedSyncShowRequested(target->driveDbId, target->syncDbId);
+            return;
+        case TargetKind::SyncManagement:
+            emit syncManagementShowRequested(target->driveDbId, target->syncDbId, target->advancedSync);
             return;
     }
 }
