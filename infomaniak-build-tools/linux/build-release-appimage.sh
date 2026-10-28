@@ -168,6 +168,9 @@ function move_dependencies() {
   cd /app
 
   mkdir -p ./usr/plugins
+  # Nothing in the CMake install creates ./usr/lib (all Linux install rules target
+  # usr/bin and usr/share), so create it before moving/copying libraries into it.
+  mkdir -p ./usr/lib
   cp -P -r $QT_BASE_DIR/plugins/* ./usr/plugins/
 
   cp -P -r $QT_BASE_DIR/libexec ./usr
@@ -176,7 +179,10 @@ function move_dependencies() {
 
   mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ 2>/dev/null || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
 
-  cp -P "$conan_dependencies_folder"/* ./usr/lib
+  if ! cp -P "$conan_dependencies_folder"/* ./usr/lib; then
+    echo "ERROR: Failed to copy Conan shared libraries from '$conan_dependencies_folder' into the AppDir." >&2
+    exit 1
+  fi
 
   # Copy nss if it exists (optional)
   if [ -d "/usr/lib/$arch-linux-gnu/nss" ]; then
