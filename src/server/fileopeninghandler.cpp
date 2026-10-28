@@ -69,7 +69,7 @@ bool isOpenFileUri(const Poco::URI &uri) {
 
 //! Parses a strictly positive integer identifier (e.g. a user id or a drive id) into `id`. Returns false if `idStr`
 //! does not exactly represent one.
-bool parsePositiveId(const std::string &idStr, int64_t &id) {
+bool parsePositiveId(std::string_view idStr, int64_t &id) {
     // std::from_chars parses the whole string strictly (no whitespace, no leading '+', no trailing garbage) and never
     // throws.
     const auto result = std::from_chars(idStr.data(), idStr.data() + idStr.size(), id);
@@ -96,7 +96,7 @@ void FileOpeningHandler::start() {
     }
 
     setPhase(Phase::Resolve, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
-    processResolvePhase();
+    resolveDeeplink();
 }
 
 bool FileOpeningHandler::isFileOpeningDeeplink(const std::string &urlStr) {
@@ -127,43 +127,15 @@ bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
     return executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
 }
 
-void FileOpeningHandler::processResolvePhase() {
+void FileOpeningHandler::resolveDeeplink() {
     constexpr auto failureMessage = "The element requested from this kDrive deeplink could not be opened.";
     // The drive lookup is performed once: the drive configuration cannot appear while the request is being processed.
-    if (_driveDbIds.empty()) {
-        std::vector<Drive> drives;
-        if (!ParmsDb::instance()->selectAllDrives(drives)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives.");
-            handleFileOpeningFailure(failureMessage);
+    if (_driveDbIds.empty() && !ParmsDb::instance()->driveDbIds(_request.userId, _request.driveId, _driveDbIds)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in ParmsDb::driveDbIds: userId=" << _request.userId << ", driveId=" << _request.driveId);
+        handleFileOpeningFailure(failureMessage);
 
-            return;
-        }
-
-        User user;
-        if (bool userFound = false; !ParmsDb::instance()->selectUserByUserId(_request.userId, user, userFound) || !userFound) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId: userId=" << _request.userId);
-            handleFileOpeningFailure(failureMessage);
-
-            return;
-        }
-
-        std::vector<Account> accounts;
-        if (!ParmsDb::instance()->selectAllAccounts(accounts)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllAccounts.");
-            handleFileOpeningFailure(failureMessage);
-
-            return;
-        }
-
-        std::unordered_set<AccountDbId> userAccountDbIds;
-        for (const auto &account: accounts) {
-            if (account.userDbId() == user.dbId()) userAccountDbIds.insert(account.dbId());
-        }
-
-        for (const auto &drive: drives) {
-            if (drive.driveId() == _request.driveId && userAccountDbIds.contains(drive.accountDbId()))
-                _driveDbIds.insert(drive.dbId());
-        }
+        return;
     }
 
     bool itemFound = false;
@@ -186,7 +158,7 @@ void FileOpeningHandler::processResolvePhase() {
 void FileOpeningHandler::sortSyncsByDbId(std::vector<Sync> &syncs) const {
     const std::scoped_lock lock(_appServer->syncPalMapMutex);
 
-    std::stable_sort(syncs.begin(), syncs.end(), [this](const Sync &sync1, const Sync &sync2) {
+    std::ranges::stable_sort(syncs, [this](const Sync &sync1, const Sync &sync2) {
         const bool running1 = _appServer->syncPalMap.contains(sync1.dbId());
         const bool running2 = _appServer->syncPalMap.contains(sync2.dbId());
 
