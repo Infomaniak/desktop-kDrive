@@ -15,23 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Effects
 import kDrive.UI
 
+// Usage card of the Storage page: a title, its usage, a gauge of colored segments over the free space, and a legend.
 Rectangle {
     id: root
 
-    required property var controller
-    required property bool loading
+    required property string title
+    property string usageText
+    property bool loading: false
+    // Animates segment widths; values restored from a cache or a first presentation appear at once.
+    property bool animated: false
+    property real availableRatio: 0
+    property list<StorageSegment> segments
+    property list<StorageLegendEntry> entries
+    // Optional trailing item of the header, after the usage text.
+    property Component headerAccessory: null
+
+    function displayedRatio(segment) {
+        // A segment that occupies nothing takes no width: the minimum only keeps a tiny occupation visible.
+        return segment.measured && segment.ratio > 0 ? Math.max(segment.ratio, IKStorage.minimumSegmentRatio) : 0;
+    }
 
     clip: true
     color: IKColors.storageSurface
-    height: IKStorage.cardHeight
     radius: IKRadius.r12
+    implicitHeight: header.height + legend.implicitHeight
 
     Item {
         id: header
@@ -44,48 +57,63 @@ Rectangle {
         Text {
             anchors.left: parent.left
             anchors.leftMargin: IKStorage.cardHorizontalPadding
-            anchors.right: root.loading ? loadingIndicator.left : usageText.left
+            anchors.right: headerTrailing.left
             anchors.rightMargin: IKSpacing.s16
+            y: IKSpacing.s16
             color: IKColors.textPrimary
             elide: Text.ElideRight
             font.pixelSize: IKFonts.bodySize
             font.weight: IKFonts.medium
-            text: root.controller.volumeName
+            text: root.title
+            textFormat: Text.PlainText
             visible: !root.loading
-            y: IKSpacing.s16
         }
-        Text {
-            id: usageText
+
+        Row {
+            id: headerTrailing
 
             anchors.right: parent.right
             anchors.rightMargin: IKStorage.cardHorizontalPadding
-            color: IKColors.textSecondary
-            font.pixelSize: IKFonts.bodySize
-            font.weight: IKFonts.medium
-            text: root.controller.usageText
-            visible: !root.loading
             y: IKSpacing.s16
-        }
-        IKLoadingSpinner {
-            id: loadingIndicator
+            height: IKFonts.bodySize + IKSpacing.s4
+            spacing: IKStorage.headerAccessorySpacing
 
-            Accessible.name: qsTrId("storageLoadingHint")
-            anchors.right: parent.right
-            anchors.rightMargin: IKStorage.cardHorizontalPadding
-            height: IKStorage.loadingSpinnerSize
-            visible: root.loading
-            width: IKStorage.loadingSpinnerSize
-            y: IKSpacing.s16
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                color: IKColors.textSecondary
+                font.pixelSize: IKFonts.bodySize
+                font.weight: IKFonts.medium
+                text: root.usageText
+                visible: !root.loading && root.usageText.length > 0
+            }
+
+            IKLoadingSpinner {
+                Accessible.name: qsTrId("storageLoadingHint")
+                anchors.verticalCenter: parent.verticalCenter
+                height: IKStorage.loadingSpinnerSize
+                visible: root.loading
+                width: IKStorage.loadingSpinnerSize
+            }
+
+            // Hidden without an item so the row adds no spacing for an absent accessory.
+            Loader {
+                anchors.verticalCenter: parent.verticalCenter
+                active: !!root.headerAccessory && !root.loading
+                visible: item !== null
+                sourceComponent: root.headerAccessory
+            }
         }
+
         Rectangle {
             id: storageBar
 
-            readonly property real displayedRatioTotal: rawSyncRatio + rawOtherRatio + rawAvailableRatio
-            readonly property real otherWidth: width * rawOtherRatio / displayedRatioTotal
-            readonly property real rawAvailableRatio: root.controller.availableRatio
-            readonly property real rawOtherRatio: Math.max(root.controller.otherRatio, IKStorage.minimumSegmentRatio)
-            readonly property real rawSyncRatio: Math.max(root.controller.syncRatio, IKStorage.minimumSegmentRatio)
-            readonly property real syncWidth: width * rawSyncRatio / displayedRatioTotal
+            readonly property real displayedRatioTotal: {
+                let total = root.availableRatio;
+                for (const segment of root.segments) {
+                    total += root.displayedRatio(segment);
+                }
+                return total > 0 ? total : 1;
+            }
 
             anchors.left: parent.left
             anchors.leftMargin: IKStorage.cardHorizontalPadding
@@ -103,33 +131,48 @@ Rectangle {
                 maskSource: storageBarMask
             }
 
-            Rectangle {
+            Row {
                 anchors.left: parent.left
-                color: IKColors.storageBarSync
-                height: parent.height
-                width: root.loading ? 0 : storageBar.syncWidth
-            }
-            Rectangle {
-                color: IKColors.storageBarOther
-                height: parent.height
-                width: root.loading ? 0 : storageBar.otherWidth
-                x: storageBar.syncWidth
-            }
-            Rectangle {
-                color: IKColors.storageBarSeparator
-                height: parent.height
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
                 visible: !root.loading
-                width: 1
-                x: Math.max(0, storageBar.syncWidth - width)
-            }
-            Rectangle {
-                color: IKColors.storageBarSeparator
-                height: parent.height
-                visible: !root.loading && root.controller.availableRatio > 0
-                width: 1
-                x: Math.max(0, storageBar.syncWidth + storageBar.otherWidth - width)
+
+                Repeater {
+                    model: root.segments
+
+                    delegate: Rectangle {
+                        id: segmentItem
+
+                        required property StorageSegment modelData
+                        required property int index
+
+                        height: storageBar.height
+                        width: storageBar.width * root.displayedRatio(modelData) / storageBar.displayedRatioTotal
+                        color: modelData.color
+
+                        Behavior on width {
+                            enabled: root.animated
+
+                            NumberAnimation {
+                                duration: IKStorage.segmentAnimationDuration
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+
+                        // Separates this segment from the next one, or from the free space when there is some.
+                        Rectangle {
+                            anchors.right: parent.right
+                            color: IKColors.storageBarSeparator
+                            height: parent.height
+                            width: 1
+                            visible: segmentItem.width >= 2
+                                     && (segmentItem.index < root.segments.length - 1 || root.availableRatio > 0)
+                        }
+                    }
+                }
             }
         }
+
         Rectangle {
             id: storageBarMask
 
@@ -141,44 +184,31 @@ Rectangle {
             width: storageBar.width
         }
     }
+
     Column {
+        id: legend
+
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: header.bottom
 
-        LegendRow {
-            dotColor: IKColors.storageLegendSync
-            height: IKStorage.rowHeight
-            label: qsTrId("storageComputerUsedByKDrive")
-            loading: root.loading
-            value: root.controller.syncSizeText
-            width: parent.width
-        }
-        LegendRow {
-            dotColor: IKColors.storageLegendOther
-            height: IKStorage.rowHeight
-            label: qsTrId("storageComputerUsedByOther")
-            loading: root.loading
-            value: root.controller.otherSizeText
-            width: parent.width
-        }
-        LegendRow {
-            dotColor: IKColors.storageFree
-            height: IKStorage.rowHeight
-            label: qsTrId("storageComputerFreeSpace")
-            loading: root.loading
-            value: root.controller.availableSizeText
-            width: parent.width
+        Repeater {
+            model: root.entries
+
+            delegate: LegendRow {
+                width: legend.width
+                height: IKStorage.rowHeight
+                visible: modelData.shown
+            }
         }
     }
 
     component LegendRow: Item {
         id: legendRow
 
-        required property color dotColor
-        required property string label
-        required property bool loading
-        required property string value
+        required property StorageLegendEntry modelData
+
+        readonly property bool hasChip: modelData.chipTitle.length > 0
 
         Rectangle {
             anchors.bottom: parent.bottom
@@ -187,44 +217,70 @@ Rectangle {
             color: IKColors.storageDivider
             height: 1
         }
+
         Rectangle {
+            id: dot
+
             anchors.left: parent.left
             anchors.leftMargin: IKStorage.cardHorizontalPadding
             anchors.verticalCenter: parent.verticalCenter
-            color: legendRow.dotColor
+            color: legendRow.modelData.dotColor
             height: IKStorage.legendDotSize
             radius: width / 2
             width: IKStorage.legendDotSize
         }
-        Text {
-            anchors.left: parent.left
-            anchors.leftMargin: IKStorage.cardHorizontalPadding + IKStorage.legendDotSize + IKSpacing.s8
-            anchors.right: valueLoader.left
+
+        Row {
+            anchors.left: dot.right
+            anchors.leftMargin: IKStorage.legendLabelSpacing
+            anchors.right: valueItem.left
             anchors.rightMargin: IKSpacing.s16
             anchors.verticalCenter: parent.verticalCenter
-            color: IKColors.textPrimary
-            elide: Text.ElideRight
-            font.pixelSize: IKFonts.bodySize
-            font.weight: IKFonts.medium
-            text: legendRow.label
+            spacing: IKStorage.legendLabelSpacing
+
+            Text {
+                id: labelText
+
+                anchors.verticalCenter: parent.verticalCenter
+                width: Math.min(implicitWidth,
+                                parent.width - (legendRow.hasChip ? chip.width + parent.spacing : 0))
+                color: IKColors.textPrimary
+                elide: Text.ElideRight
+                font.pixelSize: IKFonts.bodySize
+                font.weight: IKFonts.medium
+                text: legendRow.modelData.label
+            }
+
+            StorageSyncChip {
+                id: chip
+
+                anchors.verticalCenter: parent.verticalCenter
+                visible: legendRow.hasChip
+                width: Math.min(implicitWidth, Math.max(0, parent.width - labelText.implicitWidth - parent.spacing))
+                title: legendRow.modelData.chipTitle
+                driveColor: legendRow.modelData.chipColor
+                advancedSync: legendRow.modelData.chipAdvancedSync
+            }
         }
+
         Item {
-            id: valueLoader
+            id: valueItem
 
             anchors.right: parent.right
             anchors.rightMargin: IKStorage.cardHorizontalPadding
             anchors.verticalCenter: parent.verticalCenter
             height: IKFonts.bodySize + IKSpacing.s4
-            width: legendRow.loading ? IKStorage.loadingPlaceholderWidth : valueText.implicitWidth
+            width: legendRow.modelData.valueLoading ? IKStorage.loadingPlaceholderWidth : valueText.implicitWidth
 
             Rectangle {
                 anchors.centerIn: parent
                 color: IKColors.surfaceTertiary
                 height: IKStorage.loadingPlaceholderHeight
                 radius: IKRadius.r4
-                visible: legendRow.loading
+                visible: legendRow.modelData.valueLoading
                 width: IKStorage.loadingPlaceholderWidth
             }
+
             Text {
                 id: valueText
 
@@ -232,8 +288,8 @@ Rectangle {
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 font.weight: IKFonts.medium
-                text: legendRow.value
-                visible: !legendRow.loading
+                text: legendRow.modelData.value
+                visible: !legendRow.modelData.valueLoading
             }
         }
     }

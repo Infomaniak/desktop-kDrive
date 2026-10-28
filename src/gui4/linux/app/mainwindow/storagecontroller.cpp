@@ -18,38 +18,64 @@
 
 #include "storagecontroller.h"
 
-#include <QtConcurrentRun>
+#include "app/appconstants.h"
+#include "app/cache/appcache.h"
 
+#include <QDesktopServices>
 #include <QLocale>
+#include <QLoggingCategory>
+#include <QPromise>
+#include <QUrl>
+#include <QtConcurrentRun>
 
 #include <algorithm>
 #include <limits>
-Q_LOGGING_CATEGORY(lcStorageController, "gui.v4.storagecontroller", QtInfoMsg)
+#include <utility>
+
+using namespace Qt::StringLiterals;
 
 namespace KDC {
 
 namespace {
-constexpr int32_t minimumRetryIndicatorDurationMs = 300;
-}
 
-StorageController::StorageController(MainSelectionStore &selectionStore, QObject *const parent) :
+Q_LOGGING_CATEGORY(lcStorageController, "gui.v4.storagecontroller", QtInfoMsg)
+
+constexpr int32_t minimumRetryIndicatorDurationMs = 300;
+
+} // namespace
+
+StorageController::StorageController(AppCache &appCache, MainSelectionStore &selectionStore, QObject *const parent) :
     QObject(parent),
+    _appCache(appCache),
     _selectionStore(selectionStore) {
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this,
                    &StorageController::refreshSelectedContext);
-    (void) connect(&_selectionStore, &MainSelectionStore::currentContextChanged, this,
-                   &StorageController::refreshSelectedContext);
-    (void) connect(&_selectionStore, &MainSelectionStore::currentSyncStatusChanged, this,
-                   &StorageController::handleSyncStatusChanged);
-    (void) connect(&_scanWatcher, &QFutureWatcher<StorageScanResult>::finished, this, &StorageController::handleScanFinished);
+    (void) connect(&_selectionStore, &MainSelectionStore::currentContextChanged, this, [this] {
+        refreshSelectedContext();
+        emit quotaChanged();
+        refreshStorageWarning();
+    });
+    (void) connect(&_appCache, &AppCache::syncStatusChanged, this, &StorageController::handleSyncStatusChanged);
+    (void) connect(&_appCache, &AppCache::syncsChanged, this, &StorageController::handleSyncsChanged);
+    (void) connect(&_scanWatcher, &QFutureWatcher<StorageScanUpdate>::resultReadyAt, this,
+                   &StorageController::processScanUpdates);
+    (void) connect(&_scanWatcher, &QFutureWatcher<StorageScanUpdate>::finished, this, &StorageController::handleScanFinished);
+    (void) connect(&_volumeWatcher, &QFutureWatcher<StorageVolumeResult>::finished, this,
+                   &StorageController::handleVolumePollFinished);
+
     _minimumRetryTimer.setInterval(minimumRetryIndicatorDurationMs);
     _minimumRetryTimer.setSingleShot(true);
     (void) connect(&_minimumRetryTimer, &QTimer::timeout, this, [this] {
         if (_retryCompletionPending) {
             _retryCompletionPending = false;
+            processScanUpdates();
             handleScanFinished();
         }
     });
+
+    _volumePollTimer.setInterval(AppConstants::Storage::freeSpacePollIntervalMs);
+    (void) connect(&_volumePollTimer, &QTimer::timeout, this, &StorageController::pollVolume);
+
     refreshSelectedContext();
 }
 
@@ -58,42 +84,125 @@ StorageController::~StorageController() {
 }
 
 QString StorageController::volumeName() const {
-    if (!_currentSnapshot) {
-        return {};
-    }
-
-    return _currentSnapshot->usesDefaultRootName ? qtTrId("storageThisComputer") : _currentSnapshot->volumeName;
+    return _volume ? _volume->volumeName : QString{};
 }
 
-QString StorageController::usageText() const {
-    if (!_currentSnapshot) {
-        return {};
-    }
-    return qtTrId("storageUsageLabel").arg(formatBytes(usedBytes()), formatBytes(_currentSnapshot->totalBytes));
+bool StorageController::usesDefaultVolumeName() const {
+    return _volume && _volume->usesDefaultRootName;
 }
 
-QString StorageController::syncSizeText() const {
-    return _currentSnapshot ? formatBytes(_currentSnapshot->syncBytes) : QString{};
+QString StorageController::usedSizeText() const {
+    return _volume ? formatBytes(_volume->usedBytes()) : QString{};
 }
 
-QString StorageController::otherSizeText() const {
-    return _currentSnapshot ? formatBytes(otherBytes()) : QString{};
+QString StorageController::totalSizeText() const {
+    return _volume ? formatBytes(_volume->totalBytes) : QString{};
 }
 
 QString StorageController::availableSizeText() const {
-    return _currentSnapshot ? formatBytes(_currentSnapshot->availableBytes) : QString{};
+    return _volume ? formatBytes(_volume->availableBytes) : QString{};
+}
+
+QString StorageController::syncSizeText() const {
+    return _syncBytes ? formatBytes(*_syncBytes) : QString{};
+}
+
+QString StorageController::otherSyncsSizeText() const {
+    return _otherSyncsBytes ? formatBytes(*_otherSyncsBytes) : QString{};
+}
+
+QString StorageController::otherSizeText() const {
+    return _volume ? formatBytes(otherBytes()) : QString{};
 }
 
 double StorageController::syncRatio() const {
-    return _currentSnapshot ? ratio(_currentSnapshot->syncBytes) : 0.0;
+    return _syncBytes ? ratio(*_syncBytes) : 0.0;
+}
+
+double StorageController::otherSyncsRatio() const {
+    return _otherSyncsBytes ? ratio(*_otherSyncsBytes) : 0.0;
 }
 
 double StorageController::otherRatio() const {
-    return _currentSnapshot ? ratio(otherBytes()) : 0.0;
+    return ratio(otherBytes());
 }
 
 double StorageController::availableRatio() const {
-    return _currentSnapshot ? ratio(_currentSnapshot->availableBytes) : 0.0;
+    return _volume ? ratio(_volume->availableBytes) : 0.0;
+}
+
+bool StorageController::diskAlmostFull() const {
+    return _freeBytes && *_freeBytes < AppConstants::Storage::diskAlmostFullThresholdBytes;
+}
+
+bool StorageController::quotaAvailable() const {
+    const auto drive = currentDrive();
+    return drive && drive->size() > 0;
+}
+
+bool StorageController::quotaFull() const {
+    const auto drive = currentDrive();
+    return drive && drive->size() > 0 && drive->usedSize() >= drive->size();
+}
+
+QString StorageController::quotaUsedSizeText() const {
+    const auto drive = currentDrive();
+    if (!drive || drive->size() <= 0) {
+        return {};
+    }
+
+    return formatBytes(static_cast<uint64_t>(std::max<int64_t>(drive->usedSize(), 0)));
+}
+
+QString StorageController::quotaTotalSizeText() const {
+    const auto drive = currentDrive();
+    if (!drive || drive->size() <= 0) {
+        return {};
+    }
+
+    return formatBytes(static_cast<uint64_t>(drive->size()));
+}
+
+QString StorageController::quotaFreeSizeText() const {
+    const auto drive = currentDrive();
+    if (!drive || drive->size() <= 0) {
+        return {};
+    }
+
+    return formatBytes(static_cast<uint64_t>(std::max<int64_t>(drive->size() - drive->usedSize(), 0)));
+}
+
+double StorageController::quotaUsedRatio() const {
+    const auto drive = currentDrive();
+    if (!drive || drive->size() <= 0) {
+        return 0.0;
+    }
+
+    return std::clamp(static_cast<double>(drive->usedSize()) / static_cast<double>(drive->size()), 0.0, 1.0);
+}
+
+bool StorageController::canUpgradeSubscription() const {
+    const auto drive = currentDrive();
+    return drive && drive->admin();
+}
+
+QString StorageController::driveName() const {
+    const auto drive = currentDrive();
+    return drive ? QString::fromStdString(drive->name()) : QString{};
+}
+
+QString StorageController::subscriptionName() const {
+    const auto drive = currentDrive();
+    if (!drive || drive->packInfo().displayName().empty()) {
+        return {};
+    }
+
+    const QString displayName = QString::fromStdString(drive->packInfo().displayName());
+    return AppConstants::Drive::isStandaloneDrivePack(drive->packInfo().name()) ? u"kDrive %1"_s.arg(displayName) : displayName;
+}
+
+bool StorageController::storageWarning() const {
+    return _storageWarning;
 }
 
 void StorageController::setViewActive(const bool active) {
@@ -108,8 +217,10 @@ void StorageController::setViewActive(const bool active) {
     }
 
     refreshSelectedContext();
-    if (const auto status = currentStatus(); status && isActiveStatus(*status)) {
-        (void) _dirtySyncs.insert(_selectedSyncDbId);
+    for (const auto &sync: _appCache.syncs()) {
+        if (isSyncActive(sync.dbId())) {
+            (void) _dirtySyncs.insert(sync.dbId());
+        }
     }
     startScan();
 }
@@ -118,11 +229,48 @@ void StorageController::retry() {
     if (!_viewActive || _selectedSyncDbId == 0 || _retrying || _scanWatcher.isRunning()) {
         return;
     }
+
     startScan(ScanTrigger::Retry);
+}
+
+void StorageController::openDiskManagement() const {
+    const SyncPath root = _volume ? _volume->volumeRoot : _selectedSyncRoot;
+    if (root.empty()) {
+        return;
+    }
+
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(root)))) {
+        qCWarning(lcStorageController) << "Unable to open the Storage volume root | path:" << Path2QStr(root);
+    }
+}
+
+void StorageController::openSubscriptionUpgrade() const {
+    const auto drive = currentDrive();
+    if (!drive || !drive->admin()) {
+        return;
+    }
+
+    if (!QDesktopServices::openUrl(AppConstants::Drive::renewalUri(*drive))) {
+        qCWarning(lcStorageController) << "Unable to open the subscription upgrade page | driveId:" << drive->driveId();
+    }
+}
+
+void StorageController::manageSynchronization() {
+    const auto context = _selectionStore.currentSyncContext();
+    if (!context) {
+        return;
+    }
+
+    const DriveDbId driveDbId = context->drive.dbId();
+    const SyncDbId syncDbId = context->syncInfo.dbId();
+    const auto mainSync = _appCache.mainSync(driveDbId);
+    const bool advancedSync = !mainSync || mainSync->dbId() != syncDbId;
+    emit manageSynchronizationRequested(driveDbId, syncDbId, advancedSync);
 }
 
 void StorageController::retranslate() {
     emit storageChanged();
+    emit quotaChanged();
 }
 
 void StorageController::refreshSelectedContext() {
@@ -135,61 +283,99 @@ void StorageController::refreshSelectedContext() {
 
     cancelScan();
     if (_selectedSyncDbId != 0 && nextSyncDbId == _selectedSyncDbId && nextSyncRoot != _selectedSyncRoot) {
-        (void) _cache.erase(_selectedSyncDbId);
+        (void) _measures.erase(_selectedSyncDbId);
     }
 
     _selectedSyncDbId = nextSyncDbId;
     _selectedSyncRoot = nextSyncRoot;
-    _observedStatus = currentStatus();
+    _freeBytes.reset();
     presentSelectedCache();
+
+    if (_selectedSyncDbId == 0) {
+        _volumePollTimer.stop();
+    } else {
+        _volumePollTimer.start();
+        pollVolume();
+    }
+
     if (_viewActive && _selectedSyncDbId != 0) {
-        if (_observedStatus && isActiveStatus(*_observedStatus)) {
+        if (isSyncActive(_selectedSyncDbId)) {
             (void) _dirtySyncs.insert(_selectedSyncDbId);
         }
         startScan();
     }
 }
 
-void StorageController::handleSyncStatusChanged() {
-    const auto nextStatus = currentStatus();
-    if (!nextStatus) {
-        _observedStatus.reset();
+/**
+ * Marks a synchronization as needing a new measure while it is active, and refreshes the page once it leaves an active
+ * or transitional state.
+ */
+void StorageController::handleSyncStatusChanged(const SyncDbId syncDbId) {
+    const auto runtimeInfo = _appCache.syncRuntimeInfo(syncDbId);
+    if (!runtimeInfo) {
+        (void) _observedStatuses.erase(syncDbId);
         return;
     }
 
-    const bool nextStatusIsActive = isActiveStatus(*nextStatus);
+    const bool nextStatusIsActive = isActiveStatus(runtimeInfo->status);
     if (nextStatusIsActive) {
-        (void) _dirtySyncs.insert(_selectedSyncDbId);
+        (void) _dirtySyncs.insert(syncDbId);
     }
 
-    const bool leftActiveStatus = _observedStatus && isActiveStatus(*_observedStatus) && !nextStatusIsActive;
-    _observedStatus = nextStatus;
-    if (leftActiveStatus && _viewActive && _dirtySyncs.erase(_selectedSyncDbId) > 0) {
-        qCInfo(lcStorageController) << "Refreshing Storage after synchronization left active state | syncDbId:"
-                                    << _selectedSyncDbId << "| status:" << QString::fromStdString(toString(*nextStatus));
+    const auto previous = _observedStatuses.find(syncDbId);
+    const bool leftActiveStatus = previous != _observedStatuses.end() && isActiveStatus(previous->second) && !nextStatusIsActive;
+    _observedStatuses[syncDbId] = runtimeInfo->status;
+
+    if (syncDbId == _selectedSyncDbId) {
+        pollVolume();
+    }
+
+    if (leftActiveStatus && _viewActive && _dirtySyncs.contains(syncDbId)) {
+        qCInfo(lcStorageController) << "Refreshing Storage after synchronization left active state | syncDbId:" << syncDbId
+                                    << "| status:" << QString::fromStdString(toString(runtimeInfo->status));
+        startScan();
+    }
+}
+
+/** Drops the measures of removed synchronizations and measures the new ones while the page is visible. */
+void StorageController::handleSyncsChanged() {
+    std::unordered_set<SyncDbId> existingSyncDbIds;
+    for (const auto &sync: _appCache.syncs()) {
+        (void) existingSyncDbIds.insert(sync.dbId());
+    }
+
+    std::erase_if(_measures, [&existingSyncDbIds](const auto &entry) { return !existingSyncDbIds.contains(entry.first); });
+    std::erase_if(_dirtySyncs, [&existingSyncDbIds](const SyncDbId syncDbId) { return !existingSyncDbIds.contains(syncDbId); });
+    std::erase_if(_observedStatuses,
+                  [&existingSyncDbIds](const auto &entry) { return !existingSyncDbIds.contains(entry.first); });
+
+    if (!_viewActive || _scanWatcher.isRunning() || _selectedSyncDbId == 0) {
+        return;
+    }
+
+    const auto targets = otherSyncTargets();
+    if (std::ranges::any_of(targets, [this](const ScanTarget &target) { return !isKnown(target.syncDbId, target.syncRoot); })) {
         startScan();
     }
 }
 
 void StorageController::presentSelectedCache() {
-    _currentSnapshot.reset();
+    _volume.reset();
+    _syncBytes.reset();
+    _otherSyncsBytes.reset();
 
     if (_selectedSyncDbId != 0) {
-        if (const auto cached = _cache.find(_selectedSyncDbId);
-            cached != _cache.end() && cached->second.syncRoot == _selectedSyncRoot) {
-            presentSnapshot(cached->second.snapshot);
-            return;
+        if (const auto cached = _measures.find(_selectedSyncDbId);
+            cached != _measures.end() && cached->second.syncRoot == _selectedSyncRoot && cached->second.volume) {
+            _volume = cached->second.volume;
+            _syncBytes = cached->second.bytes;
+            _otherSyncsBytes = cachedOtherSyncsBytes(_volume->device);
+            _freeBytes = _volume->availableBytes;
         }
     }
 
-    setState(State::Loading);
-    emit storageChanged();
-}
-
-void StorageController::presentSnapshot(const StorageSnapshot &snapshot) {
-    _currentSnapshot = snapshot;
-    setState(State::Ready);
-    emit storageChanged();
+    setState(_volume ? State::Ready : State::Loading);
+    publish(false);
 }
 
 void StorageController::startScan(const ScanTrigger trigger) {
@@ -203,17 +389,77 @@ void StorageController::startScan(const ScanTrigger trigger) {
         _minimumRetryTimer.start();
     }
 
-    const SyncDbId requestedSyncDbId = _selectedSyncDbId;
-    const SyncPath requestedSyncRoot = _selectedSyncRoot;
-    _scanCancellation = std::make_shared<std::atomic_bool>(false);
-    const auto cancellation = _scanCancellation;
-    qCInfo(lcStorageController) << "Starting local Storage scan | syncDbId:" << requestedSyncDbId
-                                << "| root:" << Path2QStr(requestedSyncRoot)
-                                << "| trigger:" << (trigger == ScanTrigger::Retry ? "retry" : "automatic");
-    (void) _scanWatcher.setProperty("syncDbId", QVariant::fromValue<qint64>(requestedSyncDbId));
-    (void) _scanWatcher.setProperty("syncRoot", Path2QStr(requestedSyncRoot));
-    _scanWatcher.setFuture(QtConcurrent::run([requestedSyncRoot, cancellation] {
-        return StorageScanner::scan(requestedSyncRoot, [cancellation] { return cancellation->load(std::memory_order_relaxed); });
+    const ScanTarget selected{
+            .syncDbId = _selectedSyncDbId,
+            .syncRoot = _selectedSyncRoot,
+            .needsMeasure = trigger == ScanTrigger::Retry || needsMeasure(_selectedSyncDbId, _selectedSyncRoot)};
+    const auto others = otherSyncTargets();
+    const auto measuredOtherCount = std::ranges::count_if(others, [](const ScanTarget &target) { return target.needsMeasure; });
+
+    _pendingOtherSyncsBytes = 0;
+    _processedScanResults = 0;
+    qCInfo(lcStorageController) << "Starting local Storage scan | syncDbId:" << selected.syncDbId
+                                << "| root:" << Path2QStr(selected.syncRoot)
+                                << "| trigger:" << (trigger == ScanTrigger::Retry ? "retry" : "automatic")
+                                << "| measure selected:" << selected.needsMeasure
+                                << "| other syncs to measure:" << measuredOtherCount << "/" << others.size();
+
+    _scanWatcher.setFuture(QtConcurrent::run([selected, others](QPromise<StorageScanUpdate> &promise) {
+        using Kind = StorageScanUpdate::Kind;
+        const auto isCanceled = [&promise] { return promise.isCanceled(); };
+
+        const auto volumeResult = StorageScanner::readVolume(selected.syncRoot);
+        if (!volumeResult.volume) {
+            promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = volumeResult.error});
+            return;
+        }
+
+        const StorageVolume volume = *volumeResult.volume;
+        promise.addResult(StorageScanUpdate{.kind = Kind::Volume, .volume = volume});
+
+        if (selected.needsMeasure) {
+            const auto measure = StorageScanner::measure(selected.syncRoot, volume.device, isCanceled);
+            if (measure.error == StorageScanError::Canceled) {
+                return;
+            }
+            if (!measure.bytes) {
+                promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = measure.error});
+                return;
+            }
+
+            promise.addResult(StorageScanUpdate{.kind = Kind::SelectedSyncMeasured,
+                                                .syncDbId = selected.syncDbId,
+                                                .syncRoot = selected.syncRoot,
+                                                .bytes = measure.bytes,
+                                                .onVolume = true});
+        }
+
+        for (const auto &other: others) {
+            if (isCanceled()) {
+                return;
+            }
+
+            StorageScanUpdate update{.kind = Kind::OtherSyncMeasured, .syncDbId = other.syncDbId, .syncRoot = other.syncRoot};
+            update.device = StorageScanner::deviceOf(other.syncRoot);
+            update.onVolume = update.device && *update.device == volume.device;
+            if (update.onVolume && other.needsMeasure) {
+                const auto measure = StorageScanner::measure(other.syncRoot, volume.device, isCanceled);
+                if (measure.error == StorageScanError::Canceled) {
+                    return;
+                }
+
+                // An unreadable root has already been logged by the scanner: it stays unknown and out of the total.
+                update.bytes = measure.bytes;
+                update.error = measure.error;
+                if (!measure.bytes) {
+                    update.device.reset();
+                    update.onVolume = false;
+                }
+            }
+            promise.addResult(std::move(update));
+        }
+
+        promise.addResult(StorageScanUpdate{.kind = Kind::OtherSyncsCompleted});
     }));
 }
 
@@ -221,22 +467,17 @@ void StorageController::cancelScan() {
     _minimumRetryTimer.stop();
     _retryCompletionPending = false;
     setRetrying(false);
-    if (_scanCancellation) {
-        _scanCancellation->store(true, std::memory_order_relaxed);
-        _scanCancellation.reset();
+    if (_scanWatcher.isRunning()) {
+        _scanWatcher.cancel();
     }
 }
 
 /**
- * Applies the current scan result, deferring a fast retry result until the retry indicator has been visible for its
- * minimum duration.
+ * Applies the scan steps published so far, in order. While a retry indicator has not been visible for its minimum
+ * duration, the steps are held back so a fast retry does not flicker.
  */
-void StorageController::handleScanFinished() {
-    const auto result = _scanWatcher.result();
-    const auto requestedSyncDbId = static_cast<SyncDbId>(_scanWatcher.property("syncDbId").toLongLong());
-    const auto requestedSyncRoot = QStr2Path(_scanWatcher.property("syncRoot").toString());
-    if (!_viewActive || requestedSyncDbId != _selectedSyncDbId || requestedSyncRoot != _selectedSyncRoot ||
-        result.error == StorageScanError::Canceled) {
+void StorageController::processScanUpdates() {
+    if (_scanWatcher.isCanceled()) {
         return;
     }
     if (_retrying && _minimumRetryTimer.isActive()) {
@@ -244,27 +485,160 @@ void StorageController::handleScanFinished() {
         return;
     }
 
-    _retryCompletionPending = false;
-    setRetrying(false);
+    const auto future = _scanWatcher.future();
+    while (_processedScanResults < future.resultCount()) {
+        const auto update = future.resultAt(_processedScanResults);
+        ++_processedScanResults;
+        applyScanUpdate(update);
+    }
+}
 
-    if (result.succeeded()) {
-        _cache[requestedSyncDbId] = CachedSnapshot{.syncRoot = requestedSyncRoot, .snapshot = *result.snapshot};
-        if (const auto status = currentStatus(); status && !isActiveStatus(*status)) {
-            (void) _dirtySyncs.erase(requestedSyncDbId);
+void StorageController::applyScanUpdate(const StorageScanUpdate &update) {
+    using Kind = StorageScanUpdate::Kind;
+
+    switch (update.kind) {
+        case Kind::Volume:
+            setRetrying(false);
+            applyVolume(*update.volume);
+            break;
+        case Kind::SelectedSyncMeasured: {
+            auto &measure = _measures[update.syncDbId];
+            measure.syncRoot = update.syncRoot;
+            measure.device = _volume ? _volume->device : 0;
+            measure.bytes = *update.bytes;
+            measure.measured = true;
+            measure.volume = _volume;
+            if (!isSyncActive(update.syncDbId)) {
+                (void) _dirtySyncs.erase(update.syncDbId);
+            }
+            _syncBytes = update.bytes;
+            publish(true);
+            break;
         }
-        _scanCancellation.reset();
-        presentSnapshot(*result.snapshot);
-        qCInfo(lcStorageController) << "Local Storage scan completed | syncDbId:" << requestedSyncDbId;
+        case Kind::OtherSyncMeasured: {
+            if (!update.device) {
+                break;
+            }
+
+            // The device is remembered even for a synchronization stored on another volume, so it is not looked up as
+            // unknown again; its bytes are measured only once the selected volume holds it.
+            auto &measure = _measures[update.syncDbId];
+            if (measure.syncRoot != update.syncRoot) {
+                measure = CachedMeasure{.syncRoot = update.syncRoot};
+            }
+            measure.device = *update.device;
+            if (update.bytes) {
+                measure.bytes = *update.bytes;
+                measure.measured = true;
+                if (!isSyncActive(update.syncDbId)) {
+                    (void) _dirtySyncs.erase(update.syncDbId);
+                }
+            }
+            if (update.onVolume && measure.measured) {
+                _pendingOtherSyncsBytes += measure.bytes;
+            }
+            break;
+        }
+        case Kind::OtherSyncsCompleted:
+            _otherSyncsBytes = _pendingOtherSyncsBytes;
+            // The volume of the selected synchronization is cached with it once the whole page is known.
+            if (const auto cached = _measures.find(_selectedSyncDbId); cached != _measures.end()) {
+                cached->second.volume = _volume;
+            }
+            publish(true);
+            qCInfo(lcStorageController) << "Local Storage scan completed | syncDbId:" << _selectedSyncDbId;
+            break;
+        case Kind::Failed:
+            setRetrying(false);
+            failScan(update.error);
+            break;
+    }
+}
+
+void StorageController::handleScanFinished() {
+    if (_scanWatcher.isCanceled() || _retryCompletionPending) {
         return;
     }
 
-    (void) _cache.erase(requestedSyncDbId);
-    _currentSnapshot.reset();
-    _scanCancellation.reset();
+    processScanUpdates();
+    setRetrying(false);
+}
+
+/**
+ * Presents the volume read by the scan. A selected synchronization the scan does not measure again keeps its cached
+ * bytes, including bytes measured while another synchronization was selected, which were cached without a volume.
+ */
+void StorageController::applyVolume(const StorageVolume &volume) {
+    _volume = volume;
+    _freeBytes = volume.availableBytes;
+    if (!_syncBytes) {
+        if (const auto cached = _measures.find(_selectedSyncDbId);
+            cached != _measures.end() && cached->second.syncRoot == _selectedSyncRoot && cached->second.measured) {
+            _syncBytes = cached->second.bytes;
+        }
+    }
+
+    setState(State::Ready);
+    publish(true);
+}
+
+void StorageController::failScan(const StorageScanError error) {
+    (void) _measures.erase(_selectedSyncDbId);
+    _volume.reset();
+    _syncBytes.reset();
+    _otherSyncsBytes.reset();
+    _freeBytes.reset();
     setState(State::Unavailable);
+    publish(false);
+    qCWarning(lcStorageController) << "Local Storage scan failed | syncDbId:" << _selectedSyncDbId
+                                   << "| error:" << toString(error);
+}
+
+/**
+ * Emits the storage change. `animatedUpdateChanged` is emitted first so the gauge knows whether to animate before its
+ * widths are read again: values restored from the cache must appear at once.
+ */
+void StorageController::publish(const bool animated) {
+    setAnimatedUpdate(animated);
     emit storageChanged();
-    qCWarning(lcStorageController) << "Local Storage scan failed | syncDbId:" << requestedSyncDbId
-                                   << "| error:" << toString(result.error);
+    refreshStorageWarning();
+}
+
+/** Reads the free space of the selected volume outside the GUI thread, without logging failures. */
+void StorageController::pollVolume() {
+    if (_selectedSyncRoot.empty() || _volumeWatcher.isRunning()) {
+        return;
+    }
+
+    _volumePollRoot = _selectedSyncRoot;
+    const SyncPath root = _volumePollRoot;
+    _volumeWatcher.setFuture(QtConcurrent::run([root] { return StorageScanner::readVolume(root, false); }));
+}
+
+void StorageController::handleVolumePollFinished() {
+    if (_volumePollRoot != _selectedSyncRoot) {
+        // The selection changed during this read: read the newly selected volume instead.
+        pollVolume();
+        return;
+    }
+
+    const auto result = _volumeWatcher.result();
+    if (!result.volume) {
+        _freeBytes.reset();
+        refreshStorageWarning();
+        return;
+    }
+
+    _freeBytes = result.volume->availableBytes;
+    if (_volume && _volume->device == result.volume->device &&
+        (_volume->totalBytes != result.volume->totalBytes || _volume->availableBytes != result.volume->availableBytes)) {
+        _volume->totalBytes = result.volume->totalBytes;
+        _volume->availableBytes = result.volume->availableBytes;
+        publish(true);
+        return;
+    }
+
+    refreshStorageWarning();
 }
 
 void StorageController::setState(const State state) {
@@ -280,17 +654,105 @@ void StorageController::setRetrying(const bool retrying) {
     emit retryingChanged();
 }
 
-std::optional<SyncStatus> StorageController::currentStatus() const {
-    const auto runtimeInfo = _selectionStore.currentSyncRuntimeInfo();
-    return runtimeInfo ? std::optional{runtimeInfo->status} : std::nullopt;
+void StorageController::setAnimatedUpdate(const bool animated) {
+    if (_animatedUpdate == animated) {
+        return;
+    }
+
+    _animatedUpdate = animated;
+    emit animatedUpdateChanged();
 }
 
-uint64_t StorageController::usedBytes() const {
-    return _currentSnapshot ? _currentSnapshot->totalBytes - _currentSnapshot->availableBytes : 0;
+void StorageController::refreshStorageWarning() {
+    const bool almostFull = diskAlmostFull();
+    if (almostFull != _diskAlmostFullLogged) {
+        _diskAlmostFullLogged = almostFull;
+        qCInfo(lcStorageController) << "Storage disk almost full state changed | syncDbId:" << _selectedSyncDbId
+                                    << "| almost full:" << almostFull;
+    }
+
+    const bool warning = almostFull || quotaFull();
+    if (warning == _storageWarning) {
+        return;
+    }
+
+    _storageWarning = warning;
+    emit storageWarningChanged();
 }
 
+std::vector<StorageController::ScanTarget> StorageController::otherSyncTargets() const {
+    std::vector<ScanTarget> targets;
+    for (const auto &sync: _appCache.syncs()) {
+        if (sync.dbId() == _selectedSyncDbId) {
+            continue;
+        }
+
+        const SyncPath root = sync.localPath().lexically_normal();
+        if (root.empty()) {
+            continue;
+        }
+
+        targets.push_back({.syncDbId = sync.dbId(), .syncRoot = root, .needsMeasure = needsMeasure(sync.dbId(), root)});
+    }
+    return targets;
+}
+
+bool StorageController::needsMeasure(const SyncDbId syncDbId, const SyncPath &syncRoot) const {
+    const auto cached = _measures.find(syncDbId);
+    return cached == _measures.end() || cached->second.syncRoot != syncRoot || !cached->second.measured ||
+           _dirtySyncs.contains(syncDbId);
+}
+
+bool StorageController::isKnown(const SyncDbId syncDbId, const SyncPath &syncRoot) const {
+    const auto cached = _measures.find(syncDbId);
+    return cached != _measures.end() && cached->second.syncRoot == syncRoot;
+}
+
+/**
+ * Sums the cached measures of the other synchronizations stored on `device`. Returns nothing while one of them has never
+ * been measured, since it might be on that volume too.
+ */
+std::optional<uint64_t> StorageController::cachedOtherSyncsBytes(const dev_t device) const {
+    uint64_t total = 0;
+    for (const auto &sync: _appCache.syncs()) {
+        if (sync.dbId() == _selectedSyncDbId) {
+            continue;
+        }
+
+        const auto cached = _measures.find(sync.dbId());
+        if (cached == _measures.end() || cached->second.syncRoot != sync.localPath().lexically_normal()) {
+            return std::nullopt;
+        }
+        if (cached->second.device != device) {
+            continue;
+        }
+        if (!cached->second.measured) {
+            return std::nullopt;
+        }
+        total += cached->second.bytes;
+    }
+    return total;
+}
+
+bool StorageController::isSyncActive(const SyncDbId syncDbId) const {
+    const auto runtimeInfo = _appCache.syncRuntimeInfo(syncDbId);
+    return runtimeInfo && isActiveStatus(runtimeInfo->status);
+}
+
+std::optional<Drive> StorageController::currentDrive() const {
+    const auto context = _selectionStore.currentSyncContext();
+    return context ? std::optional{context->drive} : std::nullopt;
+}
+
+/** Used space that is not attributed to a measured kDrive synchronization, so it shrinks as the measures arrive. */
 uint64_t StorageController::otherBytes() const {
-    return _currentSnapshot ? usedBytes() - std::min(_currentSnapshot->syncBytes, usedBytes()) : 0;
+    if (!_volume) {
+        return 0;
+    }
+
+    const uint64_t usedBytes = _volume->usedBytes();
+    const uint64_t kDriveBytes = std::min(_syncBytes.value_or(0) + _otherSyncsBytes.value_or(0), usedBytes);
+    return usedBytes - kDriveBytes;
 }
 
 bool StorageController::isActiveStatus(const SyncStatus status) {
@@ -304,10 +766,11 @@ QString StorageController::formatBytes(const uint64_t bytes) {
 }
 
 double StorageController::ratio(const uint64_t bytes) const {
-    if (!_currentSnapshot || _currentSnapshot->totalBytes == 0) {
+    if (!_volume || _volume->totalBytes == 0) {
         return 0.0;
     }
-    return std::clamp(static_cast<double>(bytes) / static_cast<double>(_currentSnapshot->totalBytes), 0.0, 1.0);
+
+    return std::clamp(static_cast<double>(bytes) / static_cast<double>(_volume->totalBytes), 0.0, 1.0);
 }
 
 } // namespace KDC
