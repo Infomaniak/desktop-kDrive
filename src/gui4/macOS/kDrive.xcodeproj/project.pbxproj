@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */; };
 		37A1C4452E546A9600596DBB /* kDriveCoreUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; };
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
@@ -22,6 +21,7 @@
 		A21DC5C4300EDEED00D5257F /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A21DC5C3300EDEED00D5257F /* CoreServices.framework */; };
 		A7776BCA2FE519E400989B60 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = A7776BC92FE519E400989B60 /* InfomaniakDI */; };
 		A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */; };
+		B6DDA4E130CE010000000001 /* kDriveTests/UI/PreferencesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
@@ -107,7 +107,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/PreferencesRepositoryTests.swift; sourceTree = SOURCE_ROOT; };
 		37A1C4262E546A5200596DBB /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCoreUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C45A2E546CB600596DBB /* kDriveCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,6 +114,7 @@
 		7A3127522FED6AED0053CDDE /* libz.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.tbd; path = usr/lib/libz.1.tbd; sourceTree = SDKROOT; };
 		7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A21DC5C3300EDEED00D5257F /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/PreferencesRepositoryTests.swift; sourceTree = SOURCE_ROOT; };
 		F967009E2E95352C00EDD4D7 /* kDriveResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9ACC5372E5DF50B0081E80B /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -389,6 +389,7 @@
 				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
+				EB61117D30922D9E007FA066 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -402,6 +403,14 @@
 				7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		EB61117D30922D9E007FA066 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		F967014F2E953CF600EDD4D7 /* Frameworks */ = {
@@ -734,7 +743,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */,
+				B6DDA4E130CE010000000001 /* kDriveTests/UI/PreferencesRepositoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -917,7 +926,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -933,7 +942,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 4.0.0;
+				MARKETING_VERSION = 4.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.gui;
 				PRODUCT_NAME = kDrive;
 				REGISTER_APP_GROUPS = YES;
@@ -956,7 +965,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -972,7 +981,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 4.0.0;
+				MARKETING_VERSION = 4.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.gui;
 				PRODUCT_NAME = kDrive;
 				REGISTER_APP_GROUPS = YES;
