@@ -38,8 +38,13 @@ Button {
     property bool busy: false
     // Appends the external-link glyph. Set it whenever the action hands the user over to the web browser.
     property bool external: false
+    // Optional leading glyph, tinted like the label.
+    property url iconSource: ""
 
     readonly property real externalIconAllowance: external ? externalIcon.width + IKModalTokens.buttonExternalIconSpacing : 0
+    readonly property real leadingIconAllowance: iconSource.toString().length > 0
+                                                 ? IKModalTokens.buttonIconSize + IKModalTokens.buttonIconSpacing
+                                                 : 0
 
     readonly property color foregroundColor: {
         if (!actionEnabled && !busy) {
@@ -67,7 +72,8 @@ Button {
 
     enabled: actionEnabled && !busy
     implicitWidth: Math.max(IKModalTokens.buttonMinimumWidth,
-                            buttonText.implicitWidth + externalIconAllowance + 2 * IKModalTokens.buttonHorizontalPadding)
+                            buttonText.implicitWidth + leadingIconAllowance + externalIconAllowance
+                            + 2 * IKModalTokens.buttonHorizontalPadding)
     implicitHeight: IKModalTokens.buttonHeight
     padding: 0
     leftPadding: IKModalTokens.buttonHorizontalPadding
@@ -86,11 +92,28 @@ Button {
             visible: !root.busy
             spacing: root.external ? IKModalTokens.buttonExternalIconSpacing : 0
 
+            Item {
+                width: root.leadingIconAllowance
+                height: IKModalTokens.buttonIconSize
+                anchors.verticalCenter: parent.verticalCenter
+                visible: root.leadingIconAllowance > 0
+
+                IKTintedIcon {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: IKModalTokens.buttonIconSize
+                    height: IKModalTokens.buttonIconSize
+                    source: root.iconSource
+                    color: root.foregroundColor
+                }
+            }
+
             Text {
                 id: buttonText
 
                 // Width is taken from the content Item rather than from the Row, whose implicit width this feeds back into.
-                width: Math.min(implicitWidth, Math.max(0, buttonContent.width - root.externalIconAllowance))
+                width: Math.min(implicitWidth,
+                                Math.max(0, buttonContent.width - root.leadingIconAllowance - root.externalIconAllowance))
                 text: root.text
                 color: root.foregroundColor
                 font.pixelSize: IKFonts.bodySize
