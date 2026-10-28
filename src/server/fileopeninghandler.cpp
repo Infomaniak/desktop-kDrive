@@ -68,10 +68,10 @@ bool isOpenFileUri(const Poco::URI &uri) {
 }
 } // namespace
 
-FileOpeningHandler::FileOpeningHandler(AppServer *appServer, const std::string &url, QObject *parent) :
+FileOpeningHandler::FileOpeningHandler(AppServer *appServer, std::string url, QObject *parent) :
     QObject(parent),
     _appServer(appServer),
-    _url(url) {
+    _url(std::move(url)) {
     _deadlineTimer.setSingleShot(true);
     (void) connect(&_syncWaitTimer, &QTimer::timeout, this, &FileOpeningHandler::onSyncWaitTick);
     (void) connect(&_deadlineTimer, &QTimer::timeout, this, &FileOpeningHandler::onDeadlineReached);
@@ -80,9 +80,9 @@ FileOpeningHandler::FileOpeningHandler(AppServer *appServer, const std::string &
 void FileOpeningHandler::start() {
     LOG_INFO(Log::instance()->getLogger(), "Processing file opening URL - url=" << _url);
 
-    if (!parseUrl(_url, _request)) {
+    if (!parseDeeplinkUrl(_url, _request)) {
         LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
-        handleFailure("This kDrive link is invalid.");
+        handleFileOpeningFailure("This kDrive link is invalid.");
         return;
     }
 
@@ -90,12 +90,12 @@ void FileOpeningHandler::start() {
     processResolvePhase();
 }
 
-bool FileOpeningHandler::isOpenFileUrl(const std::string &urlStr) {
+bool FileOpeningHandler::isFileOpeningDeeplink(const std::string &urlStr) {
     Poco::URI uri;
     return parseUri(urlStr, uri) && isOpenFileUri(uri);
 }
 
-bool FileOpeningHandler::parseUrl(const std::string &urlStr, Request &request) {
+bool FileOpeningHandler::parseDeeplinkUrl(const std::string &urlStr, Request &request) {
     Poco::URI uri;
     if (!parseUri(urlStr, uri) || !isOpenFileUri(uri)) return false;
 
@@ -133,24 +133,25 @@ void FileOpeningHandler::processResolvePhase() {
         bool found = false;
         if (!ParmsDb::instance()->selectDriveByDriveId(_request.driveId, drive, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDriveByDriveId - driveId=" << _request.driveId);
-            handleFailure("The element requested from this kDrive link could not be opened.");
+            handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
             return;
         }
         if (!found) {
             // No sync of this drive is configured on this machine.
-            handleFailure("The drive of the element requested from this kDrive link is not synchronized on this machine.");
+            handleFileOpeningFailure(
+                    "The drive of the element requested from this kDrive link is not synchronized on this machine.");
             return;
         }
         _driveDbId = drive.dbId();
     }
 
     bool found = false;
-    if (!resolveUrl(found)) {
-        handleFailure("The element requested from this kDrive link could not be opened.");
+    if (!resolveDeeplink(found)) {
+        handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
     if (found) {
-        openOrHydrateResolvedItem();
+        openResolvedItem();
         return;
     }
 
@@ -158,13 +159,14 @@ void FileOpeningHandler::processResolvePhase() {
     checkRemoteExistence();
 }
 
-bool FileOpeningHandler::resolveUrl(bool &found) {
+ExitInfo FileOpeningHandler::resolveDeeplink(bool &found) {
     found = false;
 
     std::vector<Sync> syncs;
     if (!ParmsDb::instance()->selectAllSyncs(_driveDbId, syncs)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs - driveDbId=" << _driveDbId);
-        return false;
+
+        return ExitCode::DbError;
     }
 
     // Examine the syncs whose engine is running first, and make the examination order deterministic.
@@ -211,6 +213,7 @@ bool FileOpeningHandler::resolveUrl(bool &found) {
             LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::path - syncDbId=" << sync.dbId());
             continue;
         }
+
         if (!nodeFound) continue;
 
         found = true;
@@ -220,7 +223,7 @@ bool FileOpeningHandler::resolveUrl(bool &found) {
         break;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 void FileOpeningHandler::checkRemoteExistence() {
@@ -247,12 +250,12 @@ void FileOpeningHandler::onRemoteExistenceChecked(const ExitInfo &exitInfo, bool
 
     if (!exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ItemsExistJob - nodeId=" << _request.nodeId << ": " << exitInfo);
-        handleFailure("The element requested from this kDrive link could not be opened.");
+        handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
 
     if (!exists) {
-        handleFailure("The element requested from this kDrive link could not be found.");
+        handleFileOpeningFailure("The element requested from this kDrive link could not be found.");
         return;
     }
 
@@ -268,41 +271,42 @@ void FileOpeningHandler::onSyncWaitTick() {
     if (_phase != Phase::WaitForItemToSynchronize) return;
 
     bool found = false;
-    if (!resolveUrl(found)) {
-        handleFailure("The element requested from this kDrive link could not be opened.");
+    if (!resolveDeeplink(found)) {
+        handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
         return;
     }
     if (found) {
-        openOrHydrateResolvedItem();
+        openResolvedItem();
     }
 }
 
 void FileOpeningHandler::onDeadlineReached() {
     switch (_phase) {
         case Phase::WaitForItemToSynchronize:
-            handleFailure("The element requested from this kDrive link could not be synchronized. Please try again later.");
+            handleFileOpeningFailure(
+                    "The element requested from this kDrive link could not be synchronized. Please try again later.");
             break;
-        case Phase::WaitForHydration:
-            handleFailure("The download of the element requested from this kDrive link took too long.");
+        case Phase::WaitForItemHydrationToComplete:
+            handleFileOpeningFailure("The download of the element requested from this kDrive link took too long.");
             break;
         default:
             break;
     }
 }
 
-void FileOpeningHandler::openOrHydrateResolvedItem() {
+ExitInfo FileOpeningHandler::openResolvedItem() {
     ItemType itemType;
     if (!IoHelper::getItemType(_localPath, itemType)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(_localPath, itemType.ioError));
-        handleFailure("The element requested from this kDrive link could not be opened.");
-        return;
+        handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
+
+        return ExitCode::SystemError;
     }
 
     if (itemType.linkType != LinkType::None || itemType.nodeType == NodeType::Directory) {
         // Symlinks and directories do not need any hydration.
-        openResolvedItem();
-        return;
+        return openLocalItem();
     }
 
     // No VFS plugin for this sync (e.g. LiteSync disabled): the item is a plain file, open it directly. The same
@@ -310,49 +314,51 @@ void FileOpeningHandler::openOrHydrateResolvedItem() {
     // on access.
     std::shared_ptr<Vfs> vfs;
     if (const auto exitInfo = _appServer->getVfs(_syncDbId, vfs); !exitInfo || !vfs) {
-        openResolvedItem();
-        return;
+        return openLocalItem();
     }
 
     VfsStatus vfsStatus;
     if (const auto exitInfo = vfs->status(_localPath, vfsStatus); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatSyncPath(_localPath));
-        handleFailure("The element requested from this kDrive link could not be opened.");
-        return;
+        handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
+
+        return ExitCode::SystemError;
     }
 
     if (!vfsStatus.isPlaceholder || vfsStatus.isHydrated || vfsStatus.isSyncing) {
         // Nothing to download, or a download is already ongoing: the system hydrates the file on access.
-        openResolvedItem();
-        return;
+        return openLocalItem();
     }
 
     // The item is a dehydrated placeholder: download it before opening it.
-    if (!hydrateResolvedPlaceholder()) {
+    if (const auto exitInfo = hydrateResolvedPlaceholder(); !exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in hydrateResolvedPlaceholder " << Utility::formatExitInfo(_localPath, exitInfo));
         // The download could not be triggered: open the item anyway, the system hydrates it on access.
-        openResolvedItem();
-        return;
+        return openLocalItem();
     }
 
     if (!_waitingNotificationSent) {
         _waitingNotificationSent = true;
         notifyUser("The requested element is being downloaded. It will open once available.");
     }
-    setPhase(Phase::WaitForHydration, std::chrono::milliseconds(0), hydrationTimeout);
+    setPhase(Phase::WaitForItemHydrationToComplete, std::chrono::milliseconds(0), hydrationTimeout);
+
+    return ExitCode::Ok;
 }
 
-bool FileOpeningHandler::hydrateResolvedPlaceholder() {
+ExitInfo FileOpeningHandler::hydrateResolvedPlaceholder() {
     std::shared_ptr<SyncPal> syncPal;
     {
         const std::scoped_lock lock(_appServer->syncPalMapMutex);
         const auto syncPalMapIt = _appServer->syncPalMap.find(_syncDbId);
-        if (syncPalMapIt == _appServer->syncPalMap.end() || !syncPalMapIt->second) return false;
+        if (syncPalMapIt == _appServer->syncPalMap.end() || !syncPalMapIt->second) return ExitCode::DataError;
         syncPal = syncPalMapIt->second;
     }
 
 #if defined(KD_MACOS)
     std::shared_ptr<Vfs> vfs;
-    if (const auto exitInfo = _appServer->getVfs(_syncDbId, vfs); !exitInfo || !vfs) return false;
+    if (const auto exitInfo = _appServer->getVfs(_syncDbId, vfs); !exitInfo || !vfs) return exitInfo;
 
     // On macOS, setting the pin state to AlwaysLocal is required to trigger the hydration
     // (see ExtensionJob::commandMakeAvailableLocallyDirect).
@@ -360,7 +366,8 @@ bool FileOpeningHandler::hydrateResolvedPlaceholder() {
     if (_initialPinState != PinState::AlwaysLocal) {
         if (const auto exitInfo = vfs->setPinState(_relativePath, PinState::AlwaysLocal); !exitInfo) {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::setPinState - " << Utility::formatSyncPath(_localPath));
-            return false;
+
+            return exitInfo;
         }
     }
 #endif
@@ -381,24 +388,24 @@ bool FileOpeningHandler::hydrateResolvedPlaceholder() {
         vfs->cancelHydrate(_localPath);
         if (_initialPinState != PinState::Unknown) (void) vfs->setPinState(_relativePath, _initialPinState);
 #endif
-        return false;
+        return exitInfo;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 void FileOpeningHandler::onHydrationFinished(bool success) {
-    if (_phase != Phase::WaitForHydration) return; // Stale callback.
+    if (_phase != Phase::WaitForItemHydrationToComplete) return; // Stale callback.
 
     if (!success) {
-        handleFailure("The download of the element requested from this kDrive link failed.");
+        handleFileOpeningFailure("The download of the element requested from this kDrive link failed.");
         return;
     }
 
-    openResolvedItem();
+    openLocalItem();
 }
 
-void FileOpeningHandler::openResolvedItem() {
+ExitInfo FileOpeningHandler::openLocalItem() {
     SyncPath pathToOpen = _localPath;
     if (shouldOpenParentFolder(_localPath)) {
         LOGW_INFO(Log::instance()->getLogger(),
@@ -408,12 +415,15 @@ void FileOpeningHandler::openResolvedItem() {
 
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(pathToOpen)))) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in QDesktopServices::openUrl - " << Utility::formatSyncPath(pathToOpen));
-        handleFailure("The element requested from this kDrive link could not be opened.");
-        return;
+        handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
+
+        return ExitCode::SystemError;
     }
 
     LOGW_INFO(Log::instance()->getLogger(), L"Item opened from URL - " << Utility::formatSyncPath(pathToOpen));
-    succeed();
+    handleFileOpeningSuccess();
+
+    return ExitCode::Ok;
 }
 
 void FileOpeningHandler::setPhase(Phase phase, std::chrono::milliseconds tickInterval, std::chrono::milliseconds timeout) {
@@ -434,14 +444,14 @@ void FileOpeningHandler::notifyUser(const std::string &message) const {
     _appServer->sendShowNotification(QString::fromStdString(Theme::instance()->appName()), QString::fromStdString(message));
 }
 
-void FileOpeningHandler::succeed() {
+void FileOpeningHandler::handleFileOpeningSuccess() {
     setPhase(Phase::Done, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
     emit finished(true);
 }
 
-void FileOpeningHandler::handleFailure(const std::string &userMessage) {
+void FileOpeningHandler::handleFileOpeningFailure(const std::string &userMessage) {
     setPhase(Phase::Done, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
-    LOG_WARN(Log::instance()->getLogger(), "Failed to open item from URL - url=" << _url);
+    LOG_WARN(Log::instance()->getLogger(), "Failed to open item from deeplink URL - url=" << _url);
     notifyUser(userMessage);
     emit finished(false);
 }
