@@ -801,6 +801,9 @@ Begär åtkomst från ägaren eller administratören.</value>
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Åtkomst förbjuden</value> 
   </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konvertera till vanlig fil</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Den här filen är en hård länk som inte kan synkroniseras.</value> 
   </data> 
@@ -1141,6 +1144,9 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Senaste</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Mitt abonnemang</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Namn</value> 
   </data> 
@@ -1340,6 +1346,9 @@ Kontrollera och byt namn på filer som innehåller ovanliga tecken och försök 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versionskonflikt(er) hittades</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ borttagna element</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synkroniseringen är pausad för att förhindra att data raderas av misstag.
 Vad vill du göra?</value> 
@@ -1349,6 +1358,12 @@ Vad vill du göra?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Ta bort även online</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>och ytterligare en del</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>och %@ andra saker</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Dessa filer går fortfarande att återställa från kDrives papperskorg.</value> 
@@ -1602,6 +1617,12 @@ Dessa data gör det möjligt för vårt team att snabbt åtgärda och optimera p
     <value>Övriga filer på datorn</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Återstående utrymme på ditt abonnemang</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>kDrive-filer som lagras online</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synkronisering</value> 
   </data> 
@@ -1645,6 +1666,18 @@ Internetanslutning krävs för att komma åt dem.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synkronisering pågår</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Sök efter ändringar</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Förberedelse av dina filer</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@-elementet synkroniserat med %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ synkroniserade objekt av %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkroniserad</value> 

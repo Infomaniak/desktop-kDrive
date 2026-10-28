@@ -1972,6 +1972,11 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
         <translation>Systeemfout.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Het element kon niet worden verplaatst omdat het pad een symbolische koppeling of junction bevat.&lt;br&gt;Het is tijdelijk uitgesloten van synchronisatie.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Item bestaat al aan de andere kant.&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>

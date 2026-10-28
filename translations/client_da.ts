@@ -1949,6 +1949,11 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         <translation>Systemfejl.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Elementet kunne ikke flyttes, fordi dets sti indeholder et symbolsk link eller en junction.&lt;br&gt;Det er blevet midlertidigt udelukket fra synkronisering.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Elementet eksisterer allerede på den anden side.&lt;br&gt;Det er midlertidigt sortlistet.</translation>

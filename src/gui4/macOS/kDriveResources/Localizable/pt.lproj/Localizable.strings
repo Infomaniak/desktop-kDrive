@@ -736,6 +736,9 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Parece que não conseguimos carregar a aplicação…";
 
+/* loco:6ac60bf864441a81870fc9d2
+"errorCopyingShareLink" = "Ocorreu um erro ao copiar o link.";
+
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "Ocorreu um erro ao eliminar a sua conta.";
 
@@ -1434,6 +1437,9 @@
  * Search field placeholder in SearchSheetView. */
 "searchPlaceholder" = "Search…";
 
+/* loco:6ac604dd665bcc5b3402f332
+"searchResultOpenInBrowserSyncPausedTooltip" = "Sincronização pausada.\nEste ficheiro será aberto no kDrive online.";
+
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
 "searchResultOpenInBrowserTooltip" = "Este elemento não está disponível neste dispositivo. Será aberto no kDrive online.";
@@ -1543,6 +1549,12 @@
 
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "A sincronização está em curso";
+
+/* loco:6ad232f65d64577ad6084542 */
+"syncStatusAnalysing" = "Pesquisa de alterações";
+
+/* loco:6ad232ecab975477a3093ee2 */
+"syncStatusExploring" = "Preparação dos seus ficheiros";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Sincronizado";

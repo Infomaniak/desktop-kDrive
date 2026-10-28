@@ -1949,6 +1949,11 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Σφάλμα συστήματος.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Δεν ήταν δυνατή η μετακίνηση του στοιχείου επειδή η διαδρομή του περιέχει συμβολικό σύνδεσμο ή junction.&lt;br&gt;Έχει εξαιρεθεί προσωρινά από τον συγχρονισμό.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Το στοιχείο υπάρχει ήδη στην άλλη πλευρά.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>

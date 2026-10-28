@@ -801,6 +801,9 @@
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Απαγορευμένη πρόσβαση</value> 
   </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Μετατροπή σε κανονικό αρχείο</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Αυτό το αρχείο είναι σκληρός σύνδεσμος (hard link) που δεν μπορεί να συγχρονιστεί.</value> 
   </data> 
@@ -1141,6 +1144,9 @@
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Πιο πρόσφατο</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Η συνδρομή μου</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Όνομα</value> 
   </data> 
@@ -1340,6 +1346,9 @@
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ συγκρούσεις εκδόσεων εντοπίστηκαν</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ στοιχεία που διαγράφηκαν</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Ο συγχρονισμός έχει τεθεί σε παύση για να αποφευχθεί η ακούσια διαγραφή.
 Τι θέλετε να κάνετε;</value> 
@@ -1349,6 +1358,12 @@
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Διαγραφή και από το διαδίκτυο</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>και ένα ακόμα στοιχείο</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>και %@ άλλα στοιχεία</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Αυτά τα αρχεία παραμένουν διαθέσιμα για ανάκτηση στον κάδο απορριμμάτων του kDrive.</value> 
@@ -1602,6 +1617,12 @@
     <value>Άλλα αρχεία στον υπολογιστή</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Διαθέσιμος χώρος στη συνδρομή σας</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Αρχεία kDrive που είναι αποθηκευμένα στο διαδίκτυο</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Συγχρονισμός</value> 
   </data> 
@@ -1645,6 +1666,18 @@
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Ο συγχρονισμός βρίσκεται σε εξέλιξη</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Αναζήτηση αλλαγών</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Προετοιμασία των αρχείων σας</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ στοιχείο συγχρονισμένο με %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ στοιχεία συγχρονισμένα σε %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Συγχρονίστηκε</value> 

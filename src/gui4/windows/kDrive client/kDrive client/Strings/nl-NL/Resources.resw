@@ -801,6 +801,9 @@ Vraag toegang aan bij de eigenaar of beheerder.</value>
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Toegang geweigerd</value> 
   </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Omzetten naar een gewoon bestand</value> 
+  </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Dit bestand is een harde koppeling (hard link) die niet kan worden gesynchroniseerd.</value> 
   </data> 
@@ -1141,6 +1144,9 @@ Handig als u weet dat het belangrijke werk online staat op kDrive.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Meest recent</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Mijn abonnement</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Naam</value> 
   </data> 
@@ -1340,6 +1346,9 @@ Controleer en hernoem de bestanden met ongebruikelijke tekens en probeer het opn
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versieconflicten gedetecteerd</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ verwijderde elementen</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>De synchronisatie is onderbroken om onbedoeld verwijderen te voorkomen.
 Wat wilt u doen?</value> 
@@ -1349,6 +1358,12 @@ Wat wilt u doen?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Ook online verwijderen</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>en nog iets</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>en %@ andere elementen</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Deze bestanden blijven beschikbaar in de prullenbak van kDrive.</value> 
@@ -1602,6 +1617,12 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
     <value>Andere bestanden op computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Beschikbare ruimte van uw abonnement</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Online opgeslagen kDrive-bestanden</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronisatie</value> 
   </data> 
@@ -1645,6 +1666,18 @@ Een internetverbinding is vereist om ze te openen.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synchronisatie is bezig</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Zoeken naar wijzigingen</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Het voorbereiden van uw bestanden</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ element gesynchroniseerd met %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ gesynchroniseerde elementen op %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Gesynchroniseerd</value> 

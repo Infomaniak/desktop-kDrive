@@ -1551,6 +1551,12 @@
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "Die Synchronisierung läuft";
 
+/* loco:6ad232f65d64577ad6084542 */
+"syncStatusAnalysing" = "Suche nach Änderungen";
+
+/* loco:6ad232ecab975477a3093ee2 */
+"syncStatusExploring" = "Vorbereitung Ihrer Dateien";
+
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Synchronisiert";
 
