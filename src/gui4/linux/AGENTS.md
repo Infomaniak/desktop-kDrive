@@ -684,8 +684,9 @@
       "View activities". A row shows its button only once its action exists: "Choose a version" and "Manage"
       (conflicts) stay hidden until their pages land. "Understand the issue" opens `ErrorExplanationDialog` (an
       `IKModal`), whose texts, reason boxes and links are chosen in QML from the explanation kind; a link inside a
-      sentence is an `ErrorLinkText`, focusable as a whole. The inotify watches dialog shows the current limit and a
-      `sysctl` command to copy, whose value is always above that limit; the app never raises it itself. Variants: the
+      sentence is an `ErrorLinkText`, focusable as a whole. The inotify watches row and dialog show the current limit
+      (`inotifywatchlimit.h`, re-read on each refresh); "Raise the limit" opens the dialog, whose `sysctl` command to
+      copy is always above that limit: the app never raises it itself. Variants: the
       item chip (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the tooltip), the information
       icon (first line of the description, advice in the tooltip), the copyable path, and the folded technical details
       (two name and value pairs per row on wide cards, values elided on the left) with their copy button
