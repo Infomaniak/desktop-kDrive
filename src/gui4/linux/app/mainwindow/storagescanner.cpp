@@ -55,10 +55,6 @@ struct FileIdentity {
     return isCanceled && isCanceled();
 }
 
-[[nodiscard]] StorageScanResult failure(const StorageScanError error) {
-    return {.snapshot = std::nullopt, .error = error};
-}
-
 [[nodiscard]] StorageScanError errorFromErrno(const int errorNumber) {
     switch (errorNumber) {
         case EACCES:
@@ -217,84 +213,96 @@ struct DirectoryScanState {
 
 } // namespace
 
-StorageScanResult StorageScanner::scan(const SyncPath &syncRoot, const CancellationCheck &isCanceled) {
-    if (canceled(isCanceled)) {
-        return failure(StorageScanError::Canceled);
-    }
+StorageVolumeResult StorageScanner::readVolume(const SyncPath &syncRoot, const bool logFailures) {
     if (syncRoot.empty()) {
-        qCWarning(lcStorageScanner) << "Storage synchronization root is empty";
-        return failure(StorageScanError::Unavailable);
+        if (logFailures) {
+            qCWarning(lcStorageScanner) << "Storage synchronization root is empty";
+        }
+        return {.volume = std::nullopt, .error = StorageScanError::Unavailable};
     }
 
     struct stat rootStat{};
     if (stat(syncRoot.c_str(), &rootStat) != 0) {
         const int errorNumber = errno;
-        logFilesystemError("Unable to inspect Storage synchronization root", syncRoot, errorNumber);
-        return failure(errorFromErrno(errorNumber));
+        if (logFailures) {
+            logFilesystemError("Unable to inspect Storage synchronization root", syncRoot, errorNumber);
+        }
+        return {.volume = std::nullopt, .error = errorFromErrno(errorNumber)};
     }
     if (!S_ISDIR(rootStat.st_mode)) {
-        qCWarning(lcStorageScanner) << "Storage synchronization root is not a directory | path:" << Path2QStr(syncRoot);
-        return failure(StorageScanError::Unavailable);
+        if (logFailures) {
+            qCWarning(lcStorageScanner) << "Storage synchronization root is not a directory | path:" << Path2QStr(syncRoot);
+        }
+        return {.volume = std::nullopt, .error = StorageScanError::Unavailable};
     }
 
-    QStorageInfo storage(Path2QStr(syncRoot));
+    const QStorageInfo storage(Path2QStr(syncRoot));
     if (!storage.isValid() || !storage.isReady() || storage.bytesTotal() <= 0 || storage.bytesAvailable() < 0) {
-        qCWarning(lcStorageScanner) << "Storage volume is unavailable | root:" << Path2QStr(syncRoot);
-        return failure(StorageScanError::Unavailable);
+        if (logFailures) {
+            qCWarning(lcStorageScanner) << "Storage volume is unavailable | root:" << Path2QStr(syncRoot);
+        }
+        return {.volume = std::nullopt, .error = StorageScanError::Unavailable};
     }
 
     struct stat volumeRootStat{};
     const auto volumeRoot = QStr2Path(storage.rootPath());
     if (volumeRoot.empty()) {
-        qCWarning(lcStorageScanner) << "Storage volume root is empty | synchronization root:" << Path2QStr(syncRoot);
-        return failure(StorageScanError::Unavailable);
+        if (logFailures) {
+            qCWarning(lcStorageScanner) << "Storage volume root is empty | synchronization root:" << Path2QStr(syncRoot);
+        }
+        return {.volume = std::nullopt, .error = StorageScanError::Unavailable};
     }
     if (stat(volumeRoot.c_str(), &volumeRootStat) != 0) {
         const int errorNumber = errno;
-        logFilesystemError("Unable to inspect Storage volume root", volumeRoot, errorNumber);
-        return failure(errorFromErrno(errorNumber));
+        if (logFailures) {
+            logFilesystemError("Unable to inspect Storage volume root", volumeRoot, errorNumber);
+        }
+        return {.volume = std::nullopt, .error = errorFromErrno(errorNumber)};
     }
     if (volumeRootStat.st_dev != rootStat.st_dev) {
-        qCWarning(lcStorageScanner) << "Storage volume device changed while resolving the synchronization root | root:"
-                                    << Path2QStr(syncRoot) << "| volume root:" << Path2QStr(volumeRoot);
-        return failure(StorageScanError::Unavailable);
-    }
-
-    uint64_t syncBytes = 0;
-    if (const auto error = calculateSyncBytes(syncRoot, rootStat.st_dev, isCanceled, syncBytes);
-        error != StorageScanError::None) {
-        return failure(error);
-    }
-
-    const QByteArray expectedDevice = storage.device();
-    storage.refresh();
-    if (!storage.isValid() || !storage.isReady() || storage.device() != expectedDevice || storage.bytesTotal() <= 0 ||
-        storage.bytesAvailable() < 0) {
-        qCWarning(lcStorageScanner) << "Storage volume became unavailable during scan | root:" << Path2QStr(syncRoot);
-        return failure(StorageScanError::Unavailable);
+        if (logFailures) {
+            qCWarning(lcStorageScanner) << "Storage volume device changed while resolving the synchronization root | root:"
+                                        << Path2QStr(syncRoot) << "| volume root:" << Path2QStr(volumeRoot);
+        }
+        return {.volume = std::nullopt, .error = StorageScanError::Unavailable};
     }
 
     // Filesystems with dynamic allocation (btrfs, ZFS) and FUSE or network mounts may report more available bytes than
-    // total bytes. Clamping keeps the unsigned subtraction below from underflowing.
+    // total bytes. Clamping keeps the used space computation from underflowing.
     const auto totalBytes = static_cast<uint64_t>(storage.bytesTotal());
-    const auto availableBytes = std::min(static_cast<uint64_t>(storage.bytesAvailable()), totalBytes);
-    const auto usedBytes = totalBytes - availableBytes;
 
-    StorageSnapshot snapshot;
-    snapshot.volumeName = volumeName(storage);
-    snapshot.usesDefaultRootName = snapshot.volumeName.isEmpty() && storage.isRoot();
-    snapshot.volumeRoot = volumeRoot;
-    snapshot.totalBytes = totalBytes;
-    snapshot.availableBytes = availableBytes;
-    // The walk and the volume figures are not read atomically, and reflinked copies count once on disk but twice here,
-    // so the scanned total can exceed the used space. Clamping preserves the syncBytes <= usedBytes <= totalBytes
-    // invariant the storage gauge relies on.
-    snapshot.syncBytes = std::min(syncBytes, usedBytes);
-    qCDebug(lcStorageScanner) << "Storage scan completed | root:" << Path2QStr(syncRoot)
-                              << "| total bytes:" << static_cast<qulonglong>(snapshot.totalBytes)
-                              << "| available bytes:" << static_cast<qulonglong>(snapshot.availableBytes)
-                              << "| synchronization bytes:" << static_cast<qulonglong>(snapshot.syncBytes);
-    return {.snapshot = std::move(snapshot), .error = StorageScanError::None};
+    StorageVolume volume;
+    volume.volumeName = volumeName(storage);
+    volume.usesDefaultRootName = volume.volumeName.isEmpty() && storage.isRoot();
+    volume.volumeRoot = volumeRoot;
+    volume.device = rootStat.st_dev;
+    volume.totalBytes = totalBytes;
+    volume.availableBytes = std::min(static_cast<uint64_t>(storage.bytesAvailable()), totalBytes);
+    return {.volume = std::move(volume), .error = StorageScanError::None};
+}
+
+StorageMeasureResult StorageScanner::measure(const SyncPath &syncRoot, const dev_t device, const CancellationCheck &isCanceled) {
+    if (canceled(isCanceled)) {
+        return {.bytes = std::nullopt, .error = StorageScanError::Canceled};
+    }
+
+    uint64_t syncBytes = 0;
+    if (const auto error = calculateSyncBytes(syncRoot, device, isCanceled, syncBytes); error != StorageScanError::None) {
+        return {.bytes = std::nullopt, .error = error};
+    }
+
+    qCDebug(lcStorageScanner) << "Storage measure completed | root:" << Path2QStr(syncRoot)
+                              << "| bytes:" << static_cast<qulonglong>(syncBytes);
+    return {.bytes = syncBytes, .error = StorageScanError::None};
+}
+
+std::optional<dev_t> StorageScanner::deviceOf(const SyncPath &path) {
+    struct stat pathStat{};
+    if (path.empty() || stat(path.c_str(), &pathStat) != 0) {
+        return std::nullopt;
+    }
+
+    return pathStat.st_dev;
 }
 
 } // namespace KDC

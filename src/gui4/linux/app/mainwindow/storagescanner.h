@@ -25,18 +25,22 @@
 #include <cstdint>
 #include <functional>
 #include <optional>
+#include <sys/types.h>
 
 namespace KDC {
 
-struct StorageSnapshot {
+/** Capacity of the local volume holding a synchronization root, read without traversing the tree. */
+struct StorageVolume {
         QString volumeName;
         bool usesDefaultRootName{false};
         SyncPath volumeRoot;
+        dev_t device{0};
         uint64_t totalBytes{0};
         uint64_t availableBytes{0};
-        uint64_t syncBytes{0};
 
-        friend bool operator==(const StorageSnapshot &, const StorageSnapshot &) = default;
+        [[nodiscard]] uint64_t usedBytes() const { return totalBytes - availableBytes; }
+
+        friend bool operator==(const StorageVolume &, const StorageVolume &) = default;
 };
 
 enum class StorageScanError : uint8_t {
@@ -63,26 +67,40 @@ enum class StorageScanError : uint8_t {
     return "Unknown";
 }
 
-struct StorageScanResult {
-        std::optional<StorageSnapshot> snapshot;
+struct StorageVolumeResult {
+        std::optional<StorageVolume> volume;
         StorageScanError error{StorageScanError::None};
+};
 
-        [[nodiscard]] bool succeeded() const { return snapshot.has_value(); }
+struct StorageMeasureResult {
+        std::optional<uint64_t> bytes;
+        StorageScanError error{StorageScanError::None};
 };
 
 /**
- * Computes the physical storage occupied by a synchronization root on Linux.
+ * Reads the local volume of a synchronization root and measures the physical storage occupied by synchronization roots
+ * on Linux.
  *
- * The scanner never follows symbolic links and never descends onto a device different from the synchronization root's
- * device. Regular files contribute their allocated blocks rather than their logical size, so fully sparse files use zero
- * bytes. Subdirectories the user cannot traverse are skipped instead of failing the scan, so restricted subtrees are
- * under-counted. The call is synchronous and must run outside the GUI thread.
+ * The measure never follows symbolic links and never descends onto a device different from the measured root's device.
+ * Regular files contribute their allocated blocks rather than their logical size, so fully sparse files use zero bytes.
+ * Subdirectories the user cannot traverse are skipped instead of failing the measure, so restricted subtrees are
+ * under-counted. Every call is synchronous and must run outside the GUI thread: even a volume read can block on an
+ * unresponsive mount.
  */
 class StorageScanner {
     public:
         using CancellationCheck = std::function<bool()>;
 
-        [[nodiscard]] static StorageScanResult scan(const SyncPath &syncRoot, const CancellationCheck &isCanceled = {});
+        /**
+         * Reads the capacity of the volume holding `syncRoot`, which must be an existing directory. Periodic readers pass
+         * `logFailures = false` so an unavailable volume does not repeat the same warning.
+         */
+        [[nodiscard]] static StorageVolumeResult readVolume(const SyncPath &syncRoot, bool logFailures = true);
+        /** Sums the allocated bytes below `syncRoot`, restricted to `device`. */
+        [[nodiscard]] static StorageMeasureResult measure(const SyncPath &syncRoot, dev_t device,
+                                                          const CancellationCheck &isCanceled = {});
+        /** Returns the device of `path`, or nothing if it cannot be inspected. */
+        [[nodiscard]] static std::optional<dev_t> deviceOf(const SyncPath &path);
 };
 
 } // namespace KDC
