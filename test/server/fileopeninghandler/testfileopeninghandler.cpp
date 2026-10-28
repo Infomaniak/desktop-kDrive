@@ -31,22 +31,25 @@ void TestFileOpeningHandler::tearDown() {
 }
 
 void TestFileOpeningHandler::testIsOpenFileUrl() {
-    CPPUNIT_ASSERT(FileOpeningHandler::isFileOpeningDeeplink("kdrive://open/drive/1234/file/456"));
-    CPPUNIT_ASSERT(FileOpeningHandler::isFileOpeningDeeplink("KDRIVE://OPEN/drive/1234/file/456")); // Scheme and host are
-                                                                                                    // case-insensitive.
+    CPPUNIT_ASSERT(FileOpeningHandler::isFileOpeningDeeplink("kdrive://open/user/99/drive/1234/file/456"));
+    CPPUNIT_ASSERT(
+            FileOpeningHandler::isFileOpeningDeeplink("KDRIVE://OPEN/user/99/drive/1234/file/456")); // Scheme and
+                                                                                                     // host are case-insensitive.
 
     CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink(""));
     CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("kdrive://auth-desktop?code=1&state=2")); // OAuth redirection.
-    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("kdrive://other/drive/1234/file/456"));
-    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("https://open/drive/1234/file/456"));
-    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("drive/1234/file/456"));
-    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("kdrive://open/drive/1234/file/%")); // Invalid percent-encoding.
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("kdrive://other/user/99/drive/1234/file/456"));
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("https://open/user/99/drive/1234/file/456"));
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("user/99/drive/1234/file/456"));
+    CPPUNIT_ASSERT(!FileOpeningHandler::isFileOpeningDeeplink("kdrive://open/user/99/drive/1234/file/%")); // Invalid
+                                                                                                           // percent-encoding.
 }
 
 void TestFileOpeningHandler::testParseUrl() {
     {
         FileOpeningHandler::Request request;
-        CPPUNIT_ASSERT(FileOpeningHandler::parseUrl("kdrive://open/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456", request));
+        CPPUNIT_ASSERT_EQUAL(UserId(99), request.userId);
         CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
         CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
     }
@@ -54,7 +57,8 @@ void TestFileOpeningHandler::testParseUrl() {
     {
         // Query items are ignored.
         FileOpeningHandler::Request request;
-        CPPUNIT_ASSERT(FileOpeningHandler::parseUrl("kdrive://open/drive/1234/file/456?foo=bar", request));
+        CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456?foo=bar", request));
+        CPPUNIT_ASSERT_EQUAL(UserId(99), request.userId);
         CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
         CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
     }
@@ -62,48 +66,67 @@ void TestFileOpeningHandler::testParseUrl() {
     {
         // Trailing slash.
         FileOpeningHandler::Request request;
-        CPPUNIT_ASSERT(FileOpeningHandler::parseUrl("kdrive://open/drive/1234/file/456/", request));
+        CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456/", request));
+        CPPUNIT_ASSERT_EQUAL(UserId(99), request.userId);
+        CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
         CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
     }
 
     {
         // Wrong number of path segments.
         FileOpeningHandler::Request request;
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/1234", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/1234/file", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/1234/file/456/extra", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456/extra", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/drive/1234/file/456",
+                                                             request)); // Legacy URL
+                                                                        // format without the user id.
     }
 
     {
         // Unsupported resource kind.
         FileOpeningHandler::Request request;
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/folder/1234/file/456", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/1234/folder/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/folder/99/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/folder/1234/file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/folder/456", request));
+    }
+
+    {
+        // Invalid user ids.
+        FileOpeningHandler::Request request;
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/abc/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/-1/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/0/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user//drive/1234/file/456", request));
     }
 
     {
         // Invalid drive ids.
         FileOpeningHandler::Request request;
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/abc/file/456", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/-1/file/456", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/0/file/456", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive//file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/abc/file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/-1/file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/0/file/456", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive//file/456", request));
     }
 
     {
         // Invalid node ids.
         FileOpeningHandler::Request request;
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/1234/file", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/1234/file/", request));
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://open/drive/1234/file/%", request)); // Invalid percent-encoding.
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/", request));
+        CPPUNIT_ASSERT(
+                !FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/%", request)); // Invalid
+                                                                                                            // percent-encoding.
     }
 
     {
         // Not a file opening URL.
         FileOpeningHandler::Request request;
-        CPPUNIT_ASSERT(!FileOpeningHandler::parseUrl("kdrive://auth-desktop?code=1&state=2", request));
+        CPPUNIT_ASSERT(!FileOpeningHandler::parseDeeplinkUrl("kdrive://auth-desktop?code=1&state=2", request));
     }
 }
 
