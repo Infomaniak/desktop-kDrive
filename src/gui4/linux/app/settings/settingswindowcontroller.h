@@ -76,13 +76,14 @@ class SettingsWindowController final : public QObject {
         }
 
         /**
-         * Open the Settings window on the card of a user, on the management page of a drive, or on one advanced
-         * synchronization of a drive. The target stays pending until the window takes it, because the window may not exist
-         * yet when the request is made.
+         * Open the Settings window on the card of a user, on the management page of a drive, on one advanced
+         * synchronization of a drive, or on the "Manage synchronization" page of a synchronization. The target stays pending
+         * until the window takes it, because the window may not exist yet when the request is made.
          */
         void requestOpenUser(UserDbId userDbId);
         void requestOpenDrive(DriveDbId driveDbId);
         void requestOpenAdvancedSync(DriveDbId driveDbId, SyncDbId syncDbId);
+        void requestOpenSyncManagement(DriveDbId driveDbId, SyncDbId syncDbId, bool advancedSync);
 
         /**
          * Emits the show signal of the pending target, if any, and clears it.
@@ -101,6 +102,7 @@ class SettingsWindowController final : public QObject {
         void userShowRequested(qint64 userDbId);
         void driveShowRequested(qint64 driveDbId);
         void advancedSyncShowRequested(qint64 driveDbId, qint64 syncDbId);
+        void syncManagementShowRequested(qint64 driveDbId, qint64 syncDbId, bool advancedSync);
         void quitConfirmationRequested();
 
     private:
@@ -114,6 +116,7 @@ class SettingsWindowController final : public QObject {
             User,
             Drive,
             AdvancedSync,
+            SyncManagement,
         };
 
         struct Target {
@@ -121,6 +124,7 @@ class SettingsWindowController final : public QObject {
                 UserDbId userDbId{0};
                 DriveDbId driveDbId{0};
                 SyncDbId syncDbId{0};
+                bool advancedSync{false};
         };
 
         std::optional<Target> _pendingTarget;
