@@ -19,6 +19,7 @@
 #pragma once
 
 #include "libcommon/utility/types.h"
+#include "libcommon/data/sync.h"
 
 #include <QTimer>
 
@@ -77,6 +78,10 @@ class FileOpeningHandler : public QObject {
         };
 
         void processResolvePhase();
+
+        void sortSyncsByDbId(std::vector<Sync> &syncs) const;
+        std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;
+
         //! Tries to resolve the node id into one of the syncs of the drive. Returns false on DB access error, and sets
         //! `found` with true if the node has been resolved.
         ExitInfo resolveDeeplink(bool &found);
@@ -101,6 +106,7 @@ class FileOpeningHandler : public QObject {
         QTimer _syncWaitTimer; // Periodically checks whether the item has been synchronized.
         QTimer _deadlineTimer; // Fails the request when the current phase takes too long.
 
+        std::unordered_set<DriveDbId> _driveDbIds;
         DriveDbId _driveDbId{0};
         SyncDbId _syncDbId{0};
         SyncPath _relativePath; // Relative to the local folder of the sync.
