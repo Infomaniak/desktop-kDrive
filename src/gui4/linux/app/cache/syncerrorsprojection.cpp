@@ -57,16 +57,16 @@ void logClassification(const ClassifiedSyncError &classified) {
                                           << "/ exitCode:" << error.exitCode() << "/ exitCause:" << error.exitCause()
                                           << "/ nodeType:" << error.nodeType() << "/ cancelType:" << error.cancelType()
                                           << "/ inconsistencyType:" << error.inconsistencyType()
-                                          << "/ conflictType:" << error.conflictType();
+                                          << "/ conflictType:" << error.conflictType()
+                                          << "/ function:" << QString::fromStdString(error.functionName())
+                                          << "/ worker:" << QString::fromStdString(error.workerName());
         // One issue per code and cause, whatever the user: tells which unexpected errors deserve a kind of their own.
-        // The simulator's errors (negative ids, real ones are SQLite rowids) are not reported.
+        // Sentry groups the event by its message, the title only being its logger: the message holds the code and cause
+        // alone, and the other fields stay in the log above. The simulator's errors (negative ids, real ones are SQLite
+        // rowids) are not reported.
         if (error.dbId() > 0) {
-            SentryService::reportWarning(
-                    "Unclassified sync error: " + toString(error.exitCode()) + " / " + toString(error.exitCause()),
-                    "level: " + toString(error.level()) + ", cancelType: " + toString(error.cancelType()) +
-                            ", inconsistencyType: " + toString(error.inconsistencyType()) +
-                            ", conflictType: " + toString(error.conflictType()) + ", function: " + error.functionName() +
-                            ", worker: " + error.workerName());
+            SentryService::reportWarning("SyncErrorsProjection", "Unclassified sync error: " + toString(error.exitCode()) +
+                                                                         " / " + toString(error.exitCause()));
         }
         return;
     }
