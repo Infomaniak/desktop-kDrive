@@ -30,12 +30,15 @@ FocusScope {
     required property var controller
 
     readonly property bool hasErrors: root.controller.errorCount > 0
+    // A refresh deletes the errors before detecting them again: the page keeps the list and its busy Refresh button
+    // until the response, rather than showing "No errors to fix" for a moment.
+    readonly property bool showsList: root.hasErrors || root.controller.refreshPending
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: IKActivities.pagePadding
         spacing: IKActivities.errorsCardSpacing
-        visible: root.hasErrors
+        visible: root.showsList
 
         RowLayout {
             Layout.fillWidth: true
@@ -43,7 +46,8 @@ FocusScope {
 
             Text {
                 Layout.fillWidth: true
-                text: qsTrId("informationBlockSynchroErrorTitle", root.controller.errorCount)
+                // Empty while a refresh has no errors yet: 0 would read "one error" in French.
+                text: root.hasErrors ? qsTrId("informationBlockSynchroErrorTitle", root.controller.errorCount) : ""
                 textFormat: Text.StyledText
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.bodySize
@@ -101,7 +105,7 @@ FocusScope {
     Column {
         anchors.centerIn: parent
         spacing: IKActivities.emptyContentSpacing
-        visible: !root.hasErrors
+        visible: !root.showsList
 
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
