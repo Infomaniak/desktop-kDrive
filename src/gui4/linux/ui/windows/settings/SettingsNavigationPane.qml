@@ -37,7 +37,8 @@ Item {
     }
 
     property var _focusHistory: []
-    property Component _pendingResetComponent: null
+    // Reset asked during a transition, applied once it ends: {component, pushedComponent}.
+    property var _pendingReset: null
 
     signal focusRestorationRequested(var target)
 
@@ -61,17 +62,25 @@ Item {
         Qt.callLater(() => root.focusRestorationRequested(focusTarget));
     }
 
-    function reset(component) {
-        // A reset can come from an asynchronous event: defer it until the transition ends rather than dropping it.
+    // Shows `component` alone, then pushes `pushedComponent` over it when given.
+    function reset(component, pushedComponent) {
+        // A reset can come from an asynchronous event: defer it, with its page, until the transition ends rather than
+        // dropping it.
         if (stack.busy) {
-            root._pendingResetComponent = component;
+            root._pendingReset = {
+                "component": component,
+                "pushedComponent": pushedComponent || null
+            };
             return;
         }
 
-        root._pendingResetComponent = null;
+        root._pendingReset = null;
         root._focusHistory = [];
         stack.clear(StackView.Immediate);
         stack.push(component, {}, StackView.Immediate);
+        if (pushedComponent) {
+            root.push(pushedComponent);
+        }
     }
 
     StackView {
@@ -82,8 +91,8 @@ Item {
         initialItem: root.initialItem
 
         onBusyChanged: {
-            if (!busy && root._pendingResetComponent) {
-                root.reset(root._pendingResetComponent);
+            if (!busy && root._pendingReset) {
+                root.reset(root._pendingReset.component, root._pendingReset.pushedComponent);
             }
         }
     }
