@@ -50,15 +50,15 @@ class FileOpeningHandler : public QObject {
                 NodeId nodeId;
         };
 
-        FileOpeningHandler(AppServer *appServer, const std::string &url, QObject *parent = nullptr);
+        FileOpeningHandler(AppServer *appServer, std::string url, QObject *parent = nullptr);
 
         void start();
 
         //! Returns true if `urlStr` is a file opening URL, i.e. "kdrive://open/...".
-        static bool isOpenFileUrl(const std::string &urlStr);
+        static bool isFileOpeningDeeplink(const std::string &urlStr);
         //! Extracts the drive id and the node id from `urlStr`. Returns false if the URL is not a valid file opening
         //! URL.
-        static bool parseUrl(const std::string &urlStr, Request &request);
+        static bool parseDeeplinkUrl(const std::string &urlStr, Request &request);
         //! Returns true if `path` designates executable content that must be revealed in its parent folder instead of
         //! being launched.
         static bool shouldOpenParentFolder(const SyncPath &path);
@@ -71,26 +71,26 @@ class FileOpeningHandler : public QObject {
             Resolve, // Look for the node in the syncs configured for the drive.
             CheckRemoteExistence, // The node is not synchronized yet, check whether it exists on the remote side.
             WaitForItemToSynchronize, // The node exists on the remote side only, wait for it to be synchronized.
-            WaitForHydration, // The node is being hydrated, wait for the download to complete.
+            WaitForItemHydrationToComplete, // The node is being hydrated, wait for the download to complete.
             Done
         };
 
         void processResolvePhase();
         //! Tries to resolve the node id into one of the syncs of the drive. Returns false on DB access error, and sets
         //! `found` with true if the node has been resolved.
-        bool resolveUrl(bool &found);
+        ExitInfo resolveDeeplink(bool &found);
         void checkRemoteExistence();
         void onRemoteExistenceChecked(const ExitInfo &exitInfo, bool exists);
         void onSyncWaitTick();
         void onDeadlineReached();
-        void openOrHydrateResolvedItem();
-        bool hydrateResolvedPlaceholder();
+        ExitInfo openResolvedItem();
+        ExitInfo hydrateResolvedPlaceholder();
         void onHydrationFinished(bool success);
-        void openResolvedItem();
+        ExitInfo openLocalItem();
         void setPhase(Phase phase, std::chrono::milliseconds tickInterval, std::chrono::milliseconds timeout);
         void notifyUser(const std::string &message) const;
-        void succeed();
-        void handleFailure(const std::string &userMessage);
+        void handleFileOpeningSuccess();
+        void handleFileOpeningFailure(const std::string &userMessage);
 
         AppServer *_appServer{nullptr};
         std::string _url;
