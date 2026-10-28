@@ -77,7 +77,7 @@ class FileOpeningHandler : public QObject {
             Done
         };
 
-        void processResolvePhase();
+        void resolveDeeplink();
 
         void sortSyncsByDbId(std::vector<Sync> &syncs) const;
         std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;

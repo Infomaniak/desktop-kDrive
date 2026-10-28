@@ -89,6 +89,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectDriveByDriveId(DriveId driveId, Drive &drive, bool &found);
         bool selectAllDrives(std::vector<Drive> &driveList);
         bool selectAllDrives(AccountDbId accountDbId, std::vector<Drive> &driveList);
+        bool driveDbIds(UserId userId, const DriveId driveId, std::unordered_set<DriveDbId> &driveDbIds);
         bool driveDbId(AccountDbId accountDbId, DriveId driveId, DriveDbId &dbId);
         bool getNewDriveDbId(DriveDbId &dbId);
 
