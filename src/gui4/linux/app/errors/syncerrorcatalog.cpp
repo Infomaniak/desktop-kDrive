@@ -330,9 +330,9 @@ CatalogEntry catalogEntry(const SyncErrorKind kind) {
                                .explanation = Explanation::INotifyWatches,
                                .showsInTray = true},
                     .presentation = {.title = {"linuxErrINotifyWatchesTitle"},
-                                     .description = {"linuxErrINotifyWatchesDescription"},
+                                     .description = {"linuxErrINotifyWatchesLimitDescription"},
                                      .action = Action::Explain,
-                                     .actionLabel = kExplainLabel},
+                                     .actionLabel = {"linuxButtonRaiseLimit"}},
             };
 
         case Unknown:
