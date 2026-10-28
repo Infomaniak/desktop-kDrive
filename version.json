@@ -10,15 +10,15 @@
     "macOS": {
       "major": 4,
       "minor": 0,
-      "patch": 0,
-      "build": 18,
+      "patch": 1,
+      "build": 1,
       "year": 2026
     },
     "Windows": {
       "major": 4,
       "minor": 0,
-      "patch": 0,
-      "build": 18,
+      "patch": 1,
+      "build": 1,
       "year": 2026
     }
   }
