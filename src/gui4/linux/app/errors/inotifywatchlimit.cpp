@@ -23,6 +23,8 @@
 #include <QLoggingCategory>
 
 #include <algorithm>
+#include <cstdint>
+#include <limits>
 
 namespace KDC {
 
@@ -49,13 +51,16 @@ qint64 readWatchLimit() {
 // Always above the current limit, otherwise the command would change nothing: since Linux 5.11, the default depends on
 // the memory (8192 to 1048576), so a fixed value alone could be lower than the current one.
 qint64 proposedWatchLimit(const qint64 currentLimit) {
-    // 524288 (2^19) is the value commonly recommended for tools that watch large trees, such as VS Code and the
-    // JetBrains IDEs. The limit is only a cap: the kernel uses about 1 KiB per watch actually registered, and the server
-    // registers one per folder, so a high limit costs nothing until the synchronization needs it.
+    // 524288 (2^19) is one of the values used by tools that watch large trees, listed in the kernel commit that made the
+    // default depend on the memory (92890123749b, "inotify: Increase default inotify.max_user_watches limit to
+    // 1048576"). The limit is only a cap: each watch actually registered costs about 1 KiB of kernel memory (an
+    // `inotify_inode_mark` and the inode it pins), and the server registers one per folder, so a high limit costs
+    // nothing until the synchronization needs it.
+    // https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=92890123749bafc317bbfacbe0a62ce08d78efb7
     constexpr qint64 minimumProposedLimit = 524288;
     // The kernel stores the limit as an `int`.
-    constexpr qint64 maximumLimit = 2147483647;
-    return std::min(std::max(2 * currentLimit, minimumProposedLimit), maximumLimit);
+    constexpr qint64 maximumLimit = std::numeric_limits<int32_t>::max();
+    return std::clamp(2 * currentLimit, minimumProposedLimit, maximumLimit);
 }
 
 // Applied alone so the value takes effect now; a higher sysctl file set by the administrator still wins at boot.
