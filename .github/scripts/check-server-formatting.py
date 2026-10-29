@@ -61,7 +61,8 @@ def main():
             f"Run {args.clang_format} -i --style=file on this file."
         )
         diff = "".join(
-            difflib.unified_diff(
+            line if line.endswith("\n") else line + "\n\\ No newline at end of file\n"
+            for line in difflib.unified_diff(
                 original.decode("utf-8", errors="replace").splitlines(keepends=True),
                 formatted.decode("utf-8", errors="replace").splitlines(keepends=True),
                 fromfile=f"a/{filename}",
