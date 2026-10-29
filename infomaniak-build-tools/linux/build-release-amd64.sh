@@ -183,8 +183,14 @@ package_release() {
 
   cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
 
-  cp -P "$QTDIR/lib/libQt6WaylandClient.so"* "$app_dir/usr/lib"
-  cp -P "$QTDIR/lib/libQt6WaylandEglClientHwIntegration.so"* "$app_dir/usr/lib"
+  # Copy Qt Wayland libraries if they exist (optional for Wayland support).
+  # libQt6WaylandEglClientHwIntegration is no longer shipped since Qt 6.12,
+  # where the Wayland client stack moved into qtbase.
+  for lib in libQt6WaylandClient.so libQt6WaylandEglClientHwIntegration.so; do
+    if ls "$QTDIR/lib/${lib}"* 1> /dev/null 2>&1; then
+      cp -P "$QTDIR/lib/${lib}"* "$app_dir/usr/lib" || true
+    fi
+  done
 
   rm -rf "$app_dir/usr/lib/x86_64-linux-gnu/"
   rm -rf "$app_dir/usr/include/"
