@@ -437,6 +437,11 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</translation>
             <source>Open Explorer</source> 
             <translation>Åbn Stifinder</translation> 
         </message> 
+        <message id="buttonOpenFile"> 
+            <source>Open the file</source> 
+            <extracomment>Button or tooltip that opens a file in its default application. In the conflict version selection dialog, it opens the local copy of the conflicted file to compare it with the online version.</extracomment> 
+            <translation>Open the file</translation> 
+        </message> 
         <message id="buttonOpenFolder"> 
             <source>Open folder</source> 
             <translation>Åbn mappe</translation> 
