@@ -26,6 +26,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "libsyncengine/db/syncdb.h"
+#include "libsyncengine/jobs/local/hydrateplaceholderjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/itemsexistjob.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "libsyncengine/syncpal/syncpal.h"
@@ -301,13 +302,13 @@ ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
 void FileOpeningHandler::checkRemoteExistence() {
     setPhase(Phase::CheckRemoteExistence, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
 
-    const NodeId nodeId = _request.remoteNodeId;
-    const auto job = std::make_shared<ItemsExistJob>(_driveDbId, NodeSet{nodeId});
-    job->setAdditionalCallback([this, job, nodeId](UniqueId) {
+    const RemoteNodeId remoteNodeId = _request.remoteNodeId;
+    const auto job = std::make_shared<ItemsExistJob>(_driveDbId, RemoteNodeIdSet{remoteNodeId});
+    job->setAdditionalCallback([this, job, remoteNodeId](UniqueId) {
         // Job manager worker thread.
         const ExitInfo exitInfo = job->exitInfo();
         IoError ioError = IoError::Success;
-        const bool exists = job->exists(nodeId, ioError);
+        const bool exists = job->exists(remoteNodeId, ioError);
 
         // Hand the result over to the AppServer thread. `this` is used as the context object: if the handler has
         // been destroyed in the meantime, the call is simply discarded.
@@ -425,41 +426,25 @@ ExitInfo FileOpeningHandler::hydrateResolvedPlaceholder() {
         const std::scoped_lock lock(_appServer->syncPalMapMutex);
         const auto syncPalMapIt = _appServer->syncPalMap.find(_syncDbId);
         if (syncPalMapIt == _appServer->syncPalMap.end() || !syncPalMapIt->second) return ExitCode::DataError;
+
         syncPal = syncPalMapIt->second;
     }
-
-#if defined(KD_MACOS)
-    std::shared_ptr<Vfs> vfs;
-    if (const auto exitInfo = _appServer->getVfs(_syncDbId, vfs); !exitInfo || !vfs) return exitInfo;
-
-    // On macOS, setting the pin state to `AlwaysLocal` is required to trigger the hydration
-    // (see ExtensionJob::commandMakeAvailableLocallyDirect).
-    _initialPinState = vfs->pinState(_relativePath);
-    if (_initialPinState != PinState::AlwaysLocal) {
-        if (const auto exitInfo = vfs->setPinState(_relativePath, PinState::AlwaysLocal); !exitInfo) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::setPinState - " << Utility::formatSyncPath(_localPath));
-
-            return exitInfo;
-        }
-    }
-#endif
 
     const auto observer = [this](UniqueId, bool success) {
         // Invoked on a job manager worker thread, while the SyncPal direct download jobs map is locked: it must not
         // call any SyncPal method. Hand the result over to the AppServer thread. `this` is used as the context
         // object: if the handler has been destroyed in the meantime, the call is simply discarded.
-        QMetaObject::invokeMethod(
-                this, [this, success] { onHydrationFinished(success); }, Qt::QueuedConnection);
+
+        return onHydrationFinished(success);
     };
 
-    if (const auto exitInfo = syncPal->addDlDirectJob(_relativePath, _localPath, SyncPath(), observer); !exitInfo) {
+    // The job checks the item state, sets the pin state to `AlwaysLocal` if needed (macOS), and enqueues the download
+    // job (see ExtensionJob::commandMakeAvailableLocallyDirect).
+    HydratePlaceHolderJob job(syncPal, _localPath, _relativePath, {}, observer);
+    if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in SyncPal::addDlDirectJob - " << Utility::formatSyncPath(_localPath) << L": " << exitInfo);
-#if defined(KD_MACOS)
-        // Cancel the hydration and restore the initial pin state.
-        vfs->cancelHydrate(_localPath);
-        if (_initialPinState != PinState::Unknown) (void) vfs->setPinState(_relativePath, _initialPinState);
-#endif
+                  L"Error in HydratePlaceHolderJob - " << Utility::formatExitInfo(_localPath, exitInfo));
+
         return exitInfo;
     }
 
@@ -483,6 +468,25 @@ ExitInfo FileOpeningHandler::openLocalItem() {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Executable item, revealing its parent folder instead - " << Utility::formatSyncPath(_localPath));
         pathToOpen = _localPath.parent_path();
+    }
+
+    bool isDeHydrated = false;
+    if (auto ioError = IoError::Success; !IoHelper::checkIfFileIsDehydrated(pathToOpen, isDeHydrated, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::checkIfFileIsDehydrated - " << Utility::formatIoError(pathToOpen, ioError));
+
+        handleFileOpeningFailure("The download of the element requested from this kDrive link failed.");
+
+        return ExitCode::SystemError;
+    }
+
+    // Do not attempt to open a dehydrated placeholder if the engine of the sync is not running: the system is unable able to
+    // hydrate.
+    if (isDeHydrated && !getSyncDb(_syncDbId)) {
+        handleFileOpeningFailure(
+                "The download of the element requested from this kDrive link failed because its sync is not running.");
+
+        return ExitCode::DataError;
     }
 
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(pathToOpen)))) {
