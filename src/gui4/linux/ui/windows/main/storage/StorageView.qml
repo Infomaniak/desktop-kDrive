@@ -219,6 +219,18 @@ Item {
 
                 onClicked: root.controller.openSubscriptionUpgrade()
 
+                // Drawn around the glyph without enlarging the control, so the header keeps its alignment.
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width + 2 * IKStorage.cartFocusRingPadding
+                    height: parent.height + 2 * IKStorage.cartFocusRingPadding
+                    radius: IKRadius.r4
+                    color: "transparent"
+                    border.width: IKLinkTokens.focusRingWidth
+                    border.color: IKColors.accentPrimary
+                    visible: cartButton.visualFocus
+                }
+
                 // Icon-only control: the tooltip states that the action opens the web browser.
                 IKToolTip {
                     targetButton: cartButton

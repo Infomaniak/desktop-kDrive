@@ -43,6 +43,7 @@ QtObject {
     readonly property real loadingPlaceholderHeight: 12
     readonly property real headerAccessorySpacing: 8
     readonly property real cartIconSize: 14
+    readonly property real cartFocusRingPadding: 3
     readonly property real chipHeight: 24
     readonly property real chipPadding: 4
     readonly property real chipRadius: 4

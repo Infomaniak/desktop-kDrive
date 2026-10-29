@@ -30,12 +30,14 @@ Rectangle {
     property color driveColor: IKColors.driveDefaultColor
     property bool advancedSync: false
 
-    readonly property real maximumLabelWidth: IKStorage.chipMaxWidth - 2 * IKStorage.chipPadding - IKStorage.chipIconSize
-                                              - IKStorage.chipSpacing
+    readonly property real labelInset: 2 * IKStorage.chipPadding + IKStorage.chipIconSize + IKStorage.chipSpacing
+    readonly property real maximumLabelWidth: IKStorage.chipMaxWidth - labelInset
 
     color: IKColors.storageChipSurface
     radius: IKStorage.chipRadius
-    implicitWidth: content.implicitWidth + 2 * IKStorage.chipPadding
+    // Computed from the label text, not from the row: the label shrinks with the width the legend gives the chip.
+    implicitWidth: labelInset + Math.min(label.implicitWidth, maximumLabelWidth)
+    clip: true
     implicitHeight: IKStorage.chipHeight
 
     Row {
@@ -76,7 +78,7 @@ Rectangle {
             id: label
 
             anchors.verticalCenter: parent.verticalCenter
-            width: Math.min(implicitWidth, root.maximumLabelWidth)
+            width: Math.max(0, Math.min(implicitWidth, root.maximumLabelWidth, root.width - root.labelInset))
             text: root.title
             textFormat: Text.PlainText
             color: IKColors.textPrimary
