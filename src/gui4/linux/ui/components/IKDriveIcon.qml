@@ -34,6 +34,8 @@ Item {
     Image {
         anchors.fill: parent
         source: "qrc:/assets/onboarding/drive-icon-glyph.svg"
+        sourceSize.width: width
+        sourceSize.height: height
         fillMode: Image.Stretch
         smooth: true
         layer.enabled: true
