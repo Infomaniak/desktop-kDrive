@@ -1505,6 +1505,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty)
 
         return exitInfo;
     }
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC
