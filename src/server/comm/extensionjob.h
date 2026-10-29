@@ -160,10 +160,8 @@ class ExtensionJob : public AbstractJob {
         ExitInfo syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus);
         ExitInfo getPinState(const FileData &fileData, PinState &pinState);
         ExitInfo setPinState(const FileData &fileData, PinState pinState);
-        ExitInfo cancelHydrate(const FileData &fileData, PinState pinState, ExitInfo exitInfo);
         ExitInfo cancelDehydrate(const FileData &fileData, PinState pinState);
         ExitInfo dehydratePlaceholder(const FileData &fileData);
-        ExitInfo addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath);
 
 #if defined(KD_MACOS)
         void processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList);
