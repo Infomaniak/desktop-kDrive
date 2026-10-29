@@ -64,6 +64,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/activitylistmodel.h
         app/mainwindow/blockingerrorcontroller.cpp
         app/mainwindow/blockingerrorcontroller.h
+        app/mainwindow/conflictversioncontroller.cpp
+        app/mainwindow/conflictversioncontroller.h
         app/mainwindow/errorlistmodel.cpp
         app/mainwindow/errorlistmodel.h
         app/mainwindow/errorspagecontroller.cpp
