@@ -39,6 +39,8 @@ Popup {
     property real scrimRadius: 0
     property real preferredWidth: IKModalTokens.width
     property alias bodyData: bodyColumn.data
+    // Shown at the right of the title, for instance a counter.
+    property alias headerAccessoryData: headerAccessory.data
     property alias footerData: footerLayout.data
 
     signal dismissRequested
@@ -126,7 +128,7 @@ Popup {
 
         Item {
             width: parent.width
-            implicitHeight: Math.max(headerIcon.height, titleText.implicitHeight)
+            implicitHeight: Math.max(headerIcon.height, titleText.implicitHeight, headerAccessory.implicitHeight)
 
             IKTintedIcon {
                 id: headerIcon
@@ -145,13 +147,21 @@ Popup {
 
                 anchors.left: headerIcon.right
                 anchors.leftMargin: headerIcon.visible ? IKModalTokens.headerSpacing : 0
-                anchors.right: parent.right
+                anchors.right: headerAccessory.left
+                anchors.rightMargin: headerAccessory.implicitWidth > 0 ? IKModalTokens.headerSpacing : 0
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.title
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.title3Size
                 font.weight: IKFonts.emphasized
                 wrapMode: Text.WordWrap
+            }
+
+            Row {
+                id: headerAccessory
+
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
             }
         }
 
