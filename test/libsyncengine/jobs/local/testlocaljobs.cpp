@@ -21,6 +21,7 @@
 #include "config.h"
 #include "io/cachedirectory.h"
 #include "jobs/local/genericlocaldeletejob.h"
+#include "jobs/local/hydrateplaceholderjob.h"
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
@@ -45,7 +46,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath) {};
+            SyncLocalDeleteJob(syncPal, absolutePath){};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -319,7 +320,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){
 
                 };
             void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }
@@ -398,7 +399,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {};
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
 
         protected:
             bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
@@ -492,6 +493,49 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
 #endif
+}
+
+void KDC::TestLocalJobs::testHydratePlaceHolderJob() {
+    // The temporary directory is created inside the sync root, so that the items are addressed relatively to it.
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testHydratePlaceHolderJob", _localTempDir.path());
+
+    // A symlink is never hydrated.
+    {
+        const SyncPath targetPath = temporaryDirectory.path() / "tmp_target_file.txt";
+        { std::ofstream ofs(targetPath); }
+        const SyncPath linkPath = temporaryDirectory.path() / "tmp_link.txt";
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, linkPath, false, ioError));
+
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), linkPath);
+        HydratePlaceHolderJob hydrateJob(_syncPal, linkPath, relativePath);
+        hydrateJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), hydrateJob.exitInfo());
+    }
+
+    // A placeholder cannot be hydrated when the sync is not running.
+    {
+        const SyncPath filePath = temporaryDirectory.path() / "tmp_file.txt";
+        { std::ofstream ofs(filePath); }
+
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
+        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
+        hydrateJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SyncPaused), hydrateJob.exitInfo());
+    }
+
+    // A missing item is reported as such.
+    {
+        const SyncPath filePath = temporaryDirectory.path() / "missing_file.txt";
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
+
+        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
+        hydrateJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), hydrateJob.exitInfo());
+    }
 }
 
 } // namespace KDC
