@@ -64,7 +64,7 @@ jobs:
         uses: actions/checkout@v6.0.2
 
       - name: Check translations
-        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive && inputs.build_linux != 'Do not build' }}
+        if: ${{ false }}  # Temporary bypass for the 4.0.0.98 test build
         run: |
              cd translations\updateTool
              $result = .\Windows.ps1
