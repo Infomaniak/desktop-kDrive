@@ -44,6 +44,7 @@ class UserService;
 class OnboardingSessionManager final : public QObject {
         Q_OBJECT
         Q_PROPERTY(OnboardingSession *activeSession READ activeSession NOTIFY activeSessionChanged)
+        Q_PROPERTY(bool sessionReplacementPending READ sessionReplacementPending NOTIFY sessionReplacementPendingChanged)
 
     public:
         explicit OnboardingSessionManager(CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
@@ -51,6 +52,13 @@ class OnboardingSessionManager final : public QObject {
                                           QObject *parent = nullptr);
 
         [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
+
+        /**
+         * True while a forced Login session replaces the active session, without hiding the onboarding window.
+         *
+         * activeSession is null meanwhile; QML must keep the onboarding route instead of loading another one.
+         */
+        [[nodiscard]] bool sessionReplacementPending() const { return _sessionReplacementPending; }
 
         /**
          * Publishes the onboarding route derived from the completed initial cache snapshot.
@@ -72,6 +80,7 @@ class OnboardingSessionManager final : public QObject {
 
     signals:
         void activeSessionChanged();
+        void sessionReplacementPendingChanged();
         void openOnboardingWindowRequested();
         void closeOnboardingWindowRequested();
         void onboardingCancelled();
@@ -90,6 +99,7 @@ class OnboardingSessionManager final : public QObject {
         void startSession(OnboardingSession::EntryPoint entryPoint, std::optional<UserDbId> selectedUserDbId);
         void stopSession(bool closeWindow);
         void handleRetiringSessionDestroyed();
+        void setSessionReplacementPending(bool pending);
         CachePopulator &_cachePopulator;
         AppCache &_appCache;
         CommService &_commService;
@@ -103,6 +113,7 @@ class OnboardingSessionManager final : public QObject {
         bool _restartRequested{false};
         bool _loginSessionRequested{false};
         bool _windowActivationPending{false};
+        bool _sessionReplacementPending{false};
 };
 
 } // namespace KDC
