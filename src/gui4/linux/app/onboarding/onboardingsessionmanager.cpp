@@ -93,7 +93,10 @@ void OnboardingSessionManager::startLoginSession() {
 
         _loginSessionRequested = true;
         _windowActivationPending = true;
-        stopSession(true);
+        // Keep the window shown: hiding it and showing it again a few milliseconds later races the Qt Quick render
+        // thread on the Wayland surface, and the compositor then disconnects the client.
+        setSessionReplacementPending(true);
+        stopSession(false);
         return;
     }
 
@@ -215,6 +218,7 @@ void OnboardingSessionManager::handleRetiringSessionDestroyed() {
         _loginSessionRequested = false;
         _restartRequested = false;
         startSession(OnboardingSession::EntryPoint::Login, std::nullopt);
+        setSessionReplacementPending(false);
         if (activateAfterRestart) {
             openWindowIfDisplayable();
         }
@@ -229,6 +233,15 @@ void OnboardingSessionManager::handleRetiringSessionDestroyed() {
     if (activateAfterRestart) {
         openWindowIfDisplayable();
     }
+}
+
+void OnboardingSessionManager::setSessionReplacementPending(const bool pending) {
+    if (_sessionReplacementPending == pending) {
+        return;
+    }
+
+    _sessionReplacementPending = pending;
+    emit sessionReplacementPendingChanged();
 }
 
 } // namespace KDC

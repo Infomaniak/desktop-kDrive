@@ -39,7 +39,9 @@ IKShadowedWindow {
     required property var searchController
     required property var systemTrayController
 
+    // A session being replaced keeps the onboarding route: no other route may load between the two sessions.
     readonly property bool onboardingActive: onboardingSessionManager.activeSession !== null
+                                             || onboardingSessionManager.sessionReplacementPending
     readonly property bool manyDeletesPresentationAllowed: !onboardingActive
                                                            && appRouter.mainWindowActive
                                                            && visible
@@ -50,7 +52,7 @@ IKShadowedWindow {
     contentHeight: 600
     minimumContentWidth: 800
     minimumContentHeight: 520
-    title: onboardingActive ? onboardingSessionManager.activeSession.flowController.title : "kDrive"
+    title: onboardingSessionManager.activeSession ? onboardingSessionManager.activeSession.flowController.title : "kDrive"
     surfaceColor: {
         if (waitingActive) {
             return IKColors.surfaceSecondary;
