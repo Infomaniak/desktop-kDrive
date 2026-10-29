@@ -49,7 +49,7 @@ void TestFileOpeningHandler::testParseUrl() {
     {
         FileOpeningHandler::Request request;
         CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456", request));
-        CPPUNIT_ASSERT_EQUAL(UserId(99), request.userId);
+        CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
         CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
         CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
     }
@@ -58,7 +58,7 @@ void TestFileOpeningHandler::testParseUrl() {
         // Query items are ignored.
         FileOpeningHandler::Request request;
         CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456?foo=bar", request));
-        CPPUNIT_ASSERT_EQUAL(UserId(99), request.userId);
+        CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
         CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
         CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
     }
@@ -67,7 +67,7 @@ void TestFileOpeningHandler::testParseUrl() {
         // Trailing slash.
         FileOpeningHandler::Request request;
         CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456/", request));
-        CPPUNIT_ASSERT_EQUAL(UserId(99), request.userId);
+        CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
         CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
         CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
     }

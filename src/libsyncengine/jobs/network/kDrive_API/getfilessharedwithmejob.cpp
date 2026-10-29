@@ -26,8 +26,9 @@
 
 namespace KDC {
 
-GetFilesSharedWithMeJob::GetFilesSharedWithMeJob(const DriveDbId driveDbId, Cursor cursorInput, const int64_t limit /*= 10*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+GetFilesSharedWithMeJob::GetFilesSharedWithMeJob(const UserDbId userDbId, const DriveId driveId, Cursor cursorInput,
+                                                 const int64_t limit /*= 10*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _limit(limit),
     _cursorInput(std::move(cursorInput)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;

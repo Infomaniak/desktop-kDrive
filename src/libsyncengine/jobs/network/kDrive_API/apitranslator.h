@@ -68,4 +68,17 @@ class ApiTranslator {
         static std::mutex _mutex;
 };
 
+class ApiJobUtility {
+    public:
+        [[nodiscard]] static ExitInfo getSpecialFolderRemoteIds(UserDbId userDbId, DriveId driveId,
+                                                                SpecialFolderRemoteIds &specialFolderMap);
+
+        [[nodiscard]] static ExitInfo checkIfSharedFolderIsEmpty(UserDbId userDbId, DriveId driveId, bool &empty,
+                                                                 SyncTime &sleepDuration);
+        [[nodiscard]] static ExitInfo checkIfSharedFolderIsEmpty(UserDbId userDbId, DriveId driveId, bool &empty) {
+            SyncTime sleepDuration = 0;
+            return checkIfSharedFolderIsEmpty(userDbId, driveId, empty, sleepDuration);
+        }
+};
+
 } // namespace KDC

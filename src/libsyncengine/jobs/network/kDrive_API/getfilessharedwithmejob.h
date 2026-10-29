@@ -30,7 +30,7 @@ class GetFilesSharedWithMeJob : public AbstractTokenNetworkJob {
         /// @param driveDbId The database ID of the drive.
         /// @param cursorInput The cursor of the previously fetched page, empty for a first page.
         /// @param limit The maximal number of items returned by the request.
-        explicit GetFilesSharedWithMeJob(DriveDbId driveDbId, Cursor cursorInput = {}, int64_t limit = 10);
+        explicit GetFilesSharedWithMeJob(UserDbId userDbId, DriveId driveId, Cursor cursorInput = {}, int64_t limit = 10);
 
         // The node info list as returned by the backend API v3
         [[nodiscard]] const RemoteNodeInfoList &v3RemoteNodeInfoList() const { return _remoteNodeInfoList; }

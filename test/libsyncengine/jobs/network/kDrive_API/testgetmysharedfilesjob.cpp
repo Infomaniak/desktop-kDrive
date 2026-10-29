@@ -68,7 +68,7 @@ void TestGetFilesSharedWithMeJob::tearDown() {
 }
 
 void TestGetFilesSharedWithMeJob::testHandleResponse() {
-    GetFilesSharedWithMeJob job(_driveDbId);
+    GetFilesSharedWithMeJob job(_userDbId, _driveId);
 
     const std::string json = makeMySharedResponseJson();
     std::istringstream is(json);
@@ -99,7 +99,7 @@ void TestGetFilesSharedWithMeJob::testHandleResponse() {
 
 void TestGetFilesSharedWithMeJob::testHandleResponseTwice() {
     // A retried request handles a second response: its results replace those of the first one instead of piling up.
-    GetFilesSharedWithMeJob job(_driveDbId);
+    GetFilesSharedWithMeJob job(_userDbId, _driveId);
     const std::string json = makeMySharedResponseJson();
 
     for (int32_t attempt = 0; attempt < 2; ++attempt) {
@@ -112,7 +112,7 @@ void TestGetFilesSharedWithMeJob::testHandleResponseTwice() {
 
 void TestGetFilesSharedWithMeJob::testHandleResponseMissingDataArray() {
     // A response without a data array is a backend error.
-    GetFilesSharedWithMeJob job(_driveDbId);
+    GetFilesSharedWithMeJob job(_userDbId, _driveId);
 
     const std::string json = R"({"cursor":"c1","has_more":false})";
     std::istringstream is(json);
@@ -134,20 +134,20 @@ void TestGetFilesSharedWithMeJob::testSetQueryParameters() {
     };
 
     // A first page is requested without cursor.
-    GetFilesSharedWithMeJob firstPageJob(_driveDbId);
+    GetFilesSharedWithMeJob firstPageJob(_userDbId, _driveId);
     auto parameters = queryParameters(firstPageJob);
     CPPUNIT_ASSERT(!parameters.contains("cursor"));
     CPPUNIT_ASSERT_EQUAL(std::string("10"), parameters["limit"]);
 
     // A next page is requested with the cursor of the previous one.
-    GetFilesSharedWithMeJob nextPageJob(_driveDbId, "c1", 50);
+    GetFilesSharedWithMeJob nextPageJob(_userDbId, _driveId, "c1", 50);
     parameters = queryParameters(nextPageJob);
     CPPUNIT_ASSERT_EQUAL(std::string("c1"), parameters["cursor"]);
     CPPUNIT_ASSERT_EQUAL(std::string("50"), parameters["limit"]);
 }
 
 void TestGetFilesSharedWithMeJob::testGetSpecificUrl() {
-    GetFilesSharedWithMeJob job(_driveDbId);
+    GetFilesSharedWithMeJob job(_userDbId, _driveId);
     CPPUNIT_ASSERT(job.getSpecificUrl().ends_with("/files/shared_with_me"));
 }
 
