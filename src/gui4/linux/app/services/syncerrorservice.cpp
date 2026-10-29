@@ -28,6 +28,7 @@ Q_LOGGING_CATEGORY(lcSyncErrorService, "gui.v4.syncerrorservice", QtInfoMsg)
 
 constexpr char serviceKeySyncError[] = "syncError";
 constexpr char actionRefreshErrors[] = "refreshErrors";
+constexpr char actionResolveConflicts[] = "resolveConflicts";
 
 } // namespace
 
@@ -40,8 +41,13 @@ SyncErrorService::SyncErrorService(CommService &commService, ServiceActionTracke
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::actionPendingChanged, this,
                    [this](const ServiceActionTracker::ServiceKey &serviceKey, const ServiceActionTracker::ActionKey &actionKey,
                           const ServiceActionTracker::ScopeId scopeId, const bool) {
-                       if (serviceKey == serviceKeySyncError && actionKey == actionRefreshErrors) {
+                       if (serviceKey != serviceKeySyncError) {
+                           return;
+                       }
+                       if (actionKey == actionRefreshErrors) {
                            emit refreshPendingChanged(scopeId);
+                       } else if (actionKey == actionResolveConflicts) {
+                           emit conflictResolutionPendingChanged(scopeId);
                        }
                    });
 }
@@ -71,6 +77,43 @@ void SyncErrorService::refreshErrors(const qint64 syncDbId) {
 
 bool SyncErrorService::isRefreshPending(const qint64 syncDbId) const {
     return _serviceActionTracker.isActionPending(serviceKeySyncError, actionRefreshErrors, syncDbId);
+}
+
+void SyncErrorService::fetchConflictInfo(const qint64 syncDbId, const SyncPath &relativePath, const ReplicaSide side,
+                                         const ConflictInfoCallback &callback) const {
+    _commService.requestNodeConflictInfo(
+            static_cast<SyncDbId>(syncDbId), relativePath, side,
+            [syncDbId, relativePath, side, callback](const ExitInfo &exitInfo, const NodeConflictInfo &info) {
+                if (!exitInfo) {
+                    qCWarning(lcSyncErrorService) << "Conflict info unavailable | syncDbId:" << syncDbId << "/ side:" << side
+                                                  << "/ path:" << Path2QStr(relativePath) << "/ code:" << exitInfo.code()
+                                                  << "/ cause:" << exitInfo.cause();
+                }
+                callback(static_cast<bool>(exitInfo), info);
+            });
+}
+
+void SyncErrorService::resolveConflicts(const qint64 syncDbId, const std::vector<ErrorDbId> &keepLocal,
+                                        const std::vector<ErrorDbId> &keepRemote, const ResolutionCallback &callback) {
+    qCInfo(lcSyncErrorService) << "Conflict resolution requested | syncDbId:" << syncDbId << "/ keepLocal:" << keepLocal.size()
+                               << "/ keepRemote:" << keepRemote.size();
+    _serviceActionTracker.beginAction(serviceKeySyncError, actionResolveConflicts, syncDbId);
+
+    _commService.requestErrorResolveConflicts(keepLocal, keepRemote, [this, syncDbId, callback](const ExitInfo &exitInfo) {
+        _serviceActionTracker.endAction(serviceKeySyncError, actionResolveConflicts, syncDbId);
+        if (!exitInfo) {
+            qCWarning(lcSyncErrorService) << "Conflict resolution failed | syncDbId:" << syncDbId << "/ code:" << exitInfo.code()
+                                          << "/ cause:" << exitInfo.cause();
+            _serviceEventBus.notifyGenericError(exitInfo, RequestNum::ERROR_RESOLVE_CONFLICTS);
+        } else {
+            qCInfo(lcSyncErrorService) << "Conflict resolution done | syncDbId:" << syncDbId;
+        }
+        callback(static_cast<bool>(exitInfo));
+    });
+}
+
+bool SyncErrorService::isConflictResolutionPending(const qint64 syncDbId) const {
+    return _serviceActionTracker.isActionPending(serviceKeySyncError, actionResolveConflicts, syncDbId);
 }
 
 } // namespace KDC

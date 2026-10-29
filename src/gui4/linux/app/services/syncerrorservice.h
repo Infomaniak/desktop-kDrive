@@ -24,6 +24,9 @@
 
 #include <QObject>
 
+#include <functional>
+#include <vector>
+
 namespace KDC {
 
 /**
@@ -47,8 +50,21 @@ class SyncErrorService : public QObject {
         Q_INVOKABLE void refreshErrors(qint64 syncDbId);
         Q_INVOKABLE [[nodiscard]] bool isRefreshPending(qint64 syncDbId) const;
 
+        using ConflictInfoCallback = std::function<void(bool ok, const NodeConflictInfo &info)>;
+        using ResolutionCallback = std::function<void(bool ok)>;
+        // Reads the version of a conflicted item on one side. `relativePath` is the local copy of the conflict on the local
+        // side, the original path on the remote side.
+        void fetchConflictInfo(qint64 syncDbId, const SyncPath &relativePath, ReplicaSide side,
+                               const ConflictInfoCallback &callback) const;
+        // Keeps the local or the remote version of each conflict of a synchronization. On success, the server removes the
+        // resolved errors through push signals, possibly before `callback` runs.
+        void resolveConflicts(qint64 syncDbId, const std::vector<ErrorDbId> &keepLocal, const std::vector<ErrorDbId> &keepRemote,
+                              const ResolutionCallback &callback);
+        [[nodiscard]] bool isConflictResolutionPending(qint64 syncDbId) const;
+
     signals:
         void refreshPendingChanged(qint64 syncDbId);
+        void conflictResolutionPendingChanged(qint64 syncDbId);
 
     private:
         CommService &_commService;
