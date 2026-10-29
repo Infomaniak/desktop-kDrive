@@ -6,7 +6,7 @@
   Locale: sv, Swedish
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -456,10 +456,7 @@ Du kan öppna dem när som helst, även utan internetanslutning.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Uppgradera</value> 
   </data> 
-  <data name="buttonValidate" xml:space="preserve"> 
-    <value>Bekräfta</value> 
-  </data> 
-  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+<data name="buttonValidateAndGoNext" xml:space="preserve"> 
     <value>Bekräfta och gå till nästa</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
@@ -730,11 +727,11 @@ Dina ändringar synkroniseras senare.</value>
     <value>Fil räddad</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Den här filen överskrider den maximalt tillåtna storleken (50 GB).
+    <value>Den här filen överskrider den maximalt tillåtna storleken (1 TB).
 Kontakta support för att låsa upp gränsen.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Den här filen överskrider den maximalt tillåtna storleken (50 GB).
+    <value>Den här filen överskrider den maximalt tillåtna storleken (1 TB).
 Kontakta din administratör för att öka filstorleksgränsen.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1578,16 +1575,10 @@ Dessa data gör det möjligt för vårt team att snabbt åtgärda och optimera p
     <value>Övriga filer på datorn</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageOnlineFree" xml:space="preserve"> 
-    <value>Återstående utrymme på ditt abonnemang</value> 
-  </data> 
-  <data name="storageOnlineUsed" xml:space="preserve"> 
+<data name="storageOnlineUsed" xml:space="preserve"> 
     <value>kDrive-filer som lagras online</value> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synkronisering</value> 
-  </data> 
-  <data name="storageThisComputerTitle" xml:space="preserve"> 
+<data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Den här datorn - %@ - %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 

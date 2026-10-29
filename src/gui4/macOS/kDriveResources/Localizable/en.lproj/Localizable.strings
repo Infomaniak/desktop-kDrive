@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "File rescued";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "This file exceeds the maximum allowed size (50 GB).\nContact support to unlock the limit.";
+"errFileTooBigAdminDescription" = "This file exceeds the maximum allowed size (1 TB).\nContact support to unlock the limit.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "This file exceeds the maximum allowed size (50 GB).\nContact your administrator to increase the file size limit.";
+"errFileTooBigDescription" = "This file exceeds the maximum allowed size (1 TB).\nContact your administrator to increase the file size limit.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "File too large";
@@ -1514,7 +1514,7 @@
 "storageSyncBlockTitle" = "Sync";
 
 /* loco:6979e265a8419bb7510c8122 */
-"storageUsageLabel" = "%@ on %@ used";
+"storageUsageLabel" = "%@ of %@ used";
 
 /* loco:698b0623154e735e8b0a2542 */
 "storedOnline" = "Stored online";
@@ -1551,12 +1551,6 @@
 
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "Sync is running";
-
-/* loco:6ad232f65d64577ad6084542 */
-"syncStatusAnalysing" = "Search for Changes";
-
-/* loco:6ad232ecab975477a3093ee2 */
-"syncStatusExploring" = "Preparing Your Files";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Synced";

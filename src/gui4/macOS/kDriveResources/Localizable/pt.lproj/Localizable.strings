@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "Ficheiro recuperado";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "Este ficheiro excede o tamanho máximo permitido (50 GB).\nContacte o suporte para desbloquear o limite.";
+"errFileTooBigAdminDescription" = "Este ficheiro excede o tamanho máximo permitido (1 TB).\nContacte o suporte para desbloquear o limite.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "Este ficheiro excede o tamanho máximo permitido (50 GB).\nContacte o seu administrador para aumentar o limite de tamanho dos ficheiros.";
+"errFileTooBigDescription" = "Este ficheiro excede o tamanho máximo permitido (1 TB).\nContacte o seu administrador para aumentar o limite de tamanho dos ficheiros.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "Ficheiro demasiado grande";

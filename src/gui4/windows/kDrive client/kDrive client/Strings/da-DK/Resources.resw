@@ -6,7 +6,7 @@
   Locale: da, Danish
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -456,10 +456,7 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Opgradering</value> 
   </data> 
-  <data name="buttonValidate" xml:space="preserve"> 
-    <value>Bekræft</value> 
-  </data> 
-  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+<data name="buttonValidateAndGoNext" xml:space="preserve"> 
     <value>Bekræft og gå til næste</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
@@ -730,11 +727,11 @@ Dine ændringer synkroniseres senere.</value>
     <value>Fil gendannet</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Denne fil overskrider den maksimalt tilladte størrelse (50 GB).
+    <value>Denne fil overskrider den maksimalt tilladte størrelse (1 TB).
 Kontakt support for at ophæve grænsen.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Denne fil overskrider den maksimalt tilladte størrelse (50 GB).
+    <value>Denne fil overskrider den maksimalt tilladte størrelse (1 TB).
 Kontakt din administrator for at øge filstørrelsesgrænsen.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1578,16 +1575,10 @@ Disse data giver vores team mulighed for hurtigt at rette og optimere programmet
     <value>Andre filer på computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageOnlineFree" xml:space="preserve"> 
-    <value>Ledig plads på dit abonnement</value> 
-  </data> 
-  <data name="storageOnlineUsed" xml:space="preserve"> 
+<data name="storageOnlineUsed" xml:space="preserve"> 
     <value>kDrive-filer gemt online</value> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synkronisering</value> 
-  </data> 
-  <data name="storageThisComputerTitle" xml:space="preserve"> 
+<data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Denne PC - %@ - %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 

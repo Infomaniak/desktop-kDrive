@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -456,10 +456,7 @@ Puoi aprirli in qualsiasi momento, anche senza connessione a internet.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Passa a un’offerta superiore</value> 
   </data> 
-  <data name="buttonValidate" xml:space="preserve"> 
-    <value>Conferma</value> 
-  </data> 
-  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+<data name="buttonValidateAndGoNext" xml:space="preserve"> 
     <value>Conferma e vai al successivo</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
@@ -730,11 +727,11 @@ Le tue modifiche verranno sincronizzate in seguito.</value>
     <value>File recuperato</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Questo file supera la dimensione massima consentita (50 GB).
+    <value>Questo file supera la dimensione massima consentita (1 TB).
 Contatta il supporto per sbloccare il limite.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Questo file supera la dimensione massima consentita (50 GB).
+    <value>Questo file supera la dimensione massima consentita (1 TB).
 Contatta il tuo amministratore per aumentare il limite di dimensione del file.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1578,16 +1575,10 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
     <value>Altri file sul computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageOnlineFree" xml:space="preserve"> 
-    <value>Spazio libero del tuo abbonamento</value> 
-  </data> 
-  <data name="storageOnlineUsed" xml:space="preserve"> 
+<data name="storageOnlineUsed" xml:space="preserve"> 
     <value>File kDrive archiviati online</value> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Sincronizzazione</value> 
-  </data> 
-  <data name="storageThisComputerTitle" xml:space="preserve"> 
+<data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Questo PC - %@ - %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 

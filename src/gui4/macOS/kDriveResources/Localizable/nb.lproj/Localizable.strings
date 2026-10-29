@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "Fil reddet";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "Denne filen overskrider maksimal tillatt størrelse (50 GB).\nKontakt support for å låse opp grensen.";
+"errFileTooBigAdminDescription" = "Denne filen overskrider maksimal tillatt størrelse (1 TB).\nKontakt support for å låse opp grensen.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "Denne filen overskrider maksimal tillatt størrelse (50 GB).\nKontakt administratoren din for å øke filstørrelsesgrensen.";
+"errFileTooBigDescription" = "Denne filen overskrider maksimal tillatt størrelse (1 TB).\nKontakt administratoren din for å øke filstørrelsesgrensen.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "Fil for stor";
@@ -1444,7 +1444,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "Dette elementet er ikke tilgjengelig på denne enheten.  Det åpnes i kDrive online.";
+"searchResultOpenInBrowserTooltip" = "Dette elementet er ikke tilgjengelig på denne enheten. Det åpnes i kDrive online.";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */

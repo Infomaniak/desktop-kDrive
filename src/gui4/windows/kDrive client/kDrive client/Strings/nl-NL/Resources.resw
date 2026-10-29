@@ -6,7 +6,7 @@
   Locale: nl, Dutch; Flemish
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -456,10 +456,7 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Upgraden</value> 
   </data> 
-  <data name="buttonValidate" xml:space="preserve"> 
-    <value>Bevestigen</value> 
-  </data> 
-  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
+<data name="buttonValidateAndGoNext" xml:space="preserve"> 
     <value>Bevestigen en naar volgende gaan</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
@@ -730,11 +727,11 @@ Uw wijzigingen worden later gesynchroniseerd.</value>
     <value>Bestand gered</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Dit bestand overschrijdt de maximaal toegestane grootte (50 GB).
+    <value>Dit bestand overschrijdt de maximaal toegestane grootte (1 TB).
 Neem contact op met ondersteuning om de limiet op te heffen.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Dit bestand overschrijdt de maximaal toegestane grootte (50 GB).
+    <value>Dit bestand overschrijdt de maximaal toegestane grootte (1 TB).
 Neem contact op met uw beheerder om de bestandsgroottelimiet te verhogen.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1578,16 +1575,10 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
     <value>Andere bestanden op computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageOnlineFree" xml:space="preserve"> 
-    <value>Beschikbare ruimte van uw abonnement</value> 
-  </data> 
-  <data name="storageOnlineUsed" xml:space="preserve"> 
+<data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Online opgeslagen kDrive-bestanden</value> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synchronisatie</value> 
-  </data> 
-  <data name="storageThisComputerTitle" xml:space="preserve"> 
+<data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Deze pc - %@ - %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 
