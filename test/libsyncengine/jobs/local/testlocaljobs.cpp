@@ -22,6 +22,7 @@
 #include "io/cachedirectory.h"
 #include "jobs/local/genericlocaldeletejob.h"
 #include "jobs/local/hydrateplaceholderjob.h"
+#include "jobs/local/openfilejob.h"
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
@@ -535,6 +536,44 @@ void KDC::TestLocalJobs::testHydratePlaceHolderJob() {
         hydrateJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), hydrateJob.exitInfo());
+    }
+}
+
+void KDC::TestLocalJobs::testOpenFileJob() {
+    // URL parsing.
+    {
+        OpenFileJob::Request request;
+        CPPUNIT_ASSERT(OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456", request));
+        CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
+        CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
+        CPPUNIT_ASSERT_EQUAL(std::string("456"), request.remoteNodeId);
+    }
+    {
+        // The scheme and the host are case-insensitive.
+        OpenFileJob::Request request;
+        CPPUNIT_ASSERT(OpenFileJob::parseDeeplinkUrl("KDRIVE://OPEN/user/99/drive/1234/file/456", request));
+        CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
+    }
+    {
+        // Invalid URLs.
+        OpenFileJob::Request request;
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://auth-desktop?code=1&state=2", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("https://open/user/99/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://open/user/-1/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456/789", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/", request));
+    }
+
+    // An invalid URL makes the job fail immediately, without accessing any database or the network.
+    {
+        OpenFileJob job(
+                "not a url", [](SyncDbId) { return nullptr; }, [](SyncDbId) { return nullptr; });
+        job.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::LogicError, ExitCause::InvalidArgument), job.exitInfo());
+        CPPUNIT_ASSERT(job.outcome() == OpenFileJob::Outcome::Failed);
     }
 }
 
