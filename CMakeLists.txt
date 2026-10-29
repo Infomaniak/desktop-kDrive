@@ -192,10 +192,10 @@ option(KDRIVE_REPOSITORY_RELATIVE_PATHS
        "Record repository-relative source paths (src/...) in debug info and __FILE__, whatever the build host"
        ${KDRIVE_REPOSITORY_RELATIVE_PATHS_DEFAULT})
 if(KDRIVE_REPOSITORY_RELATIVE_PATHS)
-    # The last matching map wins: the build directory itself becomes an empty compilation directory, so the
-    # repository-relative source paths are not joined to it.
-    add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=" "-ffile-prefix-map=${CMAKE_BINARY_DIR}="
-                        "-ffile-prefix-map=${CMAKE_BINARY_DIR}/=")
+    # The last matching map wins. Each target compiles from its own binary directory, which becomes an empty
+    # compilation directory so the repository-relative source paths are not joined to it.
+    add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=" "-ffile-prefix-map=$<TARGET_PROPERTY:BINARY_DIR>="
+                        "-ffile-prefix-map=$<TARGET_PROPERTY:BINARY_DIR>/=")
 endif()
 
 # build the tests
