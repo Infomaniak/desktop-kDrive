@@ -24,7 +24,6 @@
 #include <QDesktopServices>
 #include <QLocale>
 #include <QLoggingCategory>
-#include <QPromise>
 #include <QUrl>
 #include <QtConcurrentRun>
 
@@ -104,11 +103,11 @@ QString StorageController::availableSizeText() const {
 }
 
 QString StorageController::syncSizeText() const {
-    return _syncBytes ? formatBytes(*_syncBytes) : QString{};
+    return _syncBytes.has_value() ? formatBytes(*_syncBytes) : QString{};
 }
 
 QString StorageController::otherSyncsSizeText() const {
-    return _otherSyncsBytes ? formatBytes(*_otherSyncsBytes) : QString{};
+    return _otherSyncsBytes.has_value() ? formatBytes(*_otherSyncsBytes) : QString{};
 }
 
 QString StorageController::otherSizeText() const {
@@ -116,11 +115,11 @@ QString StorageController::otherSizeText() const {
 }
 
 double StorageController::syncRatio() const {
-    return _syncBytes ? ratio(*_syncBytes) : 0.0;
+    return _syncBytes.has_value() ? ratio(*_syncBytes) : 0.0;
 }
 
 double StorageController::otherSyncsRatio() const {
-    return _otherSyncsBytes ? ratio(*_otherSyncsBytes) : 0.0;
+    return _otherSyncsBytes.has_value() ? ratio(*_otherSyncsBytes) : 0.0;
 }
 
 double StorageController::otherRatio() const {
@@ -132,7 +131,7 @@ double StorageController::availableRatio() const {
 }
 
 bool StorageController::diskAlmostFull() const {
-    return _freeBytes && *_freeBytes < AppConstants::Storage::diskAlmostFullThresholdBytes;
+    return _freeBytes.has_value() && *_freeBytes < AppConstants::Storage::diskAlmostFullThresholdBytes;
 }
 
 bool StorageController::quotaAvailable() const {
@@ -344,10 +343,11 @@ void StorageController::handleSyncsChanged() {
         (void) existingSyncDbIds.insert(sync.dbId());
     }
 
-    std::erase_if(_measures, [&existingSyncDbIds](const auto &entry) { return !existingSyncDbIds.contains(entry.first); });
-    std::erase_if(_dirtySyncs, [&existingSyncDbIds](const SyncDbId syncDbId) { return !existingSyncDbIds.contains(syncDbId); });
-    std::erase_if(_observedStatuses,
-                  [&existingSyncDbIds](const auto &entry) { return !existingSyncDbIds.contains(entry.first); });
+    (void) std::erase_if(_measures, [&existingSyncDbIds](const auto &entry) { return !existingSyncDbIds.contains(entry.first); });
+    (void) std::erase_if(_dirtySyncs,
+                         [&existingSyncDbIds](const SyncDbId syncDbId) { return !existingSyncDbIds.contains(syncDbId); });
+    (void) std::erase_if(_observedStatuses,
+                         [&existingSyncDbIds](const auto &entry) { return !existingSyncDbIds.contains(entry.first); });
 
     if (!_viewActive || _scanWatcher.isRunning() || _selectedSyncDbId == 0) {
         return;
@@ -404,63 +404,84 @@ void StorageController::startScan(const ScanTrigger trigger) {
                                 << "| measure selected:" << selected.needsMeasure
                                 << "| other syncs to measure:" << measuredOtherCount << "/" << others.size();
 
-    _scanWatcher.setFuture(QtConcurrent::run([selected, others](QPromise<StorageScanUpdate> &promise) {
-        using Kind = StorageScanUpdate::Kind;
-        const auto isCanceled = [&promise] { return promise.isCanceled(); };
+    _scanWatcher.setFuture(
+            QtConcurrent::run([selected, others](QPromise<StorageScanUpdate> &promise) { scan(promise, selected, others); }));
+}
 
-        const auto volumeResult = StorageScanner::readVolume(selected.syncRoot);
-        if (!volumeResult.volume) {
-            promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = volumeResult.error});
+/**
+ * Publishes the volume of the selected synchronization, then its measure when needed, then each other synchronization.
+ * Runs outside the GUI thread and stops at the first cancellation.
+ */
+void StorageController::scan(QPromise<StorageScanUpdate> &promise, const ScanTarget &selected,
+                             const std::vector<ScanTarget> &others) {
+    using Kind = StorageScanUpdate::Kind;
+    const auto isCanceled = [&promise] { return promise.isCanceled(); };
+
+    const auto volumeResult = StorageScanner::readVolume(selected.syncRoot);
+    if (!volumeResult.volume) {
+        (void) promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = volumeResult.error});
+        return;
+    }
+
+    const StorageVolume volume = *volumeResult.volume;
+    (void) promise.addResult(StorageScanUpdate{.kind = Kind::Volume, .volume = volume});
+
+    if (selected.needsMeasure) {
+        const auto measure = StorageScanner::measure(selected.syncRoot, volume.device, isCanceled);
+        if (measure.error == StorageScanError::Canceled) {
+            return;
+        }
+        if (!measure.bytes.has_value()) {
+            (void) promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = measure.error});
             return;
         }
 
-        const StorageVolume volume = *volumeResult.volume;
-        promise.addResult(StorageScanUpdate{.kind = Kind::Volume, .volume = volume});
+        (void) promise.addResult(StorageScanUpdate{.kind = Kind::SelectedSyncMeasured,
+                                                   .syncDbId = selected.syncDbId,
+                                                   .syncRoot = selected.syncRoot,
+                                                   .bytes = measure.bytes,
+                                                   .onVolume = true});
+    }
 
-        if (selected.needsMeasure) {
-            const auto measure = StorageScanner::measure(selected.syncRoot, volume.device, isCanceled);
-            if (measure.error == StorageScanError::Canceled) {
-                return;
-            }
-            if (!measure.bytes) {
-                promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = measure.error});
-                return;
-            }
-
-            promise.addResult(StorageScanUpdate{.kind = Kind::SelectedSyncMeasured,
-                                                .syncDbId = selected.syncDbId,
-                                                .syncRoot = selected.syncRoot,
-                                                .bytes = measure.bytes,
-                                                .onVolume = true});
+    for (const auto &other: others) {
+        if (isCanceled()) {
+            return;
         }
 
-        for (const auto &other: others) {
-            if (isCanceled()) {
-                return;
-            }
-
-            StorageScanUpdate update{.kind = Kind::OtherSyncMeasured, .syncDbId = other.syncDbId, .syncRoot = other.syncRoot};
-            update.device = StorageScanner::deviceOf(other.syncRoot);
-            update.onVolume = update.device && *update.device == volume.device;
-            if (update.onVolume && other.needsMeasure) {
-                const auto measure = StorageScanner::measure(other.syncRoot, volume.device, isCanceled);
-                if (measure.error == StorageScanError::Canceled) {
-                    return;
-                }
-
-                // An unreadable root has already been logged by the scanner: it stays unknown and out of the total.
-                update.bytes = measure.bytes;
-                update.error = measure.error;
-                if (!measure.bytes) {
-                    update.device.reset();
-                    update.onVolume = false;
-                }
-            }
-            promise.addResult(std::move(update));
+        auto update = scanOtherSync(other, volume.device, isCanceled);
+        if (!update.has_value()) {
+            return;
         }
+        (void) promise.addResult(std::move(*update));
+    }
 
-        promise.addResult(StorageScanUpdate{.kind = Kind::OtherSyncsCompleted});
-    }));
+    (void) promise.addResult(StorageScanUpdate{.kind = Kind::OtherSyncsCompleted});
+}
+
+/** Locates another synchronization and measures it when it is on `volumeDevice`. Returns nothing once canceled. */
+std::optional<StorageScanUpdate> StorageController::scanOtherSync(const ScanTarget &other, const dev_t volumeDevice,
+                                                                  const StorageScanner::CancellationCheck &isCanceled) {
+    StorageScanUpdate update{
+            .kind = StorageScanUpdate::Kind::OtherSyncMeasured, .syncDbId = other.syncDbId, .syncRoot = other.syncRoot};
+    update.device = StorageScanner::deviceOf(other.syncRoot);
+    update.onVolume = update.device.has_value() && *update.device == volumeDevice;
+    if (!update.onVolume || !other.needsMeasure) {
+        return update;
+    }
+
+    const auto measure = StorageScanner::measure(other.syncRoot, volumeDevice, isCanceled);
+    if (measure.error == StorageScanError::Canceled) {
+        return std::nullopt;
+    }
+
+    // An unreadable root has already been logged by the scanner: it stays unknown and out of the total.
+    update.bytes = measure.bytes;
+    update.error = measure.error;
+    if (!measure.bytes.has_value()) {
+        update.device.reset();
+        update.onVolume = false;
+    }
+    return update;
 }
 
 void StorageController::cancelScan() {
@@ -516,7 +537,7 @@ void StorageController::applyScanUpdate(const StorageScanUpdate &update) {
             break;
         }
         case Kind::OtherSyncMeasured: {
-            if (!update.device) {
+            if (!update.device.has_value()) {
                 break;
             }
 
@@ -527,7 +548,7 @@ void StorageController::applyScanUpdate(const StorageScanUpdate &update) {
                 measure = CachedMeasure{.syncRoot = update.syncRoot};
             }
             measure.device = *update.device;
-            if (update.bytes) {
+            if (update.bytes.has_value()) {
                 measure.bytes = *update.bytes;
                 measure.measured = true;
                 if (!isSyncActive(update.syncDbId)) {
@@ -571,7 +592,7 @@ void StorageController::handleScanFinished() {
 void StorageController::applyVolume(const StorageVolume &volume) {
     _volume = volume;
     _freeBytes = volume.availableBytes;
-    if (!_syncBytes) {
+    if (!_syncBytes.has_value()) {
         if (const auto cached = _measures.find(_selectedSyncDbId);
             cached != _measures.end() && cached->second.syncRoot == _selectedSyncRoot && cached->second.measured) {
             _syncBytes = cached->second.bytes;
