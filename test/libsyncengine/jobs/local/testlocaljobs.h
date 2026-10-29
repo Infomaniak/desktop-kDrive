@@ -39,6 +39,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGenericLocalDeleteJobHardDelete);
         CPPUNIT_TEST(testGenericLocalDeleteJobWithLinkedParent);
         CPPUNIT_TEST(testHydratePlaceHolderJob);
+        CPPUNIT_TEST(testOpenFileJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -54,6 +55,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
         void testGenericLocalDeleteJobHardDelete();
         void testGenericLocalDeleteJobWithLinkedParent();
         void testHydratePlaceHolderJob();
+        void testOpenFileJob();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
