@@ -168,14 +168,15 @@ function move_dependencies() {
   cd /app
 
   mkdir -p ./usr/plugins
-  # Nothing in the CMake install creates ./usr/lib (all Linux install rules target
-  # usr/bin and usr/share), so create it before moving/copying libraries into it.
-  mkdir -p ./usr/lib
   cp -P -r $QT_BASE_DIR/plugins/* ./usr/plugins/
 
   cp -P -r $QT_BASE_DIR/libexec ./usr
   cp -P -r $QT_BASE_DIR/resources ./usr || true # resources might not exist, ignore if not found
   cp -P -r $QT_BASE_DIR/translations ./usr
+
+  # Nothing in the CMake install creates ./usr/lib (all Linux install rules target
+  # usr/bin and usr/share), so create it before moving/copying libraries into it.
+  mkdir -p ./usr/lib
 
   mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ 2>/dev/null || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
 
@@ -414,7 +415,7 @@ while :
 do
     case "$1" in
       -h | --help)
-          display_help 
+          display_help
           exit 0
           ;;
       --) # End of all options
@@ -423,7 +424,7 @@ do
           ;;
       -*)
           echo "Error: Unknown option: $1" >&2
-          exit 1 
+          exit 1
           ;;
       *)  # No more options
           break

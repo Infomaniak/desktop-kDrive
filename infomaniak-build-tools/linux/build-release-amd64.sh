@@ -42,7 +42,7 @@ function display_help {
   echo "  Build the Linux Amd64 release executables built inside <git-directory>/build-linux."
   echo "where:"
   echo "-h  Show this help text."
-  echo "-d <git-directory>" 
+  echo "-d <git-directory>"
   echo "-u  Activate the build of unit tests. Without this flag, unit tests will not be built."
   echo "  Set the path to the desktop-kDrive git directory. Defaults to '$src_dir'."
 }
@@ -55,7 +55,7 @@ do
           shift 2
           ;;
       -h | --help)
-          display_help 
+          display_help
           exit 0
           ;;
       -u | --unit-tests)
@@ -68,7 +68,7 @@ do
           ;;
       -*)
           echo "Error: Unknown option: $1" >&2
-          exit 1 
+          exit 1
           ;;
       *)  # No more options
           break
@@ -160,7 +160,7 @@ build_release() {
 
   cp "$src_dir/sync-exclude-linux.lst" "$build_dir/build/bin/sync-exclude.lst"
   cp "$src_dir/sync-folder-rules-linux.csv" "$build_dir/build/bin/sync-folder-rules.csv"
-} 
+}
 
 package_release() {
   QTDIR="$(find_qt_conan_path "$build_dir")"
@@ -178,6 +178,7 @@ package_release() {
   cp -P -r "$QTDIR/resources" "$app_dir/usr" || true # resources folder is not always present in the Qt installation, but we want to copy it when it is
   cp -P -r "$QTDIR/translations" "$app_dir/usr"
 
+  mkdir -p "$app_dir/usr/lib
   cp -P "$conan_dependencies_folder/"* "$app_dir/usr/lib"
 
   cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
