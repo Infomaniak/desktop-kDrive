@@ -32,7 +32,7 @@
 #include "app/mainwindow/mainsidebarcontroller.h"
 #include "app/mainwindow/networkstatusobserver.h"
 #include "app/mainwindow/searchcontroller.h"
-#include "app/mainwindow/storagecontroller.h"
+#include "app/mainwindow/storage/storagecontroller.h"
 #include "app/mainwindow/syncerroractionhandler.h"
 #include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
