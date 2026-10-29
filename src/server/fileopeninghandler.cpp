@@ -171,7 +171,7 @@ void FileOpeningHandler::sortSyncsByDbId(std::vector<Sync> &syncs) const {
     });
 }
 
-std::shared_ptr<SyncDb> FileOpeningHandler::getSyncDb(SyncDbId syncDbId) const {
+std::shared_ptr<SyncDb> FileOpeningHandler::getSyncDb(const SyncDbId syncDbId) const {
     std::shared_ptr<SyncDb> syncDb;
 
     const std::scoped_lock lock(_appServer->syncPalMapMutex);
