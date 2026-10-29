@@ -93,6 +93,26 @@ QtObject {
     readonly property real errorsExplanationReasonContentSpacing: IKSpacing.s8
     readonly property real errorsExplanationArrowSize: 12
     readonly property real errorsExplanationArrowSpacing: IKSpacing.s4
+    // Version selection dialog of a conflict.
+    readonly property real errorsConflictWidth: 600
+    readonly property real errorsConflictCardSpacing: 20
+    readonly property real errorsConflictCardPadding: IKSpacing.s16
+    readonly property real errorsConflictCardRadius: IKRadius.r12
+    readonly property real errorsConflictCardContentSpacing: IKSpacing.s16
+    readonly property real errorsConflictCardTitleSpacing: 6
+    readonly property real errorsConflictCardIconSize: 14
+    readonly property real errorsConflictOpenIconSize: 16
+    readonly property real errorsConflictInfoPadding: IKSpacing.s8
+    readonly property real errorsConflictInfoRadius: IKRadius.r6
+    readonly property real errorsConflictInfoSpacing: 6
+    readonly property real errorsConflictInfoRowPadding: IKSpacing.s4
+    readonly property real errorsConflictSelectHeight: 24
+    readonly property real errorsConflictSelectIconSpacing: IKSpacing.s4
+    readonly property real errorsConflictBadgeHorizontalPadding: IKSpacing.s4
+    readonly property real errorsConflictBadgeVerticalPadding: IKSpacing.s2
+    readonly property real errorsConflictBadgeRadius: IKRadius.r4
+    readonly property real errorsConflictCounterHorizontalPadding: IKSpacing.s8
+    readonly property real errorsConflictCounterVerticalPadding: 6
     // How long the copy button of a path shows its confirmation.
     readonly property int errorsCopiedFeedbackDuration: 3000
 }
