@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/cache/mainselectionstore.h"
+#include "storagemeasurecache.h"
 #include "storagescanner.h"
 
 #include <QFutureWatcher>
@@ -28,8 +29,6 @@
 
 #include <cstdint>
 #include <optional>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace KDC {
@@ -146,16 +145,6 @@ class StorageController final : public QObject {
             Retry,
         };
 
-        struct CachedMeasure {
-                SyncPath syncRoot{};
-                dev_t device{0};
-                uint64_t bytes{0};
-                // False for a synchronization stored on another volume, whose bytes have never been needed.
-                bool measured{false};
-                // Volume read with the measure of a selected synchronization, shown at once when it is selected again.
-                std::optional<StorageVolume> volume{};
-        };
-
         void refreshSelectedContext();
         void handleSyncStatusChanged(SyncDbId syncDbId);
         void handleSyncsChanged();
@@ -175,13 +164,9 @@ class StorageController final : public QObject {
         void setAnimatedUpdate(bool animated);
         void refreshStorageWarning();
         [[nodiscard]] std::vector<StorageScanTarget> otherSyncTargets() const;
-        [[nodiscard]] bool needsMeasure(SyncDbId syncDbId, const SyncPath &syncRoot) const;
-        [[nodiscard]] bool isKnown(SyncDbId syncDbId, const SyncPath &syncRoot) const;
-        [[nodiscard]] std::optional<uint64_t> cachedOtherSyncsBytes(dev_t device) const;
         [[nodiscard]] bool isSyncActive(SyncDbId syncDbId) const;
         [[nodiscard]] std::optional<Drive> currentDrive() const;
         [[nodiscard]] uint64_t otherBytes() const;
-        [[nodiscard]] static bool isActiveStatus(SyncStatus status);
         [[nodiscard]] static QString formatBytes(uint64_t bytes);
         [[nodiscard]] double ratio(uint64_t bytes) const;
 
@@ -191,9 +176,7 @@ class StorageController final : public QObject {
         QFutureWatcher<StorageVolumeResult> _volumeWatcher;
         QTimer _minimumRetryTimer;
         QTimer _volumePollTimer;
-        std::unordered_map<SyncDbId, CachedMeasure> _measures;
-        std::unordered_set<SyncDbId> _dirtySyncs;
-        std::unordered_map<SyncDbId, SyncStatus> _observedStatuses;
+        StorageMeasureCache _measureCache;
         std::optional<StorageVolume> _volume;
         std::optional<uint64_t> _syncBytes;
         std::optional<uint64_t> _otherSyncsBytes;
