@@ -105,11 +105,11 @@ QString StorageController::availableSizeText() const {
 }
 
 QString StorageController::syncSizeText() const {
-    return _syncBytes.has_value() ? formatBytes(*_syncBytes) : QString{};
+    return _syncBytes.has_value() ? formatBytes(displayedSyncBytes()) : QString{};
 }
 
 QString StorageController::otherSyncsSizeText() const {
-    return _otherSyncsBytes.has_value() ? formatBytes(*_otherSyncsBytes) : QString{};
+    return _otherSyncsBytes.has_value() ? formatBytes(displayedOtherSyncsBytes()) : QString{};
 }
 
 QString StorageController::otherSizeText() const {
@@ -117,11 +117,11 @@ QString StorageController::otherSizeText() const {
 }
 
 double StorageController::syncRatio() const {
-    return _syncBytes.has_value() ? ratio(*_syncBytes) : 0.0;
+    return _syncBytes.has_value() ? ratio(displayedSyncBytes()) : 0.0;
 }
 
 double StorageController::otherSyncsRatio() const {
-    return _otherSyncsBytes.has_value() ? ratio(*_otherSyncsBytes) : 0.0;
+    return _otherSyncsBytes.has_value() ? ratio(displayedOtherSyncsBytes()) : 0.0;
 }
 
 double StorageController::otherRatio() const {
@@ -331,7 +331,11 @@ void StorageController::handleSyncStatusChanged(const SyncDbId syncDbId) {
     }
 }
 
-/** Drops the measures of removed synchronizations and measures the new ones while the page is visible. */
+/**
+ * Drops the measures of removed synchronizations. While the page is visible, a running scan restarts when its targets
+ * changed, since it measures a frozen list; otherwise new synchronizations are measured, and a removal only updates the
+ * other-syncs total from the cache.
+ */
 void StorageController::handleSyncsChanged() {
     std::unordered_set<SyncDbId> existingSyncDbIds;
     for (const auto &sync: _appCache.syncs()) {
@@ -340,15 +344,37 @@ void StorageController::handleSyncsChanged() {
 
     _measureCache.retain(existingSyncDbIds);
 
-    if (!_viewActive || _scanWatcher.isRunning() || _selectedSyncDbId == 0) {
+    if (!_viewActive || _selectedSyncDbId == 0) {
         return;
     }
 
     const auto targets = otherSyncTargets();
+    if (_scanWatcher.isRunning()) {
+        if (!sameSyncs(targets, _scannedOtherSyncs)) {
+            startScan();
+        }
+        return;
+    }
+
     if (std::ranges::any_of(targets, [this](const StorageScanTarget &target) {
             return !_measureCache.isKnown(target.syncDbId, target.syncRoot);
         })) {
         startScan();
+        return;
+    }
+
+    if (!_volume || !_otherSyncsBytes.has_value()) {
+        return;
+    }
+
+    const auto otherSyncsBytes = _measureCache.bytesOnDevice(targets, _volume->device);
+    if (!otherSyncsBytes.has_value()) {
+        startScan();
+        return;
+    }
+    if (*otherSyncsBytes != *_otherSyncsBytes) {
+        _otherSyncsBytes = otherSyncsBytes;
+        publish(true);
     }
 }
 
@@ -387,6 +413,7 @@ void StorageController::startScan(const ScanTrigger trigger) {
             .syncRoot = _selectedSyncRoot,
             .needsMeasure = trigger == ScanTrigger::Retry || _measureCache.needsMeasure(_selectedSyncDbId, _selectedSyncRoot)};
     const auto others = otherSyncTargets();
+    _scannedOtherSyncs = others;
     const auto measuredOtherCount =
             std::ranges::count_if(others, [](const StorageScanTarget &target) { return target.needsMeasure; });
 
@@ -618,15 +645,35 @@ std::optional<Drive> StorageController::currentDrive() const {
     return context ? std::optional{context->drive} : std::nullopt;
 }
 
+/**
+ * Measures can exceed the used space of the volume: blocks shared between files are counted for each of them, and a
+ * cached measure can be older than the volume read. The selected synchronization, then the other ones, are capped to the
+ * used space so the legend and the gauge add up to the volume.
+ */
+uint64_t StorageController::displayedSyncBytes() const {
+    const uint64_t bytes = _syncBytes.value_or(0);
+    return _volume ? std::min(bytes, _volume->usedBytes()) : bytes;
+}
+
+uint64_t StorageController::displayedOtherSyncsBytes() const {
+    const uint64_t bytes = _otherSyncsBytes.value_or(0);
+    return _volume ? std::min(bytes, _volume->usedBytes() - displayedSyncBytes()) : bytes;
+}
+
 /** Used space that is not attributed to a measured kDrive synchronization, so it shrinks as the measures arrive. */
 uint64_t StorageController::otherBytes() const {
     if (!_volume) {
         return 0;
     }
 
-    const uint64_t usedBytes = _volume->usedBytes();
-    const uint64_t kDriveBytes = std::min(_syncBytes.value_or(0) + _otherSyncsBytes.value_or(0), usedBytes);
-    return usedBytes - kDriveBytes;
+    return _volume->usedBytes() - displayedSyncBytes() - displayedOtherSyncsBytes();
+}
+
+/** True when both lists target the same synchronizations at the same roots, whatever their measure needs. */
+bool StorageController::sameSyncs(const std::vector<StorageScanTarget> &lhs, const std::vector<StorageScanTarget> &rhs) {
+    return std::ranges::equal(lhs, rhs, [](const StorageScanTarget &left, const StorageScanTarget &right) {
+        return left.syncDbId == right.syncDbId && left.syncRoot == right.syncRoot;
+    });
 }
 
 QString StorageController::formatBytes(const uint64_t bytes) {

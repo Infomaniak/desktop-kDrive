@@ -166,7 +166,10 @@ class StorageController final : public QObject {
         [[nodiscard]] std::vector<StorageScanTarget> otherSyncTargets() const;
         [[nodiscard]] bool isSyncActive(SyncDbId syncDbId) const;
         [[nodiscard]] std::optional<Drive> currentDrive() const;
+        [[nodiscard]] uint64_t displayedSyncBytes() const;
+        [[nodiscard]] uint64_t displayedOtherSyncsBytes() const;
         [[nodiscard]] uint64_t otherBytes() const;
+        [[nodiscard]] static bool sameSyncs(const std::vector<StorageScanTarget> &lhs, const std::vector<StorageScanTarget> &rhs);
         [[nodiscard]] static QString formatBytes(uint64_t bytes);
         [[nodiscard]] double ratio(uint64_t bytes) const;
 
@@ -182,6 +185,8 @@ class StorageController final : public QObject {
         std::optional<uint64_t> _otherSyncsBytes;
         // Other synchronizations of the running scan found on the volume, with their measured or cached bytes.
         uint64_t _pendingOtherSyncsBytes{0};
+        // Other synchronizations targeted by the running scan.
+        std::vector<StorageScanTarget> _scannedOtherSyncs;
         SyncDbId _selectedSyncDbId{0};
         SyncPath _selectedSyncRoot;
         // Last free space read by a scan or a poll; empty when the volume could not be read.
