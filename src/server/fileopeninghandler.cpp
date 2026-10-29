@@ -121,9 +121,9 @@ bool FileOpeningHandler::parseDeeplinkUrl(const std::string &urlStr, Request &re
     request.user.setUserId(userId);
 
     if (!parsePositiveId(segments[3], request.driveId)) return false;
-    request.nodeId = segments[5];
+    request.remoteNodeId = segments[5];
 
-    return !request.nodeId.empty();
+    return !request.remoteNodeId.empty();
 }
 
 bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
@@ -183,6 +183,54 @@ std::shared_ptr<SyncDb> FileOpeningHandler::getSyncDb(SyncDbId syncDbId) const {
     return syncDb;
 }
 
+ExitInfo FileOpeningHandler::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath) {
+    bestSync = Sync{}; // Default value as long as an admissible sync is not found.
+    relativePath.clear();
+
+    for (const auto &sync: syncs) {
+        std::shared_ptr<SyncDb> syncDb = getSyncDb(sync.dbId());
+        if (!syncDb) {
+            // The engine of this sync is not running: read its DB directly.
+            auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId());
+            if (tempSyncDbIt == _tempSyncDbMap.end()) {
+                try {
+                    tempSyncDbIt = _tempSyncDbMap
+                                           .try_emplace(sync.dbId(),
+                                                        std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId()))
+                                           .first;
+                } catch (const std::runtime_error &e) {
+                    LOG_WARN(Log::instance()->getLogger(),
+                             "Failed to open the sync DB - syncDbId=" << sync.dbId() << ": " << e.what());
+                    continue;
+                }
+            }
+            syncDb = tempSyncDbIt->second;
+        }
+
+        bool nodeFound = false;
+        if (!syncDb->path(ReplicaSide::Remote, _request.remoteNodeId, relativePath, nodeFound)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::path - syncDbId=" << sync.dbId());
+
+            continue;
+        }
+
+        if (!nodeFound) continue;
+        bestSync = sync;
+
+        break;
+    }
+
+    if (bestSync.dbId() == 0) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "No admissible sync found for userId=" << _request.user.userId() << ", driveId=" << _request.driveId
+                                                        << ", remoteNodeId=" << _request.remoteNodeId);
+
+        return ExitCode::DataError;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
     itemFound = false;
 
@@ -205,7 +253,7 @@ ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
 
     // The `Shared` folder is not synchronized locally if no items have been shared on the specified drive with the specified
     // user.
-    if (_request.nodeId == sharedFolderRemoteId) {
+    if (_request.remoteNodeId == sharedFolderRemoteId) {
         bool emptyShared = false;
         if (const auto exitInfo = ApiJobUtility::checkIfSharedFolderIsEmpty(_request.user.dbId(), _request.driveId, emptyShared);
             !exitInfo)
@@ -220,7 +268,8 @@ ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
     }
 
     // The `Private` folder is not synchronized locally: it is represented by the root folder in the V2 API.
-    if (const auto exitInfo = ApiTranslator::translateV3ToV2(_request.user.dbId(), _request.driveId, _request.nodeId); !exitInfo)
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(_request.user.dbId(), _request.driveId, _request.remoteNodeId);
+        !exitInfo)
         return exitInfo;
 
     std::vector<Sync> syncs;
@@ -236,44 +285,15 @@ ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
     sortSyncsByDbId(syncs);
     _driveDbId = syncs.front().driveDbId(); // Default value as long as an admissible sync is not found.
 
-    for (const auto &sync: syncs) {
-        std::shared_ptr<SyncDb> syncDb = getSyncDb(sync.dbId());
-        if (!syncDb) {
-            // The engine of this sync is not running: read its DB directly.
-            auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId());
-            if (tempSyncDbIt == _tempSyncDbMap.end()) {
-                try {
-                    tempSyncDbIt = _tempSyncDbMap
-                                           .try_emplace(sync.dbId(),
-                                                        std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId()))
-                                           .first;
-                } catch (const std::runtime_error &e) {
-                    LOG_WARN(Log::instance()->getLogger(),
-                             "Failed to open the sync DB - syncDbId=" << sync.dbId() << ": " << e.what());
-                    continue;
-                }
-            }
-            syncDb = tempSyncDbIt->second;
-        }
+    Sync bestSync;
+    SyncPath relativePath;
+    if (const auto exitInfo = getBestAdmissibleSync(syncs, bestSync, relativePath); !exitInfo) return exitInfo;
 
-        SyncPath relativePath;
-        bool nodeFound = false;
-        if (!syncDb->path(ReplicaSide::Remote, _request.nodeId, relativePath, nodeFound)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::path - syncDbId=" << sync.dbId());
-
-            continue;
-        }
-
-        if (!nodeFound) continue;
-
-        itemFound = true;
-        _driveDbId = sync.driveDbId();
-        _syncDbId = sync.dbId();
-        _relativePath = relativePath;
-        _localPath = relativePath.empty() ? sync.localPath() : sync.localPath() / relativePath;
-
-        break;
-    }
+    itemFound = true;
+    _driveDbId = bestSync.driveDbId();
+    _syncDbId = bestSync.dbId();
+    _relativePath = relativePath;
+    _localPath = relativePath.empty() ? bestSync.localPath() : bestSync.localPath() / relativePath;
 
     return ExitCode::Ok;
 }
@@ -281,7 +301,7 @@ ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
 void FileOpeningHandler::checkRemoteExistence() {
     setPhase(Phase::CheckRemoteExistence, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
 
-    const NodeId nodeId = _request.nodeId;
+    const NodeId nodeId = _request.remoteNodeId;
     const auto job = std::make_shared<ItemsExistJob>(_driveDbId, NodeSet{nodeId});
     job->setAdditionalCallback([this, job, nodeId](UniqueId) {
         // Job manager worker thread.
@@ -301,7 +321,7 @@ void FileOpeningHandler::onRemoteExistenceChecked(const ExitInfo &exitInfo, bool
     if (_phase != Phase::CheckRemoteExistence) return; // Stale callback.
 
     if (!exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ItemsExistJob - nodeId=" << _request.nodeId << ": " << exitInfo);
+        LOG_WARN(Log::instance()->getLogger(), "Error in ItemsExistJob - nodeId=" << _request.remoteNodeId << ": " << exitInfo);
         handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
         return;
     }

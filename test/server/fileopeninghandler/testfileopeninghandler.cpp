@@ -51,7 +51,7 @@ void TestFileOpeningHandler::testParseUrl() {
         CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456", request));
         CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
         CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
-        CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
+        CPPUNIT_ASSERT_EQUAL(std::string("456"), request.remoteNodeId);
     }
 
     {
@@ -60,7 +60,7 @@ void TestFileOpeningHandler::testParseUrl() {
         CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456?foo=bar", request));
         CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
         CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
-        CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
+        CPPUNIT_ASSERT_EQUAL(std::string("456"), request.remoteNodeId);
     }
 
     {
@@ -69,7 +69,7 @@ void TestFileOpeningHandler::testParseUrl() {
         CPPUNIT_ASSERT(FileOpeningHandler::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456/", request));
         CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
         CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
-        CPPUNIT_ASSERT_EQUAL(std::string("456"), request.nodeId);
+        CPPUNIT_ASSERT_EQUAL(std::string("456"), request.remoteNodeId);
     }
 
     {
