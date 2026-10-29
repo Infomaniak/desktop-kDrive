@@ -33,8 +33,11 @@ namespace KDC {
 class HydratePlaceHolderJob : public SyncJob {
     public:
         //! \param parentFolderPath is the absolute path of the parent folder whose hydration is monitored, empty otherwise.
+        //! \param observer is an optional completion observer, invoked with the job id and true if the download has
+        //! succeeded, false otherwise. It is called on a job manager worker thread, while the direct download jobs map
+        //! is locked, and must therefore not call any SyncPal method.
         HydratePlaceHolderJob(std::shared_ptr<SyncPal> syncPal, SyncPath absoluteLocalPath, SyncPath relativePath,
-                              SyncPath parentFolderPath = {});
+                              SyncPath parentFolderPath = {}, std::function<void(UniqueId, bool)> observer = nullptr);
 
     protected:
         ExitInfo canRun() override;
@@ -52,6 +55,7 @@ class HydratePlaceHolderJob : public SyncJob {
         const SyncPath _absoluteLocalPath;
         const SyncPath _relativePath;
         const SyncPath _parentFolderPath;
+        std::function<void(UniqueId, bool)> _observer;
 };
 
 } // namespace KDC
