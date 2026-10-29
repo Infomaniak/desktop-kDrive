@@ -94,6 +94,12 @@ runs:
           mkdir "${{ github.workspace }}/build-linux/sentry-server-artifacts"
           mv "${{ github.workspace }}/build-linux/kDrive.src.zip" "${{ github.workspace }}/build-linux/sentry-server-artifacts"
           mv "$DBG_FILE" "${{ github.workspace }}/build-linux/sentry-server-artifacts"
+          # The stripped executable carries the unwind tables Sentry needs to walk minidump stacks.
+          APPIMAGE=$(ls "${{ github.workspace }}/build-linux/install/kDrive-"*-amd64.AppImage | head -n 1)
+          rm -rf "${{ github.workspace }}/build-linux/appimage-executables"
+          mkdir "${{ github.workspace }}/build-linux/appimage-executables"
+          (cd "${{ github.workspace }}/build-linux/appimage-executables" && "$APPIMAGE" --appimage-extract 'usr/bin/*' >/dev/null)
+          cp "${{ github.workspace }}/build-linux/appimage-executables/squashfs-root/usr/bin/kDrive" "${{ github.workspace }}/build-linux/sentry-server-artifacts"
         shell: bash
 
       - name: Create sentry client artifacts
@@ -107,6 +113,7 @@ runs:
           mkdir "${{ github.workspace }}/build-linux/sentry-client-artifacts"
           mv "${{ github.workspace }}/build-linux/${CLIENT_EXE}.src.zip" "${{ github.workspace }}/build-linux/sentry-client-artifacts"
           mv "$DBG_FILE" "${{ github.workspace }}/build-linux/sentry-client-artifacts"
+          cp "${{ github.workspace }}/build-linux/appimage-executables/squashfs-root/usr/bin/${CLIENT_EXE}" "${{ github.workspace }}/build-linux/sentry-client-artifacts"
         shell: bash
 
       - name: Upload sentry server artifacts

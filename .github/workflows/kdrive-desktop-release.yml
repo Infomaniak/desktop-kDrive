@@ -366,6 +366,8 @@ jobs:
           .\sentry-cli.exe debug-files upload --project $project .\build-linux-amd64\$client.dbg
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux-amd64\kDrive.src.zip
           .\sentry-cli.exe debug-files upload --project $project --type sourcebundle .\build-linux-amd64\$client.src.zip
+          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-linux-amd64\kDrive
+          .\sentry-cli.exe debug-files upload --project $project .\build-linux-amd64\$client
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-arm:
