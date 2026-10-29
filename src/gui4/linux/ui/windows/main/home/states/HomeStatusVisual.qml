@@ -97,5 +97,7 @@ Item {
         height: IKMainWindow.homeStatusSetupImageHeight
         visible: root.status === HomeController.SetupRequired
         source: "qrc:/assets/main/home/status-setup-drawer.svg"
+        sourceSize.width: width
+        sourceSize.height: height
     }
 }
