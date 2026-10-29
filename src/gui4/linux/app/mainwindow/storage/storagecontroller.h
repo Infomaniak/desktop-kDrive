@@ -23,7 +23,6 @@
 
 #include <QFutureWatcher>
 #include <QObject>
-#include <QPromise>
 #include <QString>
 #include <QTimer>
 
@@ -36,28 +35,6 @@
 namespace KDC {
 
 class AppCache;
-
-/** One step of a Storage scan, published as soon as it is known so the page fills progressively. */
-struct StorageScanUpdate {
-        enum class Kind : uint8_t {
-            Volume = 0,
-            SelectedSyncMeasured,
-            OtherSyncMeasured,
-            OtherSyncsCompleted,
-            Failed,
-        };
-
-        Kind kind{Kind::Volume};
-        std::optional<StorageVolume> volume{};
-        SyncDbId syncDbId{0};
-        SyncPath syncRoot{};
-        // Empty for a cached synchronization or for one that is not on the scanned volume.
-        std::optional<uint64_t> bytes{};
-        bool onVolume{false};
-        // Device of another synchronization root; empty when it could not be inspected or read.
-        std::optional<dev_t> device{};
-        StorageScanError error{StorageScanError::None};
-};
 
 /**
  * QML-facing state and lifecycle owner for the Linux Storage page.
@@ -179,12 +156,6 @@ class StorageController final : public QObject {
                 std::optional<StorageVolume> volume{};
         };
 
-        struct ScanTarget {
-                SyncDbId syncDbId{0};
-                SyncPath syncRoot{};
-                bool needsMeasure{true};
-        };
-
         void refreshSelectedContext();
         void handleSyncStatusChanged(SyncDbId syncDbId);
         void handleSyncsChanged();
@@ -203,16 +174,13 @@ class StorageController final : public QObject {
         void setRetrying(bool retrying);
         void setAnimatedUpdate(bool animated);
         void refreshStorageWarning();
-        [[nodiscard]] std::vector<ScanTarget> otherSyncTargets() const;
+        [[nodiscard]] std::vector<StorageScanTarget> otherSyncTargets() const;
         [[nodiscard]] bool needsMeasure(SyncDbId syncDbId, const SyncPath &syncRoot) const;
         [[nodiscard]] bool isKnown(SyncDbId syncDbId, const SyncPath &syncRoot) const;
         [[nodiscard]] std::optional<uint64_t> cachedOtherSyncsBytes(dev_t device) const;
         [[nodiscard]] bool isSyncActive(SyncDbId syncDbId) const;
         [[nodiscard]] std::optional<Drive> currentDrive() const;
         [[nodiscard]] uint64_t otherBytes() const;
-        static void scan(QPromise<StorageScanUpdate> &promise, const ScanTarget &selected, const std::vector<ScanTarget> &others);
-        [[nodiscard]] static std::optional<StorageScanUpdate> scanOtherSync(const ScanTarget &other, dev_t volumeDevice,
-                                                                            const StorageScanner::CancellationCheck &isCanceled);
         [[nodiscard]] static bool isActiveStatus(SyncStatus status);
         [[nodiscard]] static QString formatBytes(uint64_t bytes);
         [[nodiscard]] double ratio(uint64_t bytes) const;
