@@ -50,7 +50,7 @@ class FileOpeningHandler : public QObject {
         struct Request {
                 User user;
                 DriveId driveId{0};
-                NodeId nodeId;
+                RemoteNodeId remoteNodeId;
         };
 
         FileOpeningHandler(AppServer *appServer, std::string url, QObject *parent = nullptr);
@@ -81,9 +81,10 @@ class FileOpeningHandler : public QObject {
         void openFileIndicatedByDeeplink();
 
         void sortSyncsByDbId(std::vector<Sync> &syncs) const;
+        [[nodiscard]] ExitInfo getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath);
         std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;
 
-        //! Tries to resolve the node id into one of the syncs of the drive. Returns false on DB access error, and sets
+        //! Tries to resolve the remode node id into one of the syncs of the drive. Returns false on DB access error, and sets
         //! `found` with true if the node has been resolved.
         [[nodiscard]] ExitInfo resolveDeeplink(bool &found);
         void checkRemoteExistence();
