@@ -26,6 +26,25 @@ env:
 
 jobs:
 
+  server-formatting:
+    name: Server formatting (advisory)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Install clang-format 18
+        continue-on-error: true
+        run: sudo apt-get update && sudo apt-get install --yes clang-format-18
+      - name: Check changed server files
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 .github/scripts/check-server-formatting.py "$BASE_SHA" "$HEAD_SHA" --clang-format clang-format-18
+
 # Build apps
   build-Windows:
     runs-on: [ self-hosted, Windows, vs2026 ]
