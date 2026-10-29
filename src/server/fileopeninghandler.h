@@ -19,29 +19,29 @@
 #pragma once
 
 #include "libcommon/utility/types.h"
-#include "libcommon/data/sync.h"
-#include "data/user.h"
+#include "libcommon/data/user.h"
+#include "libsyncengine/jobs/local/openfilejob.h"
 
-#include <QTimer>
+#include <QObject>
 
-#include <memory>
 #include <string>
-#include <unordered_map>
 
 namespace KDC {
 
 class AppServer;
-class SyncDb;
 
 //! Handles "kdrive://open/user/<user id>/drive/<drive id>/file/<node id>" URLs (e.g. clicked in a web browser).
 /*!
   The user id and the drive id are the server-side kDrive user id and drive id, as displayed in the web application
   URLs. The node id is the server-side id of the file or folder to open.
 
-  The handler resolves the node id against the syncs configured for the drive, then:
-  - opens the item directly if it is available locally,
-  - triggers its hydration first if it is a dehydrated LiteSync placeholder,
-  - waits for its synchronization if it exists on the remote side only.
+  The handler queues an OpenFileJob which:
+  - resolves the node id against the syncs configured for the drive, waiting for its synchronization if needed,
+  - makes the item available locally, hydrating it first if it is a dehydrated LiteSync placeholder.
+
+  When the job completes, the handler opens the item on success, and notifies the user otherwise. The `finished`
+  signal is emitted once the request has been processed; the caller is expected to destroy the handler afterwards
+  (e.g. by connecting the signal to QObject::deleteLater).
 */
 class FileOpeningHandler : public QObject {
         Q_OBJECT
@@ -55,7 +55,8 @@ class FileOpeningHandler : public QObject {
 
         FileOpeningHandler(AppServer *appServer, std::string url, QObject *parent = nullptr);
 
-        void start();
+        //! Parses the URL given to the constructor and queues an OpenFileJob performing the file opening flow.
+        void queueOpenFileJob();
 
         //! Returns true if `urlStr` is a file opening URL, i.e. "kdrive://open/...".
         static bool isFileOpeningDeeplink(const std::string &urlStr);
@@ -67,57 +68,23 @@ class FileOpeningHandler : public QObject {
         static bool shouldOpenParentFolder(const SyncPath &path);
 
     signals:
+        //! Emitted once the file opening request has been processed, with true on success and false on failure. The
+        //! caller is expected to destroy the handler afterwards (e.g. by connecting this signal to
+        //! QObject::deleteLater).
         void finished(bool success);
 
     private:
-        enum class Phase {
-            Resolve, // Look for the node in the syncs configured for the drive.
-            CheckRemoteExistence, // The node is not synchronized yet, check whether it exists on the remote side.
-            WaitForItemToSynchronize, // The node exists on the remote side only, wait for it to be synchronized.
-            WaitForItemHydrationToComplete, // The node is being hydrated, wait for the download to complete.
-            Done
-        };
-
-        void openFileIndicatedByDeeplink();
-
-        void sortSyncsByDbId(std::vector<Sync> &syncs) const;
-        [[nodiscard]] ExitInfo getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath);
-        std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;
-
-        //! Tries to resolve the remote node id into one of the syncs of the drive. Returns false on DB access error, and sets
-        //! `found` with true if the node has been resolved.
-        [[nodiscard]] ExitInfo resolveDeeplink(bool &found);
-        void checkRemoteExistence();
-        void onRemoteExistenceChecked(const ExitInfo &exitInfo, bool exists);
-        void onSyncWaitTick();
-        void onDeadlineReached();
-        [[nodiscard]] ExitInfo openResolvedItem();
-        [[nodiscard]] ExitInfo hydrateResolvedPlaceholder();
-        void onHydrationFinished(bool success);
-        [[nodiscard]] ExitInfo openLocalItem();
-        void setPhase(Phase phase, std::chrono::milliseconds tickInterval, std::chrono::milliseconds timeout);
+        //! Invoked on the application thread when the OpenFileJob has completed: opens the item on success, and
+        //! notifies the user of the failure otherwise.
+        void onOpenFileJobFinished(OpenFileJob::Outcome outcome, const SyncPath &localPath, SyncDbId syncDbId);
+        [[nodiscard]] ExitInfo openLocalItem(const SyncPath &localPath, SyncDbId syncDbId);
+        [[nodiscard]] bool isSyncEngineRunning(SyncDbId syncDbId) const;
         void notifyUser(const std::string &message) const;
         void handleFileOpeningSuccess();
         void handleFileOpeningFailure(const std::string &userMessage);
 
         AppServer *_appServer{nullptr};
         std::string _url;
-        Request _request;
-        Phase _phase{Phase::Resolve};
-
-        QTimer _syncWaitTimer; // Periodically checks whether the item has been synchronized.
-        QTimer _deadlineTimer; // Fails the request when the current phase takes too long.
-
-        std::unordered_set<DriveDbId> _driveDbIds;
-        DriveDbId _driveDbId{0};
-        SyncDbId _syncDbId{0};
-        SyncPath _relativePath; // Relative to the local folder of the sync.
-        SyncPath _localPath; // Absolute path of the item on the local file system.
-        bool _waitingNotificationSent{false};
-
-        // Read-only instances of the SyncDb of the syncs whose engine is not running, cached to avoid reopening them
-        // on every resolution attempt.
-        std::unordered_map<SyncDbId, std::shared_ptr<SyncDb>> _tempSyncDbMap;
 };
 
 } // namespace KDC
