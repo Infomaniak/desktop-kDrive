@@ -344,11 +344,6 @@ namespace Infomaniak.kDrive.Pages
                 Logger.LogInfo($"Error accessing drive info for root {DiskRoot}: {ex.Message}");
                 IsDiskConnected = false;
             }
-            catch (System.ArgumentException ex)
-            {
-                Logger.Log(Logger.Level.Info, $"Error accessing drive info for root {DiskRoot}: {ex.Message}");
-                IsDiskConnected = false;
-            }
             Loading = false;
         }
 
