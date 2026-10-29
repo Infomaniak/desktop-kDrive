@@ -172,7 +172,7 @@ AppServer::AppServer(int &argc, char **argv) :
     installEventFilter(&_eventFilter);
     (void) connect(&_eventFilter, &UrlSchemeEventFilter::authorizationCodeReceived, this,
                    &AppServer::onAuthorizationCodeReceived);
-    (void) connect(&_eventFilter, &UrlSchemeEventFilter::openFileUrlReceived, this, &AppServer::onOpenFileUrlReceived);
+    (void) connect(&_eventFilter, &UrlSchemeEventFilter::openFileUrlReceived, this, &AppServer::onOpenFileDeeplinkReceived);
 }
 
 AppServer::~AppServer() {
@@ -588,7 +588,7 @@ void AppServer::init() {
 
     // Process a file opening URL received at startup, once the syncs have been started.
     if (!_openFileUrlStr.isEmpty()) {
-        QTimer::singleShot(delayedActionMs, this, [this]() { onOpenFileUrlReceived(_openFileUrlStr); });
+        QTimer::singleShot(delayedActionMs, this, [this]() { onOpenFileDeeplinkReceived(_openFileUrlStr); });
     }
 }
 
@@ -2801,7 +2801,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         const QString state = query.queryItemValue("state");
         onAuthorizationCodeReceived(code, state);
     } else if (message.startsWith(openFileMsg)) {
-        onOpenFileUrlReceived(message.split(separatorMsg).back());
+        onOpenFileDeeplinkReceived(message.split(separatorMsg).back());
     } else if (message == showSynthesisMsg) {
         showSynthesis();
     } else if (message == showSettingsMsg) {
@@ -2829,12 +2829,12 @@ void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
     sendShowNotification(title, message);
 }
 
-void AppServer::onOpenFileUrlReceived(const QString &urlStr) {
-    LOG_INFO(_logger, "File opening URL received: '" << urlStr.toStdString() << "'");
+void AppServer::onOpenFileDeeplinkReceived(const QString &urlStr) {
+    LOG_INFO(_logger, "File opening deeplink received: '" << urlStr.toStdString() << "'");
 
     auto *handler = new FileOpeningHandler(this, urlStr.toStdString(), this);
     (void) connect(handler, &FileOpeningHandler::finished, handler, &QObject::deleteLater);
-    handler->start();
+    handler->queueOpenFileJob();
 }
 
 void AppServer::onAuthorizationCodeReceived(const QString &code, const QString &state) {

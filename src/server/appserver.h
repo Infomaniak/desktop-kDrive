@@ -442,6 +442,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
         void onAuthorizationCodeReceived(const QString &code, const QString &state);
-        void onOpenFileUrlReceived(const QString &urlStr);
+        void onOpenFileDeeplinkReceived(const QString &urlStr);
 };
 } // namespace KDC
