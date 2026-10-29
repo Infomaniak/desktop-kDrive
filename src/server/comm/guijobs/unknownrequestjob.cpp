@@ -41,7 +41,7 @@ ExitInfo UnknownRequestJob::serializeOutputParms() {
 }
 
 ExitInfo UnknownRequestJob::process() {
-    return     ExitCode::LogicError;
+    return ExitCode::LogicError;
 }
 
 } // namespace KDC
