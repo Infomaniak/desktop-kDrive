@@ -26,13 +26,13 @@ namespace KDC {
 
 class SearchJob : public AbstractTokenNetworkJob {
     public:
-        SearchJob(DriveDbId driveDbId, SyncDbId syncDbId, const std::string &searchString, const std::string &cursorInput = {});
+        SearchJob(DriveDbId driveDbId, SyncDbId syncDbId, std::string searchString, Cursor cursorInput = {});
 
         // Using this constructor will lead to SearchInfo::isAvailableLocally and  SearchInfo::isHydrated always being false
-        SearchJob(DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput = {});
+        SearchJob(DriveDbId driveDbId, std::string searchString, Cursor cursorInput = {});
 
         std::list<SearchInfo> searchResults() const { return _searchResults; }
-        [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
+        [[nodiscard]] const Cursor &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
     private:
@@ -51,12 +51,12 @@ class SearchJob : public AbstractTokenNetworkJob {
         ExitInfo getLocalProperties(const SyncPath &itemPath, LocalProperties &locaProperties) const;
 
         std::string _searchString;
-        std::string _cursorInput;
+        Cursor _cursorInput;
         SyncPath _syncRootPath;
         SyncPath _syncTargetPath; // Relative to the synchronized tree, empty for a sync of the whole drive
         VirtualFileMode _syncVfsMode{VirtualFileMode::Off};
         std::list<SearchInfo> _searchResults;
-        std::string _cursorOutput;
+        Cursor _cursorOutput;
         bool _hasMore{false};
 };
 

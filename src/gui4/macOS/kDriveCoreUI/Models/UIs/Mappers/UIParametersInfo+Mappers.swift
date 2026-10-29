@@ -33,6 +33,22 @@ public extension UIAppLanguage {
             self = .spanish
         case .Italian:
             self = .italian
+        case .Dutch:
+            self = .dutch
+        case .Swedish:
+            self = .swedish
+        case .Portuguese:
+            self = .portuguese
+        case .Polish:
+            self = .polish
+        case .Norwegian:
+            self = .norwegian
+        case .Finnish:
+            self = .finnish
+        case .Danish:
+            self = .danish
+        case .Greek:
+            self = .greek
         case .EnumEnd:
             ReportHelper.reportToSentryIfProd(message: "UIAppLanguage init received KDC.Language.EnumEnd case")
             self = .system
@@ -56,6 +72,22 @@ public extension UIAppLanguage {
             return .Spanish
         case .italian:
             return .Italian
+        case .dutch:
+            return .Dutch
+        case .swedish:
+            return .Swedish
+        case .portuguese:
+            return .Portuguese
+        case .polish:
+            return .Polish
+        case .norwegian:
+            return .Norwegian
+        case .finnish:
+            return .Finnish
+        case .danish:
+            return .Danish
+        case .greek:
+            return .Greek
         }
     }
 }

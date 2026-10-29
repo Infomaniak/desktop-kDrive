@@ -27,17 +27,17 @@ typedef NS_ENUM(NSInteger, ProcessType) {
 
 @protocol XPCLoginItemProtocol
 
-- (void)setServerExtEndpoint:(NSXPCListenerEndpoint *)endPoint;
-- (void)serverExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
+- (void)setServerExtEndpoint:(NSXPCListenerEndpoint *_Null_unspecified)endPoint;
+- (void)serverExtEndpoint:(void (^_Null_unspecified)(NSXPCListenerEndpoint *_Null_unspecified))callback;
 
-- (void)setServerGuiEndpoint:(NSXPCListenerEndpoint *)endPoint;
-- (void)serverGuiEndpoint:(void (^)(NSXPCListenerEndpoint *))callback;
+- (void)setServerGuiEndpoint:(NSXPCListenerEndpoint *_Null_unspecified)endPoint;
+- (void)serverGuiEndpoint:(void (^_Null_unspecified)(NSXPCListenerEndpoint *_Null_unspecified))callback;
 
 @end
 
 @protocol XPCLoginItemRemoteProtocol
 
-- (void)processType:(void (^)(ProcessType))callback;
-- (void)serverIsRunning:(NSXPCListenerEndpoint *)endPoint;
+- (void)processType:(void (^_Null_unspecified)(ProcessType))callback;
+- (void)serverIsRunning:(NSXPCListenerEndpoint *_Null_unspecified)endPoint;
 
 @end

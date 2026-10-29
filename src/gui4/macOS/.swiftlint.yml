@@ -10,6 +10,7 @@ disabled_rules:
  - inclusive_language
  - for_where
  - optional_data_string_conversion
+ - todo
 opt_in_rules:
  - closure_end_indentation
  - closure_spacing
@@ -33,6 +34,33 @@ opt_in_rules:
  - unneeded_parentheses_in_closure_argument
 analyzer_rules:
  - unused_import
+custom_rules:
+  programmatic_view_controller_inheritance:
+    name: "Programmatic View Controller Inheritance"
+    regex: '\bclass\s+\w+(?:\s*<[^{}]*>)?\s*:\s*(?:(?:AppKit|Cocoa)\s*\.\s*)?NSViewController\b'
+    match_kinds:
+      - keyword
+      - identifier
+      - typeidentifier
+    excluded: '(^|/)kDriveCoreUI/UI/AppKit/Controllers/BaseViewController\.swift$'
+    message: "Use BaseViewController for nibless controllers to prevent macOS 12/13 nib-loading crashes."
+    severity: error
+  bare_nsviewcontroller_init:
+    name: "Bare NSViewController Initialization"
+    regex: '\bNSViewController\s*(?:\.\s*init\s*)?\('
+    match_kinds:
+      - identifier
+      - typeidentifier
+    message: "Use BaseViewController() to create a nibless controller safely on macOS 12/13."
+    severity: error
+  bare_nstoolbar_init:
+    name: "Bare NSToolbar Initialization"
+    regex: '\bNSToolbar\s*(?:\.\s*init\s*)?\(\s*\)'
+    match_kinds:
+      - identifier
+      - typeidentifier
+    message: "Use NSToolbar(identifier:) to prevent toolbar initialization crashes on macOS 12."
+    severity: error
 included:
  - kDrive
  - kDriveCoreUI
