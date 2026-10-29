@@ -53,6 +53,7 @@ ErrorsPageController::ErrorsPageController(const SyncErrorsProjection &projectio
     _activitiesNavigation(activitiesNavigation),
     _model(projection, selectionStore, syncService, syncErrorService),
     _explanation(projection, selectionStore, actionHandler),
+    _conflictVersion(projection, selectionStore, syncErrorService, actionHandler),
     _errorCount(projection.currentErrorCount()) {
     (void) connect(&_projection, &SyncErrorsProjection::currentErrorsChanged, this, [this] {
         if (const auto errorCount = _projection.currentErrorCount(); errorCount != _errorCount) {
@@ -72,6 +73,8 @@ ErrorsPageController::ErrorsPageController(const SyncErrorsProjection &projectio
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, [this] { _revealErrorDbIds.clear(); });
     (void) connect(&_actionHandler, &SyncErrorActionHandler::explanationRequested, &_explanation,
                    &SyncErrorExplanationController::open);
+    (void) connect(&_actionHandler, &SyncErrorActionHandler::versionSelectionRequested, &_conflictVersion,
+                   [this](const ErrorDbId errorDbId) { _conflictVersion.open({errorDbId}); });
 }
 
 int32_t ErrorsPageController::errorCount() const {
