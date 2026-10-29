@@ -1105,6 +1105,9 @@ Atenção, isto pode substituir o trabalho dos seus colaboradores.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Mais recente</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>A minha assinatura</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nome</value> 
   </data> 
@@ -1575,6 +1578,12 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
     <value>Outros ficheiros no computador</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Espaço livre da sua assinatura</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Ficheiros kDrive armazenados online</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Sincronização</value> 
   </data> 
@@ -1618,6 +1627,18 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>A sincronização está em curso</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Pesquisa de alterações</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Preparação dos seus ficheiros</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ elemento sincronizado com %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ elementos sincronizados em %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Sincronizado</value> 

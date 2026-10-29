@@ -88,12 +88,14 @@ public struct DriveJobs: Sendable {
         await coherentCache.removeDrive(driveDbId: driveDbId, accountDbId: accountId, userDbId: userDbId)
     }
 
-    public func driveSearch(syncDbId: Int32, searchString: String) async throws -> [SearchResponse] {
-        let query = DriveSearchQuery(syncDbId: syncDbId, searchString: searchString)
+    public func driveSearch(syncDbId: Int32, searchString: String, cursor: String) async throws -> DriveSearchPage {
+        let query = DriveSearchQuery(syncDbId: syncDbId, searchString: searchString, cursor: cursor)
         let request = await RequestMessage<DriveSearchQuery>(num: RequestNum.DRIVE_SEARCH, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SearchInfoList>.self)
 
-        return decodedMessage.body.searchInfoList
+        return DriveSearchPage(items: decodedMessage.body.searchInfoList,
+                               hasMore: decodedMessage.body.hasMore,
+                               nextCursor: decodedMessage.body.cursor)
     }
 }

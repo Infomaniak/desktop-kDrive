@@ -38,6 +38,7 @@ namespace Infomaniak.kDrive.ViewModels
         private ProxyConfig _proxyConfig = new ProxyConfig();
         private bool _matomoEnabled = false;
         private bool _sentryEnabled = false;
+        private bool _askBeforeDelete = true;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
         public LogUploadManager LogUploadManager { get; } = new LogUploadManager();
 

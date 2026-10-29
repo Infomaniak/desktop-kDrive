@@ -162,6 +162,174 @@ struct SynchroTests {
         #expect(synchro.synchNodes[1]?.status == .Success)
     }
 
+    @Test("Out-of-order syncing update after completion is ignored")
+    func outOfOrderSyncingUpdateIgnored() {
+        // GIVEN
+        var synchro = Synchro(dbId: 1,
+                              driveDbId: 2,
+                              localPath: "/test",
+                              targetPath: "/target",
+                              targetNodeId: "node-id",
+                              supportVfs: true,
+                              virtualFileMode: .Mac)
+
+        let completedNode = SynchroNode(operationId: 1,
+                                        type: .File,
+                                        path: "/file.txt",
+                                        newPath: "/file.txt",
+                                        localNodeId: "local-1",
+                                        remoteNodeId: "remote-1",
+                                        direction: .Down,
+                                        instruction: .Get,
+                                        status: .Success,
+                                        conflict: .None,
+                                        inconsistency: .None,
+                                        cancelType: .None,
+                                        date: Date(),
+                                        size: 500_000_000,
+                                        progress: 100,
+                                        error: "")
+
+        synchro.addOrUpdateSynchNode(completedNode)
+
+        // Stale syncing snapshot delivered after the completion signal
+        let staleSyncingNode = SynchroNode(operationId: 1,
+                                           type: .File,
+                                           path: "/file.txt",
+                                           newPath: "/file.txt",
+                                           localNodeId: "local-1",
+                                           remoteNodeId: "remote-1",
+                                           direction: .Down,
+                                           instruction: .Get,
+                                           status: .Syncing,
+                                           conflict: .None,
+                                           inconsistency: .None,
+                                           cancelType: .None,
+                                           date: Date(),
+                                           size: 500_000_000,
+                                           progress: -1,
+                                           error: "")
+
+        // WHEN
+        synchro.addOrUpdateSynchNode(staleSyncingNode)
+
+        // THEN
+        #expect(synchro.synchNodes.count == 1)
+        #expect(synchro.synchNodes[1]?.status == .Success)
+        #expect(synchro.synchNodes[1]?.progress == 100)
+    }
+
+    @Test("Progress regression is ignored while syncing")
+    func progressRegressionIgnored() {
+        // GIVEN
+        var synchro = Synchro(dbId: 1,
+                              driveDbId: 2,
+                              localPath: "/test",
+                              targetPath: "/target",
+                              targetNodeId: "node-id",
+                              supportVfs: true,
+                              virtualFileMode: .Mac)
+
+        let advancedNode = SynchroNode(operationId: 1,
+                                       type: .File,
+                                       path: "/file.txt",
+                                       newPath: "/file.txt",
+                                       localNodeId: "local-1",
+                                       remoteNodeId: "remote-1",
+                                       direction: .Up,
+                                       instruction: .Put,
+                                       status: .Syncing,
+                                       conflict: .None,
+                                       inconsistency: .None,
+                                       cancelType: .None,
+                                       date: Date(),
+                                       size: 500_000_000,
+                                       progress: 96,
+                                       error: "")
+
+        synchro.addOrUpdateSynchNode(advancedNode)
+
+        let regressedNode = SynchroNode(operationId: 1,
+                                        type: .File,
+                                        path: "/file.txt",
+                                        newPath: "/file.txt",
+                                        localNodeId: "local-1",
+                                        remoteNodeId: "remote-1",
+                                        direction: .Up,
+                                        instruction: .Put,
+                                        status: .Syncing,
+                                        conflict: .None,
+                                        inconsistency: .None,
+                                        cancelType: .None,
+                                        date: Date(),
+                                        size: 500_000_000,
+                                        progress: 88,
+                                        error: "")
+
+        // WHEN
+        synchro.addOrUpdateSynchNode(regressedNode)
+
+        // THEN
+        #expect(synchro.synchNodes.count == 1)
+        #expect(synchro.synchNodes[1]?.progress == 96)
+    }
+
+    @Test("Completion update is applied after syncing")
+    func completionUpdateApplied() {
+        // GIVEN
+        var synchro = Synchro(dbId: 1,
+                              driveDbId: 2,
+                              localPath: "/test",
+                              targetPath: "/target",
+                              targetNodeId: "node-id",
+                              supportVfs: true,
+                              virtualFileMode: .Mac)
+
+        let syncingNode = SynchroNode(operationId: 1,
+                                      type: .File,
+                                      path: "/file.txt",
+                                      newPath: "/file.txt",
+                                      localNodeId: "local-1",
+                                      remoteNodeId: "remote-1",
+                                      direction: .Down,
+                                      instruction: .Get,
+                                      status: .Syncing,
+                                      conflict: .None,
+                                      inconsistency: .None,
+                                      cancelType: .None,
+                                      date: Date(),
+                                      size: 500_000_000,
+                                      progress: -1,
+                                      error: "")
+
+        synchro.addOrUpdateSynchNode(syncingNode)
+
+        let completedNode = SynchroNode(operationId: 1,
+                                        type: .File,
+                                        path: "/file.txt",
+                                        newPath: "/file.txt",
+                                        localNodeId: "local-1",
+                                        remoteNodeId: "remote-1",
+                                        direction: .Down,
+                                        instruction: .Get,
+                                        status: .Success,
+                                        conflict: .None,
+                                        inconsistency: .None,
+                                        cancelType: .None,
+                                        date: Date(),
+                                        size: 500_000_000,
+                                        progress: 100,
+                                        error: "")
+
+        // WHEN
+        synchro.addOrUpdateSynchNode(completedNode)
+
+        // THEN
+        #expect(synchro.synchNodes.count == 1)
+        #expect(synchro.synchNodes[1]?.status == .Success)
+        #expect(synchro.synchNodes[1]?.progress == 100)
+    }
+
     @Test("SynchroNode limit enforcement")
     func synchroNodeLimit() {
         // GIVEN

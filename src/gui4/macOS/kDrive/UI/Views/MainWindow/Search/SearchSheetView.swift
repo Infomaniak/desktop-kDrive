@@ -32,23 +32,39 @@ struct SearchSheetView: View {
                 focusState: $isSearchFieldFocused
             )
 
-            List(viewModel.displayedResults) { file in
-                Button {
-                    viewModel.openFile(file)
-                } label: {
-                    SearchResultRowView(
-                        file: file,
-                        opensLocally: viewModel.opensLocally(file),
-                        isSynchroPaused: viewModel.isSynchroPaused
-                    )
+            // A macOS List resets its scroll position and stops displaying rows when a page is appended, so results are
+            // laid out in a lazy stack instead.
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(viewModel.displayedResults, id: \.id) { file in
+                        Button {
+                            viewModel.openFile(file)
+                        } label: {
+                            SearchResultRowView(
+                                file: file,
+                                opensLocally: viewModel.opensLocally(file),
+                                isSynchroPaused: viewModel.isSynchroPaused
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, AppPadding.padding8)
+                        .onAppear {
+                            viewModel.loadNextPageIfNeeded(currentItem: file)
+                        }
+                    }
+
+                    if viewModel.isLoadingNextPage {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .controlSize(.small)
+                            Spacer()
+                        }
+                        .padding(.vertical, AppPadding.padding8)
+                    }
                 }
-                .buttonStyle(.plain)
-                .listRowInsets(
-                    EdgeInsets(top: 0, leading: AppPadding.padding8, bottom: 0, trailing: AppPadding.padding8)
-                )
-                .hideRowSeparatorIfAvailable()
             }
-            .listStyle(.plain)
             .redacted(reason: viewModel.shouldRedact ? .placeholder : [])
             .disabled(viewModel.shouldRedact)
             .opacity(viewModel.displayedResults.isEmpty ? 0 : 1)

@@ -853,6 +853,15 @@ void TestGuiCommChannel::testDriveSearchJobOutcome() {
     }
 
     {
+        // A result whose local state cannot be read keeps the page: the failure is not reported.
+        DriveSearchJob job(nullptr, 1, Poco::DynamicStruct{}, nullptr);
+        const ExitInfo localStateUnreadable{ExitCode::SystemError, ExitCause::FileAccessError};
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.applySearchOutcome(localStateUnreadable, results, true, "cursor2"));
+        CPPUNIT_ASSERT_EQUAL(size_t{2}, job._searchInfoList.size());
+        CPPUNIT_ASSERT_EQUAL(std::string("cursor2"), CommonUtility::commString2Str(job._nextCursor));
+    }
+
+    {
         // Any other failure is reported even when some results were parsed, which are dropped with the next cursor.
         DriveSearchJob job(nullptr, 1, Poco::DynamicStruct{}, nullptr);
         const ExitInfo malformedItem{ExitCode::BackError, ExitCause::MissingReplyData};

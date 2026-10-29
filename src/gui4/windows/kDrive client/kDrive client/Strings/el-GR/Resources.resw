@@ -1105,6 +1105,9 @@
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Πιο πρόσφατο</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Η συνδρομή μου</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Όνομα</value> 
   </data> 
@@ -1575,6 +1578,12 @@
     <value>Άλλα αρχεία στον υπολογιστή</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Διαθέσιμος χώρος στη συνδρομή σας</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Αρχεία kDrive που είναι αποθηκευμένα στο διαδίκτυο</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Συγχρονισμός</value> 
   </data> 
@@ -1618,6 +1627,18 @@
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Ο συγχρονισμός βρίσκεται σε εξέλιξη</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Αναζήτηση αλλαγών</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Προετοιμασία των αρχείων σας</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ στοιχείο συγχρονισμένο με %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ στοιχεία συγχρονισμένα σε %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Συγχρονίστηκε</value> 

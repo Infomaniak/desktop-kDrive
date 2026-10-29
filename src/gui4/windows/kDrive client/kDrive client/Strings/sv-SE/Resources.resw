@@ -1105,6 +1105,9 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</value>
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Senaste</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Mitt abonnemang</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Namn</value> 
   </data> 
@@ -1575,6 +1578,12 @@ Dessa data gör det möjligt för vårt team att snabbt åtgärda och optimera p
     <value>Övriga filer på datorn</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Återstående utrymme på ditt abonnemang</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>kDrive-filer som lagras online</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synkronisering</value> 
   </data> 
@@ -1618,6 +1627,18 @@ Internetanslutning krävs för att komma åt dem.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synkronisering pågår</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Sök efter ändringar</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Förberedelse av dina filer</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@-elementet synkroniserat med %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ synkroniserade objekt av %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkroniserad</value> 

@@ -542,6 +542,7 @@ function Prepare-Archive {
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
         @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
         @{ Name = "sentry";    Dlls = @("sentry") },
+        @{ Name = "pcre2";     Dlls = @("pcre2-8") }, # Shared runtime dependency of PocoFoundation
         @{ Name = "poco";      DLLs = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
     )
 

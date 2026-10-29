@@ -200,6 +200,8 @@ class PocoConan(ConanFile):
         # Disable SharedLibrary::suffix() including "d" as part of the platform-specific filename suffix
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             tc.preprocessor_definitions["POCO_NO_SHARED_LIBRARY_DEBUG_SUFFIX"] = "1"
+        # Backport Conan Center's pcre2 library type marker for Poco's unbundled build.
+        tc.cache_variables["_PCRE2TYPE"] = "SHARED_LIBRARY" if self.dependencies["pcre2"].options.shared else "STATIC_LIBRARY"
         tc.generate()
 
         deps = CMakeDeps(self)

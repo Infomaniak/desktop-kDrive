@@ -1105,6 +1105,9 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</val
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Am neuesten</value> 
   </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Mein Abonnement</value> 
+  </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Name</value> 
   </data> 
@@ -1574,6 +1577,12 @@ Diese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und z
     <value>Andere Dateien auf dem Computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Verfügbarer Speicherplatz Ihres Abonnements</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Online gespeicherte kDrive-Dateien</value> 
+  </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronisierung</value> 
   </data> 
@@ -1617,6 +1626,18 @@ Für den Zugriff ist eine Internetverbindung erforderlich.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Die Synchronisierung läuft</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Suche nach Änderungen</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Vorbereitung Ihrer Dateien</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ Element synchronisiert mit %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ Elemente synchronisiert auf %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synchronisiert</value> 

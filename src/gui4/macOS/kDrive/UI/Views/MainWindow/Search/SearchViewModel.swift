@@ -34,6 +34,10 @@ final class SearchViewModel: ObservableObject {
         currentSearchTask != nil
     }
 
+    var isLoadingNextPage: Bool {
+        nextPageTask != nil
+    }
+
     var hasResults: Bool {
         !searchResults.isEmpty
     }
@@ -74,6 +78,10 @@ final class SearchViewModel: ObservableObject {
     private let synchroLocalPath: URL
     private var bindStore = Set<AnyCancellable>()
     @Published private var currentSearchTask: Task<Void, Never>?
+    @Published private var nextPageTask: Task<Void, Never>?
+    private var currentQuery = ""
+    private var nextCursor = ""
+    private var hasMorePages = false
 
     init(syncDbId: Int32, driveId: Int, synchroLocalPath: URL) {
         self.syncDbId = syncDbId
@@ -156,30 +164,92 @@ final class SearchViewModel: ObservableObject {
 
     private func performSearch(query: String) {
         currentSearchTask?.cancel()
+        nextPageTask?.cancel()
         currentSearchTask = nil
+        nextPageTask = nil
 
         guard !query.isEmpty else {
+            currentQuery = ""
+            nextCursor = ""
+            hasMorePages = false
             searchResults = []
             return
         }
 
+        currentQuery = query
+        nextCursor = ""
+        hasMorePages = false
+
         currentSearchTask = Task { @MainActor in
             await fetchSearchResults(query: query)
+            // A cancelled task must not clear the handle of the search that replaced it.
+            guard !Task.isCancelled else { return }
             currentSearchTask = nil
+        }
+    }
+
+    func loadNextPageIfNeeded(currentItem: UISearchResponse) {
+        guard currentItem.id == searchResults.last?.id else { return }
+        loadNextPage()
+    }
+
+    func loadNextPage() {
+        guard currentSearchTask == nil, nextPageTask == nil, hasMorePages, searchText == currentQuery else { return }
+
+        let cursor = nextCursor
+        nextPageTask = Task { @MainActor in
+            await fetchNextPage(cursor: cursor)
+            // A cancelled task must not clear the handle of the page load that replaced it.
+            guard !Task.isCancelled else { return }
+            nextPageTask = nil
         }
     }
 
     private func fetchSearchResults(query: String) async {
         do {
-            let results = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query)
+            let page = try await fetchPageSkippingEmptyPages(query: query, cursor: "")
 
             guard !Task.isCancelled else { return }
 
-            searchResults = results.map { UISearchResponse(searchResponse: $0) }
+            searchResults = page.items.map { UISearchResponse(searchResponse: $0) }
+            nextCursor = page.nextCursor
+            hasMorePages = page.hasMore
         } catch {
             guard !Task.isCancelled else { return }
 
             searchResults = []
         }
+    }
+
+    private func fetchNextPage(cursor: String) async {
+        do {
+            let page = try await fetchPageSkippingEmptyPages(query: currentQuery, cursor: cursor)
+
+            guard !Task.isCancelled else { return }
+
+            searchResults.append(contentsOf: page.items.map { UISearchResponse(searchResponse: $0) })
+            nextCursor = page.nextCursor
+            hasMorePages = page.hasMore
+        } catch {
+            // A failed page keeps the already displayed results and stops paging.
+            guard !Task.isCancelled else { return }
+
+            hasMorePages = false
+        }
+    }
+
+    private func fetchPageSkippingEmptyPages(query: String, cursor: String) async throws -> DriveSearchPage {
+        var nextCursor = cursor
+        var requestedCursor: String
+        var page: DriveSearchPage
+        // Empty pages provide no result row whose appearance could trigger the next request.
+        repeat {
+            try Task.checkCancellation()
+            requestedCursor = nextCursor
+            page = try await DriveJobs().driveSearch(syncDbId: syncDbId, searchString: query, cursor: requestedCursor)
+            try Task.checkCancellation()
+            nextCursor = page.nextCursor
+        } while page.items.isEmpty && page.hasMore && nextCursor != requestedCursor
+        return page
     }
 }
