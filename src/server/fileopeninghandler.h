@@ -20,6 +20,7 @@
 
 #include "libcommon/utility/types.h"
 #include "libcommon/data/sync.h"
+#include "data/user.h"
 
 #include <QTimer>
 
@@ -47,7 +48,7 @@ class FileOpeningHandler : public QObject {
 
     public:
         struct Request {
-                UserId userId{0};
+                User user;
                 DriveId driveId{0};
                 NodeId nodeId;
         };
@@ -77,22 +78,22 @@ class FileOpeningHandler : public QObject {
             Done
         };
 
-        void resolveDeeplink();
+        void openFileIndicatedByDeeplink();
 
         void sortSyncsByDbId(std::vector<Sync> &syncs) const;
         std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;
 
         //! Tries to resolve the node id into one of the syncs of the drive. Returns false on DB access error, and sets
         //! `found` with true if the node has been resolved.
-        ExitInfo resolveDeeplink(bool &found);
+        [[nodiscard]] ExitInfo resolveDeeplink(bool &found);
         void checkRemoteExistence();
         void onRemoteExistenceChecked(const ExitInfo &exitInfo, bool exists);
         void onSyncWaitTick();
         void onDeadlineReached();
-        ExitInfo openResolvedItem();
-        ExitInfo hydrateResolvedPlaceholder();
+        [[nodiscard]] ExitInfo openResolvedItem();
+        [[nodiscard]] ExitInfo hydrateResolvedPlaceholder();
         void onHydrationFinished(bool success);
-        ExitInfo openLocalItem();
+        [[nodiscard]] ExitInfo openLocalItem();
         void setPhase(Phase phase, std::chrono::milliseconds tickInterval, std::chrono::milliseconds timeout);
         void notifyUser(const std::string &message) const;
         void handleFileOpeningSuccess();
