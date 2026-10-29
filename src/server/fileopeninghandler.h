@@ -84,7 +84,7 @@ class FileOpeningHandler : public QObject {
         [[nodiscard]] ExitInfo getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath);
         std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;
 
-        //! Tries to resolve the remode node id into one of the syncs of the drive. Returns false on DB access error, and sets
+        //! Tries to resolve the remote node id into one of the syncs of the drive. Returns false on DB access error, and sets
         //! `found` with true if the node has been resolved.
         [[nodiscard]] ExitInfo resolveDeeplink(bool &found);
         void checkRemoteExistence();
@@ -118,10 +118,6 @@ class FileOpeningHandler : public QObject {
         // Read-only instances of the SyncDb of the syncs whose engine is not running, cached to avoid reopening them
         // on every resolution attempt.
         std::unordered_map<SyncDbId, std::shared_ptr<SyncDb>> _tempSyncDbMap;
-
-#if defined(KD_MACOS)
-        PinState _initialPinState{PinState::Unknown};
-#endif
 };
 
 } // namespace KDC

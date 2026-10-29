@@ -25,12 +25,14 @@
 
 namespace KDC {
 
-HydratePlaceHolderJob::HydratePlaceHolderJob(const std::shared_ptr<SyncPal> syncPal, SyncPath absoluteLocalPath,
-                                             SyncPath relativePath, SyncPath parentFolderPath /* = {} */) :
-    _syncPal(syncPal),
+HydratePlaceHolderJob::HydratePlaceHolderJob(std::shared_ptr<SyncPal> syncPal, SyncPath absoluteLocalPath, SyncPath relativePath,
+                                             SyncPath parentFolderPath /* = {} */,
+                                             std::function<void(UniqueId, bool)> observer /* = nullptr */) :
+    _syncPal(std::move(syncPal)),
     _absoluteLocalPath(std::move(absoluteLocalPath)),
     _relativePath(std::move(relativePath)),
-    _parentFolderPath(std::move(parentFolderPath)) {}
+    _parentFolderPath(std::move(parentFolderPath)),
+    _observer(std::move(observer)) {}
 
 ExitInfo HydratePlaceHolderJob::canRun() {
     if (bypassCheck()) return ExitCode::Ok;
@@ -136,7 +138,8 @@ ExitInfo HydratePlaceHolderJob::runJob() {
 #endif
 
     // Create download job
-    if (ExitInfo exitInfo = _syncPal->addDlDirectJob(_relativePath, _absoluteLocalPath, _parentFolderPath); !exitInfo) {
+    if (ExitInfo exitInfo = _syncPal->addDlDirectJob(_relativePath, _absoluteLocalPath, _parentFolderPath, _observer);
+        !exitInfo) {
         LOGW_INFO(_logger,
                   L"Error in SyncPal::addDlDirectJob - " << Utility::formatSyncPath(_absoluteLocalPath) << L": " << exitInfo);
 
