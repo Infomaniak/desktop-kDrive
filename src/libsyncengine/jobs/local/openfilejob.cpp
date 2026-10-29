@@ -279,6 +279,7 @@ ExitInfo OpenFileJob::resolveDeeplink(bool &found) {
 
     if (bool userFound = false; !ParmsDb::instance()->selectUserByUserId(_request.user.userId(), _request.user, userFound)) {
         LOGW_WARN(_logger, L"Error in ParmsDb::selectUserByUserId.");
+
         return ExitCode::DbError;
     }
 
@@ -303,6 +304,7 @@ ExitInfo OpenFileJob::resolveDeeplink(bool &found) {
         if (emptyShared) {
             LOGW_WARN(_logger,
                       L"The Shared folder is empty - userDbId=" << _request.user.dbId() << L", driveId=" << _request.driveId);
+
             return {ExitCode::DataError, ExitCause::Unknown};
         }
     }
