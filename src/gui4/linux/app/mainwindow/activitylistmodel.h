@@ -140,7 +140,6 @@ class ActivityListModel final : public QAbstractListModel {
         using MatchScore = uint8_t;
 
         enum class SubtitleKind : uint8_t {
-            TimeOnly, // Error rows: relative time without an action.
             Updated,
             Removed,
             Renamed,
@@ -165,7 +164,7 @@ class ActivityListModel final : public QAbstractListModel {
                 QString changeText;
                 QString folder;
                 QString sizeText;
-                SubtitleKind subtitleKind{SubtitleKind::TimeOnly};
+                SubtitleKind subtitleKind{SubtitleKind::Updated};
                 NodeType nodeType{NodeType::Unknown};
                 Status status{Status::Synchronized};
                 Source source{Source::Unknown};
@@ -187,10 +186,8 @@ class ActivityListModel final : public QAbstractListModel {
 
         [[nodiscard]] std::vector<Row> buildProjection() const;
         [[nodiscard]] std::vector<Row> activityRows(SyncDbId syncDbId) const;
-        void appendActiveErrors(SyncDbId syncDbId, const std::vector<Error> &errors, std::vector<Row> &rows) const;
-        void appendActiveError(SyncDbId syncDbId, const Error &error, std::vector<Row> &rows) const;
+        static void attachActiveErrors(const std::vector<Error> &errors, std::vector<Row> &rows);
         [[nodiscard]] Row makeActivityRow(SyncDbId syncDbId, const ActivityEntry &activity) const;
-        [[nodiscard]] Row makeErrorRow(SyncDbId syncDbId, const Error &error) const;
         [[nodiscard]] static Row *findMatchingActivity(std::vector<Row> &rows, const Error &error);
         [[nodiscard]] static MatchScore errorMatchScore(const Row &row, const Error &error);
         [[nodiscard]] static AvailableActions availableActions(const Row &row);
