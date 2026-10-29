@@ -174,6 +174,17 @@ package_release() {
   cd "$app_dir"
 
   cp -P -r "$QTDIR/plugins/"* "$app_dir/usr/plugins/"
+
+  # Keep only the SQLite SQL driver. The Qt online installer also ships drivers for
+  # Firebird, PostgreSQL, etc., whose third-party client libraries (e.g. libfbclient.so.2)
+  # are neither installed on the CI runner nor bundled with Qt. linuxdeploy-plugin-qt
+  # redeploys every sqldrivers plugin from the Qt installation and aborts fatally when such
+  # a dependency cannot be resolved ("Could not find dependency: libfbclient.so.2"), so the
+  # unused drivers must be removed from the Qt installation itself, not only from the AppDir.
+  # See https://github.com/linuxdeploy/linuxdeploy-plugin-qt/issues/153.
+  find "$QTDIR/plugins/sqldrivers" "$app_dir/usr/plugins/sqldrivers" -mindepth 1 -maxdepth 1 \
+    \( -type f -o -type l \) ! -name "libqsqlite.so" -delete 2>/dev/null || true
+
   cp -P -r "$QTDIR/libexec" "$app_dir/usr"
   cp -P -r "$QTDIR/resources" "$app_dir/usr" || true # resources folder is not always present in the Qt installation, but we want to copy it when it is
   cp -P -r "$QTDIR/translations" "$app_dir/usr"

@@ -267,6 +267,14 @@ function clean_app_directory() {
   find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) ! -name "libqsqlite.so" -delete
   cd /app
 
+  # linuxdeploy-plugin-qt redeploys every sqldrivers plugin from the Qt installation and
+  # aborts fatally when a plugin dependency cannot be resolved (e.g. libfbclient.so.2 for
+  # the Firebird driver shipped since Qt 6.12). Prune the Qt installation too, otherwise
+  # the removed drivers are copied back into the AppDir at AppImage creation time.
+  # See https://github.com/linuxdeploy/linuxdeploy-plugin-qt/issues/153.
+  find "$QT_BASE_DIR/plugins/sqldrivers" -mindepth 1 -maxdepth 1 \( -type f -o -type l \) \
+    ! -name "libqsqlite.so" -delete 2>/dev/null || true
+
   # Clean translations - keep only de, es, fr, it, sv, pt, pl, nb, fi, da, el, en
   echo "  Cleaning translations..."
   cd ./usr/translations
