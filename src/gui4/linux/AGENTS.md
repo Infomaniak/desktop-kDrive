@@ -477,14 +477,14 @@
   with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
 - `app/mainwindow/searchresultmodel.*`: search results, page after page. `appendPage` inserts rows without a reset and
   skips nodes already listed; node ids and paths stay internal.
-- `app/mainwindow/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-synchronization measure cache.
+- `app/mainwindow/storage/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-synchronization measure cache.
   While Storage is visible, one cancellable scan publishes the volume, then the selected synchronization, then the other
   synchronizations stored on the same device (any user or drive, advanced ones included), so the gauge fills
   progressively; a cached measure is reused until its synchronization has been active again. It also exposes the drive
   quota from the selected `SyncContext`, polls the volume free space every 60 s outside the page (no log per poll) for the
   sidebar `storageWarning`, and asks Settings to open "Manage synchronization" through
   `SettingsWindowController::requestManageSynchronization`.
-- `app/mainwindow/storagescanner.*`: Linux local-volume reader (`QStorageInfo`) and synchronization-root measure using
+- `app/mainwindow/storage/storagescanner.*`: Linux local-volume reader (`QStorageInfo`) and synchronization-root measure using
   an explicit Qt directory stack. A measure stays on the given device, skips links and special files, deduplicates hard
   links, and sums allocated blocks so sparse files reflect their physical footprint.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;

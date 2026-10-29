@@ -70,10 +70,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/searchcontroller.h
         app/mainwindow/searchresultmodel.cpp
         app/mainwindow/searchresultmodel.h
-        app/mainwindow/storagecontroller.cpp
-        app/mainwindow/storagecontroller.h
-        app/mainwindow/storagescanner.cpp
-        app/mainwindow/storagescanner.h
+        app/mainwindow/storage/storagecontroller.cpp
+        app/mainwindow/storage/storagecontroller.h
+        app/mainwindow/storage/storagescanner.cpp
+        app/mainwindow/storage/storagescanner.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/approuter.cpp
