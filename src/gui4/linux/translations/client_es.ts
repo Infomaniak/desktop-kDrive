@@ -437,6 +437,11 @@ Puede abrirlos en cualquier momento, incluso sin conexión a Internet.</translat
             <source>Open Explorer</source> 
             <translation>Abrir Explorer</translation> 
         </message> 
+        <message id="buttonOpenFile"> 
+            <source>Open the file</source> 
+            <extracomment>Button or tooltip that opens a file in its default application. In the conflict version selection dialog, it opens the local copy of the conflicted file to compare it with the online version.</extracomment> 
+            <translation>Open the file</translation> 
+        </message> 
         <message id="buttonOpenFolder"> 
             <source>Open folder</source> 
             <translation>Abrir carpeta</translation> 
