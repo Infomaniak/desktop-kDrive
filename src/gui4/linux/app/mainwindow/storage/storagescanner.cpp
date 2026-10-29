@@ -211,6 +211,32 @@ struct DirectoryScanState {
     return StorageScanError::None;
 }
 
+/** Locates another synchronization and measures it when it is on `volumeDevice`. Returns nothing once canceled. */
+[[nodiscard]] std::optional<StorageScanUpdate> scanOtherSync(const StorageScanTarget &other, const dev_t volumeDevice,
+                                                             const StorageScanner::CancellationCheck &isCanceled) {
+    StorageScanUpdate update{
+            .kind = StorageScanUpdate::Kind::OtherSyncMeasured, .syncDbId = other.syncDbId, .syncRoot = other.syncRoot};
+    update.device = StorageScanner::deviceOf(other.syncRoot);
+    update.onVolume = update.device.has_value() && *update.device == volumeDevice;
+    if (!update.onVolume || !other.needsMeasure) {
+        return update;
+    }
+
+    const auto measure = StorageScanner::measure(other.syncRoot, volumeDevice, isCanceled);
+    if (measure.error == StorageScanError::Canceled) {
+        return std::nullopt;
+    }
+
+    // An unreadable root has already been logged by the scanner: it stays unknown and out of the total.
+    update.bytes = measure.bytes;
+    update.error = measure.error;
+    if (!measure.bytes.has_value()) {
+        update.device.reset();
+        update.onVolume = false;
+    }
+    return update;
+}
+
 } // namespace
 
 StorageVolumeResult StorageScanner::readVolume(const SyncPath &syncRoot, const bool logFailures) {
@@ -303,6 +329,52 @@ std::optional<dev_t> StorageScanner::deviceOf(const SyncPath &path) {
     }
 
     return pathStat.st_dev;
+}
+
+void StorageScanner::scanSyncs(QPromise<StorageScanUpdate> &promise, const StorageScanTarget &selected,
+                               const std::vector<StorageScanTarget> &others) {
+    using Kind = StorageScanUpdate::Kind;
+    const auto isCanceled = [&promise] { return promise.isCanceled(); };
+
+    const auto volumeResult = readVolume(selected.syncRoot);
+    if (!volumeResult.volume) {
+        (void) promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = volumeResult.error});
+        return;
+    }
+
+    const StorageVolume volume = *volumeResult.volume;
+    (void) promise.addResult(StorageScanUpdate{.kind = Kind::Volume, .volume = volume});
+
+    if (selected.needsMeasure) {
+        const auto selectedMeasure = measure(selected.syncRoot, volume.device, isCanceled);
+        if (selectedMeasure.error == StorageScanError::Canceled) {
+            return;
+        }
+        if (!selectedMeasure.bytes.has_value()) {
+            (void) promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = selectedMeasure.error});
+            return;
+        }
+
+        (void) promise.addResult(StorageScanUpdate{.kind = Kind::SelectedSyncMeasured,
+                                                   .syncDbId = selected.syncDbId,
+                                                   .syncRoot = selected.syncRoot,
+                                                   .bytes = selectedMeasure.bytes,
+                                                   .onVolume = true});
+    }
+
+    for (const auto &other: others) {
+        if (isCanceled()) {
+            return;
+        }
+
+        auto update = scanOtherSync(other, volume.device, isCanceled);
+        if (!update.has_value()) {
+            return;
+        }
+        (void) promise.addResult(std::move(*update));
+    }
+
+    (void) promise.addResult(StorageScanUpdate{.kind = Kind::OtherSyncsCompleted});
 }
 
 } // namespace KDC

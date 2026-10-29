@@ -24,6 +24,7 @@
 #include <QDesktopServices>
 #include <QLocale>
 #include <QLoggingCategory>
+#include <QPromise>
 #include <QUrl>
 #include <QtConcurrentRun>
 
@@ -354,7 +355,8 @@ void StorageController::handleSyncsChanged() {
     }
 
     const auto targets = otherSyncTargets();
-    if (std::ranges::any_of(targets, [this](const ScanTarget &target) { return !isKnown(target.syncDbId, target.syncRoot); })) {
+    if (std::ranges::any_of(targets,
+                            [this](const StorageScanTarget &target) { return !isKnown(target.syncDbId, target.syncRoot); })) {
         startScan();
     }
 }
@@ -389,12 +391,13 @@ void StorageController::startScan(const ScanTrigger trigger) {
         _minimumRetryTimer.start();
     }
 
-    const ScanTarget selected{
+    const StorageScanTarget selected{
             .syncDbId = _selectedSyncDbId,
             .syncRoot = _selectedSyncRoot,
             .needsMeasure = trigger == ScanTrigger::Retry || needsMeasure(_selectedSyncDbId, _selectedSyncRoot)};
     const auto others = otherSyncTargets();
-    const auto measuredOtherCount = std::ranges::count_if(others, [](const ScanTarget &target) { return target.needsMeasure; });
+    const auto measuredOtherCount =
+            std::ranges::count_if(others, [](const StorageScanTarget &target) { return target.needsMeasure; });
 
     _pendingOtherSyncsBytes = 0;
     _processedScanResults = 0;
@@ -404,84 +407,8 @@ void StorageController::startScan(const ScanTrigger trigger) {
                                 << "| measure selected:" << selected.needsMeasure
                                 << "| other syncs to measure:" << measuredOtherCount << "/" << others.size();
 
-    _scanWatcher.setFuture(
-            QtConcurrent::run([selected, others](QPromise<StorageScanUpdate> &promise) { scan(promise, selected, others); }));
-}
-
-/**
- * Publishes the volume of the selected synchronization, then its measure when needed, then each other synchronization.
- * Runs outside the GUI thread and stops at the first cancellation.
- */
-void StorageController::scan(QPromise<StorageScanUpdate> &promise, const ScanTarget &selected,
-                             const std::vector<ScanTarget> &others) {
-    using Kind = StorageScanUpdate::Kind;
-    const auto isCanceled = [&promise] { return promise.isCanceled(); };
-
-    const auto volumeResult = StorageScanner::readVolume(selected.syncRoot);
-    if (!volumeResult.volume) {
-        (void) promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = volumeResult.error});
-        return;
-    }
-
-    const StorageVolume volume = *volumeResult.volume;
-    (void) promise.addResult(StorageScanUpdate{.kind = Kind::Volume, .volume = volume});
-
-    if (selected.needsMeasure) {
-        const auto measure = StorageScanner::measure(selected.syncRoot, volume.device, isCanceled);
-        if (measure.error == StorageScanError::Canceled) {
-            return;
-        }
-        if (!measure.bytes.has_value()) {
-            (void) promise.addResult(StorageScanUpdate{.kind = Kind::Failed, .error = measure.error});
-            return;
-        }
-
-        (void) promise.addResult(StorageScanUpdate{.kind = Kind::SelectedSyncMeasured,
-                                                   .syncDbId = selected.syncDbId,
-                                                   .syncRoot = selected.syncRoot,
-                                                   .bytes = measure.bytes,
-                                                   .onVolume = true});
-    }
-
-    for (const auto &other: others) {
-        if (isCanceled()) {
-            return;
-        }
-
-        auto update = scanOtherSync(other, volume.device, isCanceled);
-        if (!update.has_value()) {
-            return;
-        }
-        (void) promise.addResult(std::move(*update));
-    }
-
-    (void) promise.addResult(StorageScanUpdate{.kind = Kind::OtherSyncsCompleted});
-}
-
-/** Locates another synchronization and measures it when it is on `volumeDevice`. Returns nothing once canceled. */
-std::optional<StorageScanUpdate> StorageController::scanOtherSync(const ScanTarget &other, const dev_t volumeDevice,
-                                                                  const StorageScanner::CancellationCheck &isCanceled) {
-    StorageScanUpdate update{
-            .kind = StorageScanUpdate::Kind::OtherSyncMeasured, .syncDbId = other.syncDbId, .syncRoot = other.syncRoot};
-    update.device = StorageScanner::deviceOf(other.syncRoot);
-    update.onVolume = update.device.has_value() && *update.device == volumeDevice;
-    if (!update.onVolume || !other.needsMeasure) {
-        return update;
-    }
-
-    const auto measure = StorageScanner::measure(other.syncRoot, volumeDevice, isCanceled);
-    if (measure.error == StorageScanError::Canceled) {
-        return std::nullopt;
-    }
-
-    // An unreadable root has already been logged by the scanner: it stays unknown and out of the total.
-    update.bytes = measure.bytes;
-    update.error = measure.error;
-    if (!measure.bytes.has_value()) {
-        update.device.reset();
-        update.onVolume = false;
-    }
-    return update;
+    _scanWatcher.setFuture(QtConcurrent::run(
+            [selected, others](QPromise<StorageScanUpdate> &promise) { StorageScanner::scanSyncs(promise, selected, others); }));
 }
 
 void StorageController::cancelScan() {
@@ -701,8 +628,8 @@ void StorageController::refreshStorageWarning() {
     emit storageWarningChanged();
 }
 
-std::vector<StorageController::ScanTarget> StorageController::otherSyncTargets() const {
-    std::vector<ScanTarget> targets;
+std::vector<StorageScanTarget> StorageController::otherSyncTargets() const {
+    std::vector<StorageScanTarget> targets;
     for (const auto &sync: _appCache.syncs()) {
         if (sync.dbId() == _selectedSyncDbId) {
             continue;
