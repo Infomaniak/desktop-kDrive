@@ -45,6 +45,17 @@ namespace {
 constexpr uint8_t trayAvailabilityRetryLimit = 60;
 constexpr int32_t trayAvailabilityRetryIntervalMs = 1000;
 
+// Test build only: crashes through named frames so Sentry symbolication and unwinding can be checked.
+[[gnu::noinline]] void writeThroughNullPointerForSentryTest() {
+    volatile int32_t *volatile pointer = nullptr;
+    *pointer = 42;
+}
+
+[[gnu::noinline]] void triggerSentryTestCrash() {
+    qCCritical(lcSystemTrayController) << "Sentry test crash requested from the tray menu";
+    writeThroughNullPointerForSentryTest();
+}
+
 #ifdef QT_DEBUG
 bool forceNoTrayRequested() {
     return qEnvironmentVariableIsSet("KDRIVE_FORCE_NO_TRAY");
@@ -189,6 +200,7 @@ void SystemTrayController::initialize() {
     _openAction = _trayMenu.addAction(qtTrId("statusBarOpenApp"));
     _settingsAction = _trayMenu.addAction(qtTrId("statusBarSettings"));
     (void) _trayMenu.addSeparator();
+    (void) connect(_trayMenu.addAction(u"Crash kDrive (Sentry test)"_s), &QAction::triggered, this, &triggerSentryTestCrash);
     _quitAction = _trayMenu.addAction(qtTrId("statusBarQuitApp"));
     _trayIcon.setContextMenu(&_trayMenu);
 
