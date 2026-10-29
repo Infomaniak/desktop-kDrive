@@ -48,10 +48,6 @@ constexpr auto relativeDateThreshold = std::chrono::days{4};
 // Like the Windows client: smaller transfers finish too fast to be kept on top without flickering.
 constexpr int64_t minPinnedTransferSize = 1024;
 
-QString errorRowId(const ErrorDbId errorDbId) {
-    return QStringLiteral("error:%1").arg(static_cast<qlonglong>(errorDbId));
-}
-
 SyncPath normalizedRelativePath(const SyncPath &path) {
     return path.relative_path().lexically_normal();
 }
@@ -363,7 +359,7 @@ std::vector<ActivityListModel::Row> ActivityListModel::buildProjection() const {
     }
 
     auto rows = activityRows(syncDbId);
-    appendActiveErrors(syncDbId, _appCache.errorsForSync(syncDbId), rows);
+    attachActiveErrors(_appCache.errorsForSync(syncDbId), rows);
     finalizeProjection(rows);
     return rows;
 }
@@ -378,22 +374,17 @@ std::vector<ActivityListModel::Row> ActivityListModel::activityRows(const SyncDb
     return rows;
 }
 
-void ActivityListModel::appendActiveErrors(const SyncDbId syncDbId, const std::vector<Error> &errors,
-                                           std::vector<Row> &rows) const {
+// Attaches each node error to the activity it failed on. An error without such an activity, for instance a conflict
+// whose transfers succeeded, gets no row: the error banner and the errors page show it.
+void ActivityListModel::attachActiveErrors(const std::vector<Error> &errors, std::vector<Row> &rows) {
     for (const auto &error: errors) {
         if (error.level() != ErrorLevel::Node) {
             continue;
         }
-        appendActiveError(syncDbId, error, rows);
+        if (auto *const matchingRow = findMatchingActivity(rows, error); matchingRow != nullptr) {
+            matchingRow->activeErrorDbIds.push_back(error.dbId());
+        }
     }
-}
-
-void ActivityListModel::appendActiveError(const SyncDbId syncDbId, const Error &error, std::vector<Row> &rows) const {
-    if (auto *const matchingRow = findMatchingActivity(rows, error); matchingRow != nullptr) {
-        matchingRow->activeErrorDbIds.push_back(error.dbId());
-        return;
-    }
-    rows.push_back(makeErrorRow(syncDbId, error));
 }
 
 ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbId, const ActivityEntry &activity) const {
@@ -428,29 +419,6 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.destinationPath = normalizedRelativePath(activity.newPath);
     row.localNodeId = activity.localNodeId.toStdString();
     row.remoteNodeId = activity.remoteNodeId.toStdString();
-    return row;
-}
-
-ActivityListModel::Row ActivityListModel::makeErrorRow(const SyncDbId syncDbId, const Error &error) const {
-    const SyncPath relativePath =
-            normalizedRelativePath(error.destinationPath().empty() ? error.path() : error.destinationPath());
-    const QDateTime timestampUtc = error.time() > 0 ? QDateTime::fromSecsSinceEpoch(error.time(), QTimeZone::UTC) : QDateTime{};
-
-    Row row;
-    row.rowId = errorRowId(error.dbId());
-    row.syncDbId = syncDbId;
-    row.name = itemName(relativePath);
-    row.fileIconName = _fileIconResolver.iconName(row.name, error.nodeType());
-    row.folder = parentFolder(relativePath);
-    row.subtitleText = formatSubtitle(row.subtitleKind, timestampUtc);
-    row.exactTimeText = formatExactTime(timestampUtc);
-    row.nodeType = error.nodeType();
-    row.status = Status::Failed;
-    row.timestampUtc = timestampUtc;
-    row.relativePath = relativePath;
-    row.localNodeId = error.localNodeId();
-    row.remoteNodeId = error.remoteNodeId();
-    row.activeErrorDbIds.push_back(error.dbId());
     return row;
 }
 
@@ -522,10 +490,6 @@ QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTi
         return {};
     }
 
-    if (kind == SubtitleKind::TimeOnly) {
-        return relativeTime;
-    }
-
     const char *translationId = nullptr;
     switch (kind) {
         case SubtitleKind::Updated:
@@ -546,8 +510,6 @@ QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTi
         case SubtitleKind::Added:
             translationId = "activityInstructionPutWithTimeLabel";
             break;
-        case SubtitleKind::TimeOnly:
-            return relativeTime;
     }
     if (translationId == nullptr) {
         return relativeTime;
