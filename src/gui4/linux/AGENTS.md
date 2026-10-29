@@ -448,7 +448,9 @@
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
   active node errors. It omits failed activities after their active error is resolved, maps server status and direction
   to the QML-facing presentation enums, keeps in-progress transfers of at least 1 KB first in start order, coalesces
-  bursty cache invalidations, and keeps active errors visible even when their recent activity has been evicted.
+  bursty cache invalidations. An active error only marks the failed or in-progress activity it matches; an error
+  without one, for instance a conflict whose transfers succeeded or an evicted activity, has no row and is left to the
+  errors banner and page.
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
   locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
