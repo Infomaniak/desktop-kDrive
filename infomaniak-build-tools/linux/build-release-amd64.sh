@@ -178,7 +178,7 @@ package_release() {
   cp -P -r "$QTDIR/resources" "$app_dir/usr" || true # resources folder is not always present in the Qt installation, but we want to copy it when it is
   cp -P -r "$QTDIR/translations" "$app_dir/usr"
 
-  mkdir -p "$app_dir/usr/lib
+  mkdir -p "$app_dir/usr/lib"
   cp -P "$conan_dependencies_folder/"* "$app_dir/usr/lib"
 
   cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
