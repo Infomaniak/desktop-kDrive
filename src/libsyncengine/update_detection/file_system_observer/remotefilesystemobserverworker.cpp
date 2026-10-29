@@ -1496,22 +1496,15 @@ RemoteNodeIdSet RemoteFileSystemObserverWorker::blackList() const {
 
 ExitInfo RemoteFileSystemObserverWorker::checkIfSharedFolderIsEmpty(bool &empty) {
     empty = false;
+    SyncTime sleepDuration = 0;
 
-    constexpr auto maxItemsToCheck = 5; // This is the minimum number allowed by the API. We only need to check the existence
-                                        // of a single item to determine if the 'Shared' folder is empty or not.
-    // The content of the 'Shared' folder is queried with an empty cursor: the listing cursor of the 'Shared' folder is not
-    // persisted.
-    auto job = std::make_shared<GetFilesSharedWithMeJob>(_driveDbId, Cursor{}, maxItemsToCheck);
-    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in GetFilesSharedWithMeJob::runSynchronously: " << exitInfo);
-        if (exitInfo.code() == ExitCode::RateLimited) setPauseDuration(job->sleepDuration());
+    if (const auto exitInfo =
+                ApiJobUtility::checkIfSharedFolderIsEmpty(_syncPal->userDbId(), _syncPal->driveId(), empty, sleepDuration);
+        !exitInfo) {
+        if (exitInfo.code() == ExitCode::RateLimited) setPauseDuration(sleepDuration);
 
         return exitInfo;
     }
-
-    empty = job->sharedIsEmpty();
-
-    return ExitCode::Ok;
 }
 
 } // namespace KDC
