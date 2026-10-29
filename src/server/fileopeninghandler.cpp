@@ -30,6 +30,8 @@
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "libsyncengine/syncpal/syncpal.h"
 
+#include "libsyncengine/jobs/network/kDrive_API/apitranslator.h"
+
 #include <QDesktopServices>
 
 #include <Poco/Exception.h>
@@ -96,7 +98,7 @@ void FileOpeningHandler::start() {
     }
 
     setPhase(Phase::Resolve, std::chrono::milliseconds(0), std::chrono::milliseconds(0));
-    resolveDeeplink();
+    openFileIndicatedByDeeplink();
 }
 
 bool FileOpeningHandler::isFileOpeningDeeplink(const std::string &urlStr) {
@@ -114,7 +116,10 @@ bool FileOpeningHandler::parseDeeplinkUrl(const std::string &urlStr, Request &re
     uri.getPathSegments(segments);
     if (segments.size() != 6 || segments[0] != "user" || segments[2] != "drive" || segments[4] != "file") return false;
 
-    if (!parsePositiveId(segments[1], request.userId)) return false;
+    UserId userId;
+    if (!parsePositiveId(segments[1], userId)) return false;
+    request.user.setUserId(userId);
+
     if (!parsePositiveId(segments[3], request.driveId)) return false;
     request.nodeId = segments[5];
 
@@ -127,12 +132,12 @@ bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
     return executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
 }
 
-void FileOpeningHandler::resolveDeeplink() {
+void FileOpeningHandler::openFileIndicatedByDeeplink() {
     constexpr auto failureMessage = "The element requested from this kDrive deeplink could not be opened.";
     // The drive lookup is performed once: the drive configuration cannot appear while the request is being processed.
-    if (_driveDbIds.empty() && !ParmsDb::instance()->driveDbIds(_request.userId, _request.driveId, _driveDbIds)) {
+    if (_driveDbIds.empty() && !ParmsDb::instance()->driveDbIds(_request.user.userId(), _request.driveId, _driveDbIds)) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in ParmsDb::driveDbIds: userId=" << _request.userId << ", driveId=" << _request.driveId);
+                 "Error in ParmsDb::driveDbIds: userId=" << _request.user.userId() << ", driveId=" << _request.driveId);
         handleFileOpeningFailure(failureMessage);
 
         return;
@@ -146,7 +151,7 @@ void FileOpeningHandler::resolveDeeplink() {
     }
 
     if (itemFound) {
-        openResolvedItem();
+        (void) openResolvedItem();
 
         return;
     }
@@ -160,9 +165,7 @@ void FileOpeningHandler::sortSyncsByDbId(std::vector<Sync> &syncs) const {
 
     std::ranges::stable_sort(syncs, [this](const Sync &sync1, const Sync &sync2) {
         const bool running1 = _appServer->syncPalMap.contains(sync1.dbId());
-        const bool running2 = _appServer->syncPalMap.contains(sync2.dbId());
-
-        if (running1 != running2) return running1;
+        if (const bool running2 = _appServer->syncPalMap.contains(sync2.dbId()); running1 != running2) return running1;
 
         return sync1.dbId() < sync2.dbId();
     });
@@ -183,6 +186,43 @@ std::shared_ptr<SyncDb> FileOpeningHandler::getSyncDb(SyncDbId syncDbId) const {
 ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
     itemFound = false;
 
+    if (bool userFound = false; !ParmsDb::instance()->selectUserByUserId(_request.user.userId(), _request.user, userFound)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId.");
+
+        return ExitCode::DbError;
+    }
+
+    RemoteNodeId sharedFolderRemoteId;
+    if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(_request.user.dbId(), _request.driveId,
+                                                                      SpecialRemoteFolder::Shared, sharedFolderRemoteId);
+        !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in FileOpeningHandler::getSpecialFolderRemoteIds: userDbId="
+                                                       << _request.user.dbId() << ", driveId=" << _request.driveId << ": "
+                                                       << exitInfo);
+
+        return exitInfo;
+    }
+
+    // The `Shared` folder is not synchronized locally if no items have been shared on the specified drive with the specified
+    // user.
+    if (_request.nodeId == sharedFolderRemoteId) {
+        bool emptyShared = false;
+        if (const auto exitInfo = ApiJobUtility::checkIfSharedFolderIsEmpty(_request.user.dbId(), _request.driveId, emptyShared);
+            !exitInfo)
+            return exitInfo;
+
+        if (emptyShared) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "The Shared folder is empty - userDbId=" << _request.user.dbId() << ", driveId=" << _request.driveId);
+
+            return ExitCode::DataError;
+        }
+    }
+
+    // The `Private` folder is not synchronized locally: it is represented by the root folder in the V2 API.
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(_request.user.dbId(), _request.driveId, _request.nodeId); !exitInfo)
+        return exitInfo;
+
     std::vector<Sync> syncs;
     if (!ParmsDb::instance()->selectAllSyncs(syncs)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs.");
@@ -194,6 +234,7 @@ ExitInfo FileOpeningHandler::resolveDeeplink(bool &itemFound) {
 
     // Examine the syncs whose engine is running first, and make the examination order deterministic.
     sortSyncsByDbId(syncs);
+    _driveDbId = syncs.front().driveDbId(); // Default value as long as an admissible sync is not found.
 
     for (const auto &sync: syncs) {
         std::shared_ptr<SyncDb> syncDb = getSyncDb(sync.dbId());
@@ -287,7 +328,7 @@ void FileOpeningHandler::onSyncWaitTick() {
         return;
     }
     if (found) {
-        openResolvedItem();
+        (void) openResolvedItem();
     }
 }
 
@@ -371,7 +412,7 @@ ExitInfo FileOpeningHandler::hydrateResolvedPlaceholder() {
     std::shared_ptr<Vfs> vfs;
     if (const auto exitInfo = _appServer->getVfs(_syncDbId, vfs); !exitInfo || !vfs) return exitInfo;
 
-    // On macOS, setting the pin state to AlwaysLocal is required to trigger the hydration
+    // On macOS, setting the pin state to `AlwaysLocal` is required to trigger the hydration
     // (see ExtensionJob::commandMakeAvailableLocallyDirect).
     _initialPinState = vfs->pinState(_relativePath);
     if (_initialPinState != PinState::AlwaysLocal) {
@@ -413,7 +454,7 @@ void FileOpeningHandler::onHydrationFinished(bool success) {
         return;
     }
 
-    openLocalItem();
+    (void) openLocalItem();
 }
 
 ExitInfo FileOpeningHandler::openLocalItem() {
