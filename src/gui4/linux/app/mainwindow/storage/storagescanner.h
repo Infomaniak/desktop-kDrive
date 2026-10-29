@@ -20,12 +20,14 @@
 
 #include "libcommon/utility/types.h"
 
+#include <QPromise>
 #include <QString>
 
 #include <cstdint>
 #include <functional>
 #include <optional>
 #include <sys/types.h>
+#include <vector>
 
 namespace KDC {
 
@@ -77,6 +79,35 @@ struct StorageMeasureResult {
         StorageScanError error{StorageScanError::None};
 };
 
+/** A synchronization root to scan, and whether its cached measure must be refreshed. */
+struct StorageScanTarget {
+        SyncDbId syncDbId{0};
+        SyncPath syncRoot{};
+        bool needsMeasure{true};
+};
+
+/** One step of a Storage scan, published as soon as it is known so the page fills progressively. */
+struct StorageScanUpdate {
+        enum class Kind : uint8_t {
+            Volume = 0,
+            SelectedSyncMeasured,
+            OtherSyncMeasured,
+            OtherSyncsCompleted,
+            Failed,
+        };
+
+        Kind kind{Kind::Volume};
+        std::optional<StorageVolume> volume{};
+        SyncDbId syncDbId{0};
+        SyncPath syncRoot{};
+        // Empty for a cached synchronization or for one that is not on the scanned volume.
+        std::optional<uint64_t> bytes{};
+        bool onVolume{false};
+        // Device of another synchronization root; empty when it could not be inspected or read.
+        std::optional<dev_t> device{};
+        StorageScanError error{StorageScanError::None};
+};
+
 /**
  * Reads the local volume of a synchronization root and measures the physical storage occupied by synchronization roots
  * on Linux.
@@ -101,6 +132,13 @@ class StorageScanner {
                                                           const CancellationCheck &isCanceled = {});
         /** Returns the device of `path`, or nothing if it cannot be inspected. */
         [[nodiscard]] static std::optional<dev_t> deviceOf(const SyncPath &path);
+        /**
+         * Publishes the volume of `selected`, then its measure when needed, then each of `others` with its device and,
+         * when it is on that volume and needs it, its measure. Ends with `OtherSyncsCompleted`, or with `Failed` when the
+         * selected synchronization cannot be read. Stops without a final step once `promise` is canceled.
+         */
+        static void scanSyncs(QPromise<StorageScanUpdate> &promise, const StorageScanTarget &selected,
+                              const std::vector<StorageScanTarget> &others);
 };
 
 } // namespace KDC
