@@ -22,7 +22,9 @@ import QtQuick
 QtObject {
     readonly property real cardSpacing: 32
     readonly property real cardHorizontalPadding: 10
-    readonly property real headerHeight: 64
+    // Same inset above the title as on its left, instead of the 16 px of the Figma.
+    readonly property real headerTopPadding: 10
+    readonly property real headerHeight: 58
     readonly property real rowHeight: 42
     readonly property real storageBarHeight: 16
     readonly property real storageBarRadius: 2
