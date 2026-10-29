@@ -59,7 +59,7 @@ Rectangle {
             anchors.leftMargin: IKStorage.cardHorizontalPadding
             anchors.right: headerTrailing.left
             anchors.rightMargin: IKSpacing.s16
-            y: IKSpacing.s16
+            y: IKStorage.headerTopPadding
             color: IKColors.textPrimary
             elide: Text.ElideRight
             font.pixelSize: IKFonts.bodySize
@@ -74,7 +74,7 @@ Rectangle {
 
             anchors.right: parent.right
             anchors.rightMargin: IKStorage.cardHorizontalPadding
-            y: IKSpacing.s16
+            y: IKStorage.headerTopPadding
             height: IKFonts.bodySize + IKSpacing.s4
             spacing: IKStorage.headerAccessorySpacing
 
@@ -124,7 +124,7 @@ Rectangle {
             height: IKStorage.storageBarHeight
             layer.enabled: true
             radius: IKStorage.storageBarRadius
-            y: IKSpacing.s16 + IKFonts.bodySize + IKSpacing.s12
+            y: IKStorage.headerTopPadding + IKFonts.bodySize + IKSpacing.s12
 
             layer.effect: MultiEffect {
                 maskEnabled: true
