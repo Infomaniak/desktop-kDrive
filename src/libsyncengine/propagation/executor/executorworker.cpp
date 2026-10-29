@@ -1880,25 +1880,24 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         node = syncOp->correspondingNode();
     } else {
         // insert new node
-        node = std::shared_ptr<Node>(
-                new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote,
-                         remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, newCreationTime,
-                         newLastModificationTime, size, newCorrespondingParentNode));
+        node = std::make_shared<Node>(
+                newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote, remoteName,
+                syncOp->affectedNode()->type(), OperationType::None, newNodeId, newCreationTime, newLastModificationTime, size);
+
         if (node == nullptr) {
             std::cout << "Failed to allocate memory" << std::endl;
             LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
             return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
         }
 
-        std::shared_ptr<UpdateTree> updateTree = targetUpdateTree(syncOp);
-        updateTree->insertNode(node);
-
-        if (!newCorrespondingParentNode->insertChild(node)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node "
-                                               << Utility::formatSyncName(node->name()) << L" parent node "
-                                               << Utility::formatSyncName(newCorrespondingParentNode->name()));
+        if (!node->moveTo(newCorrespondingParentNode)) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Error in Node::setParentNode: " << Node::formatNodeWithParent(node, newCorrespondingParentNode));
             return ExitCode::DataError;
         }
+
+        std::shared_ptr<UpdateTree> updateTree = targetUpdateTree(syncOp);
+        updateTree->insertNode(node);
 
         // Affected node does not have a valid DB ID yet, update it
         syncOp->affectedNode()->setIdb(newDbNodeId);
@@ -2072,15 +2071,11 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     // that follow-up operations can execute correctly, as they are based on the
     // information in this structure.
     if (!syncOp->omit()) {
-        auto prevParent = correspondingNode->parentNode();
-        (void) prevParent->deleteChild(correspondingNode);
-
         correspondingNode->setName(syncOp->newName());
 
-        if (!parentNode->insertChild(correspondingNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << Utility::formatSyncName(correspondingNode->name())
-                                                                            << L" parent node "
-                                                                            << Utility::formatSyncName(parentNode->name()));
+        if (!correspondingNode->moveTo(parentNode)) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Error in Node::setParentNode: " << Node::formatNodeWithParent(correspondingNode, parentNode));
             return ExitCode::DataError;
         }
     }

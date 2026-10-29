@@ -436,24 +436,24 @@ void TestOperationSorterWorker::testFixCreateBeforeCreateSameIdOnBothSide() {
     // ├── A (a)
     // │   └── AA (aa)
     // │       └── AAA (aaa)
-    const auto nodeA = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("A"), NodeType::Directory,
-                                              OperationType::Create, "a", testhelpers::defaultTime, testhelpers::defaultTime,
-                                              testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
-    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChild(nodeA);
+    const auto nodeA =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("A"), NodeType::Directory, OperationType::Create, "a",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize);
+    CPPUNIT_ASSERT(nodeA->moveTo(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeA);
     const auto opA = generateSyncOperation(OperationType::Create, nodeA);
 
     const auto nodeAA =
             std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("AA"), NodeType::Directory, OperationType::Create, "aa",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize, nodeA);
-    (void) nodeA->insertChild(nodeAA);
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize);
+    CPPUNIT_ASSERT(nodeAA->moveTo(nodeA));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeAA);
     const auto opAA = generateSyncOperation(OperationType::Create, nodeAA);
 
     const auto nodeAAA =
             std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("AAA"), NodeType::File, OperationType::Create, "aaa",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAA);
-    (void) nodeAA->insertChild(nodeAAA);
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize);
+    CPPUNIT_ASSERT(nodeAAA->moveTo(nodeAA));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeAAA);
     const auto opAAA = generateSyncOperation(OperationType::Create, nodeAAA);
 
@@ -463,15 +463,15 @@ void TestOperationSorterWorker::testFixCreateBeforeCreateSameIdOnBothSide() {
     //     └── BA (aa)
     const auto nodeB = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("B"), NodeType::Directory,
                                               OperationType::Create, "b", testhelpers::defaultTime, testhelpers::defaultTime,
-                                              testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    (void) _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChild(nodeB);
+                                              testhelpers::defaultDirSize);
+    CPPUNIT_ASSERT(nodeB->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
     const auto opB = generateSyncOperation(OperationType::Create, nodeB);
 
     const auto nodeBA =
             std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("BA"), NodeType::File, OperationType::Create, "aa",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize, nodeB);
-    (void) nodeB->insertChild(nodeBA);
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize);
+    CPPUNIT_ASSERT(nodeBA->moveTo(nodeB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeBA);
     const auto opBA = generateSyncOperation(OperationType::Create, nodeBA);
 
