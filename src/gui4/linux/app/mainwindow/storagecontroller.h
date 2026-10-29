@@ -23,6 +23,7 @@
 
 #include <QFutureWatcher>
 #include <QObject>
+#include <QPromise>
 #include <QString>
 #include <QTimer>
 
@@ -126,7 +127,7 @@ class StorageController final : public QObject {
         [[nodiscard]] bool otherSyncsMeasured() const { return _otherSyncsBytes.has_value(); }
         [[nodiscard]] QString otherSyncsSizeText() const;
         /** True once measured, when no other synchronization occupies space on the volume. */
-        [[nodiscard]] bool otherSyncsEmpty() const { return _otherSyncsBytes && *_otherSyncsBytes == 0; }
+        [[nodiscard]] bool otherSyncsEmpty() const { return _otherSyncsBytes.has_value() && *_otherSyncsBytes == 0; }
         [[nodiscard]] QString otherSizeText() const;
         [[nodiscard]] double syncRatio() const;
         [[nodiscard]] double otherSyncsRatio() const;
@@ -209,6 +210,9 @@ class StorageController final : public QObject {
         [[nodiscard]] bool isSyncActive(SyncDbId syncDbId) const;
         [[nodiscard]] std::optional<Drive> currentDrive() const;
         [[nodiscard]] uint64_t otherBytes() const;
+        static void scan(QPromise<StorageScanUpdate> &promise, const ScanTarget &selected, const std::vector<ScanTarget> &others);
+        [[nodiscard]] static std::optional<StorageScanUpdate> scanOtherSync(const ScanTarget &other, dev_t volumeDevice,
+                                                                            const StorageScanner::CancellationCheck &isCanceled);
         [[nodiscard]] static bool isActiveStatus(SyncStatus status);
         [[nodiscard]] static QString formatBytes(uint64_t bytes);
         [[nodiscard]] double ratio(uint64_t bytes) const;
