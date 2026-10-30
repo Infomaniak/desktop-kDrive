@@ -108,7 +108,8 @@ void ConflictVersionController::close() {
 }
 
 void ConflictVersionController::select(const Version version) {
-    if (!isOpen() || loading() || version == Version::None) {
+    // Once the choices are sent, the shown selection stays the one being applied.
+    if (!isOpen() || loading() || _awaitingResolution || version == Version::None) {
         return;
     }
     _selection = version;
