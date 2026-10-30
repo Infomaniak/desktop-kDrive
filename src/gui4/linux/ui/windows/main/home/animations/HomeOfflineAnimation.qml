@@ -64,7 +64,7 @@ Item {
         running: true
         onLoopsChanged: { if (running) { restart() } }
     }
-    visible: frameCounter >= 0 && frameCounter < 180
+    visible: frameCounter >= 0 && frameCounter <= 180
     LayerItem {
         visible: _qt_node0.frameCounter >= 0 && _qt_node0.frameCounter < 181
         objectName: "stroke"

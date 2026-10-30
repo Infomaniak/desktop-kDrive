@@ -64,7 +64,7 @@ Item {
         running: true
         onLoopsChanged: { if (running) { restart() } }
     }
-    visible: frameCounter >= 0 && frameCounter < 145
+    visible: frameCounter >= 0 && frameCounter <= 145
     LayerItem {
         visible: _qt_node0.frameCounter >= 0 && _qt_node0.frameCounter < 146
         objectName: "folder-03"
