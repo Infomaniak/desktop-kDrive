@@ -69,7 +69,7 @@ void TestFolderWatcherLinux::testQueueOverflowInvalidatesSnapshot() {
     CPPUNIT_ASSERT(syncPal->restart());
 
     // The next event is still delivered and queued until the snapshot has been rebuilt.
-    (void) testObj._watchToPath.emplace(1, tempDir.path());
+    (void) testObj._watchToPath.try_emplace(1, tempDir.path());
     const inotify_event event{.wd = 1, .mask = IN_ATTRIB, .cookie = 0, .len = 0};
     CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.processEvent(event));
     CPPUNIT_ASSERT_EQUAL(size_t{1}, parent.pendingFileEvents().size());

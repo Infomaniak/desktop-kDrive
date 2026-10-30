@@ -114,7 +114,7 @@ ExitInfo FolderWatcher_linux::processEvent(const inotify_event &event) {
     }
 
     const auto watchedPath = _watchToPath.find(event.wd);
-    if (_stop || watchedPath == _watchToPath.end()) return ExitCode::Ok;
+    if (watchedPath == _watchToPath.end()) return ExitCode::Ok;
 
     // Events on the watched directory itself have no name field (len = 0).
     const SyncPath path = makeSyncPath(watchedPath->second, event.len > 0 ? event.name : "");
