@@ -38,6 +38,14 @@ FocusScope {
         searchField.focusInput();
     }
 
+    // Enter or Space on the list: the version of its current row.
+    function chooseCurrentRow() {
+        const row = list.currentItem;
+        if (row && !row.actionPending) {
+            root.openVersionDialog(() => root.controller.chooseVersion(row.rowId));
+        }
+    }
+
     function openVersionDialog(openFrom) {
         root.conflictVersionDialog.returnFocusItem = root.Window.activeFocusItem;
         openFrom();
@@ -126,13 +134,31 @@ FocusScope {
                         anchors.margins: IKActivities.conflictsListPadding
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
-                        // The keyboard goes through the row buttons.
+                        // A single tab stop: Up and Down move the current row, which the view keeps in sight, so every
+                        // row is reachable even when its delegate is not instantiated yet.
+                        activeFocusOnTab: true
+                        keyNavigationEnabled: true
                         currentIndex: -1
-                        keyNavigationEnabled: false
                         model: root.listModel
+                        Accessible.role: Accessible.List
+                        Accessible.name: qsTrId("labelChooseConflictVersionIndividual")
+                        onActiveFocusChanged: {
+                            if (activeFocus && currentIndex < 0 && count > 0) {
+                                currentIndex = 0;
+                            }
+                        }
+                        onCurrentIndexChanged: {
+                            if (currentIndex >= 0) {
+                                positionViewAtIndex(currentIndex, ListView.Contain);
+                            }
+                        }
+                        Keys.onReturnPressed: root.chooseCurrentRow()
+                        Keys.onEnterPressed: root.chooseCurrentRow()
+                        Keys.onSpacePressed: root.chooseCurrentRow()
                         delegate: ConflictListRow {
                             width: ListView.view.width
                             isLast: index === root.listModel.count - 1
+                            keyboardCurrent: ListView.isCurrentItem && list.activeFocus
                             onChooseRequested: rowId => root.openVersionDialog(() => root.controller.chooseVersion(rowId))
                         }
 
