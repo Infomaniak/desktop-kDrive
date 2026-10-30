@@ -240,20 +240,31 @@
 - Keep `AppClientLinux` as an application composition root. Move multi-step feature workflows such as onboarding login
   into dedicated coordinators instead of accumulating workflow lambdas in `AppClientLinux`.
 - `Qt.labs.lottieqt` renders Lottie JSON assets, not `.lottie` zip containers.
-- For Qt 6.11+ onboarding Lottie assets, prefer generated QML from `lottietoqml` over PNG spritesheets when the
-  generated output builds and visually matches the source animation.
-- `lottietoqml` expects the JSON animation payload; extract `animations/<id>.json` from `.lottie` containers before
-  generating QML components.
+- For Qt 6.11+ Lottie assets, prefer generated QML from `lottietoqml` over PNG spritesheets when the generated output
+  builds and visually matches the source animation.
+- Regenerate animation QML with the procedure of "Regenerate Lottie QML animations": normalized payload, `lottietoqml`
+  without the curve renderer, root visibility fix, license header, then `IKColors` bindings for theme-aware animations.
+- Never generate Lottie QML with the curve renderer (`lottietoqml -c`): it distorts dashed strokes and moving dots on
+  GPU (seen on Mesa Intel, native Wayland). The offscreen platform hides the defect, so check an animation in a real
+  window.
+- The geometry renderer draws paths without antialiasing: the container of a generated animation renders it in a
+  multisampled layer (`layer.enabled`, `layer.samples` from the tokens, `layer.smooth`).
+- Generated QML imports `QtQuick.Timeline`: the Qt package must provide `qtquicktimeline`, which the Qt online installer
+  does not pull in with `qtlottie` (Conan recipe, Linux). Every build type needs its Conan dependencies refreshed.
 - `LoaderStrokeAnimation` is intentionally used for the login loader in both light and dark themes. Do not restore or
-  generate separate light/dark loader variants unless the user explicitly requests them.
+  generate separate light/dark loader variants unless the user explicitly requests them. Its front page is drawn as a
+  1.25 px outline: the source is filled, the Linux loader is a wireframe.
 - Version generated animation QML files in each window's `animations/` directory. Do not manually edit their geometry or
-  timing; regenerate those from the source `.lottie` asset and keep the generated-file header.
+  timing; regenerate them from the source asset and keep the generated-file header. Fix a generated defect in the
+  generation steps, not in the screens that host the animation.
 - When Light and Dark use the same animation geometry, keep one generated component and deterministically replace its
-  generated palette with theme-aware `IKColors` bindings instead of versioning separate Light and Dark QML files.
+  generated palette with theme-aware `IKColors` bindings instead of versioning separate Light and Dark QML files. Every
+  generated color except transparent gets a binding.
 - Derive a Lottie state's theme palette only from the matching Light/Dark state assets; do not reuse colors from a
   similarly named or visually related animation state.
-- Before generation, remove `h` only from animated shape-path keyframes when `lottietoqml` otherwise drops the
-  corresponding `PathInterpolated`; never restore missing paths by editing generated QML.
+- `lottietoqml` (Qt 6.12 included) leaves an animated path empty (`PathSvg { path: "M 0 0 " }`) when one of its
+  keyframes holds (`h`): drop these keyframes before generation and check that the output has no empty path. Never
+  restore missing paths by editing generated QML.
 - When a fill spans outer and inner contours, verify that `lottietoqml` preserves the holes. If it emits one filled
   `ShapePath` per contour, combine each outer contour with its reversed inner contour in the normalized JSON before
   regenerating.
@@ -610,8 +621,9 @@
     - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
       the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
       with Down on the last row. It consumes `SearchController`; it must not call IPC.
-    - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
-      status animations only while their state is active so that they start when the status becomes visible.
+    - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses (see "Regenerate Lottie
+      QML animations"). Instantiate finite status animations only while their state is active so that they start when
+      the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
@@ -644,52 +656,41 @@
       transparent
       shadow during snapping and maximization. Native Wayland intentionally uses public Qt APIs only and therefore snaps
       the complete native window, including its transparent shadow margin.
-    - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON
-      payloads. Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator
-      and the QML compilation step.
+    - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie sources
+      (see "Regenerate Lottie QML animations"). Do not edit these files manually. They are excluded from `qmllint`;
+      validation belongs to the generator and the QML compilation step.
 
-### Regenerate Onboarding Lottie QML
+### Regenerate Lottie QML animations
 
-Run `lottietoqml` from the Qt/Conan package that provides `qtlottie`. The loader source JSON is supplied locally and is
-not versioned; only the generated QML component is tracked. Set `LOTTIE_INPUT` to that source file before running:
+The Lottie sources are supplied locally and are not versioned; only the generated QML components are tracked. Use the
+`lottietoqml` of the Conan Qt package (`source build-linux/build/build/Debug/generators/conanrun.sh`).
 
-```bash
-source build-linux/build/build/Debug/generators/conanrun.sh
-mkdir -p build-linux/lottie-json
-LOTTIE_INPUT=${LOTTIE_INPUT:?Set LOTTIE_INPUT to the loader-stroke JSON source}
+Sources and palette bindings of the generated files, under `ui/windows/`:
+- `onboarding/animations/LoaderStrokeAnimation.qml`: `kDrive-LoaderStroke-LIGHT.lottie`, front page as outline.
+- `onboarding/animations/SyncFileLightAnimation.qml` and `SyncFileDarkAnimation.qml`: `kDrive-SyncroFile-LIGHT.lottie`
+  and `kDrive-SyncroFile-DARK.lottie`.
+- `main/home/animations/HomeIdleAnimation.qml`: `WIN_LINUX_kDrive-Check-LIGHT.json`; `#2A8F36` badge foreground,
+  `#E0F8E2` badge surface, `#446FDD` illustration stroke.
+- `main/home/animations/HomeSyncingAnimation.qml`: `kDrive-Sync-LIGHT.lottie`; `#446FDD` foreground, `#DEE7FD` surface.
+- `main/home/animations/HomePausedAnimation.qml`: `kDrive-Pause-LIGHT.lottie`; `#FF8500` foreground, `#FFE8D8` surface.
+- `main/home/animations/HomeOfflineAnimation.qml`: `kDrive-Offline-LIGHT.lottie`; `#446FDD` foreground, `#DEE7FD`
+  surface.
 
-LOTTIE_QML_LICENSE=$(cat <<'EOF'
-Infomaniak kDrive - Desktop
-Copyright (C) 2023-2026 Infomaniak Network SA
+For each animation:
+1. Take the animation payload: the `.json` of a `.lottie` container other than `manifest.json`.
+2. Normalize it: remove `h` from the keyframes of animated shape paths (`ty == "sh"`, `ks.a == 1`). For the loader,
+   replace the `page-front` shapes with their first path plus their last item turned into a stroke (`ty: "st"`,
+   `w: 1.25`, `lc: 2`, `lj: 2`, `ml: 4`, without `r`).
+3. Run `lottietoqml <normalized>.json <output>.qml`, without `-c` / `-p`, and check that the output has no
+   `PathSvg { path: "M 0 0 " }`.
+4. Change the root `visible: frameCounter >= 0 && frameCounter < <end frame>` to `<=`: `lottietoqml` hides the root on
+   the last frame, so a finished animation would disappear and a looping one would blink once per loop.
+5. Prepend the repository QML license block, then `// Generated by lottietoqml. Do not edit geometry or timing
+   manually.` and `// Generated from Lottie file <normalized file name>`.
+6. For Home animations, replace each generated color with `IKColors.home<State>*` per the list above, add
+   `// Palette bindings use IKColors for automatic Light/Dark adaptation.` to the header and `import kDrive.UI`.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
-EOF
-)
-
-jq '(.layers[] | select(.nm == "page-front") | .shapes) |=
-      [.[0], (.[-1] | .ty = "st" | .w = {"a": 0, "k": 1.25} |
-      .lc = 2 | .lj = 2 | .ml = 4 | del(.r))] |
-    ((.. | objects | select(.ty? == "sh") | .ks.k[]?) |= del(.h))' \
-  "$LOTTIE_INPUT" \
-  > build-linux/lottie-json/kDrive-LoaderStroke-LIGHT.json
-lottietoqml -c -p \
-  --copyright-statement \
-  "$LOTTIE_QML_LICENSE
-Generated by lottietoqml. Do not edit manually." \
-  build-linux/lottie-json/kDrive-LoaderStroke-LIGHT.json \
-  src/gui4/linux/ui/windows/onboarding/animations/LoaderStrokeAnimation.qml
-```
+Compare each regenerated animation with the previous one in a real window, in both themes, before committing.
 
 ## Build And Validation
 
