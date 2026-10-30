@@ -151,6 +151,10 @@ ExitInfo HydratePlaceHolderJob::runJob() {
         return exitInfo;
     }
 
+    // Record that a download job has been enqueued, so that callers can tell "nothing to download" apart from
+    // "download in progress" once the job has run.
+    _downloadQueued = true;
+
     return ExitCode::Ok;
 }
 

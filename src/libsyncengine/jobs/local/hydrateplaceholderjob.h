@@ -39,6 +39,10 @@ class HydratePlaceHolderJob : public SyncJob {
         HydratePlaceHolderJob(std::shared_ptr<SyncPal> syncPal, SyncPath absoluteLocalPath, SyncPath relativePath,
                               SyncPath parentFolderPath = {}, std::function<void(UniqueId, bool)> observer = nullptr);
 
+        //! Returns true if the job has enqueued a download job, i.e. the item needed to be hydrated. Only meaningful
+        //! once the job has run.
+        bool downloadQueued() const { return _downloadQueued; }
+
     protected:
         ExitInfo canRun() override;
 
@@ -56,6 +60,7 @@ class HydratePlaceHolderJob : public SyncJob {
         const SyncPath _relativePath;
         const SyncPath _parentFolderPath;
         std::function<void(UniqueId, bool)> _observer;
+        bool _downloadQueued{false};
 };
 
 } // namespace KDC
