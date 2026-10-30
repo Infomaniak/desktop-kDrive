@@ -222,8 +222,9 @@ void HomeController::openDriveDestination(const int32_t destination) const {
     }
 }
 
-void HomeController::showActivities() const {
-    _appRouter.showActivities();
+void HomeController::showErrors() const {
+    qCInfo(lcHomeController) << "Opening the errors page from the home banner | syncDbId:" << currentSyncDbId();
+    _appRouter.showErrors();
 }
 
 std::optional<SyncStatus> HomeController::currentRuntimeStatus() const {
