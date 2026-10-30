@@ -136,6 +136,8 @@ Window {
             IKWindowHeader {
                 id: windowHeader
 
+                closeShortcutText: closeShortcut.nativeText
+
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -174,5 +176,15 @@ Window {
             surfaceInset: root.effectiveShadowMargin
             visible: root.customFrameVisible
         }
+    }
+
+    // Same path as the window close button, so each window keeps its own closing behavior.
+    Shortcut {
+        id: closeShortcut
+
+        sequences: [ StandardKey.Close ] // Ctrl+W
+        autoRepeat: false
+        context: Qt.WindowShortcut
+        onActivated: root.close()
     }
 }

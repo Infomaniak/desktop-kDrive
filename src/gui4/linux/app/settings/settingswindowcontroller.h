@@ -59,12 +59,14 @@ class SettingsWindowController final : public QObject {
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
         Q_INVOKABLE void requestAccountConnection() { emit accountConnectionRequested(); }
+        Q_INVOKABLE void requestQuitConfirmation() { emit quitConfirmationRequested(); }
 
         void refreshUpdates() const;
 
     signals:
         void openRequested();
         void accountConnectionRequested();
+        void quitConfirmationRequested();
 
     private:
         GeneralSettingsController &_generalController;

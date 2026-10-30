@@ -27,6 +27,7 @@ Item {
     required property var targetWindow
     property color backgroundColor: IKColors.surfacePrimary
     property bool titleVisible: true
+    property string closeShortcutText: ""
 
     readonly property bool maximized: targetWindow.visibility === Window.Maximized
     readonly property real moveAreaWidth: windowMoveArea.width
@@ -121,6 +122,7 @@ Item {
         IKWindowControlButton {
             targetWindow: root.targetWindow
             controlType: IKWindowControlButton.Close
+            shortcutText: root.closeShortcutText
         }
     }
 }

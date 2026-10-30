@@ -173,6 +173,13 @@
 - Render text that comes from the server or the filesystem (file, folder, drive, or user names, paths) with
   `textFormat: Text.PlainText`: the default `AutoText` interprets a name such as `<b>x</b>` as markup. `IKToolTip`
   already forces plain text.
+- Declare keyboard shortcuts as `Shortcut` items with `context: Qt.WindowShortcut` in the window root (`Main.qml`,
+  `SettingsWindow.qml`); Close (Ctrl+W) lives in `IKShadowedWindow` and calls `close()`, so it follows each window's
+  `onClosing` and the close button tooltip can show it. Prefer `StandardKey` in `sequences` so each desktop keeps its own bindings, and annotate it with
+  the usual key (`sequences: [ StandardKey.Close ] // Ctrl+W`). Add explicit sequences only where GNOME or KDE bind
+  nothing (`"Ctrl+,"` for Preferences). Show a shortcut in a tooltip through `Shortcut.nativeText`.
+  Use `"Ctrl+Shift+Tab"` instead of `StandardKey.PreviousChild` (Ctrl+Shift+Backtab never matches on Wayland), and give
+  a key press a single matching sequence: two matches on the same `Shortcut` make it ambiguous and it does not fire.
 - Use `IKToolTip` for every Linux v4 tooltip so controls share the rounded, theme-aware drive-name tooltip presentation;
   do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
 - Let `IKToolTip` own `visible`: buttons set `targetButton` for its default hover/keyboard-focus trigger; other items

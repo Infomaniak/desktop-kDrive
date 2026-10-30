@@ -656,6 +656,64 @@ IKShadowedWindow {
         }
     }
 
+    Shortcut {
+        sequences: [ StandardKey.Quit ] // Ctrl+Q
+        autoRepeat: false
+        context: Qt.WindowShortcut
+        onActivated: root.controller.requestQuitConfirmation()
+    }
+
+    // Same entry points as the sidebar. Navigation wraps around.
+    function selectCategory(category) {
+        switch (category) {
+        case SettingsWindow.Category.General:
+            root.selectGeneral();
+            break;
+        case SettingsWindow.Category.Accounts:
+            root.selectAccounts();
+            break;
+        case SettingsWindow.Category.Advanced:
+            root.selectAdvanced();
+            break;
+        }
+    }
+
+    function selectAdjacentCategory(step) {
+        const categoryCount = 3;
+        root.selectCategory((root.selectedCategory + step + categoryCount) % categoryCount);
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.NextChild, "Ctrl+PgDown" ] // Ctrl+Tab
+        context: Qt.WindowShortcut
+        onActivated: root.selectAdjacentCategory(1)
+    }
+
+    Shortcut {
+        // StandardKey.PreviousChild only holds Ctrl+Shift+Backtab, which Qt never matches on Wayland.
+        sequences: [ "Ctrl+Shift+Tab", "Ctrl+PgUp" ]
+        context: Qt.WindowShortcut
+        onActivated: root.selectAdjacentCategory(-1)
+    }
+
+    Shortcut {
+        sequence: "Alt+1"
+        context: Qt.WindowShortcut
+        onActivated: root.selectCategory(SettingsWindow.Category.General)
+    }
+
+    Shortcut {
+        sequence: "Alt+2"
+        context: Qt.WindowShortcut
+        onActivated: root.selectCategory(SettingsWindow.Category.Accounts)
+    }
+
+    Shortcut {
+        sequence: "Alt+3"
+        context: Qt.WindowShortcut
+        onActivated: root.selectCategory(SettingsWindow.Category.Advanced)
+    }
+
     onClosing: {
         root.controller.network.cancelConnectionCheck();
         root.controller.network.dismissConnectionFailure();

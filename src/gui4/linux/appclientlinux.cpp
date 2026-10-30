@@ -155,6 +155,8 @@ void AppClientLinux::setupSignalConnections() {
                    &AppClientLinux::openSettingsWindow);
     (void) connect(&_settingsWindowController, &SettingsWindowController::accountConnectionRequested, this,
                    &AppClientLinux::openOnboardingLoginFromSettings);
+    (void) connect(&_settingsWindowController, &SettingsWindowController::quitConfirmationRequested, &_systemTrayController,
+                   &SystemTrayController::quitConfirmationRequested);
     (void) connect(&_systemTrayController, &SystemTrayController::openSettingsWindowRequested, this,
                    &AppClientLinux::openSettingsWindow);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
