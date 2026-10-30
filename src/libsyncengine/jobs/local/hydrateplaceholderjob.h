@@ -36,8 +36,11 @@ class HydratePlaceHolderJob : public SyncJob {
         //! \param observer is an optional completion observer, invoked with the job id and true if the download has
         //! succeeded, false otherwise. It is called on a job manager worker thread, while the direct download jobs map
         //! is locked, and must therefore not call any SyncPal method.
+        //! \param progressObserver is an optional callback invoked with the download progress in percent each time the
+        //! download job reports it.
         HydratePlaceHolderJob(std::shared_ptr<SyncPal> syncPal, SyncPath absoluteLocalPath, SyncPath relativePath,
-                              SyncPath parentFolderPath = {}, std::function<void(UniqueId, bool)> observer = nullptr);
+                              SyncPath parentFolderPath = {}, std::function<void(UniqueId, bool)> observer = nullptr,
+                              std::function<void(int16_t)> progressObserver = nullptr);
 
         //! Returns true if the job has enqueued a download job, i.e. the item needed to be hydrated. Only meaningful
         //! once the job has run.
@@ -60,6 +63,7 @@ class HydratePlaceHolderJob : public SyncJob {
         const SyncPath _relativePath;
         const SyncPath _parentFolderPath;
         std::function<void(UniqueId, bool)> _observer;
+        std::function<void(int16_t)> _progressObserver;
         bool _downloadQueued{false};
 };
 
