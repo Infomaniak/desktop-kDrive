@@ -59,6 +59,17 @@ void openLocalFolder(const SyncContext &context, const SyncPath &path) {
     openUrl(QUrl::fromLocalFile(Path2QStr(folder.value())));
 }
 
+// Opens a file of the synchronization in its default application, under the same conditions as `openLocalFolder`.
+void openLocalFile(const SyncContext &context, const SyncPath &path) {
+    // An empty path designates the root, which is not a file.
+    const auto file = path.empty() ? std::nullopt : resolveExistingPathBelowSyncRoot(context.syncInfo.localPath(), path);
+    if (!file.has_value()) {
+        qCWarning(lcSyncErrorActionHandler) << "Local file unavailable | syncDbId:" << context.syncInfo.dbId();
+        return;
+    }
+    openUrl(QUrl::fromLocalFile(Path2QStr(file.value())));
+}
+
 SyncPath parentFolder(const SyncPath &path) {
     return path.lexically_normal().parent_path();
 }
@@ -155,12 +166,28 @@ void SyncErrorActionHandler::run(const SyncErrorAction action, const ClassifiedS
             AppRouter::openSupport();
             break;
         case SyncErrorAction::ChooseVersion:
+            emit versionSelectionRequested(error.dbId());
+            break;
         case SyncErrorAction::None:
         case SyncErrorAction::EnumEnd:
-            // The rows of these actions have no button yet.
+            // These rows have no button.
             qCWarning(lcSyncErrorActionHandler)
                     << "Sync error action not available | action:" << action << "| errorDbId:" << error.dbId();
             break;
+    }
+}
+
+void SyncErrorActionHandler::openConflictVersion(const ClassifiedSyncError &classified, const SyncContext &context,
+                                                 const ReplicaSide side) {
+    const auto &error = classified.error;
+    qCInfo(lcSyncErrorActionHandler) << "Conflict version opening requested | side:" << side << "| errorDbId:" << error.dbId();
+    // The server renamed the local version into a conflict copy and put the remote version at the original path.
+    if (side == ReplicaSide::Local) {
+        openLocalFile(context, error.destinationPath());
+    } else if (!error.remoteNodeId().empty()) {
+        openUrl(AppConstants::WebDrive::itemRedirectUri(context.drive.driveId(), error.remoteNodeId()));
+    } else {
+        openLocalFile(context, error.path());
     }
 }
 

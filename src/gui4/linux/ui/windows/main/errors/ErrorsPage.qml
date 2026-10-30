@@ -28,7 +28,7 @@ FocusScope {
     id: root
 
     required property var controller
-    // Bounds of the dimmed background of the explanation dialog: the window surface, without its shadow.
+    // Bounds of the dimmed background of the dialogs: the window surface, without its shadow.
     property real modalScrimInset: 0
     property real modalScrimRadius: 0
 
@@ -137,8 +137,9 @@ FocusScope {
             delegate: ErrorRow {
                 width: ListView.view.width
                 onActionTriggered: rowId => {
-                    // The button keeps the focus back if the action opens the explanation dialog.
+                    // The button keeps the focus back if the action opens a dialog.
                     explanationDialog.returnFocusItem = root.Window.activeFocusItem;
+                    conflictVersionDialog.returnFocusItem = root.Window.activeFocusItem;
                     root.controller.invokeAction(rowId);
                 }
                 onCopyRequested: rowId => root.controller.copyPath(rowId)
@@ -187,6 +188,15 @@ FocusScope {
         id: explanationDialog
 
         controller: root.controller.explanation
+        scrimInset: root.modalScrimInset
+        scrimRadius: root.modalScrimRadius
+        onFallbackFocusRequested: root.focusDefault()
+    }
+
+    ConflictVersionDialog {
+        id: conflictVersionDialog
+
+        controller: root.controller.conflictVersion
         scrimInset: root.modalScrimInset
         scrimRadius: root.modalScrimRadius
         onFallbackFocusRequested: root.focusDefault()

@@ -64,6 +64,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/activitylistmodel.h
         app/mainwindow/blockingerrorcontroller.cpp
         app/mainwindow/blockingerrorcontroller.h
+        app/mainwindow/conflictversioncontroller.cpp
+        app/mainwindow/conflictversioncontroller.h
         app/mainwindow/errorlistmodel.cpp
         app/mainwindow/errorlistmodel.h
         app/mainwindow/errorspagecontroller.cpp
@@ -321,6 +323,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivityStatusIcon.qml
         ui/windows/main/blockingerror/BlockingErrorDriveLabel.qml
         ui/windows/main/blockingerror/BlockingErrorView.qml
+        ui/windows/main/errors/ConflictVersionCard.qml
+        ui/windows/main/errors/ConflictVersionDialog.qml
         ui/windows/main/errors/ErrorCopyButton.qml
         ui/windows/main/errors/ErrorCopyablePath.qml
         ui/windows/main/errors/ErrorExplanationDialog.qml
@@ -432,6 +436,10 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/blockingerror/wrench.svg
         ui/assets/main/chevron-down.svg
         ui/assets/main/copy.svg
+        ui/assets/main/errors/circle-check.svg
+        ui/assets/main/errors/cloud.svg
+        ui/assets/main/errors/computer.svg
+        ui/assets/main/errors/eye.svg
         ui/assets/main/folder.svg
         ui/assets/main/house.svg
         ui/assets/main/home/cog.svg

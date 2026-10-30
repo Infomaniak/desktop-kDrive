@@ -55,11 +55,9 @@ QString textId(const char *const id) {
     return id ? QString::fromLatin1(id) : QString{};
 }
 
-// Actions whose effect lands in the next PRs: their rows are shown without a button until then.
 bool isActionShown(const SyncErrorAction action) {
     switch (action) {
         case SyncErrorAction::None:
-        case SyncErrorAction::ChooseVersion:
         case SyncErrorAction::EnumEnd:
             return false;
         default:
@@ -174,6 +172,7 @@ ErrorListModel::ErrorListModel(const SyncErrorsProjection &projection, const Mai
     };
     (void) connect(&_syncService, &SyncService::syncActionPendingChanged, this, refreshPendingRows);
     (void) connect(&_syncErrorService, &SyncErrorService::refreshPendingChanged, this, refreshPendingRows);
+    (void) connect(&_syncErrorService, &SyncErrorService::conflictResolutionPendingChanged, this, refreshPendingRows);
     _rows = buildRows();
 }
 
@@ -459,6 +458,8 @@ bool ErrorListModel::isActionPending(const SyncErrorAction action) const {
             return _syncService.isStartSyncPending(syncDbId);
         case SyncErrorAction::RefreshErrors:
             return _syncErrorService.isRefreshPending(syncDbId);
+        case SyncErrorAction::ChooseVersion:
+            return _syncErrorService.isConflictResolutionPending(syncDbId);
         default:
             return false;
     }

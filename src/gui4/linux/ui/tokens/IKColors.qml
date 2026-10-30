@@ -80,6 +80,7 @@ QtObject {
         readonly property color green400: "#5FC96B"
         readonly property color green500: "#3EBF4D"
         readonly property color green600: "#2A8F36"
+        readonly property color green800: "#1D4A24"
         readonly property color green950: "#0B2810"
 
         // Orange
@@ -203,6 +204,17 @@ QtObject {
     readonly property color errorsDetailsLabel: darkMode ? _p.gray600 : _p.gray500
     readonly property color errorsDetailsHover: surfaceTertiary
     readonly property color errorsCopiedMark: statusMediumSuccess
+    readonly property color errorsConflictCardSurface: surfaceSecondary
+    readonly property color errorsConflictCardHoverBorder: textTertiary
+    readonly property color errorsConflictCardSelectedBorder: accentPrimary
+    readonly property color errorsConflictInfoSurface: surfacePrimary
+    readonly property color errorsConflictInfoDivider: surfaceTertiary
+    readonly property color errorsConflictInfoLabel: textSecondary
+    readonly property color errorsConflictCardIcon: textSecondary
+    readonly property color errorsConflictOpenIcon: accentPrimary
+    readonly property color errorsConflictMostRecentSurface: darkMode ? _p.green950 : _p.green100
+    readonly property color errorsConflictMostRecentText: darkMode ? _p.green400 : _p.green800
+    readonly property color errorsConflictCounterSurface: surfaceSecondary
     readonly property color storageSurface: surfaceSecondary
     readonly property color storageDivider: darkMode ? _p.neutralBlue600 : _p.neutralBlack05
     readonly property color storageBarSync: darkMode ? _p.kDriveLight : _p.kDrive500

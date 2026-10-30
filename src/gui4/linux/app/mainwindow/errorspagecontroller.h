@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/mainwindow/conflictversioncontroller.h"
 #include "app/mainwindow/errorlistmodel.h"
 #include "app/mainwindow/syncerrorexplanationcontroller.h"
 
@@ -46,6 +47,7 @@ class ErrorsPageController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(ErrorListModel *model READ model CONSTANT)
         Q_PROPERTY(SyncErrorExplanationController *explanation READ explanation CONSTANT)
+        Q_PROPERTY(ConflictVersionController *conflictVersion READ conflictVersion CONSTANT)
         Q_PROPERTY(int32_t errorCount READ errorCount NOTIFY errorCountChanged)
         Q_PROPERTY(bool refreshPending READ refreshPending NOTIFY refreshPendingChanged)
 
@@ -57,6 +59,7 @@ class ErrorsPageController final : public QObject {
 
         [[nodiscard]] ErrorListModel *model() { return &_model; }
         [[nodiscard]] SyncErrorExplanationController *explanation() { return &_explanation; }
+        [[nodiscard]] ConflictVersionController *conflictVersion() { return &_conflictVersion; }
         [[nodiscard]] int32_t errorCount() const;
         [[nodiscard]] bool refreshPending() const;
 
@@ -90,6 +93,7 @@ class ErrorsPageController final : public QObject {
         ActivitiesNavigation &_activitiesNavigation;
         ErrorListModel _model;
         SyncErrorExplanationController _explanation;
+        ConflictVersionController _conflictVersion;
         int32_t _errorCount{0};
         std::vector<ErrorDbId> _revealErrorDbIds;
 };
