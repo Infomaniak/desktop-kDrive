@@ -79,15 +79,25 @@ runs:
           DBG_FILE="${{ github.workspace }}/build-linux-arm64/kDrive.dbg"
           mv "${{ github.workspace }}/build-linux-arm64/kDrive.src.zip" "${{ github.workspace }}/build-linux-arm64/sentry-server-artifacts"
           mv "$DBG_FILE" "${{ github.workspace }}/build-linux-arm64/sentry-server-artifacts"
+          # The stripped executable carries the unwind tables Sentry needs to walk minidump stacks.
+          APPIMAGE=$(ls "${{ github.workspace }}/build-linux-arm64/install/kDrive-"*-arm64.AppImage | head -n 1)
+          rm -rf "${{ github.workspace }}/build-linux-arm64/appimage-executables"
+          mkdir "${{ github.workspace }}/build-linux-arm64/appimage-executables"
+          (cd "${{ github.workspace }}/build-linux-arm64/appimage-executables" && "$APPIMAGE" --appimage-extract 'usr/bin/*' >/dev/null)
+          cp "${{ github.workspace }}/build-linux-arm64/appimage-executables/squashfs-root/usr/bin/kDrive" "${{ github.workspace }}/build-linux-arm64/sentry-server-artifacts"
         shell: bash
 
       - name: Setup sentry client artifacts
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
+          source "${{ github.workspace }}/infomaniak-build-tools/linux/build-utils.sh"
+          CLIENT_EXE="$(get_linux_client_executable "${{ github.workspace }}")"
           mkdir -p "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
-          DBG_FILE="${{ github.workspace }}/build-linux-arm64/kDrive_client.dbg"
-          mv "${{ github.workspace }}/build-linux-arm64/kDrive_client.src.zip" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
+          DBG_FILE="${{ github.workspace }}/build-linux-arm64/${CLIENT_EXE}.dbg"
+          [[ -f "$DBG_FILE" ]] || { echo "::error::Missing $DBG_FILE"; exit 1; }
+          mv "${{ github.workspace }}/build-linux-arm64/${CLIENT_EXE}.src.zip" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
           mv "$DBG_FILE" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
+          cp "${{ github.workspace }}/build-linux-arm64/appimage-executables/squashfs-root/usr/bin/${CLIENT_EXE}" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
         shell: bash
 
       - name: Upload sentry server artifacts

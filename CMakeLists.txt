@@ -159,12 +159,44 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 # this option needs to be refactored out BUILD_CLIENT needs to be ON.
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
-# this option enables the default GUI for the current platform when building the src folder
-# (src/gui4 on Windows, legacy Qt GUI in src/gui on Linux/macOS)
+# this option enables the v4 GUI from src/gui4 when building the src folder
+# (the legacy Qt GUI in src/gui requires BUILD_GUI=OFF and BUILD_GUI_LEGACY=ON)
 option(BUILD_GUI "BUILD_GUI" ON)
 
 # this option adds src/gui to the subdirectories when building the src folder 
 option(BUILD_GUI_LEGACY "BUILD_GUI_LEGACY" OFF)
+if(BUILD_GUI AND BUILD_GUI_LEGACY)
+    message(FATAL_ERROR "Both BUILD_GUI and BUILD_GUI_LEGACY are enabled. Please choose only one.")
+endif()
+
+option(KDRIVE_DEPLOY_QT_RUNTIME
+       "Linux AppImage: deploy Qt libraries, plugins, QML modules, qt.conf, Qt translations and Conan libraries at install time"
+       OFF)
+if(KDRIVE_DEPLOY_QT_RUNTIME AND (NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT BUILD_GUI OR BUILD_LIBRARIES_ONLY))
+    message(FATAL_ERROR "KDRIVE_DEPLOY_QT_RUNTIME requires Linux, BUILD_GUI=ON and BUILD_LIBRARIES_ONLY=OFF.")
+endif()
+if(KDRIVE_DEPLOY_QT_RUNTIME)
+    # The GLVND OpenGL interface selected by default introduces a dependency on libOpenGL.so.0, which is not installed
+    # by default on every supported Linux desktop. The legacy interface uses the widely available libGL.so.1 while still
+    # dispatching to the system Mesa or NVIDIA driver.
+    set(OpenGL_GL_PREFERENCE LEGACY)
+endif()
+
+# Debug builds keep absolute paths so local debuggers find the sources without extra configuration.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_BUILD_TYPE MATCHES "^(Release|RelWithDebInfo)$")
+    set(KDRIVE_REPOSITORY_RELATIVE_PATHS_DEFAULT ON)
+else()
+    set(KDRIVE_REPOSITORY_RELATIVE_PATHS_DEFAULT OFF)
+endif()
+option(KDRIVE_REPOSITORY_RELATIVE_PATHS
+       "Record repository-relative source paths (src/...) in debug info and __FILE__, whatever the build host"
+       ${KDRIVE_REPOSITORY_RELATIVE_PATHS_DEFAULT})
+if(KDRIVE_REPOSITORY_RELATIVE_PATHS)
+    # The last matching map wins. Each target compiles from its own binary directory, which becomes an empty
+    # compilation directory so the repository-relative source paths are not joined to it.
+    add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=" "-ffile-prefix-map=$<TARGET_PROPERTY:BINARY_DIR>="
+                        "-ffile-prefix-map=$<TARGET_PROPERTY:BINARY_DIR>/=")
+endif()
 
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
