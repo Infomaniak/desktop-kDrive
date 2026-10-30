@@ -328,9 +328,11 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivityStatusIcon.qml
         ui/windows/main/blockingerror/BlockingErrorDriveLabel.qml
         ui/windows/main/blockingerror/BlockingErrorView.qml
+        ui/windows/main/errors/ConflictListRow.qml
         ui/windows/main/errors/ConflictStrategyCard.qml
         ui/windows/main/errors/ConflictVersionCard.qml
         ui/windows/main/errors/ConflictVersionDialog.qml
+        ui/windows/main/errors/ConflictsListPage.qml
         ui/windows/main/errors/ConflictsQuickPage.qml
         ui/windows/main/errors/ErrorCopyButton.qml
         ui/windows/main/errors/ErrorCopyablePath.qml
