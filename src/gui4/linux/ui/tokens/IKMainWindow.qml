@@ -51,6 +51,8 @@ QtObject {
     readonly property real homeLoadingSpinnerSize: 32
     readonly property real homeStatusOfflineAnimationWidth: 227
     readonly property real homeStatusOfflineAnimationHeight: 90
+    // Multisampling of the status animations: the geometry renderer draws their paths without antialiasing.
+    readonly property int homeStatusAnimationSamples: 4
     readonly property real homeStatusSetupImageWidth: 126
     readonly property real homeStatusSetupImageHeight: 121
     readonly property real toolbarIconButtonSize: 36
