@@ -413,7 +413,9 @@ void RemoteFolderTreeModel::handleChildrenResult(TreeNode *const node, const uin
     std::vector<NodeInfo> sortedChildren = children;
     // Folder names are user data rather than translated UI text. Keep their ordering tied to the system locale so a
     // runtime application-language change cannot give already loaded and newly loaded branches different collations.
-    const QCollator systemCollator(QLocale::system());
+    // Numbers compare by value, as in file managers: "2" comes before "10".
+    QCollator systemCollator(QLocale::system());
+    systemCollator.setNumericMode(true);
     (void) std::ranges::sort(sortedChildren, [&systemCollator](const NodeInfo &lhs, const NodeInfo &rhs) {
         return systemCollator.compare(lhs.name(), rhs.name()) < 0;
     });
