@@ -22,7 +22,8 @@ import QtQuick
 import QtQuick.Layouts
 import kDrive.UI
 
-// One version conflict of the list: its file, with the relative path in the tooltip, and "Choose a version".
+// One version conflict of the list: its file, with the relative path in the tooltip, and "Choose a version". The list
+// is a single tab stop: its current row is drawn with the focus ring and Enter or Space chooses its version.
 Item {
     id: root
 
@@ -34,10 +35,26 @@ Item {
     required property bool isDirectory
     required property bool actionPending
     required property bool isLast
+    // Current row of the list while the list has the keyboard focus.
+    property bool keyboardCurrent: false
 
     signal chooseRequested(string rowId)
 
     implicitHeight: IKActivities.conflictsRowHeight
+    Accessible.role: Accessible.ListItem
+    Accessible.name: root.name
+    Accessible.description: root.path
+    Accessible.selected: root.keyboardCurrent
+    Accessible.onPressAction: root.chooseRequested(root.rowId)
+
+    Rectangle {
+        anchors.fill: parent
+        visible: root.keyboardCurrent
+        radius: IKRadius.r6
+        color: "transparent"
+        border.width: IKModalTokens.focusBorderWidth
+        border.color: IKColors.accentPrimary
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -77,6 +94,8 @@ Item {
             role: IKModalButton.Tonal
             text: qsTrId("conflictErrorAction")
             busy: root.actionPending
+            // Reached through the current row of the list, not one tab stop per row.
+            focusPolicy: Qt.NoFocus
             // Tells the buttons of the rows apart.
             Accessible.name: text + ", " + root.name
             onClicked: root.chooseRequested(root.rowId)
