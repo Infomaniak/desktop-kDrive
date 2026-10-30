@@ -115,6 +115,11 @@ build_release() {
   mkdir -p "$build_dir"
 
   conan_folder="$build_dir/conan"
+
+  # TEMPORARY one-off repair (revert this commit once the CI jobs are green): see
+  # build-ci-amd64.sh. Repairs the shared Conan cache instead of failing the build.
+  bash "$src_dir/infomaniak-build-tools/conan/repair_conan_cache.sh" --home "$HOME/.conan2" --only-damaged --yes
+
   bash "$src_dir/infomaniak-build-tools/conan/build_dependencies.sh" $build_type "--output-dir=$conan_folder" --make-release
 
   conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"

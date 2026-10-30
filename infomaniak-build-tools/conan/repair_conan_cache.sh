@@ -27,16 +27,23 @@
 # (packages downloaded from remotes) are removed; every other package is left untouched.
 # The script is a dry-run unless --yes is given.
 #
+# With --only-damaged, a package folder is removed only when it carries the pruning damage
+# signature: its CMake SQL plugin configurations (lib/cmake/Qt6Sql/Qt6Q*DriverPluginConfig.cmake)
+# reference more SQL drivers than the sqldrivers folder actually contains. Package folders
+# without the CMake SQL plugin configurations cannot be assessed and are kept. This makes
+# the repair safe to run from the CI jobs themselves: it is a no-op on healthy caches.
+#
 # Equivalent Conan CLI alternative (removes all Qt revisions from one home):
 #   CONAN_HOME=<home> conan remove "qt/*" -c
 #
 # Usage:
-#   repair_conan_cache.sh [-h] [-y] [--home <conan-home>]...
+#   repair_conan_cache.sh [-h] [-y] [--only-damaged] [--home <conan-home>]...
 #
 # where:
-#   -h, --help        Show this help text.
-#   -y, --yes         Delete the matched package folders (default: dry-run).
-#   --home <dir>      Conan home to repair. Repeatable. Defaults to '$HOME/.conan2'.
+#   -h, --help         Show this help text.
+#   -y, --yes          Delete the matched package folders (default: dry-run).
+#   --only-damaged     Only delete folders carrying the pruning damage signature.
+#   --home <dir>       Conan home to repair. Repeatable. Defaults to '$HOME/.conan2'.
 #
 # Examples:
 #   # Linux AMD64 runner (repair the shared runner cache):
@@ -49,15 +56,17 @@ set -e
 program_name="$(basename "$0")"
 conan_homes=()
 apply_changes=false
+only_damaged=false
 
 function display_help {
-  echo "$program_name [-h] [-y] [--home <conan-home>]..."
+  echo "$program_name [-h] [-y] [--only-damaged] [--home <conan-home>]..."
   echo "  Remove the Qt package folders from one or more Conan cache homes so they are"
   echo "  re-created by the next 'conan install'. Dry-run unless --yes is given."
   echo "where:"
-  echo "-h, --help     Show this help text."
-  echo "-y, --yes      Delete the matched package folders (default: dry-run)."
-  echo "--home <dir>   Conan home to repair. Repeatable. Defaults to '$HOME/.conan2'."
+  echo "-h, --help        Show this help text."
+  echo "-y, --yes         Delete the matched package folders (default: dry-run)."
+  echo "--only-damaged    Only delete folders carrying the pruning damage signature."
+  echo "--home <dir>      Conan home to repair. Repeatable. Defaults to '$HOME/.conan2'."
 }
 
 while :;
@@ -69,6 +78,10 @@ do
           ;;
       -y | --yes)
           apply_changes=true
+          shift
+          ;;
+      --only-damaged)
+          only_damaged=true
           shift
           ;;
       --home)
@@ -99,10 +112,42 @@ fi
 # matches exactly the Qt package folders.
 shopt -s nullglob
 
+# Assess a Qt package folder for the pruning damage signature, using two independent
+# signals:
+#   1. its CMake SQL plugin configurations (lib/cmake/Qt6Sql/Qt6Q*DriverPluginConfig.cmake)
+#      reference more SQL drivers than the sqldrivers folder actually contains;
+#   2. the sqldrivers folder was reduced to the SQLite driver alone, which the official Qt
+#      packages never ship (they always bundle several SQL drivers).
+# Folders matching neither signal cannot be assessed and report 'unknown'.
+function qt_package_damage_report {
+    local package_root="$1" # the 'p' folder holding the package content
+    local cmake_sql_dir="$package_root/lib/cmake/Qt6Sql"
+    local sqldrivers_dir="$package_root/plugins/sqldrivers"
+    local plugin_configs=()
+    local driver_libs=()
+
+    if [[ -d "$cmake_sql_dir" ]]; then
+        plugin_configs=("$cmake_sql_dir"/Qt6Q*DriverPluginConfig.cmake)
+    fi
+    if [[ -d "$sqldrivers_dir" ]]; then
+        driver_libs=("$sqldrivers_dir"/*.so)
+    fi
+
+    if [[ ${#plugin_configs[@]} -gt 0 && ${#driver_libs[@]} -lt ${#plugin_configs[@]} ]]; then
+        echo "damaged (${#driver_libs[@]} driver libraries for ${#plugin_configs[@]} SQL plugin configurations)"
+    elif [[ ${#driver_libs[@]} -eq 1 && -e "$sqldrivers_dir/libqsqlite.so" ]]; then
+        echo "damaged (only the SQLite driver remains in sqldrivers)"
+    elif [[ ${#plugin_configs[@]} -eq 0 ]]; then
+        echo "unknown (no CMake SQL plugin configuration found)"
+    else
+        echo "healthy (${#driver_libs[@]} driver libraries for ${#plugin_configs[@]} SQL plugin configurations)"
+    fi
+}
+
 function repair_conan_home {
     local home="$1"
     local candidate
-    local sqldrivers_dir
+    local deletable=()
 
     echo
     echo "Repairing Conan home '$home':"
@@ -119,18 +164,30 @@ function repair_conan_home {
     fi
 
     for candidate in "${candidates[@]}"; do
+        local report
+        report="$(qt_package_damage_report "$candidate/p")"
         echo "  Matched Qt package folder: $candidate"
-        sqldrivers_dir="$candidate/p/plugins/sqldrivers"
-        if [[ -d "$sqldrivers_dir" ]]; then
-            echo "    sqldrivers content: $(ls "$sqldrivers_dir" | tr '\n' ' ')"
+        if [[ -d "$candidate/p/plugins/sqldrivers" ]]; then
+            echo "    sqldrivers content: $(ls "$candidate/p/plugins/sqldrivers" | tr '\n' ' ')"
         else
-            echo "    sqldrivers folder missing: $sqldrivers_dir"
+            echo "    sqldrivers folder missing: $candidate/p/plugins/sqldrivers"
         fi
+        echo "    Assessment: $report"
+        if [[ "$only_damaged" == true && "$report" != damaged* ]]; then
+            echo "    Skipped (--only-damaged)."
+            continue
+        fi
+        deletable+=("$candidate")
     done
 
+    if [[ ${#deletable[@]} -eq 0 ]]; then
+        echo "  No Qt package folder to remove."
+        return 0
+    fi
+
     if [[ "$apply_changes" == true ]]; then
-        rm -rf "${candidates[@]}"
-        echo "  Removed ${#candidates[@]} package folder(s)."
+        rm -rf "${deletable[@]}"
+        echo "  Removed ${#deletable[@]} package folder(s)."
     else
         echo "  Dry-run: no folder removed. Re-run with --yes to delete them."
     fi

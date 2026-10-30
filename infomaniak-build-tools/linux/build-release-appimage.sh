@@ -59,6 +59,15 @@ function find_qt_from_conan() {
 
   # Build Conan dependencies
   conan_folder=/build/conan
+
+  # TEMPORARY one-off repair (revert this commit once the CI jobs are green): see
+  # build-ci-amd64.sh. Inside the container, $HOME/.conan2/p is bound to the persistent
+  # host cache of the Podman flow, so the repair reaches the shared cache.
+  if ! bash /src/infomaniak-build-tools/conan/repair_conan_cache.sh --home "$HOME/.conan2" --only-damaged --yes; then
+    echo "ERROR: Conan cache repair failed" >&2
+    exit 1
+  fi
+
   bash /src/infomaniak-build-tools/conan/build_dependencies.sh "$build_type" --output-dir="$conan_folder" --clean-cache --update
 
   if [ ! "$?" -eq "0" ]; then
