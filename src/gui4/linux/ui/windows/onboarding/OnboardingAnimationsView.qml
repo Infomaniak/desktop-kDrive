@@ -41,6 +41,10 @@ Item {
         transformOrigin: Item.Center
         // Render the vector animation oversized for crispness, then scale it to fit the view.
         width: root.sourceWidth * IKOnboarding.loaderStrokeRenderScale
+        // Antialiases the generated animation, drawn by the geometry renderer.
+        layer.enabled: true
+        layer.samples: IKOnboarding.illustrationAnimationSamples
+        layer.smooth: true
 
         Loader {
             anchors.fill: parent
