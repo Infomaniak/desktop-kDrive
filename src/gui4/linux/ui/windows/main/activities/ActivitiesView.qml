@@ -95,7 +95,7 @@ Item {
 
         ErrorsPage {
             controller: root.errorsPageController
-            conflictVersionDialog: conflictVersionDialog
+            conflictVersionDialog: sharedConflictVersionDialog
             modalScrimInset: root.modalScrimInset
             modalScrimRadius: root.modalScrimRadius
         }
@@ -114,14 +114,14 @@ Item {
 
         ConflictsListPage {
             controller: root.errorsPageController.conflicts
-            conflictVersionDialog: conflictVersionDialog
+            conflictVersionDialog: sharedConflictVersionDialog
         }
     }
 
     // One dialog for the errors page and the conflicts list, which live in the stack at the same time: two dialogs on the
     // same controller would open together.
     ConflictVersionDialog {
-        id: conflictVersionDialog
+        id: sharedConflictVersionDialog
 
         controller: root.errorsPageController.conflictVersion
         scrimInset: root.modalScrimInset
