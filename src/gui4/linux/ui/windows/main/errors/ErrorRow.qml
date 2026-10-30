@@ -282,7 +282,7 @@ Rectangle {
                             Layout.preferredHeight: IKActivities.errorsChipIconSize
                             source: "qrc:/assets/main/chevron-down.svg"
                             color: IKColors.textSecondary
-                            // Disclosure convention, as on the mockup and macOS: right when folded, down when unfolded.
+                            // Right when folded, down when unfolded, as on the mockup.
                             rotation: root.detailsExpanded ? 0 : -90
 
                             Behavior on rotation {
