@@ -27,7 +27,11 @@ Item {
 
     required property var controller
 
+    implicitHeight: errorContent.implicitHeight + 2 * IKStorage.unavailableCardPadding
+
     Column {
+        id: errorContent
+
         anchors.centerIn: parent
         spacing: IKStorage.errorContentSpacing
 

@@ -55,6 +55,30 @@ IKShadowedWindow {
         users.refresh();
     }
 
+    // Opens "Manage synchronization" for one synchronization, above the pages the user would have crossed to reach it,
+    // so Back leads to the drive management page.
+    function showSynchronizationManagement(driveDbId, syncDbId, advancedSync) {
+        advancedPane.reset(advancedRootComponent);
+        selectedCategory = SettingsWindow.Category.Accounts;
+        users.refresh();
+
+        const entries = [{"component": accountsRootComponent},
+                         {"component": driveManagementComponent, "properties": {"driveDbId": driveDbId}}];
+        if (advancedSync) {
+            entries.push({"component": advancedSyncsComponent, "properties": {"driveDbId": driveDbId}});
+        }
+        entries.push({"component": excludedFoldersComponent,
+                      "properties": advancedSync ? {"syncDbId": syncDbId, "advancedSync": true} : {"syncDbId": syncDbId}});
+        accountsPane.resetTo(entries);
+    }
+
+    function handleManageSynchronizationRequest() {
+        const request = controller.takeManageSynchronizationRequest();
+        if (request.syncDbId > 0) {
+            showSynchronizationManagement(request.driveDbId, request.syncDbId, request.advancedSync);
+        }
+    }
+
     function selectAdvanced() {
         accountsPane.reset(accountsRootComponent);
         advancedPane.reset(advancedRootComponent);
@@ -71,6 +95,8 @@ IKShadowedWindow {
     minimumContentHeight: IKSettings.minimumHeight
     customShadowEnabled: true
     windowTitleVisible: false
+    // The window is created by its first request, which it reads once complete.
+    Component.onCompleted: handleManageSynchronizationRequest()
     onVisibleChanged: {
         if (visible && selectedCategory === SettingsWindow.Category.Accounts) {
             users.refresh();
@@ -545,6 +571,14 @@ IKShadowedWindow {
             root.advancedSyncs.creation?.notifyLocalFolderDialogClosed();
         }
         onRejected: root.advancedSyncs.creation?.notifyLocalFolderDialogClosed()
+    }
+
+    Connections {
+        target: root.controller
+
+        function onManageSynchronizationRequested() {
+            root.handleManageSynchronizationRequest();
+        }
     }
 
     Connections {

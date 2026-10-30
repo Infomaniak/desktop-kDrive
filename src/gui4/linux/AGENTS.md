@@ -219,8 +219,13 @@
   clipped card radius, 24 px horizontal page margins, and 32 px top margin.
 - Mask the complete Storage graph with one rounded shape instead of rounding individual segments: `Rectangle.clip` is
   rectangular in Qt Quick, and segment-level rounding breaks when the leading segment is zero or subpixel-sized.
-- Keep the synchronization and other-files Storage segments visible with a nominal 1% minimum, but let free space reach
-  a true zero width. Normalize the displayed widths inside the single rounded graph mask.
+- Keep measured Storage segments visible with a nominal 1% minimum, but let free space and empty segments reach a true
+  zero width; an unmeasured kDrive segment takes no width, the other-syncs row is hidden once they measure 0 bytes, and the other-files segment is the used space not yet attributed, so
+  measures take their share from it. Normalize the displayed widths inside the single rounded graph mask.
+- Order the Storage cards as disk, insufficient disk space (below `AppConstants::Storage::diskAlmostFullThresholdBytes`),
+  subscription (hidden while the quota is unknown), synchronization. An unreadable disk replaces only the disk card. The
+  "Optimize computer space" card of the Figma relies on LiteSync and is not shown on Linux. Only drive admins get the
+  subscription upgrade action.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
 - Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
   `NeutralBlue600` is `#1F242E`.
@@ -474,13 +479,19 @@
   with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
 - `app/mainwindow/searchresultmodel.*`: search results, page after page. `appendPage` inserts rows without a reset and
   skips nodes already listed; node ids and paths stay internal.
-- `app/mainwindow/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-sync snapshot cache. It
-  starts cancellable local scans only while Storage is visible, keeps the last resolved presentation during refresh, and
-  refreshes once an active synchronization leaves `Starting`, `Running`, `PauseAsked`, or `StopAsked` for any non-active
-  status.
-- `app/mainwindow/storagescanner.*`: Linux local-volume scanner using `QStorageInfo` plus an explicit Qt directory
-  stack. It stays on the synchronization root device, skips links and special files, deduplicates hard links, and sums
-  allocated blocks so sparse files reflect their physical footprint.
+- `app/mainwindow/storage/storagecontroller.*`: QML-facing Storage lifecycle. While Storage is visible, one cancellable
+  scan publishes the volume, then the selected synchronization, then the other synchronizations stored on the same
+  device (any user or drive, advanced ones included), so the gauge fills progressively. It also exposes the drive quota
+  from the selected `SyncContext`, polls the volume free space every 60 s outside the page (no log per poll) for the
+  sidebar `storageWarning`, and asks Settings to open "Manage synchronization" through
+  `SettingsWindowController::requestManageSynchronization`.
+- `app/mainwindow/storage/storagemeasurecache.*`: process-local per-synchronization measure cache, without QObject. A
+  measure is kept for its root and reused until its synchronization has been active again; the cache follows the
+  observed statuses to know it.
+- `app/mainwindow/storage/storagescanner.*`: Linux local-volume reader (`QStorageInfo`), synchronization-root measure
+  using an explicit Qt directory stack, and the scan job (`scanSyncs`) run outside the GUI thread. A measure stays on
+  the given device, skips links and special files, deduplicates hard links, and sums allocated blocks so sparse files
+  reflect their physical footprint.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;
   it must not read `AppCache`, call backend services, or decide whether onboarding is required.
 - `app/navigation/mainwindowactivationdecision.*`: pure post-bootstrap choice between onboarding, the unconfigured Home,

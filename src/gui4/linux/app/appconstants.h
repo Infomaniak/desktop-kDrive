@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "libcommon/data/drive.h"
 #include "libcommon/utility/types.h"
 
 #include <config.h>
@@ -25,7 +26,10 @@
 #include <QString>
 #include <QUrl>
 
+#include <algorithm>
+#include <array>
 #include <cstdint>
+#include <string_view>
 
 #ifndef KDRIVE_QML_MODULE_URI
 #error "KDRIVE_QML_MODULE_URI is not defined, check target_compile_definitions in src/gui4/linux/CMakeLists.txt"
@@ -42,6 +46,43 @@ namespace KDC::AppConstants::Drive {
 
 [[nodiscard]] inline QColor defaultColor() {
     return QColor{QStringLiteral("#0098FF")};
+}
+
+// Shop page renewing the subscription of a standalone drive, offered to its admins when it is not renewed.
+[[nodiscard]] inline QUrl renewSubscriptionUri(const DriveId driveId) {
+    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/drive/%1").arg(static_cast<qulonglong>(driveId))};
+}
+
+// Shop page renewing the my kSuite of the logged-in user.
+[[nodiscard]] inline QUrl myKSuiteRenewalUri() {
+    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/my_ksuite")};
+}
+
+// Shop home, for the drives of a kSuite whose renewal page needs an id the client does not have.
+[[nodiscard]] inline QUrl shopUri() {
+    return QUrl{QStringLiteral("https://shop.infomaniak.com")};
+}
+
+// Standalone kDrive offers, as opposed to kSuite and my kSuite ones. The API names them without the product ("Team").
+[[nodiscard]] inline bool isStandaloneDrivePack(const std::string_view packName) {
+    constexpr std::array<std::string_view, 4> standaloneDrivePacks{"free", "solo", "team", "pro"};
+    return std::ranges::find(standaloneDrivePacks, packName) != standaloneDrivePacks.end();
+}
+
+// Shop page renewing `drive`, chosen from its pack: shared by the blocking error screen and the errors page.
+// TODO: Renewing a kSuite (`order2/ksuite/<k_suite.id>`) needs an id the server does not fetch yet (drive API,
+// `with=k_suite`). Until then, a kSuite drive, or an unknown pack, opens shop.infomaniak.com.
+[[nodiscard]] inline QUrl renewalUri(const KDC::Drive &drive) {
+    const auto &packName = drive.packInfo().name();
+    if (isStandaloneDrivePack(packName)) {
+        return renewSubscriptionUri(drive.driveId());
+    }
+
+    if (packName.starts_with("my_ksuite")) {
+        return myKSuiteRenewalUri();
+    }
+
+    return shopUri();
 }
 
 } // namespace KDC::AppConstants::Drive
@@ -65,6 +106,14 @@ namespace KDC::AppConstants::Onboarding {
 }
 
 } // namespace KDC::AppConstants::Onboarding
+
+namespace KDC::AppConstants::Storage {
+
+// The sync engine stops syncing below 250 MB of free space; warning earlier gives the user time to react.
+inline constexpr uint64_t diskAlmostFullThresholdBytes = 1000ULL * 1000 * 1000;
+inline constexpr int32_t freeSpacePollIntervalMs = 60 * 1000;
+
+} // namespace KDC::AppConstants::Storage
 
 namespace KDC::AppConstants::Support {
 

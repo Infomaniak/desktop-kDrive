@@ -30,7 +30,7 @@
 #include "app/mainwindow/mainsidebarcontroller.h"
 #include "app/mainwindow/networkstatusobserver.h"
 #include "app/mainwindow/searchcontroller.h"
-#include "app/mainwindow/storagecontroller.h"
+#include "app/mainwindow/storage/storagecontroller.h"
 #include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
 #include "app/services/cachepopulator.h"
@@ -169,7 +169,7 @@ class AppClientLinux : public QApplication {
         HomeController _homeController{_appCache, _mainSelectionStore, _syncService, _appRouter, _networkStatusObserver, this};
         ActivitiesController _activitiesController{_activityStore,         _appCache,        _mainSelectionStore,
                                                    _networkStatusObserver, _activityService, this};
-        StorageController _storageController{_mainSelectionStore, this};
+        StorageController _storageController{_appCache, _mainSelectionStore, this};
         SearchController _searchController{_serverCommService, _mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
