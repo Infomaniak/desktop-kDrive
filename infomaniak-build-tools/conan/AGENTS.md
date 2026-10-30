@@ -151,6 +151,7 @@ rg -n "qt\." recipes/qt/all/conanfile.py
 
 ## Common Gotchas
 
+- **Qt SQL drivers are trimmed in the recipe**: the Qt recipe's `package()` removes every SQL driver except SQLite plus their CMake plugin packages, because linuxdeploy-plugin-qt redeploys every driver it finds while kDrive only uses QSQLITE. Recent Qt module configs auto-include every `Qt6Q*DriverPluginConfig.cmake` of the package and hard-fail when the referenced plugin library is missing, so never delete a driver library without its CMake plugin files.
 - **Qt login**: GitHub Actions and `KDRIVE_TEST_CI_RUNNING_ON_CI=true` always select `credentials`,
   requiring non-empty `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`. The installer ignores inherited JWTs
   and account files in this mode and receives `--no-save-account`. The password is passed through the
