@@ -706,20 +706,21 @@
       "View activities". "Manage" of the aggregated conflicts row opens the "Version conflicts" pages (titled
       `conflictErrorTitle`): `ConflictsQuickPage`, three `ConflictStrategyCard`s forming a single tab stop (Up and Down
       move the selection), then "Apply to N files" or the list; `ConflictsListPage`, an `IKSearchField` and one
-      `ConflictListRow` per conflict. "Choose a version" opens `ConflictVersionDialog`, hosted once by `ActivitiesView`
-      since the errors page and the list live in the stack together, two `ConflictVersionCard`s (online, local) with
-      their details, the "Most recent" badge and the eye button. Each card is one radio button (click or Space anywhere
-      on it, only the eye button keeps its own action); its "Select" surface is an indicator, not a control. The counter
-      of the header (`IKModal.headerAccessoryData`) shows only for several conflicts. "Understand the issue" opens
-      `ErrorExplanationDialog` (an `IKModal`), whose texts, reason boxes and links are chosen in QML from the
-      explanation kind; a link inside a sentence is an `ErrorLinkText`, focusable as a whole. The inotify watches row
-      and dialog show the current limit (`inotifywatchlimit.h`, re-read on each refresh); "Raise the limit" opens the
-      dialog, whose `sysctl` command to copy is always above that limit: the app never raises it itself. Variants: the
-      item chip (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the tooltip), the
-      information icon (first line of the description, advice in the tooltip), the copyable path, and the folded
-      technical details (two name and value pairs per row on wide cards, values elided on the left) with their copy
-      button (`ErrorCopyButton`, a check mark confirms the copy). The copyable field (`ErrorCopyablePath`, a path or a
-      command) is shared by the rows and the explanation dialog.
+      `ConflictListRow` per conflict, in a list that is a single tab stop (Up and Down move its current row, kept in
+      sight; Enter or Space chooses its version). "Choose a version" opens `ConflictVersionDialog`, hosted once by
+      `ActivitiesView` since the errors page and the list live in the stack together, two `ConflictVersionCard`s
+      (online, local) with their details, the "Most recent" badge and the eye button. Each card is one radio button
+      (click or Space anywhere on it, only the eye button keeps its own action); its "Select" surface is an indicator,
+      not a control. The counter of the header (`IKModal.headerAccessoryData`) shows only for several conflicts.
+      "Understand the issue" opens `ErrorExplanationDialog` (an `IKModal`), whose texts, reason boxes and links are
+      chosen in QML from the explanation kind; a link inside a sentence is an `ErrorLinkText`, focusable as a whole. The
+      inotify watches row and dialog show the current limit (`inotifywatchlimit.h`, re-read on each refresh); "Raise the
+      limit" opens the dialog, whose `sysctl` command to copy is always above that limit: the app never raises it
+      itself. Variants: the item chip (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the
+      tooltip), the information icon (first line of the description, advice in the tooltip), the copyable path, and the
+      folded technical details (two name and value pairs per row on wide cards, values elided on the left) with their
+      copy button (`ErrorCopyButton`, a check mark confirms the copy). The copyable field (`ErrorCopyablePath`, a path
+      or a command) is shared by the rows and the explanation dialog.
     - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
       the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
       with Down on the last row. It consumes `SearchController`; it must not call IPC.
