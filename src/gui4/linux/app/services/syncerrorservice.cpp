@@ -112,6 +112,28 @@ void SyncErrorService::resolveConflicts(const qint64 syncDbId, const std::vector
     });
 }
 
+void SyncErrorService::resolveConflictsQuick(const qint64 syncDbId, const std::vector<ErrorDbId> &errorDbIds,
+                                             const ConflictResolutionStrategy strategy, const ResolutionCallback &callback) {
+    qCInfo(lcSyncErrorService) << "Quick conflict resolution requested | syncDbId:" << syncDbId
+                               << "/ strategy:" << QString::fromStdString(toString(strategy)) << "/ count:" << errorDbIds.size();
+    _serviceActionTracker.beginAction(serviceKeySyncError, actionResolveConflicts, syncDbId);
+
+    _commService.requestErrorResolveConflictsQuick(errorDbIds, strategy, [this, syncDbId, callback](const ExitInfo &exitInfo) {
+        _serviceActionTracker.endAction(serviceKeySyncError, actionResolveConflicts, syncDbId);
+        if (exitInfo.code() == ExitCode::OperationCanceled) {
+            // Another user action holds the synchronization: expected, not reported.
+            qCInfo(lcSyncErrorService) << "Quick conflict resolution canceled, another action is running | syncDbId:" << syncDbId;
+        } else if (!exitInfo) {
+            qCWarning(lcSyncErrorService) << "Quick conflict resolution failed | syncDbId:" << syncDbId
+                                          << "/ code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
+            _serviceEventBus.notifyGenericError(exitInfo, RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK);
+        } else {
+            qCInfo(lcSyncErrorService) << "Quick conflict resolution done | syncDbId:" << syncDbId;
+        }
+        callback(static_cast<bool>(exitInfo));
+    });
+}
+
 bool SyncErrorService::isConflictResolutionPending(const qint64 syncDbId) const {
     return _serviceActionTracker.isActionPending(serviceKeySyncError, actionResolveConflicts, syncDbId);
 }
