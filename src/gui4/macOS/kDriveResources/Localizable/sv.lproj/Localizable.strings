@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "Fil räddad";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "Den här filen överskrider den maximalt tillåtna storleken (50 GB).\nKontakta support för att låsa upp gränsen.";
+"errFileTooBigAdminDescription" = "Den här filen överskrider den maximalt tillåtna storleken (1 TB).\nKontakta support för att låsa upp gränsen.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "Den här filen överskrider den maximalt tillåtna storleken (50 GB).\nKontakta din administratör för att öka filstorleksgränsen.";
+"errFileTooBigDescription" = "Den här filen överskrider den maximalt tillåtna storleken (1 TB).\nKontakta din administratör för att öka filstorleksgränsen.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "Filen är för stor";

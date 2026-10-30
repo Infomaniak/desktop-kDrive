@@ -6,7 +6,7 @@
   Locale: nl, Dutch; Flemish
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -730,11 +730,11 @@ Uw wijzigingen worden later gesynchroniseerd.</value>
     <value>Bestand gered</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Dit bestand overschrijdt de maximaal toegestane grootte (50 GB).
+    <value>Dit bestand overschrijdt de maximaal toegestane grootte (1 TB).
 Neem contact op met ondersteuning om de limiet op te heffen.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Dit bestand overschrijdt de maximaal toegestane grootte (50 GB).
+    <value>Dit bestand overschrijdt de maximaal toegestane grootte (1 TB).
 Neem contact op met uw beheerder om de bestandsgroottelimiet te verhogen.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1104,6 +1104,9 @@ Handig als u weet dat het belangrijke werk online staat op kDrive.</value>
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Meest recent</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Mijn abonnement</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Naam</value> 
@@ -1575,8 +1578,8 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
     <value>Andere bestanden op computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synchronisatie</value> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Online opgeslagen kDrive-bestanden</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Deze pc - %@ - %@</value> 
@@ -1618,6 +1621,18 @@ Een internetverbinding is vereist om ze te openen.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synchronisatie is bezig</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Zoeken naar wijzigingen</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Het voorbereiden van uw bestanden</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ element gesynchroniseerd met %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ gesynchroniseerde elementen op %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Gesynchroniseerd</value> 

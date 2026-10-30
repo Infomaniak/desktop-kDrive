@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -730,11 +730,11 @@ Tus cambios se sincronizarán más tarde.</value>
     <value>Archivo recuperado</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Este archivo supera el tamaño máximo permitido (50 GB).
+    <value>Este archivo supera el tamaño máximo permitido (1 TB).
 Contacta con el soporte para desbloquear el límite.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Este archivo supera el tamaño máximo permitido (50 GB).
+    <value>Este archivo supera el tamaño máximo permitido (1 TB).
 Contacta con tu administrador para aumentar el límite de tamaño de archivo.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1104,6 +1104,9 @@ Ten cuidado, esto puede sobrescribir el trabajo de tus colaboradores.</value>
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Más reciente</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Mi suscripción</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nombre</value> 
@@ -1575,8 +1578,8 @@ Estos datos permiten a nuestro equipo corregir y optimizar rápidamente la aplic
     <value>Otros archivos en el ordenador</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Sincronización</value> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Archivos de kDrive almacenados en línea</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Este PC - %@ - %@</value> 
@@ -1618,6 +1621,18 @@ Se requiere conexión a Internet para acceder a ellos.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Sync está en marcha</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Búsqueda de cambios</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Preparación de tus archivos</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ elemento sincronizado con %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ elementos sincronizados de un total de %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Sincronizado</value> 

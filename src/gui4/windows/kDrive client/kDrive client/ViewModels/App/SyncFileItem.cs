@@ -211,6 +211,11 @@ namespace Infomaniak.kDrive.ViewModels
 
         public string SyncFileItemToInstructionText(SyncFileInstruction instruction, SyncFileStatus status, DateTime timeStamp)
         {
+            if (status == SyncFileStatus.Syncing)
+            {
+                return Localizer.Instance.GetString("labelSynchronisation");
+            }
+
             switch (instruction)
             {
                 case SyncFileInstruction.Get:

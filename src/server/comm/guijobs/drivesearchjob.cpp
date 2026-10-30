@@ -100,7 +100,9 @@ ExitInfo DriveSearchJob::applySearchOutcome(const ExitInfo &searchExitInfo, cons
                                             const bool hasMore, const std::string &nextCursor) {
     // An item whose local state cannot be read is still returned, as not available locally: that failure alone keeps the
     // results. Any other failure (network, HTTP, malformed item ending the page early) reaches the client.
-    if (!searchExitInfo) {
+    const bool onlyLocalStateUnreadable =
+            searchExitInfo.code() == ExitCode::SystemError && searchExitInfo.cause() == ExitCause::FileAccessError;
+    if (!searchExitInfo && !onlyLocalStateUnreadable) {
         LOG_WARN(_logger, "Error in SearchJob::runSynchronously: " << searchExitInfo);
         return searchExitInfo;
     }

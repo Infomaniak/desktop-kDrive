@@ -28,7 +28,6 @@ using Microsoft.UI.Xaml.Media.Animation;
 using System;
 using System.IO;
 using System.Linq;
-using System.Windows.Automation;
 using Windows.System;
 
 namespace Infomaniak.kDrive.CustomControls
@@ -121,6 +120,9 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
+            if (args.ChosenSuggestion is ISearchBoxResultItem { IsSelectable: false })
+                return;
+            
             // Prefer the chosen suggestion, then an exact name match, then the first result.
             var results = _pager.Items.Where(i => i.IsSelectable).ToList();
             var searchItem = (args.ChosenSuggestion as ISearchBoxResultItem)?.SearchItem

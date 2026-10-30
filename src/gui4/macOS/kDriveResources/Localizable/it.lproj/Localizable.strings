@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "File recuperato";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "Questo file supera la dimensione massima consentita (50 GB).\nContatta il supporto per sbloccare il limite.";
+"errFileTooBigAdminDescription" = "Questo file supera la dimensione massima consentita (1 TB).\nContatta il supporto per sbloccare il limite.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "Questo file supera la dimensione massima consentita (50 GB).\nContatta il tuo amministratore per aumentare il limite di dimensione del file.";
+"errFileTooBigDescription" = "Questo file supera la dimensione massima consentita (1 TB).\nContatta il tuo amministratore per aumentare il limite di dimensione del file.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "File troppo grande";

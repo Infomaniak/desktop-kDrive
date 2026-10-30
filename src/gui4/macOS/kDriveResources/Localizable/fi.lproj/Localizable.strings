@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "Tiedosto pelastettu";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "Tämä tiedosto ylittää sallitun enimmäiskoon (50 Gt).\nOta yhteyttä tukeen rajan poistamiseksi.";
+"errFileTooBigAdminDescription" = "Tämä tiedosto ylittää sallitun enimmäiskoon (1 Tt).\nOta yhteyttä tukeen rajan poistamiseksi.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "Tämä tiedosto ylittää sallitun enimmäiskoon (50 Gt).\nOta yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.";
+"errFileTooBigDescription" = "Tämä tiedosto ylittää sallitun enimmäiskoon (1 Tt).\nOta yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "Tiedosto liian suuri";
