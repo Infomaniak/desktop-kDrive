@@ -30,11 +30,14 @@
 #include <QDesktopServices>
 
 #include <Poco/Exception.h>
+#include <Poco/File.h>
 #include <Poco/URI.h>
 
 #include <log4cplus/loggingmacros.h>
 
 #include <charconv>
+#include <functional>
+#include <string_view>
 #include <unordered_set>
 #include <vector>
 
@@ -67,6 +70,14 @@ bool parsePositiveId(std::string_view idStr, int64_t &id) {
 
     return result.ec == std::errc{} && result.ptr == idStr.data() + idStr.size() && id > 0;
 }
+
+//! Transparent hasher enabling heterogeneous lookup in associative string containers (e.g. `contains` with a
+//! `std::string_view` argument) without constructing a `std::string` for every lookup.
+struct TransparentStringHash {
+        using is_transparent = void;
+
+        size_t operator()(std::string_view str) const noexcept { return std::hash<std::string_view>{}(str); }
+};
 } // namespace
 
 FileOpeningHandler::FileOpeningHandler(AppServer *appServer, std::string url, QObject *parent) :
@@ -256,9 +267,12 @@ bool FileOpeningHandler::parseDeeplinkUrl(const std::string &urlStr, Request &re
 }
 
 bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
-    static const std::unordered_set<std::string> executableExtensions = {".exe", ".bat", ".cmd", ".com", ".scr", ".msi", ".ps1",
-                                                                         ".vbs", ".js",  ".jar", ".sh",  ".app", ".apk"};
-    return executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
+    static const std::unordered_set<std::string, TransparentStringHash, std::equal_to<>> executableExtensions = {
+            ".exe", ".com",  ".bat", ".cmd", // Poco's list
+            ".ps1", ".psm1", ".msi", ".msix", ".scr", ".sh", // scripts, installers, screensavers
+            ".vbs", ".vbe",  ".js",  ".jse",  ".wsf", ".wsh", ".hta", ".pif", ".lnk", ".jar", ".app", ".apk"};
+
+    return Poco::File(path).canExecute() || executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
 }
 
 } // namespace KDC
