@@ -64,7 +64,7 @@ Item {
         running: true
         onLoopsChanged: { if (running) { restart() } }
     }
-    visible: frameCounter >= 0 && frameCounter < 108
+    visible: frameCounter >= 0 && frameCounter <= 108
     LayerItem {
         visible: _qt_node0.frameCounter >= 0 && _qt_node0.frameCounter < 109
         objectName: "front (Stroke)"
