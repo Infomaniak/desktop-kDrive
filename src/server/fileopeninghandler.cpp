@@ -77,8 +77,7 @@ FileOpeningHandler::FileOpeningHandler(AppServer *appServer, std::string url, QO
 void FileOpeningHandler::queueOpenFileJob() {
     LOG_INFO(Log::instance()->getLogger(), "Processing file opening URL - url=" << _url);
 
-    Request request;
-    if (!parseDeeplinkUrl(_url, request)) {
+    if (Request request; !parseDeeplinkUrl(_url, request)) {
         LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
         handleFileOpeningFailure("This kDrive link is invalid.");
 
@@ -100,6 +99,15 @@ void FileOpeningHandler::queueOpenFileJob() {
     };
 
     const auto job = std::make_shared<OpenFileJob>(_url, std::move(getSyncPal), std::move(getVfs));
+    _jobId = job->jobId();
+    _job = job;
+    _appServer->registerFileOpeningJob(_jobId, this);
+    job->setFeedbackCallback([this](FileOpeningPhase phase, int8_t percent, const CommString &itemName) {
+        // Job manager worker thread. Hand the state over to the application thread. `this` is used as the context
+        // object: if the handler has been destroyed in the meantime, the call is simply discarded.
+        QMetaObject::invokeMethod(
+                this, [this, phase, percent, itemName] { onFileOpeningStatus(phase, percent, itemName); }, Qt::QueuedConnection);
+    });
     job->setAdditionalCallback([this, job](UniqueId) {
         // Job manager worker thread. Hand the outcome over to the application thread. `this` is used as the context
         // object: if the handler has been destroyed in the meantime, the call is simply discarded.
@@ -115,6 +123,10 @@ void FileOpeningHandler::queueOpenFileJob() {
 
 void FileOpeningHandler::onOpenFileJobFinished(const OpenFileJob::Outcome outcome, const SyncPath &localPath,
                                                const SyncDbId syncDbId) {
+    // Close the pop-up window on the client side, if one is open (item being synchronized or download in progress).
+    // The item name is irrelevant here: the clients close the window upon receiving the Finished phase.
+    _appServer->sendFileOpeningStatus(_jobId, FileOpeningPhase::Finished, -1, {});
+
     switch (outcome) {
         case OpenFileJob::Outcome::ReadyToOpen:
             (void) openLocalItem(localPath, syncDbId);
@@ -131,6 +143,9 @@ void FileOpeningHandler::onOpenFileJobFinished(const OpenFileJob::Outcome outcom
             break;
         case OpenFileJob::Outcome::Failed:
             handleFileOpeningFailure("The element requested from this kDrive deeplink could not be opened.");
+            break;
+        case OpenFileJob::Outcome::Canceled:
+            handleFileOpeningCanceled();
             break;
     }
 }
@@ -192,6 +207,27 @@ void FileOpeningHandler::handleFileOpeningFailure(const std::string &userMessage
     LOG_WARN(Log::instance()->getLogger(), "Failed to open item from deeplink URL - url=" << _url);
     notifyUser(userMessage);
     emit finished(false);
+}
+
+void FileOpeningHandler::handleFileOpeningCanceled() {
+    LOG_INFO(Log::instance()->getLogger(), "File opening canceled on user request - url=" << _url);
+    emit finished(false);
+}
+
+ExitInfo FileOpeningHandler::cancel() {
+    LOG_INFO(Log::instance()->getLogger(), "Canceling the file opening job - url=" << _url);
+    if (const auto job = _job.lock()) {
+        job->cancel();
+
+        return ExitCode::Ok;
+    }
+
+    return {ExitCode::DataError, ExitCause::NotFound};
+}
+
+void FileOpeningHandler::onFileOpeningStatus(const FileOpeningPhase phase, const int8_t percent,
+                                             const CommString &itemName) const {
+    _appServer->sendFileOpeningStatus(_jobId, phase, percent, itemName);
 }
 
 bool FileOpeningHandler::isFileOpeningDeeplink(const std::string &urlStr) {

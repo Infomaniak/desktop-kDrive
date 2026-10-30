@@ -386,4 +386,12 @@ enum class TooManyDeletesUserChoice {
     EnumEnd
 };
 
+//! State of a file opening requested through a "kdrive://open/..." deeplink, reported to the client interface.
+enum class FileOpeningPhase {
+    Finished = 0,
+    WaitingSync, //!< The item exists on the remote side but is not synchronized yet.
+    Hydrating, //!< The item is a dehydrated placeholder being downloaded.
+    EnumEnd
+};
+
 } // namespace KDC
