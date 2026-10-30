@@ -1793,7 +1793,7 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</tra
         <message id="linuxButtonRaiseLimit"> 
             <source>Raise the limit</source> 
             <extracomment>Linux desktop app, "Errors to fix" page: button of the linuxErrINotifyWatchesTitle row. It raises the system limit after an administrator authentication.</extracomment> 
-            <translation>Raise the limit</translation> 
+            <translation>Limit erhöhen</translation> 
         </message> 
         <message id="linuxCommandCopiedToClipboard"> 
             <source>Command copied to clipboard</source> 
@@ -1808,17 +1808,17 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</tra
         <message id="linuxErrINotifyWatchesDescription"> 
             <source>Your system limits the folders watched by your apps. New changes are no longer synchronized.</source> 
             <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrINotifyWatchesTitle, in its dialog and when the current limit cannot be read. The limit is shared by all the apps of the user, not specific to kDrive.</extracomment> 
-            <translation>Ihr System begrenzt die Anzahl der Ordner, die kDrive überwachen kann. Änderungen auf diesem Computer werden nicht mehr erkannt.</translation> 
+            <translation>Ihr System begrenzt die Anzahl der Ordner, die Ihre Apps überwachen können. Neue Änderungen werden nicht mehr synchronisiert.</translation> 
         </message> 
         <message id="linuxErrINotifyWatchesLimitDescription"> 
             <source>Your system limits the folders watched by your apps to %1. New changes are no longer synchronized.</source> 
             <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrINotifyWatchesTitle. %1 is the current limit, always at least 8192 and shown with thousands separators. The limit is shared by all the apps of the user, not specific to kDrive.</extracomment> 
-            <translation>Your system limits the folders watched by your apps to %1. New changes are no longer synchronized.</translation> 
+            <translation>Ihr System begrenzt die Anzahl der Ordner, die Ihre Apps überwachen können, auf %1. Neue Änderungen werden nicht mehr synchronisiert.</translation> 
         </message> 
         <message id="linuxErrINotifyWatchesTitle"> 
             <source>Folder sync limit reached</source> 
             <extracomment>Linux desktop app, "Errors to fix" page: title of the row and of its dialog, shown when the Linux system limit on watched folders (inotify) is reached, so kDrive stops synchronizing.</extracomment> 
-            <translation>Zu viele zu überwachende Ordner</translation> 
+            <translation>Ordnerlimit für die Synchronisierung erreicht</translation> 
         </message> 
         <message id="linuxErrTmpDirAccessDescription"> 
             <source>kDrive cannot write to its working folder (.kDrive-cache) inside the sync folder. Check the write permissions of the sync folder, then retry.</source> 
