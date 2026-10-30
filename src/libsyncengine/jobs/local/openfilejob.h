@@ -20,8 +20,11 @@
 
 #include "jobs/syncjob.h"
 #include "libcommon/data/user.h"
+#include "libcommon/utility/cstypes.h"
+#include "libcommon/utility/types.h"
 #include "syncpal/syncpal.h"
 
+#include <chrono>
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -37,8 +40,12 @@ namespace KDC {
  *
  * Once the item has been resolved, it is made available locally:
  * - if it is not a dehydrated placeholder, it can be opened right away;
- * - otherwise, the job enqueues a HydratePlaceHolderJob and waits for the download to complete, during 10 hours at
+ * - otherwise, the job enqueues a HydratePlaceHolderJob and waits for the download to complete, during 1 hour at
  *   most, before giving up with a timeout error.
+ *
+ * While the item is being synchronized, and while it is being hydrated, the job reports its state through
+ * `feedbackCallback` (see setFeedbackCallback) so that the user can be informed of the progress and cancel the
+ * request (see cancel()).
  *
  * The job must be provided with two callbacks giving access to the state of the running syncs, as this state is owned
  * by the application layer:
@@ -62,6 +69,7 @@ class OpenFileJob : public SyncJob {
             ResolveTimedOut, //!< The item was not synchronized before the deadline.
             HydrationTimedOut, //!< The hydration did not complete before the deadline.
             ReadyToOpen, //!< The item is available locally: the caller can open it.
+            Canceled, //!< The user canceled the request from the client interface.
         };
 
         struct Request {
@@ -83,6 +91,24 @@ class OpenFileJob : public SyncJob {
         //! Id of the sync through which the item has been resolved. Only meaningful when outcome() is
         //! Outcome::ReadyToOpen.
         [[nodiscard]] SyncDbId syncDbId() const { return _syncDbId; }
+
+        //! Callback through which the job reports its progress to the user interface: FileOpeningPhase::WaitingSync
+        //! while the item is being synchronized (percent is -1), FileOpeningPhase::Hydrating while it is being
+        //! downloaded (percent is 0-100). `itemName` is the name of the item being opened, empty while the item has not
+        //! been resolved (i.e. during the WaitingSync phase). Invoked on a job manager worker thread.
+        using FeedbackCallback = std::function<void(FileOpeningPhase, int8_t, const CommString &itemName)>;
+        void setFeedbackCallback(FeedbackCallback callback) { _feedbackCallback = std::move(callback); }
+
+        //! Aborts the job and cancels the hydration of the item, if it is in progress: the direct download is aborted
+        //! and the pin state set before starting it is reverted.
+        void cancel();
+
+        //! Returns true when the user interface must be informed that the item is being synchronized: the first
+        //! notification is due after 5 seconds of waiting, the following ones every 2 minutes. A default-constructed
+        //! `lastNotify` means that no notification has been sent yet.
+        [[nodiscard]] static bool isWaitNotificationDue(std::chrono::steady_clock::time_point now,
+                                                        std::chrono::steady_clock::time_point waitStart,
+                                                        std::chrono::steady_clock::time_point lastNotify);
 
     protected:
         ExitInfo canRun() override;
@@ -111,6 +137,11 @@ class OpenFileJob : public SyncJob {
         ExitInfo hydrateResolvedPlaceholder();
         //! Marks the job as ready to open the item and returns `ExitCode::Ok`.
         ExitInfo readyToOpen();
+        //! Reports the job state to the user interface through the feedback callback, when set. The name of the item
+        //! being opened is included, empty while the item has not been resolved.
+        void notifyFeedback(FileOpeningPhase phase, int8_t percent) const;
+        //! Reports the download progress to the user interface through the feedback callback, throttled.
+        void notifyProgressIfChanged(int8_t percent);
 
         const std::string _url;
         const GetSyncPalCallback _getSyncPal;
@@ -128,6 +159,15 @@ class OpenFileJob : public SyncJob {
         std::unordered_map<SyncDbId, std::shared_ptr<SyncDb>> _tempSyncDbMap;
 
         Outcome _outcome{Outcome::Failed};
+
+        //! Completion state of the hydration, shared with the observers invoked by the download job. Set when the
+        //! hydration of the item starts. Its type is defined in the .cpp file.
+        struct HydrationCompletion; // Defined in the .cpp file.
+        std::shared_ptr<HydrationCompletion> _hydration;
+
+        FeedbackCallback _feedbackCallback;
+        int8_t _lastNotifiedProgress{-1}; // Only accessed on the thread running the job.
+        std::chrono::steady_clock::time_point _lastProgressNotify; // Idem.
 };
 
 } // namespace KDC
