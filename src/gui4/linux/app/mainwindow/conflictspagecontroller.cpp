@@ -169,8 +169,7 @@ void ConflictsPageController::onPageChanged() {
 }
 
 void ConflictsPageController::onErrorsChanged() {
-    const auto conflictCount = static_cast<int32_t>(conflictDbIds().size());
-    if (conflictCount != _count) {
+    if (const auto conflictCount = static_cast<int32_t>(conflictDbIds().size()); conflictCount != _count) {
         _count = conflictCount;
         emit changed();
     }
@@ -205,8 +204,7 @@ void ConflictsPageController::leave(const char *const reason) {
     if (!isShown()) {
         return;
     }
-    const auto &errors = _projection.currentErrors();
-    if (std::ranges::any_of(errors, [](const ClassifiedSyncError &classified) {
+    if (const auto &errors = _projection.currentErrors(); std::ranges::any_of(errors, [](const ClassifiedSyncError &classified) {
             return classified.category != SyncErrorCategory::Conflicts;
         })) {
         showErrors(reason);
