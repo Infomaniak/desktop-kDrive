@@ -288,6 +288,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKLoadingSpinner.qml
         ui/components/IKModal.qml
         ui/components/IKModalButton.qml
+        ui/components/IKSearchField.qml
         ui/components/IKSidebarItem.qml
         ui/components/IKDriveSyncSelectorItem.qml
         ui/components/IKToolTip.qml
