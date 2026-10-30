@@ -26,6 +26,7 @@ namespace KDC {
 class TestFolderWatcherLinux final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestFolderWatcherLinux);
         CPPUNIT_TEST(testMakeSyncPath);
+        CPPUNIT_TEST(testQueueOverflowInvalidatesSnapshot);
         CPPUNIT_TEST(testAddFolderRecursive);
         CPPUNIT_TEST(testAddFolderRecursiveDisappearingChild);
         CPPUNIT_TEST(testRemoveFoldersBelow);
@@ -34,11 +35,12 @@ class TestFolderWatcherLinux final : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void) final { TestBase::start(); }
-        void tearDown(void) final { TestBase::stop(); }
+        void setUp() final;
+        void tearDown() final;
 
     private:
         void testMakeSyncPath();
+        void testQueueOverflowInvalidatesSnapshot();
         void testAddFolderRecursive();
         void testAddFolderRecursiveDisappearingChild();
         void testRemoveFoldersBelow();

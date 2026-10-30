@@ -73,63 +73,9 @@ void FolderWatcher_linux::startWatching() {
                     break;
                 }
                 auto *event = (inotify_event *) (buffer + offset);
-
-                auto opType = OperationType::None;
-                bool skip = false;
-                if (event->mask & IN_CREATE) {
-                    opType = OperationType::Create;
-                } else if (event->mask & IN_DELETE || event->mask & IN_MOVED_FROM) {
-                    opType = OperationType::Delete;
-                } else if (event->mask & IN_MOVED_TO) {
-                    opType = OperationType::Move;
-                } else if (event->mask & (IN_MODIFY | IN_ATTRIB)) {
-                    opType = OperationType::Edit;
-                } else {
-                    // Ignore all other events
-                    skip = true;
-                }
-
-                if (!skip && !_stop) {
-                    if (_watchToPath.contains(event->wd)) {
-                        // `event->name` is empty for instance if the event is a permission change on a watched
-                        // directory (see inotify man page).
-                        const SyncPath path = makeSyncPath(_watchToPath[event->wd], event->name);
-                        if (ParametersCache::isExtendedLogEnabled()) {
-                            LOGW_DEBUG(_logger,
-                                       L"Operation " << opType << L" detected on item with " << Utility::formatSyncPath(path));
-                        }
-
-                        bool isDirectory = false;
-                        auto ioError = IoError::Success;
-                        const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
-                        if (!isDirSuccess) {
-                            LOGW_WARN(_logger,
-                                      L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
-                        }
-
-                        if (ioError == IoError::AccessDenied) {
-                            LOGW_WARN(_logger, L"The item misses search/exec permission - " << Utility::formatSyncPath(path));
-                        }
-
-                        if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirSuccess && isDirectory) {
-                            // Watch the directory and its descendants before changesDetected scans their contents,
-                            // so creations after the scan are queued by inotify instead of being lost.
-                            if (auto exitInfo = watchDirectoryTree(path); !exitInfo) {
-                                setExitInfo(exitInfo);
-                                return;
-                            };
-                        }
-
-                        if (const auto exitInfo = changeDetected(path, opType); !exitInfo) {
-                            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_linux::changeDetected for "
-                                                                                 << Utility::formatSyncPath(path) << L" "
-                                                                                 << exitInfo);
-                        }
-
-                        if (event->mask & (IN_MOVED_FROM | IN_DELETE)) {
-                            removeFoldersBelow(path);
-                        }
-                    }
+                if (const auto exitInfo = processEvent(*event); !exitInfo) {
+                    setExitInfo(exitInfo);
+                    return;
                 }
 
                 offset += sizeof(inotify_event) + event->len;
@@ -140,6 +86,69 @@ void FolderWatcher_linux::startWatching() {
     }
 
     LOGW_DEBUG(_logger, L"Folder watching stopped: " << Utility::formatSyncPath(_folder));
+}
+
+ExitInfo FolderWatcher_linux::processEvent(const inotify_event &event) {
+    // Overflow events apply to the entire queue and have no watch descriptor (wd = -1).
+    if (event.mask & IN_Q_OVERFLOW) {
+        LOG_WARN(_logger, "Inotify event queue overflow, changes were lost. Invalidating the local snapshot.");
+        // TODO: Preserve overflow requests during a rescan and rebuild watches missing after dropped events.
+        _parent->invalidateSnapshot();
+        sentry::Handler::captureMessage(sentry::Level::Warning, "FolderWatcher_linux::processEvent",
+                                        "Inotify event queue overflow, changes were lost.");
+        return ExitCode::Ok;
+    }
+
+    auto opType = OperationType::None;
+    if (event.mask & IN_CREATE) {
+        opType = OperationType::Create;
+    } else if (event.mask & IN_DELETE || event.mask & IN_MOVED_FROM) {
+        opType = OperationType::Delete;
+    } else if (event.mask & IN_MOVED_TO) {
+        opType = OperationType::Move;
+    } else if (event.mask & (IN_MODIFY | IN_ATTRIB)) {
+        opType = OperationType::Edit;
+    } else {
+        // Ignore all other events.
+        return ExitCode::Ok;
+    }
+
+    const auto watchedPath = _watchToPath.find(event.wd);
+    if (watchedPath == _watchToPath.end()) return ExitCode::Ok;
+
+    // Events on the watched directory itself have no name field (len = 0).
+    const SyncPath path = makeSyncPath(watchedPath->second, event.len > 0 ? event.name : "");
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOGW_DEBUG(_logger, L"Operation " << opType << L" detected on item with " << Utility::formatSyncPath(path));
+    }
+
+    bool isDirectory = false;
+    auto ioError = IoError::Success;
+    const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
+    if (!isDirSuccess) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
+    }
+
+    if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"The item misses search/exec permission - " << Utility::formatSyncPath(path));
+    }
+
+    if ((event.mask & (IN_MOVED_TO | IN_CREATE)) && isDirSuccess && isDirectory) {
+        // Watch the directory and its descendants before changesDetected scans their contents,
+        // so creations after the scan are queued by inotify instead of being lost.
+        if (const auto exitInfo = watchDirectoryTree(path); !exitInfo) return exitInfo;
+    }
+
+    if (const auto exitInfo = changeDetected(path, opType); !exitInfo) {
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"Error in FolderWatcher_linux::changeDetected for " << Utility::formatSyncPath(path) << L" " << exitInfo);
+    }
+
+    if (event.mask & (IN_MOVED_FROM | IN_DELETE)) {
+        removeFoldersBelow(path);
+    }
+
+    return ExitCode::Ok;
 }
 
 bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList) {
@@ -194,9 +203,10 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
 
 FolderWatcher_linux::AddWatchOutcome FolderWatcher_linux::inotifyAddWatch(const SyncPath &path) {
     AddWatchOutcome result;
+    // Only subscribe to events handled by processEvent(). IN_Q_OVERFLOW, IN_IGNORED and IN_UNMOUNT
+    // are reported automatically by the kernel.
     result.returnValue = inotify_add_watch(static_cast<int>(_fileDescriptor), path.string().c_str(),
-                                           IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY |
-                                                   IN_DELETE_SELF | IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+                                           IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_ONLYDIR | IN_DONT_FOLLOW);
     result.errorNumber = errno;
 
     return result;
