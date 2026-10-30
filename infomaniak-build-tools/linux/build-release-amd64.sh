@@ -162,8 +162,50 @@ build_release() {
   cp "$src_dir/sync-folder-rules-linux.csv" "$build_dir/build/bin/sync-folder-rules.csv"
 }
 
+# Stage a job-private copy of the Qt prefix with the unused SQL drivers pruned, so that the
+# packaging tools (linuxdeploy-plugin-qt) resolve the pruned copy. Keep only the SQLite SQL
+# driver: the Qt online installer also ships drivers for Firebird, PostgreSQL, etc., whose
+# third-party client libraries (e.g. libfbclient.so.2) are neither installed on the CI
+# runner nor bundled with Qt. linuxdeploy-plugin-qt redeploys every sqldrivers plugin from
+# the Qt installation reported by qmake and aborts fatally when such a dependency cannot be
+# resolved ("Could not find dependency: libfbclient.so.2"). The Qt installation is a Conan
+# package folder shared with other jobs (e.g. PR CI builds) on persistent runners, so it
+# must never be modified: prune the staged copy instead.
+# See https://github.com/linuxdeploy/linuxdeploy-plugin-qt/issues/153.
+stage_pruned_qt_prefix() {
+  local conan_qt_dir="$1"
+  local staged_qt_dir="$2"
+
+  rm -rf "$staged_qt_dir"
+  mkdir -p "$staged_qt_dir"
+  if ! cp -a "$conan_qt_dir/." "$staged_qt_dir/"; then
+    echo "ERROR: Failed to stage the Qt prefix '$conan_qt_dir' into '$staged_qt_dir'."
+    exit 1
+  fi
+
+  find "$staged_qt_dir/plugins/sqldrivers" -mindepth 1 -maxdepth 1 \
+    \( -type f -o -type l \) ! -name "libqsqlite.so" -delete 2>/dev/null || true
+
+  # The packaging tooling locates Qt through qmake, so the staged copy must be the prefix
+  # that qmake reports (the official Qt builds are relocatable). Otherwise fall back to a
+  # qt.conf, which anchors the prefix relative to the qmake binary.
+  local staged_plugins_dir="$("$staged_qt_dir/bin/qmake" -query QT_INSTALL_PLUGINS)"
+  if [[ "$staged_plugins_dir" != "$staged_qt_dir/"* ]]; then
+    printf '[Paths]\nPrefix = ..\n' > "$staged_qt_dir/bin/qt.conf"
+    staged_plugins_dir="$("$staged_qt_dir/bin/qmake" -query QT_INSTALL_PLUGINS)"
+  fi
+  if [[ "$staged_plugins_dir" != "$staged_qt_dir/"* ]]; then
+    echo "ERROR: The staged Qt prefix is not relocatable: 'qmake -query QT_INSTALL_PLUGINS' reports '$staged_plugins_dir' instead of a path inside '$staged_qt_dir'."
+    exit 1
+  fi
+}
+
 package_release() {
-  QTDIR="$(find_qt_conan_path "$build_dir")"
+  conan_qt_dir="$(find_qt_conan_path "$build_dir")"
+
+  staged_qt_dir="$build_dir/qt-staging"
+  stage_pruned_qt_prefix "$conan_qt_dir" "$staged_qt_dir"
+  QTDIR="$staged_qt_dir"
   export QTDIR
   export QMAKE="$QTDIR/bin/qmake"
   export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
@@ -174,16 +216,6 @@ package_release() {
   cd "$app_dir"
 
   cp -P -r "$QTDIR/plugins/"* "$app_dir/usr/plugins/"
-
-  # Keep only the SQLite SQL driver. The Qt online installer also ships drivers for
-  # Firebird, PostgreSQL, etc., whose third-party client libraries (e.g. libfbclient.so.2)
-  # are neither installed on the CI runner nor bundled with Qt. linuxdeploy-plugin-qt
-  # redeploys every sqldrivers plugin from the Qt installation and aborts fatally when such
-  # a dependency cannot be resolved ("Could not find dependency: libfbclient.so.2"), so the
-  # unused drivers must be removed from the Qt installation itself, not only from the AppDir.
-  # See https://github.com/linuxdeploy/linuxdeploy-plugin-qt/issues/153.
-  find "$QTDIR/plugins/sqldrivers" "$app_dir/usr/plugins/sqldrivers" -mindepth 1 -maxdepth 1 \
-    \( -type f -o -type l \) ! -name "libqsqlite.so" -delete 2>/dev/null || true
 
   cp -P -r "$QTDIR/libexec" "$app_dir/usr"
   cp -P -r "$QTDIR/resources" "$app_dir/usr" || true # resources folder is not always present in the Qt installation, but we want to copy it when it is
