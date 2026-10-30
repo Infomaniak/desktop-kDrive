@@ -64,7 +64,7 @@ Item {
         running: true
         onLoopsChanged: { if (running) { restart() } }
     }
-    visible: frameCounter >= 0 && frameCounter < 601
+    visible: frameCounter >= 0 && frameCounter <= 601
     LayerItem {
         visible: _qt_node0.frameCounter >= 0 && _qt_node0.frameCounter < 602
         objectName: "cloud"
