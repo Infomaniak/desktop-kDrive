@@ -97,6 +97,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                                "BlockingErrorController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ActivityListModel>(AppConstants::Qml::moduleUri, 1, 0, "ActivityListModel",
                                                          "ActivityListModel is owned by ActivitiesController.");
+    (void) qmlRegisterUncreatableType<ErrorListModel>(AppConstants::Qml::moduleUri, 1, 0, "ErrorListModel",
+                                                      "ErrorListModel is owned by ErrorsPageController.");
+    (void) qmlRegisterUncreatableType<ErrorsPageController>(AppConstants::Qml::moduleUri, 1, 0, "ErrorsPageController",
+                                                            "ErrorsPageController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ActivitiesController>(AppConstants::Qml::moduleUri, 1, 0, "ActivitiesController",
                                                             "ActivitiesController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ManyDeletesController>(AppConstants::Qml::moduleUri, 1, 0, "ManyDeletesController",
@@ -127,6 +131,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
             {QStringLiteral("blockingErrorController"), QVariant::fromValue<QObject *>(&_blockingErrorController)},
+            {QStringLiteral("errorsPageController"), QVariant::fromValue<QObject *>(&_errorsPageController)},
             {QStringLiteral("manyDeletesController"), QVariant::fromValue<QObject *>(&_manyDeletesController)},
             {QStringLiteral("storageController"), QVariant::fromValue<QObject *>(&_storageController)},
             {QStringLiteral("searchController"), QVariant::fromValue<QObject *>(&_searchController)},
