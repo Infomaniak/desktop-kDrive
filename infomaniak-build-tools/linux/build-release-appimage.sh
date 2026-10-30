@@ -210,7 +210,8 @@ function bundle_sources_for_sentry() {
 
   echo "Bundling sources for $(basename "$debug_file")..."
   rm -f "$source_bundle"
-  sentry-cli debug-files bundle-sources "$debug_file"
+  # Repository-relative paths in the debug info are resolved from the current directory.
+  (cd /src && sentry-cli debug-files bundle-sources "$debug_file")
 
   if [ ! -f "$source_bundle" ]; then
     echo "ERROR: Source bundle '${source_bundle}' was not created for '${debug_file}'." >&2
