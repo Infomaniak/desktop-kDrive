@@ -69,6 +69,8 @@ class SystemTrayController final : public QObject {
         void handleUpdateStateChanged(UpdateState state);
         void setNotificationActive(bool active);
         void setIconState(TrayIconState state);
+        /** Enables the Settings menu entry; the entry stays disabled while an update is required. */
+        void setSettingsAvailable(bool available);
         [[nodiscard]] bool trayModeActive() const { return _isTrayModeActive; }
 
         Q_INVOKABLE void showMainWindow() const;
@@ -114,6 +116,7 @@ class SystemTrayController final : public QObject {
         bool _isTrayAvailable = false;
         bool _isTrayModeActive = false;
         bool _isInitialized = false;
+        bool _isSettingsAvailable = true;
         bool _quitRequestIssued = false;
 };
 
