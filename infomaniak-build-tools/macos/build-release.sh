@@ -41,9 +41,10 @@ if [ ! -f "$src_dir/.venv/bin/activate" ]; then
 	exit 1
 fi
 source "$src_dir/.venv/bin/activate"
-export CC="$(xcrun --find clang)"
-export CXX="$(xcrun --find clang++)"
-export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+CC="$(xcrun --find clang)"
+CXX="$(xcrun --find clang++)"
+SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+export CC CXX SDKROOT
 xcodebuild -version
 "$CC" --version
 conan --version
@@ -118,7 +119,13 @@ make -j6 all install
 
 # Generate Debug Symbol files
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM
-dsymutil ./install/kDrive.app/Contents/MacOS/kDrive.app/Contents/MacOS/kDrive.gui -o ./install/kDrive_client.dSYM
+# Xcode's Release product may already be stripped: preserve its original dSYM.
+rm -rf ./install/kDrive_client.dSYM ./install/client-frameworks
+cp -R "$src_dir/src/gui4/macOS/build/Release/kDrive.app.dSYM" ./install/kDrive_client.dSYM
+mkdir -p ./install/client-frameworks
+for framework in kDriveCore kDriveCoreUI kDriveResources; do
+	cp -R "$src_dir/src/gui4/macOS/build/Release/$framework.framework.dSYM" ./install/client-frameworks/
+done
 
 # Verify that no dylib targets a macOS version higher than expected.
 # Each architecture slice is checked independently: arm64 requires at least 11.0,
@@ -193,7 +200,7 @@ else
 fi
 
 # Notarise
-if [ -n "$sign_files" ]; then
+if [ "${#sign_files[@]}" -gt 0 ]; then
 	rm -rf "$install_dir/notorization" "$install_dir/notarization/"
 	mkdir -p "$install_dir/notarization"
 
@@ -223,6 +230,12 @@ if [ -n "$sign_files" ]; then
 			"$install_dir/InfomaniakDrive.zip" \
 			--progress --wait
 	fi
+
+	# Staple the app before Sparkle archives it, and the installer before upload.
+	xcrun stapler staple "$install_dir/$app_name.app"
+	xcrun stapler staple "$install_dir/$package_file.pkg"
+	xcrun stapler validate "$install_dir/$app_name.app"
+	xcrun stapler validate "$install_dir/$package_file.pkg"
 
 	# Staple the notarization ticket to the recovery updater app
 	if [ -d "$updater_app" ]; then

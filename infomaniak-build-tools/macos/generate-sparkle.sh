@@ -87,8 +87,8 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 
 if [ ! -f "$install_dir/$app_name-$version.pkg" ]; then
-	echo "Warning: $install_dir/$app_name-$version.pkg not found." >&2
-	echo "The appcast download URL points at this package; make sure it is published." >&2
+	echo "Error: required installer $install_dir/$app_name-$version.pkg not found." >&2
+	exit 1
 fi
 
 # --- Clean up the temporary venv on exit ------------------------------------
