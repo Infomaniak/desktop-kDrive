@@ -49,6 +49,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/dialogs/manydeletescontroller.h
         app/errors/blockingerrorresolver.cpp
         app/errors/blockingerrorresolver.h
+        app/errors/inotifywatchlimit.cpp
+        app/errors/inotifywatchlimit.h
         app/errors/syncerrorcatalog.cpp
         app/errors/syncerrorcatalog.h
         app/errors/syncerrorclassifier.cpp
@@ -82,6 +84,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/storagescanner.h
         app/mainwindow/syncerroractionhandler.cpp
         app/mainwindow/syncerroractionhandler.h
+        app/mainwindow/syncerrorexplanationcontroller.cpp
+        app/mainwindow/syncerrorexplanationcontroller.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/activitiesnavigation.cpp
@@ -318,7 +322,10 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/blockingerror/BlockingErrorDriveLabel.qml
         ui/windows/main/blockingerror/BlockingErrorView.qml
         ui/windows/main/errors/ErrorCopyButton.qml
+        ui/windows/main/errors/ErrorCopyablePath.qml
+        ui/windows/main/errors/ErrorExplanationDialog.qml
         ui/windows/main/errors/ErrorItemChip.qml
+        ui/windows/main/errors/ErrorLinkText.qml
         ui/windows/main/errors/ErrorRow.qml
         ui/windows/main/errors/ErrorsPage.qml
         ui/windows/main/home/HomeGreeting.qml
@@ -417,6 +424,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities/source-web.svg
         ui/assets/main/activities/status-error.svg
         ui/assets/main/activities/status-synchronized-outline.svg
+        ui/assets/main/arrow-right.svg
         ui/assets/main/blockingerror/door-arrow-right.svg
         ui/assets/main/blockingerror/moon-sleep.svg
         ui/assets/main/blockingerror/sun.svg

@@ -280,8 +280,9 @@
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
 - `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
-  enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), one blocking error (`asleep`,
-  `wakingup`, `maintenance`, `notrenew`, `accessdenied`, `loggedout`) or `update-required`. Once the cache is populated,
+  enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), `inotify` (the inotify
+  watches error alone), one blocking error (`asleep`, `wakingup`, `maintenance`, `notrenew`, `accessdenied`,
+  `loggedout`) or `update-required`. Once the cache is populated,
   it dispatches fake `UTILITY_ERROR_ADDED` signals through `SignalDispatcher` on the selected sync, with negative
   `ErrorDbId` values (real ones are SQLite rowids, always positive). Its fixtures assert that each kind is covered and
   classified as expected. Requests on fake errors reach the server and fail; a cache reconciliation removes them.
@@ -494,12 +495,19 @@
 - `app/mainwindow/errorspagecontroller.*`: QML-facing state of the errors page (`errorCount`, `refreshPending`,
   `refresh()`). Every row action is revalidated against the current errors before reaching `SyncErrorActionHandler`. It
   copies a path or the technical details to the clipboard, and keeps a pending `reveal` request that the page consumes
-  when it is shown, to bring the error of an activity row into view; a change of synchronization drops it.
+  when it is shown, to bring the error of an activity row into view; a change of synchronization drops it. It owns the
+  explanation dialog state (`explanation`).
+- `app/mainwindow/syncerrorexplanationcontroller.*`: QML-facing state of the "Understand the problem" dialog: the
+  explanation kind of one error, its item chip and copyable path (the item for a local access error, the
+  synchronization root otherwise). It closes when the error disappears or the selected synchronization changes; its
+  buttons are revalidated, then run through `SyncErrorActionHandler::run`.
 - `app/mainwindow/syncerroractionhandler.*`: the only place that knows what each error button does: rename or open the
   item online, open a local folder below the synchronization root, open the volume (disk space), open the shop
   (`renewalUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
-  (`loginRequested`, as on the blocking screen), or contact the support. Logs name the kind, the action and the
-  opened URL.
+  (`loginRequested`, as on the blocking screen), or contact the support. `Explain` emits `explanationRequested`;
+  `OpenSyncParentFolder` opens the folder above the synchronization root, and `CreateNewSync` opens Settings on the
+  accounts. `trigger` runs the row action from the catalog, `run` any action (the dialog buttons).
+  Logs name the kind, the action and the opened URL.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
@@ -673,12 +681,17 @@
       `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity history.
     - `ui/windows/main/errors/`: "Errors to fix" sub-page of Activities (`ErrorsPage`), titled `errorPageTitle` in the
       toolbar: header with the error count and Refresh, one card per error in sections (`ErrorRow`), empty state with
-      "View activities". A row shows its button only once its action exists: "Choose a version", "Manage" (conflicts)
-      and "Understand the issue" stay hidden until their pages and dialogs land. Variants: the item chip
-      (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the tooltip), the information icon
-      (first line of the description, advice in the tooltip), the copyable path, and the folded technical details
+      "View activities". A row shows its button only once its action exists: "Choose a version" and "Manage"
+      (conflicts) stay hidden until their pages land. "Understand the issue" opens `ErrorExplanationDialog` (an
+      `IKModal`), whose texts, reason boxes and links are chosen in QML from the explanation kind; a link inside a
+      sentence is an `ErrorLinkText`, focusable as a whole. The inotify watches row and dialog show the current limit
+      (`inotifywatchlimit.h`, re-read on each refresh); "Raise the limit" opens the dialog, whose `sysctl` command to
+      copy is always above that limit: the app never raises it itself. Variants: the
+      item chip (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the tooltip), the information
+      icon (first line of the description, advice in the tooltip), the copyable path, and the folded technical details
       (two name and value pairs per row on wide cards, values elided on the left) with their copy button
-      (`ErrorCopyButton`, a check mark confirms the copy).
+      (`ErrorCopyButton`, a check mark confirms the copy). The copyable field (`ErrorCopyablePath`, a path or a command)
+      is shared by the rows and the explanation dialog.
     - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
       the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
       with Down on the last row. It consumes `SearchController`; it must not call IPC.

@@ -197,6 +197,8 @@ QtObject {
     readonly property color errorsChipSurface: surfacePrimary
     readonly property color errorsCopyFieldSurface: surfacePrimary
     readonly property color errorsCopyFieldBorder: surfaceTertiary
+    readonly property color errorsExplanationReasonSurface: surfaceSecondary
+    readonly property color errorsExplanationArrow: textTertiary
     // Mockup labels are 50 % black; gray500 keeps a gap from the values and a 4.5:1 contrast on the card.
     readonly property color errorsDetailsLabel: darkMode ? _p.gray600 : _p.gray500
     readonly property color errorsDetailsHover: surfaceTertiary
