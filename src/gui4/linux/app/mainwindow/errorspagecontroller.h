@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/mainwindow/conflictspagecontroller.h"
 #include "app/mainwindow/conflictversioncontroller.h"
 #include "app/mainwindow/errorlistmodel.h"
 #include "app/mainwindow/syncerrorexplanationcontroller.h"
@@ -48,6 +49,7 @@ class ErrorsPageController final : public QObject {
         Q_PROPERTY(ErrorListModel *model READ model CONSTANT)
         Q_PROPERTY(SyncErrorExplanationController *explanation READ explanation CONSTANT)
         Q_PROPERTY(ConflictVersionController *conflictVersion READ conflictVersion CONSTANT)
+        Q_PROPERTY(ConflictsPageController *conflicts READ conflicts CONSTANT)
         Q_PROPERTY(int32_t errorCount READ errorCount NOTIFY errorCountChanged)
         Q_PROPERTY(bool refreshPending READ refreshPending NOTIFY refreshPendingChanged)
 
@@ -60,12 +62,14 @@ class ErrorsPageController final : public QObject {
         [[nodiscard]] ErrorListModel *model() { return &_model; }
         [[nodiscard]] SyncErrorExplanationController *explanation() { return &_explanation; }
         [[nodiscard]] ConflictVersionController *conflictVersion() { return &_conflictVersion; }
+        [[nodiscard]] ConflictsPageController *conflicts() { return &_conflicts; }
         [[nodiscard]] int32_t errorCount() const;
         [[nodiscard]] bool refreshPending() const;
 
         /** Asks the server to detect the errors of the selected synchronization again ("Refresh"). */
         Q_INVOKABLE void refresh();
-        /** Runs the action of a row; ignored when its error is gone. */
+        /** Runs the action of a row; ignored when its error is gone. "Manage" of the aggregated conflicts row opens the
+         * conflicts pages. */
         Q_INVOKABLE void invokeAction(const QString &rowId);
         /** Copies the absolute destination path of a row to the clipboard; the row shows its `~` display form. */
         Q_INVOKABLE void copyPath(const QString &rowId) const;
@@ -94,6 +98,7 @@ class ErrorsPageController final : public QObject {
         ErrorListModel _model;
         SyncErrorExplanationController _explanation;
         ConflictVersionController _conflictVersion;
+        ConflictsPageController _conflicts;
         int32_t _errorCount{0};
         std::vector<ErrorDbId> _revealErrorDbIds;
 };

@@ -54,6 +54,7 @@ ErrorsPageController::ErrorsPageController(const SyncErrorsProjection &projectio
     _model(projection, selectionStore, syncService, syncErrorService),
     _explanation(projection, selectionStore, actionHandler),
     _conflictVersion(projection, selectionStore, syncErrorService, actionHandler),
+    _conflicts(projection, selectionStore, syncErrorService, _conflictVersion, activitiesNavigation),
     _errorCount(projection.currentErrorCount()) {
     (void) connect(&_projection, &SyncErrorsProjection::currentErrorsChanged, this, [this] {
         if (const auto errorCount = _projection.currentErrorCount(); errorCount != _errorCount) {
