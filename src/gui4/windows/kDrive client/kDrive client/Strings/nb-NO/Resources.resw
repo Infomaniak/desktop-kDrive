@@ -456,7 +456,10 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Oppgrader</value> 
   </data> 
-<data name="buttonValidateAndGoNext" xml:space="preserve"> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Bekreft</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
     <value>Bekreft og gå til neste</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
@@ -1575,10 +1578,10 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <value>Andre filer på datamaskinen</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-<data name="storageOnlineUsed" xml:space="preserve"> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>kDrive-filer lagret på nettet</value> 
   </data> 
-<data name="storageThisComputerTitle" xml:space="preserve"> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Denne PC-en – %@ – %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 

@@ -456,7 +456,10 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Päivitä</value> 
   </data> 
-<data name="buttonValidateAndGoNext" xml:space="preserve"> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Vahvista</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
     <value>Vahvista ja siirry seuraavaan</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
@@ -1575,10 +1578,10 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Muut tietokoneella olevat tiedostot</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-<data name="storageOnlineUsed" xml:space="preserve"> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Verkossa tallennetut kDrive-tiedostot</value> 
   </data> 
-<data name="storageThisComputerTitle" xml:space="preserve"> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Tämä tietokone - %@ - %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 

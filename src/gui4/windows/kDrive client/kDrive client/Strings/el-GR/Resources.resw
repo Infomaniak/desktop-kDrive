@@ -456,7 +456,10 @@
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Αναβάθμιση</value> 
   </data> 
-<data name="buttonValidateAndGoNext" xml:space="preserve"> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Επιβεβαίωση</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
     <value>Επιβεβαίωση και μετάβαση στο επόμενο</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
@@ -1575,10 +1578,10 @@
     <value>Άλλα αρχεία στον υπολογιστή</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-<data name="storageOnlineUsed" xml:space="preserve"> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Αρχεία kDrive που είναι αποθηκευμένα στο διαδίκτυο</value> 
   </data> 
-<data name="storageThisComputerTitle" xml:space="preserve"> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Αυτός ο υπολογιστής - %@ - %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 

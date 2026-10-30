@@ -456,7 +456,10 @@ Sie können sie jederzeit öffnen, auch ohne Internetverbindung.</value>
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Upgraden</value> 
   </data> 
-<data name="buttonValidateAndGoNext" xml:space="preserve"> 
+  <data name="buttonValidate" xml:space="preserve"> 
+    <value>Bestätigen</value> 
+  </data> 
+  <data name="buttonValidateAndGoNext" xml:space="preserve"> 
     <value>Bestätigen und weiter</value> 
   </data> 
   <data name="buttonWakeUp" xml:space="preserve"> 
@@ -1574,10 +1577,10 @@ Diese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und z
     <value>Andere Dateien auf dem Computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-<data name="storageOnlineUsed" xml:space="preserve"> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Online gespeicherte kDrive-Dateien</value> 
   </data> 
-<data name="storageThisComputerTitle" xml:space="preserve"> 
+  <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Dieser PC – %@ – %@</value> 
     <comment>Label for the local computer entry in the storage view; first %@ is computer name, second %@ is disk identifier.</comment> 
   </data> 
