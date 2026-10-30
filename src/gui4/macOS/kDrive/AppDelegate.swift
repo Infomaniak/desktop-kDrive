@@ -44,6 +44,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // periphery:ignore - We keep a strong reference on the manyDeletesModalPresenter
     private(set) var manyDeletesModalPresenter: ManyDeletesModalPresenter?
 
+    // periphery:ignore - We keep a strong reference on the fileOpeningModalPresenter
+    private(set) var fileOpeningModalPresenter: FileOpeningModalPresenter?
+
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
             || Bundle.allBundles.contains { $0.bundlePath.hasSuffix(".xctest") }
@@ -79,6 +82,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         dockIconManager = DockIconManager()
         updateModalPresenter = UpdateModalPresenter()
         manyDeletesModalPresenter = ManyDeletesModalPresenter()
+        fileOpeningModalPresenter = FileOpeningModalPresenter()
 
         observeAppPresentation()
         handleLaunchArguments()

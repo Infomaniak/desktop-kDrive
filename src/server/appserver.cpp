@@ -45,6 +45,7 @@
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
 #include "server/comm/guijobs/signaluserremovedjob.h"
+#include "server/comm/guijobs/signalfileopeningstatusjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
 #include "server/comm/guijobs/signaldriveupdatedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
@@ -2517,6 +2518,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << toInt(exitInfo.code());
             break;
         }
+        case RequestNum::FILE_OPENING_CANCEL: {
+            qint64 jobId = 0;
+            QDataStream paramsStream(params);
+            paramsStream >> jobId;
+
+            const auto exitInfo = cancelFileOpeningJob(static_cast<UniqueId>(jobId));
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in cancelFileOpeningJob for jobId=" << jobId);
+            }
+
+            resultStream << toInt(exitInfo.code());
+            break;
+        }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
             if (_noUpdate) {
                 assert(false);
@@ -2833,7 +2847,10 @@ void AppServer::onOpenFileDeeplinkReceived(const QString &urlStr) {
     LOG_INFO(_logger, "File opening deeplink received: '" << urlStr.toStdString() << "'");
 
     auto *handler = new FileOpeningHandler(this, urlStr.toStdString(), this);
-    (void) connect(handler, &FileOpeningHandler::finished, handler, &QObject::deleteLater);
+    (void) connect(handler, &FileOpeningHandler::finished, this, [this, handler] {
+        unregisterFileOpeningJob(handler->jobId());
+        handler->deleteLater();
+    });
     handler->queueOpenFileJob();
 }
 
@@ -2862,6 +2879,49 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
         _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowNotificationJob>(CommonUtility::qStr2CommString(title),
                                                                                        CommonUtility::qStr2CommString(message)));
     }
+}
+
+void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPhase phase, const int8_t percent,
+                                      const CommString &itemName) const {
+    // Inform the client interface of the state of the file opening request, so that a pop-up window can be displayed,
+    // updated, or closed.
+    if (useOldCommServer()) {
+        int id = 0;
+
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << static_cast<qint64>(jobId);
+        paramsStream << phase;
+        paramsStream << static_cast<qint8>(percent);
+        paramsStream << CommonUtility::commString2QStr(itemName);
+        (void) OldCommServer::instance()->sendSignal(SignalNum::FILE_OPENING_STATUS, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, phase, percent, itemName));
+    }
+}
+
+ExitInfo AppServer::cancelFileOpeningJob(const UniqueId jobId) {
+    // Keep the mutex locked during the call: this prevents the handler from being unregistered and destroyed while it
+    // is being canceled. `cancel()` never takes this mutex back, and it may only acquire the engine mutexes, which are
+    // never held while taking this one.
+    const std::scoped_lock lock(_fileOpeningJobsMutex);
+    if (const auto it = _fileOpeningJobs.find(jobId); it != _fileOpeningJobs.end()) {
+        return it->second->cancel();
+    }
+
+    LOGW_WARN(_logger, L"Cannot cancel the file opening job: unknown job id " << jobId);
+    return {ExitCode::DataError, ExitCause::NotFound};
+}
+
+void AppServer::registerFileOpeningJob(const UniqueId jobId, FileOpeningHandler *handler) {
+    const std::scoped_lock lock(_fileOpeningJobsMutex);
+    _fileOpeningJobs[jobId] = handler;
+}
+
+void AppServer::unregisterFileOpeningJob(const UniqueId jobId) {
+    const std::scoped_lock lock(_fileOpeningJobsMutex);
+    (void) _fileOpeningJobs.erase(jobId);
 }
 
 void AppServer::sendErrorAdded(const Error &error) const {

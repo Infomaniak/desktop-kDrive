@@ -577,6 +577,19 @@ void KDC::TestLocalJobs::testOpenFileJob() {
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::LogicError, ExitCause::InvalidArgument), job.exitInfo());
         CPPUNIT_ASSERT(job.outcome() == OpenFileJob::Outcome::Failed);
     }
+
+    // Wait-for-sync notification cadence: first notification after 5 seconds of waiting, then every 2 minutes.
+    {
+        const auto waitStart = std::chrono::steady_clock::now();
+        const auto neverNotified = std::chrono::steady_clock::time_point{};
+
+        CPPUNIT_ASSERT(!OpenFileJob::isWaitNotificationDue(waitStart + std::chrono::seconds(4), waitStart, neverNotified));
+        CPPUNIT_ASSERT(OpenFileJob::isWaitNotificationDue(waitStart + std::chrono::seconds(5), waitStart, neverNotified));
+
+        const auto firstNotify = waitStart + std::chrono::seconds(5);
+        CPPUNIT_ASSERT(!OpenFileJob::isWaitNotificationDue(firstNotify + std::chrono::seconds(119), waitStart, firstNotify));
+        CPPUNIT_ASSERT(OpenFileJob::isWaitNotificationDue(firstNotify + std::chrono::minutes(2), waitStart, firstNotify));
+    }
 }
 
 } // namespace KDC

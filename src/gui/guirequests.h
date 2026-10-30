@@ -76,6 +76,8 @@ struct GuiRequests {
         static ExitCode resolveUnsupportedCharErrors(DriveDbId driveDbId);
         static ExitCode setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
         static ExitInfo acknowledgeManyDelete(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
+        //! Asks the server to cancel the file opening job identified by `jobId`, upon user request.
+        static ExitInfo cancelFileOpeningJob(UniqueId jobId);
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!

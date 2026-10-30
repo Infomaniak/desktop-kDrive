@@ -95,6 +95,8 @@ class UrlSchemeEventFilter : public QObject {
         }
 };
 
+class FileOpeningHandler;
+
 class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
 
@@ -260,6 +262,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 
         [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
+        //! Cancels the file opening job identified by `jobId`, upon user request in the client interface.
+        [[nodiscard]] ExitInfo cancelFileOpeningJob(UniqueId jobId);
 
 #if defined(KD_MACOS)
         //! Install the Vfs Mac extension.
@@ -316,6 +320,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<SyncDbId, SyncCache> _syncCacheMap;
         std::unordered_map<int, NodeSet> _undecidedListCacheMap;
         QProcess *_clientProcess = nullptr;
+        std::mutex _fileOpeningJobsMutex;
+        std::unordered_map<UniqueId, FileOpeningHandler *> _fileOpeningJobs;
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
@@ -406,6 +412,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode sendShowFileNotification(SyncDbId syncDbId, const QString &filename, const QString &renameTarget,
                                           SyncFileInstruction status, int count) const;
         void sendShowNotification(const QString &title, const QString &message) const;
+        //! Reports the state of a file opening request, and the name of the item being opened, to the client interface.
+        virtual void sendFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent,
+                                           const CommString &itemName) const;
+        void registerFileOpeningJob(UniqueId jobId, FileOpeningHandler *handler);
+        void unregisterFileOpeningJob(UniqueId jobId);
 
         void showSettings();
         void showSynthesis();

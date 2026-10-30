@@ -234,6 +234,8 @@
 				Parsing/Jobs/UtilityInstallMacLiteSyncExtTest.swift,
 				Parsing/Jobs/UtilityIsValidPathNewSyncTest.swift,
 				Parsing/SignalMessageTests.swift,
+				Parsing/Signals/FileOpeningStatusParsingTest.swift,
+				Parsing/Signals/JSON/FILE_OPENING_STATUS.json,
 				Parsing/Signals/JSON/SYNC_COMPLETEDITEM.json,
 				Parsing/Signals/JSON/UPDATER_SHOW_DIALOG.json,
 				Parsing/Signals/JSON/USER_ADDED.json,

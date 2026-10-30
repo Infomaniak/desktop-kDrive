@@ -62,6 +62,7 @@ set(client_SRCS
     buttonsbarwidget.h buttonsbarwidget.cpp
     clickablewidget.h clickablewidget.cpp
     confirmsynchronizationdialog.h confirmsynchronizationdialog.cpp
+    fileopeningdialog.h fileopeningdialog.cpp
     customdialog.h customdialog.cpp
     custommessagebox.h custommessagebox.cpp
     customproxystyle.h customproxystyle.cpp

@@ -284,9 +284,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
           \param observer is an optional completion observer, invoked with the job id and true if the download has
           succeeded, false otherwise. It is called on a job manager worker thread, while the direct download jobs map
           is locked, and must therefore not call any SyncPal method.
+          \param progressObserver is an optional callback invoked with the download progress in percent each time the
+          download job reports it.
         */
         ExitInfo addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath, const SyncPath &parentFolderPath,
-                                const std::function<void(UniqueId, bool)> &observer = nullptr);
+                                const std::function<void(UniqueId, bool)> &observer = nullptr,
+                                const std::function<void(int16_t)> &progressObserver = nullptr);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs();

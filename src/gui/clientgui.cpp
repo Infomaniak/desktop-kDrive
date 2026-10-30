@@ -20,6 +20,7 @@
 #include "guiutility.h"
 #include "custommessagebox.h"
 #include "appclient.h"
+#include "fileopeningdialog.h"
 #include "guirequests.h"
 #include "parameterscache.h"
 #include "libcommongui/utility/utility.h"
@@ -74,6 +75,7 @@ ClientGui::ClientGui(AppClient *parent) :
     connect(_app, &AppClient::syncRemoved, this, &ClientGui::onSyncRemoved);
     connect(_app, &AppClient::syncDeletionFailed, this, &ClientGui::onSyncDeletionFailed);
     (void) connect(_app, &AppClient::tooManyDeletesNotification, this, &ClientGui::onTooManyDeletesNotification);
+    (void) connect(_app, &AppClient::fileOpeningStatus, this, &ClientGui::onFileOpeningStatus);
     connect(_app, &AppClient::syncProgressInfo, this, &ClientGui::onProgressInfo);
     connect(_app, &AppClient::itemCompleted, this, &ClientGui::itemCompleted);
     connect(_app, &AppClient::vfsConversionCompleted, this, &ClientGui::vfsConversionCompleted);
@@ -759,6 +761,40 @@ void ClientGui::refreshErrorList(const DriveDbId driveDbId) {
     if (!_driveWithNewErrorSet.contains(driveDbId)) {
         _driveWithNewErrorSet.insert(driveDbId);
     }
+}
+
+void cleanUpFileOpeningDialog(const UniqueId jobId, QMap<UniqueId, FileOpeningDialog *> &map) {
+    if (map.contains(jobId)) {
+        if (const auto dialog = map[jobId]) {
+            dialog->accept();
+            dialog->deleteLater();
+        }
+        (void) map.remove(jobId);
+    }
+}
+
+void ClientGui::onFileOpeningStatus(const UniqueId jobId, const FileOpeningPhase phase, const int8_t percent,
+                                    const QString &itemName) {
+    if (phase == FileOpeningPhase::Finished) {
+        // The file opening request has been processed: close the pop-up window, if one is open.
+        cleanUpFileOpeningDialog(jobId, _fileOpeningPopupMap);
+        return;
+    }
+
+    auto dialogIt = _fileOpeningPopupMap.find(jobId);
+    if (dialogIt == _fileOpeningPopupMap.end()) {
+        const auto dialog = new FileOpeningDialog(this);
+        (void) connect(dialog, &FileOpeningDialog::canceled, this, [this, jobId] {
+            qCInfo(lcClientGui) << "Canceling the file opening for jobId=" << jobId;
+            if (const auto exitInfo = GuiRequests::cancelFileOpeningJob(jobId); !exitInfo) {
+                qCWarning(lcClientGui) << "Error in GuiRequests::cancelFileOpeningJob for jobId=" << jobId << ": " << exitInfo;
+            }
+            cleanUpFileOpeningDialog(jobId, _fileOpeningPopupMap);
+        });
+        dialogIt = _fileOpeningPopupMap.insert(jobId, dialog);
+    }
+
+    dialogIt.value()->updateStatus(phase, percent, itemName);
 }
 
 void ClientGui::onShowTrayMessage(const QString &title, const QString &msg) {

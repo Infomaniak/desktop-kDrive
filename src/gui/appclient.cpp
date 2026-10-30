@@ -385,6 +385,19 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             emit tooManyDeletesNotification(static_cast<SyncDbId>(syncDbId), notificationType, static_cast<uint64_t>(nbFiles));
             break;
         }
+        case SignalNum::FILE_OPENING_STATUS: {
+            qint64 jobId = 0;
+            FileOpeningPhase phase = FileOpeningPhase::Finished;
+            qint8 percent = -1;
+            QString itemName;
+            paramsStream >> jobId;
+            paramsStream >> phase;
+            paramsStream >> percent;
+            paramsStream >> itemName;
+
+            emit fileOpeningStatus(static_cast<UniqueId>(jobId), phase, percent, itemName);
+            break;
+        }
         case SignalNum::NODE_FOLDER_SIZE_COMPLETED: {
             QString nodeId;
             qint64 size;
