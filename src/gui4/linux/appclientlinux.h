@@ -26,6 +26,7 @@
 #include "app/cache/parametersstore.h"
 #include "app/dialogs/manydeletescontroller.h"
 #include "app/mainwindow/activitiescontroller.h"
+#include "app/mainwindow/blockingerrorcontroller.h"
 #include "app/mainwindow/homecontroller.h"
 #include "app/mainwindow/mainsidebarcontroller.h"
 #include "app/mainwindow/networkstatusobserver.h"
@@ -167,7 +168,10 @@ class AppClientLinux : public QApplication {
         WindowDecorationController _windowDecorationController{this};
         SystemTrayController _systemTrayController{this};
         NetworkStatusObserver _networkStatusObserver{this};
-        HomeController _homeController{_appCache, _mainSelectionStore, _syncService, _appRouter, _networkStatusObserver, this};
+        HomeController _homeController{
+                _appCache, _mainSelectionStore, _syncErrorsProjection, _syncService, _appRouter, _networkStatusObserver, this};
+        BlockingErrorController _blockingErrorController{_syncErrorsProjection, _mainSelectionStore, _syncService, _appRouter,
+                                                         this};
         ActivitiesController _activitiesController{_activityStore,         _appCache,        _mainSelectionStore,
                                                    _networkStatusObserver, _activityService, this};
         StorageController _storageController{_mainSelectionStore, this};
