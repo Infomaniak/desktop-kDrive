@@ -98,10 +98,10 @@ QString systemDescription() {
     return u"%1, %2"_s.arg(QSysInfo::prettyProductName(), session);
 }
 
-// Fields of an unexpected error for the support, those of the macOS client plus where the sync engine raised it and the
-// app version. Empty, unknown and `None` values are skipped. Paths are relative to the synchronization root, so that the
-// text the user sends does not show the rest of the computer. Labels stay in English: they name technical fields that
-// support reads.
+// Technical details of an unexpected error, sent to the support: where the sync engine raised it, the item paths, and
+// the versions of the app and the system. Empty, `Unknown` and `None` values are skipped. Paths are relative to the
+// synchronization root, so the copied text does not reveal the rest of the computer. Labels are not translated: they
+// name fields for the support.
 std::vector<std::pair<QString, QString>> technicalDetails(const Error &error, const std::optional<SyncContext> &context) {
     std::vector<std::pair<QString, QString>> details;
     const auto add = [&details](const QString &label, const QString &value) {
