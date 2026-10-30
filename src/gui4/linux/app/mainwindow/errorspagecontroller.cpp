@@ -93,6 +93,12 @@ void ErrorsPageController::refresh() {
 }
 
 void ErrorsPageController::invokeAction(const QString &rowId) {
+    // It stands for several errors, not one.
+    if (_model.isConflictsRow(rowId)) {
+        qCInfo(lcErrorsPageController) << "Opening the version conflicts pages | count:" << _conflicts.count();
+        _activitiesNavigation.show(ActivitiesNavigation::Page::ConflictsQuick);
+        return;
+    }
     const auto *const classified = currentError(rowId);
     const auto context = _selectionStore.currentSyncContext();
     if (!classified || !context.has_value()) {

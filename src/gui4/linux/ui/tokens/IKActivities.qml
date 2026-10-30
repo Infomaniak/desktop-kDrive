@@ -113,6 +113,31 @@ QtObject {
     readonly property real errorsConflictBadgeRadius: IKRadius.r4
     readonly property real errorsConflictCounterHorizontalPadding: IKSpacing.s8
     readonly property real errorsConflictCounterVerticalPadding: 6
+
+    // Version conflicts pages: grouped choice (Figma 5409-9910) and list (Figma 5799-10808)
+    readonly property real conflictsSectionSpacing: IKSpacing.s32
+    readonly property real conflictsHeaderSpacing: IKSpacing.s2
+    readonly property real conflictsStrategySpacing: IKSpacing.s16
+    readonly property real conflictsStrategyPadding: IKSpacing.s12
+    readonly property real conflictsStrategyRadius: IKRadius.r8
+    readonly property real conflictsStrategyContentSpacing: 6
+    readonly property real conflictsStrategyIconSize: 20
+    readonly property real conflictsStrategyGlyphSize: 12
+    readonly property real conflictsStrategyTitleSpacing: 6
+    readonly property real conflictsStrategyTextSpacing: IKSpacing.s2
+    readonly property real conflictsRadioSize: 16
+    readonly property real conflictsRadioDotSize: 6
+    readonly property real conflictsButtonSpacing: IKSpacing.s16
+    readonly property real conflictsButtonHeight: 24
+    readonly property real conflictsSearchWidth: 240
+    readonly property real conflictsSearchHeight: 28
+    readonly property real conflictsListSpacing: IKSpacing.s16
+    readonly property real conflictsListPadding: IKSpacing.s4
+    readonly property real conflictsListRadius: IKRadius.r8
+    readonly property real conflictsRowHeight: 42
+    readonly property real conflictsRowHorizontalPadding: IKSpacing.s8
+    readonly property real conflictsRowSpacing: 6
+    readonly property real conflictsRowIconSize: 16
     // How long the copy button of a path shows its confirmation.
     readonly property int errorsCopiedFeedbackDuration: 3000
 }
