@@ -453,8 +453,8 @@ function build_recovery_updater_image_v4() {
   updater_bin="/app/usr/bin/kDriveRecoveryUpdater"
 
   if [ ! -f "$updater_bin" ]; then
-    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
-    return 0
+    echo "kDriveRecoveryUpdater not found at '$updater_bin'; the release requires its AppImage." >&2
+    return 1
   fi
 
   echo "Building recovery updater AppImage for ${architecture}..."
