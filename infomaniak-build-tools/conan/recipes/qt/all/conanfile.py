@@ -489,8 +489,7 @@ class QtConan(ConanFile):
     def _trim_unused_sql_drivers(self):
         """
         Remove every SQL driver other than SQLite from the packaged Qt, together with the
-        CMake plugin packages describing them (lib/cmake/Qt6Sql/Qt6Q<Name>DriverPlugin*) and
-        the module-level Qt6SqlPlugins.cmake file that pulls those plugin packages in.
+        CMake plugin packages describing them (lib/cmake/Qt6Sql/Qt6Q<Name>DriverPlugin*).
 
         Rationale: the Qt online installer ships every SQL driver Qt was built with, while
         kDrive only consumes QSQLITE. The extra drivers pull third-party client libraries
@@ -504,9 +503,9 @@ class QtConan(ConanFile):
         versions (6.12 included) auto-include every Qt6Q*DriverPluginConfig.cmake of the
         package (module config -> Qt6SqlPlugins.cmake -> __qt_internal_include_plugin_packages,
         which globs the plugin configuration files) and those configurations hard-fail when
-        the plugin library they point to is missing. Deleting Qt6SqlPlugins.cmake is safe:
-        the module config includes it only when it exists, and the CMake plugin targets are
-        needed by static builds and qt_import_plugins() only, neither of which is used here.
+        the plugin library they point to is missing. Qt6SqlPlugins.cmake itself is kept: it
+        carries no per-plugin references (verified against the real 6.12.0 Linux package),
+        and after this trim its glob-based plugin inclusion covers the SQLite driver alone.
         """
         sqldrivers_dir = pjoin(self.package_folder, "plugins", "sqldrivers")
         if not os.path.isdir(sqldrivers_dir):
@@ -536,11 +535,6 @@ class QtConan(ConanFile):
                 continue  # keep the CMake plugin package of the SQLite driver
             os.remove(pjoin(cmake_sql_dir, entry))
             removed_cmake_files.append(entry)
-
-        plugins_cmake = pjoin(cmake_sql_dir, "Qt6SqlPlugins.cmake")
-        if os.path.isfile(plugins_cmake):
-            os.remove(plugins_cmake)
-            removed_cmake_files.append("Qt6SqlPlugins.cmake")
 
         if removed_cmake_files:
             self.output.info("Removed CMake SQL plugin files: " + ", ".join(removed_cmake_files))
