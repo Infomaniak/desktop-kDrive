@@ -320,12 +320,12 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1836"/>
+        <location filename="../src/server/appserver.cpp" line="1838"/>
         <source>Share link copied to clipboard</source>
         <translation>Delingslink kopieret til udklipsholderen</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3970"/>
+        <location filename="../src/server/appserver.cpp" line="3980"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet fjernet.</numerusform>
@@ -333,13 +333,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3972"/>
+        <location filename="../src/server/appserver.cpp" line="3982"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet fjernet.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3977"/>
+        <location filename="../src/server/appserver.cpp" line="3987"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet tilføjet.</numerusform>
@@ -347,13 +347,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3979"/>
+        <location filename="../src/server/appserver.cpp" line="3989"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet tilføjet.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3984"/>
+        <location filename="../src/server/appserver.cpp" line="3994"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet opdateret.</numerusform>
@@ -361,13 +361,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3986"/>
+        <location filename="../src/server/appserver.cpp" line="3996"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet opdateret.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3991"/>
+        <location filename="../src/server/appserver.cpp" line="4001"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 er blevet flyttet til %2 og %n anden fil er blevet flyttet.</numerusform>
@@ -375,12 +375,12 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3994"/>
+        <location filename="../src/server/appserver.cpp" line="4004"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 er blevet flyttet til %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4002"/>
+        <location filename="../src/server/appserver.cpp" line="4012"/>
         <source>Sync Activity</source>
         <translation>Synkroniseringsaktivitet</translation>
     </message>
@@ -963,13 +963,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
     <name>KDC::DrivePreferencesWidget</name>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="120"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1117"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
         <source>Synchronization errors and information.</source>
         <translation>Synkroniseringsfejl og information.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="144"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
         <source>Synchronize a local folder</source>
         <translation>Synkroniser en lokal mappe</translation>
     </message>
@@ -992,7 +992,7 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="360"/>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="391"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="987"/>
         <source>CANCEL</source>
         <translation>ANNULLER</translation>
     </message>
@@ -1022,92 +1022,92 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         <translation>Ny lokal mappesynkronisering mislykkedes!</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="819"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="820"/>
         <source>Lite Sync activated.</source>
         <translation>Lite Sync aktiveret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="823"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="824"/>
         <source>Lite Sync activation failed.</source>
         <translation>Aktivering af Lite Sync mislykkedes.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="837"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="838"/>
         <source>Lite Sync deactivated.</source>
         <translation>Lite Sync deaktiveret.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="841"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="842"/>
         <source>Lite Sync deactivation failed.</source>
         <translation>Deaktivering af Lite Sync mislykkedes.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="899"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="900"/>
         <source>This drive is being deleted.</source>
         <translation>Dette drev slettes.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="962"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="963"/>
         <source>Impossible to open item %1</source>
         <translation>Kan ikke åbne elementet %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="981"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="982"/>
         <source>Do you really want to stop syncing the folder &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Vil du virkelig stoppe synkroniseringen af mappen &lt;i&gt;%1&lt;/i&gt;?&lt;br&gt;&lt;b&gt;Bemærk:&lt;/b&gt; Dette vil &lt;b&gt;ikke&lt;/b&gt; slette nogen filer.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="985"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
         <source>REMOVE FOLDER SYNC CONNECTION</source>
         <translation>FJERN MAPPESYNKRONISERINGSFORBINDELSEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1007"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1008"/>
         <source>Failed to stop syncing the folder &lt;i&gt;%1&lt;/i&gt;.</source>
         <translation>Kunne ikke stoppe synkroniseringen af mappen &lt;i&gt;%1&lt;/i&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1048"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1049"/>
         <source>An error occurred while loading the list of subfolders.</source>
         <translation>Der opstod en fejl under indlæsning af listen over undermapper.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
         <source>Folders</source>
         <translation>Mapper</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
         <source>Notifications</source>
         <translation>Meddelelser</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1122"/>
         <source>Enable the notifications for this kDrive</source>
         <translation>Aktivér meddelelser for denne kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1123"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
         <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
         <translation>En meddelelse vises, så snart en ny mappe er synkroniseret eller ændret</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
         <source>Connected with</source>
         <translation>Forbundet med</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
         <source>Remove all synchronizations</source>
         <translation>Fjern alle synkroniseringer</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
         <source>Search in your kDrive</source>
         <translation>Søg i din kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1128"/>
         <source>Search</source>
         <translation>Søg</translation>
     </message>
@@ -2981,37 +2981,37 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
         <translation>Åbn i browser</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2101"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2019"/>
         <source>No valid folder selected!</source>
         <translation>Ingen gyldig mappe valgt!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2030"/>
         <source>The selected path does not exist!</source>
         <translation>Den valgte sti eksisterer ikke!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2117"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
         <source>The selected path is not a folder!</source>
         <translation>Den valgte sti er ikke en mappe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2122"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Du har ikke tilladelse til at skrive til den valgte mappe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 indeholder en mappe, der allerede er synkroniseret. Vælg venligst en anden!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2086"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 er indeholdt i en mappe, der allerede er synkroniseret. Vælg venligst en anden!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2094"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 er allerede synkroniseret. Vælg venligst en anden!</translation>
     </message>

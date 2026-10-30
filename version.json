@@ -1,25 +1,25 @@
 {
-  "Versions": {
-    "Linux": {
-      "major": 3,
-      "minor": 8,
-      "patch": 7,
-      "build": 1,
-      "year": 2026
-    },
-    "macOS": {
-      "major": 4,
-      "minor": 0,
-      "patch": 0,
-      "build": 18,
-      "year": 2026
-    },
-    "Windows": {
-      "major": 4,
-      "minor": 0,
-      "patch": 0,
-      "build": 16,
-      "year": 2026
+    "Versions": {
+        "Linux": {
+            "major": 3,
+            "minor": 9,
+            "patch": 0,
+            "build": 1,
+            "year": 2026
+        },
+        "macOS": {
+            "major": 4,
+            "minor": 1,
+            "patch": 0,
+            "build": 1,
+            "year": 2026
+        },
+        "Windows": {
+            "major": 4,
+            "minor": 1,
+            "patch": 0,
+            "build": 1,
+            "year": 2026
+        }
     }
-  }
 }

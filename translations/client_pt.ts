@@ -320,12 +320,12 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1836"/>
+        <location filename="../src/server/appserver.cpp" line="1838"/>
         <source>Share link copied to clipboard</source>
         <translation>O link para partilhar foi copiado para a área de transferência</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3970"/>
+        <location filename="../src/server/appserver.cpp" line="3980"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 e mais %n ficheiro foram removidos.</numerusform>
@@ -333,13 +333,13 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3972"/>
+        <location filename="../src/server/appserver.cpp" line="3982"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>O %1 foi removido.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3977"/>
+        <location filename="../src/server/appserver.cpp" line="3987"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 e mais %n ficheiro foram adicionados.</numerusform>
@@ -347,13 +347,13 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3979"/>
+        <location filename="../src/server/appserver.cpp" line="3989"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>O %1 foi adicionado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3984"/>
+        <location filename="../src/server/appserver.cpp" line="3994"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 e mais %n ficheiro foram atualizados.</numerusform>
@@ -361,13 +361,13 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3986"/>
+        <location filename="../src/server/appserver.cpp" line="3996"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>O %1 foi atualizado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3991"/>
+        <location filename="../src/server/appserver.cpp" line="4001"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 foi movido para %2 e mais %n ficheiro foi movido.</numerusform>
@@ -375,12 +375,12 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3994"/>
+        <location filename="../src/server/appserver.cpp" line="4004"/>
         <source>%1 has been moved to %2.</source>
         <translation>O %1 foi transferido para o %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4002"/>
+        <location filename="../src/server/appserver.cpp" line="4012"/>
         <source>Sync Activity</source>
         <translation>Atividade de sincronização</translation>
     </message>
@@ -963,27 +963,27 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
 <context>
     <name>KDC::DrivePreferencesWidget</name>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
         <source>Folders</source>
         <translation>Pastas</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
         <source>Notifications</source>
         <translation>Notificações</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1123"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
         <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
         <translation>Será exibida uma notificação assim que uma nova pasta for sincronizada ou alterada</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
         <source>Connected with</source>
         <translation>Relacionado com</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="981"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="982"/>
         <source>Do you really want to stop syncing the folder &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Quer mesmo deixar de sincronizar a pasta &lt;i&gt;%1&lt;/i&gt;?&lt;br&gt;&lt;b&gt;Nota:&lt;/b&gt; Isto &lt;b&gt;não&lt;/b&gt; irá eliminar nenhum ficheiro.</translation>
     </message>
@@ -995,7 +995,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="360"/>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="391"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="987"/>
         <source>CANCEL</source>
         <translation>CANCELAR</translation>
     </message>
@@ -1005,27 +1005,27 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <translation>A sincronização da nova pasta local falhou!</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="823"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="824"/>
         <source>Lite Sync activation failed.</source>
         <translation>A ativação do Lite Sync falhou.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="841"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="842"/>
         <source>Lite Sync deactivation failed.</source>
         <translation>Falha na desativação do Lite Sync.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="985"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
         <source>REMOVE FOLDER SYNC CONNECTION</source>
         <translation>REMOVER A LIGAÇÃO DE SINCRONIZAÇÃO DA PASTA</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1048"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1049"/>
         <source>An error occurred while loading the list of subfolders.</source>
         <translation>Ocorreu um erro ao carregar a lista de subpastas.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1122"/>
         <source>Enable the notifications for this kDrive</source>
         <translation>Ativar as notificações para este kDrive</translation>
     </message>
@@ -1037,13 +1037,13 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="120"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1117"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
         <source>Synchronization errors and information.</source>
         <translation>Erros de sincronização e informações.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="144"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
         <source>Synchronize a local folder</source>
         <translation>Sincronizar uma pasta local</translation>
     </message>
@@ -1073,42 +1073,42 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <translation>Não foi possível criar uma nova sincronização</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="819"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="820"/>
         <source>Lite Sync activated.</source>
         <translation>Lite Sync ativado.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="837"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="838"/>
         <source>Lite Sync deactivated.</source>
         <translation>O Lite Sync está desativado.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="899"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="900"/>
         <source>This drive is being deleted.</source>
         <translation>Esta unidade está a ser eliminada.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="962"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="963"/>
         <source>Impossible to open item %1</source>
         <translation>Não é possível abrir o item %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1007"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1008"/>
         <source>Failed to stop syncing the folder &lt;i&gt;%1&lt;/i&gt;.</source>
         <translation>Não foi possível interromper a sincronização da pasta &lt;i&gt;%1&lt;/i&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
         <source>Remove all synchronizations</source>
         <translation>Remover todas as sincronizações</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
         <source>Search in your kDrive</source>
         <translation>Pesquisar no seu kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1128"/>
         <source>Search</source>
         <translation>Pesquisar</translation>
     </message>
@@ -2918,37 +2918,37 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <translation>Não é possível guardar os parâmetros!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2101"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2019"/>
         <source>No valid folder selected!</source>
         <translation>Não foi selecionada nenhuma pasta válida!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2030"/>
         <source>The selected path does not exist!</source>
         <translation>O caminho selecionado não existe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2117"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
         <source>The selected path is not a folder!</source>
         <translation>O caminho selecionado não é uma pasta!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2122"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Não tem permissão para gravar na pasta selecionada!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>A pasta local %1 contém uma pasta que já está sincronizada. Por favor, escolha outra!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2086"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>A pasta local %1 está incluída numa pasta já sincronizada. Por favor, escolha outra!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2094"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>A pasta local %1 já está sincronizada. Escolha outra!</translation>
     </message>

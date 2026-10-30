@@ -174,9 +174,16 @@ function move_dependencies() {
   cp -P -r $QT_BASE_DIR/resources ./usr || true # resources might not exist, ignore if not found
   cp -P -r $QT_BASE_DIR/translations ./usr
 
+  # Nothing in the CMake install creates ./usr/lib (all Linux install rules target
+  # usr/bin and usr/share), so create it before moving/copying libraries into it.
+  mkdir -p ./usr/lib
+
   mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ 2>/dev/null || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
 
-  cp -P "$conan_dependencies_folder"/* ./usr/lib
+  if ! cp -P "$conan_dependencies_folder"/* ./usr/lib; then
+    echo "ERROR: Failed to copy Conan shared libraries from '$conan_dependencies_folder' into the AppDir." >&2
+    exit 1
+  fi
 
   # Copy nss if it exists (optional)
   if [ -d "/usr/lib/$arch-linux-gnu/nss" ]; then
@@ -260,6 +267,12 @@ function clean_app_directory() {
   find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) ! -name "libqsqlite.so" -delete
   cd /app
 
+  # linuxdeploy-plugin-qt redeploys every sqldrivers plugin from the Qt installation that
+  # qmake reports, so the AppDir cleanup above would be undone at AppImage creation time.
+  # The Qt installation itself must not be pruned (it is a Conan package folder shared with
+  # other builds); stage_pruned_qt_prefix stages a job-private pruned copy and exports it
+  # for the packaging steps instead.
+
   # Clean translations - keep only de, es, fr, it, sv, pt, pl, nb, fi, da, el, en
   echo "  Cleaning translations..."
   cd ./usr/translations
@@ -302,6 +315,53 @@ function clean_app_directory() {
   cd /app
 
   echo "  Cleanup completed!"
+}
+
+# Stage a job-private copy of the Qt prefix with the unused SQL drivers pruned, and point
+# the packaging environment at that copy. linuxdeploy-plugin-qt redeploys every sqldrivers
+# plugin from the Qt installation reported by qmake and aborts fatally when a plugin
+# dependency cannot be resolved (e.g. libfbclient.so.2 for the Firebird driver shipped
+# since Qt 6.12), so pruning only the AppDir is not enough. The Qt installation detected
+# from Conan is a package folder in a cache shared with other builds (and mounted from the
+# host in the Podman flow), so it must never be modified: prune the staged copy instead.
+# See https://github.com/linuxdeploy/linuxdeploy-plugin-qt/issues/153.
+function stage_pruned_qt_prefix() {
+  local conan_qt_dir="$1"
+  local staged_qt_dir="$2"
+
+  echo "  Staging pruned Qt copy from '$conan_qt_dir' into '$staged_qt_dir'..."
+
+  rm -rf "$staged_qt_dir"
+  mkdir -p "$staged_qt_dir"
+  if ! cp -a "$conan_qt_dir/." "$staged_qt_dir/"; then
+    echo "ERROR: Failed to stage the Qt prefix '$conan_qt_dir' into '$staged_qt_dir'." >&2
+    exit 1
+  fi
+
+  find "$staged_qt_dir/plugins/sqldrivers" -mindepth 1 -maxdepth 1 \
+    \( -type f -o -type l \) ! -name "libqsqlite.so" -delete 2>/dev/null || true
+
+  # The packaging tooling locates Qt through qmake, so the staged copy must be the prefix
+  # that qmake reports (the official Qt builds are relocatable). Otherwise fall back to a
+  # qt.conf, which anchors the prefix relative to the qmake binary.
+  local staged_plugins_dir="$("$staged_qt_dir/bin/qmake" -query QT_INSTALL_PLUGINS)"
+  if [[ "$staged_plugins_dir" != "$staged_qt_dir/"* ]]; then
+    printf '[Paths]\nPrefix = ..\n' > "$staged_qt_dir/bin/qt.conf"
+    staged_plugins_dir="$("$staged_qt_dir/bin/qmake" -query QT_INSTALL_PLUGINS)"
+  fi
+  if [[ "$staged_plugins_dir" != "$staged_qt_dir/"* ]]; then
+    echo "ERROR: The staged Qt prefix is not relocatable: 'qmake -query QT_INSTALL_PLUGINS' reports '$staged_plugins_dir' instead of a path inside '$staged_qt_dir'." >&2
+    exit 1
+  fi
+
+  # Export the pruned copy for the packaging steps and their linuxdeploy invocations
+  # (mirrors the exports of setup_build()).
+  export QT_BASE_DIR="$staged_qt_dir"
+  export QTDIR="$staged_qt_dir"
+  export QMAKE="$staged_qt_dir/bin/qmake"
+  export PATH="$staged_qt_dir/bin:$staged_qt_dir/libexec:$PATH"
+  export LD_LIBRARY_PATH="$staged_qt_dir/lib:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$staged_qt_dir/lib/pkgconfig:$PKG_CONFIG_PATH"
 }
 
 function build_app_image() {
@@ -408,7 +468,7 @@ while :
 do
     case "$1" in
       -h | --help)
-          display_help 
+          display_help
           exit 0
           ;;
       --) # End of all options
@@ -417,7 +477,7 @@ do
           ;;
       -*)
           echo "Error: Unknown option: $1" >&2
-          exit 1 
+          exit 1
           ;;
       *)  # No more options
           break
@@ -477,6 +537,10 @@ fi
 echo
 echo "Cleaning unnecessary files ..."
 clean_app_directory "$architecture"
+
+echo
+echo "Staging pruned Qt copy for packaging ..."
+stage_pruned_qt_prefix "$QT_BASE_DIR" "/tmp/qt-staging"
 
 echo
 echo "Building AppImage ..."

@@ -151,6 +151,7 @@ rg -n "qt\." recipes/qt/all/conanfile.py
 
 ## Common Gotchas
 
+- **Never mutate the Conan package store from build/packaging scripts**: package folders under `~/.conan2/p/**` (including Podman-mounted cache mounts) are content-addressed, shared by all jobs on persistent runners, and reused without re-validation. To adjust an installed package (e.g. prune unused Qt SQL drivers before AppImage packaging), stage a job-private copy of the package folder, prune that copy, and repoint the tooling (e.g. `QTDIR`/`QMAKE`) at it.
 - **Qt login**: GitHub Actions and `KDRIVE_TEST_CI_RUNNING_ON_CI=true` always select `credentials`,
   requiring non-empty `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`. The installer ignores inherited JWTs
   and account files in this mode and receives `--no-save-account`. The password is passed through the

@@ -8,7 +8,8 @@ from bs4 import BeautifulSoup as Soup
 filename, appname  = sys.argv[1:3]
 version = appname.split("-")[-1]                                # 3.7.8.2
 short_version = ".".join(version.split(".")[:-1])               # 3.7.8
-semantic_version = f"{appname.split("-")[0]}-{short_version}"   # kDrive-3.7.8
+short_appname = appname.split("-")[0]                           # kDrive
+semantic_version = f"{short_appname}-{short_version}"           # kDrive-3.7.8
 
 print(f"Processing {filename} for {appname} (semantic version: {semantic_version})")
 
