@@ -28,7 +28,7 @@ namespace KDC {
 
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode) :
+           std::optional<SyncTime> lastmodified, int64_t size) :
     _idb(idb),
     _side(side),
     _name(name),
@@ -38,32 +38,26 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
     _lastModified(lastmodified),
     _size(size),
     _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
-    setParentNode(parentNode);
     setChangeEvents(changeEvents);
 }
 
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
-           const MoveOriginInfos &moveOriginInfos) :
-    Node(idb, side, name, type, OperationType::None, id, createdAt, lastmodified, size, parentNode) {
-    setParentNode(parentNode);
+           std::optional<SyncTime> lastmodified, int64_t size, const MoveOriginInfos &moveOriginInfos) :
+    Node(idb, side, name, type, OperationType::None, id, createdAt, lastmodified, size) {
     setMoveOriginInfos(moveOriginInfos);
     setChangeEvents(changeEvents);
 }
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
-           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
-           std::shared_ptr<Node> parentNode) :
-    Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size, parentNode) {}
+           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
+           int64_t size) :
+    Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size) {}
 
-Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode) :
-    _side(side),
-    _name(name),
-    _type(type),
-    _isTmp(true) {
-    _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
-    setParentNode(parentNode);
+Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type) :
+    Node(std::nullopt, side, name, type, OperationType::None, "tmp_" + CommonUtility::generateRandomStringAlphaNum(),
+         std::nullopt, std::nullopt, 0) {
+    _isTmp = true;
 }
 
 bool Node::operator==(const Node &n) const {
@@ -84,22 +78,69 @@ void Node::setName(const SyncName &name) {
     _normalizedName.clear();
 }
 
-bool Node::setParentNode(std::shared_ptr<Node> parentNode) {
-    if (!parentNode) return true;
+bool Node::moveTo(std::shared_ptr<Node> parentNode) {
+    if (_parentNode == parentNode) return true;
 
-    // Check that the parent is not a descendant
-    if (!isParentValid(parentNode)) {
-        assert(false);
-        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::setParentNode", "Parent is a descendant");
-        return false;
+    if (parentNode) {
+        if (!_id) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"A node without ID cannot have a parent: " << Node::formatNode(shared_from_this()));
+            assert(false);
+            sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node without ID");
+            return false;
+        } else if (parentNode->children().contains(*_id)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"The parent already has a child with the same node ID: "
+                                                            << Node::formatNodeWithParent(shared_from_this(), parentNode));
+            assert(false);
+            sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node is a child");
+            return false;
+        }
+
+        if (!isParentValid(parentNode)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"The parent is the node or one of its descendants: "
+                                                            << Node::formatNodeWithParent(shared_from_this(), parentNode));
+            assert(false);
+            sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Parent is a descendant");
+            return false;
+        }
     }
 
-    _parentNode = parentNode;
+    detach();
+
+    if (parentNode) {
+        // Set the new parent.
+        _parentNode = parentNode;
+
+        // Add the node to the list of children of the new parent.
+        _parentNode->_childrenById[*_id] = shared_from_this();
+    }
+
     return true;
 }
 
+void Node::detach() {
+    if (_parentNode) {
+        // Remove the node from the list of children of the parent node.
+        if (_id) {
+            if (auto it = _parentNode->_childrenById.find(*_id);
+                it != _parentNode->_childrenById.end() && it->second.get() == this) {
+                _parentNode->_childrenById.erase(it);
+            } else {
+                // This should not happen, the ID is not found or corresponds to another node.
+                LOG_IF_FAIL(Log::instance()->getLogger(), false);
+            }
+        } else {
+            // This should not happen, as a node without an ID should not have a parent.
+            LOG_IF_FAIL(Log::instance()->getLogger(), false);
+        }
+
+        // Unset the parent node.
+        _parentNode.reset();
+    }
+}
+
 std::shared_ptr<Node> Node::getChildExcept(const SyncName &normalizedName, const OperationType except) {
-    for (auto &[_, child]: this->children()) {
+    for (const auto &[_, child]: children()) {
         SyncName normalizedChildName;
         if (!Utility::normalizedSyncName(child->name(), normalizedChildName)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(child->name()));
@@ -163,48 +204,51 @@ std::shared_ptr<Node> Node::findChildById(const NodeId &nodeId) {
     return nullptr;
 }
 
-bool Node::insertChild(std::shared_ptr<Node> child) {
-    if (!child->id().has_value()) {
-        return false;
-    }
+bool Node::setId(const std::optional<NodeId> &nodeId) {
+    if (_id == nodeId) return true;
 
-    // Check that the child is not an ancestor
-    if (std::shared_ptr<Node> tmpNode = parentNode(); tmpNode) {
-        while (tmpNode->parentNode() != nullptr) {
-            if (child == tmpNode) {
-                assert(false);
-                sentry::Handler::captureMessage(sentry::Level::Warning, "Node::insertChild", "Child is an ancestor");
-                return false;
-            }
-
-            tmpNode = tmpNode->parentNode();
-        }
-    }
-
-    if (child->parentNode() != shared_from_this()) {
-        if (!child->setParentNode(shared_from_this())) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::setParentNode: node "
-                                                            << Utility::formatSyncName(child->name()) << L" parent node "
-                                                            << Utility::formatSyncName(name()));
-
+    if (_parentNode) {
+        if (nodeId && _parentNode->_childrenById.contains(*nodeId)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Parent already has the node with ID: "
+                                                            << CommonUtility::s2ws(*nodeId) << L" as a child: "
+                                                            << Node::formatNodeWithParent(shared_from_this(), _parentNode));
+            assert(false);
             return false;
         }
+
+        // Update the list of children of the parent node.
+        if (_id) {
+            const auto count = _parentNode->_childrenById.erase(*_id);
+            if (count == 0) {
+                LOGW_WARN(Log::instance()->getLogger(), L"Parent does not have the node with ID: "
+                                                                << CommonUtility::s2ws(*_id) << L" as a child: "
+                                                                << Node::formatNodeWithParent(shared_from_this(), _parentNode));
+                assert(false);
+                return false;
+            }
+        }
+
+        if (nodeId) {
+            const auto [_, inserted] = _parentNode->_childrenById.emplace(*nodeId, shared_from_this());
+            if (!inserted) {
+                LOGW_WARN(Log::instance()->getLogger(), L"The list of children of the parent node couldn't be updated: "
+                                                                << Node::formatNodeWithParent(shared_from_this(), _parentNode));
+                assert(false);
+                return false;
+            }
+        }
     }
-
-    _childrenById[*child->id()] = child;
-
+    _id = nodeId;
     return true;
 }
 
-size_t Node::deleteChild(std::shared_ptr<Node> child) {
-    if (!child->id().has_value()) {
-        return 0;
-    }
-    return deleteChild(*child->id());
-}
+void Node::clear() {
+    (void) moveTo(nullptr);
 
-size_t Node::deleteChild(const NodeId &childId) {
-    return _childrenById.erase(childId);
+    const auto children = this->children();
+    for (const auto &[_, child]: children) {
+        child->detach();
+    }
 }
 
 bool Node::isEditFromDeleteCreate() const {
@@ -212,11 +256,6 @@ bool Node::isEditFromDeleteCreate() const {
         return true;
     }
     return false;
-}
-
-void Node::clear() {
-    _parentNode.reset();
-    _childrenById.clear();
 }
 
 bool Node::isRoot() const {
@@ -267,17 +306,31 @@ bool Node::isTmp() const {
     return _isTmp;
 }
 
-bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
-    if (!potentialChild) return false; // `parentNode` is the root node,
-    if (potentialChild->id().has_value() && potentialChild->id() == _id) return false; // potentialChild cannot be its own parent
-    while (potentialChild) {
-        if (!potentialChild->id().has_value()) {
-            LOG_ERROR(Log::instance()->getLogger(), "Error in Node::isParentOf: Node has no id.");
-            assert(false && "Node has no id");
-            return false;
+bool Node::isParentOf(const std::shared_ptr<const Node> &potentialChild) const {
+    if (!potentialChild) return false;
+
+    auto logEmptyIdError = [](const std::shared_ptr<const Node> &node) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Node has no id: " << Node::formatNode(node));
+        assert(false && "Node has no id");
+        return false;
+    };
+
+    if (!_id) return logEmptyIdError(shared_from_this());
+    if (!potentialChild->id()) return logEmptyIdError(potentialChild);
+
+    // potentialChild cannot be this node or have the same ID as this node
+    if (potentialChild.get() == this) return false;
+    if (*potentialChild->id() == *_id) return false;
+
+    auto tmpNode = potentialChild->parentNode();
+    while (tmpNode) {
+        if (!tmpNode->id()) {
+            return logEmptyIdError(tmpNode);
         }
-        if (*potentialChild->id() == *_id) return true; // This node is a parent of `potentialChild`
-        potentialChild = potentialChild->parentNode();
+
+        if (*tmpNode->id() == *_id) return true; // This node is a parent of `potentialChild`
+
+        tmpNode = tmpNode->parentNode();
     }
 
     return false;
@@ -287,7 +340,26 @@ bool Node::isValid() const {
     return _id.has_value() && !_id.value().empty() && !_isTmp;
 }
 
-bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
+std::wstring Node::formatNode(const std::shared_ptr<const Node> &node) {
+    std::wstringstream ss;
+    if (node) {
+        ss << L"Node '" << SyncName2WStr(node->name()).c_str() << L"' (ID: '" << CommonUtility::s2ws(node->id().value_or(""))
+           << L"')";
+    } else {
+        ss << L"Node 'nullptr'";
+    }
+
+    return ss.str();
+}
+
+std::wstring Node::formatNodeWithParent(const std::shared_ptr<const Node> &node, const std::shared_ptr<const Node> &parentNode) {
+    std::wstringstream ss;
+    ss << formatNode(node) << L" parent " << formatNode(parentNode);
+
+    return ss.str();
+}
+
+bool Node::isParentValid(const std::shared_ptr<const Node> &parentNode) const {
     return !isParentOf(parentNode);
 }
 

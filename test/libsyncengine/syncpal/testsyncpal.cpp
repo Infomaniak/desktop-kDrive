@@ -296,67 +296,82 @@ void TestSyncPal::testAll() {
 
 void TestSyncPal::testConflictQueue() {
     const auto localrootNode = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str(""), NodeType::Directory,
-                                                      OperationType::None, "lRoot", 1234567890, 1234567890, 12345, nullptr);
+                                                      OperationType::None, "lRoot", 1234567890, 1234567890, 12345);
     const auto remoterootNode = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str(""), NodeType::Directory,
-                                                       OperationType::None, "rRoot", 1234567890, 1234567890, 12345, nullptr);
+                                                       OperationType::None, "rRoot", 1234567890, 1234567890, 12345);
 
     // Move_Move_Source & Move_ParentDelete
     const auto localDirA = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("A"), NodeType::Directory,
-                                                  OperationType::None, "lDirA", 1234567890, 1234567890, 12345, localrootNode);
+                                                  OperationType::None, "lDirA", 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(localDirA->moveTo(localrootNode));
     const auto localDirB = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("B"), NodeType::Directory,
-                                                  OperationType::None, "lDirB", 1234567890, 1234567890, 12345, localrootNode);
-    const auto localFileC1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("c1"), NodeType::File,
-                                                    OperationType::Move, "lFileC1", 1234567890, 1234567890, 12345, localDirB,
-                                                    Node::MoveOriginInfos("A/c1", localrootNode->id().value()));
-    const auto localFileC2 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("c2"), NodeType::File,
-                                                    OperationType::Move, "lFileC2", 1234567890, 1234567890, 12345, localDirB,
-                                                    Node::MoveOriginInfos("A/c2", localDirA->id().value()));
+                                                  OperationType::None, "lDirB", 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(localDirB->moveTo(localrootNode));
+    const auto localFileC1 =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("c1"), NodeType::File, OperationType::Move, "lFileC1",
+                                   1234567890, 1234567890, 12345, Node::MoveOriginInfos("A/c1", localrootNode->id().value()));
+    CPPUNIT_ASSERT(localFileC1->moveTo(localDirB));
+    const auto localFileC2 =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("c2"), NodeType::File, OperationType::Move, "lFileC2",
+                                   1234567890, 1234567890, 12345, Node::MoveOriginInfos("A/c2", localDirA->id().value()));
+    CPPUNIT_ASSERT(localFileC2->moveTo(localDirB));
     const auto remoteDirA = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("A"), NodeType::Directory,
-                                                   OperationType::None, "rDirA", 1234567890, 1234567890, 12345, remoterootNode);
+                                                   OperationType::None, "rDirA", 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(remoteDirA->moveTo(remoterootNode));
     const auto remoteDirB = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("B"), NodeType::Directory,
-                                                   OperationType::Delete, "rDirB", 1234567890, 1234567890, 12345, remoterootNode);
-    const auto remoteFileC1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c1"), NodeType::File,
-                                                     OperationType::Move, "rFileC1", 1234567890, 1234567890, 12345,
-                                                     remoterootNode, Node::MoveOriginInfos("A/c1", remoteDirA->id().value()));
-    const auto remoteFileC2 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c2"), NodeType::File,
-                                                     OperationType::Move, "rlFileC2", 1234567890, 1234567890, 12345,
-                                                     remoterootNode, Node::MoveOriginInfos("A/c2", remoteDirA->id().value()));
+                                                   OperationType::Delete, "rDirB", 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(remoteDirB->moveTo(remoterootNode));
+    const auto remoteFileC1 =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c1"), NodeType::File, OperationType::Move, "rFileC1",
+                                   1234567890, 1234567890, 12345, Node::MoveOriginInfos("A/c1", remoteDirA->id().value()));
+    CPPUNIT_ASSERT(remoteFileC1->moveTo(remoterootNode));
+    const auto remoteFileC2 =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c2"), NodeType::File, OperationType::Move, "rlFileC2",
+                                   1234567890, 1234567890, 12345, Node::MoveOriginInfos("A/c2", remoteDirA->id().value()));
+    CPPUNIT_ASSERT(remoteFileC2->moveTo(remoterootNode));
 
     // Move_Create & Move_Delete
-    const auto localFileC4 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("c4"), NodeType::File,
-                                                    OperationType::Move, "lFileC4", 1234567890, 1234567890, 12345, localrootNode,
-                                                    Node::MoveOriginInfos("c3", localrootNode->id().value()));
-    const auto remoteFileC3 =
-            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c4"), NodeType::File, OperationType::Create, "rFileC3",
-                                   1234567890, 1234567890, 12345, localrootNode);
-    const auto remoteFileC4 =
-            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c3"), NodeType::File, OperationType::Delete, "rFileC4",
-                                   1234567890, 1234567890, 12345, localrootNode);
+    const auto localFileC4 =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("c4"), NodeType::File, OperationType::Move, "lFileC4",
+                                   1234567890, 1234567890, 12345, Node::MoveOriginInfos("c3", localrootNode->id().value()));
+    CPPUNIT_ASSERT(localFileC4->moveTo(localrootNode));
+    const auto remoteFileC3 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c4"), NodeType::File,
+                                                     OperationType::Create, "rFileC3", 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(remoteFileC3->moveTo(localrootNode));
+    const auto remoteFileC4 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c3"), NodeType::File,
+                                                     OperationType::Delete, "rFileC4", 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(remoteFileC4->moveTo(localrootNode));
 
     // Move_Move_Cycle
     const auto localDirC1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("c2"), NodeType::Directory,
-                                                   OperationType::None, "lDirC1", 1234567890, 1234567890, 12345, localrootNode);
+                                                   OperationType::None, "lDirC1", 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(localDirC1->moveTo(localrootNode));
     const auto localDirC2 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("c2"), NodeType::Directory,
-                                                   OperationType::None, "lDirC2", 1234567890, 1234567890, 12345, localrootNode);
+                                                   OperationType::None, "lDirC2", 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(localDirC2->moveTo(localrootNode));
     const auto localDirD1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("D1"), NodeType::Directory,
-                                                   OperationType::Move, "lDirD1", 1234567890, 1234567890, 12345, localDirC1,
+                                                   OperationType::Move, "lDirD1", 1234567890, 1234567890, 12345,
                                                    Node::MoveOriginInfos("D1", localrootNode->id().value()));
+    CPPUNIT_ASSERT(localDirD1->moveTo(localDirC1));
     const auto localDirD2 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("D2"), NodeType::Directory,
-                                                   OperationType::Move, "lDirD2", 1234567890, 1234567890, 12345, localDirC2,
+                                                   OperationType::Move, "lDirD2", 1234567890, 1234567890, 12345,
                                                    Node::MoveOriginInfos("D2", localrootNode->id().value()));
+    CPPUNIT_ASSERT(localDirD2->moveTo(localDirC2));
 
-    const auto remoteDirD1 =
-            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("D1"), NodeType::Directory, OperationType::None,
-                                   std::nullopt, 1234567890, 1234567890, 12345, remoterootNode);
-    const auto remoteDirD2 =
-            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("D2"), NodeType::Directory, OperationType::None,
-                                   std::nullopt, 1234567890, 1234567890, 12345, remoterootNode);
+    const auto remoteDirD1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("D1"), NodeType::Directory,
+                                                    OperationType::None, std::nullopt, 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(remoteDirD1->moveTo(remoterootNode));
+    const auto remoteDirD2 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("D2"), NodeType::Directory,
+                                                    OperationType::None, std::nullopt, 1234567890, 1234567890, 12345);
+    CPPUNIT_ASSERT(remoteDirD2->moveTo(remoterootNode));
     const auto remoteDirC1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c2"), NodeType::Directory,
-                                                    OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD1,
+                                                    OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345,
                                                     Node::MoveOriginInfos("C1", localrootNode->id().value()));
+    CPPUNIT_ASSERT(remoteDirC1->moveTo(remoteDirD1));
     const auto remoteDirC2 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c2"), NodeType::Directory,
-                                                    OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD2,
+                                                    OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345,
                                                     Node::MoveOriginInfos("C2", localrootNode->id().value()));
+    CPPUNIT_ASSERT(remoteDirC2->moveTo(remoteDirD2));
 
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(localrootNode);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(localDirA);
