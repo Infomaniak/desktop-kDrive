@@ -31,10 +31,12 @@ class GetAccountInfoJob : public AbstractTokenNetworkJob {
     private:
         ExitInfo handleJsonResponse(const std::string &replyBody) override;
         std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &uri);
 
         uint64_t _accountId{0};
 
         std::string _name;
+        std::string _logoUrl;
 };
 
 } // namespace KDC
