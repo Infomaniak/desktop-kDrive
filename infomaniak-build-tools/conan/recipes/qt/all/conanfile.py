@@ -189,6 +189,8 @@ class QtConan(ConanFile):
             modules.append(f"qt.qt{major}.{compact}.addons.qtserialport")
             if version == "6.12.0":
                 modules.append(f"qt.qt{major}.{compact}.addons.qtlottie")
+                # Required by lottietoqml and the Lottie VectorImage plugin, which the installer does not pull in.
+                modules.append(f"qt.qt{major}.{compact}.addons.qtquicktimeline")
             modules.append("qt.tools.qtcreator_gui")
 
         # Add vcredist module if requested (Windows MSVC only)
