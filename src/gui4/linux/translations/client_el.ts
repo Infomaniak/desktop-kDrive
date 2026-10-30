@@ -440,7 +440,7 @@ You can open them at any time, even without an internet connection.</source>
         <message id="buttonOpenFile"> 
             <source>Open the file</source> 
             <extracomment>Button or tooltip that opens a file in its default application. In the conflict version selection dialog, it opens the local copy of the conflicted file to compare it with the online version.</extracomment> 
-            <translation>Open the file</translation> 
+            <translation>Άνοιγμα του αρχείου</translation> 
         </message> 
         <message id="buttonOpenFolder"> 
             <source>Open folder</source> 
