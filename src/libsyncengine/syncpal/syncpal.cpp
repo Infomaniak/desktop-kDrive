@@ -788,7 +788,8 @@ void SyncPal::resetSnapshotInvalidationCounters() {
 }
 
 ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
-                                 const SyncPath &parentFolderPath, const std::function<void(UniqueId, bool)> &observer) {
+                                 const SyncPath &parentFolderPath, const std::function<void(UniqueId, bool)> &observer,
+                                 const std::function<void(int16_t)> &progressObserver) {
     // Get the nodeId from the File System (not from the DB).
     // It is possible that an element of the path has been renamed and that the change has not yet been synchronized.
     NodeId localNodeId;
@@ -846,8 +847,8 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     // This would prevent the job from being destroyed after completion and removal
     // from the job map, resulting in a memory leak.
     std::weak_ptr<SyncJob> weakJobPtr = job;
-    const auto progressPercentCallback = [weakJobPtr, this](UniqueId,
-                                                            int16_t progress // %
+    const auto progressPercentCallback = [weakJobPtr, this, progressObserver](UniqueId,
+                                                                              int16_t progress // %
                                          ) {
         auto job = weakJobPtr.lock();
         if (!job) {
@@ -857,6 +858,10 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
 
         if (!setProgress(job->affectedFilePath(), progress)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
+        }
+
+        if (progressObserver) {
+            progressObserver(progress);
         }
     };
 

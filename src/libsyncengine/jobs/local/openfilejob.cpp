@@ -77,10 +77,18 @@ bool parsePositiveId(std::string_view idStr, int64_t &id) {
     return result.ec == std::errc{} && result.ptr == idStr.data() + idStr.size() && id > 0;
 }
 
-//! Completion state of a hydration, shared between the OpenFileJob waiting for it and the observer invoked by the
-//! download job. It is held through shared pointers because the observer may outlive the OpenFileJob (e.g. when the
-//! wait times out or the job is aborted while the download is still running).
-struct HydrationCompletion {
+//! Delay before the first notification of an ongoing synchronization sent to the user interface, and interval between
+//! the following notifications.
+constexpr std::chrono::seconds kFirstWaitNotifyDelay(5);
+constexpr std::chrono::minutes kWaitNotifyInterval(2);
+//! Minimum delay between two download progress notifications sent to the user interface.
+constexpr std::chrono::milliseconds kProgressNotifyMinInterval(500);
+} // namespace
+
+//! Completion state of a hydration, shared between the OpenFileJob waiting for it and the observers invoked by the
+//! download job. It is held through shared pointers because the observers may outlive the OpenFileJob (e.g. when the
+//! wait times out, the job is aborted, or the request is canceled while the download is still running).
+struct OpenFileJob::HydrationCompletion {
         std::mutex mutex;
         std::condition_variable cv;
         bool triggered{false}; // The hydration job has run: the item state has been checked and the download has been
@@ -89,8 +97,8 @@ struct HydrationCompletion {
         ExitInfo triggerExitInfo;
         bool finished{false}; // The hydration is over: the download has completed, or no download was needed.
         bool success{false}; // Meaningful once `finished` is true: the download succeeded, or no download was needed.
+        std::atomic<int8_t> percent{-1}; // Latest download progress in percent reported by the engine.
 };
-} // namespace
 
 OpenFileJob::OpenFileJob(std::string url, GetSyncPalCallback getSyncPal, GetVfsCallback getVfs) :
     _url(std::move(url)),
@@ -159,11 +167,13 @@ ExitInfo OpenFileJob::resolveItem() {
     }
 
     const auto deadline = std::chrono::steady_clock::now() + kSyncWaitTimeout;
+    const auto waitStart = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point lastWaitNotify;
 
     forever {
         if (isAborted()) {
             LOGW_WARN(_logger, L"Job aborted while resolving the item - " << Utility::formatSyncPath(_localPath));
-            _outcome = Outcome::Failed;
+            _outcome = Outcome::Canceled;
             return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
         }
 
@@ -199,6 +209,14 @@ ExitInfo OpenFileJob::resolveItem() {
             _outcome = Outcome::NotFound;
 
             return {ExitCode::DataError, ExitCause::NotFound};
+        }
+
+        // The item exists on the remote side only: inform the user that synchronizing it may take some time, and give
+        // the user the opportunity to cancel the request.
+        const auto now = std::chrono::steady_clock::now();
+        if (isWaitNotificationDue(now, waitStart, lastWaitNotify)) {
+            notifyFeedback(FileOpeningPhase::WaitingSync, -1);
+            lastWaitNotify = now;
         }
 
         // The item exists on the remote side only: wait for it to be synchronized.
@@ -401,7 +419,8 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
         return {ExitCode::DataError, ExitCause::Unknown};
     }
 
-    const auto completion = std::make_shared<HydrationCompletion>();
+    _hydration = std::make_shared<HydrationCompletion>();
+    const auto completion = _hydration;
 
     // Two callbacks are wired to the hydration job below, and they report two different events:
     //
@@ -423,8 +442,10 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
         completion->cv.notify_all();
     };
 
-    auto hydrationJob =
-            std::make_shared<HydratePlaceHolderJob>(std::move(syncPal), _localPath, _relativePath, SyncPath{}, observer);
+    auto progressObserver = [completion](int16_t progress) { completion->percent.store(static_cast<int8_t>(progress)); };
+
+    auto hydrationJob = std::make_shared<HydratePlaceHolderJob>(std::move(syncPal), _localPath, _relativePath, SyncPath{},
+                                                                observer, std::move(progressObserver));
     std::weak_ptr<HydratePlaceHolderJob> weakHydrationJob = hydrationJob;
     hydrationJob->setAdditionalCallback([weakHydrationJob, completion](UniqueId) {
         if (const auto job = weakHydrationJob.lock()) {
@@ -445,6 +466,11 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     // enqueues the download job (see ExtensionJob::commandMakeAvailableLocallyDirect).
     SyncJobManagerSingleton::instance()->queueAsyncJob(hydrationJob, Poco::Thread::PRIO_HIGH);
 
+    // The download is starting: inform the user, and keep informing as long as the progress evolves.
+    notifyFeedback(FileOpeningPhase::Hydrating, 0);
+    _lastNotifiedProgress = 0;
+    _lastProgressNotify = std::chrono::steady_clock::now();
+
     const auto deadline = std::chrono::steady_clock::now() + kHydrationTimeout;
     std::unique_lock lock(completion->mutex);
 
@@ -454,7 +480,7 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     const auto handleWaitTick = [this, &completion, &lock, &deadline](const wchar_t *timeoutMessage) -> ExitInfo {
         if (isAborted()) {
             LOGW_WARN(_logger, L"Job aborted while hydrating the item - " << Utility::formatSyncPath(_localPath));
-            _outcome = Outcome::Failed;
+            _outcome = Outcome::Canceled;
 
             return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
         }
@@ -484,10 +510,20 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
         return readyToOpen();
     }
 
-    // Wait for the download to complete.
+    // Wait for the download to complete, keeping the user interface informed of the progress.
     while (!completion->finished) {
         if (const auto exitInfo = handleWaitTick(L"The download of the item did not complete in time - "); !exitInfo)
             return exitInfo;
+
+        notifyProgressIfChanged(completion->percent.load());
+    }
+
+    if (isAborted()) {
+        // The request was canceled while the last download updates were being processed.
+        LOGW_INFO(_logger, L"File opening canceled while hydrating the item - " << Utility::formatSyncPath(_localPath));
+        _outcome = Outcome::Canceled;
+
+        return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
     }
 
     if (!completion->success) {
@@ -500,6 +536,59 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     LOGW_INFO(_logger, L"Item hydrated - " << Utility::formatSyncPath(_localPath));
 
     return readyToOpen();
+}
+
+void OpenFileJob::cancel() {
+    abort();
+
+    // Cancel the hydration of the item, if it is in progress: abort the direct download and revert the pin state set
+    // before starting it. No-op when no hydration has been started or when it has already completed.
+    const auto hydration = _hydration;
+    if (!hydration) return;
+
+    {
+        const std::scoped_lock lock(hydration->mutex);
+        if (hydration->finished) return;
+    }
+
+    const std::shared_ptr<SyncPal> syncPal = _getSyncPal(_syncDbId);
+    if (!syncPal) return;
+
+    LOGW_INFO(_logger, L"Canceling the hydration of the item - " << Utility::formatSyncPath(_localPath));
+    (void) syncPal->cancelDlDirectJobs({_relativePath});
+
+    if (const auto vfs = _getVfs(_syncDbId)) {
+        vfs->cancelHydrate(_localPath, {ExitCode::OperationCanceled, ExitCause::OperationCanceled});
+        (void) vfs->setPinState(_relativePath, PinState::OnlineOnly);
+    }
+}
+
+void OpenFileJob::notifyFeedback(const FileOpeningPhase phase, const int8_t percent) const {
+    if (_feedbackCallback) {
+        _feedbackCallback(phase, percent, CommonUtility::syncPath2CommString(_localPath.filename()));
+    }
+}
+
+void OpenFileJob::notifyProgressIfChanged(const int8_t percent) {
+    if (percent < 0 || percent == _lastNotifiedProgress) return;
+
+    const auto now = std::chrono::steady_clock::now();
+    if (percent != 100 && now - _lastProgressNotify < kProgressNotifyMinInterval) return;
+
+    _lastNotifiedProgress = percent;
+    _lastProgressNotify = now;
+
+    notifyFeedback(FileOpeningPhase::Hydrating, percent);
+}
+
+bool OpenFileJob::isWaitNotificationDue(const std::chrono::steady_clock::time_point now,
+                                        const std::chrono::steady_clock::time_point waitStart,
+                                        const std::chrono::steady_clock::time_point lastNotify) {
+    // A default-constructed time point means "never notified yet": the first notification is due after
+    // kFirstWaitNotifyDelay, the following ones every kWaitNotifyInterval.
+    if (lastNotify == std::chrono::steady_clock::time_point{}) return now - waitStart >= kFirstWaitNotifyDelay;
+
+    return now - lastNotify >= kWaitNotifyInterval;
 }
 
 ExitInfo OpenFileJob::readyToOpen() {

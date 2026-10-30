@@ -39,7 +39,9 @@ class AppServer;
   - resolves the node id against the syncs configured for the drive, waiting for its synchronization if needed,
   - makes the item available locally, hydrating it first if it is a dehydrated LiteSync placeholder.
 
-  When the job completes, the handler opens the item on success, and notifies the user otherwise. The `finished`
+  When the job completes, the handler opens the item on success, and notifies the user otherwise. While the job runs,
+  the handler forwards its state to the client interface so that a pop-up window can inform the user of the progress
+  and offer to cancel the request. The `finished`
   signal is emitted once the request has been processed; the caller is expected to destroy the handler afterwards
   (e.g. by connecting the signal to QObject::deleteLater).
 */
@@ -57,6 +59,13 @@ class FileOpeningHandler : public QObject {
 
         //! Parses the URL given to the constructor and queues an OpenFileJob performing the file opening flow.
         void queueOpenFileJob();
+
+        //! Id of the queued OpenFileJob. Only meaningful once queueOpenFileJob has been called.
+        [[nodiscard]] UniqueId jobId() const { return _jobId; }
+
+        //! Aborts the queued OpenFileJob and cancels the hydration of the item, if it is in progress. Invoked when the
+        //! user cancels the request from the client interface.
+        [[nodiscard]] ExitInfo cancel();
 
         //! Returns true if `urlStr` is a file opening URL, i.e. "kdrive://open/...".
         static bool isFileOpeningDeeplink(const std::string &urlStr);
@@ -82,9 +91,15 @@ class FileOpeningHandler : public QObject {
         void notifyUser(const std::string &message) const;
         void handleFileOpeningSuccess();
         void handleFileOpeningFailure(const std::string &userMessage);
+        void handleFileOpeningCanceled();
+        //! Invoked on the application thread when the OpenFileJob has reported a new state: forwards it, along with the
+        //! name of the item being opened, to the client interface.
+        void onFileOpeningStatus(FileOpeningPhase phase, int8_t percent, const CommString &itemName) const;
 
         AppServer *_appServer{nullptr};
         std::string _url;
+        UniqueId _jobId{0};
+        std::weak_ptr<OpenFileJob> _job;
 };
 
 } // namespace KDC
