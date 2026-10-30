@@ -1547,6 +1547,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
+        public async Task<bool> CancelFileOpening(ulong jobId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.FileOpeningJobId] = jobId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.FILE_OPENING_CANCEL, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -1582,6 +1592,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.SYNC_NOTIFY_MANY_DELETES:
                     await HandleSyncNotifyManyDeletesAsync(sender, args);
+                    break;
+                case SignalNum.FILE_OPENING_STATUS:
+                    await HandleFileOpeningStatusAsync(sender, args);
                     break;
                 case SignalNum.UPDATER_SHOW_DIALOG:
                     await HandleUpdaterShowDialog(sender, args);
@@ -2234,6 +2247,33 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     nbFiles.Value,
                     filesPaths
                 ));
+            });
+        }
+
+        public async Task HandleFileOpeningStatusAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData is null || !signalData.ContainsKey(JsonKeys.FileOpeningJobId) || !signalData.ContainsKey(JsonKeys.FileOpeningPhase) || !signalData.ContainsKey(JsonKeys.FileOpeningPercent) || !signalData.ContainsKey(JsonKeys.FileOpeningItemName))
+            {
+                Logger.LogError($"One or more required parameters are missing in signal data: {JsonKeys.FileOpeningJobId}, {JsonKeys.FileOpeningPhase}, {JsonKeys.FileOpeningPercent}, {JsonKeys.FileOpeningItemName}. Signal data: {signalData}",
+                    "ServerCommService: Missing parameters for FILE_OPENING_STATUS signal");
+                return;
+            }
+
+            UInt64? jobId = signalData[JsonKeys.FileOpeningJobId]?.AsValue().GetValue<UInt64>();
+            FileOpeningPhase? phase = signalData[JsonKeys.FileOpeningPhase]?.AsValue().Deserialize<FileOpeningPhase>();
+            Int32? percent = signalData[JsonKeys.FileOpeningPercent]?.AsValue().GetValue<Int32>();
+            string? itemName = Utility.FromBase64String(signalData[JsonKeys.FileOpeningItemName]?.AsValue().GetValue<string>());
+            if (jobId is null || phase is null || percent is null || itemName is null)
+            {
+                Logger.LogError($"required parameter is null: jobId={jobId}, phase={phase}, percent={percent}",
+                    "ServerCommService: Null parameter for FILE_OPENING_STATUS signal");
+                return;
+            }
+
+            await Utility.RunOnUIThread(() =>
+            {
+                _viewModel.FileOpeningController.OnFileOpeningStatus(jobId.Value, phase.Value, percent.Value, itemName);
             });
         }
 
