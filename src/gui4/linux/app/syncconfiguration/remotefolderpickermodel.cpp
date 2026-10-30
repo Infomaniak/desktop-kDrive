@@ -469,7 +469,9 @@ void RemoteFolderPickerModel::handleChildrenResult(TreeNode *const node, const u
     std::vector<NodeInfo> sortedChildren = children;
     // Folder names are user data rather than translated UI text: keep their ordering tied to the system locale, as the
     // selective synchronization tree does.
-    const QCollator systemCollator(QLocale::system());
+    // Numbers compare by value, as in file managers: "2" comes before "10".
+    QCollator systemCollator(QLocale::system());
+    systemCollator.setNumericMode(true);
     (void) std::ranges::sort(sortedChildren, [&systemCollator](const NodeInfo &lhs, const NodeInfo &rhs) {
         return systemCollator.compare(lhs.name(), rhs.name()) < 0;
     });
@@ -544,7 +546,9 @@ void RemoteFolderPickerModel::removeEditingRow() {
 }
 
 std::size_t RemoteFolderPickerModel::sortedInsertionRow(const TreeNode *const parentNode, const QString &name) const {
-    const QCollator systemCollator(QLocale::system());
+    // Same order as the loaded children: a created folder lands where a reload would put it.
+    QCollator systemCollator(QLocale::system());
+    systemCollator.setNumericMode(true);
     const auto &siblings = parentNode->children;
     const auto it = std::ranges::find_if(siblings, [&systemCollator, &name](const auto &sibling) {
         return !sibling->editing && systemCollator.compare(name, sibling->name) < 0;
