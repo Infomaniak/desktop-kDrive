@@ -111,14 +111,6 @@ conan_build_folder="$BUILD_DIR/conan"
 conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
 export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
-
-# TEMPORARY one-off repair, revert this commit once the CI jobs are green: earlier packaging
-# scripts deleted the unused SQL drivers from the Qt package folder inside the shared Conan
-# cache, and Conan reuses a cached package without re-validating it, which broke the CMake
-# configure step. This removes the damaged Qt package folders once, so that the
-# 'conan install' below re-creates them; it is a no-op on healthy caches.
-bash "$BASEPATH/infomaniak-build-tools/conan/repair_conan_cache.sh" --home "$HOME/.conan2" --only-damaged --yes
-
 bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder" --clean-cache --update
 conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
