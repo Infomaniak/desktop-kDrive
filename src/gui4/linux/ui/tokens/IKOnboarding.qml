@@ -38,6 +38,8 @@ QtObject {
     readonly property real browserButtonMinWidth: 190
     readonly property real loaderStrokeDisplayMaxSize: 260
     readonly property real loaderStrokeRenderScale: 2
+    // Multisampling of the illustrations: the geometry renderer draws their paths without antialiasing.
+    readonly property int illustrationAnimationSamples: 4
 
     // Splits the onboarding window between the form area and the illustration area.
     readonly property real contentPanelWidthRatio: 0.63

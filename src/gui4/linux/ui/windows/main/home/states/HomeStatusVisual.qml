@@ -40,6 +40,10 @@ Item {
                 ? IKMainWindow.homeStatusOfflineAnimationHeight
                 : IKMainWindow.homeStatusAnimationHeight
         active: statusAnimationLoader.sourceComponent !== null
+        // Antialiases the generated animation, drawn by the geometry renderer.
+        layer.enabled: statusAnimationLoader.active
+        layer.samples: IKMainWindow.homeStatusAnimationSamples
+        layer.smooth: true
         sourceComponent: {
             switch (root.status) {
             case HomeController.UpToDate:
