@@ -496,7 +496,17 @@
   `refresh()`). Every row action is revalidated against the current errors before reaching `SyncErrorActionHandler`. It
   copies a path or the technical details to the clipboard, and keeps a pending `reveal` request that the page consumes
   when it is shown, to bring the error of an activity row into view; a change of synchronization drops it. It owns the
-  explanation dialog state (`explanation`) and the version selection dialog state (`conflictVersion`).
+  explanation dialog state (`explanation`), the version selection dialog state (`conflictVersion`) and the conflicts
+  pages state (`conflicts`). "Manage" of the aggregated conflicts row opens the conflicts pages.
+- `app/mainwindow/conflictspagecontroller.*`: QML-facing state of the version conflicts pages (`ConflictsQuick`,
+  `ConflictsList`). The grouped choice sends `resolveConflictsQuick` for every conflict present at the click; a failure
+  keeps the page with an error. It owns the navigation rules of these pages: after a grouped choice, or once no conflict
+  is left (not while its own request is pending, whose response decides), back to the errors page when other errors
+  remain, to the activity list otherwise; back to the errors page when the selected synchronization changes. Coming from
+  the errors page resets the strategy to the most recent versions; leaving the list clears its search. The list opens
+  `conflictVersion` on one conflict, or on all in list order.
+- `app/mainwindow/conflictlistmodel.*`: the conflicts of the selected synchronization, sorted by relative path
+  regardless of case and filtered by `searchText` on that path; rows are updated in place.
 - `app/mainwindow/conflictversioncontroller.*`: QML-facing state of the "Choose the version to keep" dialog. It walks
   through a list of conflicts (one from an errors row), loads both versions of each in parallel, preselects the
   strictly more recent one, and sends every choice in one request after the last conflict; a failure keeps the dialog
@@ -657,7 +667,9 @@
   replies after re-detecting the remaining ones (up to 30 s), which come back through push signals, so the cache is
   never changed here. `fetchConflictInfo` reads one version of a conflict (`NODE_CONFLICT_INFO`): the local version is
   the conflict copy (`destinationPath`), the remote one the original path (`path`). `resolveConflicts` sends
-  `ERROR_RESOLVE_CONFLICTS`; the server may remove the resolved errors before it replies.
+  `ERROR_RESOLVE_CONFLICTS`; the server may remove the resolved errors before it replies. `resolveConflictsQuick` sends
+  `ERROR_RESOLVE_CONFLICTS_QUICK` (the server picks the most recent version itself) under the same pending action, so a
+  single resolution runs per synchronization; `OperationCanceled` (another user action running) is not reported.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`. `addDriveSync` is the only sender of `SYNC_ADD`:
   onboarding and Settings must never call `CommService::requestSyncAdd` directly, otherwise two windows can create two
@@ -691,11 +703,14 @@
       `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity history.
     - `ui/windows/main/errors/`: "Errors to fix" sub-page of Activities (`ErrorsPage`), titled `errorPageTitle` in the
       toolbar: header with the error count and Refresh, one card per error in sections (`ErrorRow`), empty state with
-      "View activities". The "Manage" button of the aggregated conflicts row stays hidden until the conflicts pages
-      land. "Choose a version" opens `ConflictVersionDialog`, two `ConflictVersionCard`s (online, local) with their
-      details, the "Most recent" badge and the eye button. Each card is one radio button (click or Space anywhere on it,
-      only the eye button keeps its own action); its "Select" surface is an indicator, not a control. The counter of the
-      header (`IKModal.headerAccessoryData`) shows only for several conflicts. "Understand the issue" opens
+      "View activities". "Manage" of the aggregated conflicts row opens the "Version conflicts" pages (titled
+      `conflictErrorTitle`): `ConflictsQuickPage`, three `ConflictStrategyCard`s forming a single tab stop (Up and Down
+      move the selection), then "Apply to N files" or the list; `ConflictsListPage`, an `IKSearchField` and one
+      `ConflictListRow` per conflict. "Choose a version" opens `ConflictVersionDialog`, hosted once by `ActivitiesView`
+      since the errors page and the list live in the stack together, two `ConflictVersionCard`s (online, local) with
+      their details, the "Most recent" badge and the eye button. Each card is one radio button (click or Space anywhere
+      on it, only the eye button keeps its own action); its "Select" surface is an indicator, not a control. The counter
+      of the header (`IKModal.headerAccessoryData`) shows only for several conflicts. "Understand the issue" opens
       `ErrorExplanationDialog` (an `IKModal`), whose texts, reason boxes and links are chosen in QML from the
       explanation kind; a link inside a sentence is an `ErrorLinkText`, focusable as a whole. The inotify watches row
       and dialog show the current limit (`inotifywatchlimit.h`, re-read on each refresh); "Raise the limit" opens the
@@ -735,8 +750,10 @@
       feature dialogs supply their own wording, state, and actions. Use `IKConfirmationDialog` for standard
       cancel/confirm
       prompts so consumers only provide copy, busy state, an optional retryable `errorText`, and the confirmed/dismissed
-      workflows. `IKLinkButton` is the
-      inline textual action for rows and cards that must not carry a button surface of their own. `IKCheckBox` is the
+      workflows. `IKSearchField` is the rounded search
+      field (magnifier, clear button); its owner keeps the query through `text`, `textEdited` and `cleared`.
+      `IKLinkButton` is the inline textual action for rows and cards that must not carry a button surface of their own.
+      `IKCheckBox` is the
       shared tri-state indicator: it
       renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
       `IKBlockingState` is the shared card of full-page blocking states (update required, blocking synchronization
