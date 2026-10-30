@@ -328,8 +328,10 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivityStatusIcon.qml
         ui/windows/main/blockingerror/BlockingErrorDriveLabel.qml
         ui/windows/main/blockingerror/BlockingErrorView.qml
+        ui/windows/main/errors/ConflictStrategyCard.qml
         ui/windows/main/errors/ConflictVersionCard.qml
         ui/windows/main/errors/ConflictVersionDialog.qml
+        ui/windows/main/errors/ConflictsQuickPage.qml
         ui/windows/main/errors/ErrorCopyButton.qml
         ui/windows/main/errors/ErrorCopyablePath.qml
         ui/windows/main/errors/ErrorExplanationDialog.qml
@@ -442,6 +444,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/chevron-down.svg
         ui/assets/main/copy.svg
         ui/assets/main/errors/circle-check.svg
+        ui/assets/main/errors/clock.svg
         ui/assets/main/errors/cloud.svg
         ui/assets/main/errors/computer.svg
         ui/assets/main/errors/eye.svg

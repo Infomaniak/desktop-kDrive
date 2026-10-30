@@ -215,6 +215,17 @@ QtObject {
     readonly property color errorsConflictMostRecentSurface: darkMode ? _p.green950 : _p.green100
     readonly property color errorsConflictMostRecentText: darkMode ? _p.green400 : _p.green800
     readonly property color errorsConflictCounterSurface: surfaceSecondary
+    readonly property color conflictsStrategySurface: surfaceSecondary
+    readonly property color conflictsStrategyHoverBorder: textTertiary
+    readonly property color conflictsStrategyIconSurface: accentPrimary
+    readonly property color conflictsStrategyIcon: actionOnPrimary
+    readonly property color conflictsRecommendedSurface: errorsConflictMostRecentSurface
+    readonly property color conflictsRecommendedText: errorsConflictMostRecentText
+    readonly property color conflictsRadioOff: surfaceTertiary
+    readonly property color conflictsRadioOn: accentPrimary
+    readonly property color conflictsRadioDot: actionOnPrimary
+    readonly property color conflictsListSurface: surfaceSecondary
+    readonly property color conflictsListDivider: surfaceTertiary
     readonly property color storageSurface: surfaceSecondary
     readonly property color storageDivider: darkMode ? _p.neutralBlue600 : _p.neutralBlack05
     readonly property color storageBarSync: darkMode ? _p.kDriveLight : _p.kDrive500
