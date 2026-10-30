@@ -60,6 +60,10 @@ class SyncErrorService : public QObject {
         // resolved errors through push signals, possibly before `callback` runs.
         void resolveConflicts(qint64 syncDbId, const std::vector<ErrorDbId> &keepLocal, const std::vector<ErrorDbId> &keepRemote,
                               const ResolutionCallback &callback);
+        // Keeps the same version for every conflict in `errorDbIds`; with `KeepMostRecent`, the server compares the dates of
+        // each conflict itself. Tracked as the same pending action as `resolveConflicts`.
+        void resolveConflictsQuick(qint64 syncDbId, const std::vector<ErrorDbId> &errorDbIds, ConflictResolutionStrategy strategy,
+                                   const ResolutionCallback &callback);
         [[nodiscard]] bool isConflictResolutionPending(qint64 syncDbId) const;
 
     signals:

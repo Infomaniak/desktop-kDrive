@@ -189,6 +189,10 @@ QString ErrorListModel::technicalDetailsText(const QString &rowId) const {
     return lines.join(u'\n');
 }
 
+bool ErrorListModel::isConflictsRow(const QString &rowId) const {
+    return rowId == conflictsRowId;
+}
+
 int32_t ErrorListModel::firstRowOf(const std::vector<ErrorDbId> &errorDbIds) const {
     for (int32_t rowIndex = 0; rowIndex < static_cast<int32_t>(_rows.size()); ++rowIndex) {
         const auto &row = _rows[static_cast<std::size_t>(rowIndex)];
@@ -439,8 +443,8 @@ ErrorListModel::Row ErrorListModel::makeErrorRow(const ClassifiedSyncError &clas
     return row;
 }
 
-// The "Manage" button of this row opens the version conflict pages, added with them.
-ErrorListModel::Row ErrorListModel::makeConflictsRow(std::vector<ErrorDbId> conflictDbIds) {
+// Its "Manage" button opens the version conflicts pages.
+ErrorListModel::Row ErrorListModel::makeConflictsRow(std::vector<ErrorDbId> conflictDbIds) const {
     Row row;
     row.rowId = conflictsRowId;
     row.section = SyncErrorCategory::Conflicts;
@@ -448,6 +452,8 @@ ErrorListModel::Row ErrorListModel::makeConflictsRow(std::vector<ErrorDbId> conf
     row.titleCount = static_cast<int32_t>(conflictDbIds.size());
     row.conflictDbIds = std::move(conflictDbIds);
     row.descriptionId = u"manyConflictErrorDescription"_s;
+    row.actionLabelId = u"buttonManage"_s;
+    row.actionPending = _syncErrorService.isConflictResolutionPending(_selectionStore.currentSyncDbId());
     return row;
 }
 

@@ -19,124 +19,31 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 import kDrive.UI
 
-// Rounded search field of the search dialog: magnifier, borderless text input, and a clear button shown with text.
-Rectangle {
+// Search field of the search dialog, bound to the query of its controller.
+IKSearchField {
     id: root
 
     required property var controller
 
     signal moveToResultsRequested
 
-    function focusInput() {
-        input.forceActiveFocus();
-    }
+    placeholderText: qsTrId("searchBoxPlaceholder").arg(root.controller.driveName)
 
-    implicitHeight: IKSearch.fieldHeight
-    radius: IKSearch.fieldRadius
-    color: IKColors.surfaceSecondary
+    // Typing breaks a declarative text binding, so the controller query is pushed back explicitly.
+    Component.onCompleted: text = root.controller.query
+    onTextEdited: editedText => root.controller.query = editedText
+    onCleared: root.controller.query = ""
+    onDownPressed: root.moveToResultsRequested()
 
-    IKTintedIcon {
-        id: searchIcon
+    Connections {
+        target: root.controller
 
-        anchors.left: parent.left
-        anchors.leftMargin: IKSearch.fieldHorizontalPadding
-        anchors.verticalCenter: parent.verticalCenter
-        width: IKSearch.fieldIconSize
-        height: IKSearch.fieldIconSize
-        source: "qrc:/assets/main/home/search.svg"
-        color: IKColors.textSecondary
-    }
-
-    TextField {
-        id: input
-
-        anchors.left: searchIcon.right
-        anchors.leftMargin: IKSearch.fieldSpacing
-        anchors.right: clearButton.visible ? clearButton.left : parent.right
-        anchors.rightMargin: clearButton.visible ? IKSearch.fieldSpacing : IKSearch.fieldHorizontalPadding
-        anchors.verticalCenter: parent.verticalCenter
-        padding: 0
-        background: null
-        color: IKColors.textPrimary
-        placeholderText: qsTrId("searchBoxPlaceholder").arg(root.controller.driveName)
-        placeholderTextColor: IKColors.textTertiary
-        font.pixelSize: IKFonts.bodySize
-        selectByMouse: true
-        Accessible.name: qsTrId("buttonSearch")
-
-        // Typing breaks a declarative text binding, so the controller query is pushed back explicitly.
-        Component.onCompleted: text = root.controller.query
-
-        onTextEdited: root.controller.query = text
-        Keys.onDownPressed: root.moveToResultsRequested()
-
-        Connections {
-            target: root.controller
-
-            function onQueryChanged() {
-                if (input.text !== root.controller.query) {
-                    input.text = root.controller.query;
-                }
+        function onQueryChanged() {
+            if (root.text !== root.controller.query) {
+                root.text = root.controller.query;
             }
-        }
-    }
-
-    ToolButton {
-        id: clearButton
-
-        anchors.right: parent.right
-        anchors.rightMargin: IKSearch.fieldHorizontalPadding
-        anchors.verticalCenter: parent.verticalCenter
-        width: IKSearch.fieldIconSize
-        height: IKSearch.fieldIconSize
-        padding: 0
-        visible: input.text.length > 0
-        focusPolicy: Qt.NoFocus
-        hoverEnabled: true
-        display: AbstractButton.IconOnly
-        text: qsTrId("accessibilitySearchClear")
-        background: null
-
-        // Drawn with rectangles rather than a tinted SVG: the scene graph renders them sharp at any scale, while the
-        // diagonal cut-out of a 16 px SVG blurs once rasterized.
-        contentItem: Item {
-            Rectangle {
-                anchors.centerIn: parent
-                width: IKSearch.fieldIconSize
-                height: IKSearch.fieldIconSize
-                radius: width / 2
-                color: clearButton.hovered ? IKColors.textSecondary : IKColors.textTertiary
-                antialiasing: true
-
-                Repeater {
-                    model: [45, -45]
-
-                    Rectangle {
-                        required property int modelData
-
-                        anchors.centerIn: parent
-                        width: IKSearch.clearGlyphLength
-                        height: IKSearch.clearGlyphThickness
-                        radius: height / 2
-                        rotation: modelData
-                        color: root.color
-                        antialiasing: true
-                    }
-                }
-            }
-        }
-
-        onClicked: {
-            root.controller.query = "";
-            input.forceActiveFocus();
-        }
-
-        IKToolTip {
-            targetButton: clearButton
-            text: clearButton.text
         }
     }
 }

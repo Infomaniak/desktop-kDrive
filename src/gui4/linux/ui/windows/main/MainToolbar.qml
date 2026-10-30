@@ -62,8 +62,15 @@ Rectangle {
         text: {
             switch (root.currentTab) {
             case root.tabActivities:
-                return root.activitiesNavigation.currentPage === ActivitiesNavigation.Errors
-                        ? qsTrId("errorPageTitle") : qsTrId("tabTitleActivities")
+                switch (root.activitiesNavigation.currentPage) {
+                case ActivitiesNavigation.Errors:
+                    return qsTrId("errorPageTitle")
+                case ActivitiesNavigation.ConflictsQuick:
+                case ActivitiesNavigation.ConflictsList:
+                    return qsTrId("conflictErrorTitle")
+                default:
+                    return qsTrId("tabTitleActivities")
+                }
             case root.tabStorage:
                 return qsTrId("tabTitleStorage")
             default:

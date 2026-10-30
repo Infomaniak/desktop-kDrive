@@ -103,6 +103,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                             "ErrorsPageController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ConflictVersionController>(AppConstants::Qml::moduleUri, 1, 0, "ConflictVersionController",
                                                                  "ConflictVersionController is owned by ErrorsPageController.");
+    (void) qmlRegisterUncreatableType<ConflictsPageController>(AppConstants::Qml::moduleUri, 1, 0, "ConflictsPageController",
+                                                               "ConflictsPageController is owned by ErrorsPageController.");
+    (void) qmlRegisterUncreatableType<ConflictListModel>(AppConstants::Qml::moduleUri, 1, 0, "ConflictListModel",
+                                                         "ConflictListModel is owned by ConflictsPageController.");
     (void) qmlRegisterUncreatableType<ActivitiesController>(AppConstants::Qml::moduleUri, 1, 0, "ActivitiesController",
                                                             "ActivitiesController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ManyDeletesController>(AppConstants::Qml::moduleUri, 1, 0, "ManyDeletesController",
