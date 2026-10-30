@@ -64,5 +64,9 @@
         <!-- Hosts the "too many deletes" dialogs; it has no visual footprint. -->
         <controls:ManyDeletesDialogHost x:Name="ManyDeletesDialogHost"
                                         Grid.Row="1" />
+
+        <!-- Hosts the file opening pop-up dialog; it has no visual footprint. -->
+        <controls:FileOpeningDialogHost x:Name="FileOpeningDialogHost"
+                                        Grid.Row="1" />
     </Grid>
 </Window>

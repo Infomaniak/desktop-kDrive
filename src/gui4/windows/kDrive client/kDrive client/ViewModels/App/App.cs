@@ -64,6 +64,7 @@ namespace Infomaniak.kDrive.ViewModels
         public ObservableCollection<Error> AppErrors = [];
 
         public ManyDeletesController ManyDeletesController { get; } = new();
+        public FileOpeningController FileOpeningController { get; } = new();
         // Helpers - Agregated collections
         /** The list of active syncs across all users.
         *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
