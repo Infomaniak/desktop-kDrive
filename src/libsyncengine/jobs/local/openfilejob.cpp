@@ -84,10 +84,11 @@ struct HydrationCompletion {
         std::mutex mutex;
         std::condition_variable cv;
         bool triggered{false}; // The hydration job has run: the item state has been checked and the download has been
-                               // enqueued (unless an error occurred, see `triggerExitInfo`).
+                               // enqueued, unless an error occurred (see `triggerExitInfo`) or no download was needed
+                               // (see `finished`).
         ExitInfo triggerExitInfo;
-        bool finished{false}; // The download has completed.
-        bool success{false};
+        bool finished{false}; // The hydration is over: the download has completed, or no download was needed.
+        bool success{false}; // Meaningful once `finished` is true: the download succeeded, or no download was needed.
 };
 } // namespace
 
@@ -401,6 +402,20 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     }
 
     const auto completion = std::make_shared<HydrationCompletion>();
+
+    // Two callbacks are wired to the hydration job below, and they report two different events:
+    //
+    // - The additional callback (AbstractJob::setAdditionalCallback): one of the two job-completion callbacks offered
+    //   by the job framework (alongside the main callback, invoked after it, unused here). It fires as soon as
+    //   HydratePlaceHolderJob::runJob() has returned, on the thread that ran it, and reports the trigger outcome:
+    //   whether the item checks passed and the download job was enqueued. Its signature carries no result, hence the
+    //   weak_ptr used to read exitInfo() and downloadQueued() from the job. A weak_ptr is required because the
+    //   callback is owned by the job: capturing a shared_ptr would create a reference cycle.
+    //
+    // - The observer (job constructor parameter, forwarded to SyncPal::addDlDirectJob): invoked by the engine when the
+    //   download job completes, possibly long after the hydration job has run and even after this job has timed out or
+    //   been aborted (the completion state is shared and kept alive by the shared_ptr). It reports the outcome of the
+    //   actual download.
     const auto observer = [completion](UniqueId, bool success) {
         const std::scoped_lock lock(completion->mutex);
         completion->finished = true;
@@ -416,6 +431,12 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
             const std::scoped_lock lock(completion->mutex);
             completion->triggered = true;
             completion->triggerExitInfo = job->exitInfo();
+            if (job->exitInfo() && !job->downloadQueued()) {
+                // The job ran successfully but enqueued no download (e.g. the item got hydrated in the meantime):
+                // there is nothing to wait for and the observer will never fire. Consider the hydration finished.
+                completion->finished = true;
+                completion->success = true;
+            }
         }
         completion->cv.notify_all();
     });
@@ -427,22 +448,33 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     const auto deadline = std::chrono::steady_clock::now() + kHydrationTimeout;
     std::unique_lock lock(completion->mutex);
 
-    // Wait for the hydration job to run.
-    while (!completion->triggered && !completion->finished) {
+    // Body of the two wait loops below. Checks for abort and deadline, then waits for a tick. Returns an Ok ExitInfo
+    // to let the loop re-check its condition, or the ExitInfo to propagate when the job has been aborted or the
+    // deadline has been reached.
+    const auto handleWaitTick = [this, &completion, &lock, &deadline](const wchar_t *timeoutMessage) -> ExitInfo {
         if (isAborted()) {
             LOGW_WARN(_logger, L"Job aborted while hydrating the item - " << Utility::formatSyncPath(_localPath));
             _outcome = Outcome::Failed;
+
             return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
         }
 
         const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now());
         if (remaining <= std::chrono::milliseconds::zero()) {
-            LOGW_WARN(_logger, L"The hydration did not complete in time - " << Utility::formatSyncPath(_localPath));
+            LOGW_WARN(_logger, timeoutMessage << Utility::formatSyncPath(_localPath));
             _outcome = Outcome::HydrationTimedOut;
+
             return {ExitCode::SystemError, ExitCause::Unknown};
         }
 
         completion->cv.wait_for(lock, std::min(remaining, kHydrationWaitTick));
+
+        return ExitCode::Ok;
+    };
+
+    // Wait for the hydration job to run.
+    while (!completion->triggered && !completion->finished) {
+        if (const auto exitInfo = handleWaitTick(L"The hydration did not complete in time - "); !exitInfo) return exitInfo;
     }
 
     if (completion->triggered && !completion->triggerExitInfo) {
@@ -454,22 +486,8 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
 
     // Wait for the download to complete.
     while (!completion->finished) {
-        if (isAborted()) {
-            LOGW_WARN(_logger, L"Job aborted while hydrating the item - " << Utility::formatSyncPath(_localPath));
-            _outcome = Outcome::Failed;
-
-            return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
-        }
-
-        const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now());
-        if (remaining <= std::chrono::milliseconds::zero()) {
-            LOGW_WARN(_logger, L"The download of the item did not complete in time - " << Utility::formatSyncPath(_localPath));
-            _outcome = Outcome::HydrationTimedOut;
-
-            return {ExitCode::SystemError, ExitCause::Unknown};
-        }
-
-        completion->cv.wait_for(lock, std::min(remaining, kHydrationWaitTick));
+        if (const auto exitInfo = handleWaitTick(L"The download of the item did not complete in time - "); !exitInfo)
+            return exitInfo;
     }
 
     if (!completion->success) {
