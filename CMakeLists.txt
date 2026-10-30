@@ -159,8 +159,8 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 # this option needs to be refactored out BUILD_CLIENT needs to be ON.
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
-# this option enables the default GUI for the current platform when building the src folder
-# (src/gui4 on Windows, macOS and Linux)
+# this option enables the v4 GUI from src/gui4 when building the src folder
+# (the legacy Qt GUI in src/gui requires BUILD_GUI=OFF and BUILD_GUI_LEGACY=ON)
 option(BUILD_GUI "BUILD_GUI" ON)
 
 # this option enables the legacy Qt GUI on Windows/macOS
