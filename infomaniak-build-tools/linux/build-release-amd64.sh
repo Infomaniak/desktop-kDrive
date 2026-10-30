@@ -347,8 +347,8 @@ package_recovery_updater_v4() {
   local updater_appimage
 
   if [ ! -f "$updater_bin" ]; then
-    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
-    return 0
+    echo "kDriveRecoveryUpdater not found at '$updater_bin'; the release requires its AppImage." >&2
+    return 1
   fi
 
   v4_prepare_recovery_updater_appdir \
