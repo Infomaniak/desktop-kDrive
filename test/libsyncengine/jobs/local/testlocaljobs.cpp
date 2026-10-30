@@ -513,6 +513,8 @@ void KDC::TestLocalJobs::testHydratePlaceHolderJob() {
         hydrateJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), hydrateJob.exitInfo());
+        // The job succeeded without enqueueing any download: the observer will never be invoked.
+        CPPUNIT_ASSERT(!hydrateJob.downloadQueued());
     }
 
     // A placeholder cannot be hydrated when the sync is not running.
