@@ -542,7 +542,7 @@ function Prepare-Archive {
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
         @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
         @{ Name = "sentry";    Dlls = @("sentry") },
-        @{ Name = "pcre2";     Dlls = @("pcre2-8") }, # Shared runtime dependency of PocoFoundation
+        @{ Name = "pcre2";     Dlls = @("pcre2-8"); Optional = $true }, # DLL only present when PCRE2 is built shared; static builds link it into PocoFoundation
         @{ Name = "poco";      DLLs = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
     )
 
@@ -551,6 +551,10 @@ function Prepare-Archive {
         $binFolder = & $find_dep_script @args
         foreach ($dll in $pkg.Dlls) {
             if (-not (Test-Path "$binFolder/$dll.dll")) {
+                if ($pkg.Optional) {
+                    Write-Host "Optional DLL not found (dependency built static), skipping: $dll.dll" -ForegroundColor Yellow
+                    continue
+                }
                 Write-Host "Missing DLL: $dll.dll" -ForegroundColor Red
                 exit 1
             }
