@@ -226,6 +226,18 @@ function v4_prepare_appdir() (
     rm -rf usr/include usr/lib/cmake usr/lib/pkgconfig etc
     rm -f usr/lib/*.a
 
+    # Qt deploys every Quick Controls style, but the client only loads Fusion and its Basic fallback.
+    local style
+    for style in FluentWinUI3 Imagine Material Universal; do
+        rm -rf "usr/qml/QtQuick/Controls/$style"
+        rm -f usr/lib/libQt6QuickControls2"$style".so* usr/lib/libQt6QuickControls2"$style"StyleImpl.so*
+    done
+
+    # Plugins only used without a display server, inside Qt-based compositors or by embedded Wayland shells.
+    rm -rf usr/plugins/generic
+    rm -f usr/plugins/wayland-graphics-integration-client/*-server.so
+    rm -f usr/plugins/wayland-shell-integration/{libfullscreen-shell-v1,libivi-shell,libqt-shell}.so
+
     local triplet
     triplet="$(uname -m)-linux-gnu"
     if [[ -d "usr/lib/$triplet" && -n "$(ls -A "usr/lib/$triplet")" ]]; then
@@ -277,6 +289,8 @@ function v4_check_appdir() (
         usr/plugins/platformthemes/libqgtk3.so
         usr/plugins/qmltooling
         usr/plugins/sqldrivers
+        usr/qml/QtQuick/Controls/{FluentWinUI3,Imagine,Material,Universal}
+        usr/plugins/generic
         kDriveRecoveryUpdater*.AppImage
     )
     local missing=0
