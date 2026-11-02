@@ -48,6 +48,10 @@ Rectangle {
     signal manageRequested(Item trigger)
     signal deleteRequested(Item trigger)
 
+    function focusHeader() {
+        headerButton.forceActiveFocus(Qt.TabFocusReason);
+    }
+
     // The last row already pads its content below, like the rows of a SettingsGroup: the card only adds its bottom padding
     // when collapsed, to keep the header centered.
     implicitHeight: contentColumn.implicitHeight + IKSettings.groupPadding + (root.expanded ? 0 : IKSettings.groupPadding)

@@ -64,7 +64,8 @@ class AdvancedSyncsController final : public QObject {
         [[nodiscard]] AdvancedSyncCreationController *creation() const { return _creation; }
 
         Q_INVOKABLE void open(qint64 driveDbId);
-        /// Releases the target only when it is still the given drive, so a closing page cannot reset its successor.
+        /// Releases the target only when it is still the given drive and no other page has it open, so a closing page cannot
+        /// reset its successor, even one opened on the same drive.
         Q_INVOKABLE void close(qint64 driveDbId);
         /// Reloads a confirmed blacklist, after a failure or once the excluded folders page saved a new one.
         Q_INVOKABLE void reloadBlackList(qint64 syncDbId);
@@ -94,6 +95,8 @@ class AdvancedSyncsController final : public QObject {
         SyncService &_syncService;
         AdvancedSyncListModel _model;
         DriveDbId _driveDbId{0};
+        // Pages showing the target: Settings can create the page of a drive before destroying its previous page.
+        uint32_t _targetOpenCount{0};
         DriveId _driveId{0};
         QColor _driveColor;
         // Deleted synchronization awaiting its response; it may already have left the cache through SYNC_REMOVED.
