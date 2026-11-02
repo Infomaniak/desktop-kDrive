@@ -398,6 +398,10 @@ void AppClientLinux::openSettingsWindow() {
         auto *object = component.createWithInitialProperties(
                 {{"controller", QVariant::fromValue<SettingsWindowController *>(&_settingsWindowController)},
                  {"users", QVariant::fromValue<SettingsUserService *>(&_settingsUserService)},
+    // A request for a window already displayed, such as a Home shortcut, only raises it: the updater state is refreshed
+    // when the window is shown, then kept up to date by the server signals.
+    const bool alreadyVisible = _settingsWindow && _settingsWindow->isVisible();
+
                  {"excludedFolders", QVariant::fromValue<ExcludedFoldersController *>(&_excludedFoldersController)},
                  {"advancedSyncs", QVariant::fromValue<AdvancedSyncsController *>(&_advancedSyncsController)}});
         auto *window = qobject_cast<QWindow *>(object);
@@ -423,7 +427,7 @@ void AppClientLinux::openSettingsWindow() {
     _settingsWindow->raise();
     _settingsWindow->requestActivate();
 
-    if (_bootstrapCompleted) {
+    if (_bootstrapCompleted && !alreadyVisible) {
         _settingsWindowController.refreshUpdates();
     }
 }

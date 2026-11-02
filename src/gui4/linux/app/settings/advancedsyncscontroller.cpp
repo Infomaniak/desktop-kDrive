@@ -86,9 +86,15 @@ AdvancedSyncsController::AdvancedSyncsController(AppCache &appCache, CommService
 }
 
 void AdvancedSyncsController::open(const qint64 driveDbId) {
+    if (hasTarget() && static_cast<DriveDbId>(driveDbId) == _driveDbId) {
+        ++_targetOpenCount;
+        return;
+    }
+
     resetTarget();
 
     _driveDbId = static_cast<DriveDbId>(driveDbId);
+    _targetOpenCount = 1;
     qCInfo(lcAdvancedSyncsController) << "Opening advanced synchronizations | driveDbId:" << _driveDbId;
 
     refresh();
@@ -96,6 +102,10 @@ void AdvancedSyncsController::open(const qint64 driveDbId) {
 
 void AdvancedSyncsController::close(const qint64 driveDbId) {
     if (static_cast<DriveDbId>(driveDbId) != _driveDbId) {
+        return;
+    }
+    if (_targetOpenCount > 1) {
+        --_targetOpenCount;
         return;
     }
 
@@ -285,6 +295,7 @@ void AdvancedSyncsController::resetTarget() {
     releaseCreation();
     ++_targetGeneration;
     _driveDbId = 0;
+    _targetOpenCount = 0;
     _driveId = 0;
     _driveColor = QColor();
     _deletingSyncDbId = 0;
