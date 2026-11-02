@@ -79,10 +79,14 @@ class DriveManagementController final : public QObject {
         [[nodiscard]] bool deletePending() const;
 
         Q_INVOKABLE void open(qint64 driveDbId);
-        /// Releases the target only when it is still the given drive and no other page has it open, so a closing page cannot
-        /// reset its successor, even one opened on the same drive.
+        /**
+         * Releases the target only when it is still the given drive and no other page has it open, so a closing page cannot
+         * reset its successor, even one opened on the same drive.
+         */
         Q_INVOKABLE void close(qint64 driveDbId);
-        /// Reloads the confirmed blacklist, after a failure or once the excluded folders page saved a new one.
+        /**
+         * Reloads the confirmed blacklist, after a failure or once the excluded folders page saved a new one.
+         */
         Q_INVOKABLE void reloadBlackList();
         Q_INVOKABLE void openLocalFolder() const;
         Q_INVOKABLE void deleteMainSync();
