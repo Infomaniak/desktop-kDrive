@@ -215,7 +215,11 @@ void HomeController::openDriveDestination(const int32_t destination) const {
         return;
     }
 
-    const auto url = AppConstants::WebDrive::destinationUri(context->drive.driveId(), *webDestination);
+    // kDrive online opens the remote folder of an advanced synchronization, and the drive root otherwise.
+    const auto &targetNodeId = context->syncInfo.targetNodeId();
+    const auto url = *webDestination == AppConstants::WebDrive::Destination::OnlineDrive && !targetNodeId.empty()
+                             ? AppConstants::WebDrive::itemRedirectUri(context->drive.driveId(), targetNodeId)
+                             : AppConstants::WebDrive::destinationUri(context->drive.driveId(), *webDestination);
     qCInfo(lcHomeController) << "Opening current drive web destination:" << url;
     if (!QDesktopServices::openUrl(url)) {
         qCWarning(lcHomeController) << "Failed to open current drive web destination:" << url;
