@@ -65,8 +65,8 @@ IKShadowedWindow {
     // The Settings window does not block the main window, which can request another page behind these dialogs:
     // confirming one after that navigation would delete the synchronization of another drive.
     function closeSyncDeletionDialogs() {
-        deleteSyncDialog.close();
-        advancedSyncDeleteDialog.close();
+        deleteSyncDialog.closeWithoutRestoringFocus();
+        advancedSyncDeleteDialog.closeWithoutRestoringFocus();
     }
 
     // Shows the page requested from outside the window, such as the Home avatar: the card of a user, the management
