@@ -119,7 +119,7 @@ Rectangle {
 
                 width: parent.width
                 text: qsTrId("buttonKDriveOnline")
-                glyphSource: "qrc:/assets/main/home/kdrive-folders-stacked.svg"
+                glyphSource: "qrc:/assets/main/home/kdrive-outline.svg"
                 onClicked: root.controller.openDriveDestination(WebDrive.OnlineDrive)
             }
         }
