@@ -23,6 +23,7 @@
 #include "parametersdialog.h"
 #include "adddrivewizard.h"
 #include "custommessagebox.h"
+#include "fileopeningdialog.h"
 #include "logindialog.h"
 #include "info/userinfoclient.h"
 #include "libcommon/data/account.h"
