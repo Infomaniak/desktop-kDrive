@@ -160,10 +160,10 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
 # this option enables the default GUI for the current platform when building the src folder
-# (src/gui4 on Windows, legacy Qt GUI in src/gui on Linux/macOS)
+# (src/gui4 on Windows/macOS, Qt GUI in src/gui on Linux)
 option(BUILD_GUI "BUILD_GUI" ON)
 
-# this option adds src/gui to the subdirectories when building the src folder 
+# this option enables the legacy Qt GUI on Windows/macOS
 option(BUILD_GUI_LEGACY "BUILD_GUI_LEGACY" OFF)
 
 # build the tests
@@ -176,9 +176,6 @@ endif(APPLE)
 
 if(APPLE)
     set(TEAM_IDENTIFIER_PREFIX "" CACHE STRING "Team identifier prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
-
-    # TODO: Remove when all the app will be built with the default version
-    set(XCODE_GUI4 "Xcode_26.app" CACHE STRING "Xcode version to use for building the GUI4 project")
 endif()
 
 if(BUILD_CLIENT)

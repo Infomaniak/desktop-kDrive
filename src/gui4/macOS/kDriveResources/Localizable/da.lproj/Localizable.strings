@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "Fil gendannet";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "Denne fil overskrider den maksimalt tilladte størrelse (50 GB).\nKontakt support for at ophæve grænsen.";
+"errFileTooBigAdminDescription" = "Denne fil overskrider den maksimalt tilladte størrelse (1 TB).\nKontakt support for at ophæve grænsen.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "Denne fil overskrider den maksimalt tilladte størrelse (50 GB).\nKontakt din administrator for at øge filstørrelsesgrænsen.";
+"errFileTooBigDescription" = "Denne fil overskrider den maksimalt tilladte størrelse (1 TB).\nKontakt din administrator for at øge filstørrelsesgrænsen.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "Fil for stor";

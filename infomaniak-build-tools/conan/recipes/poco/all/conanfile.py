@@ -123,7 +123,12 @@ class PocoConan(ConanFile):
 
     # Crypto, Foundation, JSON, Net, NetSSL, Util, XML
     def requirements(self):
-        self.requires("pcre2/[>=10.42 <11]")
+        if self.settings.os == "Macos":
+            # Avoid duplicate PCRE2 symbols from Poco's embedded tables and the static archive.
+            # Keep other platforms' defaults so Windows does not require an additional runtime DLL.
+            self.requires("pcre2/[>=10.42 <11]", options={"shared": True})
+        else:
+            self.requires("pcre2/[>=10.42 <11]")
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # Since Poco 1.15.x, Foundation's Unicode support is unbundled onto utf8proc.
         self.requires("utf8proc/[>=2.5.0 <3]")
@@ -172,6 +177,10 @@ class PocoConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["CMAKE_BUILD_TYPE"] = self.settings.build_type
+        if self.settings.os == "Macos" and self.settings.os.get_safe("version"):
+            # Poco sets its deployment-target cache default before project() loads the toolchain.
+            # Pass it on the configure command line so the Conan target takes precedence.
+            tc.cache_variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = str(self.settings.os.version)
         for comp in self._poco_component_tree.values():
             if comp.option:
                 tc.variables[comp.option.upper()] = self.options.get_safe(comp.option, False)
@@ -191,6 +200,8 @@ class PocoConan(ConanFile):
         # Disable SharedLibrary::suffix() including "d" as part of the platform-specific filename suffix
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             tc.preprocessor_definitions["POCO_NO_SHARED_LIBRARY_DEBUG_SUFFIX"] = "1"
+        # Backport Conan Center's pcre2 library type marker for Poco's unbundled build.
+        tc.cache_variables["_PCRE2TYPE"] = "SHARED_LIBRARY" if self.dependencies["pcre2"].options.shared else "STATIC_LIBRARY"
         tc.generate()
 
         deps = CMakeDeps(self)

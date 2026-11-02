@@ -23,12 +23,13 @@
 
 namespace KDC {
 
-RenameJob::RenameJob(const DriveDbId driveDbId, const NodeId &remoteFileId,
-                     const SyncPath &absoluteFinalPath) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _remoteFileId(remoteFileId),
-    _absoluteFinalPath(absoluteFinalPath) {
+RenameJob::RenameJob(const DriveDbId driveDbId, RemoteNodeId remoteFileId,
+                     SyncPath absoluteFinalPath) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _remoteFileId(std::move(remoteFileId)),
+    _absoluteFinalPath(std::move(absoluteFinalPath)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _apiVersion = 2;
 }
 
 std::string RenameJob::getSpecificUrl() {
@@ -36,6 +37,7 @@ std::string RenameJob::getSpecificUrl() {
     str += "/files/";
     str += _remoteFileId;
     str += "/rename";
+
     return str;
 }
 
@@ -47,6 +49,7 @@ ExitInfo RenameJob::setData() {
     std::stringstream ss;
     json.stringify(ss);
     _data = ss.str();
+
     return ExitCode::Ok;
 }
 

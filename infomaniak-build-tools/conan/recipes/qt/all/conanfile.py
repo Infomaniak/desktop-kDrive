@@ -435,7 +435,7 @@ class QtConan(ConanFile):
                     'target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})',
                     ''
                 )
-
+            if self.version == "6.2.3":
                 """
                 Fixes spam of this kind of CMake warning on macOS:            
                 

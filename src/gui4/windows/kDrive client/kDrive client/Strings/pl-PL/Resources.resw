@@ -6,7 +6,7 @@
   Locale: pl, Polish
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -730,11 +730,11 @@ Twoje zmiany zostaną zsynchronizowane później.</value>
     <value>Plik odzyskany</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Ten plik przekracza maksymalny dozwolony rozmiar (50 GB).
+    <value>Ten plik przekracza maksymalny dozwolony rozmiar (1 TB).
 Skontaktuj się ze wsparciem, aby odblokować limit.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Ten plik przekracza maksymalny dozwolony rozmiar (50 GB).
+    <value>Ten plik przekracza maksymalny dozwolony rozmiar (1 TB).
 Skontaktuj się z administratorem, aby zwiększyć limit rozmiaru pliku.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1104,6 +1104,9 @@ Przydatne, gdy wiesz, że ważna praca jest online w kDrive.</value>
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Najnowsza</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Moja subskrypcja</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nazwa</value> 
@@ -1575,8 +1578,8 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
     <value>Inne pliki na komputerze</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synchronizacja</value> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Pliki kDrive przechowywane w chmurze</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Ten komputer - %@ - %@</value> 
@@ -1618,6 +1621,18 @@ Do ich dostępu wymagane jest połączenie z Internetem.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synchronizacja jest w toku</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Wyszukiwanie zmian</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Przygotowanie plików</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ element zsynchronizowany z %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ elementów zsynchronizowanych z %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Zsynchronizowano</value> 

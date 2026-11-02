@@ -28,6 +28,7 @@ set(libcommonserver_SRCS
     utility/checksumverifier.h utility/checksumverifier.cpp
     utility/selfsignedcert.h utility/selfsignedcert.cpp
     utility/truststorehelper.h
+    utility/certificateblocklist.h utility/certificateblocklist.cpp
     utility/stateholder.h
     utility/jsonparserutility.h
     utility/kdexception.h utility/kdexception.cpp

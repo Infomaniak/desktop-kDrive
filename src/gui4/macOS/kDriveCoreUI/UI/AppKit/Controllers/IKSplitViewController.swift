@@ -26,7 +26,9 @@ public extension NSToolbarItem.Identifier {
 }
 
 open class IKSplitViewController: NSSplitViewController {
-    public var toolbar = NSToolbar()
+    // Use the designated initializer for macOS 12 compatibility. Keep each
+    // toolbar independent: AppKit synchronizes toolbars sharing an identifier.
+    public var toolbar = NSToolbar(identifier: NSToolbar.Identifier(UUID().uuidString))
 
     public var currentContentViewController: NSViewController?
 

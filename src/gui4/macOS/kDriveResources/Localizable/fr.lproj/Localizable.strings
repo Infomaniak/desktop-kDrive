@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "Fichier récupéré";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "Ce fichier dépasse la taille maximale autorisée (50 Go).\nContactez le support pour débloquer la limite.";
+"errFileTooBigAdminDescription" = "Ce fichier dépasse la taille maximale autorisée (1 To).\nContactez le support pour débloquer la limite.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "Ce fichier dépasse la taille maximale autorisée (50 Go).\nContactez votre administrateur pour augmenter la limite de taille des fichiers.";
+"errFileTooBigDescription" = "Ce fichier dépasse la taille maximale autorisée (1 To).\nContactez votre administrateur pour augmenter la limite de taille des fichiers.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "Fichier trop volumineux";
@@ -1444,7 +1444,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "Cet élément n’est pas disponible sur cet appareil.  Il s’ouvrira dans kDrive en ligne.";
+"searchResultOpenInBrowserTooltip" = "Cet élément n’est pas disponible sur cet appareil. Il s’ouvrira dans kDrive en ligne.";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */

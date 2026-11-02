@@ -18,7 +18,7 @@ runs:
         with:
           path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
-          key: ${{ inputs.test_dependencies_version }}
+          key: ${{ inputs.test_dependencies_version }}-${{ github.run_id }}-${{ github.run_attempt }}
           clean-key: true
 
       - name: Clean the log directory

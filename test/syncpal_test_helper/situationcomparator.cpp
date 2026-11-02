@@ -25,6 +25,7 @@
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "test_utility/testhelpers.h"
 #include "io/iohelper.h"
+#include "requests/syncnodecache.h"
 
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
@@ -165,11 +166,11 @@ SituationMap SituationComparator::jsonToSituationMap(const Situation &situation)
 }
 
 SituationMap SituationComparator::csvToSituationMap(const std::string &csv) {
-    SnapshotItemHandler handler(Log::instance()->getLogger());
+    RemoteSnapshotItemHandler handler(1, 1, Log::instance()->getLogger());
     std::stringstream ss(csv);
 
     RawItemMap rawItems;
-    SnapshotItem item;
+    RemoteSnapshotItem item;
     bool error = false;
     bool ignore = false;
     bool eof = false;
@@ -200,7 +201,7 @@ SituationMap SituationComparator::getRemoteSituation(const NodeId &remoteDirId /
     }
 
     RawItemMap rawItems;
-    SnapshotItem item;
+    RemoteSnapshotItem item;
     bool error = false;
     bool ignore = false;
     bool eof = false;

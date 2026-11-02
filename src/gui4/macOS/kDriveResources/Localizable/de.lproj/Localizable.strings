@@ -587,10 +587,10 @@
 "errFileRescuedTitle" = "Datei gerettet";
 
 /* loco:699c74f5a495a84f970d7b72 */
-"errFileTooBigAdminDescription" = "Diese Datei überschreitet die maximal zulässige Grösse (50 GB).\nWenden Sie sich an den Support, um das Limit aufzuheben.";
+"errFileTooBigAdminDescription" = "Diese Datei überschreitet die maximal zulässige Grösse (1 TB).\nWenden Sie sich an den Support, um das Limit aufzuheben.";
 
 /* loco:699c5df989c9f608fc070e34 */
-"errFileTooBigDescription" = "Diese Datei überschreitet die maximal zulässige Grösse (50 GB).\nWenden Sie sich an Ihren Administrator, um das Dateigrössenlimit zu erhöhen.";
+"errFileTooBigDescription" = "Diese Datei überschreitet die maximal zulässige Grösse (1 TB).\nWenden Sie sich an Ihren Administrator, um das Dateigrössenlimit zu erhöhen.";
 
 /* loco:699dbc6b6214e7b523066c22 */
 "errFileTooBigTitle" = "Datei zu gross";

@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -730,11 +730,11 @@ Muutoksesi synkronoidaan myöhemmin.</value>
     <value>Tiedosto pelastettu</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Tämä tiedosto ylittää sallitun enimmäiskoon (50 Gt).
+    <value>Tämä tiedosto ylittää sallitun enimmäiskoon (1 Tt).
 Ota yhteyttä tukeen rajan poistamiseksi.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Tämä tiedosto ylittää sallitun enimmäiskoon (50 Gt).
+    <value>Tämä tiedosto ylittää sallitun enimmäiskoon (1 Tt).
 Ota yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1104,6 +1104,9 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</value>
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Uusin</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Tilaukseni</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nimi</value> 
@@ -1575,8 +1578,8 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Muut tietokoneella olevat tiedostot</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synkronointi</value> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Verkossa tallennetut kDrive-tiedostot</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Tämä tietokone - %@ - %@</value> 
@@ -1618,6 +1621,18 @@ Internet-yhteys vaaditaan niiden käyttämiseen.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synkronointi on käynnissä</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Muutosten haku</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Tiedostojen valmistelu</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@-elementti on synkronoitu %@:n kanssa</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ synkronoitua kohdetta %@:sta</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkronoitu</value> 

@@ -72,7 +72,7 @@ extension SidebarItem {
     static let mainViewItems: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
 }
 
-final class MainSidebarViewController: NSViewController {
+final class MainSidebarViewController: BaseViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
     @LazyInjectService private var router: MainViewRouter

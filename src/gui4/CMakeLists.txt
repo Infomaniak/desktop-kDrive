@@ -42,24 +42,27 @@ if(WIN32)
     install(DIRECTORY ${CLIENT_DEST}/ DESTINATION ${CMAKE_INSTALL_BINDIR}/client
         PATTERN "${CLIENT_STAMP_NAME}" EXCLUDE
     )
-endif()
+elseif(APPLE)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/macOS/CMakeLists.txt)
 
-if(APPLE AND CMAKE_BUILD_TYPE MATCHES "Debug")
-    # TODO: Do that also for Release and RelWithDebInfo builds when we will have a proper release build for macOS
-    # TODO: Remove the hardcoded Xcode version when all the app will be built with the default version
-    add_custom_target(kdriveclient ALL
-            COMMAND ${CMAKE_COMMAND} -E env DEVELOPER_DIR=/Applications/${XCODE_GUI4}/Contents/Developer
-            xcodebuild -project "${CMAKE_SOURCE_DIR}/src/gui4/macOS/kDrive.xcodeproj"
-            -target "kDrive" -configuration ${CMAKE_BUILD_TYPE} "SYMROOT=${CMAKE_CURRENT_BINARY_DIR}"
-            COMMENT building kDrive client
-            VERBATIM)
-    # mac_litesyncext is only set as a dependency to avoid parallel build issues between xcode projects
-    #   -> error: unable to attach DB: error: accessing build database "{...}/build-macos/client/extensions/MacOSX/XCBuildData/build.db":
-    #      database is locked Possibly there are two concurrent builds running in the same filesystem location.
-    #      ** BUILD FAILED *
-    add_dependencies(kdriveclient mac_litesyncext ${APPLICATION_EXECUTABLE})
-
-    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/kDrive.app"
-            DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/
-            USE_SOURCE_PERMISSIONS)
+    if(BUILD_KDRIVE_OSX_BUNDLE)
+        # we must add MACOSX_BUNDLE only if building a bundle
+        set(QM_DIR ${KDRIVE_OSX_BUNDLE}/Contents/Resources/Translations)
+        install(FILES ${client_I18N} DESTINATION ${QM_DIR})
+        get_target_property(_qmake Qt6::qmake LOCATION)
+        execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
+                OUTPUT_VARIABLE QT_TRANSLATIONS_DIR
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        file(GLOB qt_I18N ${QT_TRANSLATIONS_DIR}/qt_??.qm ${QT_TRANSLATIONS_DIR}/qt_??_??.qm)
+        install(FILES ${qt_I18N} DESTINATION ${QM_DIR})
+        file(GLOB qtbase_I18N ${QT_TRANSLATIONS_DIR}/qtbase_??.qm ${QT_TRANSLATIONS_DIR}/qtbase_??_??.qm)
+        install(FILES ${qtbase_I18N} DESTINATION ${QM_DIR})
+        foreach(LPROJ_DIR in ${TRANSLATIONS})
+            string(REPLACE "${CMAKE_SOURCE_DIR}/translations/client_" "\${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/" LPROJ_DIR ${LPROJ_DIR})
+            string(REPLACE ".ts" ".lproj" LPROJ_DIR ${LPROJ_DIR})
+            install(CODE "file(MAKE_DIRECTORY ${LPROJ_DIR})")
+        endforeach()
+        install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
+    endif()
 endif()

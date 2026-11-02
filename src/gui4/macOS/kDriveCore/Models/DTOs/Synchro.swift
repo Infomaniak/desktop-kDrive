@@ -48,6 +48,12 @@ public struct Synchro: Identifiable, Hashable, Sendable {
             return
         }
 
+        // Signal jobs are dispatched concurrently, so a progress snapshot can be delivered after the
+        // completion signal of the same operation. Ignore updates that would regress the stored state.
+        if let storedNode = synchNodes[node.id], node.isOutdated(than: storedNode) {
+            return
+        }
+
         let nodeToStore = synchNodes[node.id]?.updating(with: node) ?? node
         synchNodes[node.id] = nodeToStore
         synchNodes.sort { $0.value.date > $1.value.date }
@@ -144,6 +150,16 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
 }
 
 extension SynchroNode {
+    /// Returns `true` when `self` carries an older snapshot than `reference` for the same operation:
+    /// a syncing snapshot delivered after the completion snapshot, or a lower progress value.
+    func isOutdated(than reference: SynchroNode) -> Bool {
+        if reference.status != .Syncing && reference.status != .Unknown {
+            return status == .Syncing || status == .Unknown
+        }
+
+        return progress < reference.progress
+    }
+
     /// Returns a new SynchroNode updated with values from the provided node, preserving this node's original date.
     func updating(with node: SynchroNode) -> SynchroNode {
         SynchroNode(

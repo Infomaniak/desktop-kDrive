@@ -32,10 +32,10 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         void stop() override;
 
         virtual ExitInfo changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes);
-        virtual void forceUpdate() override;
+        void forceUpdate() override;
 
     protected:
-        virtual void execute() override;
+        void execute() override;
 
         ExitInfo exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected = false);
 
@@ -44,8 +44,8 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         std::unique_ptr<FolderWatcher> _folderWatcher = nullptr;
 
     private:
-        virtual ExitInfo generateInitialSnapshot() override;
-        virtual ReplicaSide getSnapshotType() const override { return ReplicaSide::Local; }
+        ExitInfo generateInitialSnapshot() override;
+        ReplicaSide getSnapshotType() const override { return ReplicaSide::Local; }
 
         bool canComputeChecksum(const SyncPath &absolutePath);
 

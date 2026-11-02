@@ -17,6 +17,7 @@ set(testcommonserver_SRCS
         test.cpp
         # Utility
         utility/testutility.h utility/testutility.cpp
+        utility/testcertificateblocklist.h utility/testcertificateblocklist.cpp
         # db
         db/testdb.h db/testdb.cpp
         # data

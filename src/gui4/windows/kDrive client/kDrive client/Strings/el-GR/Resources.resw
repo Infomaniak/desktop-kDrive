@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Clément Kunz
-  Exported at: Thu, 22 Oct 2026 08:43:31 +0200 
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -730,11 +730,11 @@
     <value>Αρχείο ανακτήθηκε</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Αυτό το αρχείο υπερβαίνει το μέγιστο επιτρεπτό μέγεθος (50 GB).
+    <value>Αυτό το αρχείο υπερβαίνει το μέγιστο επιτρεπτό μέγεθος (1 TB).
 Επικοινωνήστε με την υποστήριξη για να αρθεί το όριο.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Αυτό το αρχείο υπερβαίνει το μέγιστο επιτρεπτό μέγεθος (50 GB).
+    <value>Αυτό το αρχείο υπερβαίνει το μέγιστο επιτρεπτό μέγεθος (1 TB).
 Επικοινωνήστε με τον διαχειριστή σας για να αυξήσετε το όριο μεγέθους αρχείου.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -1104,6 +1104,9 @@
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Πιο πρόσφατο</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Η συνδρομή μου</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Όνομα</value> 
@@ -1575,8 +1578,8 @@
     <value>Άλλα αρχεία στον υπολογιστή</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Συγχρονισμός</value> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Αρχεία kDrive που είναι αποθηκευμένα στο διαδίκτυο</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Αυτός ο υπολογιστής - %@ - %@</value> 
@@ -1618,6 +1621,18 @@
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Ο συγχρονισμός βρίσκεται σε εξέλιξη</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Αναζήτηση αλλαγών</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Προετοιμασία των αρχείων σας</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ στοιχείο συγχρονισμένο με %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ στοιχεία συγχρονισμένα σε %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Συγχρονίστηκε</value> 
