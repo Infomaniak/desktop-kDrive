@@ -159,6 +159,13 @@ if [[ -z "${XXHASH_LIB_DIR:-}" ]]; then
 fi
 XXHASH_LIB_DIR="${XXHASH_LIB_DIR:?Could not detect XXHASH_LIB_DIR}"
 
+# PCRE2 (required by PocoFoundation)
+if [[ -z "${PCRE2_LIB_DIR:-}" ]]; then
+    _pcre2_root=$(conan_pkg_folder "PCRE2-debug-*-data.cmake" "pcre2_PACKAGE_FOLDER_DEBUG")
+    PCRE2_LIB_DIR="${_pcre2_root}/lib"
+fi
+PCRE2_LIB_DIR="${PCRE2_LIB_DIR:?Could not detect PCRE2_LIB_DIR}"
+
 # sentry
 if [[ -z "${SENTRY_LIB_DIR:-}" ]]; then
     _sentry_root=$(conan_pkg_folder "sentry-debug-*-data.cmake" "sentry_PACKAGE_FOLDER_DEBUG")
@@ -256,6 +263,7 @@ OPENSSL_DYLIBS=(
 ZLIB_DYLIBS=("$(resolve_required_dylib "$ZLIB_LIB_DIR" "libz.[0-9]*.dylib" "libz")")
 LOG4CPLUS_DYLIBS=("$(resolve_required_dylib "$LOG4CPLUS_LIB_DIR" "liblog4cplus.[0-9]*.dylib" "liblog4cplus")")
 XXHASH_DYLIBS=("$(resolve_required_dylib "$XXHASH_LIB_DIR" "libxxhash.[0-9]*.dylib" "libxxhash")")
+PCRE2_DYLIBS=("$(resolve_required_dylib "$PCRE2_LIB_DIR" "libpcre2-8.[0-9].dylib" "libpcre2-8")")
 SENTRY_DYLIBS=("$(resolve_required_dylib "$SENTRY_LIB_DIR" "libsentry*.dylib" "libsentry")")
 
 # Qt plugins: "subdir/plugin.dylib" — add more as needed
@@ -410,6 +418,9 @@ for lib in "${LOG4CPLUS_DYLIBS[@]}"; do copy_dylib "$LOG4CPLUS_LIB_DIR/$lib"; do
 step "Copying xxHash"
 for lib in "${XXHASH_DYLIBS[@]}"; do copy_dylib "$XXHASH_LIB_DIR/$lib"; done
 
+step "Copying PCRE2"
+for lib in "${PCRE2_DYLIBS[@]}"; do copy_dylib "$PCRE2_LIB_DIR/$lib"; done
+
 step "Copying sentry"
 for lib in "${SENTRY_DYLIBS[@]}"; do copy_dylib "$SENTRY_LIB_DIR/$lib"; done
 
@@ -468,6 +479,7 @@ for lib in \
     "${ZLIB_DYLIBS[@]}" \
     "${LOG4CPLUS_DYLIBS[@]}" \
     "${XXHASH_DYLIBS[@]}" \
+    "${PCRE2_DYLIBS[@]}" \
     "${SENTRY_DYLIBS[@]}"
 do
     fix_dylib_id "$lib"
