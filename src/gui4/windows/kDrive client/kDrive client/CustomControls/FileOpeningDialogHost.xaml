@@ -38,8 +38,9 @@
             <TextBlock Text="{x:Bind Request.Message, Mode=OneWay}"
                        TextWrapping="Wrap" />
             <ProgressBar Maximum="100"
+                         MinWidth="320"
                          Value="{x:Bind Request.Percent, Mode=OneWay}"
-                         Visibility="{x:Bind Request.IsDownloading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                         IsIndeterminate="{x:Bind Request.IsIndeterminate, Mode=OneWay}" />
             <Button Content="{x:Bind CancelButtonLabel}"
                     Click="OnCancelClicked"
                     HorizontalAlignment="Right" />

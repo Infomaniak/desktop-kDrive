@@ -123,7 +123,20 @@ namespace Infomaniak.kDrive
                     return;
                 }
 
-                if (!isMainInstance)
+                // The client is the registered handler of the kdrive scheme, but file opening deeplinks are handled by the server,
+                // which forwards them to its running instance if any. The main instance must keep running, so its key is kept.
+                var openFileArg = arguments.FirstOrDefault(arg => arg.StartsWith("kdrive://open", StringComparison.OrdinalIgnoreCase), "");
+                if (openFileArg != "")
+                {
+                    Logger.LogInfo("File opening deeplink received, forwarding it to the server.");
+                    StartServer($"\"{openFileArg.Replace("\"", "")}\"", releaseMainInstanceKey: false);
+                    if (!isMainInstance)
+                    {
+                        ExitApplication();
+                        return;
+                    }
+                }
+                else if (!isMainInstance)
                 {
                     // if this is not the main instance, we should start the server which will decide to open or not the main window of the main instance
                     StartServer();
@@ -325,7 +338,7 @@ namespace Infomaniak.kDrive
             Environment.Exit(0);
         }
 
-        public static void StartServer()
+        public static void StartServer(string arguments = "--synthesis", bool releaseMainInstanceKey = true)
         {
             string serverPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "..", "kDrive.exe");
             if (!System.IO.File.Exists(serverPath))
@@ -347,10 +360,10 @@ namespace Infomaniak.kDrive
                     UseShellExecute = true,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    Arguments = "--synthesis"
+                    Arguments = arguments
                 };
 
-                if (App.Current is App app && app._mainInstance?.IsCurrent == true)
+                if (releaseMainInstanceKey && App.Current is App app && app._mainInstance?.IsCurrent == true)
                 {
                     AppInstance.GetCurrent().UnregisterKey();
                 }

@@ -51,6 +51,7 @@ namespace Infomaniak.kDrive.ViewModels
                 if (SetPropertyInUIThread(ref _phase, value))
                 {
                     OnPropertyChangedInUIThread(nameof(IsDownloading));
+                    OnPropertyChangedInUIThread(nameof(IsIndeterminate));
                     OnPropertyChangedInUIThread(nameof(Message));
                 }
             }
@@ -60,8 +61,17 @@ namespace Infomaniak.kDrive.ViewModels
         public int Percent
         {
             get => _percent;
-            private set => SetPropertyInUIThread(ref _percent, value);
+            private set
+            {
+                if (SetPropertyInUIThread(ref _percent, value))
+                {
+                    OnPropertyChangedInUIThread(nameof(IsIndeterminate));
+                }
+            }
         }
+
+        /// True while no measurable progress is available: waiting for the synchronization or no byte downloaded yet.
+        public bool IsIndeterminate => !IsDownloading || Percent <= 0;
 
         /// Name of the item being opened. Empty while the item has not been resolved by the engine (WaitingSync phase).
         public string ItemName
