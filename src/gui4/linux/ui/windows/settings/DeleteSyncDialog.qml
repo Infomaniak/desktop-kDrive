@@ -28,6 +28,7 @@ IKConfirmationDialog {
 
     property Item triggerItem: null
     property bool failed: false
+    property bool restoreFocusOnClose: true
 
     signal deleteConfirmed
     signal fallbackFocusRequested
@@ -35,7 +36,14 @@ IKConfirmationDialog {
     function showFrom(trigger) {
         triggerItem = trigger;
         failed = false;
+        restoreFocusOnClose = true;
         open();
+    }
+
+    // For a navigation that focuses its own target: `closed` comes after it and must not take the focus back.
+    function closeWithoutRestoringFocus() {
+        restoreFocusOnClose = false;
+        close();
     }
 
     title: qsTrId("dialogSyncDeletionWarningTitle")
@@ -50,10 +58,12 @@ IKConfirmationDialog {
     }
     onClosed: {
         root.failed = false;
-        if (root.triggerItem && root.triggerItem.enabled && root.triggerItem.visible) {
-            root.triggerItem.forceActiveFocus(Qt.BacktabFocusReason);
-        } else {
-            root.fallbackFocusRequested();
+        if (root.restoreFocusOnClose) {
+            if (root.triggerItem && root.triggerItem.enabled && root.triggerItem.visible) {
+                root.triggerItem.forceActiveFocus(Qt.BacktabFocusReason);
+            } else {
+                root.fallbackFocusRequested();
+            }
         }
         root.triggerItem = null;
     }
