@@ -86,8 +86,9 @@ IKShadowedWindow {
             return;
         }
 
-        // Already on the requested page: only focus the synchronization again, without replaying the navigation.
-        const currentPage = accountsPane.currentItem;
+        // Already on the requested page: only focus the synchronization again, without replaying the navigation. A
+        // queued navigation is older than this request, which must replace it through showAboveRoot.
+        const currentPage = accountsPane.navigationPending ? null : accountsPane.currentItem;
         if (syncDbId === 0 && accountsPane.depth === 2 && currentPage instanceof DriveManagementView
                 && currentPage.driveDbId === driveDbId) {
             return;

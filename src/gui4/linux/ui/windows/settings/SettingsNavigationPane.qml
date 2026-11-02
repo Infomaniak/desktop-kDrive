@@ -40,6 +40,7 @@ Item {
     // Reset asked during a transition, applied once it ends: {component, pushedComponent}.
     property var _pendingReset: null
     property var _pendingPagesAboveRoot: null
+    readonly property bool navigationPending: _pendingReset !== null || _pendingPagesAboveRoot !== null
 
     signal focusRestorationRequested(var target)
 
