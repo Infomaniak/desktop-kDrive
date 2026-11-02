@@ -35,8 +35,8 @@ static const auto userInfoIsStaff = "isStaff";
 
 namespace KDC {
 
-UserInfo::UserInfo(const UserDbId dbId, const UserId userId, const QString &name, const QString &firstName, const QString &email, const QImage &avatar,
-                   const bool connected) :
+UserInfo::UserInfo(const UserDbId dbId, const UserId userId, const QString &name, const QString &firstName, const QString &email,
+                   const QImage &avatar, const bool connected) :
     _dbId(dbId),
     _userId(userId),
     _name(name),
@@ -54,11 +54,11 @@ void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
     QByteArray avatarQBA;
     QBuffer buffer(&avatarQBA);
-    if (buffer.open(QIODevice::WriteOnly) && _avatar.save(&buffer, "PNG")) {
-        buffer.close();
-        CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
-        CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
-    }
+    (void) buffer.open(QIODevice::WriteOnly);
+    (void) _avatar.save(&buffer, "PNG");
+    buffer.close();
+    const CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
+    CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
 
     CommonUtility::writeValueToStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::writeValueToStruct(dstruct, userInfoIsStaff, _isStaff);
