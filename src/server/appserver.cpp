@@ -4044,7 +4044,7 @@ bool AppServer::startClient() {
 #endif
 
         auto getPathToExecutable = [](const SyncPath &executableName) {
-            auto pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
+            auto pathToExecutable = QStr2Path(CommonUtility::applicationDirPath()) / executableName;
             auto ioError = IoError::Success;
             if (auto exists = false;
                 !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
