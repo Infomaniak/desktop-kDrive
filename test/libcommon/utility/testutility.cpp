@@ -1561,7 +1561,7 @@ void TestUtility::testApplicationDirPath() {
     const LocalTemporaryDirectory tmpDir("testApplicationDirPath");
     const SyncPath linkPath = tmpDir.path() / "kDrive_test_common_link";
     std::filesystem::create_symlink(std::filesystem::read_symlink("/proc/self/exe"), linkPath);
-    const auto removeLink = qScopeGuard([&linkPath] {
+    const auto deferRemoveLink = qScopeGuard([&linkPath] {
         std::error_code ec;
         std::filesystem::remove(linkPath, ec);
     });
