@@ -81,6 +81,10 @@ class OpenFileJob : public SyncJob {
         //! \param url is a "kdrive://open/user/<user id>/drive/<drive id>/file/<node id>" URL.
         OpenFileJob(std::string url, GetSyncPalCallback getSyncPal, GetVfsCallback getVfs);
 
+        //! Returns true if `urlStr` is a syntactically valid file opening URI, i.e. "kdrive://open/...", without
+        //! checking its path segments.
+        static bool isFileOpeningUri(const std::string &urlStr);
+
         //! Returns true if `urlStr` is a file opening URL, i.e. "kdrive://open/...", and extracts the user id, the
         //! drive id, and the node id from it.
         static bool parseDeeplinkUrl(const std::string &urlStr, Request &request);

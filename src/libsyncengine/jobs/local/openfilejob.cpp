@@ -105,6 +105,11 @@ OpenFileJob::OpenFileJob(std::string url, GetSyncPalCallback getSyncPal, GetVfsC
     _getSyncPal(std::move(getSyncPal)),
     _getVfs(std::move(getVfs)) {}
 
+bool OpenFileJob::isFileOpeningUri(const std::string &urlStr) {
+    Poco::URI uri;
+    return parseUri(urlStr, uri) && isOpenFileUri(uri);
+}
+
 bool OpenFileJob::parseDeeplinkUrl(const std::string &urlStr, Request &request) {
     Poco::URI uri;
     if (!parseUri(urlStr, uri) || !isOpenFileUri(uri)) return false;
