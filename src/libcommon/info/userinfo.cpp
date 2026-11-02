@@ -53,9 +53,10 @@ void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, userInfoEmail, CommonUtility::qStr2CommString(_email));
 
     QByteArray avatarQBA;
-    if (QBuffer buffer(&avatarQBA); buffer.open(QIODevice::WriteOnly) && _avatar.save(&buffer, "PNG")) {
-        buffer.close();
-    }
+    QBuffer buffer(&avatarQBA);
+    (void) buffer.open(QIODevice::WriteOnly);
+    (void) _avatar.save(&buffer, "PNG");
+    buffer.close();
     const CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
     CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
 
