@@ -272,7 +272,8 @@ bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
             ".ps1", ".psm1", ".msi", ".msix", ".scr", ".sh", // scripts, installers, screensavers
             ".vbs", ".vbe",  ".js",  ".jse",  ".wsf", ".wsh", ".hta", ".pif", ".lnk", ".jar", ".app", ".apk"};
 
-    return Poco::File(path).canExecute() || executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
+    return Poco::File(Path2Str(path)).canExecute() ||
+           executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
 }
 
 } // namespace KDC
