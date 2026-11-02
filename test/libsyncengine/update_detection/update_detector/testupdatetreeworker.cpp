@@ -500,6 +500,101 @@ void TestUpdateTreeWorker::testCreateMissingNodesFromPath() {
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 8/Dir 8.1/Dir 8.1.1") == parentNode);
 }
 
+void TestUpdateTreeWorker::testCreateMissingNodesForDeletedItem() {
+    const auto isChildOfItsParent = [](const std::shared_ptr<Node> &node) {
+        const auto parent = node->parentNode();
+        return parent && parent->children().contains(*node->id());
+    };
+
+    // The parent already exists in the update tree: no node is created.
+    {
+        setUpUpdateTree(ReplicaSide::Local);
+        const auto expectedParent = _localUpdateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1");
+        CPPUNIT_ASSERT(expectedParent);
+        const auto nbNodes = expectedParent->children().size();
+
+        std::shared_ptr<Node> parentNode;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem(
+                                                   "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.2", parentNode));
+        CPPUNIT_ASSERT(parentNode == expectedParent);
+        CPPUNIT_ASSERT_EQUAL(nbNodes, expectedParent->children().size());
+    }
+
+    // The item is located at the root of the synchronization.
+    {
+        setUpUpdateTree(ReplicaSide::Local);
+        std::shared_ptr<Node> parentNode;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("File 6", parentNode));
+        CPPUNIT_ASSERT(parentNode == _localUpdateTree->rootNode());
+    }
+
+    // The parent is missing: a temporary node is created.
+    {
+        setUpUpdateTree(ReplicaSide::Local);
+        CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5") == nullptr);
+
+        std::shared_ptr<Node> parentNode;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
+        CPPUNIT_ASSERT(parentNode);
+        CPPUNIT_ASSERT(parentNode->isTmp());
+        CPPUNIT_ASSERT(SyncName(Str("Dir 5")) == parentNode->name());
+        CPPUNIT_ASSERT(parentNode->parentNode() == _localUpdateTree->rootNode());
+        CPPUNIT_ASSERT(isChildOfItsParent(parentNode));
+    }
+
+    // Several parents are missing because an ancestor was moved to a non-existing location.
+    {
+        setUpUpdateTree(ReplicaSide::Local);
+        _operationSet->insertOp(std::make_shared<FSOperation>(
+                OperationType::Move, "id5", NodeType::Directory, testhelpers::defaultTime, testhelpers::defaultTime,
+                testhelpers::defaultFileSize, "Dir 5", "Dir 9/Dir 9.1/Dir 5"));
+
+        std::shared_ptr<Node> parentNode;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
+        CPPUNIT_ASSERT(parentNode);
+
+        const std::list<SyncName> expectedNames{Str("Dir 5"), Str("Dir 9.1"), Str("Dir 9")};
+        auto node = parentNode;
+        for (const auto &name: expectedNames) {
+            CPPUNIT_ASSERT(node);
+            CPPUNIT_ASSERT(node->isTmp());
+            CPPUNIT_ASSERT(name == node->name());
+            CPPUNIT_ASSERT(isChildOfItsParent(node));
+            node = node->parentNode();
+        }
+        CPPUNIT_ASSERT(node == _localUpdateTree->rootNode());
+    }
+
+    // A rename of the parent directory is taken into account.
+    {
+        setUpUpdateTree(ReplicaSide::Local);
+        _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id11", NodeType::Directory,
+                                                              testhelpers::defaultTime, testhelpers::defaultTime,
+                                                              testhelpers::defaultFileSize, "Dir 1/Dir 1.1", "Dir 1/Dir 1.1*"));
+        const auto node1 = _localUpdateTree->getNodeByPath("Dir 1");
+        const auto node11 = _localUpdateTree->getNodeByPath("Dir 1/Dir 1.1");
+        CPPUNIT_ASSERT(node1 && node11);
+
+        std::shared_ptr<Node> parentNode;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 1/Dir 1.1/File 1.1.2",
+                                                                                                    parentNode));
+        CPPUNIT_ASSERT(parentNode);
+        CPPUNIT_ASSERT(parentNode != node11);
+        CPPUNIT_ASSERT(parentNode->isTmp());
+        CPPUNIT_ASSERT(SyncName(Str("Dir 1.1*")) == parentNode->name());
+        CPPUNIT_ASSERT(parentNode->parentNode() == node1);
+        CPPUNIT_ASSERT(isChildOfItsParent(parentNode));
+    }
+
+    // An item (or one of its ancestors) unknown to the DB cannot be resolved.
+    {
+        setUpUpdateTree(ReplicaSide::Local);
+        std::shared_ptr<Node> parentNode;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError,
+                             _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 8/Dir 8.1/File 8.1.1", parentNode));
+    }
+}
+
 void TestUpdateTreeWorker::testStep1() {
     setUpUpdateTree(ReplicaSide::Local);
 
