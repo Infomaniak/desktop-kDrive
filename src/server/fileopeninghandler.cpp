@@ -29,48 +29,17 @@
 
 #include <QDesktopServices>
 
-#include <Poco/Exception.h>
 #include <Poco/File.h>
-#include <Poco/URI.h>
 
 #include <log4cplus/loggingmacros.h>
 
-#include <charconv>
 #include <functional>
 #include <string_view>
 #include <unordered_set>
-#include <vector>
 
 namespace KDC {
 
 namespace {
-//! Parses `urlStr` into `uri`. Returns false if `urlStr` is not a syntactically valid URI.
-bool parseUri(const std::string &urlStr, Poco::URI &uri) {
-    try {
-        uri = Poco::URI(urlStr);
-
-        return true;
-    } catch (const Poco::URISyntaxException &) {
-        return false;
-    }
-}
-
-//! Returns true if `uri` is a file opening URI, i.e. "kdrive://open/...". Poco::URI stores the scheme and the host
-//! in lowercase, making the comparisons case-insensitive.
-bool isOpenFileUri(const Poco::URI &uri) {
-    return uri.getScheme() == "kdrive" && uri.getHost() == "open";
-}
-
-//! Parses a strictly positive integer identifier (e.g. a user id or a drive id) into `id`. Returns false if `idStr`
-//! does not exactly represent one.
-bool parsePositiveId(std::string_view idStr, int64_t &id) {
-    // std::from_chars parses the whole string strictly (no whitespace, no leading '+', no trailing garbage) and never
-    // throws.
-    const auto result = std::from_chars(idStr.data(), idStr.data() + idStr.size(), id);
-
-    return result.ec == std::errc{} && result.ptr == idStr.data() + idStr.size() && id > 0;
-}
-
 //! Transparent hasher enabling heterogeneous lookup in associative string containers (e.g. `contains` with a
 //! `std::string_view` argument) without constructing a `std::string` for every lookup.
 struct TransparentStringHash {
@@ -88,7 +57,7 @@ FileOpeningHandler::FileOpeningHandler(AppServer *appServer, std::string url, QO
 void FileOpeningHandler::queueOpenFileJob() {
     LOG_INFO(Log::instance()->getLogger(), "Processing file opening URL - url=" << _url);
 
-    if (Request request; !parseDeeplinkUrl(_url, request)) {
+    if (OpenFileJob::Request request; !OpenFileJob::parseDeeplinkUrl(_url, request)) {
         LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
         handleFileOpeningFailure("This kDrive link is invalid.");
 
@@ -242,28 +211,7 @@ void FileOpeningHandler::onFileOpeningStatus(const FileOpeningPhase phase, const
 }
 
 bool FileOpeningHandler::isFileOpeningDeeplink(const std::string &urlStr) {
-    Poco::URI uri;
-    return parseUri(urlStr, uri) && isOpenFileUri(uri);
-}
-
-bool FileOpeningHandler::parseDeeplinkUrl(const std::string &urlStr, Request &request) {
-    Poco::URI uri;
-    if (!parseUri(urlStr, uri) || !isOpenFileUri(uri)) return false;
-
-    // Poco::URI decodes the path and excludes the query and the fragment while parsing, and getPathSegments drops the
-    // empty segments produced by the leading, doubled, and trailing slashes.
-    std::vector<std::string> segments;
-    uri.getPathSegments(segments);
-    if (segments.size() != 6 || segments[0] != "user" || segments[2] != "drive" || segments[4] != "file") return false;
-
-    UserId userId;
-    if (!parsePositiveId(segments[1], userId)) return false;
-    request.user.setUserId(userId);
-
-    if (!parsePositiveId(segments[3], request.driveId)) return false;
-    request.remoteNodeId = segments[5];
-
-    return !request.remoteNodeId.empty();
+    return OpenFileJob::isFileOpeningUri(urlStr);
 }
 
 bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
