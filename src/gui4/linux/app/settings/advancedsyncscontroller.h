@@ -64,17 +64,25 @@ class AdvancedSyncsController final : public QObject {
         [[nodiscard]] AdvancedSyncCreationController *creation() const { return _creation; }
 
         Q_INVOKABLE void open(qint64 driveDbId);
-        /// Releases the target only when it is still the given drive and no other page has it open, so a closing page cannot
-        /// reset its successor, even one opened on the same drive.
+        /**
+         * Releases the target only when it is still the given drive and no other page has it open, so a closing page cannot
+         * reset its successor, even one opened on the same drive.
+         */
         Q_INVOKABLE void close(qint64 driveDbId);
-        /// Reloads a confirmed blacklist, after a failure or once the excluded folders page saved a new one.
+        /**
+         * Reloads a confirmed blacklist, after a failure or once the excluded folders page saved a new one.
+         */
         Q_INVOKABLE void reloadBlackList(qint64 syncDbId);
         Q_INVOKABLE void openLocalFolder(qint64 syncDbId) const;
         Q_INVOKABLE void openRemoteFolder(qint64 syncDbId);
         Q_INVOKABLE void deleteSync(qint64 syncDbId);
-        /// Starts a "Sync a folder with kDrive" session for the target drive, unless one is already running.
+        /**
+         * Starts a "Sync a folder with kDrive" session for the target drive, unless one is already running.
+         */
         Q_INVOKABLE void openCreation();
-        /// Ends the running session, once its dialog closed or when its host window closes.
+        /**
+         * Ends the running session, once its dialog closed or when its host window closes.
+         */
         Q_INVOKABLE void releaseCreation();
 
     signals:
