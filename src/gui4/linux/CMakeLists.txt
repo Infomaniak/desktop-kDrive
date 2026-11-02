@@ -325,6 +325,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/home/HomeStatusPanel.qml
         ui/windows/main/home/HomeView.qml
         ui/windows/main/home/shortcuts/DriveWebShortcutsView.qml
+        ui/windows/main/home/shortcuts/HomeAccountAvatar.qml
         ui/windows/main/home/shortcuts/HomeWebShortcutButton.qml
         ui/windows/main/home/states/HomeLoadingState.qml
         ui/windows/main/home/states/HomeOfflineState.qml
@@ -431,8 +432,8 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/home/folder-share.svg
         ui/assets/main/home/headphones.svg
         ui/assets/main/home/kdrive-folders-stacked.svg
-        ui/assets/main/home/pause.svg
         ui/assets/main/home/kdrive-outline.svg
+        ui/assets/main/home/pause.svg
         ui/assets/main/home/play.svg
         ui/assets/main/home/search.svg
         ui/assets/main/home/star.svg
