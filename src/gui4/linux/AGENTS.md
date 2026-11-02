@@ -13,6 +13,8 @@
 
 ### Local Norms (Linux v4)
 
+- Keep full diffs out of chat unless explicitly asked to display them there; provide a patch file or an editor diff.
+- Explain failure conditions with concrete prerequisites; avoid vague labels such as "normally configured".
 - Keep new C++ readable: separate method definitions and logical steps with blank lines, use explicit names, and expand
   conditional bodies with braces. Do not compact multiple operations onto one line or conflate readability cleanup with
   architectural simplification.
@@ -43,6 +45,7 @@
   the generated Conan/CMake Debug preset, then build `kDrive` and `kdrive_qml`. Do not build the legacy `kDrive_client`,
   which is not buildable for version 4. Do not use the Podman release script for this local Linux validation path.
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
+- Document C++ APIs with `/** */` blocks, not `///`.
 - Do not duplicate method documentation between headers and implementation files. Document public API contracts in
   headers, private helpers in `.cpp` files, and keep implementation-specific comments next to the relevant code.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
@@ -339,6 +342,13 @@
   category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
   presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
   `requestOpenFileExclusions()` opens Settings on Advanced > file exclusions, for the errors page.
+  `requestOpenUser`, `requestOpenDrive` and `requestOpenAdvancedSync` keep a typed pending target that the window takes
+  when it is created or on `targetPending()`, through one typed show signal per kind of target. The window shows that
+  page above the Accounts root, animated when Accounts is already displayed, and focuses the user or advanced
+  synchronization card. A page can then be created on the drive of the page it replaces before that one is destroyed,
+  so `DriveManagementController` and `AdvancedSyncsController` count the pages open on their target and release it on
+  the last `close()`. `StackView.pushItems` only creates the top page, so `SettingsNavigationPane.showAboveRoot` loads
+  the pages below it: the drive management page must exist to leave a drive that lost its last synchronization.
 - `app/settings/settingssyncactivationcontroller.*`: process-long transactional editor, owned by `AppClientLinux` and
   exposed as `SettingsWindowController.syncActivation`, that activates one available drive from Accounts. A single
   private `State` drives it: `Preparing` (server default folder requested, row busy) → `Editing` ⇄ `CheckingFolder` →
@@ -506,6 +516,9 @@
   a pending pause or resume request drives the toolbar control (`SyncControlState::Pending`), never the central status.
   The control is disabled while the selected synchronization has a blocking error, as on macOS. The errors banner
   opens the errors page (`showErrors()`); the primary action still opens the Activities tab.
+  kDrive online opens the remote folder of an advanced synchronization (`itemRedirectUri`), the drive root otherwise;
+  the other web shortcuts stay at the drive level. The Home avatar opens the user's card in Settings, its badge the
+  drive management page, or the advanced synchronizations page focused on the selected advanced synchronization.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
