@@ -29,6 +29,7 @@
 #include <QFileInfo>
 #include <QLocale>
 #include <QProcess>
+#include <QScopeGuard>
 #include <chrono>
 #include <source_location>
 #include <iostream>
@@ -1560,6 +1561,10 @@ void TestUtility::testApplicationDirPath() {
     const LocalTemporaryDirectory tmpDir("testApplicationDirPath");
     const SyncPath linkPath = tmpDir.path() / "kDrive_test_common_link";
     std::filesystem::create_symlink(std::filesystem::read_symlink("/proc/self/exe"), linkPath);
+    const auto removeLink = qScopeGuard([&linkPath] {
+        std::error_code ec;
+        std::filesystem::remove(linkPath, ec);
+    });
 
     QProcess process;
     process.start(Path2QStr(linkPath), {QString::fromLatin1(printApplicationDirPathOption)});
