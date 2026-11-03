@@ -210,6 +210,10 @@ void SentryService::reportError(const std::string &title, const std::string &mes
     sentry::Handler::captureMessage(sentry::Level::Error, title, message);
 }
 
+void SentryService::reportWarning(const std::string &title, const std::string &message) {
+    sentry::Handler::captureMessage(sentry::Level::Warning, title, message);
+}
+
 void SentryService::reportError(const QString &title, const QString &message) {
     reportError(title.toStdString(), message.toStdString());
 }

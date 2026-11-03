@@ -951,8 +951,8 @@ Neem contact op met ondersteuning om de limiet op te heffen.</translation>
             <translation>Toegang geweigerd</translation> 
         </message> 
         <message id="errForbiddenCharDescription"> 
-            <source>The name of this %1 contains one or more characters not supported by the kDrive Windows application. Rename the %2 from kDrive online.</source> 
-            <translation>De naam van dit %1 bevat een of meer tekens die niet worden ondersteund door de kDrive Windows-applicatie. Hernoem de %2 vanuit kDrive online.</translation> 
+            <source>The name of this %1 contains one or more characters that are not supported by the kDrive app. Rename %2 using kDrive online.</source> 
+            <translation>De naam van dit %1 bevat een of meer tekens die niet worden ondersteund door de kDrive-app. Hernoem het %2 via kDrive Online.</translation> 
         </message> 
         <message id="errForbiddenCharOnlySpacesTitle"> 
             <source>Invalid name</source> 

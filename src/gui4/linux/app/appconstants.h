@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "libcommon/data/drive.h"
 #include "libcommon/utility/types.h"
 
 #include <config.h>
@@ -25,7 +26,10 @@
 #include <QString>
 #include <QUrl>
 
+#include <algorithm>
+#include <array>
 #include <cstdint>
+#include <string_view>
 
 #ifndef KDRIVE_QML_MODULE_URI
 #error "KDRIVE_QML_MODULE_URI is not defined, check target_compile_definitions in src/gui4/linux/CMakeLists.txt"
@@ -57,6 +61,23 @@ namespace KDC::AppConstants::Drive {
 // Shop home, for the drives of a kSuite whose renewal page needs an id the client does not have.
 [[nodiscard]] inline QUrl shopUri() {
     return QUrl{QStringLiteral("https://shop.infomaniak.com")};
+}
+
+// Shop page renewing `drive`, chosen from its pack.
+// TODO: Renewing a kSuite (`order2/ksuite/<k_suite.id>`) needs an id the server does not fetch yet (drive API,
+// `with=k_suite`). Until then, a kSuite drive, or an unknown pack, opens shop.infomaniak.com.
+[[nodiscard]] inline QUrl renewalUri(const KDC::Drive &drive) {
+    const auto &packName = drive.packInfo().name();
+    if (constexpr std::array<std::string_view, 4> standaloneDrivePacks{"free", "solo", "team", "pro"};
+        std::ranges::find(standaloneDrivePacks, packName) != standaloneDrivePacks.end()) {
+        return renewSubscriptionUri(drive.driveId());
+    }
+
+    if (packName.starts_with("my_ksuite")) {
+        return myKSuiteRenewalUri();
+    }
+
+    return shopUri();
 }
 
 } // namespace KDC::AppConstants::Drive
