@@ -148,6 +148,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
 
         DbNodeId _dbnodeIdDir41;
         DbNodeId _dbnodeIdDir411;
+        DbNodeId _dbnodeIdDir8;
 
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestUpdateTreeWorker");
 };
