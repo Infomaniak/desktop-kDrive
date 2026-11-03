@@ -141,6 +141,13 @@ void OperationGeneratorWorker::execute() {
         }
     }
 
+#ifdef KD_WINDOWS // The many delete operations UI is not yet implemented on Windows. So we do not stop the sync in this case.
+                  // To be removed when merged on develop branch where the many delete operations UI is implemented.
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
+    setDone(exitCode);
+    return;
+#endif // KD_WINDOWS
+
     if (_syncPal->manyDeleteOpsUserChoice() == TooManyDeletesUserChoice::None) {
         if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationHardLimit) {
             LOGW_SYNCPAL_WARN(_logger, L"Local delete operations detected: hard limit triggered!");
