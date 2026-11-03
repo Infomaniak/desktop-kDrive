@@ -239,7 +239,12 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
 }
 
 void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
-    if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialRemoteFolder::Private)) return;
+    if (remotePath.empty()) return;
+
+    const bool isAbsolutePath = remotePath.is_absolute();
+    if (isAbsolutePath) remotePath = remotePath.relative_path();
+
+    if (*remotePath.begin() != v3SpecialFolderNames.at(SpecialRemoteFolder::Private)) return;
 
     try {
         remotePath = remotePath.lexically_relative(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
@@ -248,6 +253,7 @@ void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
     }
 
     if (remotePath == ".") remotePath = SyncPath{};
+    if (isAbsolutePath) remotePath = SyncPath{"/"} / remotePath;
 }
 
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId, RemoteNodeId &remoteNodeId) {
@@ -264,6 +270,12 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
     return ExitCode::Ok;
 }
 
+QString ApiTranslator::translateV3ToV2(QString v3Path) {
+    const auto privateSegment = QString::fromStdString("/" + v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
+
+    return v3Path.replace(privateSegment, "/");
+}
+
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId,
                                         RemoteNodeInfoList &v3RemoteNodeInfoList) {
     RemoteNodeId privateFolderId;
@@ -276,8 +288,10 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
     });
 
     for (auto &nodeInfo: v3RemoteNodeInfoList) {
-        if (nodeInfo.parentNodeId().toStdString() == privateFolderId)
+        if (nodeInfo.parentNodeId().toStdString() == privateFolderId) {
             nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId()));
+            nodeInfo.setPath(translateV3ToV2(nodeInfo.path()));
+        }
     }
 
     return ExitCode::Ok;

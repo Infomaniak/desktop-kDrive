@@ -36,7 +36,6 @@ class ApiTranslator {
         [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
         [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId,
                                                       RemoteNodeInfoList &v3RemoteNodeInfoList);
-
         [[nodiscard]] static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId,
                                                                SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId);
         [[nodiscard]] static ExitInfo getSharedFolderSnapshotItem(UserDbId userDbId, DriveId driveId, RemoteSnapshotItem &item);
@@ -53,6 +52,7 @@ class ApiTranslator {
         static const SpecialFolderNames v3SpecialFolderNames;
 
     private:
+        [[nodiscard]] static QString translateV3ToV2(QString v3Path);
         [[nodiscard]] static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
         [[nodiscard]] static ExitInfo updateCache(UserDbId userDbId, DriveId driveId);
 
