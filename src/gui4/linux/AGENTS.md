@@ -458,7 +458,8 @@
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
   locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
-  transient feedback independent from projected row lifetime.
+  transient feedback independent from projected row lifetime. The errors banner and the "fix errors" row action open the
+  errors page through `AppRouter::showErrors()`.
 - `app/mainwindow/blockingerrorcontroller.*`: QML-facing state of the blocking error screen of the selected
   synchronization (`SyncErrorsProjection::currentBlockingError`: drive asleep, waking up, not renewed, in maintenance,
   access denied, or user logged out). Only that synchronization is blocked: the controller switches `AppRouter` to the
@@ -474,7 +475,8 @@
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
   a pending pause or resume request drives the toolbar control (`SyncControlState::Pending`), never the central status.
-  The control is disabled while the selected synchronization has a blocking error, as on macOS.
+  The control is disabled while the selected synchronization has a blocking error, as on macOS. The errors banner
+  opens the errors page (`showErrors()`); the primary action still opens the Activities tab.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
@@ -497,8 +499,13 @@
 - `app/mainwindow/storagescanner.*`: Linux local-volume scanner using `QStorageInfo` plus an explicit Qt directory
   stack. It stays on the synchronization root device, skips links and special files, deduplicates hard links, and sums
   allocated blocks so sparse files reflect their physical footprint.
-- `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;
-  it must not read `AppCache`, call backend services, or decide whether onboarding is required.
+- `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive`, the selected main tab, and
+  the `ActivitiesNavigation` exposed as `activitiesNavigation`; `showErrors()` is the only shortcut that crosses both.
+  It must not read `AppCache`, call backend services, or decide whether onboarding is required.
+- `app/navigation/activitiesnavigation.*`: current sub-page of the Activities tab in a fixed chain (`List`, `Errors`,
+  `ConflictsQuick`, `ConflictsList`); `back()` goes to the parent page, with no history. Switching tabs keeps the
+  sub-page, like macOS; `AppClientLinux` resets it only with the unconfigured Home. It holds no business rule: a
+  controller that must close a page (for example when the conflicts drop) calls it.
 - `app/navigation/mainwindowactivationdecision.*`: pure post-bootstrap choice between onboarding, the unconfigured Home,
   and the configured Home. Closing onboarding or removing the last configured sync selects the unconfigured Home on the
   next activation.
@@ -617,7 +624,7 @@
       routes and arbitrates presentation across global modal families; feature queueing remains in the owning C++
       controller.
     - `ui/windows/main/`: main-window shell, remaining temporary tab placeholders, and feature families grouped under
-      `activities/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`,
+      `activities/`, `errors/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`,
       `states/`, and versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window
       active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML
       models.
@@ -626,9 +633,14 @@
       recolored white for `IKTintedIcon`, status colors per variant). `SidebarView.navigationEnabled` disables Home,
       Activities and Storage meanwhile; opening the synchronization folder stays available.
     - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
-      presentation, and empty state. Size and status columns have fixed widths; only the name/folder boundary is
+      presentation, and empty state. `ActivitiesView` hosts the sub-pages in a `StackView` that follows
+      `ActivitiesNavigation.currentPage` (one component per chain page, rebuilt without animation when the view is
+      recreated); the list itself is `ActivitiesListPage`. The toolbar shows the back button and the page title, and
+      Alt+Left or the mouse back button go back too. Size and status columns have fixed widths; only the name/folder boundary is
       draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
       history.
+    - `ui/windows/main/errors/`: "Errors to fix" sub-page of Activities (`ErrorsPage`), titled `errorPageTitle` in the
+      toolbar. It is an empty shell until the error list lands.
     - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
       the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
       with Down on the last row. It consumes `SearchController`; it must not call IPC.
