@@ -146,9 +146,9 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         std::shared_ptr<UpdateTree> _localUpdateTree;
         std::shared_ptr<UpdateTree> _remoteUpdateTree;
 
-        DbNodeId _dbnodeIdDir41;
-        DbNodeId _dbnodeIdDir411;
-        DbNodeId _dbnodeIdDir8;
+        DbNodeId _dbnodeIdDir41 = 0;
+        DbNodeId _dbnodeIdDir411 = 0;
+        DbNodeId _dbnodeIdDir8 = 0;
 
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestUpdateTreeWorker");
 };

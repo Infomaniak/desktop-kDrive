@@ -98,114 +98,114 @@ void TestUpdateTreeWorker::setUpDbTree() {
 
      */
 
-    DbNodeId dbNodeIdDir1;
-    DbNodeId dbNodeIdDir11;
-    DbNodeId dbNodeIdDir111;
-    DbNodeId dbNodeId112;
-    DbNodeId dbNodeIdFile1111;
-    DbNodeId dbNodeIdDir2;
-    DbNodeId dbNodeIdDir3;
-    DbNodeId dbNodeIdDir31;
-    DbNodeId dbNodeIdDir32;
-    DbNodeId dbnodeIdDir4;
-    DbNodeId dbnodeIdfile4111;
-    DbNodeId dbnodeIdfile4112;
-    DbNodeId dbnodeIdDir5;
-    DbNodeId dbnodeIdfile51;
-    DbNodeId dbnodeIdfile6;
-    DbNodeId dbnodeIdfile6a;
-    DbNodeId dbnodeIdFile81;
+    DbNodeId dbNodeIdDir1 = 0;
+    DbNodeId dbNodeIdDir11 = 0;
+    DbNodeId dbNodeIdDir111 = 0;
+    DbNodeId dbNodeId112 = 0;
+    DbNodeId dbNodeIdFile1111 = 0;
+    DbNodeId dbNodeIdDir2 = 0;
+    DbNodeId dbNodeIdDir3 = 0;
+    DbNodeId dbNodeIdDir31 = 0;
+    DbNodeId dbNodeIdDir32 = 0;
+    DbNodeId dbnodeIdDir4 = 0;
+    DbNodeId dbnodeIdfile4111 = 0;
+    DbNodeId dbnodeIdfile4112 = 0;
+    DbNodeId dbnodeIdDir5 = 0;
+    DbNodeId dbnodeIdfile51 = 0;
+    DbNodeId dbnodeIdfile6 = 0;
+    DbNodeId dbnodeIdfile6a = 0;
+    DbNodeId dbnodeIdFile81 = 0;
 
     bool constraintError = false;
     const DbNode nodeDir1(0, _syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "id1", "id drive 1",
                           testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                           testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError));
     const DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "id11", "id drive 11", testhelpers::defaultTime,
                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
                            std::nullopt);
-    _syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError));
     const DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "id111", "id drive 111",
                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                             testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError));
     const DbNode nodeFile112(0, dbNodeIdDir11, Str("File 1.1.2"), Str("File 1.1.2"), "id112", "id drive 112",
                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                              testhelpers::defaultFileSize, "cs 1.1");
-    _syncDb->insertNode(nodeFile112, dbNodeId112, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile112, dbNodeId112, constraintError));
     const DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "id1111", "id drive 1111",
                               testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                               testhelpers::defaultFileSize, "cs 1.1");
-    _syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError));
     const DbNode nodeDir2(0, _syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "id2", "id drive 2",
                           testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                           testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError));
     const DbNode nodeDir3(0, _syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "id3", "id drive 3",
                           testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                           testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError));
     const DbNode nodeDir31(0, dbNodeIdDir3, Str("Dir 3.1"), Str("Dir 3.1"), "id31", "id drive 31", testhelpers::defaultTime,
                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
                            std::nullopt);
-    _syncDb->insertNode(nodeDir31, dbNodeIdDir31, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir31, dbNodeIdDir31, constraintError));
     const DbNode nodeDir32(0, dbNodeIdDir3, Str("Dir 3.2"), Str("Dir 3.2"), "id32", "id drive 32", testhelpers::defaultTime,
                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
                            std::nullopt);
-    _syncDb->insertNode(nodeDir32, dbNodeIdDir32, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir32, dbNodeIdDir32, constraintError));
     const DbNode nodeDir4(0, _syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "id4", "id drive 4",
                           testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                           testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir4, dbnodeIdDir4, constraintError));
     const DbNode nodedir41(0, dbnodeIdDir4, Str("Dir 4.1"), Str("Dir 4.1"), "id41", "id drive 41", testhelpers::defaultTime,
                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
                            std::nullopt);
-    _syncDb->insertNode(nodedir41, _dbnodeIdDir41, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodedir41, _dbnodeIdDir41, constraintError));
     const DbNode nodeDir411(0, _dbnodeIdDir41, Str("Dir 4.1.1"), Str("Dir 4.1.1"), "id411", "id drive 411",
                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                             testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeDir411, _dbnodeIdDir411, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir411, _dbnodeIdDir411, constraintError));
     const DbNode nodeFile4111(0, _dbnodeIdDir411, Str("File 4.1.1.1"), Str("File 4.1.1.1"), "id4111", "id drive 4111",
                               testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                               testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeFile4111, dbnodeIdfile4111, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile4111, dbnodeIdfile4111, constraintError));
     const DbNode nodeFile4112(0, _dbnodeIdDir411, Str("File 4.1.1.2"), Str("File 4.1.1.2"), "id4112", "id drive 4112",
                               testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                               testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeFile4112, dbnodeIdfile4112, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile4112, dbnodeIdfile4112, constraintError));
     const DbNode nodeDir5(0, _syncDb->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "id5", "id drive 5",
                           testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                           testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir5, dbnodeIdDir5, constraintError));
     const DbNode nodeFile51(0, dbnodeIdDir5, Str("File 5.1"), Str("File 5.1"), "id51", "id drive 51", testhelpers::defaultTime,
                             testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
                             std::nullopt);
-    _syncDb->insertNode(nodeFile51, dbnodeIdfile51, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile51, dbnodeIdfile51, constraintError));
     const DbNode nodeFile6(0, _syncDb->rootNode().nodeId(), Str("File 6"), Str("File 6"), "id6", "id drive 6",
                            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                            testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeFile6, dbnodeIdfile6, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile6, dbnodeIdfile6, constraintError));
     const DbNode nodeFile6a(0, _syncDb->rootNode().nodeId(), Str("File 6a"), Str("File 6a"), "id6a", "id drive 6a",
                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                             testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeFile6a, dbnodeIdfile6a, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile6a, dbnodeIdfile6a, constraintError));
 
     // Node with name encoded differently on remote (NFC) and on local (NFD) side
     DbNodeId dbnodeIdfile7;
     const DbNode nodeFile7(0, _syncDb->rootNode().nodeId(), testhelpers::makeNfcSyncName(), testhelpers::makeNfdSyncName(),
                            "id7l", "id7r", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
                            NodeType::File, testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeFile7, dbnodeIdfile7, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile7, dbnodeIdfile7, constraintError));
 
     SyncName nodeDir8Name = Str("Dir 8") + testhelpers::makeNfcSyncName();
     const DbNode nodeDir8(0, _syncDb->rootNode().nodeId(), nodeDir8Name, nodeDir8Name, "id8", "id drive 8",
                           testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                           testhelpers::defaultFileSize, std::nullopt);
-    _syncDb->insertNode(nodeDir8, _dbnodeIdDir8, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeDir8, _dbnodeIdDir8, constraintError));
     const DbNode nodeFile81(0, _dbnodeIdDir8, Str("File 8.1"), Str("File 8.1"), "id81", "id drive 81", testhelpers::defaultTime,
                             testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
                             std::nullopt);
-    _syncDb->insertNode(nodeFile81, dbnodeIdFile81, constraintError);
+    CPPUNIT_ASSERT(_syncDb->insertNode(nodeFile81, dbnodeIdFile81, constraintError));
 
     _syncDb->cache().reloadIfNeeded();
 }
@@ -1264,6 +1264,7 @@ void TestUpdateTreeWorker::testGetNodeFromDeletedPath() {
         const auto nodeA = std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None,
                                                   CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
                                                   testhelpers::defaultTime, testhelpers::defaultDirSize, updateTree->rootNode());
+
         updateTree->insertNode(nodeA);
         (void) updateTree->rootNode()->insertChild(nodeA);
 
