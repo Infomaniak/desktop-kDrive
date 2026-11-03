@@ -21,16 +21,17 @@
 #include <QObject>
 
 #include <cstdint>
-#include <string_view>
+#include <string>
 
 namespace KDC {
 
 // User-facing kind of a sync error, derived from the raw `Error` fields by `classifySyncError`.
-// Mirrors `SynchroErrorKind` of the macOS client, plus the Linux-only inotify limit.
+// Mirrors `SynchroErrorKind` of the macOS client, plus the Linux-only inotify limit. The case clash and reserved name
+// kinds are left out: the sync engine only detects them on macOS and Windows (`PlatformInconsistencyCheckerWorker`), so
+// such an error would show as unexpected, with its technical details.
 enum class SyncErrorKind : uint8_t {
     // Node level
     Conflict,
-    CaseError,
     CreateCancel,
     DeleteCancel,
     EditCancel,
@@ -45,7 +46,6 @@ enum class SyncErrorKind : uint8_t {
     PathLength,
     NotEnoughDiskSpace,
     QuotaExceeded,
-    ReservedName,
     TemporaryBlacklisted,
     ExcludedByTemplate,
     GenericErrForbidden,
@@ -87,7 +87,6 @@ enum class SyncErrorAction : uint8_t {
     None,
     ChooseVersion,
     Rename,
-    OpenOnline,
     OpenParentFolder,
     OpenRescueFolder,
     ManageDiskSpace,
@@ -149,7 +148,8 @@ using BlockingErrors::BlockingErrorKind;
 // Up to this number of version conflicts, each conflict has its own row; beyond it, a single aggregated row is shown.
 inline constexpr int32_t kMaxIndividualConflicts = 5;
 
-[[nodiscard]] std::string_view toString(SyncErrorKind kind);
-[[nodiscard]] std::string_view toString(BlockingErrorKind kind);
+// Like the `libcommon` enums, so that `qCInfo() << kind` prints "Name(value)" through its generic operator.
+[[nodiscard]] std::string toString(SyncErrorKind kind);
+[[nodiscard]] std::string toString(BlockingErrorKind kind);
 
 } // namespace KDC
