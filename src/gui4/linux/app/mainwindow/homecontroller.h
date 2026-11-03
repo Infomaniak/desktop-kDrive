@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/mainwindow/syncprogressstate.h"
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 
@@ -57,6 +58,7 @@ class HomeController final : public QObject {
         Q_PROPERTY(int32_t errorCount READ errorCount NOTIFY homeChanged)
         Q_PROPERTY(bool hasCurrentDrive READ hasCurrentDrive NOTIFY homeChanged)
         Q_PROPERTY(bool hasConnectedUser READ hasConnectedUser NOTIFY homeChanged)
+        Q_PROPERTY(SyncProgressState *syncProgress READ syncProgress CONSTANT)
 
     public:
         enum class HomeStatus : uint8_t {
@@ -88,7 +90,8 @@ class HomeController final : public QObject {
 
         explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
                                 const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
-                                NetworkStatusObserver &networkStatusObserver, QObject *parent = nullptr);
+                                NetworkStatusObserver &networkStatusObserver, SyncProgressState &syncProgress,
+                                QObject *parent = nullptr);
 
         [[nodiscard]] HomeStatus status() const;
         [[nodiscard]] PrimaryAction primaryAction() const;
@@ -102,6 +105,7 @@ class HomeController final : public QObject {
         [[nodiscard]] int32_t errorCount() const;
         [[nodiscard]] bool hasCurrentDrive() const;
         [[nodiscard]] bool hasConnectedUser() const;
+        [[nodiscard]] SyncProgressState *syncProgress() { return &_syncProgress; }
 
         Q_INVOKABLE void triggerPrimaryAction();
         Q_INVOKABLE void toggleSync();
@@ -129,6 +133,7 @@ class HomeController final : public QObject {
         SyncService &_syncService;
         AppRouter &_appRouter;
         NetworkStatusObserver &_networkStatusObserver;
+        SyncProgressState &_syncProgress;
 };
 
 } // namespace KDC

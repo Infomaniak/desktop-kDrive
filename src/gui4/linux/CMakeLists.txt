@@ -88,6 +88,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/syncerroractionhandler.h
         app/mainwindow/syncerrorexplanationcontroller.cpp
         app/mainwindow/syncerrorexplanationcontroller.h
+        app/mainwindow/syncprogressstate.cpp
+        app/mainwindow/syncprogressstate.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/activitiesnavigation.cpp
