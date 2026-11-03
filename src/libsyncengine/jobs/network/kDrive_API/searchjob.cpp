@@ -142,6 +142,10 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
         }
     }
 
+    if (!localProperties.isAvailableLocally) return ExitCode::Ok;
+
+    // An item reached through a link located inside the sync root is not part of the synchronized tree. Links above the sync
+    // root (e.g. "/var" on macOS) are ignored: the closest link is returned first, so any link inside the sync root wins.
     auto traversesLink = false;
     SyncPath linkPath;
     if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, traversesLink, linkPath);
@@ -149,10 +153,11 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
-    if (traversesLink) {
+    if (traversesLink && linkPath != _syncRootPath && CommonUtility::isDescendantOrEqual(linkPath, _syncRootPath)) {
         LOGW_WARN(_logger, L"Path " << Utility::formatSyncPath(absolutePath) << L" traverses the link "
                                     << Utility::formatSyncPath(linkPath));
         localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
     }
 
     return ExitCode::Ok;
@@ -203,7 +208,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         if (!JsonParserUtility::extractValue(obj, pathKey, pathStr)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
-        SyncPath path(pathStr);
+        const SyncPath path(pathStr);
 
         SyncTime modifiedTime = 0;
         if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {

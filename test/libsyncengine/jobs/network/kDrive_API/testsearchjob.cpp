@@ -26,6 +26,7 @@
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/abstracttokennetworkjob.h"
 #include "requests/parameterscache.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
@@ -269,6 +270,59 @@ void TestSearchJob::testHandleResponseAdvancedSync() {
         CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
         CPPUNIT_ASSERT(!results.front().isAvailableLocally());
     }
+}
+
+void TestSearchJob::testHandleResponseTraversesLink() {
+    const auto searchLocalItem = [this](const SyncPath &syncRootPath, const std::string &remotePath) {
+        SearchJob job(_driveDbId, "doc");
+        job._syncRootPath = syncRootPath;
+        const std::string json = makeSearchResponseJson(remotePath);
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        return results.front();
+    };
+
+    const SyncPath targetDirPath = _localTempDir.path() / "target_dir";
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::create_directories(targetDirPath, ec) && !ec);
+    { std::ofstream ofs(targetDirPath / "item.txt"); }
+
+    const SyncPath symlinkPath = _localTempDir.path() / "dir_link";
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(targetDirPath, symlinkPath, true, ioError));
+
+    // An item reached through a symbolic link of the sync root is not available locally, so it cannot be opened.
+    auto result = searchLocalItem(_localTempDir.path(), "/Private/dir_link/item.txt");
+    CPPUNIT_ASSERT(!result.isAvailableLocally());
+    CPPUNIT_ASSERT(!result.isHydrated());
+
+    // The same item reached through its real path is available locally.
+    result = searchLocalItem(_localTempDir.path(), "/Private/target_dir/item.txt");
+    CPPUNIT_ASSERT(result.isAvailableLocally());
+    CPPUNIT_ASSERT(result.isHydrated());
+
+    // An item whose ancestors do not exist locally is not available locally, and the search does not fail.
+    result = searchLocalItem(_localTempDir.path(), "/Private/missing_dir/item.txt");
+    CPPUNIT_ASSERT(!result.isAvailableLocally());
+
+    // The sync root itself is reached through a link (e.g. "/var" on macOS). This link is outside of the synchronized tree:
+    // it does not prevent an item of the sync root from being available locally.
+    const LocalTemporaryDirectory otherTempDir("testSearchJobLinkedRoot");
+    const SyncPath linkedRootPath = otherTempDir.path() / "root_link";
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(_localTempDir.path(), linkedRootPath, true, ioError));
+    result = searchLocalItem(linkedRootPath / "target_dir", "/Private/item.txt");
+    CPPUNIT_ASSERT(result.isAvailableLocally());
+
+#if defined(KD_WINDOWS)
+    // An item reached through a junction of the sync root is not available locally either.
+    const SyncPath junctionPath = _localTempDir.path() / "dir_junction";
+    CPPUNIT_ASSERT(IoHelper::createJunctionFromPath(targetDirPath, junctionPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    result = searchLocalItem(_localTempDir.path(), "/Private/dir_junction/item.txt");
+    CPPUNIT_ASSERT(!result.isAvailableLocally());
+#endif
 }
 
 void TestSearchJob::testHandleResponseTwice() {
