@@ -201,7 +201,7 @@ namespace Infomaniak.kDrive.Pages
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+                Logger.LogInfo("Disk size update was canceled.");
             }
         }
 
@@ -389,13 +389,14 @@ namespace Infomaniak.kDrive.Pages
                 DiskSize = driveInfo.TotalSize;
                 DiskFreeSize = driveInfo.AvailableFreeSpace;
                 DiskUsedSize = DiskSize - DiskFreeSize;
-                HydratedFileSize = await GetHydratedFileSizeAsync(_cancellationTokenSource.Token);
-                if (HydratedFileSize is null)
+                var hydratedFileSizeResult = await GetHydratedFileSizeAsync(_cancellationTokenSource.Token);
+                HydratedFileSize = hydratedFileSizeResult.Value;
+                if (hydratedFileSizeResult.ExitCode != ExitCode.Ok)
                 {
                     Loading = false;
                     HydratedFileSize = -1;
                     OtherFileSize = -1;
-                    if (!_cancellationTokenSource.IsCancellationRequested)
+                    if (hydratedFileSizeResult.ExitCode != ExitCode.OperationCanceled)
                     {
                         Utility.ShowUnexpectedErrorTeachingTip();
                         Logger.LogWarning($"Unable to get hydrated file size of {syncPath}",
@@ -418,10 +419,11 @@ namespace Infomaniak.kDrive.Pages
             Loading = false;
         }
 
-        private async Task<long?> GetHydratedFileSizeAsync(CancellationToken cancellationToken)
+        private readonly record struct HydratedFileSizeResult(ExitCode ExitCode, long Value);
+        private async Task<HydratedFileSizeResult> GetHydratedFileSizeAsync(CancellationToken cancellationToken)
         {
             if (_sync is null)
-                return null;
+                return new HydratedFileSizeResult(ExitCode.DataError, -1);
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             UInt64? res = await commService.GetSyncOfflineFilesSize(_sync.DbId, cancellationToken);
@@ -430,13 +432,13 @@ namespace Infomaniak.kDrive.Pages
             {
                 if (!cancellationToken.IsCancellationRequested)
                     Logger.LogWarning("GetSyncOfflineFilesSize returned null");
-                return null;
+                return new HydratedFileSizeResult(ExitCode.OperationCanceled, -1);
             }
 
             if (res.Value > long.MaxValue)
-                return long.MaxValue;
+                return new HydratedFileSizeResult(ExitCode.Ok, long.MaxValue);
             else
-                return (long)res.Value;
+                return new HydratedFileSizeResult(ExitCode.Ok, (long)res.Value);
         }
     }
 }
