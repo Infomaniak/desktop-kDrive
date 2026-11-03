@@ -31,6 +31,7 @@ class AppCache;
 class CommService;
 class OnboardingFlowController;
 class OnboardingState;
+class SyncService;
 class UserService;
 
 /**
@@ -45,8 +46,8 @@ class OnboardingLoginCoordinator : public QObject {
 
     public:
         explicit OnboardingLoginCoordinator(OnboardingFlowController &flowController, CommService &commService,
-                                            UserService &userService, AppCache &appCache, OnboardingState &onboardingState,
-                                            QObject *parent = nullptr);
+                                            UserService &userService, SyncService &syncService, AppCache &appCache,
+                                            OnboardingState &onboardingState, QObject *parent = nullptr);
         ~OnboardingLoginCoordinator() override;
 
     signals:
@@ -62,6 +63,7 @@ class OnboardingLoginCoordinator : public QObject {
         OnboardingFlowController &_flowController;
         CommService &_commService;
         UserService &_userService;
+        SyncService &_syncService;
         AppCache &_appCache;
         OnboardingState &_onboardingState;
         OAuthLoginService _oauthLoginService{this};

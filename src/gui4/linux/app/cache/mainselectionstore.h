@@ -68,6 +68,7 @@ class MainSelectionStore : public QObject {
 
         AppCache &_cache;
         SyncDbId _currentSyncDbId{0};
+        std::optional<SyncContext> _currentSyncContext;
         SyncDbId _lastRequestedSyncDbId{0};
 };
 

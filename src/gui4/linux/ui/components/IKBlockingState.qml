@@ -29,6 +29,7 @@ Rectangle {
     required property string title
     required property string description
     property alias visual: visualContainer.data
+    property real visualSpacing: IKBlockingStateTokens.visualSpacing
     property alias actions: actionsRow.data
 
     radius: IKBlockingStateTokens.cardRadius
@@ -41,7 +42,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.margins: IKBlockingStateTokens.contentMargin
         anchors.verticalCenter: parent.verticalCenter
-        spacing: IKBlockingStateTokens.visualSpacing
+        spacing: root.visualSpacing
 
         Item {
             id: visualContainer
@@ -74,6 +75,7 @@ Rectangle {
 
                 Text {
                     width: parent.width
+                    visible: root.description !== ""
                     text: root.description
                     textFormat: Text.PlainText
                     color: IKColors.textPrimary

@@ -39,7 +39,7 @@ OnboardingSession::OnboardingSession(AppCache &appCache, CommService &commServic
     QObject(parent),
     _userService(userService),
     _onboardingState(appCache),
-    _loginCoordinator(_flowController, commService, userService, appCache, _onboardingState),
+    _loginCoordinator(_flowController, commService, userService, syncService, appCache, _onboardingState),
     _defaultPathResolver(appCache, _onboardingState, commService, serviceEventBus),
     _driveSelectionController(appCache, _onboardingState, userService, _flowController, _defaultPathResolver),
     _syncConfigurationController(appCache, _onboardingState, _flowController, commService),
