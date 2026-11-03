@@ -315,6 +315,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
+        ui/windows/main/SyncProgressText.qml
         ui/windows/main/storage/StorageActionCard.qml
         ui/windows/main/storage/StorageErrorState.qml
         ui/windows/main/storage/StorageLegendEntry.qml
