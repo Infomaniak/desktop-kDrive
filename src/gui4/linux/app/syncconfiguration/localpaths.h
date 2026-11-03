@@ -57,12 +57,12 @@ namespace KDC {
 [[nodiscard]] QString makeUniqueLocalPath(const QString &path, const std::function<bool(const QString &)> &taken);
 
 /**
- * Resolves a path relative to a synchronization root to the canonical path of the existing item it designates.
+ * Resolves a path below a synchronization root to the canonical path of the existing item it designates.
  *
- * An empty relative path designates the root itself. Returns `std::nullopt` when the relative path is absolute or
- * climbs with `..`, when the root or the item does not exist, or when the item resolves outside the root, for instance
- * through a symbolic link.
+ * `path` is relative to the root, or absolute. An empty path designates the root itself. Returns `std::nullopt` when the
+ * path climbs with `..`, when the root or the item does not exist, or when the item resolves outside the root, for
+ * instance through a symbolic link.
  */
-[[nodiscard]] std::optional<SyncPath> resolveExistingPathBelowSyncRoot(const SyncPath &syncRoot, const SyncPath &relativePath);
+[[nodiscard]] std::optional<SyncPath> resolveExistingPathBelowSyncRoot(const SyncPath &syncRoot, const SyncPath &path);
 
 } // namespace KDC
