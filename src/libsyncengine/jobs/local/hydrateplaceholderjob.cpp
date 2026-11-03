@@ -190,7 +190,7 @@ ExitInfo HydratePlaceHolderJob::syncFileStatus(SyncFileStatus &status, VfsStatus
     return ExitCode::Ok;
 }
 
-ExitInfo HydratePlaceHolderJob::cancelHydrate(PinState pinState, ExitInfo exitInfo) {
+ExitInfo HydratePlaceHolderJob::cancelHydrate(const PinState pinState, const ExitInfo &exitInfo) {
     _syncPal->vfs()->cancelHydrate(_absoluteLocalPath, exitInfo);
 
     if (pinState != PinState::Unknown) return _syncPal->vfs()->setPinState(_relativePath, pinState);

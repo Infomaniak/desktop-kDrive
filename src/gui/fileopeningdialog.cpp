@@ -23,8 +23,8 @@
 
 namespace KDC {
 
-static const int boxHMargin = 40;
-static const int messageVBMargin = 15;
+static const int32_t boxHMargin = 40;
+static const int32_t messageVBMargin = 15;
 // The window only carries an informative message, a progress gauge and a cancel button: keep it more compact than
 // the default minimum size of CustomDialog.
 static const QSize windowMinimumSize(625, 280);
@@ -37,7 +37,7 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     mainLayout()->addStretch();
 
     // Message
-    QHBoxLayout *messageHBox = new QHBoxLayout();
+    auto *messageHBox = new QHBoxLayout();
     messageHBox->setContentsMargins(boxHMargin, 0, boxHMargin, messageVBMargin);
     mainLayout()->addLayout(messageHBox);
 
@@ -49,7 +49,7 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     messageHBox->addWidget(_messageLabel);
 
     // Progress bar
-    QHBoxLayout *progressHBox = new QHBoxLayout();
+    auto *progressHBox = new QHBoxLayout();
     progressHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     mainLayout()->addLayout(progressHBox);
 
@@ -61,7 +61,7 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     mainLayout()->addStretch();
 
     // Cancel button
-    QHBoxLayout *buttonsHBox = new QHBoxLayout();
+    auto *buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     mainLayout()->addLayout(buttonsHBox);
 
