@@ -122,16 +122,15 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
     }
 
     const SyncPath absolutePath = _syncRootPath / localProperties.path;
-
     if (_syncVfsMode == VirtualFileMode::Off) {
-        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
-                                                                             ioError, IoHelper::PathCheckOption::Insensitive)) {
+        if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
+                                                                          ioError, IoHelper::PathCheckOption::Insensitive)) {
             LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
         localProperties.isHydrated = localProperties.isAvailableLocally;
     } else {
-        IoError ioError = IoError::Success;
+        auto ioError = IoError::Success;
         bool isDehydrated = false;
         if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
             (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory)) {
@@ -141,6 +140,19 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
             localProperties.isAvailableLocally = ioError != IoError::NoSuchFileOrDirectory;
             localProperties.isHydrated = localProperties.isAvailableLocally && !isDehydrated;
         }
+    }
+
+    auto traversesLink = false;
+    SyncPath linkPath;
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, traversesLink, linkPath);
+        ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+    if (traversesLink) {
+        LOGW_WARN(_logger, L"Path " << Utility::formatSyncPath(absolutePath) << L" traverses the link "
+                                    << Utility::formatSyncPath(linkPath));
+        localProperties.isAvailableLocally = false;
     }
 
     return ExitCode::Ok;
