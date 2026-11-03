@@ -951,8 +951,8 @@ Contact support to unlock the limit.</source>
             <translation>Απαγορευμένη πρόσβαση</translation> 
         </message> 
         <message id="errForbiddenCharDescription"> 
-            <source>The name of this %1 contains one or more characters not supported by the kDrive Windows application. Rename the %2 from kDrive online.</source> 
-            <translation>Το όνομα αυτού του %1 περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive Windows. Μετονομάστε το %2 από το kDrive online.</translation> 
+            <source>The name of this %1 contains one or more characters that are not supported by the kDrive app. Rename %2 using kDrive online.</source> 
+            <translation>Το όνομα αυτού του %1 περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive. Μετονομάστε το %2 μέσω του kDrive online.</translation> 
         </message> 
         <message id="errForbiddenCharOnlySpacesTitle"> 
             <source>Invalid name</source> 

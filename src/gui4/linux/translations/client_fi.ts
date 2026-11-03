@@ -951,8 +951,8 @@ Ota yhteyttä tukeen rajan poistamiseksi.</translation>
             <translation>Pääsy kielletty</translation> 
         </message> 
         <message id="errForbiddenCharDescription"> 
-            <source>The name of this %1 contains one or more characters not supported by the kDrive Windows application. Rename the %2 from kDrive online.</source> 
-            <translation>Tämän %1 nimi sisältää yhden tai useamman merkin, joita kDriven Windows-sovellus ei tue. Nimeä %2 uudelleen kDrive-verkkopalvelusta.</translation> 
+            <source>The name of this %1 contains one or more characters that are not supported by the kDrive app. Rename %2 using kDrive online.</source> 
+            <translation>Tämän %1:n nimessä on yksi tai useampi merkki, joita kDrive-sovellus ei tue. Nimeä %2 uudelleen kDrive-verkkopalvelussa.</translation> 
         </message> 
         <message id="errForbiddenCharOnlySpacesTitle"> 
             <source>Invalid name</source> 
