@@ -82,13 +82,6 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
 }
 
 void FileOpeningDialog::updateStatus(const FileOpeningPhase phase, const int8_t percent, const QString &itemName) {
-    if (_userDismissed && phase == _dismissedPhase) {
-        // The user dismissed the window for this state: keep it hidden until the state of the request changes.
-        return;
-    }
-    _userDismissed = false;
-    _dismissedPhase = phase;
-
     switch (phase) {
         case FileOpeningPhase::WaitingSync:
             _messageLabel->setText(tr("This item is not synchronized yet. Synchronizing it may take some time."));
@@ -116,9 +109,8 @@ void FileOpeningDialog::updateStatus(const FileOpeningPhase phase, const int8_t 
 }
 
 void FileOpeningDialog::onExit() {
-    // Dismiss the window: the file opening keeps running, but the window stays hidden until the state of the request
-    // changes again (e.g. the item starts downloading).
-    _userDismissed = true;
+    // Dismiss the window: the file opening keeps running, and the window is displayed again the next time the server
+    // reports the state of the request.
     hide();
 }
 
