@@ -151,6 +151,8 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
     if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, traversesLink, linkPath);
         ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
     if (traversesLink && linkPath != _syncRootPath && CommonUtility::isDescendantOrEqual(linkPath, _syncRootPath)) {
