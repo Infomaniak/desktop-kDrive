@@ -31,6 +31,11 @@ Rectangle {
 
     signal actionTriggered
 
+    // Gives the keyboard focus to the "Fix errors" button, for instance when the user comes back from the errors page.
+    function focusAction() {
+        fixButton.forceActiveFocus();
+    }
+
     implicitHeight: IKMainWindow.errorBannerHeight
     radius: IKRadius.r12
     color: IKColors.errorBannerSurface

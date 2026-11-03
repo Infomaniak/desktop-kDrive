@@ -84,6 +84,8 @@ class ErrorListModel final : public QAbstractListModel {
         [[nodiscard]] std::optional<ErrorDbId> errorDbId(const QString &rowId) const;
         /** Returns the technical details of a row as "Name: value" lines, or an empty string. */
         [[nodiscard]] QString technicalDetailsText(const QString &rowId) const;
+        /** Returns the first row, in display order, that stands for one of `errorDbIds`, or -1. */
+        [[nodiscard]] int32_t firstRowOf(const std::vector<ErrorDbId> &errorDbIds) const;
 
     private:
         struct Row {
@@ -107,6 +109,8 @@ class ErrorListModel final : public QAbstractListModel {
                 uint8_t actionLabelArgCount{0};
                 bool actionExternal{false};
                 bool actionPending{false};
+                // Errors the aggregated conflicts row stands for.
+                std::vector<ErrorDbId> conflictDbIds;
 
                 friend bool operator==(const Row &lhs, const Row &rhs) = default;
         };
@@ -116,7 +120,7 @@ class ErrorListModel final : public QAbstractListModel {
         [[nodiscard]] std::vector<Row> buildRows() const;
         [[nodiscard]] Row makeErrorRow(const ClassifiedSyncError &classified, SyncErrorCategory section,
                                        const std::optional<SyncContext> &context) const;
-        [[nodiscard]] static Row makeConflictsRow(int32_t conflictCount);
+        [[nodiscard]] static Row makeConflictsRow(std::vector<ErrorDbId> conflictDbIds);
         [[nodiscard]] bool isActionPending(SyncErrorAction action) const;
         void updateRow(int32_t rowIndex, Row nextRow);
 
