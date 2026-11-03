@@ -37,7 +37,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void SyncCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded || !ViewModel.IsInitialized)
+            if (!IsLoaded || !ViewModel.IsInitialized || e.RemovedItems.Count == 0)
                 return;
 
             _analyticsService.TrackClick(Analytics.Keys.Category.SyncSelector, Analytics.Keys.EventName.SyncSelected);
