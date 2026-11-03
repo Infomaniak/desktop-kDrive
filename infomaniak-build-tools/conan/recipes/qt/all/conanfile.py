@@ -486,13 +486,13 @@ class QtConan(ConanFile):
         else:
             raise ConanInvalidConfiguration(f"Unsupported OS: {self.settings.os}")
 
-    def _trim_unused_sql_drivers(self):
+    def _remove_sql_drivers(self):
         """
-        Remove every SQL driver other than SQLite from the packaged Qt, together with the
-        CMake plugin packages describing them (lib/cmake/Qt6Sql/Qt6Q<Name>DriverPlugin*).
+        Remove every SQL driver from the packaged Qt, together with the CMake plugin packages
+        describing them (lib/cmake/Qt6Sql/Qt6Q<Name>DriverPlugin*).
 
         Rationale: the Qt online installer ships every SQL driver Qt was built with, while
-        kDrive only consumes QSQLITE. The extra drivers pull third-party client libraries
+        kDrive does not use Qt SQL. Most drivers pull third-party client libraries
         (e.g. libfbclient.so.2 for the Firebird driver) that are neither installed on the
         build machines nor bundled with Qt, which fatally breaks the AppImage packaging:
         linuxdeploy-plugin-qt redeploys every driver it finds in the Qt installation and
@@ -504,24 +504,12 @@ class QtConan(ConanFile):
         package (module config -> Qt6SqlPlugins.cmake -> __qt_internal_include_plugin_packages,
         which globs the plugin configuration files) and those configurations hard-fail when
         the plugin library they point to is missing. Qt6SqlPlugins.cmake itself is kept: it
-        carries no per-plugin references (verified against the real 6.12.0 Linux package),
-        and after this trim its glob-based plugin inclusion covers the SQLite driver alone.
+        carries no per-plugin references (verified against the real 6.12.0 Linux package).
         """
         sqldrivers_dir = pjoin(self.package_folder, "plugins", "sqldrivers")
-        if not os.path.isdir(sqldrivers_dir):
-            return
-
-        removed_drivers = []
-        for entry in sorted(os.listdir(sqldrivers_dir)):
-            if re.match(r"^(lib)?qsqlite", entry):
-                continue  # kDrive uses QSQLITE; keep every variant of the SQLite driver
-            path = pjoin(sqldrivers_dir, entry)
-            if os.path.isfile(path) or os.path.islink(path):
-                os.remove(path)
-                removed_drivers.append(entry)
-        if removed_drivers:
-            self.output.info(f"Removed unused SQL drivers: {', '.join(removed_drivers)}")
-            self.output.info(f"Kept SQL drivers: {', '.join(sorted(os.listdir(sqldrivers_dir)))}")
+        if os.path.isdir(sqldrivers_dir):
+            self.output.info(f"Removed SQL drivers: {', '.join(sorted(os.listdir(sqldrivers_dir)))}")
+            rmdir(self, sqldrivers_dir)
 
         cmake_sql_dir = pjoin(self.package_folder, "lib", "cmake", "Qt6Sql")
         if not os.path.isdir(cmake_sql_dir):
@@ -531,8 +519,6 @@ class QtConan(ConanFile):
         for entry in sorted(os.listdir(cmake_sql_dir)):
             if not fnmatch(entry, "Qt6Q*DriverPlugin*.cmake"):
                 continue
-            if fnmatch(entry, "Qt6QSQLiteDriverPlugin*"):
-                continue  # keep the CMake plugin package of the SQLite driver
             os.remove(pjoin(cmake_sql_dir, entry))
             removed_cmake_files.append(entry)
 
@@ -572,7 +558,7 @@ class QtConan(ConanFile):
         for folder in ("doc",):
             rmdir(self, pjoin(self.package_folder, folder))
 
-        self._trim_unused_sql_drivers()
+        self._remove_sql_drivers()
 
 
     def package_info(self):
