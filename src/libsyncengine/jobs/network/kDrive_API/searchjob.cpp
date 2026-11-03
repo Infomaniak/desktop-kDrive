@@ -123,34 +123,34 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
 
     const SyncPath absolutePath = _syncRootPath / localProperties.path;
     if (_syncVfsMode == VirtualFileMode::Off) {
-        if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
-                                                                          ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-        localProperties.isHydrated = localProperties.isAvailableLocally;
+        localProperties.isAvailableLocally = true;
+        localProperties.isHydrated = true;
     } else {
         auto ioError = IoError::Success;
         bool isDehydrated = false;
         if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
-            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory)) {
+            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory && ioError != IoError::AccessDenied)) {
             LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         } else {
-            localProperties.isAvailableLocally = ioError != IoError::NoSuchFileOrDirectory;
+            localProperties.isAvailableLocally = ioError == IoError::Success;
             localProperties.isHydrated = localProperties.isAvailableLocally && !isDehydrated;
         }
     }
-
-    if (!localProperties.isAvailableLocally) return ExitCode::Ok;
 
     ItemType destinationType;
     if (!IoHelper::getItemType(absolutePath, destinationType)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, destinationType.ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
-
-    if (destinationType.ioError == IoError::Success && IoHelper::isLink(destinationType.linkType)) {
+    if (destinationType.ioError != IoError::Success && destinationType.ioError != IoError::NoSuchFileOrDirectory &&
+        destinationType.ioError != IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, destinationType.ioError));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+    if (destinationType.ioError != IoError::Success || IoHelper::isLink(destinationType.linkType)) {
         localProperties.isAvailableLocally = false;
         localProperties.isHydrated = false;
         return ExitCode::Ok;
