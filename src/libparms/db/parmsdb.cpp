@@ -3929,7 +3929,7 @@ bool ParmsDb::driveDbIds(const UserId userId, const DriveId driveId, std::unorde
 
     std::unordered_set<AccountDbId> userAccountDbIds;
     for (const auto &account: accounts) {
-        if (account.userDbId() == user.dbId()) userAccountDbIds.insert(account.dbId());
+        if (account.userDbId() == user.dbId()) (void) userAccountDbIds.insert(account.dbId());
     }
 
     for (const auto &drive: drives) {

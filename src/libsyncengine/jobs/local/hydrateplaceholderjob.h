@@ -56,7 +56,7 @@ class HydratePlaceHolderJob : public SyncJob {
         //! maps.
         ExitInfo syncFileStatus(SyncFileStatus &status, VfsStatus &vfsStatus);
         //! Cancels an ongoing hydration of the item and restores `pinState` if it is not PinState::Unknown.
-        ExitInfo cancelHydrate(PinState pinState, ExitInfo exitInfo);
+        ExitInfo cancelHydrate(const PinState pinState, const ExitInfo &exitInfo);
 
         const std::shared_ptr<SyncPal> _syncPal;
         const SyncPath _absoluteLocalPath;
