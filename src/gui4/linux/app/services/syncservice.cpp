@@ -31,6 +31,7 @@ namespace {
 constexpr char serviceKeySync[] = "sync";
 constexpr char actionStartSync[] = "startSync";
 constexpr char actionStopSync[] = "stopSync";
+constexpr char actionStartSyncsAfterLogin[] = "startSyncsAfterLogin";
 constexpr char actionDeleteSync[] = "deleteSync";
 constexpr char actionQuerySyncStatus[] = "querySyncStatus";
 constexpr char actionFindGoodPathForNewSync[] = "findGoodPathForNewSync";
@@ -130,6 +131,24 @@ void SyncService::startSync(const qint64 syncDbId) {
             revertOptimisticSyncStatus(syncDbId, SyncStatus::Starting, previousStatus);
             notifyRequestFailure(exitInfo, RequestNum::SYNC_START);
         }
+    });
+}
+
+void SyncService::startSyncsAfterLogin(const UserDbId userDbId) {
+    if (isActionPending(actionStartSyncsAfterLogin, userDbId)) {
+        qCWarning(lcSyncService) << "Sync restart after login ignored: already pending | userDbId:" << userDbId;
+        return;
+    }
+
+    qCInfo(lcSyncService) << "Restarting synchronizations after login | userDbId:" << userDbId;
+    beginAction(actionStartSyncsAfterLogin, userDbId);
+    _commService.requestStartSyncsAfterLogin(userDbId, [this, userDbId](const ExitInfo &exitInfo) {
+        endAction(actionStartSyncsAfterLogin, userDbId);
+        if (!exitInfo) {
+            notifyRequestFailure(exitInfo, RequestNum::SYNC_START_AFTER_LOGIN);
+            return;
+        }
+        qCInfo(lcSyncService) << "Synchronizations restarted after login | userDbId:" << userDbId;
     });
 }
 

@@ -70,6 +70,8 @@ class SyncService : public QObject {
                                 const CommService::NodeIdCallback &callback);
 
         Q_INVOKABLE void startSync(qint64 syncDbId);
+        // Restarts the synchronizations of a user who logged in again (SYNC_START_AFTER_LOGIN).
+        void startSyncsAfterLogin(UserDbId userDbId);
         Q_INVOKABLE void stopSync(qint64 syncDbId);
         Q_INVOKABLE void deleteSync(qint64 syncDbId);
         // Sends SYNC_DELETE and reports its outcome. The cache still learns the removal from the SYNC_REMOVED push.
