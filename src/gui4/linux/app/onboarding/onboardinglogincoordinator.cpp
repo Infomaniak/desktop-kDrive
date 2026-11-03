@@ -22,23 +22,33 @@
 #include "app/cache/onboardingstate.h"
 #include "app/onboarding/onboardingflowcontroller.h"
 #include "app/services/commservice.h"
+#include "app/services/syncservice.h"
 #include "app/services/userservice.h"
 
 #include <QLoggingCategory>
+
+#include <algorithm>
 
 namespace KDC {
 
 namespace {
 Q_LOGGING_CATEGORY(lcOnboardingLoginCoordinator, "gui.v4.onboardinglogincoordinator", QtInfoMsg)
+
+bool hasSyncs(const AppCache &appCache, const UserDbId userDbId) {
+    const auto contexts = appCache.syncContexts();
+    return std::ranges::any_of(contexts,
+                               [userDbId](const SyncContext &context) { return context.userDisplayInfo.dbId() == userDbId; });
+}
 } // namespace
 
 OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController &flowController, CommService &commService,
-                                                       UserService &userService, AppCache &appCache,
+                                                       UserService &userService, SyncService &syncService, AppCache &appCache,
                                                        OnboardingState &onboardingState, QObject *const parent) :
     QObject(parent),
     _flowController(flowController),
     _commService(commService),
     _userService(userService),
+    _syncService(syncService),
     _appCache(appCache),
     _onboardingState(onboardingState) {
     (void) connect(&_flowController, &OnboardingFlowController::loginRequested, &_oauthLoginService,
@@ -107,6 +117,16 @@ void OnboardingLoginCoordinator::loadAvailableDrivesWhenUserIsCached(const UserD
     }
 
     _pendingUserDbId.reset();
+
+    // A user who already has synchronizations logged in again, for instance from the blocking error screen: restart
+    // them and return to the main window, instead of selecting drives.
+    if (hasSyncs(_appCache, userDbId)) {
+        qCInfo(lcOnboardingLoginCoordinator) << "Known user logged in again, restarting synchronizations | userDbId:" << userDbId;
+        _syncService.startSyncsAfterLogin(userDbId);
+        _flowController.completeReconnection(userDbId);
+        return;
+    }
+
     _pendingAvailableDrivesUserDbId = userDbId;
     _onboardingState.selectUser(userDbId);
     _flowController.completeLogin(userDbId);

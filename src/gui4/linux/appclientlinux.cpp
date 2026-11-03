@@ -91,6 +91,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                          "SyncSelectorModel is owned by MainSidebarController.");
     (void) qmlRegisterUncreatableType<HomeController>(AppConstants::Qml::moduleUri, 1, 0, "HomeController",
                                                       "HomeController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableType<BlockingErrorController>(AppConstants::Qml::moduleUri, 1, 0, "BlockingErrorController",
+                                                               "BlockingErrorController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ActivityListModel>(AppConstants::Qml::moduleUri, 1, 0, "ActivityListModel",
                                                          "ActivityListModel is owned by ActivitiesController.");
     (void) qmlRegisterUncreatableType<ActivitiesController>(AppConstants::Qml::moduleUri, 1, 0, "ActivitiesController",
@@ -108,6 +110,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             "OnboardingSyncConfigurationController is owned by OnboardingSession.");
     (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0,
                                             "WebDrive", QStringLiteral("WebDrive only exposes enums."));
+    (void) qmlRegisterUncreatableMetaObject(BlockingErrors::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0,
+                                            "BlockingErrors", QStringLiteral("BlockingErrors only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
@@ -120,6 +124,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
+            {QStringLiteral("blockingErrorController"), QVariant::fromValue<QObject *>(&_blockingErrorController)},
             {QStringLiteral("manyDeletesController"), QVariant::fromValue<QObject *>(&_manyDeletesController)},
             {QStringLiteral("storageController"), QVariant::fromValue<QObject *>(&_storageController)},
             {QStringLiteral("searchController"), QVariant::fromValue<QObject *>(&_searchController)},
@@ -160,6 +165,8 @@ void AppClientLinux::setupSignalConnections() {
                    &AppClientLinux::openSettingsWindow);
     (void) connect(&_syncErrorsProjection, &SyncErrorsProjection::updateRequiredChanged, this,
                    &AppClientLinux::handleUpdateRequiredChanged);
+    (void) connect(&_blockingErrorController, &BlockingErrorController::loginRequested, &_onboardingSessionManager,
+                   &OnboardingSessionManager::startLoginSession);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
