@@ -155,7 +155,8 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
         localProperties.isHydrated = false;
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
-    if (traversesLink && linkPath != _syncRootPath && CommonUtility::isDescendantOrEqual(linkPath, _syncRootPath)) {
+    const SyncPath syncRootPath = _syncRootPath.has_filename() ? _syncRootPath : _syncRootPath.parent_path();
+    if (traversesLink && linkPath != syncRootPath && CommonUtility::isDescendantOrEqual(linkPath, syncRootPath)) {
         LOGW_WARN(_logger, L"Path " << Utility::formatSyncPath(absolutePath) << L" traverses the link "
                                     << Utility::formatSyncPath(linkPath));
         localProperties.isAvailableLocally = false;
