@@ -19,10 +19,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import kDrive.UI
 
-// One error of the errors page, as a card: title, item, description and the button of its action.
+// One error of the errors page, as a card: title, item, description and the button of its action. The variants add
+// an information tooltip, a copyable path or the technical details of an unexpected error.
 Rectangle {
     id: root
 
@@ -37,16 +39,44 @@ Rectangle {
     required property string itemPath
     required property string itemIconName
     required property bool isDirectory
+    required property int variant
+    required property string copyablePath
+    required property var technicalDetails
     required property string actionLabelId
     required property int actionLabelArgCount
     required property bool actionExternal
     required property bool actionPending
 
     readonly property string title: ErrorTexts.text(root.titleId, root.titleArgCount, root.nodeLabelId, root.titleCount)
-    readonly property string description: ErrorTexts.text(root.descriptionId, root.descriptionArgCount,
-                                                          root.nodeLabelId, 0)
+    readonly property string fullDescription: ErrorTexts.text(root.descriptionId, root.descriptionArgCount,
+                                                              root.nodeLabelId, 0)
+    // The information variant keeps the first line as description and shows the advice that follows in its tooltip.
+    readonly property int adviceSeparator: root.variant === SyncErrors.InfoTooltip ? root.fullDescription.indexOf("\n") : -1
+    readonly property string description: root.adviceSeparator < 0 ? root.fullDescription
+                                                                   : root.fullDescription.slice(0, root.adviceSeparator)
+    readonly property string advice: root.adviceSeparator < 0 ? "" : root.fullDescription.slice(root.adviceSeparator + 1)
+    property bool detailsExpanded: false
+
+    // One cell per name, then one per value: the details grid fills its rows in that order. The details arrive as a Qt
+    // sequence, which has no `flatMap`.
+    function detailCells(details) {
+        const cells = [];
+        for (let index = 0; index < details.length; ++index) {
+            cells.push({
+                "text": details[index].label,
+                "isValue": false
+            });
+            cells.push({
+                "text": details[index].value,
+                "isValue": true
+            });
+        }
+        return cells;
+    }
 
     signal actionTriggered(string rowId)
+    signal copyRequested(string rowId)
+    signal technicalDetailsCopyRequested(string rowId)
 
     implicitHeight: card.implicitHeight + 2 * IKActivities.errorsCardVerticalPadding
     radius: IKActivities.errorsCardRadius
@@ -94,15 +124,57 @@ Rectangle {
                     isDirectory: root.isDirectory
                 }
 
-                Text {
+                RowLayout {
                     Layout.fillWidth: true
-                    text: root.description
-                    textFormat: Text.PlainText
-                    color: IKColors.textSecondary
-                    font.pixelSize: IKFonts.subheadlineSize
-                    wrapMode: Text.WordWrap
-                    Accessible.role: Accessible.StaticText
-                    Accessible.name: text
+                    spacing: IKSpacing.s4
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.description
+                        textFormat: Text.PlainText
+                        color: IKColors.textSecondary
+                        font.pixelSize: IKFonts.subheadlineSize
+                        wrapMode: Text.WordWrap
+                        Accessible.role: Accessible.StaticText
+                        Accessible.name: text
+                    }
+
+                    ToolButton {
+                        id: infoButton
+
+                        Layout.alignment: Qt.AlignTop
+                        implicitWidth: IKActivities.errorsInfoIconSize + 2 * IKSpacing.s4
+                        implicitHeight: implicitWidth
+                        visible: root.advice.length > 0
+                        text: qsTrId("accessibilityMoreInformation")
+                        focusPolicy: Qt.StrongFocus
+                        hoverEnabled: true
+                        display: AbstractButton.IconOnly
+                        Accessible.name: text
+                        Accessible.description: root.advice
+
+                        contentItem: Item {
+                            IKTintedIcon {
+                                anchors.centerIn: parent
+                                width: IKActivities.errorsInfoIconSize
+                                height: width
+                                source: "qrc:/assets/settings/information.svg"
+                                color: IKColors.textSecondary
+                            }
+                        }
+
+                        background: Rectangle {
+                            radius: width / 2
+                            color: infoButton.hovered ? IKColors.surfaceTertiary : "transparent"
+                            border.width: infoButton.visualFocus ? 2 : 0
+                            border.color: IKColors.accentPrimary
+                        }
+
+                        IKToolTip {
+                            targetButton: infoButton
+                            text: root.advice
+                        }
+                    }
                 }
             }
 
@@ -119,6 +191,151 @@ Rectangle {
                 // Several rows can share a label ("Rename file"): the item tells them apart.
                 Accessible.description: root.itemName.length > 0 ? root.itemName : root.title
                 onClicked: root.actionTriggered(root.rowId)
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            implicitHeight: IKActivities.errorsCopyFieldHeight
+            visible: root.variant === SyncErrors.CopyablePath && root.copyablePath.length > 0
+            radius: IKRadius.r4
+            color: IKColors.errorsCopyFieldSurface
+            border.width: 1
+            border.color: IKColors.errorsCopyFieldBorder
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: IKSpacing.s8
+                anchors.rightMargin: IKSpacing.s4
+                spacing: IKSpacing.s4
+
+                Text {
+                    id: pathLabel
+
+                    Layout.fillWidth: true
+                    text: root.copyablePath
+                    textFormat: Text.PlainText
+                    color: IKColors.textSecondary
+                    font.pixelSize: IKFonts.bodySize
+                    elide: Text.ElideMiddle
+
+                    HoverHandler {
+                        id: pathHover
+                    }
+
+                    IKToolTip {
+                        text: root.copyablePath
+                        showRequested: pathHover.hovered && pathLabel.truncated
+                    }
+                }
+
+                ErrorCopyButton {
+                    text: qsTrId("buttonCopyPath")
+                    copiedText: qsTrId("pathCopiedToClipboard")
+                    onCopyRequested: root.copyRequested(root.rowId)
+                }
+            }
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            visible: root.variant === SyncErrors.Technical && root.technicalDetails.length > 0
+            spacing: IKActivities.errorsDetailsLineSpacing
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: IKSpacing.s4
+
+                // A full-width disclosure row: the hover surface and the hand cursor tell that it unfolds.
+                ToolButton {
+                    id: detailsButton
+
+                    Layout.fillWidth: true
+                    text: qsTrId("defaultErrorDetailsLabel")
+                    focusPolicy: Qt.StrongFocus
+                    hoverEnabled: true
+                    checkable: true
+                    checked: root.detailsExpanded
+                    padding: IKActivities.errorsDetailsHeaderPadding
+                    Accessible.name: text
+                    Accessible.role: Accessible.Button
+                    onToggled: root.detailsExpanded = checked
+
+                    HoverHandler {
+                        cursorShape: Qt.PointingHandCursor
+                    }
+
+                    contentItem: RowLayout {
+                        spacing: IKSpacing.s4
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: detailsButton.text
+                            textFormat: Text.PlainText
+                            color: IKColors.textSecondary
+                            font.pixelSize: IKFonts.subheadlineSize
+                            font.weight: IKFonts.emphasized
+                        }
+
+                        IKTintedIcon {
+                            Layout.preferredWidth: IKActivities.errorsChipIconSize
+                            Layout.preferredHeight: IKActivities.errorsChipIconSize
+                            source: "qrc:/assets/main/chevron-down.svg"
+                            color: IKColors.textSecondary
+                            // Right when folded, down when unfolded, as on the mockup.
+                            rotation: root.detailsExpanded ? 0 : -90
+
+                            Behavior on rotation {
+                                NumberAnimation {
+                                    duration: IKActivities.errorsDetailsChevronDuration
+                                }
+                            }
+                        }
+                    }
+
+                    background: Rectangle {
+                        radius: IKRadius.r4
+                        color: detailsButton.hovered || detailsButton.down ? IKColors.errorsDetailsHover : "transparent"
+                        border.width: detailsButton.visualFocus ? 2 : 0
+                        border.color: IKColors.accentPrimary
+                    }
+                }
+
+                ErrorCopyButton {
+                    text: qsTrId("buttonCopyTechnicalDetails")
+                    copiedText: qsTrId("technicalDetailsCopiedToClipboard")
+                    onCopyRequested: root.technicalDetailsCopyRequested(root.rowId)
+                }
+            }
+
+            // Field names and values in aligned columns, two pairs per row when the card is wide enough, so that every
+            // value starts at the same place. The copy button next to the title sends them to the support.
+            GridLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: IKActivities.errorsDetailsHeaderPadding
+                visible: root.detailsExpanded
+                columns: width >= IKActivities.errorsDetailsTwoPairsMinWidth ? 4 : 2
+                columnSpacing: IKActivities.errorsDetailsColumnSpacing
+                rowSpacing: IKActivities.errorsDetailsLineSpacing
+
+                Repeater {
+                    model: root.detailsExpanded ? root.detailCells(root.technicalDetails) : []
+
+                    Text {
+                        required property var modelData
+
+                        Layout.fillWidth: modelData.isValue
+                        Layout.alignment: Qt.AlignTop
+                        text: modelData.text
+                        textFormat: Text.PlainText
+                        color: modelData.isValue ? IKColors.textPrimary : IKColors.errorsDetailsLabel
+                        font.pixelSize: IKFonts.subheadlineSize
+                        font.weight: modelData.isValue ? IKFonts.medium : IKFonts.regular
+                        // A long value keeps one line and its end, which tells most (file name, function): the copy
+                        // button still sends it whole.
+                        elide: modelData.isValue ? Text.ElideLeft : Text.ElideNone
+                    }
+                }
             }
         }
     }

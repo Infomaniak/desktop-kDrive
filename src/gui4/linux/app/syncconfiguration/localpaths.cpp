@@ -97,4 +97,8 @@ std::optional<SyncPath> resolveExistingPathBelowSyncRoot(const SyncPath &syncRoo
     return canonicalTargetPath;
 }
 
+SyncPath absoluteSyncPath(const SyncPath &syncRoot, const SyncPath &path) {
+    return (path.is_absolute() ? path : syncRoot / path).lexically_normal();
+}
+
 } // namespace KDC
