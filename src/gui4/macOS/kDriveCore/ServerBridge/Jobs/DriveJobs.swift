@@ -75,10 +75,7 @@ public struct DriveJobs: Sendable {
         let query = DriveUpdateQuery(driveInfo: driveInfo)
         let request = await RequestMessage<DriveUpdateQuery>(num: RequestNum.DRIVE_UPDATE, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-
-        // TODO: update cache by drive update signal
-        // await coherentCache.updateDrive(drive: driveInfo.asDrive)
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
     // TODO: Simplify parameters requirements once I checked with team how to get a `driveDbId` all the time
@@ -86,19 +83,19 @@ public struct DriveJobs: Sendable {
         let query = DriveDeleteQuery(driveDbId: driveDbId)
         let request = await RequestMessage<DriveDeleteQuery>(num: RequestNum.DRIVE_DELETE, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+        _ = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         await coherentCache.removeDrive(driveDbId: driveDbId, accountDbId: accountId, userDbId: userDbId)
-
-        // TODO: also implement signal
     }
 
-    public func driveSearch(syncDbId: Int32, searchString: String) async throws -> [SearchResponse] {
-        let query = DriveSearchQuery(syncDbId: syncDbId, searchString: searchString)
+    public func driveSearch(syncDbId: Int32, searchString: String, cursor: String) async throws -> DriveSearchPage {
+        let query = DriveSearchQuery(syncDbId: syncDbId, searchString: searchString, cursor: cursor)
         let request = await RequestMessage<DriveSearchQuery>(num: RequestNum.DRIVE_SEARCH, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SearchInfoList>.self)
 
-        return decodedMessage.body.searchInfoList
+        return DriveSearchPage(items: decodedMessage.body.searchInfoList,
+                               hasMore: decodedMessage.body.hasMore,
+                               nextCursor: decodedMessage.body.cursor)
     }
 }

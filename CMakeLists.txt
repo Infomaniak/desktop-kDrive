@@ -41,17 +41,7 @@ if(UNIX)
     add_subdirectory(src/3rdparty/utf8proc)
 endif()
 
-# keychain
-add_subdirectory(src/3rdparty/keychain)
-if (UNIX AND NOT APPLE) # Add this on linux to fix keychain problems with gcc 15
-    target_compile_options(keychain PRIVATE -Wno-uninitialized)
-endif()
-
 #####
-
-# Create an alias for the Qt6::Core target, used by the sentry recipe
-find_package(Qt6 COMPONENTS Core)
-add_library(qt::qt ALIAS Qt6::Core)
 
 if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -108,7 +98,10 @@ include(GenerateExportHeader)
 add_definitions(
         -DQT_USE_QSTRINGBUILDER
         -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
-        -DQT_DEPRECATED_WARNINGS
+        # QT_WARN_DEPRECATED_UP_TO caps the Qt version for which deprecated annotations are emitted.
+        # Capped at 6.12.0 (0x060C00) to avoid Qt 6.13+ deprecation markers that GCC 11 cannot parse
+        # when they appear before [[nodiscard]] inside class definitions.
+        -DQT_WARN_DEPRECATED_UP_TO=0x060C00
 )
 
 if(APPLE)
@@ -167,10 +160,10 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
 # this option enables the default GUI for the current platform when building the src folder
-# (src/gui4 on Windows, legacy Qt GUI in src/gui on Linux/macOS)
+# (src/gui4 on Windows/macOS, Qt GUI in src/gui on Linux)
 option(BUILD_GUI "BUILD_GUI" ON)
 
-# this option adds src/gui to the subdirectories when building the src folder 
+# this option enables the legacy Qt GUI on Windows/macOS
 option(BUILD_GUI_LEGACY "BUILD_GUI_LEGACY" OFF)
 
 # build the tests
@@ -183,9 +176,6 @@ endif(APPLE)
 
 if(APPLE)
     set(TEAM_IDENTIFIER_PREFIX "" CACHE STRING "Team identifier prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
-
-    # TODO: Remove when all the app will be built with the default version
-    set(XCODE_GUI4 "Xcode_26.app" CACHE STRING "Xcode version to use for building the GUI4 project")
 endif()
 
 if(BUILD_CLIENT)
@@ -378,8 +368,8 @@ if(UNIX AND NOT APPLE)
         # Copy .so files to the conan dependency directory
         find_package(log4cplus 2.1.2 REQUIRED)
         find_package(xxHash 0.8.2 REQUIRED)
-        find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
-        find_package(Poco 1.13.3 REQUIRED)
+        find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
+        find_package(Poco 1.15.2 REQUIRED)
         find_package(sentry REQUIRED)
 
         # Normalize Conan variables to be build-type agnostic
@@ -394,37 +384,30 @@ if(UNIX AND NOT APPLE)
             include("${CONAN_GEN_DIR}/ConanNormalizeVars.cmake")
         endif()
 
-        # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type
-        file(COPY
+        # We use <lib>_LIB_DIRS which is normalized by Conan to match the current build type.
+        # Glob each shared library and its SONAME chain (e.g. libPocoCrypto.so and
+        # libPocoCrypto.so.<abi>) instead of hardcoding versioned file names, so that
+        # dependency SONAME bumps do not require updating this list.
+        file(GLOB _dep_shared_libs
             # log4cplus
-            "${log4cplus_LIB_DIRS}/liblog4cplus.so"
-            "${log4cplus_LIB_DIRS}/liblog4cplus.so.9"
+            "${log4cplus_LIB_DIRS}/liblog4cplus.so*"
             # xxHash
-            "${xxhash_LIB_DIRS}/libxxhash.so"
-            "${xxhash_LIB_DIRS}/libxxhash.so.0"
-            "${xxhash_LIB_DIRS}/libxxhash.so.0.8.2"
+            "${xxhash_LIB_DIRS}/libxxhash.so*"
             # OpenSSL
-            "${openssl_LIB_DIRS}/libcrypto.so"
-            "${openssl_LIB_DIRS}/libcrypto.so.3"
-            "${openssl_LIB_DIRS}/libssl.so"
-            "${openssl_LIB_DIRS}/libssl.so.3"
+            "${openssl_LIB_DIRS}/libcrypto.so*"
+            "${openssl_LIB_DIRS}/libssl.so*"
             # sentry
-            "${sentry_LIB_DIRS}/libsentry.so"
+            "${sentry_LIB_DIRS}/libsentry.so*"
             # Poco
-            "${poco_LIB_DIRS}/libPocoCrypto.so"
-            "${poco_LIB_DIRS}/libPocoCrypto.so.103"
-            "${poco_LIB_DIRS}/libPocoFoundation.so"
-            "${poco_LIB_DIRS}/libPocoFoundation.so.103"
-            "${poco_LIB_DIRS}/libPocoJSON.so"
-            "${poco_LIB_DIRS}/libPocoJSON.so.103"
-            "${poco_LIB_DIRS}/libPocoNet.so"
-            "${poco_LIB_DIRS}/libPocoNet.so.103"
-            "${poco_LIB_DIRS}/libPocoNetSSL.so"
-            "${poco_LIB_DIRS}/libPocoNetSSL.so.103"
-            "${poco_LIB_DIRS}/libPocoUtil.so"
-            "${poco_LIB_DIRS}/libPocoUtil.so.103"
-            "${poco_LIB_DIRS}/libPocoXML.so"
-            "${poco_LIB_DIRS}/libPocoXML.so.103"
+            "${poco_LIB_DIRS}/libPocoCrypto.so*"
+            "${poco_LIB_DIRS}/libPocoFoundation.so*"
+            "${poco_LIB_DIRS}/libPocoJSON.so*"
+            "${poco_LIB_DIRS}/libPocoNet.so*"
+            "${poco_LIB_DIRS}/libPocoNetSSL.so*"
+            "${poco_LIB_DIRS}/libPocoUtil.so*"
+            "${poco_LIB_DIRS}/libPocoXML.so*"
+        )
+        file(COPY ${_dep_shared_libs}
             DESTINATION "${CONAN_DEP_DIR}"
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
         )

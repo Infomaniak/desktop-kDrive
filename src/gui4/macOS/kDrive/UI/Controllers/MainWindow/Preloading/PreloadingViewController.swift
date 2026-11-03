@@ -22,7 +22,7 @@ import kDriveCoreUI
 import kDriveResources
 import Lottie
 
-final class PreloadingViewController: NSViewController {
+final class PreloadingViewController: BaseViewController {
     private lazy var animationView: NSThemedAnimationView = {
         let view = NSThemedAnimationView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -64,7 +64,7 @@ final class PreloadingViewController: NSViewController {
 
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
-        window.toolbar = NSToolbar()
+        window.toolbar = NSToolbar(identifier: NSToolbar.Identifier("PreloadingToolbar"))
     }
 
     private func setupView() {

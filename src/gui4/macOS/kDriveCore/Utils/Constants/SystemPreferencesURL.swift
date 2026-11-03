@@ -21,15 +21,17 @@ import Foundation
 public enum SystemPreferencesURL {
     private static let systemPreferencesWindow = "x-apple.systempreferences:com.apple"
 
-    public static let general = URL(string: systemPreferencesWindow)!
-
     public static var endpointSecurityExtension: URL {
         if #available(macOS 26.0, *) {
-            return URL(string: "\(systemPreferencesWindow).ExtensionsPreferences?")!
+            return URL(
+                string: "\(systemPreferencesWindow).ExtensionsPreferences?extensionPointIdentifier=com.apple.system_extension.endpoint_security.extension-point"
+            )!
         } else {
             return URL(string: "\(systemPreferencesWindow).preference.security?Security")!
         }
     }
+
+    public static let loginItems = URL(string: "\(systemPreferencesWindow).LoginItems-Settings.extension")!
 
     public static let fullDiskAccess = URL(string: "\(systemPreferencesWindow).preference.security?Privacy_AllFiles")!
 

@@ -110,12 +110,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         struct GetNodeInfoResult
         {
+            public ExitCode Code { get; private set; }
             public ExitCause Cause { get; private set; }
             public Node? Node { get; private set; }
             public bool IsSuccess => Node is not null && Cause == ExitCause.Unknown;
 
-            public GetNodeInfoResult(ExitCause cause, Node? node)
+            public GetNodeInfoResult(ExitCode code, ExitCause cause, Node? node)
             {
+                Code = code;
                 Cause = cause;
                 Node = node;
             }

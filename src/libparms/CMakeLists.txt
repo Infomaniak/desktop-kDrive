@@ -4,7 +4,7 @@ else()
     project(libparms LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -50,8 +50,7 @@ if(WIN32)
 else()
     target_include_directories(${libparms_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include")
+        ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 # Link

@@ -60,9 +60,9 @@ class Snapshot {
         bool isAncestor(const NodeId &itemId, const NodeId &ancestorItemId) const;
         bool isOrphan(const NodeId &itemId) const;
 
-        [[nodiscard]] inline ReplicaSide side() const { return _side; }
+        [[nodiscard]] ReplicaSide side() const { return _side; }
 
-        [[nodiscard]] inline NodeId rootFolderId() const { return _rootFolderId; }
+        [[nodiscard]] NodeId rootFolderId() const { return _rootFolderId; }
 
         bool isEmpty() const;
         uint64_t nbItems() const;
@@ -106,6 +106,8 @@ class ConstSnapshot : public Snapshot {
             Snapshot(other) {}
 
     private:
+        friend class LiveSnapshot;
+
         // Prevent any derived class to modify the snapshot content.
         using Snapshot::_items;
         using Snapshot::_mutex;

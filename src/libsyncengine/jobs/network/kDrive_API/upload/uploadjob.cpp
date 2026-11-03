@@ -18,7 +18,12 @@
 
 #include "uploadjob.h"
 
+
 #include "uploadhelpers.h"
+
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
 
@@ -34,9 +39,9 @@
 namespace KDC {
 
 UploadJob::UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
-                     const SyncName &filename, const NodeId &remoteParentDirId, const SyncTime creationTime,
+                     const SyncName &filename, const RemoteNodeId &remoteParentDirId, const SyncTime creationTime,
                      const SyncTime modificationTime) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _absoluteFilePath(absoluteFilePath),
     _filename(filename),
     _remoteParentDirId(remoteParentDirId),
@@ -45,11 +50,17 @@ UploadJob::UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
+
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _remoteParentDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in UploadJob::UploadJob.");
+    }
 }
 
 UploadJob::UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
-                     const NodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
-    UploadJob(driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
+                     const RemoteNodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
+    UploadJob(driveDbId, absoluteFilePath, SyncName{}, RemoteNodeId{}, SyncTime{0}, modificationTime) {
     _fileId = fileId;
     _remoteSize = remoteSize;
 
@@ -165,19 +176,19 @@ void UploadJob::setQueryParameters(Poco::URI &uri) {
 
 ExitInfo UploadJob::setData() {
     ItemType itemType;
-    if (!IoHelper::getItemType(_absoluteFilePath, itemType)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getItemType - " << Utility::formatSyncPath(_absoluteFilePath));
-        return ExitCode::SystemError;
-    }
+    if (auto result = IoHelper::getItemTypeAndProcessIoError(_absoluteFilePath, itemType);
+        !result || itemType.ioError != IoError::Success) {
+        if (!result) {
+            return ExitCode::SystemError;
+        }
 
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::NotFound};
-    }
-
-    if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        } else if (itemType.ioError == IoError::AccessDenied) {
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        } else {
+            return ExitCode::SystemError;
+        }
     }
 
     _linkType = itemType.linkType;
@@ -303,20 +314,18 @@ ExitInfo UploadJob::readLink() {
         IoError ioError = IoError::Success;
         if (!IoHelper::readAlias(_absoluteFilePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_absoluteFilePath));
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::OperationCanceled};
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::NotFound};
-        }
-
-        if (ioError == IoError::AccessDenied) {
+        } else if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        assert(ioError == IoError::Success); // For every other error type, false should have been returned.
+        assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed - type=" << _linkType);

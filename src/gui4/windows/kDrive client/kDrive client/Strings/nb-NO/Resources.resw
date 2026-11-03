@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: nb, Norwegian Bokmål
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported by: Clément Kunz
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Alle aktiviteter</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Bare min aktivitet</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Aktiviteter fra denne datamaskinen</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importert</value> 
@@ -134,7 +134,7 @@
     <value>Omdøpt</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Omdøpt til %@</value> 
+    <value>Omdøpt %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Endret</value> 
@@ -177,7 +177,7 @@ Du kan få tilgang til avanserte synkroniseringer fra stasjonvelgeren på starts
     <value>Bruker endring…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Sletter logger eldre enn 7 dager for å spare diskplass.</value> 
+    <value>Sletter logger eldre enn 31 dager for å spare diskplass.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatisk opprydding</value> 
@@ -730,11 +730,11 @@ Endringene dine vil bli synkronisert senere.</value>
     <value>Fil reddet</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Denne filen overskrider maksimal tillatt størrelse (50 GB).
+    <value>Denne filen overskrider maksimal tillatt størrelse (1 TB).
 Kontakt support for å låse opp grensen.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Denne filen overskrider maksimal tillatt størrelse (50 GB).
+    <value>Denne filen overskrider maksimal tillatt størrelse (1 TB).
 Kontakt administratoren din for å øke filstørrelsesgrensen.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -744,7 +744,7 @@ Kontakt administratoren din for å øke filstørrelsesgrensen.</value>
     <value>Tilgang forbudt</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Navnet på dette %@ inneholder ett eller flere tegn som ikke støttes av kDrive Windows-programmet. Gi nytt navn til %@ fra kDrive på nett.</value> 
+    <value>Navnet på denne %@ inneholder ett eller flere tegn som ikke støttes av kDrive-appen. Gi %@ et nytt navn via kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Dette navnet inneholder bare mellomrom og kan ikke brukes. Gi nytt navn til %@ fra kDrive på nett.</value> 
@@ -761,6 +761,9 @@ Be om tilgang fra eieren eller administratoren.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Tilgang forbudt</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konverter til vanlig fil</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Denne filen er en hardlenke som ikke kan synkroniseres.</value> 
@@ -1101,6 +1104,9 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</value>
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Nyeste</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Abonnementet mitt</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Navn</value> 
@@ -1546,7 +1552,7 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <value>Innstillinger</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Kontoer og synkroniseringer</value> 
+    <value>Synkroniseringer</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avansert</value> 
@@ -1572,8 +1578,8 @@ Disse dataene lar teamet vårt raskt rette og optimalisere programmet, noe som g
     <value>Andre filer på datamaskinen</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synkronisering</value> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>kDrive-filer lagret på nettet</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Denne PC-en – %@ – %@</value> 
@@ -1615,6 +1621,18 @@ Internettforbindelse kreves for å åpne dem.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synkronisering pågår</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Søk etter endringer</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Forberedelse av filene dine</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ element synkronisert med %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ elementer synkronisert på %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkronisert</value> 

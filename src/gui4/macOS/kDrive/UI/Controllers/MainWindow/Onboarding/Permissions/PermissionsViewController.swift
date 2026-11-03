@@ -43,12 +43,7 @@ extension MacOSPermission {
     }
 
     var majorCellIndex: Int {
-        switch self {
-        case .endpointSecurityExtension:
-            return 2
-        case .fullDiskAccess:
-            return 1
-        }
+        return instructions.count - 1
     }
 }
 
@@ -56,7 +51,7 @@ extension MacOSPermission {
     var instructions: [Instruction] {
         switch self {
         case .endpointSecurityExtension:
-            return [.openSystemSettings, .openSecurityExtensions, .enableKDrive]
+            return [.openSecurityExtensions, .enableKDrive]
         case .fullDiskAccess:
             return [.openPrivacySecurity, .enableFullDiskAccess]
         }
@@ -100,8 +95,12 @@ extension MacOSPermission {
 
         var argument: String? {
             switch self {
+            case .openSystemSettings:
+                return KDriveLocalizable.instructionOpenSystemSettingsLink
             case .openSecurityExtensions:
-                if #available(macOS 15.0, *) {
+                if #available(macOS 26.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsLink
+                } else if #available(macOS 15.0, *) {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
                 } else {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsArgumentLegacy
@@ -119,10 +118,10 @@ extension MacOSPermission {
 
         var link: String? {
             switch self {
-            case .openSystemSettings:
-                return KDriveLocalizable.instructionOpenSystemSettingsLink
             case .openSecurityExtensions:
-                if #available(macOS 15.0, *) {
+                if #available(macOS 26.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
+                } else if #available(macOS 15.0, *) {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsLink
                 } else {
                     return KDriveLocalizable.instructionOpenSecurityExtensionsLinkLegacy
@@ -140,14 +139,12 @@ extension MacOSPermission {
             @InjectService var permissionHandler: MacOSPermissionHandling
 
             switch self {
-            case .openSystemSettings:
-                return SystemPreferencesURL.general
             case .openSecurityExtensions:
                 return permissionHandler.systemPreferencesURL(for: .endpointSecurityExtension)
             case .openPrivacySecurity:
                 return permissionHandler.systemPreferencesURL(for: .fullDiskAccess)
             case .openLoginItems:
-                return permissionHandler.systemPreferencesURL(for: .endpointSecurityExtension)
+                return SystemPreferencesURL.loginItems
             default:
                 return nil
             }
@@ -237,19 +234,29 @@ final class PermissionsViewController: OnboardingStepViewController {
 
         setupUI()
         bindValues()
-
-        viewModel.installLiteSyncExtensionIfNeeded()
     }
 
     override func viewWillAppear() {
         super.viewWillAppear()
 
-        didBecomeActiveObserver = NotificationCenter.default
-            .addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
-                self?.checkPermission()
-            }
+        if didBecomeActiveObserver == nil {
+            didBecomeActiveObserver = NotificationCenter.default
+                .addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+                    self?.checkPermission()
+                }
+        }
 
-        checkPermission()
+        viewModel.startRefreshing()
+    }
+
+    override func viewWillDisappear() {
+        super.viewWillDisappear()
+
+        viewModel.stopRefreshing()
+        if let didBecomeActiveObserver {
+            NotificationCenter.default.removeObserver(didBecomeActiveObserver)
+            self.didBecomeActiveObserver = nil
+        }
     }
 
     private func bindValues() {
@@ -282,6 +289,8 @@ final class PermissionsViewController: OnboardingStepViewController {
         guard let cell = instructionCell(at: viewModel.currentPermission.majorCellIndex) else {
             return
         }
+
+        secondaryButton.isHidden = state == .done
 
         switch state {
         case .neutral:
@@ -324,7 +333,10 @@ final class PermissionsViewController: OnboardingStepViewController {
         primaryButton.isHidden = false
         primaryButton.target = self
         primaryButton.action = #selector(didClickValidate)
-        secondaryButton.isHidden = true
+        secondaryButton.title = KDriveLocalizable.needHelpSetting
+        secondaryButton.target = self
+        secondaryButton.action = #selector(didClickNeedHelp)
+        secondaryButton.isHidden = viewModel.currentState == .done
 
         switch permission {
         case .endpointSecurityExtension:
@@ -336,6 +348,10 @@ final class PermissionsViewController: OnboardingStepViewController {
 
     @objc private func didClickValidate() {
         viewModel.navigateIfPossible()
+    }
+
+    @objc private func didClickNeedHelp() {
+        NSWorkspace.shared.open(URLConstants.permissionsFaq)
     }
 
     private func checkPermission() {

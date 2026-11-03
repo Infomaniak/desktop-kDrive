@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: fr, French
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported by: Clément Kunz
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Toutes les activités</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Mon activité uniquement</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Activités de cet ordinateur</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importé</value> 
@@ -177,7 +177,7 @@ Vous pouvez accéder à vos synchronisations avancées à partir du sélecteur d
     <value>Appliquer le changement…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Supprime les journaux datant de plus de 7 jours pour économiser de l’espace.</value> 
+    <value>Supprime les journaux datant de plus de 31 jours pour économiser de l’espace.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Nettoyage automatique</value> 
@@ -730,11 +730,11 @@ Vos modifications seront synchronisées ultérieurement.</value>
     <value>Fichier récupéré</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Ce fichier dépasse la taille maximale autorisée (50 Go).
+    <value>Ce fichier dépasse la taille maximale autorisée (1 To).
 Contactez le support pour débloquer la limite.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Ce fichier dépasse la taille maximale autorisée (50 Go).
+    <value>Ce fichier dépasse la taille maximale autorisée (1 To).
 Contactez votre administrateur pour augmenter la limite de taille des fichiers.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -761,6 +761,9 @@ Demandez l’accès au propriétaire ou à l’administrateur.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Accès interdit</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Convertir en fichier standard</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Ce fichier est un lien système (hard link) qui ne peut pas être synchronisé.</value> 
@@ -1101,6 +1104,9 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Plus récente</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Mon abonnement</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nom</value> 
@@ -1546,7 +1552,7 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
     <value>Paramètres</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Comptes &amp; Synchronisations</value> 
+    <value>Synchronisations</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Avancés</value> 
@@ -1572,8 +1578,8 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
     <value>Autres fichiers de l’ordinateur</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Synchronisation</value> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Fichiers kDrive stockés en ligne</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Ce PC - %@ - %@</value> 
@@ -1615,6 +1621,18 @@ Connexion internet requise pour y accéder.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>La synchronisation est en cours</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Recherche des changements</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Préparation de vos fichiers</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ élément synchronisé sur %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ éléments synchronisés sur %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synchronisé</value> 

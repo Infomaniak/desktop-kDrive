@@ -256,11 +256,15 @@ jobs:
     if: ${{ inputs.build_macos != 'Do not build' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
+      - name: Set up Xcode 26
+        uses: ./.github/actions/setup_xcode
       - name: Build macOS
         uses: ./.github/actions/build_macos
         with:  

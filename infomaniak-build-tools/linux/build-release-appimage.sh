@@ -59,7 +59,7 @@ function find_qt_from_conan() {
 
   # Build Conan dependencies
   conan_folder=/build/conan
-  bash /src/infomaniak-build-tools/conan/build_dependencies.sh "$build_type" --output-dir="$conan_folder" --clean-cache
+  bash /src/infomaniak-build-tools/conan/build_dependencies.sh "$build_type" --output-dir="$conan_folder" --clean-cache --update
 
   if [ ! "$?" -eq "0" ]; then
     echo "ERROR: Conan dependencies build failed" >&2
@@ -102,6 +102,11 @@ function build_client_via_cmake() {
     echo "ERROR: Conan toolchain file not found: $conan_toolchain_file" >&2
     exit 1
   fi
+
+  # Ensure cmake is the one provided by Conan: Qt >= 6.12 requires CMake >= 3.25 to be
+  # consumed via find_package() (see QtPublicCMakeVersionHelpers.cmake).
+  # shellcheck disable=SC1091
+  source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 
   architecture=$(get_host_arch)
   qt_neon_activation="ON"
@@ -162,7 +167,7 @@ function move_dependencies() {
 
   cd /app
 
-  mkdir -p ./usr/plugins
+  mkdir -p ./usr/plugins ./usr/lib
   cp -P -r $QT_BASE_DIR/plugins/* ./usr/plugins/
 
   cp -P -r $QT_BASE_DIR/libexec ./usr
@@ -249,11 +254,9 @@ function clean_app_directory() {
   # Remove egldeviceintegrations (embedded systems)
   rm -rf ./usr/plugins/egldeviceintegrations
 
-  # Remove unnecessary SQL drivers (keep only sqlite)
-  echo "  Removing unnecessary SQL drivers..."
-  cd ./usr/plugins/sqldrivers
-  find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) ! -name "libqsqlite.so" -delete
-  cd /app
+  # Remove the SQL drivers (no Qt SQL driver is used on Linux)
+  echo "  Removing SQL drivers..."
+  rm -rf ./usr/plugins/sqldrivers
 
   # Clean translations - keep only de, es, fr, it, sv, pt, pl, nb, fi, da, el, en
   echo "  Cleaning translations..."
@@ -306,6 +309,8 @@ function build_app_image() {
   # linuxdeploy bundles its own `strip` which can fail on newer ELF features.
   # Skipping linuxdeploy stripping avoids build failures; our binaries are already handled earlier.
   export NO_STRIP=1
+  # The Qt plugin deploys every SQL driver from the Qt installation, but no Qt SQL driver is used on Linux
+  export LINUXDEPLOY_EXCLUDED_LIBRARIES="libqsql*.so"
   linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0 --
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }

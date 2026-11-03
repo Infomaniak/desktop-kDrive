@@ -36,7 +36,7 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> sync
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSyncDbReadOnlyCache, const std::string &name,
                                                    const std::string &shortName) :
-    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true),
+    ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0)),
     _syncDbReadOnlyCache(testSyncDbReadOnlyCache) {}
 
 void ComputeFSOperationWorker::postponeOperationsOnReusedIds() {
@@ -865,7 +865,6 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
             // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
             setExitCause(ExitCause::InvalidName);
             return {ExitCode::SystemError, ExitCause::InvalidName};
-
         } else if (ioError == IoError::AccessDenied) {
             setExitCause(ExitCause::FileAccessError);
             return {ExitCode::SystemError, ExitCause::FileAccessError};

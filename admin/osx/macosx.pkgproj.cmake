@@ -848,7 +848,7 @@
 						<array>
 							<string>/Applications/@APPLICATION_EXECUTABLE@.app</string>
 							<string>/Applications/@APPLICATION_NAME_XML_ESCAPED@/@APPLICATION_EXECUTABLE@.app</string>
-							<string>/Applications/@APPLICATION_NAME_XML_ESCAPED@/kDriveUninstaller.app</string>
+							<string>/Applications/@APPLICATION_NAME_XML_ESCAPED@/kDrive Uninstaller.app</string>
 						</array>
 						<key>IC_REQUIREMENT_FILES_SELECTOR</key>
 						<integer>1</integer>

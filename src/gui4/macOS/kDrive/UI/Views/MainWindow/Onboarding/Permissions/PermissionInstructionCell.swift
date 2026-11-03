@@ -73,11 +73,10 @@ class PermissionInstructionCell: NSView {
     }()
 
     private lazy var titleLabel: NSTextField = {
-        let textField = NSTextField(labelWithAttributedString: title)
+        let textField = LinkLabel(labelWithAttributedString: title)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.usesSingleLineMode = false
-        textField.allowsEditingTextAttributes = true
-        textField.isSelectable = true
+        textField.isSelectable = false
         return textField
     }()
 
@@ -139,6 +138,65 @@ class PermissionInstructionCell: NSView {
             stepCircleView.isHidden = true
             iconCircleView.isHidden = false
         }
+    }
+}
+
+private final class LinkLabel: NSTextField {
+    override var attributedStringValue: NSAttributedString {
+        didSet {
+            window?.invalidateCursorRects(for: self)
+        }
+    }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        window?.invalidateCursorRects(for: self)
+    }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        for (_, rect) in linkRects() {
+            addCursorRect(rect, cursor: .pointingHand)
+        }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        if let url = linkRects().first(where: { $0.rect.contains(point) })?.url {
+            NSWorkspace.shared.open(url)
+        } else {
+            super.mouseDown(with: event)
+        }
+    }
+
+    private func linkRects() -> [(url: URL, rect: NSRect)] {
+        let text = attributedStringValue
+        guard text.length > 0, let cell else { return [] }
+
+        let textRect = cell.titleRect(forBounds: bounds)
+        let textStorage = NSTextStorage(attributedString: text)
+        let layoutManager = NSLayoutManager()
+        let textContainer = NSTextContainer(size: NSSize(width: textRect.width, height: .greatestFiniteMagnitude))
+        textContainer.lineFragmentPadding = 2
+        layoutManager.addTextContainer(textContainer)
+        textStorage.addLayoutManager(layoutManager)
+        layoutManager.ensureLayout(for: textContainer)
+
+        var result = [(url: URL, rect: NSRect)]()
+        text.enumerateAttribute(.link, in: NSRange(location: 0, length: text.length)) { value, range, _ in
+            let url = (value as? URL) ?? (value as? String).flatMap(URL.init(string:))
+            guard let url else { return }
+
+            let glyphRange = layoutManager.glyphRange(forCharacterRange: range, actualCharacterRange: nil)
+            layoutManager.enumerateEnclosingRects(
+                forGlyphRange: glyphRange,
+                withinSelectedGlyphRange: NSRange(location: NSNotFound, length: 0),
+                in: textContainer
+            ) { rect, _ in
+                result.append((url, rect.offsetBy(dx: textRect.minX, dy: textRect.minY)))
+            }
+        }
+        return result
     }
 }
 

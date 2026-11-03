@@ -25,6 +25,8 @@ cd src/gui4/macOS && swiftlint --fix
 
 Requires an Xcode shipping Swift tools >= 6.2 (pinned `swift-foundation` 0.1.0 fails to resolve otherwise). If the selected toolchain is older, prefix commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` instead of changing `xcode-select`. The `Swiftlint` build phase runs through `mise` and fails if the project's `mise.toml` files are untrusted — run `mise trust <path-to-mise.toml>` once.
 
+Leave Xcode selection to the machine operator. Build scripts use the existing `xcode-select` selection or explicitly supplied `DEVELOPER_DIR`; do not select an installation, enforce an exact Xcode version, or switch Xcode inside build commands.
+
 ## Architecture (3 targets)
 
 ```
@@ -85,7 +87,9 @@ Services are registered at app startup. Check `AppDelegate` or the DI setup file
 ### ViewModels & Views
 - ViewModels are `@MainActor final class` conforming to `ObservableObject`
 - ViewControllers (AppKit `NSViewController`) host SwiftUI views via `NSHostingView`
+- Nibless AppKit controllers must inherit from `BaseViewController` (in `kDriveCoreUI/UI/AppKit/Controllers/`), which explicitly creates the root view: default `NSViewController.loadView()` can crash trying to load a nib on macOS 12/13. Use it for empty placeholders too; SwiftLint rejects direct `NSViewController` inheritance/construction. Genuine nib-backed exceptions require a narrowly scoped lint disable with an explanation.
 - Example ViewModel: `kDrive/UI/Controllers/MainWindow/MainView/MainViewModel.swift`
+- Create toolbars with `NSToolbar(identifier:)`; parameterless `NSToolbar()` can crash on macOS 12 and is rejected by SwiftLint. AppKit synchronizes toolbars sharing an identifier, so use distinct identifiers (e.g. a UUID per instance) for independent toolbars.
 - Example VC: `kDrive/UI/Controllers/MainWindow/MainView/MainViewController.swift`
 
 ### Navigation / Router
@@ -134,7 +138,7 @@ Server sends unsolicited signals decoded by `XPCSignalHandler` → dispatched to
 - Signal DTOs in `kDriveCore/ServerBridge/Signal/DTOs/`
 
 ### Localization
-5 languages: `fr` / `en` / `de` / `es` / `it`.
+Supported languages are listed in `.import_loco.yml`; keep `UIAppLanguage` and its server mappings aligned with them.
 Strings live in `kDriveResources/Localizable/<lang>.lproj/`.
 ```swift
 // Use NSLocalizedString with a key from the resource bundle
@@ -193,6 +197,7 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 
 ## Local norms
 - Keep the possible server-crash notion in server connection-loss diagnostics; connection loss is a useful crash indicator.
+- Derive state from existing sources of truth rather than maintaining redundant flags. For example, infer whether refresh work is active from its task handle instead of a separate boolean.
 
 ## Common Gotchas
 - `@MainActor` is required on all ViewModels — missing it causes runtime warnings in Swift 6 strict concurrency.
@@ -202,6 +207,8 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 - AppKit views (`NSView`) needing SwiftUI content: wrap with `NSHostingView<ContentView>`.
 - SwiftLint's `unused_import` analyzer rule is active — remove unused imports before committing.
 - The project has a `kDrive` scheme that runs `kDriveTests`; there is no separate `kDriveTests` scheme.
+- Expose C/Objective-C headers through `kDriveCore.h` and the target's `publicHeaders` list; framework targets cannot combine a Clang module with a Swift bridging header.
+- Project-level `LM_SKIP_METADATA_EXTRACTION=YES` skips unused App Intents metadata tasks in Debug/Release, including CI and CMake invocations. This internal setting was verified with Xcode 26.5; recheck after Xcode upgrades and remove it for targets introducing App Intents.
 
 ## Pre-PR Checks
 ```bash

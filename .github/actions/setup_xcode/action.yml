@@ -1,0 +1,31 @@
+name: Set up Xcode 26
+description: Select an installed Xcode 26 toolchain for the current job
+runs:
+  using: composite
+  steps:
+    - name: Select and verify Xcode 26
+      shell: bash
+      run: |
+        sw_vers
+        selected_developer_dir=""
+        for developer_dir in /Applications/Xcode_26.app/Contents/Developer /Applications/Xcode*.app/Contents/Developer; do
+          if [[ ! -d "$developer_dir" ]]; then
+            continue
+          fi
+          if ! version=$(DEVELOPER_DIR="$developer_dir" xcodebuild -version 2>/dev/null); then
+            continue
+          fi
+          if [[ "$version" =~ ^Xcode\ 26([.]|$|[[:space:]]) ]]; then
+            selected_developer_dir="$developer_dir"
+            echo "$version"
+            break
+          fi
+        done
+        if [[ -z "$selected_developer_dir" ]]; then
+          echo "::error::No runnable Xcode 26 installation found."
+          exit 1
+        fi
+        export DEVELOPER_DIR="$selected_developer_dir"
+        echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+        xcrun clang --version
+        xcrun --sdk macosx --show-sdk-path

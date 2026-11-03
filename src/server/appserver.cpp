@@ -535,10 +535,6 @@ void AppServer::init() {
         return;
     }
 
-#if defined(KD_MACOS)
-    if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
-#endif
-
     // Start syncs
     LOG_DEBUG(_logger, "Start syncs");
     QTimer::singleShot(0, this, [this]() { startSyncsAndRetryOnError(); });
@@ -696,14 +692,16 @@ ExitInfo AppServer::stopSyncTask(const SyncDbId syncDbId,
 
     {
         const std::scoped_lock lock(syncPalMapMutex);
-        LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() == 1)
+        // The SyncPal count can be 2 if its Remote File System Observer Worker still exists as it has a reference to the
+        // SyncPal. It can be 1 if the SyncPal is scheduled for destruction since it has a reference to itself.
+        LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() <= 2)
         (void) syncPalMap.erase(syncDbId);
     }
 
     {
         const std::scoped_lock lock(vfsMapMutex);
         LOG_IF_FAIL(!vfsMap[syncDbId] ||
-                    vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+                    vfsMap[syncDbId].use_count() <= 2) // `use_count` can be zero when the local drive has been removed.
         (void) vfsMap.erase(syncDbId);
     }
     return ExitCode::Ok;
@@ -1824,13 +1822,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
             std::string linkUrl;
-            const auto exitCode = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
+            if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::getLinkUrl");
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                addError(Error(ERR_ID, exitInfo));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << QString::fromStdString(linkUrl);
 
             sendShowNotification(tr("Share link copied to clipboard"), QString::fromStdString(linkUrl));
@@ -2188,12 +2186,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> list;
 
             std::vector<ExclusionTemplate> exclusionTemplateList;
-            (void) std::for_each(list.begin(), list.end(), [&exclusionTemplateList](const ExclusionTemplate &templateInfo) {
+            (void) std::ranges::for_each(list, [&exclusionTemplateList](const ExclusionTemplate &templateInfo) {
                 exclusionTemplateList.push_back(templateInfo);
             });
 
             ExclusionTemplate::updateList(exclusionTemplateList);
-
 
             const auto exitInfo = ServerRequests::setUserExclusionTemplateList(exclusionTemplateList);
             if (!exitInfo) {
@@ -2201,6 +2198,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(ERR_ID, exitInfo, ExitCause::Unknown));
                 resultStream << toInt(exitInfo.code());
                 break;
+            }
+
+            // Invalidate snapshots of all syncs. We do not want the new exclusion templates to be applied to snapshots that were
+            // created with the previous templates.
+            {
+                const std::scoped_lock lock(syncPalMapMutex);
+                for (const auto &[_, syncPal]: syncPalMap) {
+                    if (syncPal) syncPal->forceInvalidateSnapshots();
+                }
             }
 
             resultStream << toInt(exitInfo.code());
@@ -2985,11 +2991,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -4038,16 +4044,18 @@ bool AppServer::startClient() {
 #endif
 
         auto getPathToExecutable = [](const SyncPath &executableName) {
-            auto pathToExecutable = QStr2Path(QCoreApplication::applicationDirPath()) / executableName;
+            auto pathToExecutable = QStr2Path(CommonUtility::applicationDirPath()) / executableName;
             auto ioError = IoError::Success;
-            if (auto exists = false; !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+            if (auto exists = false;
+                !IoHelper::checkIfPathExists(pathToExecutable, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
                 !exists || ioError != IoError::Success) {
                 return SyncPath();
             }
             return pathToExecutable;
         };
 
-        auto pathToExecutable = getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
+        auto pathToExecutable =
+                getPathToExecutable(useClientV4 ? APPLICATION_CLIENTV4_EXECUTABLE : APPLICATION_CLIENT_EXECUTABLE);
         if (pathToExecutable.empty()) {
             if (useClientV4) {
                 useClientV4 = false;
@@ -5189,12 +5197,11 @@ void AppServer::onUpdateSyncsProgress() {
     }
 
     for (const auto &sync: syncList) {
-        SyncCache syncCache{SyncStatus::Undefined, SyncStep::None, SyncProgress()};
         const std::scoped_lock lock(syncPalMapMutex);
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
             // Show the sync paused anyway. It is most likely that an external drive is not plugged in.
-            syncCache._status = SyncStatus::Paused;
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress());
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);
@@ -5203,25 +5210,24 @@ void AppServer::onUpdateSyncsProgress() {
 
             const auto syncPal = syncPalMapIt->second;
 
-            syncCache._status = syncPal->status();
-            syncCache._step = syncPal->step();
-
             // Get progress
-            if (syncCache._status == SyncStatus::Running && syncCache._step == SyncStep::Propagation2) {
-                syncPal->loadProgress(syncCache._progress);
+            SyncProgress progress;
+            if (syncPal->status() == SyncStatus::Running && syncPal->step() == SyncStep::Propagation2) {
+                syncPal->loadProgress(progress);
             }
-        }
 
-        if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
-            syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
-            // Set/update sync cache
-            if (syncCacheMapIt == _syncCacheMap.end())
-                _syncCacheMap[sync.dbId()] = syncCache;
-            else
-                syncCacheMapIt->second = syncCache;
+            const SyncCache syncCache{syncPal->status(), syncPal->step(), progress};
+            if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
+                syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
+                // Set/update sync cache
+                if (syncCacheMapIt == _syncCacheMap.end())
+                    _syncCacheMap[sync.dbId()] = syncCache;
+                else
+                    syncCacheMapIt->second = syncCache;
 
-            // Send progress to the client
-            sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, syncCache._progress);
+                // Send progress to the client
+                sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, progress);
+            }
         }
     }
 }
@@ -5297,7 +5303,7 @@ void AppServer::onRestartSyncs() {
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
             syncPal->pauseTime() + std::chrono::milliseconds(syncPal->pauseDuration()) < std::chrono::steady_clock::now()) {
             syncPal->unpause();
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
             Utility::restartFinderExtension();
 #endif
         }

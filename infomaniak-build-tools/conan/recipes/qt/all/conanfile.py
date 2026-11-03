@@ -2,6 +2,7 @@ import glob
 import os
 import re
 import time
+from fnmatch import fnmatch
 from os.path import join as pjoin
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
@@ -140,7 +141,7 @@ class QtConan(ConanFile):
                 return "linux_gcc_arm64"
             else:
                 # Qt 6.2.3 uses 'gcc_64', but newer versions (6.7.3+) use 'linux_gcc_64'
-                if self.version in ("6.2.3", "6.5.3"):
+                if self.version == "6.2.3":
                     return "gcc_64"
                 else:
                     return "linux_gcc_64"
@@ -156,16 +157,7 @@ class QtConan(ConanFile):
         """
         compiler = str(self.settings.compiler)
 
-        # Qt 6.2.3 always uses MSVC 2019
-        if self.version == "6.2.3":
-            return "win64_msvc2019_64"
-
-        # Qt 6.5.3 supports both MinGW and MSVC 2019
-        elif self.version == "6.5.3":
-            return "win64_mingw" if compiler == "gcc" else "win64_msvc2019_64"
-
-        # Qt 6.8.3+ and 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
-        elif self.version in ("6.8.3", "6.10.1", "6.11.1"):
+        if self.version == "6.12.0":
             return "win64_mingw" if compiler == "gcc" else "win64_msvc2022_64"
         else:
             return "win64_msvc2019_64"  # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
@@ -186,7 +178,7 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtpositioning"
         ]
 
-        if version in ("6.8.3", "6.10.1", "6.11.1"):
+        if version == "6.12.0":
             modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
         else:
             modules.append(f"qt.qt{major}.{compact}.qt5compat")
@@ -437,13 +429,14 @@ class QtConan(ConanFile):
         if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
             self.output.highlight("Patching Qt installation...")
             from conan.tools.files import replace_in_file
-            if self.version == "6.5.3":
+            if self.version == "6.2.3":
+                # AGL is unused by Qt 6 and is absent from recent macOS SDKs.
                 replace_in_file(
                     self, find_wrap_open_gl,
                     'target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})',
                     ''
                 )
-            elif self.version == "6.2.3":
+            if self.version == "6.2.3":
                 """
                 Fixes spam of this kind of CMake warning on macOS:            
                 
@@ -485,16 +478,66 @@ class QtConan(ConanFile):
             # Determine Windows subfolder based on compiler and version
             if self.version == "6.2.3":
                 return "msvc2019_64"
-            elif self.version in ["6.8.3", "6.10.1", "6.11.1"]:
+            else:
                 if str(self.settings.compiler) == "gcc":  # MinGW
                     return "mingw_64"
                 else:  # MSVC 2022
                     return "msvc2022_64"
-            else:
-                # Default for other versions (6.2.3, 6.5.3, etc.)
-                return "msvc2019_64"
         else:
             raise ConanInvalidConfiguration(f"Unsupported OS: {self.settings.os}")
+
+    def _trim_unused_sql_drivers(self):
+        """
+        Remove every SQL driver other than SQLite from the packaged Qt, together with the
+        CMake plugin packages describing them (lib/cmake/Qt6Sql/Qt6Q<Name>DriverPlugin*).
+
+        Rationale: the Qt online installer ships every SQL driver Qt was built with, while
+        kDrive only consumes QSQLITE. The extra drivers pull third-party client libraries
+        (e.g. libfbclient.so.2 for the Firebird driver) that are neither installed on the
+        build machines nor bundled with Qt, which fatally breaks the AppImage packaging:
+        linuxdeploy-plugin-qt redeploys every driver it finds in the Qt installation and
+        aborts on the unresolvable dependency.
+        See https://github.com/linuxdeploy/linuxdeploy-plugin-qt/issues/153.
+
+        The CMake plugin packages of the removed drivers must go away with them: recent Qt
+        versions (6.12 included) auto-include every Qt6Q*DriverPluginConfig.cmake of the
+        package (module config -> Qt6SqlPlugins.cmake -> __qt_internal_include_plugin_packages,
+        which globs the plugin configuration files) and those configurations hard-fail when
+        the plugin library they point to is missing. Qt6SqlPlugins.cmake itself is kept: it
+        carries no per-plugin references (verified against the real 6.12.0 Linux package),
+        and after this trim its glob-based plugin inclusion covers the SQLite driver alone.
+        """
+        sqldrivers_dir = pjoin(self.package_folder, "plugins", "sqldrivers")
+        if not os.path.isdir(sqldrivers_dir):
+            return
+
+        removed_drivers = []
+        for entry in sorted(os.listdir(sqldrivers_dir)):
+            if re.match(r"^(lib)?qsqlite", entry):
+                continue  # kDrive uses QSQLITE; keep every variant of the SQLite driver
+            path = pjoin(sqldrivers_dir, entry)
+            if os.path.isfile(path) or os.path.islink(path):
+                os.remove(path)
+                removed_drivers.append(entry)
+        if removed_drivers:
+            self.output.info(f"Removed unused SQL drivers: {', '.join(removed_drivers)}")
+            self.output.info(f"Kept SQL drivers: {', '.join(sorted(os.listdir(sqldrivers_dir)))}")
+
+        cmake_sql_dir = pjoin(self.package_folder, "lib", "cmake", "Qt6Sql")
+        if not os.path.isdir(cmake_sql_dir):
+            return
+
+        removed_cmake_files = []
+        for entry in sorted(os.listdir(cmake_sql_dir)):
+            if not fnmatch(entry, "Qt6Q*DriverPlugin*.cmake"):
+                continue
+            if fnmatch(entry, "Qt6QSQLiteDriverPlugin*"):
+                continue  # keep the CMake plugin package of the SQLite driver
+            os.remove(pjoin(cmake_sql_dir, entry))
+            removed_cmake_files.append(entry)
+
+        if removed_cmake_files:
+            self.output.info("Removed CMake SQL plugin files: " + ", ".join(removed_cmake_files))
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
@@ -528,6 +571,8 @@ class QtConan(ConanFile):
         # Save space by removing not needed folder (/!\ modules folder is needed by <os>deployqt from at least Qt 6.11.1)
         for folder in ("doc",):
             rmdir(self, pjoin(self.package_folder, folder))
+
+        self._trim_unused_sql_drivers()
 
 
     def package_info(self):

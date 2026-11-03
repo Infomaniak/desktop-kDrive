@@ -175,6 +175,7 @@ struct COMMON_EXPORT CommonUtility {
         static SyncPath getAppDir();
         static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
+        static QString applicationDirPath();
 #if defined(KD_MACOS)
         static SyncPath getExtensionPath();
 #endif
@@ -375,6 +376,7 @@ struct COMMON_EXPORT CommonUtility {
         static QImage toQImage(const std::shared_ptr<CommBLOB> blob);
 
         static bool modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2);
+        inline static SyncTime now() { return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()); };
 
         static SyncTime getCurrentSyncTime();
         static SyncTime getCurrentSyncTimeWithOffset(std::chrono::seconds offset);

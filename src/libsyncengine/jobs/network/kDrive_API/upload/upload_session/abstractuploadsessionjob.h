@@ -27,13 +27,13 @@ class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
     public:
         AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId);
         AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId, const SyncPath &filepath,
-                                 const std::string &sessionToken);
+                                 const SessionInfo &sessionInfo);
         ~AbstractUploadSessionJob() override = default;
 
-        inline const std::string &sessionToken() const { return _sessionToken; }
+        const std::string &sessionToken() const { return _sessionInfo.token; }
 
     protected:
-        std::string _sessionToken;
+        SessionInfo _sessionInfo;
         SyncPath _absoluteFilePath;
 };
 

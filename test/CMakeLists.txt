@@ -1,6 +1,12 @@
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
+if(NOT WIN32)
+    # CppUnit (and libzip on macOS) is installed outside Conan. Search this
+    # fallback after Conan's system includes to avoid mixing dependency versions.
+    add_compile_options("SHELL:-idirafter /usr/local/include")
+endif()
+
 if(NOT MSVC)
     if(NOT (CMAKE_SYSTEM_PROCESSOR MATCHES "^(alpha|parisc|hppa)") AND NOT CMAKE_CROSSCOMPILING)
         if((CMAKE_CXX_COMPILER_ID MATCHES "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9))

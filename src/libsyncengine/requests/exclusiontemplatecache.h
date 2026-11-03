@@ -38,8 +38,8 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
         void operator=(ExclusionTemplateCache const &) = delete;
 
         [[nodiscard]] const std::vector<ExclusionTemplate> &exclusionTemplates() const { return _exclusionTemplates; }
-        [[nodiscard]] const std::vector<ExclusionTemplate> &exclusionTemplates(const bool def) const {
-            return def ? _defExclusionTemplates : _userExclusionTemplates;
+        [[nodiscard]] const std::vector<ExclusionTemplate> &exclusionTemplates(const bool selectDefault) const {
+            return selectDefault ? _defaultExclusionTemplates : _userExclusionTemplates;
         }
 
         ExitCode update(bool def, const std::vector<ExclusionTemplate> &exclusionTemplates);
@@ -51,7 +51,7 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
         friend class TestExclusionTemplateCache;
         static std::shared_ptr<ExclusionTemplateCache> _instance;
         std::vector<ExclusionTemplate> _exclusionTemplates;
-        std::vector<ExclusionTemplate> _defExclusionTemplates;
+        std::vector<ExclusionTemplate> _defaultExclusionTemplates;
         std::vector<ExclusionTemplate> _userExclusionTemplates;
         std::vector<std::pair<std::regex, ExclusionTemplate>> _regexPatterns;
 
@@ -63,9 +63,9 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
 
         void updateRegexPatterns();
 
-        void escapeRegexSpecialChar(std::string &in);
+        static void escapeRegexSpecialChar(std::string &in);
 
-        void addRegexForAllNormalizationForms(std::string regexPattern, ExclusionTemplate exclusionTemplate);
+        void addRegexForAllNormalizationForms(const std::string &regexPattern, ExclusionTemplate exclusionTemplate);
 };
 
 } // namespace KDC

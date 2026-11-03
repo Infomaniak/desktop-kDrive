@@ -24,9 +24,8 @@ namespace KDC {
 
 class CheckHashMatchJob : public AbstractTokenNetworkJob {
     public:
-        CheckHashMatchJob(DriveDbId driveDbId, const SyncPath &filePath, const NodeId &nodeId, const int64_t remoteSize);
-
-        [[nodiscard]] const NodeId &nodeId() const { return _nodeId; }
+        CheckHashMatchJob(DriveDbId driveDbId, SyncPath filePath, RemoteNodeId remoteNodeId, int64_t remoteSize);
+        [[nodiscard]] const RemoteNodeId &remoteNodeId() const { return _remoteNodeId; }
         [[nodiscard]] bool hashMatch() const { return _hashMatch; }
 
     protected:
@@ -38,10 +37,10 @@ class CheckHashMatchJob : public AbstractTokenNetworkJob {
         ExitInfo runJob() noexcept override;
 
         SyncPath _filePath;
-        NodeId _nodeId;
-
+        RemoteNodeId _remoteNodeId;
+        std::string _remoteHash;
+        std::string _localHash;
         int64_t _remoteSize = 0;
-
         bool _hashMatch = false;
 };
 

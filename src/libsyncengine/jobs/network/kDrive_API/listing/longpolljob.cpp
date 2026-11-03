@@ -25,9 +25,9 @@ namespace KDC {
 
 static const uint32_t apiTimout = 50;
 
-LongPollJob::LongPollJob(const DriveDbId driveDbId, const std::string &cursor, const NodeSet &blacklist /*= {}*/) :
+LongPollJob::LongPollJob(const DriveDbId driveDbId, Cursor cursor, const RemoteNodeIdSet &blacklist /*= {}*/) :
     AbstractListingJob(ApiType::NotifyDrive, driveDbId, blacklist),
-    _cursor(cursor) {
+    _cursor(std::move(cursor)) {
     _customTimeout = apiTimout + 5; // Must be < 1 min (VPNs' default timeout)
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 
@@ -40,12 +40,23 @@ LongPollJob::LongPollJob(const DriveDbId driveDbId, const std::string &cursor, c
 std::string LongPollJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/listing/longpoll";
+
     return str;
 }
 
 void LongPollJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("cursor", _cursor);
     uri.addQueryParameter("timeout", std::to_string(apiTimout) + "s");
+}
+
+ExitInfo LongPollJob::handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &) {
+    disableRetry();
+    std::string replyBody;
+    getStringFromStream(inputStream, replyBody);
+    LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
+    _backError = BackError(replyBody);
+
+    return {ExitCode::BackError, ExitCause::HttpErr};
 }
 
 } // namespace KDC

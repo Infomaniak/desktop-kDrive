@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: en, English
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported by: Clément Kunz
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>All activities</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>My activity only</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Activities from this computer</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Imported</value> 
@@ -177,7 +177,7 @@ You can access your advanced syncs from the drive picker on the home page.</valu
     <value>Applying change…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Deletes logs older than 7 days to save disk space.</value> 
+    <value>Deletes logs older than 31 days to save disk space.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatic cleanup</value> 
@@ -730,11 +730,11 @@ Your changes will be synced later.</value>
     <value>File rescued</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>This file exceeds the maximum allowed size (50 GB).
+    <value>This file exceeds the maximum allowed size (1 TB).
 Contact support to unlock the limit.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>This file exceeds the maximum allowed size (50 GB).
+    <value>This file exceeds the maximum allowed size (1 TB).
 Contact your administrator to increase the file size limit.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -744,7 +744,7 @@ Contact your administrator to increase the file size limit.</value>
     <value>Access forbidden</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>The name of this %@ contains one or more characters not supported by the kDrive Windows application. Rename the %@ from kDrive online.</value> 
+    <value>The name of this %@ contains one or more characters that are not supported by the kDrive app. Rename %@ using kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>This name contains only spaces and cannot be used. Rename the %@ from kDrive online.</value> 
@@ -761,6 +761,9 @@ Request access from the owner or administrator.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Access forbidden</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Convert to regular file</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>This file is a hard link that cannot be synced.</value> 
@@ -1101,6 +1104,9 @@ Useful if you know the important work is online on kDrive.</value>
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Most recent</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>My Subscription</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Name</value> 
@@ -1546,7 +1552,7 @@ This data allows our team to quickly fix and optimize the application, resulting
     <value>Settings</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Accounts &amp; Sync</value> 
+    <value>Syncs</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Advanced</value> 
@@ -1572,8 +1578,8 @@ This data allows our team to quickly fix and optimize the application, resulting
     <value>Other files on computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
-  <data name="storageSyncBlockTitle" xml:space="preserve"> 
-    <value>Sync</value> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>kDrive files stored online</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>This PC - %@ - %@</value> 
@@ -1615,6 +1621,18 @@ An internet connection is required to access them.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Sync is running</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Search for Changes</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Preparing Your Files</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ element synchronized with %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ items synchronized out of %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synced</value> 
