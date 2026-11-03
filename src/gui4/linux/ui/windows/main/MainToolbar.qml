@@ -35,19 +35,35 @@ Rectangle {
     readonly property int currentTab: root.appRouter.currentMainTabIndex
     readonly property int tabActivities: AppRouter.Activities
     readonly property int tabStorage: AppRouter.Storage
+    readonly property var activitiesNavigation: root.appRouter.activitiesNavigation
+    readonly property bool canGoBack: root.currentTab === root.tabActivities && root.activitiesNavigation.canGoBack
 
     color: "transparent"
+
+    HeaderIconButton {
+        id: backButton
+
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        visible: root.canGoBack
+        iconSource: "qrc:/assets/settings/chevron-left.svg"
+        text: qsTrId("accessibilityBack")
+        Accessible.description: qsTrId("tabTitleActivities")
+        onClicked: root.activitiesNavigation.back()
+    }
 
     Text {
         id: titleLabel
 
-        anchors.left: parent.left
+        anchors.left: root.canGoBack ? backButton.right : parent.left
+        anchors.leftMargin: root.canGoBack ? IKSpacing.s12 : 0
         anchors.verticalCenter: parent.verticalCenter
         width: Math.min(implicitWidth, Math.max(0, actionsRow.x - x - IKSpacing.s16))
         text: {
             switch (root.currentTab) {
             case root.tabActivities:
-                return qsTrId("tabTitleActivities")
+                return root.activitiesNavigation.currentPage === ActivitiesNavigation.Errors
+                        ? qsTrId("errorPageTitle") : qsTrId("tabTitleActivities")
             case root.tabStorage:
                 return qsTrId("tabTitleStorage")
             default:

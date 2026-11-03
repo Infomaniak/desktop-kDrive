@@ -38,6 +38,11 @@
             <source>Visible activities</source> 
             <translation>Sichtbare Aktivitäten</translation> 
         </message> 
+        <message id="accessibilityBack"> 
+            <source>Back</source> 
+            <extracomment>Back navigation button: returns to the previous page (Settings sub-pages, Activities sub-pages). Used as tooltip and accessible name.</extracomment> 
+            <translation>Zurück</translation> 
+        </message> 
         <message id="accessibilityBetaProgramPicker"> 
             <source>Choosing a distribution channel</source> 
             <translation>Wählen Sie den Vertriebskanal</translation> 
