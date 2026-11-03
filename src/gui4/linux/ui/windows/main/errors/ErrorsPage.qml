@@ -96,6 +96,8 @@ FocusScope {
             delegate: ErrorRow {
                 width: ListView.view.width
                 onActionTriggered: rowId => root.controller.invokeAction(rowId)
+                onCopyRequested: rowId => root.controller.copyPath(rowId)
+                onTechnicalDetailsCopyRequested: rowId => root.controller.copyTechnicalDetails(rowId)
             }
 
             ScrollBar.vertical: ScrollBar {}
