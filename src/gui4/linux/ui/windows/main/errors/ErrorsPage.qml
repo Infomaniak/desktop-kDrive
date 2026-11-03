@@ -34,6 +34,44 @@ FocusScope {
     // until the response, rather than showing "No errors to fix" for a moment.
     readonly property bool showsList: root.hasErrors || root.controller.refreshPending
 
+    // Gives the keyboard focus to the main control of the page, once it is shown, or brings into view the row the
+    // "Fix errors" action of an activity asked for.
+    function focusDefault() {
+        // Once the page has its size: the view positions its rows from it. The row is resolved only then, since the rows
+        // or the selected synchronization can change meanwhile.
+        Qt.callLater(root.revealOrFocus);
+    }
+
+    function revealOrFocus() {
+        const revealRow = root.controller.takeRevealRow();
+        if (revealRow < 0) {
+            root.focusMainControl();
+            return;
+        }
+        list.positionViewAtIndex(revealRow, ListView.Center);
+        const rowItem = list.itemAtIndex(revealRow);
+        if (rowItem) {
+            rowItem.reveal();
+        } else {
+            root.focusMainControl();
+        }
+    }
+
+    // Refresh is disabled while it runs: the page itself then takes the focus, so that it stays on a visible item.
+    function focusMainControl() {
+        if (!root.showsList) {
+            seeActivitiesButton.forceActiveFocus();
+        } else if (refreshButton.enabled) {
+            refreshButton.forceActiveFocus();
+        } else {
+            focusFallback.forceActiveFocus();
+        }
+    }
+
+    Item {
+        id: focusFallback
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: IKActivities.pagePadding

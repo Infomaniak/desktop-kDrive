@@ -82,6 +82,8 @@ class ActivitiesController final : public QObject {
         void shareLinkCopied(const QString &rowId);
         void shareLinkCopyFailed(const QString &rowId);
         void actionFailed(const QString &rowId);
+        // The errors page should bring one of these errors into view: emitted right before it opens.
+        void fixErrorsRequested(const std::vector<ErrorDbId> &errorDbIds);
 
     private:
         void refreshPageState();
