@@ -46,6 +46,10 @@ def test_classify_green_requires_every_scope_clean_and_successful():
     # A scope whose scan job failed is not a clean scan
     failed = scope("linux-appimage", dict(CLEAN_COUNTS), result="failure")
     assert kchat_notification.classify("success", {"scopes": ALL_SCOPES_CLEAN + [failed]})[0] == "failed"
+    # A scope whose audit reported problems is not a clean scan
+    incomplete = dict(scope("windows-client-nuget", dict(CLEAN_COUNTS)), problems=1)
+    assert kchat_notification.classify("success", {"scopes": ALL_SCOPES_CLEAN + [incomplete]})[0] == "failed"
+    assert "incomplete scan (1 problem(s))" in kchat_notification.scope_line(incomplete)
 
 
 def test_classify_failed_report_or_missing_summary():

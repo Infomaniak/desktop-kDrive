@@ -24,8 +24,8 @@ overall status and writes the kChat markdown message to a UTF-8 file:
   - red:    Critical or High finding on at least one scope
   - orange: only Medium/Low findings on any scope, or a failed/cancelled scan
   - green:  nothing to report — only when every scope reported clean results
-            and its scan job succeeded (a missing, failed or cancelled scope
-            is never reported green)
+            and its scan job succeeded (a missing, failed, cancelled or
+            incomplete scope is never reported green)
 
 The badge is a static shields.io URL rendered by raster.shields.io as a PNG
 (kChat cannot display SVGs), colored by severity: every message keeps its
@@ -92,7 +92,8 @@ def classify(report_result, summary):
     scopes = {scope.get("key"): scope for scope in (summary or {}).get("scopes") or []}
     for key in EXPECTED_SCOPE_KEYS:
         scope = scopes.get(key)
-        if scope is None or scope.get("counts") is None or scope.get("result") != "success":
+        if (scope is None or scope.get("counts") is None or scope.get("result") != "success"
+                or scope.get("problems")):
             # An incomplete or partially failed scan must not be reported green
             return "failed", total
     if total["Medium"] or total["Low"] or total["Unknown"]:
@@ -131,9 +132,12 @@ def scope_line(scope):
         detail = "scan job %s" % result if result != "success" else "no results available"
         return "- ⚠️ **%s** — %s" % (title, detail)
     parts = ["%d %s" % (counts[severity], severity) for severity in SEVERITIES if counts.get(severity)]
+    problems = scope.get("problems") or 0
+    if problems:
+        parts.append("incomplete scan (%d problem(s))" % problems)
     if not parts:
         return "- ✅ %s — clean" % title
-    emoji = "🔴" if (counts.get("Critical") or counts.get("High")) else "🟠"
+    emoji = "🔴" if (counts.get("Critical") or counts.get("High")) else ("⚠️" if problems else "🟠")
     return "- %s **%s** — %s" % (emoji, title, ", ".join(parts))
 
 
