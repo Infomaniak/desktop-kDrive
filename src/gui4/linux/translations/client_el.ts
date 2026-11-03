@@ -2453,6 +2453,22 @@ An internet connection is required to access them.</source>
             <source>Sync is running</source> 
             <translation>Ο συγχρονισμός βρίσκεται σε εξέλιξη</translation> 
         </message> 
+        <message id="syncStatusAnalysing"> 
+            <source>Searching for changes…</source> 
+            <translation>Αναζήτηση αλλαγών…</translation> 
+        </message> 
+        <message id="syncStatusExploring"> 
+            <source>Scanning files to synchronize…</source> 
+            <translation>Σάρωση των αρχείων προς συγχρονισμό…</translation> 
+        </message> 
+        <message id="syncStatusPropagating"> 
+            <source>%1 item synchronized out of %2…</source> 
+            <translation>%1 από %2 στοιχεία συγχρονίστηκε…</translation> 
+        </message> 
+        <message id="syncStatusPropagating-plural"> 
+            <source>%1 items synchronized out of %2…</source> 
+            <translation>%1 από %2 στοιχεία συγχρονίστηκαν…</translation> 
+        </message> 
         <message id="syncSuccessTooltip"> 
             <source>Synced</source> 
             <translation>Συγχρονίστηκε</translation> 
@@ -2476,10 +2492,6 @@ An internet connection is required to access them.</source>
         <message id="synchroPaused"> 
             <source>synchronization is paused</source> 
             <translation>ο συγχρονισμός έχει τεθεί σε παύση</translation> 
-        </message> 
-        <message id="synchroStatusInProgressDescription"> 
-            <source>Your recent files are being updated.</source> 
-            <translation>Τα πρόσφατα αρχεία σας ενημερώνονται.</translation> 
         </message> 
         <message id="synchroStatusInProgressTitle"> 
             <source>Sync in progress</source> 

@@ -2453,6 +2453,22 @@ Connexion internet requise pour y accéder.</translation>
             <source>Sync is running</source> 
             <translation>La synchronisation est en cours</translation> 
         </message> 
+        <message id="syncStatusAnalysing"> 
+            <source>Searching for changes…</source> 
+            <translation>Recherche des changements…</translation> 
+        </message> 
+        <message id="syncStatusExploring"> 
+            <source>Scanning files to synchronize…</source> 
+            <translation>Parcours des fichiers à synchroniser…</translation> 
+        </message> 
+        <message id="syncStatusPropagating"> 
+            <source>%1 item synchronized out of %2…</source> 
+            <translation>%1 élément synchronisé sur %2…</translation> 
+        </message> 
+        <message id="syncStatusPropagating-plural"> 
+            <source>%1 items synchronized out of %2…</source> 
+            <translation>%1 éléments synchronisés sur %2…</translation> 
+        </message> 
         <message id="syncSuccessTooltip"> 
             <source>Synced</source> 
             <translation>Synchronisé</translation> 
@@ -2476,10 +2492,6 @@ Connexion internet requise pour y accéder.</translation>
         <message id="synchroPaused"> 
             <source>synchronization is paused</source> 
             <translation>la synchronisation est en pause</translation> 
-        </message> 
-        <message id="synchroStatusInProgressDescription"> 
-            <source>Your recent files are being updated.</source> 
-            <translation>Vos fichiers récents sont en train d’être mis à jour.</translation> 
         </message> 
         <message id="synchroStatusInProgressTitle"> 
             <source>Sync in progress</source> 

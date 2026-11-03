@@ -2453,6 +2453,22 @@ Internetanslutning krävs för att komma åt dem.</translation>
             <source>Sync is running</source> 
             <translation>Synkronisering pågår</translation> 
         </message> 
+        <message id="syncStatusAnalysing"> 
+            <source>Searching for changes…</source> 
+            <translation>Söker efter ändringar…</translation> 
+        </message> 
+        <message id="syncStatusExploring"> 
+            <source>Scanning files to synchronize…</source> 
+            <translation>Genomsöker filer att synkronisera…</translation> 
+        </message> 
+        <message id="syncStatusPropagating"> 
+            <source>%1 item synchronized out of %2…</source> 
+            <translation>%1 av %2 element synkroniserat…</translation> 
+        </message> 
+        <message id="syncStatusPropagating-plural"> 
+            <source>%1 items synchronized out of %2…</source> 
+            <translation>%1 av %2 element synkroniserade…</translation> 
+        </message> 
         <message id="syncSuccessTooltip"> 
             <source>Synced</source> 
             <translation>Synkroniserad</translation> 
@@ -2476,10 +2492,6 @@ Internetanslutning krävs för att komma åt dem.</translation>
         <message id="synchroPaused"> 
             <source>synchronization is paused</source> 
             <translation>synkroniseringen är pausad</translation> 
-        </message> 
-        <message id="synchroStatusInProgressDescription"> 
-            <source>Your recent files are being updated.</source> 
-            <translation>Dina senaste filer uppdateras.</translation> 
         </message> 
         <message id="synchroStatusInProgressTitle"> 
             <source>Sync in progress</source> 
