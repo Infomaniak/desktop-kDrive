@@ -21,7 +21,6 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "libcommon/log/sentry/ptraces.h"
-#include "version.h"
 
 namespace KDC {
 
