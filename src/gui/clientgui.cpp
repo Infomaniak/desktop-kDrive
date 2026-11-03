@@ -783,7 +783,7 @@ void ClientGui::onFileOpeningStatus(const UniqueId jobId, const FileOpeningPhase
 
     auto dialogIt = _fileOpeningPopupMap.find(jobId);
     if (dialogIt == _fileOpeningPopupMap.end()) {
-        const auto dialog = new FileOpeningDialog(this);
+        const auto dialog = new FileOpeningDialog();
         (void) connect(dialog, &FileOpeningDialog::canceled, this, [this, jobId] {
             qCInfo(lcClientGui) << "Canceling the file opening for jobId=" << jobId;
             if (const auto exitInfo = GuiRequests::cancelFileOpeningJob(jobId); !exitInfo) {
