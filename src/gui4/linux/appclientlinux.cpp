@@ -118,6 +118,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                             "WebDrive", QStringLiteral("WebDrive only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(BlockingErrors::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0,
                                             "BlockingErrors", QStringLiteral("BlockingErrors only exposes enums."));
+    (void) qmlRegisterUncreatableMetaObject(SyncErrors::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "SyncErrors",
+                                            QStringLiteral("SyncErrors only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
