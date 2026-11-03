@@ -131,7 +131,9 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
         if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
             (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory && ioError != IoError::AccessDenied)) {
             LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+            localProperties.isAvailableLocally = false;
+            localProperties.isHydrated = false;
+            return ExitCode::SystemError;
         } else {
             localProperties.isAvailableLocally = ioError == IoError::Success;
             localProperties.isHydrated = localProperties.isAvailableLocally && !isDehydrated;
@@ -139,16 +141,13 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
     }
 
     ItemType destinationType;
-    if (!IoHelper::getItemType(absolutePath, destinationType)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, destinationType.ioError));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-    if (destinationType.ioError != IoError::Success && destinationType.ioError != IoError::NoSuchFileOrDirectory &&
-        destinationType.ioError != IoError::AccessDenied) {
+    if (!IoHelper::getItemType(absolutePath, destinationType) ||
+        (destinationType.ioError != IoError::Success && destinationType.ioError != IoError::NoSuchFileOrDirectory &&
+         destinationType.ioError != IoError::AccessDenied)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, destinationType.ioError));
         localProperties.isAvailableLocally = false;
         localProperties.isHydrated = false;
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return ExitCode::SystemError;
     }
     if (destinationType.ioError != IoError::Success || IoHelper::isLink(destinationType.linkType)) {
         localProperties.isAvailableLocally = false;
