@@ -80,8 +80,8 @@ SyncErrorExplanationController::SyncErrorExplanationController(const SyncErrorsP
 
 void SyncErrorExplanationController::open(const ErrorDbId errorDbId) {
     _errorDbId = errorDbId;
-    const auto *const classified = currentError();
-    const auto kind = classified ? syncErrorTraits(classified->kind).explanation : SyncErrorExplanation::None;
+    const auto *const classifiedError = currentError();
+    const auto kind = classifiedError ? syncErrorTraits(classifiedError->kind).explanation : SyncErrorExplanation::None;
     if (kind == SyncErrorExplanation::None) {
         qCWarning(lcSyncErrorExplanation) << "No explanation for this error | errorDbId:" << errorDbId;
         _errorDbId.reset();
@@ -89,9 +89,9 @@ void SyncErrorExplanationController::open(const ErrorDbId errorDbId) {
     }
 
     _kind = kind;
-    _nodeLabelId = QString::fromLatin1(syncErrorNodeLabelId(classified->error.nodeType()));
-    _copyablePath = displayLocalPath(absolutePath(*classified));
-    const auto &error = classified->error;
+    _nodeLabelId = QString::fromLatin1(syncErrorNodeLabelId(classifiedError->error.nodeType()));
+    _copyablePath = displayLocalPath(absolutePath(*classifiedError));
+    const auto &error = classifiedError->error;
     _isDirectory = error.nodeType() == NodeType::Directory;
     _itemName = Path2QStr(error.path().filename());
     _itemPath = Path2QStr(error.path().relative_path().lexically_normal());
@@ -102,7 +102,7 @@ void SyncErrorExplanationController::open(const ErrorDbId errorDbId) {
         qCInfo(lcSyncErrorExplanation) << "Inotify watches limit | current:" << _watchLimit
                                        << "| proposed:" << proposedWatchLimit(_watchLimit);
     }
-    qCInfo(lcSyncErrorExplanation) << "Explanation dialog opened | kind:" << classified->kind << "| errorDbId:" << errorDbId;
+    qCInfo(lcSyncErrorExplanation) << "Explanation dialog opened | kind:" << classifiedError->kind << "| errorDbId:" << errorDbId;
     emit changed();
 }
 
