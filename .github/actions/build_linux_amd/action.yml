@@ -159,7 +159,6 @@ runs:
                 -o -iname 'libQt6Widgets*.so*' \
                 -o -iname 'libQt6Gui*.so*' \
                 -o -iname 'libQt6Network*.so*' \
-                -o -iname 'libQt6Sql*.so*' \
                 -o -iname 'libQt6Core*.so*' \
                 -o -iname 'libQt6DBus*.so*' \
                 -o -iname 'libQt6Svg*.so*' \
