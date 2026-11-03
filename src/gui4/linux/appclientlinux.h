@@ -34,6 +34,7 @@
 #include "app/mainwindow/searchcontroller.h"
 #include "app/mainwindow/storage/storagecontroller.h"
 #include "app/mainwindow/syncerroractionhandler.h"
+#include "app/mainwindow/syncprogressstate.h"
 #include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
 #include "app/services/cachepopulator.h"
@@ -170,12 +171,14 @@ class AppClientLinux : public QApplication {
         WindowDecorationController _windowDecorationController{this};
         SystemTrayController _systemTrayController{this};
         NetworkStatusObserver _networkStatusObserver{this};
-        HomeController _homeController{_appCache,  _mainSelectionStore,    _syncErrorsProjection, _syncService,
-                                       _appRouter, _networkStatusObserver, _serverCommService,    this};
+        SyncProgressState _syncProgressState{_mainSelectionStore, this};
+        HomeController _homeController{_appCache,          _mainSelectionStore, _syncErrorsProjection,
+                                       _syncService,       _appRouter,          _networkStatusObserver,
+                                       _serverCommService, _syncProgressState,  this};
         BlockingErrorController _blockingErrorController{_syncErrorsProjection, _mainSelectionStore, _syncService, _appRouter,
                                                          this};
-        ActivitiesController _activitiesController{
-                _activityStore, _appCache, _mainSelectionStore, _networkStatusObserver, _activityService, _appRouter, this};
+        ActivitiesController _activitiesController{_activityStore,   _appCache,  _mainSelectionStore, _networkStatusObserver,
+                                                   _activityService, _appRouter, _syncProgressState,  this};
         StorageController _storageController{_appCache, _mainSelectionStore, _serverCommService, this};
         SearchController _searchController{_serverCommService, _mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
