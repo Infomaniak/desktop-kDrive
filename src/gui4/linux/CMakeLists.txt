@@ -216,6 +216,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKSyncConfiguration.qml
         ui/tokens/IKBlockingStateTokens.qml
         ui/tokens/IKWaiting.qml
+        ui/windows/main/errors/ErrorTexts.qml
 )
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
@@ -316,6 +317,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivityStatusIcon.qml
         ui/windows/main/blockingerror/BlockingErrorDriveLabel.qml
         ui/windows/main/blockingerror/BlockingErrorView.qml
+        ui/windows/main/errors/ErrorItemChip.qml
+        ui/windows/main/errors/ErrorRow.qml
         ui/windows/main/errors/ErrorsPage.qml
         ui/windows/main/home/HomeGreeting.qml
         ui/windows/main/home/HomeStatusPanel.qml

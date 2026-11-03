@@ -55,9 +55,10 @@ IKShadowedWindow {
         users.refresh();
     }
 
-    function selectAdvanced() {
+    // `pushedComponent`, when given, opens over the Advanced root (file exclusions).
+    function selectAdvanced(pushedComponent) {
         accountsPane.reset(accountsRootComponent);
-        advancedPane.reset(advancedRootComponent);
+        advancedPane.reset(advancedRootComponent, pushedComponent);
         selectedCategory = SettingsWindow.Category.Advanced;
     }
 
@@ -566,6 +567,15 @@ IKShadowedWindow {
                 }
             }
             root.advancedSyncCreationTrigger = null;
+        }
+    }
+
+    // "Manage exclusions" on the errors page: Advanced, then its file exclusions page.
+    Connections {
+        target: root.controller
+
+        function onFileExclusionsRequested() {
+            root.selectAdvanced(fileExclusionsComponent);
         }
     }
 

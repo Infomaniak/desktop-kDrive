@@ -976,6 +976,16 @@ Request access from the owner or administrator.</source>
             <source>Unsupported file type</source> 
             <translation>Μη υποστηριζόμενος τύπος αρχείου</translation> 
         </message> 
+        <message id="errInvalidLinkTargetDescription"> 
+            <source>This link has been excluded from synchronization because its destination path is invalid.
+The path must be relative and cannot contain a reference to a parent folder, such as "..".</source> 
+            <translation>Αυτός ο σύνδεσμος εξαιρέθηκε από τον συγχρονισμό, καθώς η διαδρομή προορισμού του δεν είναι έγκυρη.
+Η διαδρομή πρέπει να είναι σχετική και δεν μπορεί να περιέχει αναφορά σε γονικό φάκελο, όπως «..».</translation> 
+        </message> 
+        <message id="errInvalidLinkTargetTitle"> 
+            <source>Invalid destination path</source> 
+            <translation>Μη έγκυρη διαδρομή προορισμού</translation> 
+        </message> 
         <message id="errInvalidSyncSyncDirAccessDescription"> 
             <source>This folder is no longer accessible at its original location.</source> 
             <translation>Αυτός ο φάκελος δεν είναι πλέον προσβάσιμος στην αρχική του τοποθεσία.</translation> 
@@ -1764,6 +1774,26 @@ Useful if you know the important work is online on kDrive.</source>
         <message id="linkCopiedToClipboardTitle"> 
             <source>Link copied to clipboard</source> 
             <translation>Ο σύνδεσμος αντιγράφηκε στο πρόχειρο</translation> 
+        </message> 
+        <message id="linuxErrINotifyWatchesDescription"> 
+            <source>Your system limits the number of folders kDrive can watch. Changes made on this computer are no longer detected.</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrINotifyWatchesTitle. "This computer" is the computer running the kDrive app.</extracomment> 
+            <translation>Το σύστημά σας περιορίζει τον αριθμό των φακέλων που μπορεί να παρακολουθεί το kDrive. Οι αλλαγές που γίνονται σε αυτόν τον υπολογιστή δεν εντοπίζονται πλέον.</translation> 
+        </message> 
+        <message id="linuxErrINotifyWatchesTitle"> 
+            <source>Too many folders to watch</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page: title of the row shown when the Linux system limit on watched folders (inotify) is reached, so kDrive no longer detects local changes.</extracomment> 
+            <translation>Υπερβολικά πολλοί φάκελοι για παρακολούθηση</translation> 
+        </message> 
+        <message id="linuxErrTmpDirAccessDescription"> 
+            <source>kDrive cannot write to its working folder (.kDrive-cache) inside the sync folder. Check the write permissions of the sync folder, then retry.</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrTmpDirAccessTitle. Keep ".kDrive-cache" as is: it is the name of a hidden folder. The row offers a "Retry" button.</extracomment> 
+            <translation>Το kDrive δεν μπορεί να γράψει στον φάκελο εργασίας του (.kDrive-cache) μέσα στον φάκελο συγχρονισμού. Ελέγξτε τα δικαιώματα εγγραφής του φακέλου συγχρονισμού και, στη συνέχεια, δοκιμάστε ξανά.</translation> 
+        </message> 
+        <message id="linuxErrTmpDirAccessTitle"> 
+            <source>Sync folder not writable</source> 
+            <extracomment>Linux desktop app, "Errors to fix" page: title of the row shown when kDrive cannot write to its hidden working folder (.kDrive-cache) inside the sync folder, for example after its permissions changed. The row offers a "Retry" button.</extracomment> 
+            <translation>Δεν είναι δυνατή η εγγραφή στον φάκελο συγχρονισμού</translation> 
         </message> 
         <message id="linuxStorageLocationUnavailableDescription"> 
             <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
