@@ -321,9 +321,19 @@ Sie können sie jederzeit öffnen, auch ohne Internetverbindung.</translation>
             <source>Continue</source> 
             <translation>Weiter</translation> 
         </message> 
+        <message id="buttonCopyPath"> 
+            <source>Copy path</source> 
+            <extracomment>Icon-only button next to a file path (Linux desktop app, "Errors to fix" page): copies the path to the clipboard. Used as tooltip and accessible name.</extracomment> 
+            <translation>Pfad kopieren</translation> 
+        </message> 
         <message id="buttonCopyShareLink"> 
             <source>Copy share link</source> 
             <translation>Freigabelink kopieren</translation> 
+        </message> 
+        <message id="buttonCopyTechnicalDetails"> 
+            <source>Copy technical details</source> 
+            <extracomment>Icon-only button next to the "Technical details" of an unexpected error (Linux desktop app, "Errors to fix" page): copies them to the clipboard, to send them to the support. Used as tooltip and accessible name.</extracomment> 
+            <translation>Technische Details kopieren</translation> 
         </message> 
         <message id="buttonCreateAccount"> 
             <source>Create an account</source> 
@@ -2506,6 +2516,11 @@ Die Synchronisierung wurde pausiert. Bitte überprüfen Sie Ihre Dateien und ver
         <message id="teachingTipInvalidFolderTitle"> 
             <source>This folder cannot be used</source> 
             <translation>Dieser Ordner kann nicht verwendet werden</translation> 
+        </message> 
+        <message id="technicalDetailsCopiedToClipboard"> 
+            <source>Technical details copied to clipboard</source> 
+            <extracomment>Confirmation shown for a moment in the tooltip of the "Copy technical details" button once the details are in the clipboard (Linux desktop app, "Errors to fix" page).</extracomment> 
+            <translation>Technische Details in die Zwischenablage kopiert</translation> 
         </message> 
         <message id="titleConflictIndividualResolution"> 
             <source>Individual handling</source> 
