@@ -39,6 +39,7 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
 #endif
         CPPUNIT_TEST(testHandleResponseIsHydratedWithVfsOff);
         CPPUNIT_TEST(testHandleResponseAdvancedSync);
+        CPPUNIT_TEST(testHandleResponseTraversesLink);
         CPPUNIT_TEST(testHandleResponseTwice);
         CPPUNIT_TEST(testSetQueryParameters);
         CPPUNIT_TEST_SUITE_END();
@@ -57,6 +58,7 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
 #endif
         void testHandleResponseIsHydratedWithVfsOff();
         void testHandleResponseAdvancedSync();
+        void testHandleResponseTraversesLink();
         void testHandleResponseTwice();
         void testSetQueryParameters();
 

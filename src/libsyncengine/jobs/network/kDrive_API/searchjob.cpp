@@ -122,25 +122,57 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
     }
 
     const SyncPath absolutePath = _syncRootPath / localProperties.path;
-
     if (_syncVfsMode == VirtualFileMode::Off) {
-        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
-                                                                             ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-        localProperties.isHydrated = localProperties.isAvailableLocally;
+        localProperties.isAvailableLocally = true;
+        localProperties.isHydrated = true;
     } else {
-        IoError ioError = IoError::Success;
+        auto ioError = IoError::Success;
         bool isDehydrated = false;
         if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
-            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory)) {
+            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory && ioError != IoError::AccessDenied)) {
             LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+            localProperties.isAvailableLocally = false;
+            localProperties.isHydrated = false;
+            return ExitCode::SystemError;
         } else {
-            localProperties.isAvailableLocally = ioError != IoError::NoSuchFileOrDirectory;
+            localProperties.isAvailableLocally = ioError == IoError::Success;
             localProperties.isHydrated = localProperties.isAvailableLocally && !isDehydrated;
         }
+    }
+
+    ItemType destinationType;
+    if (!IoHelper::getItemType(absolutePath, destinationType) ||
+        (destinationType.ioError != IoError::Success && destinationType.ioError != IoError::NoSuchFileOrDirectory &&
+         destinationType.ioError != IoError::AccessDenied)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, destinationType.ioError));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return ExitCode::SystemError;
+    }
+    if (destinationType.ioError != IoError::Success || IoHelper::isLink(destinationType.linkType)) {
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return ExitCode::Ok;
+    }
+
+    // An item reached through a link located inside the sync root is not part of the synchronized tree. Links above the sync
+    // root (e.g. "/var" on macOS) are ignored: the closest link is returned first, so any link inside the sync root wins.
+    auto traversesLink = false;
+    SyncPath linkPath;
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, traversesLink, linkPath);
+        ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    if (const SyncPath syncRootPath = _syncRootPath.has_filename() ? _syncRootPath : _syncRootPath.parent_path();
+        traversesLink && CommonUtility::isStrictDescendant(linkPath, syncRootPath)) {
+        LOGW_WARN(_logger, L"Path " << Utility::formatSyncPath(absolutePath) << L" traverses the link "
+                                    << Utility::formatSyncPath(linkPath));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
     }
 
     return ExitCode::Ok;
@@ -191,7 +223,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         if (!JsonParserUtility::extractValue(obj, pathKey, pathStr)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
-        SyncPath path(pathStr);
+        const SyncPath path(pathStr);
 
         SyncTime modifiedTime = 0;
         if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
