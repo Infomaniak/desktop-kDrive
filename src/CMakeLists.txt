@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED Core Concurrent Core5Compat)
+find_package(Qt6 REQUIRED Core Concurrent)
 find_package(Qt6LinguistTools)
 
 get_target_property(QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
