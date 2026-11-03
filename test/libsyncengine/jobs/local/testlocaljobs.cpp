@@ -546,15 +546,15 @@ void KDC::TestLocalJobs::testOpenFileJob() {
     {
         OpenFileJob::Request request;
         CPPUNIT_ASSERT(OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456", request));
-        CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
-        CPPUNIT_ASSERT_EQUAL(DriveId(1234), request.driveId);
-        CPPUNIT_ASSERT_EQUAL(std::string("456"), request.remoteNodeId);
+        CPPUNIT_ASSERT_EQUAL(UserId{99}, request.user.userId());
+        CPPUNIT_ASSERT_EQUAL(DriveId{1234}, request.driveId);
+        CPPUNIT_ASSERT_EQUAL(std::string{"456"}, request.remoteNodeId);
     }
     {
         // The scheme and the host are case-insensitive.
         OpenFileJob::Request request;
         CPPUNIT_ASSERT(OpenFileJob::parseDeeplinkUrl("KDRIVE://OPEN/user/99/drive/1234/file/456", request));
-        CPPUNIT_ASSERT_EQUAL(UserId(99), request.user.userId());
+        CPPUNIT_ASSERT_EQUAL(UserId{99}, request.user.userId());
     }
     {
         // Invalid URLs.

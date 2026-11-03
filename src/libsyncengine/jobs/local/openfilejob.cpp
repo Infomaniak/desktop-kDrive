@@ -70,7 +70,7 @@ bool isOpenFileUri(const Poco::URI &uri) {
 
 //! Parses a strictly positive integer identifier (e.g. a user id or a drive id) into `id`. Returns false if `idStr`
 //! does not exactly represent one.
-bool parsePositiveId(std::string_view idStr, int64_t &id) {
+bool parsePositiveId(const std::string_view idStr, int64_t &id) {
     // std::from_chars parses the whole string strictly (no whitespace, no leading '+', no trailing garbage) and never
     // throws.
     const auto result = std::from_chars(idStr.data(), idStr.data() + idStr.size(), id);
@@ -120,7 +120,7 @@ bool OpenFileJob::parseDeeplinkUrl(const std::string &urlStr, Request &request) 
     uri.getPathSegments(segments);
     if (segments.size() != 6 || segments[0] != "user" || segments[2] != "drive" || segments[4] != "file") return false;
 
-    UserId userId;
+    UserId userId{0};
     if (!parsePositiveId(segments[1], userId)) return false;
     request.user.setUserId(userId);
 
@@ -237,7 +237,7 @@ ExitInfo OpenFileJob::resolveItem() {
 }
 
 void OpenFileJob::sortSyncsByRunningState(std::vector<Sync> &syncs) const {
-    std::ranges::stable_sort(syncs, [this](const Sync &sync1, const Sync &sync2) {
+    (void) std::ranges::stable_sort(syncs, [this](const Sync &sync1, const Sync &sync2) {
         const bool running1 = _getSyncPal(sync1.dbId()) != nullptr;
         if (const bool running2 = _getSyncPal(sync2.dbId()) != nullptr; running1 != running2) return running1;
 
@@ -246,7 +246,7 @@ void OpenFileJob::sortSyncsByRunningState(std::vector<Sync> &syncs) const {
 }
 
 std::shared_ptr<SyncDb> OpenFileJob::getSyncDb(const SyncDbId syncDbId) const {
-    std::shared_ptr<SyncPal> syncPal = _getSyncPal(syncDbId);
+    const std::shared_ptr<SyncPal> syncPal = _getSyncPal(syncDbId);
 
     return syncPal ? syncPal->syncDb() : nullptr;
 }
@@ -344,7 +344,7 @@ ExitInfo OpenFileJob::resolveDeeplink(bool &found) {
         return ExitCode::DbError;
     }
 
-    std::erase_if(syncs, [this](const Sync &sync) { return !_driveDbIds.contains(sync.driveDbId()); });
+    (void) std::erase_if(syncs, [this](const Sync &sync) { return !_driveDbIds.contains(sync.driveDbId()); });
 
     // Examine the syncs whose engine is running first, and make the examination order deterministic.
     sortSyncsByRunningState(syncs);
@@ -440,7 +440,7 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     //   download job completes, possibly long after the hydration job has run and even after this job has timed out or
     //   been aborted (the completion state is shared and kept alive by the shared_ptr). It reports the outcome of the
     //   actual download.
-    const auto observer = [completion](UniqueId, bool success) {
+    const auto observer = [completion](const UniqueId, bool success) {
         const std::scoped_lock lock(completion->mutex);
         completion->finished = true;
         completion->success = success;
