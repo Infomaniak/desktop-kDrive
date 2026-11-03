@@ -38,17 +38,25 @@ class FileOpeningDialog : public CustomDialog {
 
         //! Updates the window contents according to the state reported by the server: an informative message while the
         //! item is being synchronized, and the name of the item being downloaded along with a progress gauge while it
-        //! is being downloaded.
+        //! is being downloaded. If the user dismissed the window for the current state, the window stays hidden until
+        //! the state changes.
         void updateStatus(FileOpeningPhase phase, int8_t percent, const QString &itemName);
 
     signals:
         //! Emitted when the user requests the cancellation of the file opening.
         void canceled();
 
+    private slots:
+        //! Dismisses the window when the user closes it (system bar cross or escape key): the file opening keeps
+        //! running, but the window stays hidden until the state of the request changes.
+        void onExit();
+
     private:
         QLabel *_messageLabel = nullptr;
         QProgressBar *_progressBar = nullptr;
         QPushButton *_cancelButton = nullptr;
+        FileOpeningPhase _dismissedPhase{FileOpeningPhase::WaitingSync};
+        bool _userDismissed{false};
 };
 
 } // namespace KDC
