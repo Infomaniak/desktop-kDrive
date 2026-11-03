@@ -4,7 +4,7 @@ else()
     project(testserver LANGUAGES C CXX)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Network Svg)
+find_package(Qt6 REQUIRED COMPONENTS Network)
 find_package(Poco 1.15.2 REQUIRED XML Net NetSSL Crypto)
 
 set(CMAKE_AUTOMOC ON)
