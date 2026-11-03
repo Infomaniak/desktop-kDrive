@@ -21,6 +21,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "libcommon/log/sentry/ptraces.h"
+#include "version.h"
 
 namespace KDC {
 
@@ -140,6 +141,13 @@ void OperationGeneratorWorker::execute() {
                               L"Could not determine free space available at " << Utility::formatSyncPath(_syncPal->localPath()));
         }
     }
+
+#ifdef KD_WINDOWS // The many delete operations UI is not yet implemented on Windows. So we do not stop the sync in this case.
+                  // To be removed when merged on develop branch where the many delete operations UI is implemented.
+    LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
+    setDone(exitCode);
+    return;
+#endif // KD_WINDOWS
 
     if (_syncPal->manyDeleteOpsUserChoice() == TooManyDeletesUserChoice::None) {
         if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationHardLimit) {
