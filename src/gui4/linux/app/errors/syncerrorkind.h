@@ -94,7 +94,7 @@ enum class SyncErrorAction : uint8_t {
     OpenExclusions,
     Explain,
     OpenSyncParentFolder, // Parent folder of the synchronization root
-    CreateNewSync, // Settings, on the accounts and synchronizations
+    CreateNewSync, // Settings, on the synchronizations
     RestartSync,
     WakeUp,
     RefreshErrors,

@@ -64,7 +64,7 @@ class SettingsWindowController final : public QObject {
             emit openRequested();
             emit fileExclusionsRequested();
         }
-        // Opens Settings on the accounts and synchronizations, where a new synchronization is created, for the errors page.
+        // Opens Settings on the synchronizations, where a new synchronization is created, for the errors page.
         void requestOpenAccounts() {
             emit openRequested();
             emit accountsRequested();
