@@ -18,32 +18,69 @@
 
 #include "fileopeningdialog.h"
 
+#include <QHBoxLayout>
 #include <cassert>
 
 namespace KDC {
 
+static const int boxHMargin = 40;
+static const int messageVBMargin = 15;
+
 FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     CustomDialog(true, parent) {
+    // Message
+    QHBoxLayout *messageHBox = new QHBoxLayout();
+    messageHBox->setContentsMargins(boxHMargin, 0, boxHMargin, messageVBMargin);
+    mainLayout()->addLayout(messageHBox);
+
     _messageLabel = new QLabel(this);
+    _messageLabel->setObjectName("textLabel");
+    _messageLabel->setTextFormat(Qt::RichText);
     _messageLabel->setWordWrap(true);
+    _messageLabel->setAlignment(Qt::AlignHCenter);
+    messageHBox->addWidget(_messageLabel);
+
+    // Progress bar
+    QHBoxLayout *progressHBox = new QHBoxLayout();
+    progressHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    mainLayout()->addLayout(progressHBox);
 
     _progressBar = new QProgressBar(this);
     _progressBar->setRange(0, 100);
     _progressBar->setValue(0);
+    progressHBox->addWidget(_progressBar);
 
-    _cancelButton = new QPushButton(tr("Cancel"), this);
+    mainLayout()->addStretch();
 
-    auto *layout = mainLayout();
-    layout->addWidget(_messageLabel);
-    layout->addWidget(_progressBar);
-    layout->addWidget(_cancelButton, 0, Qt::AlignRight);
+    // Cancel button
+    QHBoxLayout *buttonsHBox = new QHBoxLayout();
+    buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    mainLayout()->addLayout(buttonsHBox);
+
+    _cancelButton = new QPushButton(this);
+    _cancelButton->setObjectName("nondefaultbutton");
+    _cancelButton->setFlat(true);
+    _cancelButton->setText(tr("Cancel"));
+    buttonsHBox->addWidget(_cancelButton);
+    buttonsHBox->addStretch();
 
     (void) connect(_cancelButton, &QPushButton::clicked, this, &FileOpeningDialog::canceled);
+
+    // Closing the window (system bar cross, escape key) dismisses it without cancelling the file opening.
+    (void) connect(this, &CustomDialog::exit, this, &FileOpeningDialog::onExit);
+    (void) connect(this, &QDialog::rejected, this, &FileOpeningDialog::onExit);
 
     updateStatus(FileOpeningPhase::WaitingSync, -1, QString());
 }
 
 void FileOpeningDialog::updateStatus(const FileOpeningPhase phase, const int8_t percent, const QString &itemName) {
+    if (_userDismissed && phase == _dismissedPhase) {
+        // The user dismissed the window for this state: keep it hidden until the state of the request changes.
+        return;
+    }
+    _userDismissed = false;
+    _dismissedPhase = phase;
+
     switch (phase) {
         case FileOpeningPhase::WaitingSync:
             _messageLabel->setText(tr("This item is not synchronized yet. Synchronizing it may take some time."));
@@ -68,6 +105,13 @@ void FileOpeningDialog::updateStatus(const FileOpeningPhase phase, const int8_t 
     show();
     raise();
     activateWindow();
+}
+
+void FileOpeningDialog::onExit() {
+    // Dismiss the window: the file opening keeps running, but the window stays hidden until the state of the request
+    // changes again (e.g. the item starts downloading).
+    _userDismissed = true;
+    hide();
 }
 
 } // namespace KDC
