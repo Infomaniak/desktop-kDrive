@@ -12,12 +12,6 @@ find_package(Poco 1.15.2 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
 
-if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
-    # Use fallback library types for imported dependencies
-    set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
-endif()
-find_package(libzip 1.10.1 REQUIRED)
-
 set(CMAKE_AUTOMOC TRUE)
 
 add_definitions(-DUNICODE)
@@ -114,8 +108,7 @@ generate_export_header(${libcommon_NAME}
 if(WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/libzip/include")
+        ${CMAKE_CURRENT_BINARY_DIR})
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -127,8 +120,7 @@ target_link_libraries(${libcommon_NAME}
     Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network
     Poco::Foundation Poco::JSON Poco::Util
     log4cplus::log4cplus
-    sentry::sentry
-    libzip::zip)
+    sentry::sentry)
 
 if(UNIX)
     target_link_libraries(${libcommon_NAME}
