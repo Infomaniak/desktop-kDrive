@@ -942,7 +942,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 4.0.1;
+				MARKETING_VERSION = 4.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.gui;
 				PRODUCT_NAME = kDrive;
 				REGISTER_APP_GROUPS = YES;
@@ -981,7 +981,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 4.0.1;
+				MARKETING_VERSION = 4.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.gui;
 				PRODUCT_NAME = kDrive;
 				REGISTER_APP_GROUPS = YES;
