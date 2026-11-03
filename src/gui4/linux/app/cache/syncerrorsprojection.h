@@ -50,6 +50,8 @@ struct ClassifiedSyncError {
  */
 class SyncErrorsProjection final : public QObject {
         Q_OBJECT
+        // Read by Main.qml: the update-required screen replaces every route.
+        Q_PROPERTY(bool updateRequired READ isUpdateRequired NOTIFY updateRequiredChanged)
 
     public:
         SyncErrorsProjection(const AppCache &cache, const MainSelectionStore &selectionStore, QObject *parent = nullptr);

@@ -125,6 +125,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("searchController"), QVariant::fromValue<QObject *>(&_searchController)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
+            {QStringLiteral("syncErrorsProjection"), QVariant::fromValue<QObject *>(&_syncErrorsProjection)},
     });
     _qmlEngine.loadFromModule(AppConstants::Qml::moduleUri, QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
@@ -157,6 +158,8 @@ void AppClientLinux::setupSignalConnections() {
                    &AppClientLinux::openOnboardingLoginFromSettings);
     (void) connect(&_systemTrayController, &SystemTrayController::openSettingsWindowRequested, this,
                    &AppClientLinux::openSettingsWindow);
+    (void) connect(&_syncErrorsProjection, &SyncErrorsProjection::updateRequiredChanged, this,
+                   &AppClientLinux::handleUpdateRequiredChanged);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
@@ -363,6 +366,12 @@ void AppClientLinux::quitOnServerDisconnection() {
 }
 
 void AppClientLinux::openSettingsWindow() {
+    // Covers every entry point: tray menu, toolbar, UTILITY_SHOW_SETTINGS and the return from an onboarding login.
+    if (_syncErrorsProjection.isUpdateRequired()) {
+        qCInfo(lcAppClientLinux) << "Settings window not opened: an update is required";
+        return;
+    }
+
     if (!_settingsWindow) {
         QQmlComponent component(&_qmlEngine);
         component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow");
@@ -507,6 +516,15 @@ void AppClientLinux::handleConfiguredSyncsChanged() {
         qCInfo(lcAppClientLinux) << "Configured synchronization set became empty; Home switched to setup state";
     }
     _hadConfiguredSync = hasConfiguredSync;
+}
+
+void AppClientLinux::handleUpdateRequiredChanged() {
+    const bool updateRequired = _syncErrorsProjection.isUpdateRequired();
+    _systemTrayController.setSettingsAvailable(!updateRequired);
+    if (updateRequired && _settingsWindow && _settingsWindow->isVisible()) {
+        qCInfo(lcAppClientLinux) << "Closing the Settings window: an update is required";
+        (void) _settingsWindow->close();
+    }
 }
 
 void AppClientLinux::setupLogging() {

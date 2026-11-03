@@ -204,6 +204,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKSearch.qml
         ui/tokens/IKStorage.qml
         ui/tokens/IKSyncConfiguration.qml
+        ui/tokens/IKBlockingStateTokens.qml
         ui/tokens/IKWaiting.qml
 )
 
@@ -261,6 +262,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKWindowHeader.qml
         ui/chrome/IKWindowResizeHandles.qml
         ui/components/IKBadge.qml
+        ui/components/IKBlockingState.qml
         ui/components/IKAvatar.qml
         ui/components/IKCheckBox.qml
         ui/components/IKConfirmationDialog.qml
@@ -336,6 +338,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/onboarding/OnboardingWindow.qml
         ui/windows/onboarding/ReadyView.qml
         ui/windows/onboarding/SynchronizationView.qml
+        ui/windows/updaterequired/UpdateRequiredView.qml
         ui/windows/waiting/WaitingView.qml
         ${GUI_QML_SINGLETON_FILES}
 )
@@ -428,6 +431,8 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/tray/white/notif.svg
         ui/assets/tray/white/pause.svg
         ui/assets/tray/white/sync.svg
+        ui/assets/updaterequired/folders-stack-arrows-counterclockwise.svg
+        ui/assets/updaterequired/folders-stack-arrows-counterclockwise-dark.svg
 )
 
 
