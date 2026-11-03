@@ -34,8 +34,8 @@ FileOpeningCancelJob::FileOpeningCancelJob(std::shared_ptr<CommManager> commMana
 ExitInfo FileOpeningCancelJob::deserializeInputParms() {
     try {
         readParamValue(inParamsJobId, _jobId);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in FileOpeningCancelJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, "Exception in FileOpeningCancelJob::readParamValue: error=" << pocoException.message());
 
         return ExitCode::LogicError;
     }

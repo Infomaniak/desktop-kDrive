@@ -64,14 +64,14 @@ void FileOpeningHandler::queueOpenFileJob() {
         return;
     }
 
-    auto getSyncPal = [this](SyncDbId syncDbId) -> std::shared_ptr<SyncPal> {
+    auto getSyncPal = [this](const SyncDbId syncDbId) -> std::shared_ptr<SyncPal> {
         const std::scoped_lock lock(_appServer->syncPalMapMutex);
         const auto syncPalMapIt = _appServer->syncPalMap.find(syncDbId);
 
         return syncPalMapIt == _appServer->syncPalMap.end() ? nullptr : syncPalMapIt->second;
     };
 
-    auto getVfs = [this](SyncDbId syncDbId) -> std::shared_ptr<Vfs> {
+    auto getVfs = [this](const SyncDbId syncDbId) -> std::shared_ptr<Vfs> {
         std::shared_ptr<Vfs> vfs;
         (void) _appServer->getVfs(syncDbId, vfs);
 
@@ -82,16 +82,16 @@ void FileOpeningHandler::queueOpenFileJob() {
     _jobId = job->jobId();
     _job = job;
     _appServer->registerFileOpeningJob(_jobId, this);
-    job->setFeedbackCallback([this](FileOpeningPhase phase, int8_t percent, const CommString &itemName) {
+    job->setFeedbackCallback([this](const FileOpeningPhase phase, const int8_t percent, const CommString &itemName) {
         // Job manager worker thread. Hand the state over to the application thread. `this` is used as the context
         // object: if the handler has been destroyed in the meantime, the call is simply discarded.
-        QMetaObject::invokeMethod(
+        (void) QMetaObject::invokeMethod(
                 this, [this, phase, percent, itemName] { onFileOpeningStatus(phase, percent, itemName); }, Qt::QueuedConnection);
     });
     job->setAdditionalCallback([this, job](UniqueId) {
         // Job manager worker thread. Hand the outcome over to the application thread. `this` is used as the context
         // object: if the handler has been destroyed in the meantime, the call is simply discarded.
-        QMetaObject::invokeMethod(
+        (void) QMetaObject::invokeMethod(
                 this,
                 [this, outcome = job->outcome(), localPath = job->localPath(), syncDbId = job->syncDbId()] {
                     onOpenFileJobFinished(outcome, localPath, syncDbId);
