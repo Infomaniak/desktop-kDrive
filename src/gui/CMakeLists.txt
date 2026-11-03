@@ -326,6 +326,13 @@ if(APPLE)
         RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
         INSTALL_RPATH "@executable_path/../Frameworks"
     )
+elseif(UNIX)
+    # Linux: same rationale as the server target; the client binary must also keep resolving its
+    # libraries without any launch environment.
+    set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib"
+    )
 else()
     set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}

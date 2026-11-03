@@ -319,6 +319,14 @@ if(APPLE)
         MACOSX_BUNDLE TRUE
         INSTALL_RPATH "@executable_path/../Frameworks"
     )
+elseif(UNIX)
+    # Linux: the application is the handler of the "kdrive" URL scheme, so the desktop environment
+    # may launch it without any development environment. The installed layout must therefore resolve
+    # its shared libraries on its own (e.g. an AppImage usr/lib directory).
+    set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib"
+    )
 else()
     set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
