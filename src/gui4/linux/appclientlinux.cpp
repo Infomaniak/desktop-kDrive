@@ -178,6 +178,8 @@ void AppClientLinux::setupSignalConnections() {
                    &OnboardingSessionManager::startLoginSession);
     (void) connect(&_syncErrorActionHandler, &SyncErrorActionHandler::loginRequested, &_onboardingSessionManager,
                    &OnboardingSessionManager::startLoginSession);
+    (void) connect(&_activitiesController, &ActivitiesController::fixErrorsRequested, &_errorsPageController,
+                   &ErrorsPageController::reveal);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);

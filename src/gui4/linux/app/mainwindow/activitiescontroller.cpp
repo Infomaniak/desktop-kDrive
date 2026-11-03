@@ -259,6 +259,7 @@ void ActivitiesController::requestFixErrors(const QString &rowId) {
     }
     qCInfo(lcActivitiesController) << "Opening the errors page from an activity"
                                    << "| rowId:" << rowId << "| activeErrorCount:" << target->activeErrorDbIds.size();
+    emit fixErrorsRequested(target->activeErrorDbIds);
     _appRouter.showErrors();
 }
 

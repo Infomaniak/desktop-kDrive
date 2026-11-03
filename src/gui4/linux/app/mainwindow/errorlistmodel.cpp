@@ -190,6 +190,20 @@ QString ErrorListModel::technicalDetailsText(const QString &rowId) const {
     return lines.join(u'\n');
 }
 
+int32_t ErrorListModel::firstRowOf(const std::vector<ErrorDbId> &errorDbIds) const {
+    for (int32_t rowIndex = 0; rowIndex < static_cast<int32_t>(_rows.size()); ++rowIndex) {
+        const auto &row = _rows[static_cast<std::size_t>(rowIndex)];
+        const auto standsFor = [&row](const ErrorDbId errorDbId) {
+            return row.rowId == conflictsRowId ? std::ranges::find(row.conflictDbIds, errorDbId) != row.conflictDbIds.end()
+                                               : row.errorDbId == errorDbId;
+        };
+        if (std::ranges::any_of(errorDbIds, standsFor)) {
+            return rowIndex;
+        }
+    }
+    return -1;
+}
+
 int ErrorListModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : static_cast<int>(_rows.size());
 }
@@ -337,9 +351,13 @@ void ErrorListModel::refresh() {
 std::vector<ErrorListModel::Row> ErrorListModel::buildRows() const {
     const auto &errors = _projection.currentErrors();
     const auto context = _selectionStore.currentSyncContext();
-    const auto conflictCount =
-            static_cast<int32_t>(std::ranges::count(errors, SyncErrorCategory::Conflicts, &ClassifiedSyncError::category));
-    const bool aggregateConflicts = conflictCount > kMaxIndividualConflicts;
+    std::vector<ErrorDbId> conflictDbIds;
+    for (const auto &classified: errors) {
+        if (classified.category == SyncErrorCategory::Conflicts) {
+            conflictDbIds.push_back(classified.error.dbId());
+        }
+    }
+    const bool aggregateConflicts = std::ssize(conflictDbIds) > kMaxIndividualConflicts;
 
     std::vector<Row> rows;
     rows.reserve(errors.size() + 1);
@@ -354,7 +372,7 @@ std::vector<ErrorListModel::Row> ErrorListModel::buildRows() const {
         rows.push_back(makeErrorRow(classified, section, context));
     }
     if (aggregateConflicts) {
-        rows.push_back(makeConflictsRow(conflictCount));
+        rows.push_back(makeConflictsRow(std::move(conflictDbIds)));
     }
 
     (void) std::ranges::sort(rows, [](const Row &lhs, const Row &rhs) { return isBefore(lhs, rhs); });
@@ -412,12 +430,13 @@ ErrorListModel::Row ErrorListModel::makeErrorRow(const ClassifiedSyncError &clas
 }
 
 // The "Manage" button of this row opens the version conflict pages, added with them.
-ErrorListModel::Row ErrorListModel::makeConflictsRow(const int32_t conflictCount) {
+ErrorListModel::Row ErrorListModel::makeConflictsRow(std::vector<ErrorDbId> conflictDbIds) {
     Row row;
     row.rowId = conflictsRowId;
     row.section = SyncErrorCategory::Conflicts;
     row.titleId = u"manyConflictErrorTitle"_s;
-    row.titleCount = conflictCount;
+    row.titleCount = static_cast<int32_t>(conflictDbIds.size());
+    row.conflictDbIds = std::move(conflictDbIds);
     row.descriptionId = u"manyConflictErrorDescription"_s;
     return row;
 }
