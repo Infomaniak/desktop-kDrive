@@ -303,6 +303,18 @@ void TestSearchJob::testHandleResponseTraversesLink() {
     CPPUNIT_ASSERT(result.isAvailableLocally());
     CPPUNIT_ASSERT(result.isHydrated());
 
+    // A result that is itself a link is not available locally either, whether it targets a directory or a file.
+    result = searchLocalItem(_localTempDir.path(), "/Private/dir_link");
+    CPPUNIT_ASSERT(!result.isAvailableLocally());
+    CPPUNIT_ASSERT(!result.isHydrated());
+
+    const SyncPath fileSymlinkPath = _localTempDir.path() / "file_link.txt";
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::createSymlink(targetDirPath / "item.txt", fileSymlinkPath, false, ioError));
+    result = searchLocalItem(_localTempDir.path(), "/Private/file_link.txt");
+    CPPUNIT_ASSERT(!result.isAvailableLocally());
+    CPPUNIT_ASSERT(!result.isHydrated());
+
     // An item whose ancestors do not exist locally is not available locally, and the search does not fail.
     result = searchLocalItem(_localTempDir.path(), "/Private/missing_dir/item.txt");
     CPPUNIT_ASSERT(!result.isAvailableLocally());
