@@ -201,6 +201,8 @@ QtObject {
     readonly property color storageLegendOther: darkMode ? _p.violetLight : _p.cloud500
     readonly property color storageFree: darkMode ? _p.gray400 : _p.gray600
     readonly property color storageBarSeparator: darkMode ? _p.neutralBlue700 : _p.gray100
+    readonly property color blockingStateSurface: surfaceSecondary
+    readonly property color blockingStateBorder: surfaceTertiary
     readonly property color sidebarNotificationSurface: surfacePrimary
     readonly property color sidebarNotificationBorder: surfaceTertiary
     readonly property color modalSurface: onboardingSurfacePrimary

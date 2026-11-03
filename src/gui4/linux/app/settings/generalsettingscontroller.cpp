@@ -214,6 +214,9 @@ void GeneralSettingsController::openUrl(const QUrl &url) {
 }
 
 void GeneralSettingsController::openDownload() {
+    // TODO: The Linux server has no installer yet (`LinuxUpdater::startInstaller` is empty): the user downloads the new
+    // version from the website, from Settings or from the update-required screen. Once the packaging rework brings one,
+    // send UPDATER_START_INSTALLER instead, as on Windows and macOS, and present the installation state.
     openUrl(AppConstants::Settings::downloadUri());
 }
 
