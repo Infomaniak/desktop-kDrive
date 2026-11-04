@@ -175,6 +175,7 @@ struct COMMON_EXPORT CommonUtility {
         static SyncPath getAppDir();
         static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
+        static QString applicationDirPath();
 #if defined(KD_MACOS)
         static SyncPath getExtensionPath();
 #endif

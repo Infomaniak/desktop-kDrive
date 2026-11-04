@@ -320,12 +320,12 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1836"/>
+        <location filename="../src/server/appserver.cpp" line="1834"/>
         <source>Share link copied to clipboard</source>
         <translation>Lien de partage copié dans le presse-papiers</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3970"/>
+        <location filename="../src/server/appserver.cpp" line="3976"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 a été supprimé.</numerusform>
@@ -333,13 +333,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3972"/>
+        <location filename="../src/server/appserver.cpp" line="3978"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été supprimé.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3977"/>
+        <location filename="../src/server/appserver.cpp" line="3983"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 et %n autre(s) fichier(s) ont été ajouté(s).</numerusform>
@@ -347,13 +347,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3979"/>
+        <location filename="../src/server/appserver.cpp" line="3985"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été ajouté.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3984"/>
+        <location filename="../src/server/appserver.cpp" line="3990"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 a été mis à jour.</numerusform>
@@ -361,13 +361,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3986"/>
+        <location filename="../src/server/appserver.cpp" line="3992"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été mis à jour.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3991"/>
+        <location filename="../src/server/appserver.cpp" line="3997"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 a été déplacé vers %2.</numerusform>
@@ -375,12 +375,12 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3994"/>
+        <location filename="../src/server/appserver.cpp" line="4000"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 a été déplacé vers %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4002"/>
+        <location filename="../src/server/appserver.cpp" line="4008"/>
         <source>Sync Activity</source>
         <translation>Activité de synchronisation</translation>
     </message>
@@ -963,27 +963,27 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
 <context>
     <name>KDC::DrivePreferencesWidget</name>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
         <source>Folders</source>
         <translation>Dossiers</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
         <source>Notifications</source>
         <translation>Notifications</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1123"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
         <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
         <translation>Une notification sera affichée dès qu’un nouveau dossier aura été synchronisé ou modifié</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
         <source>Connected with</source>
         <translation>Connecté avec</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="981"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="982"/>
         <source>Do you really want to stop syncing the folder &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Voulez-vous vraiment arrêter de synchroniser le dossier &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note :&lt;/b&gt; &lt;/b&gt;Aucun&lt;/b&gt; fichier ne sera supprimé.</translation>
     </message>
@@ -995,7 +995,7 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="360"/>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="391"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="987"/>
         <source>CANCEL</source>
         <translation>ANNULER</translation>
     </message>
@@ -1005,27 +1005,27 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         <translation>La synchronisation du nouveau dossier local a échoué!</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="823"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="824"/>
         <source>Lite Sync activation failed.</source>
         <translation>L&apos;activation de la Lite Sync a échoué.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="841"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="842"/>
         <source>Lite Sync deactivation failed.</source>
         <translation>La désactivation de la Lite Sync a échoué.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="985"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
         <source>REMOVE FOLDER SYNC CONNECTION</source>
         <translation>SUPPRIMER LA SYNC. DU DOSSIER</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1048"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1049"/>
         <source>An error occurred while loading the list of subfolders.</source>
         <translation>Une erreur s&apos;est produite lors du chargement de la liste des sous-dossiers.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1122"/>
         <source>Enable the notifications for this kDrive</source>
         <translation>Activer les notifications pour ce kDrive</translation>
     </message>
@@ -1037,13 +1037,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="120"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1117"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
         <source>Synchronization errors and information.</source>
         <translation>Erreurs et informations de synchronisation.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="144"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
         <source>Synchronize a local folder</source>
         <translation>Synchroniser un dossier local</translation>
     </message>
@@ -1073,42 +1073,42 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         <translation>Impossible de créer une nouvelle synchronisation</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="819"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="820"/>
         <source>Lite Sync activated.</source>
         <translation>Lite Sync activée.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="837"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="838"/>
         <source>Lite Sync deactivated.</source>
         <translation>Lite Sync désactivée.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="899"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="900"/>
         <source>This drive is being deleted.</source>
         <translation>Ce lecteur est en cours de suppression.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="962"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="963"/>
         <source>Impossible to open item %1</source>
         <translation>Impossible d&apos;ouvrir le poste %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1007"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1008"/>
         <source>Failed to stop syncing the folder &lt;i&gt;%1&lt;/i&gt;.</source>
         <translation>Échec de l&apos;arrêt de la synchronisation du dossier &lt;i&gt;%1&lt;/i&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
         <source>Remove all synchronizations</source>
         <translation>Supprimer toutes les synchronisations</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
         <source>Search in your kDrive</source>
         <translation>Recherche dans votre kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1128"/>
         <source>Search</source>
         <translation>Recherche</translation>
     </message>
@@ -2917,37 +2917,37 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Impossible d&apos;enregistrer les paramètres&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2101"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2019"/>
         <source>No valid folder selected!</source>
         <translation>Aucun dossier valable sélectionné!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2030"/>
         <source>The selected path does not exist!</source>
         <translation>Le chemin sélectionné n’existe pas!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2117"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
         <source>The selected path is not a folder!</source>
         <translation>Le chemin sélectionné n&apos;est pas un dossier!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2122"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Vous n&apos;avez pas la permission d&apos;écrire dans le dossier sélectionné!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Le dossier local %1 contient un dossier déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2086"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Le dossier local %1 est contenu dans un dossier déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2094"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Le dossier local %1 est déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>

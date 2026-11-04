@@ -320,12 +320,12 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1836"/>
+        <location filename="../src/server/appserver.cpp" line="1834"/>
         <source>Share link copied to clipboard</source>
         <translation>Deellink gekopieerd naar klembord</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3970"/>
+        <location filename="../src/server/appserver.cpp" line="3976"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 is verwijderd.</numerusform>
@@ -333,13 +333,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3972"/>
+        <location filename="../src/server/appserver.cpp" line="3978"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is verwijderd.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3977"/>
+        <location filename="../src/server/appserver.cpp" line="3983"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 en %n ander(e) bestand(en) zijn toegevoegd.</numerusform>
@@ -347,13 +347,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3979"/>
+        <location filename="../src/server/appserver.cpp" line="3985"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is toegevoegd.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3984"/>
+        <location filename="../src/server/appserver.cpp" line="3990"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 is bijgewerkt.</numerusform>
@@ -361,13 +361,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3986"/>
+        <location filename="../src/server/appserver.cpp" line="3992"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is bijgewerkt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3991"/>
+        <location filename="../src/server/appserver.cpp" line="3997"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 is verplaatst naar %2.</numerusform>
@@ -375,12 +375,12 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3994"/>
+        <location filename="../src/server/appserver.cpp" line="4000"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 is verplaatst naar %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4002"/>
+        <location filename="../src/server/appserver.cpp" line="4008"/>
         <source>Sync Activity</source>
         <translation>Synchronisatieactiviteit</translation>
     </message>
@@ -963,27 +963,27 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::DrivePreferencesWidget</name>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
         <source>Folders</source>
         <translation>Mappen</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
         <source>Notifications</source>
         <translation>Meldingen</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1123"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
         <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
         <translation>Een melding wordt weergegeven zodra een nieuwe map is gesynchroniseerd of gewijzigd</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1124"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
         <source>Connected with</source>
         <translation>Verbonden met</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="981"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="982"/>
         <source>Do you really want to stop syncing the folder &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Weet u zeker dat u wilt stoppen met het synchroniseren van de map &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Opmerking:&lt;/b&gt; Hierdoor worden &lt;b&gt;geen&lt;/b&gt; bestanden verwijderd.</translation>
     </message>
@@ -995,7 +995,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="360"/>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="391"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="987"/>
         <source>CANCEL</source>
         <translation>ANNULEREN</translation>
     </message>
@@ -1005,27 +1005,27 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         <translation>Synchronisatie van nieuwe lokale map mislukt!</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="823"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="824"/>
         <source>Lite Sync activation failed.</source>
         <translation>Activering van Lite Sync mislukt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="841"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="842"/>
         <source>Lite Sync deactivation failed.</source>
         <translation>Deactivering van Lite Sync mislukt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="985"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="986"/>
         <source>REMOVE FOLDER SYNC CONNECTION</source>
         <translation>MAP-SYNCHRONISATIE VERWIJDEREN</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1048"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1049"/>
         <source>An error occurred while loading the list of subfolders.</source>
         <translation>Er is een fout opgetreden bij het laden van de lijst met submappen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1121"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1122"/>
         <source>Enable the notifications for this kDrive</source>
         <translation>Meldingen voor deze kDrive inschakelen</translation>
     </message>
@@ -1037,13 +1037,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="120"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1117"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1118"/>
         <source>Synchronization errors and information.</source>
         <translation>Synchronisatiefouten en informatie.</translation>
     </message>
     <message>
         <location filename="../src/gui/drivepreferenceswidget.cpp" line="144"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1119"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1120"/>
         <source>Synchronize a local folder</source>
         <translation>Een lokale map synchroniseren</translation>
     </message>
@@ -1073,42 +1073,42 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         <translation>Kan geen nieuwe synchronisatie aanmaken</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="819"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="820"/>
         <source>Lite Sync activated.</source>
         <translation>Lite Sync geactiveerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="837"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="838"/>
         <source>Lite Sync deactivated.</source>
         <translation>Lite Sync gedeactiveerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="899"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="900"/>
         <source>This drive is being deleted.</source>
         <translation>Dit station wordt verwijderd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="962"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="963"/>
         <source>Impossible to open item %1</source>
         <translation>Kan item %1 niet openen</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1007"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1008"/>
         <source>Failed to stop syncing the folder &lt;i&gt;%1&lt;/i&gt;.</source>
         <translation>Kan stoppen met synchroniseren van map &lt;i&gt;%1&lt;/i&gt; niet uitvoeren.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1125"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
         <source>Remove all synchronizations</source>
         <translation>Alle synchronisaties verwijderen</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1126"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
         <source>Search in your kDrive</source>
         <translation>Zoeken in uw kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1127"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1128"/>
         <source>Search</source>
         <translation>Zoeken</translation>
     </message>
@@ -2917,37 +2917,37 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
         <translation>Kan parameters niet opslaan!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2101"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2019"/>
         <source>No valid folder selected!</source>
         <translation>Geen geldige map geselecteerd!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2030"/>
         <source>The selected path does not exist!</source>
         <translation>Het geselecteerde pad bestaat niet!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2117"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
         <source>The selected path is not a folder!</source>
         <translation>Het geselecteerde pad is geen map!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2122"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>U heeft geen schrijfrechten voor de geselecteerde map!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>De lokale map %1 bevat een map die al gesynchroniseerd is. Kies een andere!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2086"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>De lokale map %1 zit in een map die al gesynchroniseerd is. Kies een andere!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2094"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>De lokale map %1 is al gesynchroniseerd. Kies een andere!</translation>
     </message>

@@ -13,15 +13,26 @@ namespace Infomaniak.kDrive.Analytics
     {
         private const string _clickEventCategory = "click";
         private const string _otherEventCategory = "other";
+        private const string _productName = "kDrive";
         private const int MaxConcurrentRequests = 4;
         private readonly SemaphoreSlim _throttle = new(MaxConcurrentRequests, MaxConcurrentRequests);
         private readonly IMatomoTracker _tracker;
         private readonly UserDefaults _userDefaults;
+        private readonly string? _userAgent;
+        private readonly string? _clientHints;
         public MatomoService(IMatomoTracker tracker, UserDefaults userDefaults)
         {
             _tracker = tracker;
             _userDefaults = userDefaults;
+            var userAgentInfo = UserAgentBuilder.CurrentDesktopInfo(_productName, AppVersion.Current().Tag, WindowsPlatformVersion.Current());
+            _userAgent = NullIfEmpty(UserAgentBuilder.BuildDesktopUserAgent(userAgentInfo));
+            _clientHints = NullIfEmpty(UserAgentBuilder.BuildClientHints(userAgentInfo));
         }
+
+        private static string? NullIfEmpty(string value) => string.IsNullOrEmpty(value) ? null : value;
+
+        // Read on each request since the user can change the app language at runtime.
+        private static string? CurrentLanguage() => NullIfEmpty(Localizer.Instance.CurrentLanguage);
 
         public void TrackClick(Keys.Category category, Keys.EventName eventName, int? value = null)
         {
@@ -43,14 +54,18 @@ namespace Infomaniak.kDrive.Analytics
             if (!IsMatomoEnabled())
                 return;
 
-            _ = TrackInBackgroundAsync(() => _tracker.Track(new EventTrackingItem()
+            string? language = CurrentLanguage();
+            _ = TrackInBackgroundAsync(() => _tracker.Track(new ClientHintsEventTrackingItem()
             {
                 Url = $"kdrive://{category.ToCamelCase()}",
                 EventCategory = category.ToCamelCase(),
                 EventAction = eventAction,
                 EventName = eventName.ToCamelCase(),
                 EventValue = value,
-                NewVisit = false
+                NewVisit = false,
+                UserAgent = _userAgent,
+                ClientHints = _clientHints,
+                Language = language
             }));
         }
 
@@ -59,10 +74,14 @@ namespace Infomaniak.kDrive.Analytics
             if (!IsMatomoEnabled())
                 return;
 
-            _ = TrackInBackgroundAsync(() => _tracker.Track(new PageViewTrackingItem()
+            string? language = CurrentLanguage();
+            _ = TrackInBackgroundAsync(() => _tracker.Track(new ClientHintsPageViewTrackingItem()
             {
                 Url = $"kdrive://{category.ToCamelCase()}",
                 ActionName = category.ToCamelCase(),
+                UserAgent = _userAgent,
+                ClientHints = _clientHints,
+                Language = language
             }));
         }
 

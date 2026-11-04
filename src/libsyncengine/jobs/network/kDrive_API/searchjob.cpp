@@ -246,6 +246,11 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         disableRetry();
     }
 
+    // Only a local metadata failure reaches this point: sending the request again would fail the same way.
+    if (!exitInfo) {
+        disableRetry();
+    }
+
     return exitInfo;
 }
 } // namespace KDC

@@ -33,20 +33,20 @@ namespace Infomaniak.kDrive.CustomControls
             DependencyProperty.Register("Color1", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value1Property =
-            DependencyProperty.Register("Value1", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
+            DependencyProperty.Register("Value1", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
 
         private static readonly DependencyProperty Color2Property =
             DependencyProperty.Register("Color2", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value2Property =
-            DependencyProperty.Register("Value2", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
+            DependencyProperty.Register("Value2", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Color3Property =
             DependencyProperty.Register("Color3", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value3Property =
-            DependencyProperty.Register("Value3", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
+            DependencyProperty.Register("Value3", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         public Brush Color1
         {

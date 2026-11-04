@@ -435,9 +435,9 @@ public enum KDriveLocalizable {
   /// loco:699c5615411d7368440846f8
   public static let errFileRescuedTitle = KDriveLocalizable.tr("Localizable", "errFileRescuedTitle", fallback: "File rescued")
   /// loco:699c74f5a495a84f970d7b72
-  public static let errFileTooBigAdminDescription = KDriveLocalizable.tr("Localizable", "errFileTooBigAdminDescription", fallback: "This file exceeds the maximum allowed size (50 GB).\nContact support to unlock the limit.")
+  public static let errFileTooBigAdminDescription = KDriveLocalizable.tr("Localizable", "errFileTooBigAdminDescription", fallback: "This file exceeds the maximum allowed size (1 TB).\nContact support to unlock the limit.")
   /// loco:699c5df989c9f608fc070e34
-  public static let errFileTooBigDescription = KDriveLocalizable.tr("Localizable", "errFileTooBigDescription", fallback: "This file exceeds the maximum allowed size (50 GB).\nContact your administrator to increase the file size limit.")
+  public static let errFileTooBigDescription = KDriveLocalizable.tr("Localizable", "errFileTooBigDescription", fallback: "This file exceeds the maximum allowed size (1 TB).\nContact your administrator to increase the file size limit.")
   /// loco:699dbc6b6214e7b523066c22
   public static let errFileTooBigTitle = KDriveLocalizable.tr("Localizable", "errFileTooBigTitle", fallback: "File too large")
   /// loco:699c5deb5ae8fa2cd40b6d92
@@ -1118,7 +1118,7 @@ public enum KDriveLocalizable {
   public static let storageSyncBlockTitle = KDriveLocalizable.tr("Localizable", "storageSyncBlockTitle", fallback: "Sync")
   /// loco:6979e265a8419bb7510c8122
   public static func storageUsageLabel(_ p1: Any, _ p2: Any) -> String {
-    return KDriveLocalizable.tr("Localizable", "storageUsageLabel", String(describing: p1), String(describing: p2), fallback: "%@ on %@ used")
+    return KDriveLocalizable.tr("Localizable", "storageUsageLabel", String(describing: p1), String(describing: p2), fallback: "%@ of %@ used")
   }
   /// loco:698b0623154e735e8b0a2542
   public static let storedOnline = KDriveLocalizable.tr("Localizable", "storedOnline", fallback: "Stored online")

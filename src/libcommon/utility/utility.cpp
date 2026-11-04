@@ -33,6 +33,7 @@
 #include <signal.h>
 
 #include <QDir>
+#include <QFileInfo>
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QMimeDatabase>
@@ -793,8 +794,7 @@ QString applicationTrPath() {
 #endif
 
 #else
-    return QCoreApplication::applicationDirPath() +
-           QString::fromLatin1("/../" SHAREDIR "/" APPLICATION_CLIENT_EXECUTABLE "/i18n/");
+    return CommonUtility::applicationDirPath() + QString::fromLatin1("/../" SHAREDIR "/" APPLICATION_CLIENT_EXECUTABLE "/i18n/");
 #endif
 }
 
@@ -931,6 +931,17 @@ SyncPath CommonUtility::getAppSupportDir() {
 
 SyncPath CommonUtility::getAppWorkingDir() {
     return _workingDirPath;
+}
+
+QString CommonUtility::applicationDirPath() {
+#if defined(KD_LINUX)
+    // Since Qt 6.12, QCoreApplication::applicationDirPath() follows AT_EXECFN, which keeps the symlink the app was
+    // started through (e.g. the AppImage AppRun): resolve it to get the directory of the actual binary.
+    if (const QString dirPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath(); !dirPath.isEmpty()) {
+        return dirPath;
+    }
+#endif
+    return QCoreApplication::applicationDirPath();
 }
 
 QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, const NodeType type) {
