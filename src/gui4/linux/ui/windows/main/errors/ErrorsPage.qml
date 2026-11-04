@@ -28,6 +28,9 @@ FocusScope {
     id: root
 
     required property var controller
+    // Bounds of the dimmed background of the explanation dialog: the window surface, without its shadow.
+    property real modalScrimInset: 0
+    property real modalScrimRadius: 0
 
     readonly property bool hasErrors: root.controller.errorCount > 0
     // A refresh deletes the errors before detecting them again: the page keeps the list and its busy Refresh button
@@ -133,7 +136,11 @@ FocusScope {
             }
             delegate: ErrorRow {
                 width: ListView.view.width
-                onActionTriggered: rowId => root.controller.invokeAction(rowId)
+                onActionTriggered: rowId => {
+                    // The button keeps the focus back if the action opens the explanation dialog.
+                    explanationDialog.returnFocusItem = root.Window.activeFocusItem;
+                    root.controller.invokeAction(rowId);
+                }
                 onCopyRequested: rowId => root.controller.copyPath(rowId)
                 onTechnicalDetailsCopyRequested: rowId => root.controller.copyTechnicalDetails(rowId)
             }
@@ -174,5 +181,14 @@ FocusScope {
             text: qsTrId("buttonSeeActivities")
             onClicked: root.controller.showActivities()
         }
+    }
+
+    ErrorExplanationDialog {
+        id: explanationDialog
+
+        controller: root.controller.explanation
+        scrimInset: root.modalScrimInset
+        scrimRadius: root.modalScrimRadius
+        onFallbackFocusRequested: root.focusDefault()
     }
 }

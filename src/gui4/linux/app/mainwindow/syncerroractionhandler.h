@@ -19,6 +19,8 @@
 #pragma once
 
 #include "app/cache/cachetypes.h"
+#include "app/errors/syncerrorkind.h"
+#include "libcommon/utility/types.h"
 
 #include <QObject>
 
@@ -45,10 +47,15 @@ class SyncErrorActionHandler final : public QObject {
 
         /** Runs the action of `classified`, an error of the synchronization described by `context`. */
         void trigger(const ClassifiedSyncError &classified, const SyncContext &context);
+        /** Runs `action` on `classified`: the row button goes through `trigger`, the explanation dialog buttons call it
+         * directly. */
+        void run(SyncErrorAction action, const ClassifiedSyncError &classified, const SyncContext &context);
 
     signals:
         // The user must log in again; handled like the logged-out blocking screen.
         void loginRequested();
+        // The "Understand the problem" button: the errors page opens the explanation dialog of this error.
+        void explanationRequested(ErrorDbId errorDbId);
 
     private:
         SyncService &_syncService;
