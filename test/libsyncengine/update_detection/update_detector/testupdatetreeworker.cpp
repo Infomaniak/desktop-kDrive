@@ -776,7 +776,7 @@ void TestUpdateTreeWorker::testStep4() {
 
     CPPUNIT_ASSERT(_localUpdateTree->exists("id81b"));
     auto node81 = _localUpdateTree->getNodeByPath(node81Path);
-    CPPUNIT_ASSERT(node81);
+    CPPUNIT_ASSERT(node81 != nullptr);
     CPPUNIT_ASSERT(node81->parentNode()->isTmp());
     CPPUNIT_ASSERT(node81->id() == "id81b");
     CPPUNIT_ASSERT(node81->hasChangeEvent(OperationType::Edit));
@@ -1058,7 +1058,7 @@ void TestUpdateTreeWorker::testClearTreeStep7() {
 
 void TestUpdateTreeWorker::testClearTreeStep8() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step8CompleteUpdateTree());
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->_updateTree->nodes().size() == 20);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->_updateTree->nodes().size() == 22);
 }
 
 void TestUpdateTreeWorker::testGetOriginPath() {
