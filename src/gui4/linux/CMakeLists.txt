@@ -561,12 +561,17 @@ install(TARGETS ${APPLICATION_CLIENTV4_EXECUTABLE}
 )
 
 # Named after QGuiApplication::desktopFileName() ("kDrive"), see app/applicationidentity.cpp.
+set(APPLICATION_ICON_NAME "kdrive")
 file(READ "${CMAKE_SOURCE_DIR}/kdrive.desktop.in" kdrive_desktop_template)
 string(CONFIGURE "${kdrive_desktop_template}" kdrive_desktop @ONLY)
 string(REPLACE "Type=Application\n" "Type=Application\nStartupWMClass=${APPLICATION_CLIENTV4_EXECUTABLE}\n"
         kdrive_desktop "${kdrive_desktop}")
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_EXECUTABLE}.desktop" "${kdrive_desktop}")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_EXECUTABLE}.desktop" DESTINATION ${DATADIR}/applications)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/ui/assets/taskbar/logo_kdrive.png"
+        RENAME "${APPLICATION_ICON_NAME}.png"
+        DESTINATION ${DATADIR}/icons/hicolor/256x256/apps
+)
 
 if(KDRIVE_DEPLOY_QT_RUNTIME)
     set_target_properties(${APPLICATION_CLIENTV4_EXECUTABLE} PROPERTIES
