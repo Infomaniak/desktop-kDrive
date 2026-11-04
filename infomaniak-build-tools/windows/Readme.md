@@ -141,6 +141,12 @@ python -m venv .venv
 python -m pip install --upgrade pip
 ```
 
+In a git worktree, reuse the virtual environment created in the main checkout instead of creating a new one:
+
+```powershell
+& C:\Projects\desktop-kDrive\.venv\Scripts\Activate.ps1
+```
+
 #### 5.1.2 Install Conan
 
 ```powershell
@@ -210,6 +216,14 @@ From repository root:
 
 ```powershell
 powershell .\infomaniak-build-tools\conan\build_dependencies.ps1 [Debug|Release] [-OutputDir <output_dir>] -UpdateEnvironment
+```
+
+Typical local development run, reusing the venv of the main checkout and installing the dependencies once into a
+dedicated output directory (to be passed as `CMAKE_TOOLCHAIN_FILE` source when configuring CMake manually):
+
+```powershell
+& C:\Projects\desktop-kDrive\.venv\Scripts\Activate.ps1
+powershell .\infomaniak-build-tools\conan\build_dependencies.ps1 Debug -OutputDir .\build-dev-deb
 ```
 
 > ⚠️ Do **not** run this command from a terminal where `vcvarsall.bat`/`vcvars64.bat` is already active if Conan must compile packages in cache.
