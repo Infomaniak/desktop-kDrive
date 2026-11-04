@@ -18,6 +18,7 @@
 
 import QtQuick
 import QtQuick.Effects
+import kDrive.UI
 
 Item {
     id: root
@@ -25,13 +26,23 @@ Item {
     property url source
     property color color: "white"
 
+    readonly property size naturalSize: SvgInfo.naturalSize(source)
+    readonly property real sourceRatio: naturalSize.width / Math.max(1, naturalSize.height)
+    readonly property real glyphWidth: Math.min(width, height * sourceRatio)
+    readonly property real glyphHeight: glyphWidth / sourceRatio
+
     Image {
         id: iconSource
 
-        anchors.fill: parent
+        x: (root.width - width) / 2
+        y: (root.height - height) / 2
+        width: root.glyphWidth
+        height: root.glyphHeight
         source: root.source
-        sourceSize.width: Math.ceil(width * Math.max(3, Screen.devicePixelRatio))
-        fillMode: Image.PreserveAspectFit
+        // Qt applies the window DPR. The 2x texture reduces evenly when sampled with linear filtering.
+        sourceSize.width: Math.ceil(width * 2)
+        // The rectangle already preserves the aspect ratio; Stretch avoids MultiEffect's intermediate texture.
+        fillMode: Image.Stretch
         smooth: true
         visible: false
     }
