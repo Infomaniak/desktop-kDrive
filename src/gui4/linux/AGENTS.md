@@ -588,7 +588,9 @@
   device (any user or drive, advanced ones included), so the gauge fills progressively. It also exposes the drive quota
   from the selected `SyncContext`, polls the volume free space every 60 s outside the page (no log per poll) for the
   sidebar `storageWarning`, and asks Settings to open "Manage synchronization" through
-  `SettingsWindowController::requestOpenSyncManagement`.
+  `SettingsWindowController::requestOpenSyncManagement`. The server does not poll the quota: opening the page sends
+  `UTILITY_ACTIVATELOADINFO`, at most once per minute because it reloads every user and drive; Retry and the refresh
+  shortcut always send it.
 - `app/mainwindow/storage/storagemeasurecache.*`: process-local per-synchronization measure cache, without QObject. A
   measure is kept for its root and reused until its synchronization has been active again; the cache follows the
   observed statuses to know it.
