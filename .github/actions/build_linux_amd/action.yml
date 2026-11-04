@@ -55,7 +55,7 @@ runs:
         with:
           name: linux-release-artifacts-appimage-amd64
           path: ${{ github.workspace }}/build-linux/install/kDrive-*-amd64.* # kDrive-<full_version>-amd64.<extension>
-          retention-days: 1
+          retention-days: 14
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Generate recovery updater SHA256
