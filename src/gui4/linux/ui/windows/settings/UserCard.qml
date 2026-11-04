@@ -44,6 +44,10 @@ Rectangle {
     signal activateRequested(Item trigger, var userDbId, var accountId, var driveId)
     signal manageRequested(Item trigger, var driveDbId)
 
+    function focusHeader() {
+        headerButton.forceActiveFocus(Qt.TabFocusReason);
+    }
+
     implicitHeight: contentColumn.implicitHeight + 2 * IKSettings.userCardPadding
     radius: IKRadius.r12
     color: IKColors.settingsCardSurface

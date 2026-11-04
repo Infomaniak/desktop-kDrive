@@ -69,10 +69,14 @@ class ExcludedFoldersController final : public QObject {
         void preload(SyncDbId syncDbId);
         void releasePreload(SyncDbId syncDbId);
 
-        /// Reuses the preloaded target when it is the given synchronization.
+        /**
+         * Reuses the preloaded target when it is the given synchronization.
+         */
         Q_INVOKABLE void open(qint64 syncDbId);
-        /// Releases the target only when it is still the given synchronization, so a closing page cannot reset its
-        /// successor.
+        /**
+         * Releases the target only when it is still the given synchronization, so a closing page cannot reset its
+         * successor.
+         */
         Q_INVOKABLE void close(qint64 syncDbId);
         Q_INVOKABLE void retry();
         Q_INVOKABLE void save();

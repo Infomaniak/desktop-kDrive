@@ -62,6 +62,51 @@ IKShadowedWindow {
         selectedCategory = SettingsWindow.Category.Advanced;
     }
 
+    // The Settings window does not block the main window, which can request another page behind these dialogs:
+    // confirming one after that navigation would delete the synchronization of another drive.
+    function closeSyncDeletionDialogs() {
+        deleteSyncDialog.closeWithoutRestoringFocus();
+        advancedSyncDeleteDialog.closeWithoutRestoringFocus();
+    }
+
+    // Shows the page requested from outside the window, such as the Home avatar: the card of a user, the management
+    // page of a drive, or the advanced synchronizations of a drive with one of them focused. The navigation is animated
+    // when Accounts is already displayed.
+    function showAccountsTarget(userDbId, driveDbId, syncDbId) {
+        const animated = root.visible && root.selectedCategory === SettingsWindow.Category.Accounts;
+        // Selecting Accounts again would request the available drives once more; a hidden window requests them when it
+        // is shown.
+        if (root.selectedCategory !== SettingsWindow.Category.Accounts) {
+            root.selectAccounts();
+        }
+        root.closeSyncDeletionDialogs();
+        if (userDbId !== 0) {
+            accountsPane.showAboveRoot([], animated,
+                                       () => (accountsPane.rootItem() as UsersSettingsView).revealUser(userDbId));
+            return;
+        }
+
+        // Already on the requested page: only focus the synchronization again, without replaying the navigation. A
+        // queued navigation is older than this request, which must replace it through showAboveRoot.
+        const currentPage = accountsPane.navigationPending ? null : accountsPane.currentItem;
+        if (syncDbId === 0 && accountsPane.depth === 2 && currentPage instanceof DriveManagementView
+                && currentPage.driveDbId === driveDbId) {
+            return;
+        }
+        if (syncDbId !== 0 && accountsPane.depth === 3 && currentPage instanceof AdvancedSyncsView
+                && currentPage.driveDbId === driveDbId) {
+            (currentPage as AdvancedSyncsView).revealSync(syncDbId);
+            return;
+        }
+
+        const pages = [{"component": driveManagementComponent, "properties": {"driveDbId": driveDbId}}];
+        if (syncDbId !== 0) {
+            pages.push({"component": advancedSyncsComponent,
+                        "properties": {"driveDbId": driveDbId, "revealSyncDbId": syncDbId}});
+        }
+        accountsPane.showAboveRoot(pages, animated);
+    }
+
     visible: false
     transientParent: null
     modality: Qt.NonModal
@@ -72,6 +117,7 @@ IKShadowedWindow {
     minimumContentHeight: IKSettings.minimumHeight
     customShadowEnabled: true
     windowTitleVisible: false
+    Component.onCompleted: root.controller.takePendingTarget()
     onVisibleChanged: {
         if (visible && selectedCategory === SettingsWindow.Category.Accounts) {
             users.refresh();
@@ -649,6 +695,26 @@ IKShadowedWindow {
             root.controller.syncActivation.notifyCustomFolderDialogClosed();
         }
         onRejected: root.controller.syncActivation.notifyCustomFolderDialogClosed()
+    }
+
+    Connections {
+        target: root.controller
+
+        function onTargetPending() {
+            root.controller.takePendingTarget();
+        }
+
+        function onUserShowRequested(userDbId) {
+            root.showAccountsTarget(userDbId, 0, 0);
+        }
+
+        function onDriveShowRequested(driveDbId) {
+            root.showAccountsTarget(0, driveDbId, 0);
+        }
+
+        function onAdvancedSyncShowRequested(driveDbId, syncDbId) {
+            root.showAccountsTarget(0, driveDbId, syncDbId);
+        }
     }
 
     Connections {

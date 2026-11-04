@@ -39,6 +39,13 @@ QtObject {
     readonly property real errorBannerHeight: 64
     readonly property real errorBannerActionButtonHeight: 24
     readonly property real homeAvatarSize: 44
+    readonly property real homeAvatarSettingsIconSize: 16
+    // The synchronization badge sits on the bottom-right of the avatar and overflows it.
+    readonly property real homeSyncBadgeSize: 20
+    readonly property real homeSyncBadgeGlyphSize: 12
+    readonly property real homeSyncBadgeSettingsIconSize: 10
+    readonly property real homeSyncBadgeOverflowX: 4
+    readonly property real homeSyncBadgeOverflowY: 6
     readonly property real homeDriveNameMaxWidth: 140
     readonly property real homeDriveNameMaxHeight: 40
     readonly property real homeShortcutHeight: 34

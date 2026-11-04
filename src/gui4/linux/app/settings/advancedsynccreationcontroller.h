@@ -86,7 +86,9 @@ class AdvancedSyncCreationController final : public QObject {
         [[nodiscard]] bool folderCreationFailed() const { return _folderCreationFailed; }
         [[nodiscard]] RemoteFolderPickerModel *pickerModel() { return &_pickerModel; }
 
-        /// Leaves the location picker for the form, or ends the session from the form.
+        /**
+         * Leaves the location picker for the form, or ends the session from the form.
+         */
         Q_INVOKABLE void cancelCurrentPage();
 
         Q_INVOKABLE void requestLocalFolder();
@@ -96,7 +98,9 @@ class AdvancedSyncCreationController final : public QObject {
         Q_INVOKABLE void openLocationPicker();
         Q_INVOKABLE void confirmLocation();
         Q_INVOKABLE void beginFolderCreation(const QModelIndex &parentIndex);
-        /// Creates the folder named by the editing row. An empty name cancels the creation.
+        /**
+         * Creates the folder named by the editing row. An empty name cancels the creation.
+         */
         Q_INVOKABLE void commitFolderCreation(const QString &name);
         Q_INVOKABLE void cancelFolderCreation();
 

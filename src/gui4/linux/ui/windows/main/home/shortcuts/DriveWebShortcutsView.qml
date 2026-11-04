@@ -52,12 +52,9 @@ Rectangle {
             width: parent.width
             spacing: IKSpacing.s16
 
-            IKAvatar {
-                width: IKMainWindow.homeAvatarSize
-                height: IKMainWindow.homeAvatarSize
+            HomeAccountAvatar {
                 anchors.horizontalCenter: parent.horizontalCenter
-                source: root.controller.avatarSource
-                fallbackLabel: root.controller.firstName
+                controller: root.controller
                 maskColor: root.color
             }
 
@@ -119,7 +116,7 @@ Rectangle {
 
                 width: parent.width
                 text: qsTrId("buttonKDriveOnline")
-                glyphSource: "qrc:/assets/main/home/kdrive-folders-stacked.svg"
+                glyphSource: "qrc:/assets/main/home/kdrive-outline.svg"
                 onClicked: root.controller.openDriveDestination(WebDrive.OnlineDrive)
             }
         }
