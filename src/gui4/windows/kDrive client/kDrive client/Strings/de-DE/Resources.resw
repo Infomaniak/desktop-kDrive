@@ -1577,8 +1577,14 @@ Diese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und z
     <value>Andere Dateien auf dem Computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Verfügbarer Speicherplatz Ihres Abonnements</value> 
+  </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Online gespeicherte kDrive-Dateien</value> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Synchronisierung</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Dieser PC – %@ – %@</value> 
