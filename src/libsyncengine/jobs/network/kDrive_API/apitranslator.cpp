@@ -271,7 +271,7 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
 }
 
 QString ApiTranslator::translateV3ToV2(QString v3Path) {
-    const auto privateSegment = QString::fromStdString("/" + v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
+    const auto privateSegment = QString("/") + SyncName2QStr(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
 
     return v3Path.replace(privateSegment, "/");
 }
