@@ -50,12 +50,16 @@ class SyncErrorActionHandler final : public QObject {
         /** Runs `action` on `classified`: the row button goes through `trigger`, the explanation dialog buttons call it
          * directly. */
         void run(SyncErrorAction action, const ClassifiedSyncError &classified, const SyncContext &context);
+        /** Opens one version of a conflict: the local copy in its application, the remote version on kDrive web. */
+        void openConflictVersion(const ClassifiedSyncError &classified, const SyncContext &context, ReplicaSide side);
 
     signals:
         // The user must log in again; handled like the logged-out blocking screen.
         void loginRequested();
         // The "Understand the problem" button: the errors page opens the explanation dialog of this error.
         void explanationRequested(ErrorDbId errorDbId);
+        // The "Choose a version" button: the errors page opens the version selection dialog of this conflict.
+        void versionSelectionRequested(ErrorDbId errorDbId);
 
     private:
         SyncService &_syncService;
