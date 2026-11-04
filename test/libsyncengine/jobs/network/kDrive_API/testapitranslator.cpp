@@ -146,8 +146,7 @@ void TestApiTranslator::testGetSpecialFolders() {
     RemoteNodeId id3;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
                          ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::Shared, id3));
-    CPPUNIT_ASSERT(!id3.empty()); // The call always return a valid identifier, should there be shared file or not in the
-                                  // 'Shared' folder.
+    CPPUNIT_ASSERT(!id3.empty()); // The API returns a valid identifier even when the 'Shared' folder contains no shared files.
 
     const RemoteNodeIdSet folderIds{id1, id2, id3};
     CPPUNIT_ASSERT_EQUAL(size_t{3}, folderIds.size());
