@@ -132,6 +132,32 @@ void TestUpdateTree::testDelete() {
     CPPUNIT_ASSERT(_myTree->_validNodes.size() == 0);
 }
 
+void TestUpdateTree::testInsertChildReparenting() {
+    CPPUNIT_ASSERT(_myTree->_validNodes.empty());
+
+    auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
+                                        12345, _myTree->rootNode());
+    auto node2 = std::make_shared<Node>(_myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::None, "l2", 0, 0,
+                                        12345, _myTree->rootNode());
+    auto node11 = std::make_shared<Node>(_myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None, "l11", 0, 0,
+                                         12345, node1);
+    CPPUNIT_ASSERT(node1->insertChild(node11));
+    CPPUNIT_ASSERT(node11->parentNode() == node1);
+    CPPUNIT_ASSERT(node1->findChildById(*node11->id()) == node11);
+
+    // Re-parenting a node through Node::insertChild must remove it from the children list of its previous parent.
+    // Otherwise, the node remains reachable through two different parents and gets processed twice by the workers
+    // visiting the tree.
+    CPPUNIT_ASSERT(node2->insertChild(node11));
+    CPPUNIT_ASSERT(node11->parentNode() == node2);
+    CPPUNIT_ASSERT(node2->findChildById(*node11->id()) == node11);
+    CPPUNIT_ASSERT(!node1->findChildById(*node11->id()));
+
+    // Re-inserting a node under its current parent is a no-op.
+    CPPUNIT_ASSERT(node2->insertChild(node11));
+    CPPUNIT_ASSERT(node2->findChildById(*node11->id()) == node11);
+}
+
 void TestUpdateTree::testAll() {
     CPPUNIT_ASSERT(_myTree->_validNodes.empty());
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,

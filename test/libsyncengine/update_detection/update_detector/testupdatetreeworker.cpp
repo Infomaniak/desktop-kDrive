@@ -394,6 +394,50 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
     }
 }
 
+void TestUpdateTreeWorker::testTryToMergeTmpNodeAlreadyMerged() {
+    // Reproduces the endless sync loop reported in support case 2306527: a tmp node reachable twice through the
+    // children maps of the update tree (Node::insertChild re-parents a node without removing it from the children
+    // map of its previous parent) is visited twice by UpdateTreeWorker::updateNodeWithDb. The first visit merges
+    // the tmp node into its real sibling and detaches it from its parent. The second visit, on the already merged
+    // node, used to fail with ExitCode::DataError ("Error in Node::deleteChild"), aborting the update tree
+    // generation and restarting the sync endlessly.
+    setUpUpdateTree(ReplicaSide::Local);
+
+    bool found = false;
+    DbNodeId dbNodeIdDir5;
+    _syncDb->dbId(ReplicaSide::Local, NodeId("id5"), dbNodeIdDir5, found);
+    CPPUNIT_ASSERT(found);
+    const auto dir5 = std::make_shared<Node>(dbNodeIdDir5, ReplicaSide::Local, Str("Dir 5"), NodeType::Directory,
+                                             OperationType::None, "id5", testhelpers::defaultTime, testhelpers::defaultTime,
+                                             testhelpers::defaultFileSize, _localUpdateTree->rootNode());
+    CPPUNIT_ASSERT(_localUpdateTree->rootNode()->insertChild(dir5));
+
+    // Real sibling "Dir 5.1": merge target of the tmp node.
+    const auto dir51 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 5.1"), NodeType::Directory,
+                                              OperationType::None, "id51d", testhelpers::defaultTime, testhelpers::defaultTime,
+                                              testhelpers::defaultFileSize, dir5);
+    CPPUNIT_ASSERT(dir5->insertChild(dir51));
+
+    // Tmp node "Dir 5.1" with a pending child, as created when the real parent already exists in the DB.
+    const auto tmpNode = std::make_shared<Node>(ReplicaSide::Local, Str("Dir 5.1"), NodeType::Directory, dir5);
+    CPPUNIT_ASSERT(dir5->insertChild(tmpNode));
+    const auto tmpChildNode = std::make_shared<Node>(ReplicaSide::Local, Str("Dir 5.1.1"), NodeType::Directory, tmpNode);
+    CPPUNIT_ASSERT(tmpNode->insertChild(tmpChildNode));
+
+    { // First visit: the tmp node is merged into its real sibling and detached from its parent.
+        bool merged = false;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->tryToMergeTmpNode(tmpNode, merged));
+        CPPUNIT_ASSERT(merged);
+        CPPUNIT_ASSERT(!dir5->findChildById(*tmpNode->id()));
+        CPPUNIT_ASSERT(dir51->findChildById(*tmpChildNode->id()) == tmpChildNode);
+    }
+
+    { // Second visit of the same still-tmp node: must not fail the update tree generation.
+        bool merged = false;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->tryToMergeTmpNode(tmpNode, merged));
+    }
+}
+
 void TestUpdateTreeWorker::testHandleCreateOperationsWithSamePath() {
     setUpUpdateTree(ReplicaSide::Local);
 

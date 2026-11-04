@@ -41,9 +41,10 @@ class MockUpdateTreeWorker : public UpdateTreeWorker {
 };
 
 class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestUpdateTreeWorker); 
+        CPPUNIT_TEST_SUITE(TestUpdateTreeWorker);
         CPPUNIT_TEST(testUtilsFunctions);
         CPPUNIT_TEST(testUpdateTmpFileNode);
+        CPPUNIT_TEST(testTryToMergeTmpNodeAlreadyMerged);
         CPPUNIT_TEST(testHandleCreateOperationsWithSamePath);
         CPPUNIT_TEST(testSearchForAncestorNode);
         CPPUNIT_TEST(testGetNewPathAfterMove);
@@ -89,6 +90,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
 
         void testUtilsFunctions();
         void testUpdateTmpFileNode();
+        void testTryToMergeTmpNodeAlreadyMerged();
         void testHandleCreateOperationsWithSamePath();
         void testSearchForAncestorNode();
         void testGetNewPathAfterMove();
