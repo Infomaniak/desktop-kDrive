@@ -24,8 +24,12 @@
 #include "app/settings/generalsettingscontroller.h"
 #include "app/settings/networksettingscontroller.h"
 #include "app/settings/settingssyncactivationcontroller.h"
+#include "libcommon/utility/types.h"
 
 #include <QObject>
+
+#include <cstdint>
+#include <optional>
 
 namespace KDC {
 
@@ -70,6 +74,21 @@ class SettingsWindowController final : public QObject {
             emit accountsRequested();
         }
 
+        /**
+         * Open the Settings window on the card of a user, on the management page of a drive, on one advanced
+         * synchronization of a drive, or on the "Manage synchronization" page of a synchronization. The target stays pending
+         * until the window takes it, because the window may not exist yet when the request is made.
+         */
+        void requestOpenUser(UserDbId userDbId);
+        void requestOpenDrive(DriveDbId driveDbId);
+        void requestOpenAdvancedSync(DriveDbId driveDbId, SyncDbId syncDbId);
+        void requestOpenSyncManagement(DriveDbId driveDbId, SyncDbId syncDbId, bool advancedSync);
+
+        /**
+         * Emits the show signal of the pending target, if any, and clears it.
+         */
+        Q_INVOKABLE void takePendingTarget();
+
         void refreshUpdates() const;
 
     signals:
@@ -77,6 +96,12 @@ class SettingsWindowController final : public QObject {
         void accountConnectionRequested();
         void fileExclusionsRequested();
         void accountsRequested();
+        void targetPending();
+        // Ids are qint64 at the QML boundary.
+        void userShowRequested(qint64 userDbId);
+        void driveShowRequested(qint64 driveDbId);
+        void advancedSyncShowRequested(qint64 driveDbId, qint64 syncDbId);
+        void syncManagementShowRequested(qint64 driveDbId, qint64 syncDbId, bool advancedSync);
 
     private:
         GeneralSettingsController &_generalController;
@@ -85,6 +110,24 @@ class SettingsWindowController final : public QObject {
         NetworkSettingsController &_networkController;
         SettingsSyncActivationController &_syncActivationController;
         DriveManagementController &_driveManagementController;
+        enum class TargetKind : uint8_t {
+            User,
+            Drive,
+            AdvancedSync,
+            SyncManagement,
+        };
+
+        struct Target {
+                TargetKind kind{TargetKind::User};
+                UserDbId userDbId{0};
+                DriveDbId driveDbId{0};
+                SyncDbId syncDbId{0};
+                bool advancedSync{false};
+        };
+
+        std::optional<Target> _pendingTarget;
+
+        void requestOpenTarget(const Target &target);
 };
 
 } // namespace KDC

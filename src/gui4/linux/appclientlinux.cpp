@@ -186,6 +186,8 @@ void AppClientLinux::setupSignalConnections() {
                    &OnboardingSessionManager::startLoginSession);
     (void) connect(&_activitiesController, &ActivitiesController::fixErrorsRequested, &_errorsPageController,
                    &ErrorsPageController::reveal);
+    (void) connect(&_storageController, &StorageController::manageSynchronizationRequested, &_settingsWindowController,
+                   &SettingsWindowController::requestOpenSyncManagement);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
@@ -243,6 +245,12 @@ void AppClientLinux::setupSignalConnections() {
         qCInfo(lcAppClientLinux) << "Future unconfigured activation will open the Home after onboarding cancellation";
     });
     (void) connect(&_homeController, &HomeController::setupRequested, this, &AppClientLinux::openOnboardingFromHome);
+    (void) connect(&_homeController, &HomeController::userSettingsRequested, &_settingsWindowController,
+                   &SettingsWindowController::requestOpenUser);
+    (void) connect(&_homeController, &HomeController::driveSettingsRequested, &_settingsWindowController,
+                   &SettingsWindowController::requestOpenDrive);
+    (void) connect(&_homeController, &HomeController::advancedSyncSettingsRequested, &_settingsWindowController,
+                   &SettingsWindowController::requestOpenAdvancedSync);
     (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &AppClientLinux::handleConfiguredSyncsChanged);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
@@ -398,6 +406,10 @@ void AppClientLinux::openSettingsWindow() {
         return;
     }
 
+    // A request for a window already displayed, such as a Home shortcut, only raises it: the updater state is refreshed
+    // when the window is shown, then kept up to date by the server signals.
+    const bool alreadyVisible = _settingsWindow && _settingsWindow->isVisible();
+
     if (!_settingsWindow) {
         QQmlComponent component(&_qmlEngine);
         component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow");
@@ -429,7 +441,7 @@ void AppClientLinux::openSettingsWindow() {
     _settingsWindow->raise();
     _settingsWindow->requestActivate();
 
-    if (_bootstrapCompleted) {
+    if (_bootstrapCompleted && !alreadyVisible) {
         _settingsWindowController.refreshUpdates();
     }
 }

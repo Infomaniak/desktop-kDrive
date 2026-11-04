@@ -57,6 +57,7 @@ Item {
             appRouter: root.appRouter
             controller: root.mainSidebarController
             navigationEnabled: !root.blockingErrorController.active
+            storageController: root.storageController
         }
 
         Rectangle {
@@ -159,6 +160,7 @@ Item {
 
         StorageView {
             controller: root.storageController
+            selection: root.mainSidebarController
         }
     }
 }

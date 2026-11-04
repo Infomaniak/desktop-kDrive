@@ -79,7 +79,9 @@ class SettingsSyncActivationController final : public QObject {
         Q_INVOKABLE void activate(qint64 userDbId, qint64 accountId, qint64 driveId);
         Q_INVOKABLE [[nodiscard]] bool targets(qint64 userDbId, qint64 accountId, qint64 driveId) const;
         Q_INVOKABLE void cancelCurrentPage();
-        /// Dismisses the editor when its host window closes without abandoning an already submitted synchronization.
+        /**
+         * Dismisses the editor when its host window closes without abandoning an already submitted synchronization.
+         */
         Q_INVOKABLE void dismissFromHostWindow();
         Q_INVOKABLE void validateCurrentPage();
         Q_INVOKABLE void requestCustomFolder();

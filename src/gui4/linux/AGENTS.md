@@ -13,6 +13,8 @@
 
 ### Local Norms (Linux v4)
 
+- Keep full diffs out of chat unless explicitly asked to display them there; provide a patch file or an editor diff.
+- Explain failure conditions with concrete prerequisites; avoid vague labels such as "normally configured".
 - Keep new C++ readable: separate method definitions and logical steps with blank lines, use explicit names, and expand
   conditional bodies with braces. Do not compact multiple operations onto one line or conflate readability cleanup with
   architectural simplification.
@@ -43,6 +45,7 @@
   the generated Conan/CMake Debug preset, then build `kDrive` and `kdrive_qml`. Do not build the legacy `kDrive_client`,
   which is not buildable for version 4. Do not use the Podman release script for this local Linux validation path.
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
+- Document C++ APIs with `/** */` blocks, not `///`.
 - Do not duplicate method documentation between headers and implementation files. Document public API contracts in
   headers, private helpers in `.cpp` files, and keep implementation-specific comments next to the relevant code.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
@@ -222,8 +225,13 @@
   clipped card radius, 24 px horizontal page margins, and 32 px top margin.
 - Mask the complete Storage graph with one rounded shape instead of rounding individual segments: `Rectangle.clip` is
   rectangular in Qt Quick, and segment-level rounding breaks when the leading segment is zero or subpixel-sized.
-- Keep the synchronization and other-files Storage segments visible with a nominal 1% minimum, but let free space reach
-  a true zero width. Normalize the displayed widths inside the single rounded graph mask.
+- Keep measured Storage segments visible with a nominal 1% minimum, but let free space and empty segments reach a true
+  zero width; an unmeasured kDrive segment takes no width, the other-syncs row is hidden once they measure 0 bytes, and the other-files segment is the used space not yet attributed, so
+  measures take their share from it. Normalize the displayed widths inside the single rounded graph mask.
+- Order the Storage cards as disk, insufficient disk space (below `AppConstants::Storage::diskAlmostFullThresholdBytes`),
+  subscription (hidden while the quota is unknown), synchronization. An unreadable disk replaces only the disk card. The
+  "Optimize computer space" card of the Figma relies on LiteSync and is not shown on Linux. Only drive admins get the
+  subscription upgrade action.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
 - Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
   `NeutralBlue600` is `#1F242E`.
@@ -340,6 +348,13 @@
   category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
   presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
   `requestOpenFileExclusions()` opens Settings on Advanced > file exclusions, for the errors page.
+  `requestOpenUser`, `requestOpenDrive`, `requestOpenAdvancedSync` and `requestOpenSyncManagement` keep a typed pending
+  target that the window takes when it is created or on `targetPending()`, through one typed show signal per kind of target. The window shows that
+  page above the Accounts root, animated when Accounts is already displayed, and focuses the user or advanced
+  synchronization card. A page can then be created on the drive of the page it replaces before that one is destroyed,
+  so `DriveManagementController` and `AdvancedSyncsController` count the pages open on their target and release it on
+  the last `close()`. `StackView.pushItems` only creates the top page, so `SettingsNavigationPane.showAboveRoot` loads
+  the pages below it: the drive management page must exist to leave a drive that lost its last synchronization.
 - `app/settings/settingssyncactivationcontroller.*`: process-long transactional editor, owned by `AppClientLinux` and
   exposed as `SettingsWindowController.syncActivation`, that activates one available drive from Accounts. A single
   private `State` drives it: `Preparing` (server default folder requested, row busy) → `Editing` ⇄ `CheckingFolder` →
@@ -532,6 +547,9 @@
   a pending pause or resume request drives the toolbar control (`SyncControlState::Pending`), never the central status.
   The control is disabled while the selected synchronization has a blocking error, as on macOS. The errors banner
   opens the errors page (`showErrors()`); the primary action still opens the Activities tab.
+  kDrive online opens the remote folder of an advanced synchronization (`itemRedirectUri`), the drive root otherwise;
+  the other web shortcuts stay at the drive level. The Home avatar opens the user's card in Settings, its badge the
+  drive management page, or the advanced synchronizations page focused on the selected advanced synchronization.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
@@ -547,13 +565,19 @@
   with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
 - `app/mainwindow/searchresultmodel.*`: search results, page after page. `appendPage` inserts rows without a reset and
   skips nodes already listed; node ids and paths stay internal.
-- `app/mainwindow/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-sync snapshot cache. It
-  starts cancellable local scans only while Storage is visible, keeps the last resolved presentation during refresh, and
-  refreshes once an active synchronization leaves `Starting`, `Running`, `PauseAsked`, or `StopAsked` for any non-active
-  status.
-- `app/mainwindow/storagescanner.*`: Linux local-volume scanner using `QStorageInfo` plus an explicit Qt directory
-  stack. It stays on the synchronization root device, skips links and special files, deduplicates hard links, and sums
-  allocated blocks so sparse files reflect their physical footprint.
+- `app/mainwindow/storage/storagecontroller.*`: QML-facing Storage lifecycle. While Storage is visible, one cancellable
+  scan publishes the volume, then the selected synchronization, then the other synchronizations stored on the same
+  device (any user or drive, advanced ones included), so the gauge fills progressively. It also exposes the drive quota
+  from the selected `SyncContext`, polls the volume free space every 60 s outside the page (no log per poll) for the
+  sidebar `storageWarning`, and asks Settings to open "Manage synchronization" through
+  `SettingsWindowController::requestOpenSyncManagement`.
+- `app/mainwindow/storage/storagemeasurecache.*`: process-local per-synchronization measure cache, without QObject. A
+  measure is kept for its root and reused until its synchronization has been active again; the cache follows the
+  observed statuses to know it.
+- `app/mainwindow/storage/storagescanner.*`: Linux local-volume reader (`QStorageInfo`), synchronization-root measure
+  using an explicit Qt directory stack, and the scan job (`scanSyncs`) run outside the GUI thread. A measure stays on
+  the given device, skips links and special files, deduplicates hard links, and sums allocated blocks so sparse files
+  reflect their physical footprint.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive`, the selected main tab, and
   the `ActivitiesNavigation` exposed as `activitiesNavigation`; `showErrors()` is the only shortcut that crosses both.
   `navigateToMainTab`, called only by the sidebar, resets the Activities sub-page: the Activities entry always leads to

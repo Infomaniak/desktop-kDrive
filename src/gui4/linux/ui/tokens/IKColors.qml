@@ -91,6 +91,7 @@ QtObject {
         readonly property color orange800: "#A14B0B"
         readonly property color orangeDeep: "#FF8500"
         readonly property color orangePale: "#FFE8D8"
+        readonly property color mango: "#FF9802"
 
         // Brown
         readonly property color brown950: "#461E04"
@@ -183,6 +184,9 @@ QtObject {
     readonly property color homePausedSurface: darkMode ? _p.brown950 : _p.orangePale
     readonly property color homeSyncingForeground: darkMode ? _p.kDriveLight : _p.blue600
     readonly property color homeSyncingSurface: darkMode ? _p.kDriveDark : _p.bluePale
+    readonly property color homeSettingsShortcutSurface: actionPrimary
+    readonly property color homeSettingsShortcutGlyph: actionOnPrimary
+    readonly property color homeSyncBadgeSurface: surfacePrimary
     readonly property color activitiesFilterSurface: surfaceSecondary
     readonly property color activitiesRowAlternateSurface: surfaceSecondary
     readonly property color activitiesDivider: surfaceTertiary
@@ -232,8 +236,15 @@ QtObject {
     readonly property color storageLegendSync: darkMode ? _p.kDriveLight : _p.infomaniak
     readonly property color storageBarOther: darkMode ? _p.violetLight : _p.violet500
     readonly property color storageLegendOther: darkMode ? _p.violetLight : _p.cloud500
+    readonly property color storageBarOtherSyncs: darkMode ? _p.orange400 : _p.mango
+    readonly property color storageLegendOtherSyncs: storageBarOtherSyncs
     readonly property color storageFree: darkMode ? _p.gray400 : _p.gray600
     readonly property color storageBarSeparator: darkMode ? _p.neutralBlue700 : _p.gray100
+    readonly property color storageActionSurface: surfaceSecondary
+    readonly property color storageActionIconTile: _p.kDrive500
+    readonly property color storageActionIcon: _p.white
+    readonly property color storageChipSurface: darkMode ? _p.neutralBlue600 : _p.white
+    readonly property color storageCartIcon: accentSecondary
     readonly property color blockingStateSurface: surfaceSecondary
     readonly property color blockingStateBorder: surfaceTertiary
     readonly property color blockingErrorDriveLabelSurface: darkMode ? _p.neutralBlue900 : _p.white

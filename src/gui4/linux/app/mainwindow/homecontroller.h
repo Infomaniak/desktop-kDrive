@@ -19,7 +19,9 @@
 #pragma once
 
 #include "libcommon/utility/cstypes.h"
+#include "libcommon/utility/types.h"
 
+#include <QColor>
 #include <QObject>
 #include <QString>
 
@@ -47,8 +49,11 @@ class HomeController final : public QObject {
         Q_PROPERTY(PrimaryAction primaryAction READ primaryAction NOTIFY homeChanged)
         Q_PROPERTY(SyncControlState syncControlState READ syncControlState NOTIFY homeChanged)
         Q_PROPERTY(QString firstName READ firstName NOTIFY homeChanged)
+        Q_PROPERTY(QString userName READ userName NOTIFY homeChanged)
         Q_PROPERTY(QString driveName READ driveName NOTIFY homeChanged)
         Q_PROPERTY(QString avatarSource READ avatarSource NOTIFY homeChanged)
+        Q_PROPERTY(QColor driveColor READ driveColor NOTIFY homeChanged)
+        Q_PROPERTY(bool advancedSync READ advancedSync NOTIFY homeChanged)
         Q_PROPERTY(int32_t errorCount READ errorCount NOTIFY homeChanged)
         Q_PROPERTY(bool hasCurrentDrive READ hasCurrentDrive NOTIFY homeChanged)
         Q_PROPERTY(bool hasConnectedUser READ hasConnectedUser NOTIFY homeChanged)
@@ -89,8 +94,11 @@ class HomeController final : public QObject {
         [[nodiscard]] PrimaryAction primaryAction() const;
         [[nodiscard]] SyncControlState syncControlState() const;
         [[nodiscard]] QString firstName() const;
+        [[nodiscard]] QString userName() const;
         [[nodiscard]] QString driveName() const;
         [[nodiscard]] QString avatarSource() const;
+        [[nodiscard]] QColor driveColor() const;
+        [[nodiscard]] bool advancedSync() const;
         [[nodiscard]] int32_t errorCount() const;
         [[nodiscard]] bool hasCurrentDrive() const;
         [[nodiscard]] bool hasConnectedUser() const;
@@ -100,10 +108,15 @@ class HomeController final : public QObject {
         Q_INVOKABLE static void openSupport();
         Q_INVOKABLE void openDriveDestination(int32_t destination) const;
         Q_INVOKABLE void showErrors() const;
+        Q_INVOKABLE void openUserSettings();
+        Q_INVOKABLE void openSyncSettings();
 
     signals:
         void homeChanged();
         void setupRequested();
+        void userSettingsRequested(UserDbId userDbId);
+        void driveSettingsRequested(DriveDbId driveDbId);
+        void advancedSyncSettingsRequested(DriveDbId driveDbId, SyncDbId syncDbId);
 
     private:
         [[nodiscard]] std::optional<SyncStatus> currentRuntimeStatus() const;
