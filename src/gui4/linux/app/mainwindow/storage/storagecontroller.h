@@ -22,6 +22,7 @@
 #include "storagemeasurecache.h"
 #include "storagescanner.h"
 
+#include <QElapsedTimer>
 #include <QFutureWatcher>
 #include <QObject>
 #include <QString>
@@ -34,6 +35,7 @@
 namespace KDC {
 
 class AppCache;
+class CommService;
 
 /**
  * QML-facing state and lifecycle owner for the Linux Storage page.
@@ -45,7 +47,8 @@ class AppCache;
  * reused until its synchronization has been active again. A scan publishes the volume first, then the selected
  * synchronization, then the other synchronizations, so the gauge fills progressively. Scans run only while the page is
  * visible and are canceled when it is hidden or the selection changes. The free space of the volume is also polled
- * without any scan while a synchronization is selected, so the sidebar warning stays current outside the page.
+ * without any scan while a synchronization is selected, so the sidebar warning stays current outside the page. The server
+ * does not poll the quota: opening the page asks for a reload, at most once per minute, and a retry always does.
  */
 class StorageController final : public QObject {
         Q_OBJECT
@@ -87,7 +90,8 @@ class StorageController final : public QObject {
         };
         Q_ENUM(State)
 
-        StorageController(AppCache &appCache, MainSelectionStore &selectionStore, QObject *parent = nullptr);
+        StorageController(AppCache &appCache, MainSelectionStore &selectionStore, CommService &commService,
+                          QObject *parent = nullptr);
         ~StorageController() override;
 
         [[nodiscard]] State state() const { return _state; }
@@ -149,6 +153,7 @@ class StorageController final : public QObject {
         };
 
         void refreshSelectedContext();
+        void refreshQuota();
         void handleSyncStatusChanged(SyncDbId syncDbId);
         void handleSyncsChanged();
         void presentSelectedCache();
@@ -179,6 +184,8 @@ class StorageController final : public QObject {
 
         AppCache &_appCache;
         MainSelectionStore &_selectionStore;
+        CommService &_commService;
+        QElapsedTimer _lastQuotaRefresh;
         QFutureWatcher<StorageScanUpdate> _scanWatcher;
         QFutureWatcher<StorageVolumeResult> _volumeWatcher;
         QTimer _minimumRetryTimer;
