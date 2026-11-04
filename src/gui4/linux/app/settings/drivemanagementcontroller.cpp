@@ -69,9 +69,15 @@ bool DriveManagementController::deletePending() const {
 }
 
 void DriveManagementController::open(const qint64 driveDbId) {
+    if (hasTarget() && static_cast<DriveDbId>(driveDbId) == _driveDbId) {
+        ++_targetOpenCount;
+        return;
+    }
+
     resetTarget();
 
     _driveDbId = static_cast<DriveDbId>(driveDbId);
+    _targetOpenCount = 1;
     qCInfo(lcDriveManagementController) << "Opening drive management | driveDbId:" << _driveDbId;
 
     refresh();
@@ -79,6 +85,10 @@ void DriveManagementController::open(const qint64 driveDbId) {
 
 void DriveManagementController::close(const qint64 driveDbId) {
     if (static_cast<DriveDbId>(driveDbId) != _driveDbId) {
+        return;
+    }
+    if (_targetOpenCount > 1) {
+        --_targetOpenCount;
         return;
     }
 
@@ -227,6 +237,7 @@ void DriveManagementController::resetTarget() {
     ++_targetGeneration;
     ++_blackListGeneration;
     _driveDbId = 0;
+    _targetOpenCount = 0;
     _availableDriveKey = AvailableDriveKey{};
     _mainSyncDbId = 0;
     _driveName.clear();

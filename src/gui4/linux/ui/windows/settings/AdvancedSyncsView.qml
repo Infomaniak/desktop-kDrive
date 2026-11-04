@@ -28,6 +28,8 @@ ScrollView {
 
     required property var controller
     required property var driveDbId
+    // Synchronization whose card is unfolded, scrolled to and focused once it exists, when Settings opens on it.
+    property var revealSyncDbId: null
     readonly property string navigationTitle: qsTrId("advancedSyncTitle")
 
     signal manageRequested(Item trigger, var syncDbId)
@@ -38,7 +40,38 @@ ScrollView {
     clip: true
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-    Component.onCompleted: root.controller.open(root.driveDbId)
+    function revealSync(syncDbId) {
+        root.revealSyncDbId = syncDbId;
+        root.revealPendingSync();
+    }
+
+    function revealPendingSync() {
+        if (root.revealSyncDbId === null) {
+            return;
+        }
+
+        for (let index = 0; index < syncsRepeater.count; ++index) {
+            const card = syncsRepeater.itemAt(index) as AdvancedSyncCard;
+            if (card && card.syncDbId === root.revealSyncDbId) {
+                root.revealSyncDbId = null;
+                card.expanded = true;
+                // Waits for the unfolded card to be laid out before scrolling to it.
+                Qt.callLater(() => {
+                    const flickable = root.contentItem as Flickable;
+                    const cardY = card.mapToItem(flickable.contentItem, 0, 0).y;
+                    flickable.contentY = Math.min(Math.max(0, cardY - IKSettings.pageMargin),
+                                                  Math.max(0, flickable.contentHeight - flickable.height));
+                    card.focusHeader();
+                });
+                return;
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        root.controller.open(root.driveDbId);
+        root.revealPendingSync();
+    }
     Component.onDestruction: root.controller.close(root.driveDbId)
 
     Column {
@@ -74,7 +107,10 @@ ScrollView {
             spacing: IKSettings.groupSpacing
 
             Repeater {
+                id: syncsRepeater
+
                 model: root.controller.model
+                onItemAdded: root.revealPendingSync()
 
                 delegate: AdvancedSyncCard {
                     width: parent.width
