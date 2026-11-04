@@ -59,6 +59,8 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUpdateUserInfo);
         CPPUNIT_TEST(testResolveErrorsForNode);
         CPPUNIT_TEST(testRemoveDriveAccessErrors);
+        CPPUNIT_TEST(testManageInvalidTokenErrorForUser);
+        CPPUNIT_TEST(testDriveAccessErrorWithInvalidToken);
         CPPUNIT_TEST(testProxyConfigUpdate);
         CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
@@ -72,6 +74,8 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         void testUpdateUserInfo();
         void testResolveErrorsForNode();
         void testRemoveDriveAccessErrors();
+        void testManageInvalidTokenErrorForUser();
+        void testDriveAccessErrorWithInvalidToken();
         void testProxyConfigUpdate();
 
         void testCleanup();

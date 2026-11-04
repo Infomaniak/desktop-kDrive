@@ -4139,7 +4139,11 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
 
         if (const auto exitInfo = updateUserInfo(user); !exitInfo) {
             LOG_WARN(_logger, "Error in updateUserInfo: " << exitInfo);
-            if (exitInfo.code() == ExitCode::InvalidToken) continue;
+            if (exitInfo.code() == ExitCode::InvalidToken) {
+                // No sync is involved yet: flag the user as disconnected so that the GUI prompts to log in again
+                manageInvalidTokenError(user);
+                continue;
+            }
             return exitInfo;
         }
     }
@@ -4659,7 +4663,7 @@ void AppServer::addError(const Error &error) const {
         return;
     }
 
-    Error errorCopy = error;
+    Error errorCopy = supersedeDriveAccessErrorIfTokenIsInvalid(error);
     // Fetch all errors.
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(errorCopy.level(), errorCopy.syncDbId(), INT_MAX, errorList)) {
@@ -4704,6 +4708,32 @@ void AppServer::addError(const Error &error) const {
 
         sendErrorAdded(errorCopy);
     }
+}
+
+Error AppServer::supersedeDriveAccessErrorIfTokenIsInvalid(const Error &error) const {
+    if (error.exitCode() != ExitCode::BackError || error.exitCause() != ExitCause::DriveAccessError || !error.syncDbId()) {
+        return error;
+    }
+
+    User user;
+    Account account;
+    Drive drive;
+    Sync sync;
+    if (ServerRequests::getDbStructsFromSyncDbId(error.syncDbId(), user, account, drive, sync) != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getDbStructsFromSyncDbId");
+        return error;
+    }
+
+    // While a revoked token is still cached, a 401 on the Drive API cannot be told apart from a lost access to the drive and is
+    // reported as DriveAccessError. The user profile API answers 401 only if the token itself is invalid.
+    bool updated = false;
+    if (const auto exitInfo = _loadUserInfo(user, updated); exitInfo.code() != ExitCode::InvalidToken) {
+        return error;
+    }
+
+    LOG_INFO(Log::instance()->getLogger(),
+             "DriveAccessError caused by an invalid token, reported as InvalidToken for syncDbId=" << error.syncDbId());
+    return Error(error.syncDbId(), error.workerName(), ExitCode::InvalidToken, ExitCause::Unknown);
 }
 
 void AppServer::manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const {
@@ -4785,6 +4815,24 @@ void AppServer::manageInvalidTokenError(User &user) const {
     }
 
     sendUserUpdated(user);
+
+    // A 401 received before the token cache was cleared is reported as DriveAccessError: it is superseded by InvalidToken
+    removeDriveAccessErrors(user.dbId());
+}
+
+void AppServer::manageInvalidTokenError(const UserDbId userDbId) const {
+    User user;
+    bool found = false;
+    if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUser");
+        return;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "User not found with dbId=" << userDbId);
+        return;
+    }
+
+    manageInvalidTokenError(user);
 }
 
 void AppServer::removeDriveAccessErrors(const UserDbId userDbId) const {

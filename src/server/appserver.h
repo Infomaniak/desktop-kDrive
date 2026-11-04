@@ -152,9 +152,11 @@ class AppServer : public SharedTools::QtSingleApplication {
                                   const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
 
         void addError(const Error &error) const;
+        [[nodiscard]] Error supersedeDriveAccessErrorIfTokenIsInvalid(const Error &error) const;
         void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
         void manageDriveAccessError(Drive &drive) const;
         void manageInvalidTokenError(User &user) const;
+        void manageInvalidTokenError(UserDbId userDbId) const;
         void removeDriveAccessErrors(UserDbId userDbId) const;
         void manageSocketsDefunctedError() const;
         void manageFileAccessErrorError(const std::vector<Error> &errorList) const;

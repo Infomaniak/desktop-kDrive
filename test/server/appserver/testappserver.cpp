@@ -366,6 +366,81 @@ void TestAppServer::testRemoveDriveAccessErrors() {
     CPPUNIT_ASSERT(ParmsDb::instance()->deleteErrors(ErrorLevel::SyncPal));
 }
 
+void TestAppServer::testManageInvalidTokenErrorForUser() {
+    const UserDbId userDbId = 1;
+    const SyncDbId syncDbId = 1;
+
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(userDbId, user, found) && found);
+    const auto keychainKey = user.keychainKey();
+    CPPUNIT_ASSERT(!keychainKey.empty());
+
+    Error driveAccessError(syncDbId, "RFSO", ExitCode::BackError, ExitCause::DriveAccessError);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(driveAccessError));
+
+    // The token is found invalid outside of any sync (e.g. while listing the available drives): only the user is known
+    _appPtr->manageInvalidTokenError(userDbId);
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(userDbId, user, found) && found);
+    CPPUNIT_ASSERT(!user.connected());
+
+    std::vector<Error> errorList;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList));
+    CPPUNIT_ASSERT(errorList.empty());
+
+    // Restore the user's token for the following tests
+    user.setKeychainKey(keychainKey);
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user, found) && found);
+}
+
+void TestAppServer::testDriveAccessErrorWithInvalidToken() {
+    const UserDbId userDbId = 1;
+    const SyncDbId syncDbId = 1;
+
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(userDbId, user, found) && found);
+    const auto keychainKey = user.keychainKey();
+
+    // The user lost access to the drive but the token is valid: the error is kept
+    {
+        _appPtr->setLoadUserInfoFunction([](User &, bool &updated) -> ExitInfo {
+            updated = false;
+            return ExitCode::Ok;
+        });
+        _appPtr->addError(Error(syncDbId, "RFSO", ExitCode::BackError, ExitCause::DriveAccessError));
+
+        std::vector<Error> errorList;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList));
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::DriveAccessError, errorList[0].exitCause());
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteErrors(ErrorLevel::SyncPal));
+    }
+
+    // The token is revoked but still cached: the 401 on the Drive API is reported as an invalid token
+    {
+        _appPtr->setLoadUserInfoFunction([](User &, bool &updated) -> ExitInfo {
+            updated = false;
+            return ExitCode::InvalidToken;
+        });
+        _appPtr->addError(Error(syncDbId, "RFSO", ExitCode::BackError, ExitCause::DriveAccessError));
+
+        std::vector<Error> errorList;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList));
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, errorList[0].exitCode());
+
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(userDbId, user, found) && found);
+        CPPUNIT_ASSERT(!user.connected());
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteErrors(ErrorLevel::SyncPal));
+    }
+
+    // Restore the user's token for the following tests
+    user.setKeychainKey(keychainKey);
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user, found) && found);
+}
+
 void TestAppServer::testProxyConfigUpdate() {
     // Set proxy configuration without authentication
     {

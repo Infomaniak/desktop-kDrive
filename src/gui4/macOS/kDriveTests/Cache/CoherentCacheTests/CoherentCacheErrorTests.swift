@@ -171,6 +171,38 @@ struct CoherentCacheErrorTests {
     }
 
     @Test(.timeLimit(.minutes(1)))
+    func disconnectedUserBlocksSynchroWithLoginErrorWithoutSynchroError() async throws {
+        // GIVEN: the token is found invalid outside of any synchro, so only the user is reported as disconnected
+        let cache = try await makeCacheWithSynchro()
+        var disconnectedUser = CacheData.expectedUser
+        disconnectedUser.isConnected = false
+
+        // WHEN
+        await cache.updateUser(disconnectedUser, updateOptions: .updateSignal)
+
+        // THEN
+        let synchroContext = try #require(await cache.getSynchroContext(CacheData.expectedSynchroDbId))
+        #expect(synchroContext.synchro.latestError == nil)
+        #expect(synchroContext.blockingError == .loggingError)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func disconnectedUserLoginErrorPreemptsSynchroError() async throws {
+        // GIVEN
+        let cache = try await makeCacheWithSynchro()
+        try await cache.addOrUpdateError(CacheData.expectedDriveAccessError)
+        #expect(await cache.getSynchroContext(CacheData.expectedSynchroDbId)?.blockingError == .accessDenied)
+
+        // WHEN
+        var disconnectedUser = CacheData.expectedUser
+        disconnectedUser.isConnected = false
+        await cache.updateUser(disconnectedUser, updateOptions: .updateSignal)
+
+        // THEN
+        #expect(await cache.getSynchroContext(CacheData.expectedSynchroDbId)?.blockingError == .loggingError)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
     func updateLoginErrorInSynchro() async throws {
         // GIVEN
         let user = CacheData.expectedUser
