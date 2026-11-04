@@ -170,7 +170,11 @@ struct ActivitiesTableStatusView: View {
         let pathToLink = context.node.type == .directory ? context.node.path : context.node.parentFolder
         let url = nodeURLGenerator.localURL(for: pathToLink.path, synchroPath: context.synchro.localPath)
 
-        NSWorkspace.shared.open(url)
+        if NSWorkspace.shared.open(url) {
+            IKLogger.general.info("[KD] [Activity] Local open accepted itemId=\(context.node.id)")
+        } else {
+            IKLogger.general.error("[KD] [Activity] Local open failed itemId=\(context.node.id) path=\(url.path)")
+        }
     }
 
     private func openInBrowser() {
@@ -178,7 +182,11 @@ struct ActivitiesTableStatusView: View {
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.remoteURL(for: context.node.remoteID, driveId: context.drive.driveId)
 
-        NSWorkspace.shared.open(url)
+        if NSWorkspace.shared.open(url) {
+            IKLogger.general.info("[KD] [Activity] Browser open accepted itemId=\(context.node.id)")
+        } else {
+            IKLogger.general.error("[KD] [Activity] Browser open failed itemId=\(context.node.id) url=\(url.absoluteString)")
+        }
     }
 
     private func copyShareLink() {

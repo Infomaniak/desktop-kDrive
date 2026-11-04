@@ -111,11 +111,16 @@ extension UISynchroFileInstruction {
 }
 
 public extension UISynchroNode {
-    init(synchroNode: SynchroNode) {
-        let localPath = URL(fileURLWithPath: synchroNode.path)
+    /// - Parameter localRootPath: Absolute path of the sync root folder, used to resolve the node's sync folder
+    /// relative paths. They must never be turned into a `URL` without this base: `URL(fileURLWithPath:)` applied to
+    /// a relative path silently resolves it against the process working directory, producing a location that has
+    /// nothing to do with the synced item.
+    init(synchroNode: SynchroNode, localRootPath: String) {
+        let localRootURL = URL(fileURLWithPath: localRootPath)
+        let localPath = NodePathResolver.localURL(for: synchroNode.path, synchroPath: localRootURL)
         var updatedLocalPath: URL?
         if !synchroNode.newPath.isEmpty {
-            updatedLocalPath = URL(fileURLWithPath: synchroNode.newPath)
+            updatedLocalPath = NodePathResolver.localURL(for: synchroNode.newPath, synchroPath: localRootURL)
         }
 
         var instruction = UISynchroFileInstruction(syncFileInstruction: synchroNode.instruction)
