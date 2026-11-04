@@ -1578,8 +1578,14 @@
     <value>Άλλα αρχεία στον υπολογιστή</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Διαθέσιμος χώρος στη συνδρομή σας</value> 
+  </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Αρχεία kDrive που είναι αποθηκευμένα στο διαδίκτυο</value> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Συγχρονισμός</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Αυτός ο υπολογιστής - %@ - %@</value> 

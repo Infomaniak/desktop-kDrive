@@ -1578,8 +1578,14 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
     <value>Andere bestanden op computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Beschikbare ruimte van uw abonnement</value> 
+  </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Online opgeslagen kDrive-bestanden</value> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Synchronisatie</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Deze pc - %@ - %@</value> 
