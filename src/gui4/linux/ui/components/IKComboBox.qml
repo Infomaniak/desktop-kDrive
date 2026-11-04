@@ -24,13 +24,26 @@ import kDrive.UI
 ComboBox {
     id: root
     required property string accessibleName
-    implicitWidth: Math.max(IKSettings.comboWidth, implicitContentWidth + leftPadding + rightPadding)
+    // Reads the model directly: a retranslation replaces it, and the width must not depend on the selected option.
+    readonly property real widestOptionWidth: {
+        const options = root.model;
+        let widest = 0;
+        for (let index = 0; index < (options ? options.length : 0); ++index) {
+            widest = Math.max(widest, optionMetrics.advanceWidth(options[index][root.textRole]));
+        }
+        return Math.ceil(widest);
+    }
+    implicitWidth: Math.max(IKSettings.comboWidth, widestOptionWidth + leftPadding + rightPadding)
     implicitHeight: IKSettings.buttonHeight
     leftPadding: IKSpacing.s8
     rightPadding: IKSettings.iconButtonSize
     font.pixelSize: IKFonts.bodySize
     focusPolicy: Qt.StrongFocus
     Accessible.name: accessibleName
+    FontMetrics {
+        id: optionMetrics
+        font: root.font
+    }
     contentItem: Text {
         text: root.displayText
         color: root.enabled ? IKColors.textPrimary : IKColors.actionDisabled
