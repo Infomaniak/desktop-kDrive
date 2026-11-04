@@ -80,6 +80,7 @@ Item {
         cancelText: qsTrId("buttonCancel")
         confirmText: qsTrId("statusBarQuitApp")
         description: qsTrId("quitConfirmationDialogDescription")
+        initialFocusOnConfirm: true
         scrimInset: root.surfaceInset
         scrimRadius: root.surfaceRadius
         title: qsTrId("quitConfirmationDialogTitle")

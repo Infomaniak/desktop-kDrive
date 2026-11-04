@@ -124,6 +124,8 @@ class StorageController final : public QObject {
 
         Q_INVOKABLE void setViewActive(bool active);
         Q_INVOKABLE void retry();
+        /** Rescans while keeping the current presentation; acts as retry when Storage is unavailable. */
+        Q_INVOKABLE void refresh();
         Q_INVOKABLE void openDiskManagement() const;
         Q_INVOKABLE void openSubscriptionUpgrade() const;
         /** Asks Settings to open the "Manage synchronization" page of the selected synchronization. */
@@ -143,6 +145,7 @@ class StorageController final : public QObject {
         enum class ScanTrigger : uint8_t {
             Automatic = 0,
             Retry,
+            Refresh,
         };
 
         void refreshSelectedContext();
@@ -170,6 +173,7 @@ class StorageController final : public QObject {
         [[nodiscard]] uint64_t displayedOtherSyncsBytes() const;
         [[nodiscard]] uint64_t otherBytes() const;
         [[nodiscard]] static bool sameSyncs(const std::vector<StorageScanTarget> &lhs, const std::vector<StorageScanTarget> &rhs);
+        [[nodiscard]] static const char *scanTriggerName(ScanTrigger trigger);
         [[nodiscard]] static QString formatBytes(uint64_t bytes);
         [[nodiscard]] double ratio(uint64_t bytes) const;
 

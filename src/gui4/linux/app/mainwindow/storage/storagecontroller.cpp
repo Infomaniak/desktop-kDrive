@@ -234,6 +234,19 @@ void StorageController::retry() {
     startScan(ScanTrigger::Retry);
 }
 
+void StorageController::refresh() {
+    if (_state == State::Unavailable) {
+        retry();
+        return;
+    }
+
+    if (!_viewActive || _selectedSyncDbId == 0 || _scanWatcher.isRunning()) {
+        return;
+    }
+
+    startScan(ScanTrigger::Refresh);
+}
+
 void StorageController::openDiskManagement() const {
     const SyncPath root = _volume ? _volume->volumeRoot : _selectedSyncRoot;
     if (root.empty()) {
@@ -408,11 +421,16 @@ void StorageController::startScan(const ScanTrigger trigger) {
         _minimumRetryTimer.start();
     }
 
-    const StorageScanTarget selected{
-            .syncDbId = _selectedSyncDbId,
-            .syncRoot = _selectedSyncRoot,
-            .needsMeasure = trigger == ScanTrigger::Retry || _measureCache.needsMeasure(_selectedSyncDbId, _selectedSyncRoot)};
-    const auto others = otherSyncTargets();
+    const StorageScanTarget selected{.syncDbId = _selectedSyncDbId,
+                                     .syncRoot = _selectedSyncRoot,
+                                     .needsMeasure = trigger != ScanTrigger::Automatic ||
+                                                     _measureCache.needsMeasure(_selectedSyncDbId, _selectedSyncRoot)};
+    auto others = otherSyncTargets();
+    if (trigger == ScanTrigger::Refresh) {
+        for (auto &target: others) {
+            target.needsMeasure = true;
+        }
+    }
     _scannedOtherSyncs = others;
     const auto measuredOtherCount =
             std::ranges::count_if(others, [](const StorageScanTarget &target) { return target.needsMeasure; });
@@ -420,13 +438,24 @@ void StorageController::startScan(const ScanTrigger trigger) {
     _pendingOtherSyncsBytes = 0;
     _processedScanResults = 0;
     qCInfo(lcStorageController) << "Starting local Storage scan | syncDbId:" << selected.syncDbId
-                                << "| root:" << Path2QStr(selected.syncRoot)
-                                << "| trigger:" << (trigger == ScanTrigger::Retry ? "retry" : "automatic")
+                                << "| root:" << Path2QStr(selected.syncRoot) << "| trigger:" << scanTriggerName(trigger)
                                 << "| measure selected:" << selected.needsMeasure
                                 << "| other syncs to measure:" << measuredOtherCount << "/" << others.size();
 
     _scanWatcher.setFuture(QtConcurrent::run(
             [selected, others](QPromise<StorageScanUpdate> &promise) { StorageScanner::scanSyncs(promise, selected, others); }));
+}
+
+const char *StorageController::scanTriggerName(const ScanTrigger trigger) {
+    switch (trigger) {
+        case ScanTrigger::Automatic:
+            return "automatic";
+        case ScanTrigger::Retry:
+            return "retry";
+        case ScanTrigger::Refresh:
+            return "refresh";
+    }
+    return "unknown";
 }
 
 void StorageController::cancelScan() {
