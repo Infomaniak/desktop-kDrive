@@ -59,7 +59,7 @@ void FileOpeningHandler::queueOpenFileJob() {
 
     if (OpenFileJob::Request request; !OpenFileJob::parseDeeplinkUrl(_url, request)) {
         LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
-        handleFileOpeningFailure("This kDrive link is invalid.");
+        handleFileOpeningFailure(tr("This kDrive link is invalid."));
 
         return;
     }
@@ -112,17 +112,17 @@ void FileOpeningHandler::onOpenFileJobFinished(const OpenFileJob::Outcome outcom
             (void) openLocalItem(localPath, syncDbId);
             break;
         case OpenFileJob::Outcome::NotFound:
-            handleFileOpeningFailure("The element requested from this kDrive link could not be found.");
+            handleFileOpeningFailure(tr("The element requested from this kDrive link could not be found."));
             break;
         case OpenFileJob::Outcome::ResolveTimedOut:
             handleFileOpeningFailure(
-                    "The element requested from this kDrive link could not be synchronized. Please try again later.");
+                    tr("The element requested from this kDrive link could not be synchronized. Please try again later."));
             break;
         case OpenFileJob::Outcome::HydrationTimedOut:
-            handleFileOpeningFailure("The download of the element requested from this kDrive link took too long.");
+            handleFileOpeningFailure(tr("The download of the element requested from this kDrive link took too long."));
             break;
         case OpenFileJob::Outcome::Failed:
-            handleFileOpeningFailure("The element requested from this kDrive deeplink could not be opened.");
+            handleFileOpeningFailure(tr("The element requested from this kDrive deeplink could not be opened."));
             break;
         case OpenFileJob::Outcome::Canceled:
             handleFileOpeningCanceled();
@@ -143,7 +143,7 @@ ExitInfo FileOpeningHandler::openLocalItem(const SyncPath &localPath, const Sync
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfFileIsDehydrated - " << Utility::formatIoError(pathToOpen, ioError));
 
-        handleFileOpeningFailure("The download of the element requested from this kDrive link failed.");
+        handleFileOpeningFailure(tr("The download of the element requested from this kDrive link failed."));
 
         return ExitCode::SystemError;
     }
@@ -152,14 +152,14 @@ ExitInfo FileOpeningHandler::openLocalItem(const SyncPath &localPath, const Sync
     // to hydrate it.
     if (isDeHydrated && !isSyncEngineRunning(syncDbId)) {
         handleFileOpeningFailure(
-                "The download of the element requested from this kDrive link failed because its sync is not running.");
+                tr("The download of the element requested from this kDrive link failed because its sync is not running."));
 
         return ExitCode::DataError;
     }
 
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(pathToOpen)))) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in QDesktopServices::openUrl - " << Utility::formatSyncPath(pathToOpen));
-        handleFileOpeningFailure("The element requested from this kDrive link could not be opened.");
+        handleFileOpeningFailure(tr("The element requested from this kDrive link could not be opened."));
 
         return ExitCode::SystemError;
     }
@@ -175,15 +175,15 @@ bool FileOpeningHandler::isSyncEngineRunning(const SyncDbId syncDbId) const {
     return _appServer->syncPalMap.contains(syncDbId);
 }
 
-void FileOpeningHandler::notifyUser(const std::string &message) const {
-    _appServer->sendShowNotification(QString::fromStdString(Theme::instance()->appName()), QString::fromStdString(message));
+void FileOpeningHandler::notifyUser(const QString &message) const {
+    _appServer->sendShowNotification(QString::fromStdString(Theme::instance()->appName()), message);
 }
 
 void FileOpeningHandler::handleFileOpeningSuccess() {
     emit finished(true);
 }
 
-void FileOpeningHandler::handleFileOpeningFailure(const std::string &userMessage) {
+void FileOpeningHandler::handleFileOpeningFailure(const QString &userMessage) {
     LOG_WARN(Log::instance()->getLogger(), "Failed to open item from deeplink URL - url=" << _url);
     notifyUser(userMessage);
     emit finished(false);
