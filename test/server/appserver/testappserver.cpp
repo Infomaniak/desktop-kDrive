@@ -344,6 +344,28 @@ void TestAppServer::testResolveErrorsForNode() {
     CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, errorList[0].conflictType());
 }
 
+void TestAppServer::testRemoveDriveAccessErrors() {
+    const UserDbId userDbId = 1;
+    const SyncDbId syncDbId = 1;
+
+    // A 401 received with a revoked token is first reported as a DriveAccessError
+    Error driveAccessError(syncDbId, "RFSO", ExitCode::BackError, ExitCause::DriveAccessError);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(driveAccessError));
+
+    // Unrelated error - must survive
+    Error maintenanceError(syncDbId, "RFSO", ExitCode::BackError, ExitCause::DriveMaintenance);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(maintenanceError));
+
+    _appPtr->removeDriveAccessErrors(userDbId);
+
+    std::vector<Error> errorList;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList));
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::DriveMaintenance, errorList[0].exitCause());
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->deleteErrors(ErrorLevel::SyncPal));
+}
+
 void TestAppServer::testProxyConfigUpdate() {
     // Set proxy configuration without authentication
     {

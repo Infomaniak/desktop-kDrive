@@ -155,6 +155,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
         void manageDriveAccessError(Drive &drive) const;
         void manageInvalidTokenError(User &user) const;
+        void removeDriveAccessErrors(UserDbId userDbId) const;
         void manageSocketsDefunctedError() const;
         void manageFileAccessErrorError(const std::vector<Error> &errorList) const;
         void manageUpdateRequiredErrorError() const;

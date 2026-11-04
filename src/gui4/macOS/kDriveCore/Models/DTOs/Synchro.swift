@@ -214,4 +214,27 @@ public enum BlockingSynchroError: Error, Hashable, Sendable, CaseIterable {
             return nil
         }
     }
+
+    /// The first blocking error sticks until resolution, except for a logging error: once the token is invalid, any other
+    /// blocking error is meaningless (e.g. a 401 reported as `DriveAccessError`) and the user must log in again.
+    var preemptsOtherErrors: Bool {
+        self == .loggingError
+    }
+}
+
+extension Synchro {
+    mutating func updateLatestError(adding error: ErrorInfo) {
+        guard let blockingError = BlockingSynchroError(errorInfo: error) else {
+            return
+        }
+
+        if latestError == nil || blockingError.preemptsOtherErrors {
+            latestError = blockingError
+        }
+    }
+
+    mutating func refreshLatestErrorFromRemainingErrors() {
+        let blockingErrors = errors.values.compactMap { BlockingSynchroError(errorInfo: $0) }
+        latestError = blockingErrors.first { $0.preemptsOtherErrors } ?? blockingErrors.first
+    }
 }
