@@ -13,6 +13,8 @@
 
 ### Local Norms (Linux v4)
 
+- AppImage icons must use the Linux v4 application icon named by the installed `.desktop` file; derive `.DirIcon`
+  from that entry instead of hardcoding the legacy `kdrive-win` icon.
 - Keep full diffs out of chat unless explicitly asked to display them there; provide a patch file or an editor diff.
 - Explain failure conditions with concrete prerequisites; avoid vague labels such as "normally configured".
 - Keep new C++ readable: separate method definitions and logical steps with blank lines, use explicit names, and expand

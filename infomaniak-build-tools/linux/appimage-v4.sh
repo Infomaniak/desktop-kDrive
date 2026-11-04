@@ -255,13 +255,27 @@ function v4_prepare_appdir() (
         cp -P "/usr/lib/$triplet/gio/modules/"*.so usr/lib/gio/modules/
     fi
 
-    cp usr/share/icons/hicolor/512x512/apps/kdrive-win.png ./kdrive-win.png
+    local icon_name
+    icon_name="$(sed -n 's/^Icon=//p' usr/share/applications/kDrive.desktop)"
+    if [[ -z "$icon_name" || "$icon_name" == */* || "$icon_name" == *$'\n'* ]]; then
+        echo "Invalid application icon in kDrive.desktop: '$icon_name'" >&2
+        exit 1
+    fi
+    local icon_path="usr/share/icons/hicolor/256x256/apps/$icon_name.png"
+    [[ -f "$icon_path" ]] || {
+        echo "Missing desktop application icon: $icon_path" >&2
+        exit 1
+    }
+    ln -sfn "$icon_path" "$icon_name.png"
+    ln -sfn "$icon_name.png" .DirIcon
 )
 
 function v4_check_appdir() (
     set -eo pipefail
     cd "$1"
 
+    local icon_name
+    icon_name="$(sed -n 's/^Icon=//p' usr/share/applications/kDrive.desktop)"
     local -a required=(
         usr/bin/{kDrive,kdrive_qml,crashpad_handler,qt.conf,sync-exclude.lst,sync-folder-rules.csv}
         usr/lib/{libQt6Core.so.6,libQt6Quick.so.6,libQt6WaylandClient.so.6,libsentry.so,libssl.so.3,libcrypto.so.3}
@@ -282,7 +296,9 @@ function v4_check_appdir() (
         usr/translations/qt_fr.qm
         usr/share/kDrive_client/i18n/client_fr.qm
         usr/share/applications/kDrive.desktop
-        kdrive-win.png
+        "usr/share/icons/hicolor/256x256/apps/$icon_name.png"
+        "$icon_name.png"
+        .DirIcon
     )
     local -a forbidden=(
         usr/bin/kDriveRecoveryUpdater
@@ -312,6 +328,10 @@ function v4_check_appdir() (
 
     grep -qx 'Prefix = ..' usr/bin/qt.conf || {
         echo "Unexpected qt.conf content" >&2
+        missing=1
+    }
+    cmp -s .DirIcon "usr/share/icons/hicolor/256x256/apps/$icon_name.png" || {
+        echo ".DirIcon does not match the installed desktop application icon" >&2
         missing=1
     }
     exit "$missing"
