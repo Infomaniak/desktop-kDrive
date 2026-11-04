@@ -68,6 +68,11 @@ class SettingsWindowController final : public QObject {
             emit openRequested();
             emit fileExclusionsRequested();
         }
+        // Opens Settings on the synchronizations, where a new synchronization is created, for the errors page.
+        void requestOpenAccounts() {
+            emit openRequested();
+            emit accountsRequested();
+        }
 
         /**
          * Open the Settings window on the card of a user, on the management page of a drive, or on one advanced
@@ -89,6 +94,7 @@ class SettingsWindowController final : public QObject {
         void openRequested();
         void accountConnectionRequested();
         void fileExclusionsRequested();
+        void accountsRequested();
         void targetPending();
         // Ids are qint64 at the QML boundary.
         void userShowRequested(qint64 userDbId);

@@ -58,6 +58,7 @@ class ErrorListModel final : public QAbstractListModel {
             TitleCountRole,
             DescriptionIdRole,
             DescriptionArgCountRole,
+            DescriptionCountRole,
             NodeLabelIdRole,
             ItemNameRole,
             ItemPathRole,
@@ -97,6 +98,8 @@ class ErrorListModel final : public QAbstractListModel {
                 int32_t titleCount{0};
                 QString descriptionId;
                 uint8_t descriptionArgCount{0};
+                // Number shown in the description, such as the inotify watches limit; 0 when it has none.
+                qint64 descriptionCount{0};
                 QString nodeLabelId;
                 QString itemName;
                 QString itemPath;

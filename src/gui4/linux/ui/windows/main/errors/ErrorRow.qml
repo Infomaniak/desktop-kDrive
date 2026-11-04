@@ -34,6 +34,8 @@ Rectangle {
     required property int titleCount
     required property string descriptionId
     required property int descriptionArgCount
+    // A 64-bit count (the inotify watches limit): `real` keeps it whole.
+    required property real descriptionCount
     required property string nodeLabelId
     required property string itemName
     required property string itemPath
@@ -49,7 +51,7 @@ Rectangle {
 
     readonly property string title: ErrorTexts.text(root.titleId, root.titleArgCount, root.nodeLabelId, root.titleCount)
     readonly property string fullDescription: ErrorTexts.text(root.descriptionId, root.descriptionArgCount,
-                                                              root.nodeLabelId, 0)
+                                                              root.nodeLabelId, root.descriptionCount)
     // The information variant keeps the first line as description and shows the advice that follows in its tooltip.
     readonly property int adviceSeparator: root.variant === SyncErrors.InfoTooltip ? root.fullDescription.indexOf("\n") : -1
     readonly property string description: root.adviceSeparator < 0 ? root.fullDescription
@@ -217,47 +219,11 @@ Rectangle {
             }
         }
 
-        Rectangle {
+        ErrorCopyablePath {
             Layout.fillWidth: true
-            implicitHeight: IKActivities.errorsCopyFieldHeight
             visible: root.variant === SyncErrors.CopyablePath && root.copyablePath.length > 0
-            radius: IKRadius.r4
-            color: IKColors.errorsCopyFieldSurface
-            border.width: 1
-            border.color: IKColors.errorsCopyFieldBorder
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: IKSpacing.s8
-                anchors.rightMargin: IKSpacing.s4
-                spacing: IKSpacing.s4
-
-                Text {
-                    id: pathLabel
-
-                    Layout.fillWidth: true
-                    text: root.copyablePath
-                    textFormat: Text.PlainText
-                    color: IKColors.textSecondary
-                    font.pixelSize: IKFonts.bodySize
-                    elide: Text.ElideMiddle
-
-                    HoverHandler {
-                        id: pathHover
-                    }
-
-                    IKToolTip {
-                        text: root.copyablePath
-                        showRequested: pathHover.hovered && pathLabel.truncated
-                    }
-                }
-
-                ErrorCopyButton {
-                    text: qsTrId("buttonCopyPath")
-                    copiedText: qsTrId("pathCopiedToClipboard")
-                    onCopyRequested: root.copyRequested(root.rowId)
-                }
-            }
+            value: root.copyablePath
+            onCopyRequested: root.copyRequested(root.rowId)
         }
 
         ColumnLayout {

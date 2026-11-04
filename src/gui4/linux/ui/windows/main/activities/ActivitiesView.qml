@@ -29,6 +29,8 @@ Item {
     required property var controller
     required property var errorsPageController
     required property var navigation
+    property real modalScrimInset: 0
+    property real modalScrimRadius: 0
 
     // One component per page of the ActivitiesNavigation chain, in chain order: the stack depth of a page is its index + 1.
     readonly property list<Component> pageComponents: [listPageComponent, errorsPageComponent]
@@ -92,6 +94,8 @@ Item {
 
         ErrorsPage {
             controller: root.errorsPageController
+            modalScrimInset: root.modalScrimInset
+            modalScrimRadius: root.modalScrimRadius
         }
     }
 }
