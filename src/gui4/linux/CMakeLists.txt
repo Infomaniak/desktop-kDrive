@@ -80,10 +80,12 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/searchcontroller.h
         app/mainwindow/searchresultmodel.cpp
         app/mainwindow/searchresultmodel.h
-        app/mainwindow/storagecontroller.cpp
-        app/mainwindow/storagecontroller.h
-        app/mainwindow/storagescanner.cpp
-        app/mainwindow/storagescanner.h
+        app/mainwindow/storage/storagecontroller.cpp
+        app/mainwindow/storage/storagecontroller.h
+        app/mainwindow/storage/storagemeasurecache.cpp
+        app/mainwindow/storage/storagemeasurecache.h
+        app/mainwindow/storage/storagescanner.cpp
+        app/mainwindow/storage/storagescanner.h
         app/mainwindow/syncerroractionhandler.cpp
         app/mainwindow/syncerroractionhandler.h
         app/mainwindow/syncerrorexplanationcontroller.cpp
@@ -305,7 +307,12 @@ set(GUI_QML_FILES # .qml files for the app
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
+        ui/windows/main/storage/StorageActionCard.qml
         ui/windows/main/storage/StorageErrorState.qml
+        ui/windows/main/storage/StorageLegendEntry.qml
+        ui/windows/main/storage/StorageSegment.qml
+        ui/windows/main/storage/StorageSyncCard.qml
+        ui/windows/main/storage/StorageSyncChip.qml
         ui/windows/main/storage/StorageUsageCard.qml
         ui/windows/main/storage/StorageView.qml
         ui/windows/main/activities/ActivitiesEmptyState.qml
@@ -458,6 +465,8 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/search/empty.svg
         ui/assets/main/search/empty-dark.svg
         ui/assets/main/storage.svg
+        ui/assets/main/storage/cart-add.svg
+        ui/assets/main/storage/computer.svg
         ui/assets/main/storage/unavailable.svg
         ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg
