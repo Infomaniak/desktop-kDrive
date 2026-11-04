@@ -108,23 +108,23 @@ void TestApiTranslator::testTranslateV3ToV2() {
 
 void TestApiTranslator::testTranslateV3ToV2Paths() {
     // Pure path conversion tests, no API access required.
-    const auto privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private);
-    const auto commonDocumentsFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::CommonDocuments);
-    const auto sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
+    const SyncPath privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private);
+    const SyncPath commonDocumentsFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::CommonDocuments);
+    const SyncPath sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
 
     // Absolute private path: the private folder name is stripped, absoluteness and deeper components are preserved.
-    SyncPath remotePath = SyncPath{"/"} / SyncPath{privateFolderName} / Str("folder_A") / Str("text.txt");
+    SyncPath remotePath = SyncPath{"/"} / privateFolderName / Str("folder_A") / Str("text.txt");
     ApiTranslator::translateV3ToV2(remotePath);
     CPPUNIT_ASSERT_EQUAL(SyncPath{"/"} / Str("folder_A") / Str("text.txt"), remotePath);
 
     // A component deeper than the private folder may be named like the private folder: only the leading one is
     // stripped.
-    remotePath = SyncPath{"/"} / SyncPath{privateFolderName} / SyncPath{privateFolderName} / Str("text.txt");
+    remotePath = SyncPath{"/"} / privateFolderName / privateFolderName / Str("text.txt");
     ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(SyncPath{"/"} / SyncPath{privateFolderName} / Str("text.txt"), remotePath);
+    CPPUNIT_ASSERT_EQUAL(SyncPath{"/"} / privateFolderName / Str("text.txt"), remotePath);
 
     // The private folder itself translates to the V2 drive root.
-    remotePath = SyncPath{"/"} / SyncPath{privateFolderName};
+    remotePath = SyncPath{"/"} / privateFolderName;
     ApiTranslator::translateV3ToV2(remotePath);
     CPPUNIT_ASSERT_EQUAL(SyncPath{"/"}, remotePath);
 
@@ -134,13 +134,13 @@ void TestApiTranslator::testTranslateV3ToV2Paths() {
     CPPUNIT_ASSERT_EQUAL(SyncPath{"/"}, remotePath);
 
     // Non-private absolute paths are unchanged, absoluteness preserved.
-    remotePath = SyncPath{"/"} / SyncPath{commonDocumentsFolderName} / Str("folder_A");
+    remotePath = SyncPath{"/"} / commonDocumentsFolderName / Str("folder_A");
     ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(SyncPath{"/"} / SyncPath{commonDocumentsFolderName} / Str("folder_A"), remotePath);
+    CPPUNIT_ASSERT_EQUAL(SyncPath{"/"} / commonDocumentsFolderName / Str("folder_A"), remotePath);
 
-    remotePath = SyncPath{"/"} / SyncPath{sharedFolderName} / Str("folder_A") / Str("text.txt");
+    remotePath = SyncPath{"/"} / sharedFolderName / Str("folder_A") / Str("text.txt");
     ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(SyncPath{"/"} / SyncPath{sharedFolderName} / Str("folder_A") / Str("text.txt"), remotePath);
+    CPPUNIT_ASSERT_EQUAL(SyncPath{"/"} / sharedFolderName / Str("folder_A") / Str("text.txt"), remotePath);
 
     // A first component that merely starts with the private folder name is a non-private path.
     remotePath = SyncPath{"/"} / Str("Privatex") / Str("folder_A");
@@ -148,14 +148,14 @@ void TestApiTranslator::testTranslateV3ToV2Paths() {
     CPPUNIT_ASSERT_EQUAL(SyncPath{"/"} / Str("Privatex") / Str("folder_A"), remotePath);
 
     // Relative private path: the private folder name is stripped.
-    remotePath = SyncPath{privateFolderName} / Str("folder_A") / Str("text.txt");
+    remotePath = privateFolderName / Str("folder_A") / Str("text.txt");
     ApiTranslator::translateV3ToV2(remotePath);
     CPPUNIT_ASSERT_EQUAL(SyncPath{Str("folder_A")} / Str("text.txt"), remotePath);
 
     // Relative non-private path: unchanged.
-    remotePath = SyncPath{commonDocumentsFolderName} / Str("folder_A");
+    remotePath = commonDocumentsFolderName / Str("folder_A");
     ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(SyncPath{commonDocumentsFolderName} / Str("folder_A"), remotePath);
+    CPPUNIT_ASSERT_EQUAL(commonDocumentsFolderName / Str("folder_A"), remotePath);
 
     // Empty path: unchanged.
     remotePath = SyncPath{};
@@ -230,8 +230,8 @@ void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
     }
 
     const auto findNode = [&v3RemoteNodeInfoList](const QString &nodeId) {
-        return std::find_if(v3RemoteNodeInfoList.cbegin(), v3RemoteNodeInfoList.cend(),
-                            [&nodeId](const NodeInfo &nodeInfo) { return nodeInfo.nodeId() == nodeId; });
+        return std::ranges::find_if(v3RemoteNodeInfoList.cbegin(), v3RemoteNodeInfoList.cend(),
+                                    [&nodeId](const NodeInfo &nodeInfo) { return nodeInfo.nodeId() == nodeId; });
     };
 
     // The parent of an immediate private child is the V2 root folder.
