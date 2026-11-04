@@ -241,10 +241,17 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
 void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
     if (remotePath.empty()) return;
 
-    const bool isAbsolutePath = remotePath.is_absolute();
-    if (isAbsolutePath) remotePath = remotePath.relative_path();
+    // The V3 API paths are POSIX style ("/Private/...", "/Common documents/...", "/Shared/..."): detect the initial
+    // root with has_root_directory() rather than is_absolute(), which is platform dependent.
+    const bool hasInitialRoot = remotePath.has_root_directory();
+    if (hasInitialRoot) remotePath = remotePath.relative_path();
 
-    if (*remotePath.begin() != v3SpecialFolderNames.at(SpecialRemoteFolder::Private)) return;
+    // The V3 drive root translates to an empty relative path, and non-private paths are the same in the V2 tree. Keep
+    // them as is, except for the initial root which is restored for paths that carry one.
+    if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialRemoteFolder::Private)) {
+        if (hasInitialRoot) remotePath = SyncPath{"/"} / remotePath;
+        return;
+    }
 
     try {
         remotePath = remotePath.lexically_relative(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
@@ -253,7 +260,7 @@ void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
     }
 
     if (remotePath == ".") remotePath = SyncPath{};
-    if (isAbsolutePath) remotePath = SyncPath{"/"} / remotePath;
+    if (hasInitialRoot) remotePath = SyncPath{"/"} / remotePath;
 }
 
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId, RemoteNodeId &remoteNodeId) {
