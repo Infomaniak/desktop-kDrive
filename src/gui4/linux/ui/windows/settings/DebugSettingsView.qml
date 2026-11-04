@@ -82,30 +82,20 @@ ScrollView {
             }
 
             SettingsRow {
-                title: qsTrId("extendedLogSetting")
-                description: qsTrId("extendedLogDescription")
-                SettingsInfoButton { text: qsTrId("extendedLogWarning") }
-                IKSwitch {
-                    text: qsTrId("extendedLogSetting")
-                    value: root.controller.extendedLog
-                    enabled: root.controller.ready && !root.controller.saving
-                    onToggleRequested: value => root.controller.setExtendedLog(value)
-                }
-            }
-
-            SettingsRow {
-                enabled: root.controller.debugLevelEnabled
                 title: qsTrId("debugLevelSetting")
                 description: qsTrId("debugLevelDescription")
                 separator: false
-                opacity: enabled ? 1 : 0.55
+                SettingsInfoButton {
+                    visible: root.controller.extendedLog
+                    text: qsTrId("extendedLogWarning")
+                }
                 IKComboBox {
                     accessibleName: qsTrId("debugLevelSetting")
-                    enabled: !root.controller.saving
+                    enabled: root.controller.ready && !root.controller.saving
                     model: root.controller.logLevels
                     textRole: "label"
                     valueRole: "value"
-                    currentIndex: root.controller.logLevel
+                    currentIndex: root.controller.logLevelIndex
                     onActivated: root.controller.setLogLevel(currentValue)
                 }
             }

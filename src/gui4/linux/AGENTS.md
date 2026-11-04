@@ -442,7 +442,9 @@
 - `app/settings/advancedsettingscontroller.*`: confirmed Matomo/Sentry consent presentation, page-scoped errors,
   Advanced external actions, debug parameters, and process-long log-upload state. Sentry mutations continue to flow
   through `SentryService`, including its post-confirmation SDK update. Client log expiration follows the confirmed
-  `purgeOldLogs` value in `AppClientLinux::updateLoggerSettings`; the server does not purge client logs.
+  `purgeOldLogs` value in `AppClientLinux::updateLoggerSettings`; the server does not purge client logs. The extended
+  log is an entry of the log level list, not a separate setting: `Log::configure` ignores `extendedLog`, and its logs
+  are written at the Debug level, so that entry saves `extendedLog` with `LogLevel::Debug`.
 - `app/settings/networksettingscontroller.*`: Network Settings proxy draft, asynchronous TCP reachability check, and
   confirmed full-snapshot persistence. Unsaved edits, credentials included, stay in the controller until saved; a
   successful save publishes the full proxy configuration to `ParametersStore`. Credentials are never logged.

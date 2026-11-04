@@ -39,7 +39,11 @@ using namespace Qt::StringLiterals;
 
 namespace {
 Q_LOGGING_CATEGORY(lcAdvancedSettings, "gui.v4.settings.advanced", QtInfoMsg)
-}
+
+// Comes right before LogLevel::Debug, which makes it the first entry of the list. It is not a LogLevel: the server only knows
+// the extended log flag and the level.
+constexpr int32_t extendedLogOption = static_cast<int32_t>(LogLevel::Debug) - 1;
+} // namespace
 
 AdvancedSettingsController::AdvancedSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
                                                        SentryService &sentryService, const CommService &commService,
@@ -84,14 +88,28 @@ bool AdvancedSettingsController::extendedLog() const {
     return parameters && parameters->extendedLog();
 }
 
-int32_t AdvancedSettingsController::logLevel() const {
+int32_t AdvancedSettingsController::logLevelIndex() const {
+    return selectedLogOption() - extendedLogOption;
+}
+
+// The extended log only takes effect at the Debug level, so any other stored level is presented as it is.
+int32_t AdvancedSettingsController::selectedLogOption() const {
     const auto parameters = _parametersStore.parameters();
-    return static_cast<int32_t>(parameters ? parameters->logLevel() : LogLevel::Debug);
+    if (!parameters) {
+        return static_cast<int32_t>(LogLevel::Debug);
+    }
+
+    if (parameters->extendedLog() && parameters->logLevel() == LogLevel::Debug) {
+        return extendedLogOption;
+    }
+
+    return static_cast<int32_t>(parameters->logLevel());
 }
 
 QVariantList AdvancedSettingsController::logLevels() {
     static constexpr std::array ids{"logLevelDebug", "logLevelInfo", "logLevelWarning", "logLevelError", "logLevelFatal"};
     QVariantList values;
+    values.push_back(QVariantMap{{u"label"_s, qtTrId("extendedLogSetting")}, {u"value"_s, extendedLogOption}});
     for (auto value = static_cast<int32_t>(LogLevel::Debug); value < static_cast<int32_t>(LogLevel::EnumEnd); ++value) {
         values.push_back(QVariantMap{{u"label"_s, qtTrId(ids[static_cast<std::size_t>(value)])}, {u"value"_s, value}});
     }
@@ -195,18 +213,19 @@ void AdvancedSettingsController::setPurgeOldLogs(const bool enabled) {
     }
 }
 
-void AdvancedSettingsController::setExtendedLog(const bool enabled) {
-    if (enabled != extendedLog()) {
-        save([enabled](Parameters &parameters) { parameters.setExtendedLog(enabled); }, ErrorContext::Debug);
-    }
-}
-
-void AdvancedSettingsController::setLogLevel(const int32_t level) {
-    if (level < static_cast<int32_t>(LogLevel::Debug) || level >= static_cast<int32_t>(LogLevel::EnumEnd) ||
-        level == logLevel()) {
+void AdvancedSettingsController::setLogLevel(const int32_t option) {
+    if (option < extendedLogOption || option >= static_cast<int32_t>(LogLevel::EnumEnd) || option == selectedLogOption()) {
         return;
     }
-    save([level](Parameters &parameters) { parameters.setLogLevel(static_cast<LogLevel>(level)); }, ErrorContext::Debug);
+
+    const bool extendedLogSelected = option == extendedLogOption;
+    const LogLevel level = extendedLogSelected ? LogLevel::Debug : static_cast<LogLevel>(option);
+    save(
+            [extendedLogSelected, level](Parameters &parameters) {
+                parameters.setExtendedLog(extendedLogSelected);
+                parameters.setLogLevel(level);
+            },
+            ErrorContext::Debug);
 }
 
 void AdvancedSettingsController::openSources() {

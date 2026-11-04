@@ -46,8 +46,7 @@ class AdvancedSettingsController final : public QObject {
         Q_PROPERTY(bool useLog READ useLog NOTIFY changed)
         Q_PROPERTY(bool purgeOldLogs READ purgeOldLogs NOTIFY changed)
         Q_PROPERTY(bool extendedLog READ extendedLog NOTIFY changed)
-        Q_PROPERTY(bool debugLevelEnabled READ debugLevelEnabled NOTIFY changed)
-        Q_PROPERTY(int32_t logLevel READ logLevel NOTIFY changed)
+        Q_PROPERTY(int32_t logLevelIndex READ logLevelIndex NOTIFY changed)
         Q_PROPERTY(QVariantList logLevels READ logLevels NOTIFY changed)
         Q_PROPERTY(int32_t uploadState READ uploadState NOTIFY changed)
         Q_PROPERTY(int32_t uploadPercentage READ uploadPercentage NOTIFY changed)
@@ -76,8 +75,9 @@ class AdvancedSettingsController final : public QObject {
         [[nodiscard]] bool useLog() const;
         [[nodiscard]] bool purgeOldLogs() const;
         [[nodiscard]] bool extendedLog() const;
-        [[nodiscard]] bool debugLevelEnabled() const { return ready() && !extendedLog(); }
-        [[nodiscard]] int32_t logLevel() const;
+        /** Row of logLevels() matching the confirmed parameters. */
+        [[nodiscard]] int32_t logLevelIndex() const;
+        /** Log level choices: the extended log first, then every level. Their value is what setLogLevel expects. */
         [[nodiscard]] static QVariantList logLevels();
         [[nodiscard]] int32_t uploadState() const { return static_cast<int32_t>(_uploadState); }
         [[nodiscard]] int32_t uploadPercentage() const { return _uploadPercentage; }
@@ -103,8 +103,8 @@ class AdvancedSettingsController final : public QObject {
         Q_INVOKABLE void setSentryEnabled(bool enabled);
         Q_INVOKABLE void setUseLog(bool enabled);
         Q_INVOKABLE void setPurgeOldLogs(bool enabled);
-        Q_INVOKABLE void setExtendedLog(bool enabled);
-        Q_INVOKABLE void setLogLevel(int32_t level);
+        /** Saves the extended log flag and the level together, from a value of logLevels(). */
+        Q_INVOKABLE void setLogLevel(int32_t option);
         Q_INVOKABLE void openSources();
         Q_INVOKABLE void openDebugFolder();
         Q_INVOKABLE void sendDebugLogs(bool lastSessionOnly);
@@ -137,6 +137,7 @@ class AdvancedSettingsController final : public QObject {
                 QUrl failedUrl;
         };
 
+        [[nodiscard]] int32_t selectedLogOption() const;
         [[nodiscard]] QString errorText(ErrorContext context) const;
         void setError(ErrorContext context, Error error, const QUrl &failedUrl = {});
         void beginSave(ErrorContext context);
