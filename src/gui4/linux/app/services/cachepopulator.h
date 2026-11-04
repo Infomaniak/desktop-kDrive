@@ -63,11 +63,17 @@ class CachePopulator : public QObject {
         void reconcile();
 
     signals:
-        /// Emitted only after the initial startup snapshot completes successfully.
+        /**
+         * Emitted only after the initial startup snapshot completes successfully.
+         */
         void bootstrapCompleted();
-        /// Emitted after an explicit recoverable cache repair completes successfully.
+        /**
+         * Emitted after an explicit recoverable cache repair completes successfully.
+         */
         void reconciliationCompleted();
-        /// Emitted when an explicit recoverable cache repair fails.
+        /**
+         * Emitted when an explicit recoverable cache repair fails.
+         */
         void reconciliationFailed();
 
     private:

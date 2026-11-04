@@ -29,6 +29,8 @@ Flickable {
     required property var activationController
     property string navigationTitle: qsTrId("sidebarItemAccounts")
     property var userExpansionStates: ({})
+    // User whose card is unfolded, scrolled to and focused once it exists, when Settings opens on a user.
+    property var revealUserDbId: null
     readonly property bool hasUsers: controller.usersModel.count > 0
 
     signal connectAccountRequested(Item trigger)
@@ -51,6 +53,34 @@ Flickable {
     function rememberUserExpansion(userDbId, expanded) {
         userExpansionStates[userDbId.toString()] = expanded;
     }
+
+    function revealUser(userDbId) {
+        root.revealUserDbId = userDbId;
+        root.revealPendingUser();
+    }
+
+    function revealPendingUser() {
+        if (root.revealUserDbId === null) {
+            return;
+        }
+
+        for (let index = 0; index < usersRepeater.count; ++index) {
+            const card = usersRepeater.itemAt(index) as UserCard;
+            if (card && card.userDbId === root.revealUserDbId) {
+                root.revealUserDbId = null;
+                card.expanded = true;
+                // Waits for the unfolded card to be laid out before scrolling to it.
+                Qt.callLater(() => {
+                    root.contentY = Math.min(Math.max(0, card.y + contentColumn.y - IKSettings.pageMargin),
+                                             Math.max(0, root.contentHeight - root.height));
+                    card.focusHeader();
+                });
+                return;
+            }
+        }
+    }
+
+    Component.onCompleted: root.revealPendingUser()
 
     contentWidth: width
     contentHeight: contentColumn.implicitHeight + 2 * IKSettings.pageMargin
@@ -130,7 +160,10 @@ Flickable {
         }
 
         Repeater {
+            id: usersRepeater
+
             model: root.controller.usersModel
+            onItemAdded: root.revealPendingUser()
 
             delegate: UserCard {
                 width: contentColumn.width

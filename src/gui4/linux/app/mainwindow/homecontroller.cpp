@@ -137,6 +137,11 @@ QString HomeController::firstName() const {
     return context.has_value() ? QString::fromStdString(context->userDisplayInfo.firstName()) : QString{};
 }
 
+QString HomeController::userName() const {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    return context.has_value() ? QString::fromStdString(context->userDisplayInfo.name()) : QString{};
+}
+
 QString HomeController::driveName() const {
     const auto context = _mainSelectionStore.currentSyncContext();
     return context.has_value() ? QString::fromStdString(context->drive.name()) : QString{};
@@ -145,6 +150,21 @@ QString HomeController::driveName() const {
 QString HomeController::avatarSource() const {
     const auto context = _mainSelectionStore.currentSyncContext();
     return context.has_value() ? context->userDisplayInfo.avatarSource() : QString{};
+}
+
+QColor HomeController::driveColor() const {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    if (!context.has_value()) {
+        return AppConstants::Drive::defaultColor();
+    }
+
+    const QColor color{QString::fromStdString(context->drive.color())};
+    return color.isValid() ? color : AppConstants::Drive::defaultColor();
+}
+
+bool HomeController::advancedSync() const {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    return context.has_value() && !context->syncInfo.targetNodeId().empty();
 }
 
 int32_t HomeController::errorCount() const {
@@ -215,7 +235,11 @@ void HomeController::openDriveDestination(const int32_t destination) const {
         return;
     }
 
-    const auto url = AppConstants::WebDrive::destinationUri(context->drive.driveId(), *webDestination);
+    // kDrive online opens the remote folder of an advanced synchronization, and the drive root otherwise.
+    const auto &targetNodeId = context->syncInfo.targetNodeId();
+    const auto url = *webDestination == AppConstants::WebDrive::Destination::OnlineDrive && !targetNodeId.empty()
+                             ? AppConstants::WebDrive::itemRedirectUri(context->drive.driveId(), targetNodeId)
+                             : AppConstants::WebDrive::destinationUri(context->drive.driveId(), *webDestination);
     qCInfo(lcHomeController) << "Opening current drive web destination:" << url;
     if (!QDesktopServices::openUrl(url)) {
         qCWarning(lcHomeController) << "Failed to open current drive web destination:" << url;
@@ -225,6 +249,35 @@ void HomeController::openDriveDestination(const int32_t destination) const {
 void HomeController::showErrors() const {
     qCInfo(lcHomeController) << "Opening the errors page from the home banner | syncDbId:" << currentSyncDbId();
     _appRouter.showErrors();
+}
+
+void HomeController::openUserSettings() {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    if (!context.has_value()) {
+        qCWarning(lcHomeController) << "User settings ignored: no synchronization is selected";
+        return;
+    }
+
+    qCInfo(lcHomeController) << "Opening user settings from the Home | userDbId:" << context->userDisplayInfo.dbId();
+    emit userSettingsRequested(context->userDisplayInfo.dbId());
+}
+
+void HomeController::openSyncSettings() {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    if (!context.has_value()) {
+        qCWarning(lcHomeController) << "Sync settings ignored: no synchronization is selected";
+        return;
+    }
+
+    qCInfo(lcHomeController) << "Opening sync settings from the Home | driveDbId:" << context->drive.dbId()
+                             << "/ syncDbId:" << context->syncInfo.dbId();
+    // Settings lists every synchronization of the drive but the main one on its advanced page, extra classic ones included.
+    const auto mainSync = _appCache.mainSync(context->drive.dbId());
+    if (mainSync.has_value() && mainSync->dbId() == context->syncInfo.dbId()) {
+        emit driveSettingsRequested(context->drive.dbId());
+    } else {
+        emit advancedSyncSettingsRequested(context->drive.dbId(), context->syncInfo.dbId());
+    }
 }
 
 std::optional<SyncStatus> HomeController::currentRuntimeStatus() const {
