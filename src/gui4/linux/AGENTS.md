@@ -13,6 +13,7 @@
 
 ### Local Norms (Linux v4)
 
+- Prepare Linux v4 fixes and PRs in the current checkout; create another worktree only when explicitly requested.
 - Keep full diffs out of chat unless explicitly asked to display them there; provide a patch file or an editor diff.
 - Explain failure conditions with concrete prerequisites; avoid vague labels such as "normally configured".
 - Keep new C++ readable: separate method definitions and logical steps with blank lines, use explicit names, and expand
@@ -203,10 +204,11 @@
   even when the asset declares `overflow="visible"`.
 - Preserve the padded view box of `ui/assets/main/folder.svg`; it prevents Qt SVG from clipping the right edge.
   When aligning its outline to pixels, account for the padding instead of removing it.
-- Rasterize small tintable SVG sources at no less than 3x their logical size before applying `MultiEffect`, while
-  constraining only one `sourceSize` dimension so Qt retains the SVG aspect ratio. Do not enable mipmapping for these
-  icons. Wrap icons used as a `Control.contentItem` before assigning their intended size because the control owns the
-  direct content item's geometry.
+- Keep `IKTintedIcon` rasterization at 2x logical size; Qt applies the window DPR. Use `SvgInfo` for the intrinsic
+  aspect ratio, center the fitted glyph rectangle, and use `Image.Stretch` so `MultiEffect` can sample the image
+  directly. Keep only one `sourceSize` dimension constrained and leave mipmapping disabled.
+- Wrap icons used as a `Control.contentItem` before assigning their intended size because the control owns the direct
+  content item's geometry.
 - Close an Activities row action menu when its delegate moves vertically. A popup must not follow a row displaced by
   incoming activities, sorting, or filtering because it can become detached from the viewport and obscure another row.
 - Keep an Activities row action menu entirely inside the visible list viewport. Prefer opening it below its row, flip it
