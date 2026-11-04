@@ -271,9 +271,13 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
 }
 
 QString ApiTranslator::translateV3ToV2(QString v3Path) {
-    const auto privateSegment = QString("/") + SyncName2QStr(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
+    const QString privateSegment = QString("/") + SyncName2QStr(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
 
-    return v3Path.replace(privateSegment, "/");
+    if (v3Path == privateSegment) return "/";
+
+    if (v3Path.startsWith(privateSegment + "/")) return v3Path.mid(privateSegment.length());
+
+    return v3Path;
 }
 
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId,
@@ -288,10 +292,10 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
     });
 
     for (auto &nodeInfo: v3RemoteNodeInfoList) {
-        if (nodeInfo.parentNodeId().toStdString() == privateFolderId) {
+        if (nodeInfo.parentNodeId().toStdString() == privateFolderId)
             nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId()));
-            nodeInfo.setPath(translateV3ToV2(nodeInfo.path()));
-        }
+
+        nodeInfo.setPath(translateV3ToV2(nodeInfo.path()));
     }
 
     return ExitCode::Ok;
