@@ -571,7 +571,7 @@ void KDC::TestLocalJobs::testOpenFileJob() {
     // An invalid URL makes the job fail immediately, without accessing any database or the network.
     {
         OpenFileJob job(
-                "not a url", [](SyncDbId) { return nullptr; }, [](SyncDbId) { return nullptr; });
+                "not a url", [](const SyncDbId) { return nullptr; }, [](const SyncDbId) { return nullptr; });
         job.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::LogicError, ExitCause::InvalidArgument), job.exitInfo());

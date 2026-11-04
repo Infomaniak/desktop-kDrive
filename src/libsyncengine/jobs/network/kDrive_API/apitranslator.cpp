@@ -307,18 +307,4 @@ ExitInfo ApiJobUtility::checkIfSharedFolderIsEmpty(const UserDbId userDbId, cons
     return ExitCode::Ok;
 }
 
-ExitInfo ApiJobUtility::getSpecialFolderRemoteIds(UserDbId userDbId, DriveId driveId, SpecialFolderRemoteIds &specialFolderMap) {
-    for (const auto &specialFolderName:
-         {SpecialRemoteFolder::CommonDocuments, SpecialRemoteFolder::Private, SpecialRemoteFolder::Shared}) {
-        RemoteNodeId folderRemoteId;
-        if (const auto exitInfo = ApiTranslator::getSpecialFolderRemoteId(userDbId, driveId, specialFolderName, folderRemoteId);
-            !exitInfo)
-            return exitInfo;
-
-        specialFolderMap[specialFolderName] = folderRemoteId;
-    }
-
-    return ExitCode::Ok;
-}
-
 } // namespace KDC
