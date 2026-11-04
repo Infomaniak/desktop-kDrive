@@ -37,7 +37,7 @@ on:
         default: true
 
 concurrency:
-  group: kDrive-desktop-release-${{ github.head_ref }}
+  group: kDrive-desktop-release-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
