@@ -1578,8 +1578,14 @@ Estes dados permitem à nossa equipa corrigir e otimizar rapidamente a aplicaç�
     <value>Outros ficheiros no computador</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Espaço livre da sua assinatura</value> 
+  </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Ficheiros kDrive armazenados online</value> 
+  </data> 
+  <data name="storageSyncBlockTitle" xml:space="preserve"> 
+    <value>Sincronização</value> 
   </data> 
   <data name="storageThisComputerTitle" xml:space="preserve"> 
     <value>Este PC - %@ - %@</value> 
