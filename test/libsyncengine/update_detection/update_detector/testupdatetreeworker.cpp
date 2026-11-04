@@ -301,7 +301,7 @@ void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {
                                        testhelpers::defaultFileSize, updateTree->rootNode());
     }
 
-    const auto node8 = std::make_shared<Node>(_dbnodeIdDir8, updateTree->side(), "Dir 8" + testhelpers::makeNfcSyncName(),
+    const auto node8 = std::make_shared<Node>(_dbnodeIdDir8, updateTree->side(), Str("Dir 8") + testhelpers::makeNfcSyncName(),
                                               NodeType::Directory, OperationType::None, "id8", testhelpers::defaultTime,
                                               testhelpers::defaultTime, testhelpers::defaultFileSize, updateTree->rootNode());
 
@@ -749,10 +749,10 @@ void TestUpdateTreeWorker::testStep4() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id8b", NodeType::Directory,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
                                                           testhelpers::defaultFileSize, node8NfdPath));
-    SyncPath node81Path = node8Path / "File 8.1";
+    SyncPath node81Path = node8Path / Str("File 8.1");
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id81", NodeType::File, testhelpers::defaultTime,
                                                           testhelpers::defaultTime, testhelpers::defaultFileSize, node81Path));
-    SyncPath node81NfdPath = node8NfdPath / "File 8.1";
+    SyncPath node81NfdPath = node8NfdPath / Str("File 8.1");
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id81b", NodeType::File,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
                                                           testhelpers::defaultFileSize, node81NfdPath));
