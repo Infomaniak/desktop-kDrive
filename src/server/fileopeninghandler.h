@@ -22,6 +22,7 @@
 #include "libsyncengine/jobs/local/openfilejob.h"
 
 #include <QObject>
+#include <QString>
 
 #include <string>
 
@@ -78,9 +79,9 @@ class FileOpeningHandler : public QObject {
         void onOpenFileJobFinished(OpenFileJob::Outcome outcome, const SyncPath &localPath, SyncDbId syncDbId);
         [[nodiscard]] ExitInfo openLocalItem(const SyncPath &localPath, SyncDbId syncDbId);
         [[nodiscard]] bool isSyncEngineRunning(SyncDbId syncDbId) const;
-        void notifyUser(const std::string &message) const;
+        void notifyUser(const QString &message) const;
         void handleFileOpeningSuccess();
-        void handleFileOpeningFailure(const std::string &userMessage);
+        void handleFileOpeningFailure(const QString &userMessage);
         void handleFileOpeningCanceled();
         //! Invoked on the application thread when the OpenFileJob has reported a new state: forwards it, along with the
         //! name of the item being opened, to the client interface.
