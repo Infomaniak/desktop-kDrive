@@ -20,6 +20,7 @@
 
 #include "app/appconstants.h"
 #include "app/cache/appcache.h"
+#include "app/services/commservice.h"
 
 #include <QDesktopServices>
 #include <QLocale>
@@ -42,13 +43,16 @@ namespace {
 Q_LOGGING_CATEGORY(lcStorageController, "gui.v4.storagecontroller", QtInfoMsg)
 
 constexpr int32_t minimumRetryIndicatorDurationMs = 300;
+constexpr int64_t minimumQuotaRefreshIntervalMs = 60000;
 
 } // namespace
 
-StorageController::StorageController(AppCache &appCache, MainSelectionStore &selectionStore, QObject *const parent) :
+StorageController::StorageController(AppCache &appCache, MainSelectionStore &selectionStore, CommService &commService,
+                                     QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
-    _selectionStore(selectionStore) {
+    _selectionStore(selectionStore),
+    _commService(commService) {
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this,
                    &StorageController::refreshSelectedContext);
     (void) connect(&_selectionStore, &MainSelectionStore::currentContextChanged, this, [this] {
@@ -224,6 +228,11 @@ void StorageController::setViewActive(const bool active) {
         }
     }
     startScan();
+
+    // The request reloads every user and drive, so going back and forth between pages must not repeat it.
+    if (!_lastQuotaRefresh.isValid() || _lastQuotaRefresh.hasExpired(minimumQuotaRefreshIntervalMs)) {
+        refreshQuota();
+    }
 }
 
 void StorageController::retry() {
@@ -232,6 +241,20 @@ void StorageController::retry() {
     }
 
     startScan(ScanTrigger::Retry);
+    refreshQuota();
+}
+
+/**
+ * Asks the server to reload the drives. A changed quota comes back through the drive update signal, which reaches
+ * `quotaChanged()` through the selected context.
+ */
+void StorageController::refreshQuota() {
+    _lastQuotaRefresh.start();
+    _commService.requestActivateLoadInfo([](const ExitInfo &exitInfo) {
+        if (!exitInfo) {
+            qCWarning(lcStorageController) << "Quota refresh failed | code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
+        }
+    });
 }
 
 void StorageController::refresh() {
