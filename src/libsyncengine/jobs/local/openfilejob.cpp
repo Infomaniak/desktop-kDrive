@@ -440,14 +440,14 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     //   download job completes, possibly long after the hydration job has run and even after this job has timed out or
     //   been aborted (the completion state is shared and kept alive by the shared_ptr). It reports the outcome of the
     //   actual download.
-    const auto observer = [completion](const UniqueId, bool success) {
+    const auto observer = [completion](const UniqueId, const bool success) {
         const std::scoped_lock lock(completion->mutex);
         completion->finished = true;
         completion->success = success;
         completion->cv.notify_all();
     };
 
-    auto progressObserver = [completion](int16_t progress) { completion->percent.store(static_cast<int8_t>(progress)); };
+    auto progressObserver = [completion](const int16_t progress) { completion->percent.store(static_cast<int8_t>(progress)); };
 
     auto hydrationJob = std::make_shared<HydratePlaceHolderJob>(std::move(syncPal), _localPath, _relativePath, SyncPath{},
                                                                 observer, std::move(progressObserver));

@@ -48,7 +48,7 @@ class FileOpeningHandler : public QObject {
         Q_OBJECT
 
     public:
-        FileOpeningHandler(AppServer *appServer, std::string url, QObject *parent = nullptr);
+        FileOpeningHandler(AppServer *const appServer, std::string url, QObject *const parent = nullptr);
 
         //! Parses the URL given to the constructor and queues an OpenFileJob performing the file opening flow.
         void queueOpenFileJob();

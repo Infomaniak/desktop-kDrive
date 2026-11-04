@@ -45,11 +45,11 @@ namespace {
 struct TransparentStringHash {
         using is_transparent = void;
 
-        size_t operator()(std::string_view str) const noexcept { return std::hash<std::string_view>{}(str); }
+        size_t operator()(const std::string_view str) const noexcept { return std::hash<std::string_view>{}(str); }
 };
 } // namespace
 
-FileOpeningHandler::FileOpeningHandler(AppServer *appServer, std::string url, QObject *parent) :
+FileOpeningHandler::FileOpeningHandler(AppServer *const appServer, std::string url, QObject *const parent) :
     QObject(parent),
     _appServer(appServer),
     _url(std::move(url)) {}

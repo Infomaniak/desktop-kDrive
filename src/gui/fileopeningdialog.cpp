@@ -37,7 +37,7 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     mainLayout()->addStretch();
 
     // Message
-    auto *messageHBox = new QHBoxLayout();
+    auto *const messageHBox = new QHBoxLayout();
     messageHBox->setContentsMargins(boxHMargin, 0, boxHMargin, messageVBMargin);
     mainLayout()->addLayout(messageHBox);
 
@@ -49,7 +49,7 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     messageHBox->addWidget(_messageLabel);
 
     // Progress bar
-    auto *progressHBox = new QHBoxLayout();
+    auto *const progressHBox = new QHBoxLayout();
     progressHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     mainLayout()->addLayout(progressHBox);
 
@@ -61,7 +61,7 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     mainLayout()->addStretch();
 
     // Cancel button
-    auto *buttonsHBox = new QHBoxLayout();
+    auto *const buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     mainLayout()->addLayout(buttonsHBox);
 

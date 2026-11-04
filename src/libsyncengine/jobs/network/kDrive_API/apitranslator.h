@@ -70,12 +70,9 @@ class ApiTranslator {
 
 class ApiJobUtility {
     public:
-        [[nodiscard]] static ExitInfo getSpecialFolderRemoteIds(UserDbId userDbId, DriveId driveId,
-                                                                SpecialFolderRemoteIds &specialFolderMap);
-
         [[nodiscard]] static ExitInfo checkIfSharedFolderIsEmpty(UserDbId userDbId, DriveId driveId, bool &empty,
                                                                  SyncTime &sleepDuration);
-        [[nodiscard]] static ExitInfo checkIfSharedFolderIsEmpty(UserDbId userDbId, DriveId driveId, bool &empty) {
+        [[nodiscard]] static ExitInfo checkIfSharedFolderIsEmpty(const UserDbId userDbId, const DriveId driveId, bool &empty) {
             SyncTime sleepDuration = 0;
             return checkIfSharedFolderIsEmpty(userDbId, driveId, empty, sleepDuration);
         }
