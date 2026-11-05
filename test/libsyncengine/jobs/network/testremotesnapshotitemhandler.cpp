@@ -388,7 +388,12 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
         CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.parentId());
+#if defined(KD_WINDOWS)
+        // Backslashes are encoded on Windows.
+        CPPUNIT_ASSERT_EQUAL(std::string(R"(test%5c"test)"), SyncName2Str(item.name()));
+#else
         CPPUNIT_ASSERT_EQUAL(std::string(R"(test\"test)"), SyncName2Str(item.name()));
+#endif
     }
 
     // The items surrounding a name containing a backslash followed by a double quote are correctly parsed
@@ -683,7 +688,13 @@ void TestRemoteSnapshotItemHandler::testGetItemWithForgedRowsInName() {
     CPPUNIT_ASSERT(!error);
     CPPUNIT_ASSERT_EQUAL(NodeId("16"), item.id());
     CPPUNIT_ASSERT_EQUAL(NodeId("15"), item.parentId());
+#if defined(KD_WINDOWS)
+    // Backslashes are encoded on Windows.
+    CPPUNIT_ASSERT_EQUAL(std::string("a\n%5c\"\n16,1,Invoice-Q4.pdf,file,12,1793727077,1793727077,1,0,"),
+                         SyncName2Str(item.name()));
+#else
     CPPUNIT_ASSERT_EQUAL(forgedName, SyncName2Str(item.name()));
+#endif
     CPPUNIT_ASSERT_EQUAL(NodeType::File, item.type());
     CPPUNIT_ASSERT_EQUAL(int64_t{12}, item.size());
 
