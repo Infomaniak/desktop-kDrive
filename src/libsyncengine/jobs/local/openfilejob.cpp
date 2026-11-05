@@ -278,7 +278,15 @@ ExitInfo OpenFileJob::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync
         }
 
         bool nodeFound = false;
-        if (!syncDb->path(ReplicaSide::Remote, _request.remoteNodeId, relativePath, nodeFound)) {
+        DbNodeId dbNodeId{0};
+        if (!syncDb->dbId(ReplicaSide::Remote, _request.remoteNodeId, dbNodeId, nodeFound)) {
+            LOGW_WARN(_logger, L"Error in SyncDb::dbId - syncDbId=" << sync.dbId());
+            continue;
+        }
+        if (!nodeFound) continue;
+
+        SyncPath remotePath;
+        if (!syncDb->path(dbNodeId, relativePath, remotePath, nodeFound)) {
             LOGW_WARN(_logger, L"Error in SyncDb::path - syncDbId=" << sync.dbId());
             continue;
         }
