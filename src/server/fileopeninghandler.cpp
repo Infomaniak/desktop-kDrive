@@ -225,7 +225,11 @@ bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
             ".ps1", ".psm1", ".msi", ".msix", ".scr", ".sh", // scripts, installers, screensavers
             ".vbs", ".vbe",  ".js",  ".jse",  ".wsf", ".wsh", ".hta", ".pif", ".lnk", ".jar", ".app", ".apk"};
 
-    return Poco::File(Path2Str(path)).canExecute() ||
+    ItemType itemType;
+    const bool isFile = IoHelper::getItemType(path, itemType) && itemType.ioError == IoError::Success &&
+                        itemType.nodeType == NodeType::File &&
+                        (itemType.linkType == LinkType::None || itemType.targetType != NodeType::Directory);
+    return (isFile && Poco::File(Path2Str(path)).canExecute()) ||
            executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
 }
 
