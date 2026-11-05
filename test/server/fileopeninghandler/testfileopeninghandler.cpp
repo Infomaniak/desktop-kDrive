@@ -20,6 +20,11 @@
 
 #include "fileopeninghandler.h"
 #include "libsyncengine/jobs/local/openfilejob.h"
+#include "test_utility/localtemporarydirectory.h"
+
+#include <Poco/File.h>
+
+#include <fstream>
 
 namespace KDC {
 
@@ -131,13 +136,46 @@ void TestFileOpeningHandler::testParseUrl() {
 }
 
 void TestFileOpeningHandler::testShouldOpenParentFolder() {
-    CPPUNIT_ASSERT(FileOpeningHandler::shouldOpenParentFolder(SyncPath("tools/setup.exe")));
-    CPPUNIT_ASSERT(FileOpeningHandler::shouldOpenParentFolder(SyncPath("script.sh")));
-    CPPUNIT_ASSERT(FileOpeningHandler::shouldOpenParentFolder(SyncPath("Setup.EXE"))); // Extension check is case-insensitive.
+    // shouldOpenParentFolder() inspects the item on disk: the asserted paths must exist for its on-disk checks to
+    // run at all. Create real, non-executable files and assert against them.
+    const LocalTemporaryDirectory tmpDir("TestFileOpeningHandler");
+    const auto createEmptyFile = [](const SyncPath &path) { std::ofstream ofs(path); };
 
-    CPPUNIT_ASSERT(!FileOpeningHandler::shouldOpenParentFolder(SyncPath("Documents/report.docx")));
-    CPPUNIT_ASSERT(!FileOpeningHandler::shouldOpenParentFolder(SyncPath("photo.jpg")));
-    CPPUNIT_ASSERT(!FileOpeningHandler::shouldOpenParentFolder(SyncPath("no_extension")));
+    // Files with an executable extension open the parent folder, whether or not they are executable.
+    const SyncPath setupExePath = tmpDir.path() / "setup.exe";
+    const SyncPath scriptShPath = tmpDir.path() / "script.sh";
+    const SyncPath setupExeUpperCasePath = tmpDir.path() / "Setup.EXE"; // Extension check is case-insensitive.
+    createEmptyFile(setupExePath);
+    createEmptyFile(scriptShPath);
+    createEmptyFile(setupExeUpperCasePath);
+
+    CPPUNIT_ASSERT(FileOpeningHandler::shouldOpenParentFolder(setupExePath));
+    CPPUNIT_ASSERT(FileOpeningHandler::shouldOpenParentFolder(scriptShPath));
+    CPPUNIT_ASSERT(FileOpeningHandler::shouldOpenParentFolder(setupExeUpperCasePath));
+
+    // Non-executable files without an executable extension do not open the parent folder.
+    const SyncPath reportPath = tmpDir.path() / "report.docx";
+    const SyncPath photoPath = tmpDir.path() / "photo.jpg";
+    const SyncPath noExtensionPath = tmpDir.path() / "no_extension";
+    createEmptyFile(reportPath);
+    createEmptyFile(photoPath);
+    createEmptyFile(noExtensionPath);
+
+    CPPUNIT_ASSERT(!FileOpeningHandler::shouldOpenParentFolder(reportPath));
+    CPPUNIT_ASSERT(!FileOpeningHandler::shouldOpenParentFolder(photoPath));
+    CPPUNIT_ASSERT(!FileOpeningHandler::shouldOpenParentFolder(noExtensionPath));
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    // An executable permission opens the parent folder whatever the extension is. Poco detects executables through
+    // the file permissions on POSIX only: on Windows, it relies on the extension.
+    const SyncPath executablePath = tmpDir.path() / "runnable.bin";
+    createEmptyFile(executablePath);
+    Poco::File file(executablePath.native());
+    file.setExecutable();
+    CPPUNIT_ASSERT(file.canExecute());
+
+    CPPUNIT_ASSERT(FileOpeningHandler::shouldOpenParentFolder(executablePath));
+#endif
 }
 
 } // namespace KDC
