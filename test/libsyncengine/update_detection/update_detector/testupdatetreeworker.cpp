@@ -404,8 +404,8 @@ void TestUpdateTreeWorker::testTryToMergeTmpNodeAlreadyMerged() {
     setUpUpdateTree(ReplicaSide::Local);
 
     bool found = false;
-    DbNodeId dbNodeIdDir5;
-    _syncDb->dbId(ReplicaSide::Local, NodeId("id5"), dbNodeIdDir5, found);
+    DbNodeId dbNodeIdDir5 = 0;
+    CPPUNIT_ASSERT(_syncDb->dbId(ReplicaSide::Local, NodeId("id5"), dbNodeIdDir5, found));
     CPPUNIT_ASSERT(found);
     const auto dir5 = std::make_shared<Node>(dbNodeIdDir5, ReplicaSide::Local, Str("Dir 5"), NodeType::Directory,
                                              OperationType::None, "id5", testhelpers::defaultTime, testhelpers::defaultTime,

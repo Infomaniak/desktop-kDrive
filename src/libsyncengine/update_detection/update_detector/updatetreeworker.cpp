@@ -1204,9 +1204,9 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
     // merging tmpNode's children to realNode
     // Copy the children map: insertChild detaches each child from tmpNode while the loop iterates it.
     const auto tmpChildren = tmpNode->children();
-    for (auto &child: tmpChildren) {
-        if (!realNode->insertChild(child.second)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << Utility::formatSyncName(child.second->name())
+    for (const auto &[_, childNode]: tmpChildren) {
+        if (!realNode->insertChild(childNode)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << Utility::formatSyncName(childNode->name())
                                                                             << L" parent node "
                                                                             << Utility::formatSyncName(realNode->name()));
             return false;
