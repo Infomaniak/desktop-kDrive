@@ -117,6 +117,19 @@
 
 namespace KDC {
 
+namespace {
+// Runs a token check through AppServer::_loadUserInfo so that it can be mocked in tests
+class TokenCheckJob : public AbstractJob {
+    public:
+        explicit TokenCheckJob(const std::function<ExitInfo()> &check) :
+            _check(check) {}
+        ExitInfo runJob() override { return _check(); }
+
+    private:
+        std::function<ExitInfo()> _check;
+};
+} // namespace
+
 std::vector<AppServer::Notification> AppServer::_notifications;
 std::unique_ptr<UpdateManager> AppServer::_updateManager;
 
@@ -4663,7 +4676,7 @@ void AppServer::addError(const Error &error) const {
         return;
     }
 
-    Error errorCopy = supersedeDriveAccessErrorIfTokenIsInvalid(error);
+    Error errorCopy = error;
     // Fetch all errors.
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(errorCopy.level(), errorCopy.syncDbId(), INT_MAX, errorList)) {
@@ -4710,32 +4723,6 @@ void AppServer::addError(const Error &error) const {
     }
 }
 
-Error AppServer::supersedeDriveAccessErrorIfTokenIsInvalid(const Error &error) const {
-    if (error.exitCode() != ExitCode::BackError || error.exitCause() != ExitCause::DriveAccessError || !error.syncDbId()) {
-        return error;
-    }
-
-    User user;
-    Account account;
-    Drive drive;
-    Sync sync;
-    if (ServerRequests::getDbStructsFromSyncDbId(error.syncDbId(), user, account, drive, sync) != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getDbStructsFromSyncDbId");
-        return error;
-    }
-
-    // While a revoked token is still cached, a 401 on the Drive API cannot be told apart from a lost access to the drive and is
-    // reported as DriveAccessError. The user profile API answers 401 only if the token itself is invalid.
-    bool updated = false;
-    if (const auto exitInfo = _loadUserInfo(user, updated); exitInfo.code() != ExitCode::InvalidToken) {
-        return error;
-    }
-
-    LOG_INFO(Log::instance()->getLogger(),
-             "DriveAccessError caused by an invalid token, reported as InvalidToken for syncDbId=" << error.syncDbId());
-    return Error(error.syncDbId(), error.workerName(), ExitCode::InvalidToken, ExitCause::Unknown);
-}
-
 void AppServer::manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const {
     User user;
     Account account;
@@ -4749,10 +4736,9 @@ void AppServer::manageError(const Error &error, std::vector<Error> &errorList, b
 
     if (error.exitCode() == ExitCode::InvalidToken) {
         manageInvalidTokenError(user);
-        // A 401 received before the token cache was cleared is reported as DriveAccessError: it is superseded by InvalidToken
-        removeDriveAccessErrors(user.dbId());
     } else if (error.exitCode() == ExitCode::BackError && error.exitCause() == ExitCause::DriveAccessError) {
         manageDriveAccessError(drive);
+        checkTokenAfterDriveAccessError(user);
     } else if (error.exitCode() == ExitCode::NetworkError && error.exitCause() == ExitCause::SocketsDefuncted) {
         manageSocketsDefunctedError();
     } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
@@ -4790,6 +4776,37 @@ void AppServer::manageDriveAccessError(Drive &drive) const {
     }
 
     sendDriveUpdated(drive);
+}
+
+void AppServer::checkTokenAfterDriveAccessError(const User &user) const {
+    if (!user.dbId()) return;
+
+    // While a revoked token is still cached, a 401 on the Drive API cannot be told apart from a lost access to the drive and is
+    // reported as DriveAccessError. The user profile API answers 401 only if the token itself is invalid.
+    // The check runs asynchronously: addError is called synchronously by the sync workers, which must not wait for a request.
+    {
+        const std::scoped_lock lock(_tokenCheckMutex);
+        if (!_tokenCheckInProgress.insert(user.dbId()).second) return; // A check is already running for this user
+    }
+
+    const auto userDbId = user.dbId();
+    const auto job = std::make_shared<TokenCheckJob>([this, user = User(user)]() mutable {
+        bool updated = false;
+        return _loadUserInfo(user, updated);
+    });
+    const std::weak_ptr<TokenCheckJob> weakJob = job;
+    job->setAdditionalCallback([this, userDbId, weakJob](const UniqueId) {
+        if (const auto checkJob = weakJob.lock(); checkJob && checkJob->exitInfo().code() == ExitCode::InvalidToken) {
+            LOG_INFO(Log::instance()->getLogger(), "DriveAccessError caused by an invalid token for userDbId=" << userDbId);
+            // Flags the user as disconnected and removes the DriveAccessError errors of their drives
+            manageInvalidTokenError(userDbId);
+        }
+
+        // Released last, so that the check is reported as finished only once its outcome is applied
+        const std::scoped_lock lock(_tokenCheckMutex);
+        _tokenCheckInProgress.erase(userDbId);
+    });
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 }
 
 void AppServer::manageInvalidTokenError(User &user) const {

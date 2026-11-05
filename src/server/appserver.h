@@ -42,6 +42,8 @@
 #include <QElapsedTimer>
 #include <QPointer>
 #include <memory>
+#include <mutex>
+#include <unordered_set>
 #include <QProcess>
 #include <QQueue>
 #include <QTimer>
@@ -152,9 +154,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                                   const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
 
         void addError(const Error &error) const;
-        [[nodiscard]] Error supersedeDriveAccessErrorIfTokenIsInvalid(const Error &error) const;
         void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
         void manageDriveAccessError(Drive &drive) const;
+        void checkTokenAfterDriveAccessError(const User &user) const;
         void manageInvalidTokenError(User &user) const;
         void manageInvalidTokenError(UserDbId userDbId) const;
         void removeDriveAccessErrors(UserDbId userDbId) const;
@@ -271,6 +273,10 @@ class AppServer : public SharedTools::QtSingleApplication {
                 _loadDriveInfo =
                         static_cast<ExitInfo (*)(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId,
                                                  bool &updated, bool &quotaUpdated)>(&ServerRequests::loadDriveInfo);
+
+        // Users whose token is being checked asynchronously after a DriveAccessError
+        mutable std::mutex _tokenCheckMutex;
+        mutable std::unordered_set<UserDbId> _tokenCheckInProgress;
 
     private:
         AuthorizationCodeEventFilter _eventFilter;

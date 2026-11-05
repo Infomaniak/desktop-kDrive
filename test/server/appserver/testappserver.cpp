@@ -410,30 +410,33 @@ void TestAppServer::testDriveAccessErrorWithInvalidToken() {
             return ExitCode::Ok;
         });
         _appPtr->addError(Error(syncDbId, "RFSO", ExitCode::BackError, ExitCause::DriveAccessError));
+        CPPUNIT_ASSERT(waitForTokenCheck(userDbId));
 
         std::vector<Error> errorList;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList));
         CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
         CPPUNIT_ASSERT_EQUAL(ExitCause::DriveAccessError, errorList[0].exitCause());
+
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(userDbId, user, found) && found);
+        CPPUNIT_ASSERT_EQUAL(keychainKey, user.keychainKey());
         CPPUNIT_ASSERT(ParmsDb::instance()->deleteErrors(ErrorLevel::SyncPal));
     }
 
-    // The token is revoked but still cached: the 401 on the Drive API is reported as an invalid token
+    // The token is revoked but still cached: the asynchronous check disconnects the user and removes the error
     {
         _appPtr->setLoadUserInfoFunction([](User &, bool &updated) -> ExitInfo {
             updated = false;
             return ExitCode::InvalidToken;
         });
         _appPtr->addError(Error(syncDbId, "RFSO", ExitCode::BackError, ExitCause::DriveAccessError));
+        CPPUNIT_ASSERT(waitForTokenCheck(userDbId));
 
         std::vector<Error> errorList;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList));
-        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
-        CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, errorList[0].exitCode());
+        CPPUNIT_ASSERT(errorList.empty());
 
         CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(userDbId, user, found) && found);
-        CPPUNIT_ASSERT(!user.connected());
-        CPPUNIT_ASSERT(ParmsDb::instance()->deleteErrors(ErrorLevel::SyncPal));
+        CPPUNIT_ASSERT(user.keychainKey().empty());
     }
 
     // Restore the user's token for the following tests
@@ -568,6 +571,18 @@ bool TestAppServer::waitForSyncStatus(const int syncDbId, const SyncStatus targe
     auto count = 0;
     while (count++ < 100) {
         if (const auto status = _appPtr->syncPalMap[syncDbId]->status(); status == targetStatus) return true;
+        Utility::msleep(100);
+    }
+    return false;
+}
+
+bool TestAppServer::waitForTokenCheck(const UserDbId userDbId) const {
+    auto count = 0;
+    while (count++ < 100) {
+        {
+            const std::scoped_lock lock(_appPtr->_tokenCheckMutex);
+            if (!_appPtr->_tokenCheckInProgress.contains(userDbId)) return true;
+        }
         Utility::msleep(100);
     }
     return false;

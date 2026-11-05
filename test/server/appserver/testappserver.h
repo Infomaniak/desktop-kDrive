@@ -85,6 +85,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestAppServer");
 
         bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
+        bool waitForTokenCheck(UserDbId userDbId) const;
         bool syncIsActive(int syncDbId) const;
 };
 
