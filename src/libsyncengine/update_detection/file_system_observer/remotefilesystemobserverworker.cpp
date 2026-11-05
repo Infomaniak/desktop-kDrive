@@ -933,10 +933,8 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         }
 
 #if defined(KD_WINDOWS)
-        SyncName newName;
-        if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(actionInfo.snapshotItem.name(), newName)) {
-            actionInfo.snapshotItem.setName(newName);
-        }
+        actionInfo.snapshotItem.setName(
+                PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(actionInfo.snapshotItem.name()));
 #endif
         actionInfoList.push_back(actionInfo);
     }

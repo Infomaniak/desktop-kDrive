@@ -22,6 +22,9 @@
 #include "utility/jsonparserutility.h"
 #include "jobs/network/jobexceptions.h"
 
+#if defined(KD_WINDOWS)
+#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#endif
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -85,6 +88,10 @@ ExitInfo GetFilesInDirectoryJob::extractName(const Poco::JSON::Object::Ptr &obj,
     if (!Utility::normalizedSyncName(rawName, name)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
     }
+    
+#if defined(KD_WINDOWS)
+    name = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name);
+#endif
 
     return ExitCode::Ok;
 }

@@ -45,7 +45,7 @@ class PlatformInconsistencyCheckerUtility {
                                                           bool &endsWithForbiddenSpace);
 
 #if defined(KD_WINDOWS)
-        bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
+        SyncName fixNameWithBackslash(const SyncName &name);
 #endif
         bool checkReservedNames(const SyncName &name);
         SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);

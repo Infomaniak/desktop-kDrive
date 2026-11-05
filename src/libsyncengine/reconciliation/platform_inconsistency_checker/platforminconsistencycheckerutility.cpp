@@ -162,7 +162,8 @@ ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
 }
 
 #if defined(KD_WINDOWS)
-bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &name, SyncName &newName) {
+SyncName PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &name) {
+    SyncName newName;
     size_t pos = name.find('\\');
     while (pos != std::string::npos) {
         if (newName.empty()) {
@@ -173,7 +174,8 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
         pos = newName.find('\\', pos);
     }
 
-    return newName != name && !newName.empty();
+    // Return the original name if no backslash was found, otherwise return the modified name
+    return newName.empty() ? name : newName;
 }
 #endif
 

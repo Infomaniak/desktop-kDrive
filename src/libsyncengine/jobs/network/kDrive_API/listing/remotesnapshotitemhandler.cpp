@@ -60,10 +60,7 @@ bool RemoteSnapshotItemHandler::updateRemoteSnapshotItem(const std::string &str,
         case CsvIndexName: {
             SyncName name = Str2SyncName(str);
 #if defined(KD_WINDOWS)
-            SyncName newName;
-            if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name, newName)) {
-                name = newName;
-            }
+            name = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name);
 #endif
             item.setName(name);
             break;

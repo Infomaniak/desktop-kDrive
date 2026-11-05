@@ -21,6 +21,9 @@
 #include "jobs/network/abstracttokennetworkjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#if defined(KD_WINDOWS)
+#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#endif
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -66,6 +69,11 @@ ExitInfo GetFilesSharedWithMeJob::deserializeDataArray() {
         if (!Utility::normalizedSyncName(rawName, name)) {
             LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
         }
+
+#if defined(KD_WINDOWS)
+        name = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name);
+#endif
+
         if (name.empty()) continue;
 
         RemoteNodeId parentId;
