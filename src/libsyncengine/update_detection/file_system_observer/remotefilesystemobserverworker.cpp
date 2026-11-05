@@ -878,7 +878,7 @@ ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &r
 
 namespace {
 bool shouldContainPath(const ActionCode actionCode) {
-    // The relative path "Private" from API v3 is translated into the empty relative path "" via `ActionInfo::setPath`. We do
+    // The absolute path "/Private" from API v3 is translated into the empty path "" via `ActionInfo::setPath`. We do
     // not record the `ActionInfo` of action acting on the "Private" root only.
     // However, we still want to process the `ActionInfo` if it is
     // - a trash action,
@@ -911,7 +911,7 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         ActionInfo actionInfo;
         if (const auto exitInfo = extractActionInfo(actionObj, actionInfo); !exitInfo) return exitInfo;
 
-        // Skip actions with an empty relative path that corresponds to the "Private" folder in API v3,
+        // Skip actions with an empty path that corresponds to the "Private" root folder in API v3,
         // except for specific action codes where the path is optional (e.g. trash / access-right removal).
         if (actionInfo.path().empty() && shouldContainPath(actionInfo.actionCode)) continue;
 
@@ -1394,9 +1394,9 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
 }
 
 void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &remotePath) {
-    SyncPath remotePath_{remotePath};
-    ApiTranslator::translateV3ToV2(remotePath_);
-    _path = remotePath_.native();
+    SyncName translatedRemotePath = remotePath;
+    ApiTranslator::translateV3ToV2(translatedRemotePath);
+    _path = translatedRemotePath;
 }
 
 RemoteNodeId RemoteFileSystemObserverWorker::rootFolderRemoteId() const {
