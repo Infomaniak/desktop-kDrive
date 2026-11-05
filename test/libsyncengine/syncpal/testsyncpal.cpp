@@ -498,7 +498,8 @@ void TestSyncPal::testWipeVirtualFiles() {
     const SyncPath nonPlaceholderPath = _localTempDir.path() / "non_placeholder.txt";
     std::ofstream(nonPlaceholderPath).close();
 
-    auto mockStatus = [=]([[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+    auto mockStatus = [dehydratedPlaceholderPath, hydratedPlaceholderPath, nonPlaceholderPath](
+                              [[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
         if (absolutePath.native() == dehydratedPlaceholderPath.native()) {
             vfsStatus.isPlaceholder = true;
             vfsStatus.isHydrated = false;
