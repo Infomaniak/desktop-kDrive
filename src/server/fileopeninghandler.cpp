@@ -88,7 +88,11 @@ void FileOpeningHandler::queueOpenFileJob() {
         (void) QMetaObject::invokeMethod(
                 this, [this, phase, percent, itemName] { onFileOpeningStatus(phase, percent, itemName); }, Qt::QueuedConnection);
     });
-    job->setAdditionalCallback([this, job](UniqueId) {
+    std::weak_ptr<OpenFileJob> weakJob = job;
+    job->setAdditionalCallback([this, weakJob](UniqueId) {
+        const auto job = weakJob.lock();
+        if (!job) return;
+
         // Job manager worker thread. Hand the outcome over to the application thread. `this` is used as the context
         // object: if the handler has been destroyed in the meantime, the call is simply discarded.
         (void) QMetaObject::invokeMethod(
