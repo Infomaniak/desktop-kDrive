@@ -106,9 +106,10 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     //   Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
-    const auto node = std::make_shared<Node>(1, ReplicaSide::Local, Str2SyncName("test_file.txt"), NodeType::File,
-                                             OperationType::None, "1234", testhelpers::defaultTime, testhelpers::defaultTime,
-                                             testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    const auto node =
+            std::make_shared<Node>(1, ReplicaSide::Local, Str2SyncName("test_file.txt"), NodeType::File, OperationType::None,
+                                   "1234", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
     opPtr->setAffectedNode(node);
     // A hydrated placeholder.
     {
@@ -179,11 +180,12 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
                                                     const OperationType opType) {
     const auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
-                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    const auto correspondingNode = std::make_shared<Node>(
-            dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
-            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    const auto correspondingNode =
+            std::make_shared<Node>(dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(correspondingNode->moveTo(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
 
     auto op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
@@ -196,20 +198,20 @@ SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, con
 
 SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeId dbNodeId, const SyncName &parentFilename,
                                                                    const OperationType opType, const NodeType nodeType) {
-    auto parentNode =
-            std::make_shared<Node>(dbNodeId, ReplicaSide::Local, parentFilename, NodeType::Directory, OperationType::None,
-                                   "local_parent_id", testhelpers::defaultTime, testhelpers::defaultTime,
-                                   testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    auto parentNode = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, parentFilename, NodeType::Directory,
+                                             OperationType::None, "local_parent_id", testhelpers::defaultTime,
+                                             testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(parentNode->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
 
     auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, Str("test_file.txt"), nodeType, OperationType::None,
                                        "local_child_id", testhelpers::defaultTime, testhelpers::defaultTime,
-                                       testhelpers::defaultFileSize, parentNode);
+                                       testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node->moveTo(parentNode));
 
-
-    auto correspondingNode =
-            std::make_shared<Node>(dbNodeId, ReplicaSide::Remote, Str("test_file.txt"), nodeType, OperationType::None,
-                                   "remote_child_id", testhelpers::defaultTime, testhelpers::defaultTime,
-                                   testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    auto correspondingNode = std::make_shared<Node>(dbNodeId, ReplicaSide::Remote, Str("test_file.txt"), nodeType,
+                                                    OperationType::None, "remote_child_id", testhelpers::defaultTime,
+                                                    testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(correspondingNode->moveTo(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
 
     SyncOpPtr op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
@@ -246,12 +248,16 @@ void TestExecutorWorker::testIsValidDestination() {
     }
     // Always true if the operation is not of type Create
     {
+        _syncPal->updateTree(ReplicaSide::Local)->clear();
+        _syncPal->updateTree(ReplicaSide::Remote)->clear();
         SyncOpPtr op = generateSyncOperation(1, Str("test_file.txt"));
         op->setTargetSide(ReplicaSide::Remote);
         CPPUNIT_ASSERT(_executorWorker->isValidDestination(op));
     }
     // Always true if the item is created on the local replica at the root of the synchronisation folder
     {
+        _syncPal->updateTree(ReplicaSide::Local)->clear();
+        _syncPal->updateTree(ReplicaSide::Remote)->clear();
         SyncOpPtr op = generateSyncOperation(1, Str("parent_dir"));
         op->setTargetSide(ReplicaSide::Remote);
         CPPUNIT_ASSERT(_executorWorker->isValidDestination(op));
@@ -271,7 +277,8 @@ void TestExecutorWorker::testIsValidDestination() {
 
     const auto correspondingParentCommonDocsNode = std::make_shared<Node>(
             666, ReplicaSide::Remote, Utility::commonDocumentsFolderName(), NodeType::Directory, OperationType::None,
-            "common_docs_id", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
+            "common_docs_id", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(correspondingParentCommonDocsNode->moveTo(root));
 
     // False if the item created on the local replica is a file and has Common Documents as corresponding parent node.
     {
@@ -311,7 +318,8 @@ void TestExecutorWorker::testIsValidDestination() {
 
     const auto correspondingParentSharedNode = std::make_shared<Node>(
             777, ReplicaSide::Remote, Utility::sharedFolderName(), NodeType::Directory, OperationType::None, "shared_id",
-            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, root);
+            testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(correspondingParentSharedNode->moveTo(root));
 
     // False if the item is created on the local replica is a file and has Shared as corresponding parent node.
     {
@@ -478,12 +486,14 @@ void TestExecutorWorker::testPropagateConflictToDbAndTree() {
 }
 
 void TestExecutorWorker::testInitSyncFileItem() {
-    const auto localNode = std::make_shared<Node>(
-            ReplicaSide::Local, Str("test_file.txt"), NodeType::File, OperationType::None, "lid", testhelpers::defaultTime,
-            testhelpers::defaultTime + 1, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    const auto remoteNode = std::make_shared<Node>(
-            ReplicaSide::Remote, Str("test_file.txt"), NodeType::File, OperationType::None, "rid", testhelpers::defaultTime + 2,
-            testhelpers::defaultTime + 3, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    const auto localNode =
+            std::make_shared<Node>(ReplicaSide::Local, Str("test_file.txt"), NodeType::File, OperationType::None, "lid",
+                                   testhelpers::defaultTime, testhelpers::defaultTime + 1, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(localNode->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    const auto remoteNode =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("test_file.txt"), NodeType::File, OperationType::None, "rid",
+                                   testhelpers::defaultTime + 2, testhelpers::defaultTime + 3, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(remoteNode->moveTo(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
 
     // General case
     {
@@ -587,16 +597,16 @@ void TestExecutorWorker::testInitSyncFileItem() {
 
     // Move special case
     {
-        const auto localParentNode = std::make_shared<Node>(
-                ReplicaSide::Local, Str("parent_dir"), NodeType::Directory, OperationType::None, "lid", testhelpers::defaultTime,
-                testhelpers::defaultTime + 1, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+        const auto localParentNode =
+                std::make_shared<Node>(ReplicaSide::Local, Str("parent_dir"), NodeType::Directory, OperationType::None, "lid",
+                                       testhelpers::defaultTime, testhelpers::defaultTime + 1, testhelpers::defaultFileSize);
+        CPPUNIT_ASSERT(localParentNode->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
         const auto remoteParentNode =
                 std::make_shared<Node>(ReplicaSide::Remote, Str("parent_dir"), NodeType::Directory, OperationType::None, "rid",
-                                       testhelpers::defaultTime + 2, testhelpers::defaultTime + 3, testhelpers::defaultFileSize,
-                                       _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+                                       testhelpers::defaultTime + 2, testhelpers::defaultTime + 3, testhelpers::defaultFileSize);
+        CPPUNIT_ASSERT(remoteParentNode->moveTo(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
 
-        CPPUNIT_ASSERT(remoteNode->setParentNode(remoteParentNode));
-        CPPUNIT_ASSERT(remoteParentNode->insertChild(remoteNode));
+        CPPUNIT_ASSERT(remoteNode->moveTo(remoteParentNode));
 
         // Local move from parent_dir/test_file.txt to /test_file.txt
         localNode->setMoveOriginInfos({"parent_dir/test_file.txt", localParentNode->id().value()});
@@ -654,17 +664,21 @@ void TestExecutorWorker::testHandleMoveThroughSymlinkError() {
 
     const auto localParent =
             std::make_shared<Node>(ReplicaSide::Local, Str("parent"), NodeType::Directory, OperationType::None, "local-parent-id",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, localRoot);
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(localParent->moveTo(localRoot));
     const auto remoteParent = std::make_shared<Node>(ReplicaSide::Remote, Str("parent"), NodeType::Directory, OperationType::None,
                                                      "remote-parent-id", testhelpers::defaultTime, testhelpers::defaultTime,
-                                                     testhelpers::defaultFileSize, remoteRoot);
+                                                     testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(remoteParent->moveTo(remoteRoot));
 
     const auto localChild =
             std::make_shared<Node>(ReplicaSide::Local, Str("child.txt"), NodeType::File, OperationType::None, "local-child-id",
-                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, localParent);
-    const auto remoteChild = std::make_shared<Node>(ReplicaSide::Remote, Str("child.txt"), NodeType::File, OperationType::None,
-                                                    "remote-child-id", testhelpers::defaultTime, testhelpers::defaultTime,
-                                                    testhelpers::defaultFileSize, remoteParent);
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(localChild->moveTo(localParent));
+    const auto remoteChild =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("child.txt"), NodeType::File, OperationType::None, "remote-child-id",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(remoteChild->moveTo(remoteParent));
 
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(localParent);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(remoteParent);
@@ -765,17 +779,17 @@ void TestExecutorWorker::testRemoveDependentOps() {
         auto op2Create = std::make_shared<SyncOperation>(); // a/b/ is created.
         auto op3Create = std::make_shared<SyncOperation>(); // a/b/c/ is created.
         auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
-                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr);
+                                                    OperationType::None, "idAn1", 1234, 1234, 1);
         auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
-                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr);
+                                                    OperationType::None, "idAn2", 1234, 1234, 1);
         auto affectedNode3 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an3"), NodeType::Unknown,
-                                                    OperationType::None, "idAn3", 1234, 1234, 1, nullptr);
+                                                    OperationType::None, "idAn3", 1234, 1234, 1);
         auto affectedNode4 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an4"), NodeType::Unknown,
-                                                    OperationType::None, "idAn4", 1234, 1234, 1, nullptr);
+                                                    OperationType::None, "idAn4", 1234, 1234, 1);
 
-        affectedNode4->setParentNode(affectedNode3);
-        affectedNode3->setParentNode(affectedNode2);
-        affectedNode2->setParentNode(affectedNode1);
+        affectedNode4->moveTo(affectedNode3);
+        affectedNode3->moveTo(affectedNode2);
+        affectedNode2->moveTo(affectedNode1);
 
         op1Create->setAffectedNode(affectedNode2);
         op2Create->setAffectedNode(affectedNode3);
@@ -801,14 +815,14 @@ void TestExecutorWorker::testRemoveDependentOps() {
         auto op2Move = std::make_shared<SyncOperation>(); // b/ is moved to a/b/.
 
         auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
-                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr); // a/
+                                                    OperationType::None, "idAn1", 1234, 1234, 1); // a/
         auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
-                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr); // a/b
+                                                    OperationType::None, "idAn2", 1234, 1234, 1); // a/b
 
         auto correspondingNode2 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn2"), NodeType::Unknown,
-                                                         OperationType::None, "idCn2", 1234, 1234, 1, nullptr); // b/
+                                                         OperationType::None, "idCn2", 1234, 1234, 1); // b/
 
-        affectedNode2->setParentNode(affectedNode1);
+        affectedNode2->moveTo(affectedNode1);
 
         op1Create->setAffectedNode(affectedNode1);
         op2Move->setAffectedNode(affectedNode2);
@@ -831,16 +845,16 @@ void TestExecutorWorker::testRemoveDependentOps() {
         auto op2Move = std::make_shared<SyncOperation>(); // y is moved to b/y.
 
         auto affectedNode1 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an1"), NodeType::Unknown,
-                                                    OperationType::None, "idAn1", 1234, 1234, 1, nullptr); // b
+                                                    OperationType::None, "idAn1", 1234, 1234, 1); // b
         auto affectedNode2 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an2"), NodeType::Unknown,
-                                                    OperationType::None, "idAn2", 1234, 1234, 1, nullptr); // b/y
+                                                    OperationType::None, "idAn2", 1234, 1234, 1); // b/y
 
         auto correspondingNode1 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn1"), NodeType::Unknown,
-                                                         OperationType::None, "idCn1", 1234, 1234, 1, nullptr); // a
+                                                         OperationType::None, "idCn1", 1234, 1234, 1); // a
         auto correspondingNode2 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn2"), NodeType::Unknown,
-                                                         OperationType::None, "idCn2", 1234, 1234, 1, nullptr); // y
+                                                         OperationType::None, "idCn2", 1234, 1234, 1); // y
 
-        affectedNode2->setParentNode(affectedNode1);
+        affectedNode2->moveTo(affectedNode1);
 
         op1Move->setAffectedNode(affectedNode1);
         op1Move->setCorrespondingNode(correspondingNode1);

@@ -62,16 +62,15 @@ class Node : public std::enable_shared_from_this<Node> {
 
         Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
              OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-             std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode);
+             std::optional<SyncTime> lastmodified, int64_t size);
 
         Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
              OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-             std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
-             const MoveOriginInfos &moveOriginInfos);
+             std::optional<SyncTime> lastmodified, int64_t size, const MoveOriginInfos &moveOriginInfos);
 
         Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
              const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
-             int64_t size, std::shared_ptr<Node> parentNode);
+             int64_t size);
 
         /**
          * @brief Node
@@ -84,7 +83,7 @@ class Node : public std::enable_shared_from_this<Node> {
          * @param type
          * @param parentNode
          */
-        Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode);
+        Node(const ReplicaSide &side, const SyncName &name, NodeType type);
 
         bool operator==(const Node &n) const;
 
@@ -118,12 +117,36 @@ class Node : public std::enable_shared_from_this<Node> {
         inline void setModificationTime(const std::optional<SyncTime> &lastmodified) { _lastModified = lastmodified; }
         inline void setSize(int64_t size) { _size = size; }
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
-        bool setParentNode(std::shared_ptr<Node> parentNode);
+
+        /**
+         * @brief Link a node to a parent.
+         * @param parentNode is the new parent.
+         * @return True if the parent has been set; otherwise, false.
+         */
+        bool moveTo(std::shared_ptr<Node> parentNode);
+
+        /**
+         * @brief Detach the node from its parent
+         */
+        void detach();
+
+        /**
+         * @brief Set a new ID.
+         * @param nodeId is the new node ID.
+         * @return True if the node ID has been set; otherwise, false.
+         */
+        bool setId(const std::optional<NodeId> &nodeId);
+
+        /**
+         * @brief Unlink the parent and children.
+         */
+        void clear();
+
         inline void setMoveOriginInfos(const MoveOriginInfos &moveOriginInfos) { _moveOriginInfos = moveOriginInfos; }
         inline void clearMoveOriginInfos() { _moveOriginInfos.clear(); }
         inline void setStatus(const NodeStatus &status) { _status = status; }
 
-        inline std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }
+        inline const std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }
 
         /**
          * @brief Retrieve a child node based on its name and optionally its id.
@@ -134,9 +157,6 @@ class Node : public std::enable_shared_from_this<Node> {
         std::shared_ptr<Node> findChild(const SyncName &name, const NodeId &nodeId = "");
 
         std::shared_ptr<Node> findChildById(const NodeId &nodeId);
-        [[nodiscard]] bool insertChild(std::shared_ptr<Node> child);
-        size_t deleteChild(std::shared_ptr<Node> child);
-        size_t deleteChild(const NodeId &childId);
 
         /**
          * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change
@@ -159,13 +179,11 @@ class Node : public std::enable_shared_from_this<Node> {
 
         bool isEditFromDeleteCreate() const;
 
-        void clear();
-
         [[nodiscard]] bool isRoot() const;
         [[nodiscard]] bool isCommonDocumentsFolder() const;
         [[nodiscard]] bool isSharedFolder() const;
         [[nodiscard]] bool isSpecialFolder() const;
-        [[nodiscard]] bool isParentOf(std::shared_ptr<const Node> potentialChild) const;
+        [[nodiscard]] bool isParentOf(const std::shared_ptr<const Node> &potentialChild) const;
 
         [[nodiscard]] SyncPath getPath() const;
 
@@ -173,12 +191,12 @@ class Node : public std::enable_shared_from_this<Node> {
         inline void setIsTmp(bool newIsTmp) { _isTmp = newIsTmp; }
         [[nodiscard]] bool isValid() const;
 
+        static std::wstring formatNode(const std::shared_ptr<const Node> &node);
+        static std::wstring formatNodeWithParent(const std::shared_ptr<const Node> &node,
+                                                 const std::shared_ptr<const Node> &parentNode);
+
     private:
-        friend class UpdateTree;
-        // The node id should not be changed without also changing the map in the UpdateTree and the parent/child relationship in
-        // other nodes.
-        inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
-        [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
+        [[nodiscard]] bool isParentValid(const std::shared_ptr<const Node> &parentNode) const;
 
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;
