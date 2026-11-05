@@ -29,7 +29,9 @@ Item {
     required property Component initialItem
     readonly property int depth: stack.depth
     readonly property var currentItem: stack.currentItem
-    readonly property bool canGoBack: depth > 1 && !stack.busy
+    // Stays true during a transition, so a back button does not blink between two pages that both have one.
+    readonly property bool hasPreviousPage: depth > 1
+    readonly property bool canGoBack: hasPreviousPage && !stack.busy
     readonly property string currentTitle: stack.currentItem ? stack.currentItem["navigationTitle"] || "" : ""
     readonly property string previousTitle: {
         const previousItem = depth > 1 ? stack.get(depth - 2) : null;
