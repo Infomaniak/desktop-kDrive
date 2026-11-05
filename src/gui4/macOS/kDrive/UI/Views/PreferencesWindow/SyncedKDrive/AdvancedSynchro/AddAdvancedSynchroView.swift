@@ -189,7 +189,7 @@ struct AddAdvancedSynchroView: View {
                 remoteFolder: remoteFolder,
                 localFolder: localFolder,
                 blackList: [],
-                useLightSync: true
+                useLightSync: false
             )
             try await SyncCreationService().create(from: syncCandidate)
 
