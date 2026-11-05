@@ -238,29 +238,48 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
     return translateV2ToV3(account.userDbId(), drive.driveId(), remoteDirectoryId);
 }
 
-void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
+// Precondition: every non-empty input path is absolute, as always sent by the API v3 ("/Private/...",
+// "/Common documents/...", "/Shared/..."). The private space is the root of the synchronized tree, while the other
+// roots stay folders in it.
+void ApiTranslator::translateV3ToV2(std::string &remotePath) {
     if (remotePath.empty()) return;
 
-    // The V3 API paths are POSIX style ("/Private/...", "/Common documents/...", "/Shared/..."): detect the initial
-    // root with has_root_directory() rather than is_absolute(), which is platform dependent.
-    const bool hasInitialRoot = remotePath.has_root_directory();
-    if (hasInitialRoot) remotePath = remotePath.relative_path();
+    const std::string privateSegment = std::string("/") + SyncName2Str(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
 
-    // The V3 drive root translates to an empty relative path, and non-private paths are the same in the V2 tree. Keep
-    // them as is, except for the initial root which is restored for paths that carry one.
-    if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialRemoteFolder::Private)) {
-        if (hasInitialRoot) remotePath = SyncPath{"/"} / remotePath;
-        return;
+    if (remotePath == privateSegment) {
+        // The v3 private root translates to the empty path, which represents the v2 drive root.
+        remotePath.clear();
+    } else if (CommonUtility::startsWith(remotePath, privateSegment + "/")) {
+        // Only the leading private folder name is stripped, together with the root separator: a deeper component may
+        // be named like the private folder.
+        remotePath = remotePath.substr(privateSegment.size() + 1);
     }
+}
 
-    try {
-        remotePath = remotePath.lexically_relative(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
-    } catch (const std::exception &) {
-        remotePath = SyncPath{};
+#if defined(KD_WINDOWS)
+void ApiTranslator::translateV3ToV2(SyncName &remotePath) {
+    if (remotePath.empty()) return;
+
+    const SyncName privateSegment = Str("/") + v3SpecialFolderNames.at(SpecialRemoteFolder::Private);
+
+    if (remotePath == privateSegment) {
+        remotePath.clear();
+    } else if (CommonUtility::startsWith(remotePath, privateSegment + Str("/"))) {
+        remotePath = remotePath.substr(privateSegment.size() + 1);
     }
+}
+#endif
 
-    if (remotePath == ".") remotePath = SyncPath{};
-    if (hasInitialRoot) remotePath = SyncPath{"/"} / remotePath;
+void ApiTranslator::translateV3ToV2(QString &v3Path) {
+    if (v3Path.isEmpty()) return;
+
+    const QString privateSegment = QString("/") + SyncName2QStr(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
+
+    if (v3Path == privateSegment) {
+        v3Path.clear();
+    } else if (v3Path.startsWith(privateSegment + "/")) {
+        v3Path = v3Path.mid(privateSegment.length() + 1);
+    }
 }
 
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId, RemoteNodeId &remoteNodeId) {
@@ -275,16 +294,6 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
     remoteNodeId = v2RootFolderRemoteId();
 
     return ExitCode::Ok;
-}
-
-QString ApiTranslator::translateV3ToV2(QString v3Path) {
-    const QString privateSegment = QString("/") + SyncName2QStr(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
-
-    if (v3Path == privateSegment) return "/";
-
-    if (v3Path.startsWith(privateSegment + "/")) return v3Path.mid(privateSegment.length());
-
-    return v3Path;
 }
 
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId,
@@ -302,7 +311,9 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
         if (nodeInfo.parentNodeId().toStdString() == privateFolderId)
             nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId()));
 
-        nodeInfo.setPath(translateV3ToV2(nodeInfo.path()));
+        QString translatedPath = nodeInfo.path();
+        translateV3ToV2(translatedPath);
+        nodeInfo.setPath(translatedPath);
     }
 
     return ExitCode::Ok;

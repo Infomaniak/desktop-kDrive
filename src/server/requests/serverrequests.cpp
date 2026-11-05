@@ -39,6 +39,7 @@
 #include "jobs/network/kDrive_API/getthumbnailjob.h"
 #include "jobs/network/getavatarjob.h"
 #include "jobs/network/infomaniak_API/getaccountinfojob.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/getsizejob.h"
@@ -636,10 +637,12 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
         if (!JsonParserUtility::extractValue(dataObj, pathKey, pathStr)) {
             return ExitCode::BackError;
         }
+
 #if defined(KD_WINDOWS)
         pathStr = Utility::fixNameWithBackslash(pathStr);
 #endif
-        nodeInfo.setPath(SyncName2QStr(pathStr));
+        ApiTranslator::translateV3ToV2(tmp);
+        nodeInfo.setPath(QString::fromStdString(tmp));
     }
 
     return ExitCode::Ok;

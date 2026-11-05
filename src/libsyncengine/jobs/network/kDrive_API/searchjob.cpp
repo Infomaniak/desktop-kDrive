@@ -97,30 +97,37 @@ void SearchJob::setQueryParameters(Poco::URI &uri) {
 }
 
 
-ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties &localProperties) const {
+ExitInfo SearchJob::getLocalProperties(const SyncName &itemPath, LocalProperties &localProperties) const {
     localProperties.path = itemPath;
 
     if (_syncRootPath.empty()) return ExitCode::Ok; // If sync root path is not set, skip local properties check.
 
     // The API returns paths of the v3 drive tree ("/Private/...", "/Common documents/...", "/Shared/..."): translate them to
     // the synchronized tree, where the private space is the root while "Common documents" and "Shared" stay folders.
-    localProperties.path = localProperties.path.relative_path();
     ApiTranslator::translateV3ToV2(localProperties.path);
+    if (CommonUtility::startsWith(localProperties.path, Str("/"))) {
+        localProperties.path.erase(0, 1);
+    }
 
     // An advanced sync only mirrors its target folder: results outside of it are never available locally, and results
     // inside of it are located relative to the target folder. The target folder itself is the local sync root.
+    SyncPath localPropertiesPath{localProperties.path};
     if (!_syncTargetPath.empty()) {
         if (!CommonUtility::isDescendantOrEqual(localProperties.path, _syncTargetPath)) {
             return ExitCode::Ok;
         }
 
-        localProperties.path = localProperties.path.lexically_relative(_syncTargetPath);
-        if (localProperties.path == SyncPath(Str("."))) {
-            localProperties.path.clear();
+        localPropertiesPath = SyncPath{localProperties.path}.lexically_relative(_syncTargetPath);
+        if (localPropertiesPath == SyncPath(Str("."))) {
+            localPropertiesPath.clear();
         }
+
+        // The result path is provided relative to the target folder. lexically_relative() may have replaced the
+        // separators by the platform-preferred ones (on Windows): restore the generic separators.
+        localProperties.path = localPropertiesPath.generic_string<std::filesystem::path::value_type>();
     }
 
-    const SyncPath absolutePath = _syncRootPath / localProperties.path;
+    const SyncPath absolutePath = _syncRootPath / localPropertiesPath;
 
     if (_syncVfsMode == VirtualFileMode::Off) {
         if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
@@ -222,7 +229,6 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         pathStr = Utility::fixNameWithBackslash(pathStr);
 #endif
         SyncPath path(pathStr);
-
         SyncTime modifiedTime = 0;
         if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
@@ -234,13 +240,13 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         }
 
         LocalProperties localProperties;
-        const auto itemExitInfo = getLocalProperties(path, localProperties);
+        const auto itemExitInfo = getLocalProperties(pathStr, localProperties);
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File,
                                            localProperties.path, modifiedTime, size, localProperties.isAvailableLocally,
                                            localProperties.isHydrated);
 
         if (!itemExitInfo) {
-            LOGW_WARN(_logger, L"Error in getLocalProperties: " << Utility::formatExitInfo(path, itemExitInfo));
+            LOGW_WARN(_logger, L"Error in getLocalProperties: " << Utility::formatExitInfo(SyncPath{pathStr}, itemExitInfo));
             if (!(itemExitInfo.code() == ExitCode::SystemError &&
                   (itemExitInfo.cause() == ExitCause::FileAccessError || itemExitInfo.cause() == ExitCause::FileNameTooLong ||
                    itemExitInfo.cause() == ExitCause::InvalidName))) {
