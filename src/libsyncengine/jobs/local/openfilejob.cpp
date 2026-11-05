@@ -218,8 +218,7 @@ ExitInfo OpenFileJob::resolveItem() {
 
         // The item exists on the remote side only: inform the user that synchronizing it may take some time, and give
         // the user the opportunity to cancel the request.
-        const auto now = std::chrono::steady_clock::now();
-        if (isWaitNotificationDue(now, waitStart, lastWaitNotify)) {
+        if (const auto now = std::chrono::steady_clock::now(); isWaitNotificationDue(now, waitStart, lastWaitNotify)) {
             notifyFeedback(FileOpeningPhase::WaitingSync, -1);
             lastWaitNotify = now;
         }
