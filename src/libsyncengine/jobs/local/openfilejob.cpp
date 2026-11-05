@@ -262,10 +262,12 @@ ExitInfo OpenFileJob::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync
             auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId());
             if (tempSyncDbIt == _tempSyncDbMap.end()) {
                 try {
-                    tempSyncDbIt = _tempSyncDbMap
-                                           .try_emplace(sync.dbId(),
-                                                        std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId()))
-                                           .first;
+                    const auto tempSyncDb = std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId());
+                    if (!tempSyncDb->prepare()) {
+                        LOGW_WARN(_logger, L"Failed to prepare the sync DB - syncDbId=" << sync.dbId());
+                        continue;
+                    }
+                    tempSyncDbIt = _tempSyncDbMap.try_emplace(sync.dbId(), tempSyncDb).first;
                 } catch (const std::runtime_error &e) {
                     LOGW_WARN(_logger,
                               L"Failed to open the sync DB - syncDbId=" << sync.dbId() << L": " << CommonUtility::s2ws(e.what()));
