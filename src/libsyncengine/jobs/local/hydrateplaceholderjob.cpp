@@ -72,6 +72,11 @@ ExitInfo HydratePlaceHolderJob::canRun() {
 }
 
 ExitInfo HydratePlaceHolderJob::runJob() {
+    if (isAborted()) {
+        LOGW_INFO(_logger, L"Hydration canceled before starting - " << Utility::formatSyncPath(_absoluteLocalPath));
+        return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
+    }
+
     if (const auto exitInfo = canRun(); !exitInfo) {
         return exitInfo;
     }
@@ -121,6 +126,13 @@ ExitInfo HydratePlaceHolderJob::runJob() {
         return ExitCode::Ok;
     }
 
+    if (isAborted()) {
+        // Canceled before the hydration could change anything: no pin state has been set and no download has been
+        // enqueued.
+        LOGW_INFO(_logger, L"Hydration canceled - " << Utility::formatSyncPath(_absoluteLocalPath));
+        return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
+    }
+
     PinState ps{PinState::Unknown};
 #if defined(KD_MACOS)
     // Not done in Windows case: triggers a hydration
@@ -157,6 +169,20 @@ ExitInfo HydratePlaceHolderJob::runJob() {
     // Record that a download job has been enqueued, so that callers can tell "nothing to download" apart from
     // "download in progress" once the job has run.
     _downloadQueued = true;
+
+    if (isAborted()) {
+        // The job has been aborted while the download was being enqueued: stop that download and revert the pin
+        // state, so that nothing is transferred for an aborted job.
+        LOGW_INFO(_logger, L"Hydration canceled after enqueuing the download - " << Utility::formatSyncPath(_absoluteLocalPath));
+        (void) _syncPal->cancelDlDirectJobs({_absoluteLocalPath});
+        if (const auto cancelHydrateExitInfo = cancelHydrate(ps, {ExitCode::OperationCanceled, ExitCause::OperationCanceled});
+            !cancelHydrateExitInfo) {
+            LOGW_INFO(_logger, L"Error in HydratePlaceHolderJob::cancelHydrate - " << Utility::formatSyncPath(_absoluteLocalPath)
+                                                                                   << L": " << cancelHydrateExitInfo);
+        }
+
+        return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
+    }
 
     return ExitCode::Ok;
 }

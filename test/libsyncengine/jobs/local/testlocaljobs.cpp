@@ -539,6 +539,20 @@ void KDC::TestLocalJobs::testHydratePlaceHolderJob() {
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), hydrateJob.exitInfo());
     }
+
+    // A canceled job does not hydrate the item: no pin state is set and no download is enqueued.
+    {
+        const SyncPath filePath = temporaryDirectory.path() / "canceled_file.txt";
+        { std::ofstream ofs(filePath); }
+
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
+        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
+        hydrateJob.abort();
+        hydrateJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::OperationCanceled, ExitCause::OperationCanceled), hydrateJob.exitInfo());
+        CPPUNIT_ASSERT(!hydrateJob.downloadQueued());
+    }
 }
 
 void KDC::TestLocalJobs::testOpenFileJob() {
