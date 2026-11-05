@@ -4804,7 +4804,7 @@ void AppServer::checkTokenAfterDriveAccessError(const User &user) const {
 
         // Released last, so that the check is reported as finished only once its outcome is applied
         const std::scoped_lock lock(_tokenCheckMutex);
-        _tokenCheckInProgress.erase(userDbId);
+        (void) _tokenCheckInProgress.erase(userDbId);
     });
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 }

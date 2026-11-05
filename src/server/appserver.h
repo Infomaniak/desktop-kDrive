@@ -273,10 +273,6 @@ class AppServer : public SharedTools::QtSingleApplication {
                         static_cast<ExitInfo (*)(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId,
                                                  bool &updated, bool &quotaUpdated)>(&ServerRequests::loadDriveInfo);
 
-        // Users whose token is being checked asynchronously after a DriveAccessError
-        mutable std::mutex _tokenCheckMutex;
-        mutable std::unordered_set<UserDbId> _tokenCheckInProgress;
-
     private:
         AuthorizationCodeEventFilter _eventFilter;
 
@@ -313,6 +309,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         QProcess *_clientProcess = nullptr;
 
         static std::unique_ptr<UpdateManager> _updateManager;
+
+        // Users whose token is being checked asynchronously after a DriveAccessError
+        mutable std::mutex _tokenCheckMutex;
+        mutable std::unordered_set<UserDbId> _tokenCheckInProgress;
 
         virtual std::filesystem::path makeDbName();
         virtual std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version);
