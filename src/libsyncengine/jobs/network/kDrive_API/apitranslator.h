@@ -43,6 +43,7 @@ class ApiTranslator {
 #if defined(KD_WINDOWS)
         static void translateV3ToV2(SyncName &remotePath);
 #endif
+        // Unlike the string overloads, the translated path keeps its leading separator, as expected for NodeInfo paths.
         static void translateV3ToV2(QString &v3Path);
         [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
         [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId,
