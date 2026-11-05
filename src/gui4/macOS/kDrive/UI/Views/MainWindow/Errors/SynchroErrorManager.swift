@@ -28,6 +28,9 @@ final class SynchroErrorManager: ObservableObject {
     @Published var isShowingResolutionTipsSheet: ExplanationsSheetType?
     @Published var isShowingVersionSelectorSheet: ConflictsToResolve?
     @Published var isShowingGenericError = false
+    @Published var userMismatchEmail: String?
+
+    private let reloginViewModel = ReloginViewModel()
 
     enum ExplanationsSheetType: Identifiable, Sendable {
         var id: String {
@@ -160,9 +163,15 @@ final class SynchroErrorManager: ObservableObject {
 
     // MARK: - App navigation
 
-    func navigateToLoginPage() {
-        @InjectService var router: MainWindowRouter
-        router.navigate(to: .onboarding(nil, nil, .login))
+    func relogin(_ error: SynchroError) async {
+        switch await reloginViewModel.relogin(synchroDbId: Int32(error.metadata.synchroDbId), anchor: NSApp.keyWindow) {
+        case .success, .cancelled:
+            break
+        case .userMismatch(let email):
+            userMismatchEmail = email
+        case .failure:
+            isShowingGenericError = true
+        }
     }
 
     func navigateToSynchroCreation() {
