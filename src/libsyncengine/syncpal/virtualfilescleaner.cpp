@@ -94,14 +94,14 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                 return false;
             }
 
-            if (const bool dirItemHasFileType = hasFileType(entry);
-                dirItemHasFileType && vfsStatus.isPlaceholder && vfsStatus.isHydrated) {
+            const bool dirItemHasFileType = hasFileType(entry);
+            if (!dirItemHasFileType || !vfsStatus.isPlaceholder || vfsStatus.isHydrated) {
                 // Keep this file in file system
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
                                                                       << L" is a hydrated placeholder, keep it");
                 }
-            } else if (dirItemHasFileType) { // Keep folders
+            } else {
                 // Remove file from file system
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
