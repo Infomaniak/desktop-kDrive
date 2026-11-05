@@ -57,6 +57,10 @@ final class ReloginViewModel: ObservableObject {
             return .failure
         }
 
+        guard !isInProgress else {
+            return .cancelled
+        }
+
         return await withCheckedContinuation { continuation in
             pendingRelogin = PendingRelogin(expectedUserDbId: expectedUserDbId, continuation: continuation)
             loginService.asWebAuthenticationLoginFrom(
