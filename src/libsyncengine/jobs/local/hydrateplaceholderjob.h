@@ -29,6 +29,10 @@ namespace KDC {
  * placeholder), sets its pin state to PinState::AlwaysLocal (macOS), and enqueues the download job that will retrieve
  * the item content. The logic reproduces the behavior of ExtensionJob::commandMakeAvailableLocallyDirect for a single
  * item.
+ *
+ * The job honors abortion: aborting it while it is queued prevents it from running at all, aborting it while it is
+ * running stops the hydration before anything is changed, and if the download job has just been enqueued, it stops
+ * that download and reverts the pin state. Hence no transfer can start anymore once the job has been aborted.
  */
 class HydratePlaceHolderJob : public SyncJob {
     public:
