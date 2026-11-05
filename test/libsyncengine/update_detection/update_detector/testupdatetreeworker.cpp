@@ -735,6 +735,7 @@ void TestUpdateTreeWorker::testStep4() {
                                                           testhelpers::defaultFileSize, "Dir 5/File 5.1"));
 
     // Delete/Create directory with NFC/NFD encoded name which contains a file not present in the update tree.
+    CPPUNIT_ASSERT(_localUpdateTree->exists("id8"));
     CPPUNIT_ASSERT(!_localUpdateTree->exists("id81"));
 
     SyncPath node8Path;
@@ -774,12 +775,10 @@ void TestUpdateTreeWorker::testStep4() {
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5/File 5.1")->id() == "id511");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5/File 5.1")->parentNode()->isTmp());
 
-    CPPUNIT_ASSERT(_localUpdateTree->exists("id81b"));
-    auto node81 = _localUpdateTree->getNodeByPath(node81Path);
+    auto node81 = _localUpdateTree->getNodeById("id81b");
     CPPUNIT_ASSERT(node81 != nullptr);
-    CPPUNIT_ASSERT(node81->parentNode()->isTmp());
-    CPPUNIT_ASSERT(node81->id() == "id81b");
     CPPUNIT_ASSERT(node81->hasChangeEvent(OperationType::Edit));
+    CPPUNIT_ASSERT(node81->parentNode()->isTmp());
 }
 
 void TestUpdateTreeWorker::testStep5() {
