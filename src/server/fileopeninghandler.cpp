@@ -172,7 +172,8 @@ ExitInfo FileOpeningHandler::openLocalItem(const SyncPath &localPath, const Sync
 
 bool FileOpeningHandler::isSyncEngineRunning(const SyncDbId syncDbId) const {
     const std::scoped_lock lock(_appServer->syncPalMapMutex);
-    return _appServer->syncPalMap.contains(syncDbId);
+    const auto it = _appServer->syncPalMap.find(syncDbId);
+    return it != _appServer->syncPalMap.end() && it->second && it->second->isRunning();
 }
 
 void FileOpeningHandler::notifyUser(const QString &message) const {
