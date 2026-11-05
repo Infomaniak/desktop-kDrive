@@ -26,6 +26,7 @@
 
 #include <chrono>
 #include <functional>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -164,8 +165,13 @@ class OpenFileJob : public SyncJob {
 
         Outcome _outcome{Outcome::Failed};
 
-        //! Completion state of the hydration, shared with the observers invoked by the download job. Set when the
-        //! hydration of the item starts. Its type is defined in the .cpp file.
+        //! Guards publication of and access to `_hydration`: the state is published by the thread running the job, and
+        //! loaded by cancel() on the thread processing the cancellation. The internals of the pointed-to state have
+        //! their own finer-grained mutex (see HydrationCompletion in the .cpp file).
+        std::mutex _hydrationMutex;
+
+        //! Completion state of the hydration, shared with the observers invoked by the download job. Published under
+        //! `_hydrationMutex` when the hydration of the item starts. Its type is defined in the .cpp file.
         struct HydrationCompletion; // Defined in the .cpp file.
         std::shared_ptr<HydrationCompletion> _hydration;
 

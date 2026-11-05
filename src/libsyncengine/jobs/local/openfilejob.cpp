@@ -433,8 +433,21 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
         return {ExitCode::DataError, ExitCause::Unknown};
     }
 
-    _hydration = std::make_shared<HydrationCompletion>();
-    const auto completion = _hydration;
+    // The completion state is constructed first, then published under the mutex: cancel() loads `_hydration` under
+    // the same mutex, on the thread that processes the cancellation, always after aborting the job. This orders the
+    // publication against the cancellation: if cancel() runs first and observes no state, the abortion check below
+    // prevents the hydration from starting; if it runs second, it observes the state and cancels the hydration.
+    const auto completion = std::make_shared<HydrationCompletion>();
+    {
+        const std::scoped_lock lock(_hydrationMutex);
+        if (isAborted()) {
+            LOGW_INFO(_logger, L"File opening canceled before starting the hydration - " << Utility::formatSyncPath(_localPath));
+            _outcome = Outcome::Canceled;
+
+            return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
+        }
+        _hydration = completion;
+    }
 
     // Two callbacks are wired to the hydration job below, and they report two different events:
     //
@@ -557,7 +570,15 @@ void OpenFileJob::cancel() {
 
     // Cancel the hydration of the item, if it is in progress: abort the direct download and revert the pin state set
     // before starting it. No-op when no hydration has been started or when it has already completed.
-    const auto hydration = _hydration;
+    //
+    // The job is aborted before the state is loaded, and the state is loaded under the mutex it is published with:
+    // when the hydration has not started yet, the thread running the job re-checks isAborted() under the same mutex
+    // before publishing the state, and does not start the hydration at all.
+    std::shared_ptr<HydrationCompletion> hydration;
+    {
+        const std::scoped_lock lock(_hydrationMutex);
+        hydration = _hydration;
+    }
     if (!hydration) return;
 
     {
