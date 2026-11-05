@@ -20,14 +20,18 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct BlockingErrorView: View {
     @InjectService private var matomo: MatomoUtils
     @InjectService private var vfsConversionCache: VFSConversionCacheObservable
 
+    @StateObject private var reloginViewModel = ReloginViewModel()
+
     @State private var isShowingGenericError = false
     @State private var isConverting = false
+    @State private var userMismatchEmail: String?
 
     let blockingError: UIBlockingError
 
@@ -41,9 +45,29 @@ struct BlockingErrorView: View {
             }
         case .wakingUp, .maintenance, .accessDenied:
             return !isConverting
+        case .loggingError:
+            return !reloginViewModel.isInProgress
         default:
             return true
         }
+    }
+
+    private var title: String {
+        guard userMismatchEmail != nil else {
+            return blockingError.title
+        }
+        return KDriveLocalizable.driveLoggingErrorUserMismatchTitle
+    }
+
+    private var subtitle: String? {
+        guard let userMismatchEmail else {
+            return blockingError.subtitle
+        }
+        return KDriveLocalizable.driveLoggingErrorUserMismatchDescription(userMismatchEmail)
+    }
+
+    private var isLoading: Bool {
+        blockingError.isLoading || reloginViewModel.isInProgress
     }
 
     var body: some View {
@@ -57,9 +81,9 @@ struct BlockingErrorView: View {
             .padding(.bottom, AppPadding.padding64)
 
             VStack(spacing: AppPadding.padding16) {
-                Text(blockingError.title)
+                Text(title)
                     .font(.Tokens.titleEmphasized)
-                if let subtitle = blockingError.subtitle {
+                if let subtitle {
                     Text(subtitle)
                         .font(.Tokens.body)
                 }
@@ -68,7 +92,7 @@ struct BlockingErrorView: View {
             .foregroundStyle(ColorToken.Text.primary.asColor)
             .padding(.bottom, AppPadding.padding24)
 
-            if blockingError.isLoading {
+            if isLoading {
                 ProgressView()
                     .controlSize(.small)
                     .padding(.bottom, AppPadding.padding24)
@@ -117,8 +141,25 @@ struct BlockingErrorView: View {
             restartSynchro()
         case .loggingError:
             matomo.track(eventWithCategory: .loginErrorPage, name: "openSignInWeb")
-            @InjectService var router: MainWindowRouter
-            router.navigate(to: .onboarding(nil, nil, .login))
+            relogin()
+        }
+    }
+
+    private func relogin() {
+        Task {
+            let result = await reloginViewModel.relogin(
+                synchroDbId: Int32(blockingError.synchro.dbId),
+                anchor: NSApp.keyWindow
+            )
+
+            switch result {
+            case .success, .cancelled:
+                break
+            case .userMismatch(let email):
+                userMismatchEmail = email
+            case .failure:
+                isShowingGenericError = true
+            }
         }
     }
 

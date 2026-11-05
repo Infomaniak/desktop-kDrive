@@ -58,6 +58,8 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStartAndStopSync);
         CPPUNIT_TEST(testUpdateUserInfo);
         CPPUNIT_TEST(testResolveErrorsForNode);
+        CPPUNIT_TEST(testManageInvalidTokenErrorForUser);
+        CPPUNIT_TEST(testDriveAccessErrorWithInvalidToken);
         CPPUNIT_TEST(testProxyConfigUpdate);
         CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
@@ -70,6 +72,8 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         void testStartAndStopSync();
         void testUpdateUserInfo();
         void testResolveErrorsForNode();
+        void testManageInvalidTokenErrorForUser();
+        void testDriveAccessErrorWithInvalidToken();
         void testProxyConfigUpdate();
 
         void testCleanup();
@@ -79,6 +83,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestAppServer");
 
         bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
+        bool waitForTokenCheck(UserDbId userDbId) const;
         bool syncIsActive(int syncDbId) const;
 };
 

@@ -157,6 +157,25 @@ enum CacheData {
                                              destinationPath: "",
                                              autoResolved: false)
 
+    static let expectedDriveAccessErrorDbId = Int32.random(in: 10001 ... 20000)
+    static let expectedDriveAccessError = ErrorInfo(dbId: expectedDriveAccessErrorDbId,
+                                                    synchroDbId: expectedSynchroDbId,
+                                                    time: Date().timeIntervalSince1970,
+                                                    level: KDC.ErrorLevel.SyncPal,
+                                                    functionName: "",
+                                                    workerName: "",
+                                                    exitCode: KDC.ExitCode.BackError,
+                                                    exitCause: KDC.ExitCause.DriveAccessError,
+                                                    localNodeId: "",
+                                                    remoteNodeId: "",
+                                                    nodeType: KDC.NodeType.Unknown,
+                                                    path: "",
+                                                    conflictType: KDC.ConflictType.None,
+                                                    cancelType: KDC.CancelType.None,
+                                                    inconsistencyType: KDC.InconsistencyType.None,
+                                                    destinationPath: "",
+                                                    autoResolved: false)
+
     static let expectedAsleepErrorDbId = Int32.random(in: 0 ... 10000)
     static let expectedAsleepError = ErrorInfo(dbId: expectedAsleepErrorDbId,
                                                synchroDbId: expectedSynchroDbId,
