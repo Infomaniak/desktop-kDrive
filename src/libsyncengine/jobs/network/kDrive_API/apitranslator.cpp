@@ -270,15 +270,20 @@ void ApiTranslator::translateV3ToV2(SyncName &remotePath) {
 }
 #endif
 
+// Unlike the string overloads above, the translated path keeps its leading separator, as expected for NodeInfo paths:
+// "/Private/<path>" translates to "/<path>", and "/Private" to the empty path.
 void ApiTranslator::translateV3ToV2(QString &v3Path) {
     if (v3Path.isEmpty()) return;
 
     const QString privateSegment = QString("/") + SyncName2QStr(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
 
     if (v3Path == privateSegment) {
+        // The v3 private root translates to the empty path.
         v3Path.clear();
     } else if (v3Path.startsWith(privateSegment + "/")) {
-        v3Path = v3Path.mid(privateSegment.length() + 1);
+        // Only the leading private folder name is removed, without the separator that follows it: a deeper component
+        // may be named like the private folder.
+        v3Path = v3Path.mid(privateSegment.length());
     }
 }
 
