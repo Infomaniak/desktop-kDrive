@@ -229,7 +229,8 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
                 return true;
             }
 
-            state.tmp.push_back('\n');
+            // A closing double quote at the end of the line is not part of the name, so the line return is not either.
+            if (!state.prevCharDoubleQuotes) state.tmp.push_back('\n');
             state.readNextLine = true;
             (void) std::getline(ss, line);
         }
