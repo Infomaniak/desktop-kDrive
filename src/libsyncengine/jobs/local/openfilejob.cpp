@@ -433,21 +433,12 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
         return {ExitCode::DataError, ExitCause::Unknown};
     }
 
-    // The completion state is constructed first, then published under the mutex: cancel() loads `_hydration` under
-    // the same mutex, on the thread that processes the cancellation, always after aborting the job. This orders the
-    // publication against the cancellation: if cancel() runs first and observes no state, the abortion check below
-    // prevents the hydration from starting; if it runs second, it observes the state and cancels the hydration.
+    // The completion state and the hydration job are constructed first, then published together under the mutex:
+    // cancel() loads both under the same mutex, on the thread that processes the cancellation, always after aborting
+    // the job. This orders the publication against the cancellation: if cancel() runs first and observes no state,
+    // the abortion check below prevents the hydration from starting; if it runs second, it observes the state and
+    // cancels the hydration, aborting the hydration job with it.
     const auto completion = std::make_shared<HydrationCompletion>();
-    {
-        const std::scoped_lock lock(_hydrationMutex);
-        if (isAborted()) {
-            LOGW_INFO(_logger, L"File opening canceled before starting the hydration - " << Utility::formatSyncPath(_localPath));
-            _outcome = Outcome::Canceled;
-
-            return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
-        }
-        _hydration = completion;
-    }
 
     // Two callbacks are wired to the hydration job below, and they report two different events:
     //
@@ -489,8 +480,22 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
         completion->cv.notify_all();
     });
 
+    {
+        const std::scoped_lock lock(_hydrationMutex);
+        if (isAborted()) {
+            LOGW_INFO(_logger, L"File opening canceled before starting the hydration - " << Utility::formatSyncPath(_localPath));
+            _outcome = Outcome::Canceled;
+
+            return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
+        }
+        _hydration = completion;
+        _hydrationJob = hydrationJob;
+    }
+
     // Enqueue the hydration job: it checks the item state, sets the pin state to `AlwaysLocal` if needed (macOS), and
-    // enqueues the download job (see ExtensionJob::commandMakeAvailableLocallyDirect).
+    // enqueues the download job (see ExtensionJob::commandMakeAvailableLocallyDirect). It honors abortion: while it is
+    // still queued, the job manager discards it without running it; while it is running, its abortion checks stop it
+    // and undo a download registration it has just performed.
     SyncJobManagerSingleton::instance()->queueAsyncJob(hydrationJob, Poco::Thread::PRIO_HIGH);
 
     // The download is starting: inform the user, and keep informing as long as the progress evolves.
@@ -568,18 +573,27 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
 void OpenFileJob::cancel() {
     abort();
 
-    // Cancel the hydration of the item, if it is in progress: abort the direct download and revert the pin state set
-    // before starting it. No-op when no hydration has been started or when it has already completed.
+    // Cancel the hydration of the item, if it is in progress: abort the hydration job and the direct download, and
+    // revert the pin state set before starting the download. No-op when no hydration has been started or when it has
+    // already completed.
     //
-    // The job is aborted before the state is loaded, and the state is loaded under the mutex it is published with:
+    // The job is aborted before anything is loaded, and the state is loaded under the mutex it is published with:
     // when the hydration has not started yet, the thread running the job re-checks isAborted() under the same mutex
     // before publishing the state, and does not start the hydration at all.
     std::shared_ptr<HydrationCompletion> hydration;
+    std::shared_ptr<HydratePlaceHolderJob> hydrationJob;
     {
         const std::scoped_lock lock(_hydrationMutex);
         hydration = _hydration;
+        hydrationJob = _hydrationJob;
     }
     if (!hydration) return;
+
+    // Stop the hydration job before canceling the download: while it is still queued, the job manager discards
+    // aborted jobs without ever running them, so that it can neither set the pin state nor enqueue a download
+    // anymore. While it is running, its own abortion checks stop it, and if a download was just enqueued, they stop
+    // that download and revert the pin state.
+    if (hydrationJob) hydrationJob->abort();
 
     {
         const std::scoped_lock lock(hydration->mutex);

@@ -33,6 +33,8 @@
 
 namespace KDC {
 
+class HydratePlaceHolderJob;
+
 //! Asynchronous job performing the whole "open the item indicated by a kDrive deeplink" flow.
 /*!
  * The job first resolves the item indicated by the URL against the syncs configured for the drive. While the item has
@@ -165,15 +167,19 @@ class OpenFileJob : public SyncJob {
 
         Outcome _outcome{Outcome::Failed};
 
-        //! Guards publication of and access to `_hydration`: the state is published by the thread running the job, and
-        //! loaded by cancel() on the thread processing the cancellation. The internals of the pointed-to state have
-        //! their own finer-grained mutex (see HydrationCompletion in the .cpp file).
+        //! Guards publication of and access to `_hydration` and `_hydrationJob`: both are published by the thread
+        //! running the job, and loaded by cancel() on the thread processing the cancellation. The internals of the
+        //! pointed-to state have their own finer-grained mutex (see HydrationCompletion in the .cpp file).
         std::mutex _hydrationMutex;
 
         //! Completion state of the hydration, shared with the observers invoked by the download job. Published under
         //! `_hydrationMutex` when the hydration of the item starts. Its type is defined in the .cpp file.
         struct HydrationCompletion; // Defined in the .cpp file.
         std::shared_ptr<HydrationCompletion> _hydration;
+
+        //! The hydration job enqueued by this job, retained so that cancel() can abort it while it is queued or
+        //! running. Published under `_hydrationMutex` together with `_hydration`.
+        std::shared_ptr<HydratePlaceHolderJob> _hydrationJob;
 
         FeedbackCallback _feedbackCallback;
         int8_t _lastNotifiedProgress{-1}; // Only accessed on the thread running the job.
