@@ -367,7 +367,8 @@ void TestRemoteFileSystemObserverWorker::testInsertItemsFromCorruptedCsvReply() 
         CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
     }
 
-    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains an escaped double quote.
+    // Real-world CSV replies containing a truncated item (id 2891437): its quoted name `A\` is directly followed by a line
+    // return instead of a comma.
     // Same replies as in TestSnapshotItemHandler::testGetItemWithCorruptedItem.
     const std::string commonDocumentsLine = R"(3,1,"Common documents",dir,,1627909284,1779373659,,)";
     const std::string symlinkLine = "2891434,1,symlink_to_folder_outside_sync_dir,file,17,1789713856,1789713856,1,1";

@@ -553,10 +553,10 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
 }
 
 void TestRemoteSnapshotItemHandler::testGetItemWithCorruptedItem() {
-    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains a backslash followed by a double
-    // quote and is not properly closed. The corrupted item spans 3 physical lines. It must be ignored, and the valid items
-    // around it must be parsed whatever their position in the reply. The second and third physical lines must never be
-    // parsed as valid items.
+    // Real-world CSV replies containing a truncated item (id 2891437): its quoted name `A\` is directly followed by a line
+    // return instead of a comma, so the record only has 3 columns. The truncated item spans 3 physical lines. It must be
+    // ignored, and the valid items around it must be parsed whatever their position in the reply. The second and third
+    // physical lines must never be parsed as valid items.
     const std::string commonDocumentsLine = R"(3,1,"Common documents",dir,,1627909284,1779373659,,)";
     const std::string symlinkLine = "2891434,1,symlink_to_folder_outside_sync_dir,file,17,1789713856,1789713856,1,1";
     const std::string myVirusLine = "2891435,1,myVirus.txt,file,14,1789716406,1789716417,1,";
