@@ -97,16 +97,12 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             const bool dirItemHasFileType = hasFileType(entry);
             if (!dirItemHasFileType || !vfsStatus.isPlaceholder || vfsStatus.isHydrated) {
                 // Keep this file in file system
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
-                                                                      << L" is a hydrated placeholder, keep it");
-                }
+                LOGW_INFO(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
+                                                                 << L" is a not a dehydrated placeholder, keep it");
             } else {
                 // Remove file from file system
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
-                                                                               << L" from file system");
-                }
+                LOGW_INFO(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
+                                                                 << L" is a dehydrated placeholder, remove it");
 
                 if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), ioError)) {
                     LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatIoError(absolutePath, tmpIoError));
