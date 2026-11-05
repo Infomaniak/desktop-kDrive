@@ -215,16 +215,6 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
 
         readRemoteSnapshotItemFields(item, line, error, state);
 
-        // Ignore the lines containing escaped double quotes
-        if (line.find(R"(\")") != std::string::npos) {
-            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << CommonUtility::s2ws(line));
-            if (state.index == CsvIndexName && item.name().empty()) {
-                item.setName(Str2SyncName(state.tmp));
-            }
-            ignore = true;
-            return true;
-        }
-
         if (error) return true;
 
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
@@ -240,6 +230,8 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
             (void) std::getline(ss, line);
         }
     }
+
+    LOG_IF_FAIL(_logger, state.doubleQuoteCount % 2 == 0);
 
     if (state.index < CsvIndexEnd - 1) {
         LOG_WARN(_logger, "Invalid item");

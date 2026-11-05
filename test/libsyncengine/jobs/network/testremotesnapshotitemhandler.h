@@ -36,6 +36,7 @@ class TestRemoteSnapshotItemHandler : public CppUnit::TestFixture, public TestBa
         CPPUNIT_TEST(testToCsvString);
         CPPUNIT_TEST(testGetItem);
         CPPUNIT_TEST(testGetItemWithCorruptedItem);
+        CPPUNIT_TEST(testGetItemWithForgedRowsInName);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -47,6 +48,7 @@ class TestRemoteSnapshotItemHandler : public CppUnit::TestFixture, public TestBa
         void testToCsvString();
         void testGetItem();
         void testGetItemWithCorruptedItem();
+        void testGetItemWithForgedRowsInName();
 };
 
 namespace snapshotitem_checker {

@@ -165,10 +165,9 @@ void TestRemoteSnapshotItemHandler::testUpdateItem() {
 std::string toCsvString(const std::string &name) {
     std::stringstream ss;
     bool encloseInDoubleQuotes = false;
-    bool prevCharBackslash = false;
 
     for (const char c: name) {
-        if (c == '"' && !prevCharBackslash) { // If a double quote is preceded by a comma, do not insert a second double quote.
+        if (c == '"') {
             encloseInDoubleQuotes = true;
             ss << '"'; // Insert 2 double quotes instead of one
         }
@@ -178,7 +177,6 @@ std::string toCsvString(const std::string &name) {
         }
 
         ss << c;
-        prevCharBackslash = c == '\\';
     }
 
     std::string output;
@@ -214,9 +212,9 @@ test)");
 test")";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 
-    // Name contains escaped double quote (\")
+    // A double quote preceded by a backslash is doubled like any other double quote
     actual = toCsvString(R"(te\"st)");
-    expected = R"(te\"st)";
+    expected = R"("te\""st")";
     CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
@@ -375,7 +373,7 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!error);
     }
 
-    // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
+    // A backslash followed by a double quote within the snapshot item name is a regular name: the item is not ignored
     {
         RemoteSnapshotItem item;
         bool ignore = false;
@@ -386,14 +384,14 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
            << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
         RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
-        CPPUNIT_ASSERT(ignore);
+        CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
-        // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
         CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
         CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.parentId());
+        CPPUNIT_ASSERT_EQUAL(std::string(R"(test\"test)"), SyncName2Str(item.name()));
     }
 
-    // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
+    // The items surrounding a name containing a backslash followed by a double quote are correctly parsed
     {
         RemoteSnapshotItem item;
         bool ignore = false;
@@ -406,20 +404,13 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
            << "0,1,coucou2,dir,1000,123,124,0,1";
         RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
 
-        // First line should be ignored because of parsing issue
-        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
-        CPPUNIT_ASSERT(ignore);
-        CPPUNIT_ASSERT(!error);
-        // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
-        CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
-        // The other ones should be correctly parsed
         Count counter = 0;
         while (handler.getItem(item, ss, error, ignore, eof)) {
             counter++;
             CPPUNIT_ASSERT(!ignore);
             CPPUNIT_ASSERT(!error);
         }
-        CPPUNIT_ASSERT_EQUAL(Count{2}, counter); // There should be 2 valid items
+        CPPUNIT_ASSERT_EQUAL(Count{3}, counter); // There should be 3 valid items
     }
 
     // An ignored line must not inherit the id of the previously parsed item: the item is reset before each line is read.
@@ -431,7 +422,7 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n"
-           << "2,0," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
+           << "2,0,test,dir,1000";
         RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
 
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
@@ -557,9 +548,10 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
 }
 
 void TestRemoteSnapshotItemHandler::testGetItemWithCorruptedItem() {
-    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains an escaped double quote.
-    // The corrupted item spans 3 physical lines. It must be ignored, and the valid items around it must be parsed
-    // whatever their position in the reply.
+    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains a backslash followed by a double
+    // quote and is not properly closed. The corrupted item spans 3 physical lines. It must be ignored, and the valid items
+    // around it must be parsed whatever their position in the reply. The second and third physical lines must never be
+    // parsed as valid items.
     const std::string commonDocumentsLine = R"(3,1,"Common documents",dir,,1627909284,1779373659,,)";
     const std::string symlinkLine = "2891434,1,symlink_to_folder_outside_sync_dir,file,17,1789713856,1789713856,1,1";
     const std::string myVirusLine = "2891435,1,myVirus.txt,file,14,1789716406,1789716417,1,";
@@ -577,10 +569,6 @@ Z",file,4,1789735691,1789735698,1,)csv";
     const RemoteSnapshotItem expectedMyVirus(NodeId("2891435"), NodeId("1"), Str2SyncName(std::string("myVirus.txt")),
                                              static_cast<SyncTime>(1789716406), static_cast<SyncTime>(1789716417), NodeType::File,
                                              static_cast<int64_t>(14), false, true, true);
-    // The second physical line of the corrupted item is parsed as a separate valid item.
-    const RemoteSnapshotItem expectedMyVirusWithFileParent(
-            NodeId("2891435"), NodeId("2891434"), Str2SyncName(std::string("myVirus.txt")), static_cast<SyncTime>(1786459004),
-            static_cast<SyncTime>(1788263590), NodeType::File, static_cast<int64_t>(0), false, true, true);
 
     struct ParsedItem {
             ParsedItem(const bool ignore_, RemoteSnapshotItem item_) :
@@ -606,14 +594,13 @@ Z",file,4,1789735691,1789735698,1,)csv";
         return parsedItems;
     };
     const auto checkParsedItem = [](const ParsedItem &parsedItem, const bool expectedIgnore, const SnapshotItem &expectedItem,
-                                    const NodeId &expectedIgnoredId = NodeId(), const NodeId &expectedIgnoredParentId = NodeId(),
-                                    const SyncName &expectedIgnoredName = {}) {
+                                    const NodeId &expectedIgnoredId = NodeId(),
+                                    const NodeId &expectedIgnoredParentId = NodeId()) {
         CPPUNIT_ASSERT_EQUAL(expectedIgnore, parsedItem.ignore);
         if (expectedIgnore) {
             // The item fields are parsed before the ignore check, so that an error can be reported for this item.
             CPPUNIT_ASSERT_EQUAL(expectedIgnoredId, parsedItem.item.id());
             CPPUNIT_ASSERT_EQUAL(expectedIgnoredParentId, parsedItem.item.parentId());
-            CPPUNIT_ASSERT(expectedIgnoredName == parsedItem.item.name());
         } else {
             const auto result = snapshotitem_checker::compare(expectedItem, parsedItem.item);
             CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -624,53 +611,86 @@ Z",file,4,1789735691,1789735698,1,)csv";
     {
         const auto parsedItems =
                 parseCsvReply(commonDocumentsLine + "\n" + symlinkLine + "\n" + myVirusLine + "\n" + corruptedItemLines);
-        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), parsedItems.size());
         checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
         checkParsedItem(parsedItems[1], false, expectedSymlink);
         checkParsedItem(parsedItems[2], false, expectedMyVirus);
-        checkParsedItem(parsedItems[3], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
-        checkParsedItem(parsedItems[4], false, expectedMyVirusWithFileParent);
-        checkParsedItem(parsedItems[5], true, SnapshotItem());
+        checkParsedItem(parsedItems[3], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[4], true, SnapshotItem());
     }
 
     // Case 2: symlink, corrupted item, valid item
     {
         const auto parsedItems =
                 parseCsvReply(commonDocumentsLine + "\n" + symlinkLine + "\n" + corruptedItemLines + "\n" + myVirusLine);
-        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), parsedItems.size());
         checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
         checkParsedItem(parsedItems[1], false, expectedSymlink);
-        checkParsedItem(parsedItems[2], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
-        checkParsedItem(parsedItems[3], false, expectedMyVirusWithFileParent);
-        checkParsedItem(parsedItems[4], true, SnapshotItem());
-        checkParsedItem(parsedItems[5], false, expectedMyVirus);
+        checkParsedItem(parsedItems[2], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[3], true, SnapshotItem());
+        checkParsedItem(parsedItems[4], false, expectedMyVirus);
     }
 
     // Case 3: corrupted item, symlink, valid item
     {
         const auto parsedItems =
                 parseCsvReply(commonDocumentsLine + "\n" + corruptedItemLines + "\n" + symlinkLine + "\n" + myVirusLine);
-        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), parsedItems.size());
         checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
-        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
-        checkParsedItem(parsedItems[2], false, expectedMyVirusWithFileParent);
-        checkParsedItem(parsedItems[3], true, SnapshotItem());
-        checkParsedItem(parsedItems[4], false, expectedSymlink);
-        checkParsedItem(parsedItems[5], false, expectedMyVirus);
+        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[2], true, SnapshotItem());
+        checkParsedItem(parsedItems[3], false, expectedSymlink);
+        checkParsedItem(parsedItems[4], false, expectedMyVirus);
     }
 
     // Case 4: corrupted item, valid item, symlink
     {
         const auto parsedItems =
                 parseCsvReply(commonDocumentsLine + "\n" + corruptedItemLines + "\n" + myVirusLine + "\n" + symlinkLine);
-        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(5), parsedItems.size());
         checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
-        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
-        checkParsedItem(parsedItems[2], false, expectedMyVirusWithFileParent);
-        checkParsedItem(parsedItems[3], true, SnapshotItem());
-        checkParsedItem(parsedItems[4], false, expectedMyVirus);
-        checkParsedItem(parsedItems[5], false, expectedSymlink);
+        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[2], true, SnapshotItem());
+        checkParsedItem(parsedItems[3], false, expectedMyVirus);
+        checkParsedItem(parsedItems[4], false, expectedSymlink);
     }
+}
+
+void TestRemoteSnapshotItemHandler::testGetItemWithForgedRowsInName() {
+    // A file name made of line returns, a backslash followed by a double quote and a text looking like a CSV row must be parsed
+    // as a single item. The text of the name must never be parsed as forged items.
+    const std::string forgedName = "a\n\\\"\n16,1,Invoice-Q4.pdf,file,12,1793727077,1793727077,1,0,";
+
+    std::stringstream ss;
+    ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+       << "15,4,poc,dir,,1793726629,1793726995,1,\n"
+       << "16,15," << toCsvString(forgedName) << ",file,12,1793726696,1793726710,1,\n"
+       << endOfFileDelimiter;
+    RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
+
+    RemoteSnapshotItem item;
+    bool error = false;
+    bool ignore = false;
+    bool eof = false;
+
+    CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+    CPPUNIT_ASSERT(!ignore);
+    CPPUNIT_ASSERT(!error);
+    CPPUNIT_ASSERT_EQUAL(NodeId("15"), item.id());
+
+    CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+    CPPUNIT_ASSERT(!ignore);
+    CPPUNIT_ASSERT(!error);
+    CPPUNIT_ASSERT_EQUAL(NodeId("16"), item.id());
+    CPPUNIT_ASSERT_EQUAL(NodeId("15"), item.parentId());
+    CPPUNIT_ASSERT_EQUAL(forgedName, SyncName2Str(item.name()));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, item.type());
+    CPPUNIT_ASSERT_EQUAL(int64_t{12}, item.size());
+
+    // No forged item is parsed: the end of file delimiter directly follows.
+    CPPUNIT_ASSERT(!handler.getItem(item, ss, error, ignore, eof));
+    CPPUNIT_ASSERT(eof);
+    CPPUNIT_ASSERT(!error);
 }
 
 } // namespace KDC
