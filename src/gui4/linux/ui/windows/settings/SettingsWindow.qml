@@ -211,7 +211,7 @@ IKShadowedWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             visible: root.selectedCategory === SettingsWindow.Category.Accounts
-            canGoBack: accountsPane.canGoBack
+            hasPreviousPage: accountsPane.hasPreviousPage
             currentTitle: accountsPane.currentTitle
             previousTitle: accountsPane.previousTitle
             onBackRequested: accountsPane.pop()
@@ -224,7 +224,7 @@ IKShadowedWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             visible: root.selectedCategory === SettingsWindow.Category.Advanced
-            canGoBack: advancedPane.canGoBack
+            hasPreviousPage: advancedPane.hasPreviousPage
             currentTitle: advancedPane.currentTitle
             previousTitle: advancedPane.previousTitle
             onBackRequested: advancedPane.pop()
