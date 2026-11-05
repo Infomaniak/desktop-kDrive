@@ -4832,9 +4832,6 @@ void AppServer::manageInvalidTokenError(User &user) const {
     }
 
     sendUserUpdated(user);
-
-    // A 401 received before the token cache was cleared is reported as DriveAccessError: it is superseded by InvalidToken
-    removeDriveAccessErrors(user.dbId());
 }
 
 void AppServer::manageInvalidTokenError(const UserDbId userDbId) const {
@@ -4850,63 +4847,6 @@ void AppServer::manageInvalidTokenError(const UserDbId userDbId) const {
     }
 
     manageInvalidTokenError(user);
-}
-
-void AppServer::removeDriveAccessErrors(const UserDbId userDbId) const {
-    if (!userDbId) return;
-
-    std::vector<Account> accounts;
-    if (!ParmsDb::instance()->selectAllAccounts(userDbId, accounts)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllAccounts");
-        return;
-    }
-
-    for (const auto &account: accounts) {
-        std::vector<Drive> drives;
-        if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
-            return;
-        }
-
-        for (auto &drive: drives) {
-            std::vector<Sync> syncs;
-            if (!ParmsDb::instance()->selectAllSyncs(drive.dbId(), syncs)) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-                return;
-            }
-
-            bool driveAccessErrorRemoved = false;
-            for (const auto &sync: syncs) {
-                std::vector<Error> errors;
-                if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, sync.dbId(), INT_MAX, errors)) {
-                    LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
-                    return;
-                }
-
-                for (const auto &error: errors) {
-                    if (error.exitCode() != ExitCode::BackError || error.exitCause() != ExitCause::DriveAccessError) continue;
-
-                    bool found = false;
-                    if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
-                        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
-                        return;
-                    }
-                    if (!found) continue;
-
-                    LOG_DEBUG(Log::instance()->getLogger(),
-                              "DriveAccessError superseded by InvalidToken, errorDbId=" << error.dbId());
-                    sendErrorRemoved(error.dbId());
-                    driveAccessErrorRemoved = true;
-                }
-            }
-
-            if (driveAccessErrorRemoved) {
-                // accessDenied is not stored in DB, notify the client that the drive is no longer considered as denied
-                drive.setAccessDenied(false);
-                sendDriveUpdated(drive);
-            }
-        }
-    }
 }
 
 void AppServer::manageSocketsDefunctedError() const {

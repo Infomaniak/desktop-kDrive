@@ -159,7 +159,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void checkTokenAfterDriveAccessError(const User &user) const;
         void manageInvalidTokenError(User &user) const;
         void manageInvalidTokenError(UserDbId userDbId) const;
-        void removeDriveAccessErrors(UserDbId userDbId) const;
         void manageSocketsDefunctedError() const;
         void manageFileAccessErrorError(const std::vector<Error> &errorList) const;
         void manageUpdateRequiredErrorError() const;
