@@ -230,7 +230,7 @@ void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
     }
 
     const auto findNode = [&v3RemoteNodeInfoList](const QString &nodeId) {
-        return std::ranges::find_if(v3RemoteNodeInfoList.cbegin(), v3RemoteNodeInfoList.cend(),
+        return std::ranges::find_if(v3RemoteNodeInfoList,
                                     [&nodeId](const NodeInfo &nodeInfo) { return nodeInfo.nodeId() == nodeId; });
     };
 
