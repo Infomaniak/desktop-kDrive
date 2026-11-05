@@ -499,11 +499,8 @@ void TestSyncPal::testWipeVirtualFiles() {
     std::ofstream(nonPlaceholderPath).close();
 
     auto mockStatus = [dehydratedPlaceholderPath, hydratedPlaceholderPath, nonPlaceholderPath](
-                              [[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) {
+                              [[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
         if (absolutePath.native() == dehydratedPlaceholderPath.native()) {
-            vfsStatus.isPlaceholder = true;
-            vfsStatus.isHydrated = false;
-        } else if (absolutePath.native() == dehydratedPlaceholderPath.native()) {
             vfsStatus.isPlaceholder = true;
             vfsStatus.isHydrated = false;
         } else if (absolutePath.native() == hydratedPlaceholderPath.native()) {
