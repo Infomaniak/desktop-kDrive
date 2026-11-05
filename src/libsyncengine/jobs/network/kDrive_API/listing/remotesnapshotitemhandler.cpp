@@ -140,6 +140,10 @@ void RemoteSnapshotItemHandler::readRemoteSnapshotItemFields(RemoteSnapshotItem 
         if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
             if (c != ',' && c != '"') {
                 // After a closing double quote, we must have a comma or another double quote. Otherwise, ignore the line.
+                // Keep the name read so far so that an error can be reported for this item.
+                if (state.index == CsvIndexName && item.name().empty()) {
+                    item.setName(Str2SyncName(state.tmp));
+                }
                 state.index = CsvIndexId; // Make sure that `state` is not equal to `CsvIndexEnd`.
                 state.readingDoubleQuotedValue = false; // Exit the `readingDoubleQuotedValue` mode.
                 LOG_WARN(_logger, "Item '" << line.c_str()

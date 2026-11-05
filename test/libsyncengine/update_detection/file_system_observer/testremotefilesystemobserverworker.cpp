@@ -367,8 +367,7 @@ void TestRemoteFileSystemObserverWorker::testInsertItemsFromCorruptedCsvReply() 
         CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
     }
 
-    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains a backslash followed by a double
-    // quote and is not properly closed.
+    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains an escaped double quote.
     // Same replies as in TestSnapshotItemHandler::testGetItemWithCorruptedItem.
     const std::string commonDocumentsLine = R"(3,1,"Common documents",dir,,1627909284,1779373659,,)";
     const std::string symlinkLine = "2891434,1,symlink_to_folder_outside_sync_dir,file,17,1789713856,1789713856,1,1";
@@ -384,11 +383,15 @@ Z",file,4,1789735691,1789735698,1,)csv";
             commonDocumentsLine + "\n" + corruptedItemLines + "\n" + myVirusLine + "\n" + symlinkLine, // Case 4
     };
 
-    // Whatever the position of the corrupted item in the reply, it is ignored instead of being inserted into the snapshot, and
-    // the physical lines it spans are never parsed as valid items. The name of the corrupted item is not read, so no error is
-    // reported for it by handleRemoteSnapshotItem.
+    // Whatever the position of the corrupted item in the reply, getItemsInDir reports an error for it instead of
+    // inserting it into the snapshot. Replicate this behavior and check that exactly one error is reported per case.
     int nbErrors = 0;
-    _syncPal->setAddErrorCallback([&nbErrors](const Error &) { ++nbErrors; });
+    _syncPal->setAddErrorCallback([&nbErrors](const Error &reportedError) {
+        ++nbErrors;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Unknown, reportedError.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, reportedError.exitCause());
+        CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, reportedError.inconsistencyType());
+    });
 
     for (const auto &csvBody: csvBodies) {
         nbErrors = 0;
@@ -406,14 +409,26 @@ Z",file,4,1789735691,1789735698,1,)csv";
         bool eof = false;
         SyncNameSet existingFiles;
         while (handler.getItem(item, ss, error, ignore, eof)) {
-            if (ignore) continue;
+            if (ignore) {
+                // Replicate getItemsInDir: report an error for the malformed item instead of inserting it.
+                if (!item.id().empty() && !item.name().empty()) {
+                    SyncPath parentPath;
+                    if (bool dummy = false; !liveSnapshot.path(item.id(), parentPath, dummy)) {
+                        LOGW_WARN(_logger, L"Fail to get path for item: " << CommonUtility::s2ws(item.id()));
+                    }
+
+                    _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), item.type(), parentPath / item.name(),
+                                             ConflictType::None, InconsistencyType::ForbiddenChar));
+                }
+                continue;
+            }
             if (eof) break;
 
             CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInRemoteSnapshot(item, existingFiles));
         }
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);
-        CPPUNIT_ASSERT_EQUAL(0, nbErrors);
+        CPPUNIT_ASSERT_EQUAL(1, nbErrors);
 
         // Whatever the position of the corrupted item in the reply, the valid items must be inserted into the snapshot
         // and the corrupted item (id 2891437) must be absent.
