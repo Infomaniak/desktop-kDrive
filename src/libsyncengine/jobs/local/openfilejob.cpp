@@ -569,7 +569,7 @@ void OpenFileJob::cancel() {
     if (!syncPal) return;
 
     LOGW_INFO(_logger, L"Canceling the hydration of the item - " << Utility::formatSyncPath(_localPath));
-    (void) syncPal->cancelDlDirectJobs({_relativePath});
+    (void) syncPal->cancelDlDirectJobs({_localPath});
 
     if (const auto vfs = _getVfs(_syncDbId)) {
         vfs->cancelHydrate(_localPath, {ExitCode::OperationCanceled, ExitCause::OperationCanceled});
