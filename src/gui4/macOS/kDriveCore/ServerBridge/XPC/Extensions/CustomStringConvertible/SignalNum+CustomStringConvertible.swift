@@ -92,6 +92,8 @@ extension SignalNum: @retroactive CustomStringConvertible {
             return "UTILITY_QUIT"
         case .LOGIN_SEND_AUTHORIZATION_CODE:
             return "LOGIN_SEND_AUTHORIZATION_CODE"
+        case .FILE_OPENING_STATUS:
+            return "FILE_OPENING_STATUS"
         case .EnumEnd:
             return "EnumEnd"
         @unknown default:

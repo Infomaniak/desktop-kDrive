@@ -75,6 +75,7 @@ namespace Infomaniak.kDrive.Types
         SYNC_TRIGGER_PROGRESS_UPDATE,
         SYNC_SETSUPPORTSVIRTUALFILES,
         SYNC_ACKNOWLEDGE_MANY_DELETES,
+        FILE_OPENING_CANCEL,
         BLACKLISTED_NODE_LIST,
         BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
@@ -170,8 +171,17 @@ namespace Infomaniak.kDrive.Types
         UTILITY_SHOW_SETTINGS,
         UTILITY_SHOW_SYNTHESIS,
         UTILITY_LOG_UPLOAD_STATUS_UPDATED,
-        UTILITY_QUIT
+        UTILITY_QUIT,
+        FILE_OPENING_STATUS
     }
+
+    public enum FileOpeningPhase
+    {
+        Finished = 0,
+        WaitingSync,
+        Hydrating,
+        EnumEnd
+    };
 
     public enum NotificationsDisabled
     {

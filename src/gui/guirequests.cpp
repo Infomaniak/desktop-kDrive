@@ -199,6 +199,22 @@ ExitCode GuiRequests::setSupportsVirtualFiles(const SyncDbId syncDbId, const boo
     return exitCode;
 }
 
+ExitInfo GuiRequests::cancelFileOpeningJob(const UniqueId jobId) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << static_cast<qint64>(jobId);
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::FILE_OPENING_CANCEL, params, results)) {
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    return exitCode;
+}
+
 ExitInfo GuiRequests::acknowledgeManyDelete(const SyncDbId syncDbId, const TooManyDeletesUserChoice userChoice) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);

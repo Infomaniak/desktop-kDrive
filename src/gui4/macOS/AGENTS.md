@@ -209,6 +209,8 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 - The project has a `kDrive` scheme that runs `kDriveTests`; there is no separate `kDriveTests` scheme.
 - Expose C/Objective-C headers through `kDriveCore.h` and the target's `publicHeaders` list; framework targets cannot combine a Clang module with a Swift bridging header.
 - Project-level `LM_SKIP_METADATA_EXTRACTION=YES` skips unused App Intents metadata tasks in Debug/Release, including CI and CMake invocations. This internal setting was verified with Xcode 26.5; recheck after Xcode upgrades and remove it for targets introducing App Intents.
+- C++ enums bridged through `CppInterop` that live in the `KDC` namespace (cstypes.h) are only usable inside the kDriveCore target: reading a kDriveCore struct member typed with one from the app or test targets fails with `has no member`. Mirror them as pure Swift enums for anything crossing the framework boundary (see `FileOpeningStatusPhase`); top-level enums from comm.h (`SignalNum`, `RequestNum`) have no such restriction.
+- New files under `kDriveTests/` are not picked up automatically: register them (Swift file + JSON fixture) in the `Exceptions for "kDriveTests" folder in "kDriveTests" target` membershipExceptions list of `kDrive.xcodeproj/project.pbxproj`, or they will not be compiled or run.
 
 ## Pre-PR Checks
 ```bash

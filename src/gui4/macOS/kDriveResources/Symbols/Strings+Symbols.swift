@@ -864,6 +864,12 @@ public enum KDriveLocalizable {
   /// loco:6a6c9c2250ca28e030064894
   public static let manyDeleteDialogHardLimitPrimary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitPrimary", fallback: "Restore the files")
   /// loco:6a6c9c3be4819f7c890366e2
+  public static func fileOpeningDownloadingMessage(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "fileOpeningDownloadingMessage", String(describing: p1), fallback: "Downloading %@…")
+  }
+  public static let fileOpeningHydratingMessage = KDriveLocalizable.tr("Localizable", "fileOpeningHydratingMessage", fallback: "Downloading the item…")
+  public static let fileOpeningWaitingSyncMessage = KDriveLocalizable.tr("Localizable", "fileOpeningWaitingSyncMessage", fallback: "This item is not synchronized yet. Synchronizing it may take some time.")
+  public static let fileOpeningWindowTitle = KDriveLocalizable.tr("Localizable", "fileOpeningWindowTitle", fallback: "kDrive")
   public static let manyDeleteDialogHardLimitSecondary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitSecondary", fallback: "Delete online as well")
   /// loco:6a6c9cb7e46a51ff3e04e779
   public static let manyDeleteDialogSoftLimitContent = KDriveLocalizable.tr("Localizable", "manyDeleteDialogSoftLimitContent", fallback: "These files can still be recovered from the kDrive Recycle Bin.")
