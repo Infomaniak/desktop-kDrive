@@ -301,11 +301,23 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         {
             const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
             const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-            if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) {
-                // The engine of the sync is not running: the item cannot be hydrated.
-                continue;
+            if (syncPalMapIt != _commManager->appServer().syncPalMap.end()) {
+                syncPal = syncPalMapIt->second;
             }
-            syncPal = syncPalMapIt->second;
+        }
+
+        if (!syncPal) {
+            // The engine of the sync is not running: the item cannot be hydrated. Fail the VFS fetch request,
+            // otherwise the user-initiated hydration stays pending although no download will start. The VFS is
+            // used without holding syncPalMapMutex, so no map lock order is involved.
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Sync engine not running - releasing the VFS hydration request - " << Utility::formatSyncPath(filePath));
+            if (const auto exitInfo = cancelHydrate(fileData, PinState::OnlineOnly, {ExitCode::SyncPaused}); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::cancelHydrate - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+            }
+
+            continue;
         }
 
         // The job checks the item state (symlink, placeholder, already hydrated/ing, pin state) and enqueues the
@@ -908,6 +920,20 @@ ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) 
     if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
 
     return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+}
+
+ExitInfo ExtensionJob::cancelHydrate(const FileData &fileData, PinState pinState, ExitInfo exitInfo) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
+    if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
+
+    vfsMapIt->second->cancelHydrate(fileData.localPath, exitInfo);
+
+    if (pinState != PinState::Unknown) return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+
+    return ExitCode::Ok;
 }
 
 ExitInfo ExtensionJob::cancelDehydrate(const FileData &fileData, PinState pinState) {
