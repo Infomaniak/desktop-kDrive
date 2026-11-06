@@ -918,8 +918,14 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         bool isWarning = false;
         if (ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) {
             if (isWarning) {
-                Error error(_syncPal->syncDbId(), "", actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type(),
-                            actionInfo.path(), ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
+                // Error paths are relative to the sync root: strip the leading separator kept by the V3 to V2
+                // translation.
+                SyncName path = actionInfo.path();
+                if (CommonUtility::startsWith(path, Str("/"))) {
+                    (void) path.erase(0, 1);
+                }
+                Error error(_syncPal->syncDbId(), "", actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type(), path,
+                            ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
                 _syncPal->addError(error);
             }
             // Remove it from liveSnapshot

@@ -97,17 +97,17 @@ void TestApiTranslator::testTranslateV3ToV2Paths() {
     const SyncName sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
     const SyncName rootSeparator = Str("/");
 
-    // Absolute private path: the private folder name is stripped, the deeper components are preserved. The result is a
-    // path relative to the drive root.
+    // Absolute private path: the private folder name is stripped, the deeper components are preserved. The result
+    // keeps its leading separator.
     SyncName remotePath = rootSeparator + privateFolderName + Str("/folder_A/text.txt");
     ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(std::string("folder_A/text.txt"), SyncName2Str(remotePath));
+    CPPUNIT_ASSERT_EQUAL(std::string("/folder_A/text.txt"), SyncName2Str(remotePath));
 
     // A component deeper than the private folder may be named like the private folder: only the leading one is
     // stripped.
     remotePath = rootSeparator + privateFolderName + Str("/") + privateFolderName + Str("/text.txt");
     ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(SyncName2Str(privateFolderName) + std::string("/text.txt"), SyncName2Str(remotePath));
+    CPPUNIT_ASSERT_EQUAL(std::string("/") + SyncName2Str(privateFolderName) + std::string("/text.txt"), SyncName2Str(remotePath));
 
     // A first component that merely starts with the private folder name is a non-private path: unchanged.
     remotePath = rootSeparator + Str("Privatex") + Str("/folder_A");
@@ -147,7 +147,7 @@ void TestApiTranslator::testTranslateV3ToV2Paths() {
 
     std::string remotePathStr = privateSegment + "/folder_A/text.txt";
     ApiTranslator::translateV3ToV2(remotePathStr);
-    CPPUNIT_ASSERT_EQUAL(std::string("folder_A/text.txt"), remotePathStr);
+    CPPUNIT_ASSERT_EQUAL(std::string("/folder_A/text.txt"), remotePathStr);
 
     // The private folder itself translates to the empty path.
     remotePathStr = privateSegment;
