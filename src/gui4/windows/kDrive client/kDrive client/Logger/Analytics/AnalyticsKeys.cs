@@ -70,7 +70,6 @@
         OpenKDriveWeb,
         OpenTrashWeb,
         OpenStorage,
-        RestartApp,
         SyncSelected,
         OpenHome,
         OpenSyncDir,
@@ -157,7 +156,6 @@
         ManageDriveAccessDenied,
         ManageSpaceOnly,
         ManageInvalidToken,
-        ManageTmpDirError,
         OpenRenewWeb,
         Displayed,
         Ignore
