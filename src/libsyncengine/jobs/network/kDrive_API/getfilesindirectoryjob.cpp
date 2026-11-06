@@ -106,6 +106,10 @@ ExitInfo GetFilesInDirectoryJob::extractPath(const Poco::JSON::Object::Ptr &obj,
         LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawPath));
     }
 
+#if defined(KD_WINDOWS)
+    path = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(path);
+#endif
+
     return ExitCode::Ok;
 }
 
