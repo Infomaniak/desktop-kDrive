@@ -180,6 +180,8 @@ extension RequestNum: @retroactive CustomStringConvertible {
             return "UPDATER_START_INSTALLER"
         case .UPDATER_SKIP_VERSION:
             return "UPDATER_SKIP_VERSION"
+        case .FILE_OPENING_CANCEL:
+            return "FILE_OPENING_CANCEL"
         case .EnumEnd:
             return "EnumEnd"
         @unknown default:
