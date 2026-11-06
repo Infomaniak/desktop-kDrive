@@ -143,7 +143,6 @@ const std::vector<Matcher> &matchers() {
             syncRoot(SyncErrorKind::SystemSyncDirAccess, ExitCode::SystemError, ExitCause::SyncDirAccessError),
             syncRoot(SyncErrorKind::SystemSyncDirDiskMissing, ExitCode::SystemError, ExitCause::SyncDirDiskMissing),
             syncRoot(SyncErrorKind::DataSyncDirChanged, ExitCode::DataError, ExitCause::SyncDirChanged),
-            syncPal(SyncErrorKind::TemporaryDirAccess, ExitCode::SystemError, {ExitCause::TmpDirAccessError}),
             syncPal(SyncErrorKind::NotEnoughINotifyWatches, ExitCode::SystemError, {ExitCause::NotEnoughINotifyWatches}),
     };
     return table;
@@ -232,8 +231,6 @@ std::string toString(const SyncErrorKind kind) {
             return "SystemSyncDirDiskMissing";
         case DataSyncDirChanged:
             return "DataSyncDirChanged";
-        case TemporaryDirAccess:
-            return "TemporaryDirAccess";
         case NotEnoughINotifyWatches:
             return "NotEnoughINotifyWatches";
         case Unknown:
