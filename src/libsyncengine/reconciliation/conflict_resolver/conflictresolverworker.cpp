@@ -18,6 +18,7 @@
 
 #include "conflictresolverworker.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#include "jobs/network/kDrive_API/checkhashmatchjob.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/logiffail.h"
 
@@ -73,6 +74,11 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     }
 
     if (continueSolving) return ExitCode::Ok;
+
+    if (conflict.type() == ConflictType::EditEdit) {
+        handleConflictOnIdenticalContent(conflict, continueSolving);
+        if (continueSolving) return ExitCode::Ok;
+    }
 
     ExitCode exitCode = ExitCode::Ok;
     switch (conflict.type()) {
@@ -141,6 +147,74 @@ ExitInfo ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &con
     return ExitCode::Ok;
 }
 
+void ConflictResolverWorker::handleConflictOnIdenticalContent(const Conflict &conflict, bool &continueSolving) {
+    continueSolving = false;
+
+    const auto localNode = conflict.localNode();
+    const auto remoteNode = conflict.remoteNode();
+
+    // Content equality can only be checked on files. Directories always have identical content.
+    if (localNode->type() != NodeType::File || remoteNode->type() != NodeType::File) return;
+
+    // The content of a dehydrated placeholder is not available on the local replica: fall back to the regular conflict
+    // resolution.
+    if (_syncPal->vfsMode() != VirtualFileMode::Off) {
+        VfsStatus vfsStatus;
+        const auto relativeLocalPath = localNode->getPath();
+        if (const auto exitInfo = _syncPal->vfs()->status(_syncPal->localPath() / relativeLocalPath, vfsStatus); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to get VFS status for file " << Utility::formatSyncPath(relativeLocalPath));
+            return;
+        }
+        if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) return;
+    }
+
+    // Check the content equality with the same hash mechanism as the one used by the upload and download jobs.
+    // Skip the check if the drive ID is unknown, since the hash job requires it to be valid.
+    const RemoteNodeId remoteNodeId = remoteNode->id().value_or("");
+    if (_syncPal->driveDbId() == 0 || remoteNodeId.empty()) return;
+
+    const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
+    CheckHashMatchJob hashJob(_syncPal->driveDbId(), absoluteLocalPath, remoteNodeId, remoteNode->size());
+    if (const auto exitInfo = hashJob.runSynchronously(); !exitInfo) {
+        LOGW_SYNCPAL_DEBUG(_logger,
+                           L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding with regular conflict resolution.");
+        return;
+    }
+
+    if (!hashJob.hashMatch()) return;
+
+    LOGW_SYNCPAL_INFO(_logger,
+                      L"Edit-Edit conflict on identical content for item "
+                              << Utility::formatSyncPath(localNode->getPath())
+                              << L". The most recent modification date will be propagated, no conflict will be created.");
+
+    // The content is identical on both replicas: propagate only the most recent modification date to the other replica.
+    // The upload and download jobs detect the identical content through the hash match and then propagate only the dates.
+    const auto op = std::make_shared<SyncOperation>();
+    op->setType(OperationType::Edit);
+    if (localNode->modificationTime().value_or(0) >= remoteNode->modificationTime().value_or(0)) {
+        // The local modification date is the most recent one: propagate it to the remote replica.
+        op->setAffectedNode(localNode);
+        op->setCorrespondingNode(remoteNode);
+        op->setTargetSide(ReplicaSide::Remote);
+    } else {
+        // The remote modification date is the most recent one: propagate it to the local replica.
+        op->setAffectedNode(remoteNode);
+        op->setCorrespondingNode(localNode);
+        op->setTargetSide(ReplicaSide::Local);
+    }
+    LOGW_SYNCPAL_INFO(_logger, getLogString(op));
+
+    (void) _syncPal->syncOps()->pushOp(op);
+
+    // Consume the edit change events on both replicas so that the operation generator does not generate redundant
+    // propagation operations.
+    localNode->setStatus(NodeStatus::Processed);
+    remoteNode->setStatus(NodeStatus::Processed);
+
+    continueSolving = true;
+}
+
 ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Conflict &conflict, bool &continueSolving) {
     if (_syncPal->vfsMode() == VirtualFileMode::Off) return ExitCode::Ok;
 
@@ -155,7 +229,7 @@ ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Con
         return exitInfo;
     }
     if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated && !vfsStatus.isSyncing) {
-        // Local node is a dehydrated placeholder, remove it so it will be detected as new on next sync (if still present on
+        // Local node is a dehydrated placeholder, remove it, so it will be detected as new on next sync (if still present on
         // remote replica).
         const auto op = std::make_shared<SyncOperation>();
         op->setType(OperationType::Delete);

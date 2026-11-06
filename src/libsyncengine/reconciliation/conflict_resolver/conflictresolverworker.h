@@ -65,6 +65,17 @@ class ConflictResolverWorker : public OperationProcessor {
         ExitInfo handleConflictOnOmittedEdit(const Conflict &conflict, bool &continueSolving);
 
         /**
+         * @brief Handles an Edit-Edit conflict on files whose content is identical on both replicas (e.g., the same file has
+         * been edited on both sides while the synchronization was paused). The content equality is checked with the same hash
+         * mechanism as the one used by the upload and download jobs. In such a case, the conflict is solved without renaming
+         * the local file: the most recent modification date of both files is propagated to the other replica, so both end up
+         * with the same content and the same modification date.
+         * @param conflict The conflict to be resolved.
+         * @param continueSolving A boolean value indicating if the conflict has been handled by this method.
+         */
+        void handleConflictOnIdenticalContent(const Conflict &conflict, bool &continueSolving);
+
+        /**
          * @brief For Create-Create and Edit-Edit conflicts, the local file is renamed and excluded from the sync in order no to
          * lose any changes. The remote file will be pulled on next sync.
          * @param conflict The conflict to be resolved.
