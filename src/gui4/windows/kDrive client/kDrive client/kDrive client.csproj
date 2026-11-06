@@ -158,9 +158,6 @@
     <Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharEndWithSpaceError.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="CustomControls\Errors\Templates\Node\TmpDirAccessError.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ReservedNameError.xaml">
       <SubType>Designer</SubType>
     </Page>
