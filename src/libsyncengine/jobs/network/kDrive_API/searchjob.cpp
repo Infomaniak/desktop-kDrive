@@ -106,7 +106,7 @@ ExitInfo SearchJob::getLocalProperties(const SyncName &itemPath, LocalProperties
     // the synchronized tree, where the private space is the root while "Common documents" and "Shared" stay folders.
     ApiTranslator::translateV3ToV2(localProperties.path);
     if (CommonUtility::startsWith(localProperties.path, Str("/"))) {
-        localProperties.path.erase(0, 1);
+        (void) localProperties.path.erase(0, 1);
     }
 
     // An advanced sync only mirrors its target folder: results outside of it are never available locally, and results
