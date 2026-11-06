@@ -67,7 +67,6 @@ public enum SynchroErrorKind: Sendable, Hashable, CaseIterable {
     case invalidLinkTarget
     case localAccess
     case dataSyncDirChanged
-    case temporaryDirAccess
 
     case unknown
 
@@ -83,7 +82,7 @@ public enum SynchroErrorKind: Sendable, Hashable, CaseIterable {
              .invalidToken,
              .systemNotEnoughDiskSpace, .systemSyncDirAccess, .systemSyncDirDiskMissing, .systemUnableToStartVFS,
              .systemLiteSyncNotAllowed,
-             .genericErrForbidden, .dataSyncDirChanged, .temporaryDirAccess:
+             .genericErrForbidden, .dataSyncDirChanged:
             return true
         default:
             return false

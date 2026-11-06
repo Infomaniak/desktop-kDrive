@@ -225,11 +225,6 @@ final class SynchroErrorManager: ObservableObject {
         }
     }
 
-    func closeApp() async {
-        try? await UtilityJobs().quit()
-        NSApp.terminate(nil)
-    }
-
     // MARK: - Helpers
 
     private func getDrive(_ error: SynchroError) async -> Drive? {
