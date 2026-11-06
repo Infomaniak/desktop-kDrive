@@ -1157,6 +1157,8 @@
 /* loco:6a6c9c3be4819f7c890366e2 */
 "manyDeleteDialogHardLimitSecondary" = "Slet også online";
 
+"manyDeleteDialogOtherPlaceholder" = "og %@ andre elementer";
+
 /* loco:6a6c9cb7e46a51ff3e04e779 */
 "manyDeleteDialogSoftLimitContent" = "Disse filer kan stadig gendannes fra kDrive-papirkurven.";
 
