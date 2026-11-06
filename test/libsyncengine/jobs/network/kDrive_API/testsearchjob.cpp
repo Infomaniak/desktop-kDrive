@@ -208,7 +208,7 @@ void TestSearchJob::testHandleResponseIsAvailableLocally() {
 void TestSearchJob::testHandleResponseBackslashNameAndPath() {
     const SyncPath localFile = _localTempDir.path() / "ancestor%5cfolder" / "result%5cfile.txt";
     std::error_code ec;
-    std::filesystem::create_directories(localFile.parent_path(), ec);
+    CPPUNIT_ASSERT(std::filesystem::create_directories(localFile.parent_path(), ec));
     CPPUNIT_ASSERT_MESSAGE("Failed to create test directory", !ec);
     { std::ofstream ofs(localFile); }
 
