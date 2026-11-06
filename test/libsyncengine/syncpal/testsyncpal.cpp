@@ -18,15 +18,15 @@
 
 #include "testsyncpal.h"
 #include "syncpal/tmpblacklistmanager.h"
-#include "mocks/libcommonserver/db/mockdb.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
-#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
-
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+
+#include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/mockkeychainstorage.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -79,8 +79,8 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
-                                         KDRIVE_VERSION_STRING);
+    _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    _syncPal = std::make_shared<SyncPal>(_mockVfs, sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
@@ -489,18 +489,42 @@ bool TestSyncPal::check_case_6_4() {
 
 void TestSyncPal::testWipeVirtualFiles() {
 #if !defined(KD_LINUX)
-    const SyncPath placeholderPath = _localTempDir.path() / "dehydrated_placeholder.txt";
-    {
-        std::ofstream placeholder{placeholderPath};
-        auto ioError = IoError::Success;
-        testhelpers::setDehydratedPlaceholderStatus(placeholderPath, ioError);
-    }
+    const SyncPath dehydratedPlaceholderPath = _localTempDir.path() / "dehydrated_placeholder.txt";
+    std::ofstream(dehydratedPlaceholderPath).close();
+
+    const SyncPath hydratedPlaceholderPath = _localTempDir.path() / "hydrated_placeholder.txt";
+    std::ofstream(hydratedPlaceholderPath).close();
+
+    const SyncPath nonPlaceholderPath = _localTempDir.path() / "non_placeholder.txt";
+    std::ofstream(nonPlaceholderPath).close();
+
+    auto mockStatus = [dehydratedPlaceholderPath, hydratedPlaceholderPath, nonPlaceholderPath](
+                              [[maybe_unused]] const SyncPath &absolutePath, VfsStatus &vfsStatus) -> ExitInfo {
+        if (absolutePath.native() == dehydratedPlaceholderPath.native()) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = false;
+        } else if (absolutePath.native() == hydratedPlaceholderPath.native()) {
+            vfsStatus.isPlaceholder = true;
+            vfsStatus.isHydrated = true;
+        } else if (absolutePath.native() == nonPlaceholderPath.native()) {
+            vfsStatus.isPlaceholder = false;
+            vfsStatus.isHydrated = false;
+        }
+
+        vfsStatus.isSyncing = false;
+        vfsStatus.progress = 0;
+        return ExitCode::Ok;
+    };
+    _mockVfs->setMockStatus(mockStatus);
 #endif
+
     CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+
 #if !defined(KD_LINUX)
     std::error_code ec;
-    CPPUNIT_ASSERT(!std::filesystem::exists(placeholderPath, ec));
-    CPPUNIT_ASSERT(!ec);
+    CPPUNIT_ASSERT(!std::filesystem::exists(dehydratedPlaceholderPath, ec) && !ec);
+    CPPUNIT_ASSERT(std::filesystem::exists(hydratedPlaceholderPath, ec) && !ec);
+    CPPUNIT_ASSERT(std::filesystem::exists(nonPlaceholderPath, ec) && !ec);
 #endif
 }
 } // namespace KDC

@@ -21,6 +21,8 @@
 
 #include "syncpal/syncpal.h"
 
+#include "mocks/libsyncengine/vfs/mockvfs.h"
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -45,6 +47,7 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<MockVfs<VfsOff>> _mockVfs = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
         LocalTemporaryDirectory _localParmsDbTempDir = LocalTemporaryDirectory("TestSyncpalParmsDbDir");
