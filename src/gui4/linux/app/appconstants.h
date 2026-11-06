@@ -108,6 +108,11 @@ namespace KDC::AppConstants::Support {
     return QUrl{QStringLiteral("https://support.infomaniak.com/")};
 }
 
+// FAQ article presenting the new kDrive app, opened from the Home banner shown after an update from a version before 4.
+[[nodiscard]] inline QUrl v4OnboardingFaqUri() {
+    return QUrl{QStringLiteral("https://faq.infomaniak.com/2923")};
+}
+
 } // namespace KDC::AppConstants::Support
 
 namespace KDC::AppConstants::WebDrive {
