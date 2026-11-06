@@ -324,7 +324,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<SyncDbId, SyncCache> _syncCacheMap;
         std::unordered_map<int, NodeSet> _undecidedListCacheMap;
         QProcess *_clientProcess = nullptr;
-        std::mutex _fileOpeningJobsMutex;
+        mutable std::mutex _fileOpeningJobsMutex;
         std::unordered_map<UniqueId, FileOpeningHandler *> _fileOpeningJobs;
 
         static std::unique_ptr<UpdateManager> _updateManager;
@@ -425,6 +425,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const CommString &itemName) const;
         void registerFileOpeningJob(UniqueId jobId, FileOpeningHandler *handler);
         void unregisterFileOpeningJob(UniqueId jobId);
+        //! Returns the number of file-opening flows currently active: their job is queued or running and their
+        //! outcome has not been reported yet.
+        [[nodiscard]] Count fileOpeningJobCount() const;
 
         void showSettings();
         void showSynthesis();
