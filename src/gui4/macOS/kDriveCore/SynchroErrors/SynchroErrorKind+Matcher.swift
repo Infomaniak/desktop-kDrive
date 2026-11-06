@@ -103,8 +103,6 @@ extension SynchroErrorKind {
             return .node(exitCodes: [.SystemError], exitCauses: [.FileAccessError])
         case .dataSyncDirChanged:
             return .syncPal(nodeTypes: [.File, .Directory, .Unknown], exitCodes: [.DataError], exitCauses: [.SyncDirChanged])
-        case .temporaryDirAccess:
-            return .syncPal(exitCodes: [.SystemError], exitCauses: [.TmpDirAccessError])
         case .unknown:
             return nil
         }
