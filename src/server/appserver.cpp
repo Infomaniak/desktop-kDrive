@@ -117,6 +117,19 @@
 
 namespace KDC {
 
+namespace {
+// Runs a token check through AppServer::_loadUserInfo so that it can be mocked in tests
+class TokenCheckJob : public AbstractJob {
+    public:
+        explicit TokenCheckJob(const std::function<ExitInfo()> &check) :
+            _check(check) {}
+        ExitInfo runJob() override { return _check(); }
+
+    private:
+        std::function<ExitInfo()> _check;
+};
+} // namespace
+
 std::vector<AppServer::Notification> AppServer::_notifications;
 std::unique_ptr<UpdateManager> AppServer::_updateManager;
 
@@ -2991,11 +3004,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -4139,7 +4152,11 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
 
         if (const auto exitInfo = updateUserInfo(user); !exitInfo) {
             LOG_WARN(_logger, "Error in updateUserInfo: " << exitInfo);
-            if (exitInfo.code() == ExitCode::InvalidToken) continue;
+            if (exitInfo.code() == ExitCode::InvalidToken) {
+                // No sync is involved yet: flag the user as disconnected so that the GUI prompts to log in again
+                manageInvalidTokenError(user);
+                continue;
+            }
             return exitInfo;
         }
     }
@@ -4721,6 +4738,7 @@ void AppServer::manageError(const Error &error, std::vector<Error> &errorList, b
         manageInvalidTokenError(user);
     } else if (error.exitCode() == ExitCode::BackError && error.exitCause() == ExitCause::DriveAccessError) {
         manageDriveAccessError(drive);
+        checkTokenAfterDriveAccessError(user);
     } else if (error.exitCode() == ExitCode::NetworkError && error.exitCause() == ExitCause::SocketsDefuncted) {
         manageSocketsDefunctedError();
     } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
@@ -4760,6 +4778,37 @@ void AppServer::manageDriveAccessError(Drive &drive) const {
     sendDriveUpdated(drive);
 }
 
+void AppServer::checkTokenAfterDriveAccessError(const User &user) const {
+    if (!user.dbId()) return;
+
+    // While a revoked token is still cached, a 401 on the Drive API cannot be told apart from a lost access to the drive and is
+    // reported as DriveAccessError. The user profile API answers 401 only if the token itself is invalid.
+    // The check runs asynchronously: addError is called synchronously by the sync workers, which must not wait for a request.
+    {
+        const std::scoped_lock lock(_tokenCheckMutex);
+        if (!_tokenCheckInProgress.insert(user.dbId()).second) return; // A check is already running for this user
+    }
+
+    const auto userDbId = user.dbId();
+    const auto job = std::make_shared<TokenCheckJob>([this, user = User(user)]() mutable {
+        bool updated = false;
+        return _loadUserInfo(user, updated);
+    });
+    const std::weak_ptr<TokenCheckJob> weakJob = job;
+    job->setAdditionalCallback([this, userDbId, weakJob](const UniqueId) {
+        if (const auto checkJob = weakJob.lock(); checkJob && checkJob->exitInfo().code() == ExitCode::InvalidToken) {
+            LOG_INFO(Log::instance()->getLogger(), "DriveAccessError caused by an invalid token for userDbId=" << userDbId);
+            // Flags the user as disconnected and removes the DriveAccessError errors of their drives
+            manageInvalidTokenError(userDbId);
+        }
+
+        // Released last, so that the check is reported as finished only once its outcome is applied
+        const std::scoped_lock lock(_tokenCheckMutex);
+        (void) _tokenCheckInProgress.erase(userDbId);
+    });
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
+}
+
 void AppServer::manageInvalidTokenError(User &user) const {
     // Manage invalid token error
     LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token error");
@@ -4783,6 +4832,21 @@ void AppServer::manageInvalidTokenError(User &user) const {
     }
 
     sendUserUpdated(user);
+}
+
+void AppServer::manageInvalidTokenError(const UserDbId userDbId) const {
+    User user;
+    bool found = false;
+    if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUser");
+        return;
+    }
+    if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), "User not found with dbId=" << userDbId);
+        return;
+    }
+
+    manageInvalidTokenError(user);
 }
 
 void AppServer::manageSocketsDefunctedError() const {

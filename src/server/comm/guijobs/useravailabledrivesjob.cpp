@@ -59,6 +59,11 @@ ExitInfo UserAvailableDrivesJob::process() {
     ExitCode exitCode = ServerRequests::getUserAvailableDrives(_userDbId, _driveAvailableList);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getUserAvailableDrives");
+        if (exitCode == ExitCode::InvalidToken && _commManager) {
+            // A server-level error carries no user: flag the user as disconnected so that the GUI prompts to log in again
+            _commManager->appServer().manageInvalidTokenError(_userDbId);
+            return exitCode;
+        }
         addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
         return exitCode;
     }
