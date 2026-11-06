@@ -178,4 +178,21 @@ void TestFileOpeningHandler::testShouldOpenParentFolder() {
 #endif
 }
 
+void TestFileOpeningHandler::testMaxConcurrentFileOpeningJobs() {
+    // Smallest pool: one flow only, so that the download it waits for always has a worker to run on.
+    CPPUNIT_ASSERT_EQUAL(Count{1}, FileOpeningHandler::maxConcurrentFileOpeningJobs(3, 1));
+    CPPUNIT_ASSERT_EQUAL(Count{1}, FileOpeningHandler::maxConcurrentFileOpeningJobs(4, 1));
+
+    // Larger pools: at most half of the usable workers may be pinned by waiting flows.
+    CPPUNIT_ASSERT_EQUAL(Count{3}, FileOpeningHandler::maxConcurrentFileOpeningJobs(8, 1));
+    CPPUNIT_ASSERT_EQUAL(Count{4}, FileOpeningHandler::maxConcurrentFileOpeningJobs(10, 1));
+
+    // Degenerate pools: still allow a single flow.
+    CPPUNIT_ASSERT_EQUAL(Count{1}, FileOpeningHandler::maxConcurrentFileOpeningJobs(2, 1));
+    CPPUNIT_ASSERT_EQUAL(Count{1}, FileOpeningHandler::maxConcurrentFileOpeningJobs(1, 1));
+
+    // The live variant never blocks all flows.
+    CPPUNIT_ASSERT(FileOpeningHandler::maxConcurrentFileOpeningJobs() >= 1);
+}
+
 } // namespace KDC
