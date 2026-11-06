@@ -76,6 +76,7 @@ namespace Infomaniak.kDrive
         {
             var services = new ServiceCollection();
             services.AddSingleton<AppModel>();
+            services.AddSingleton<FileOpeningWindowPresenter>();
             services.AddSingleton<IKeychainStore, WindowsKeychainStore>();
             services.AddSingleton<IServerCommClient, TcpServerCommClient>();
             services.AddSingleton<IServerCommService, ServerCommService>();
@@ -170,6 +171,11 @@ namespace Infomaniak.kDrive
             // Initialize notifications
             ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
+            // Start presenting the file opening progress before the server communication is initialized: the
+            // presenter subscribes to the controller for the whole application lifetime and replays the
+            // requests it already tracks, so the pop-up windows are shown whatever the state of the main
+            // window (tray-only startup and cold launch included).
+            ServiceProvider.GetRequiredService<FileOpeningWindowPresenter>().Start();
 
             var serverCommService = ServiceProvider.GetRequiredService<IServerCommService>();
             using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
