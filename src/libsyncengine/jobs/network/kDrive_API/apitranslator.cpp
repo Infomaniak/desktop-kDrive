@@ -240,7 +240,8 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
 
 // Precondition: every non-empty input path is absolute, as always sent by the API v3 ("/Private/...",
 // "/Common documents/...", "/Shared/..."). The private space is the root of the synchronized tree, while the other
-// roots stay folders in it.
+// roots stay folders in it. The translated path keeps its leading separator: the consumers strip it when they need a
+// path relative to the v2 drive root.
 void ApiTranslator::translateV3ToV2(std::string &remotePath) {
     if (remotePath.empty()) return;
 
@@ -250,9 +251,9 @@ void ApiTranslator::translateV3ToV2(std::string &remotePath) {
         // The v3 private root translates to the empty path, which represents the v2 drive root.
         remotePath.clear();
     } else if (CommonUtility::startsWith(remotePath, privateSegment + "/")) {
-        // Only the leading private folder name is stripped, together with the root separator: a deeper component may
-        // be named like the private folder.
-        remotePath = remotePath.substr(privateSegment.size() + 1);
+        // Only the leading private folder name is stripped, without the separator that follows it: a deeper component
+        // may be named like the private folder.
+        remotePath = remotePath.substr(privateSegment.size());
     }
 }
 
@@ -265,12 +266,12 @@ void ApiTranslator::translateV3ToV2(SyncName &remotePath) {
     if (remotePath == privateSegment) {
         remotePath.clear();
     } else if (CommonUtility::startsWith(remotePath, privateSegment + Str("/"))) {
-        remotePath = remotePath.substr(privateSegment.size() + 1);
+        remotePath = remotePath.substr(privateSegment.size());
     }
 }
 #endif
 
-// Unlike the string overloads above, the translated path keeps its leading separator, as expected for NodeInfo paths:
+// Like the string overloads above, the translated path keeps its leading separator, as expected for NodeInfo paths:
 // "/Private/<path>" translates to "/<path>", and "/Private" to the empty path.
 void ApiTranslator::translateV3ToV2(QString &v3Path) {
     if (v3Path.isEmpty()) return;
