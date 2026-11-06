@@ -40,11 +40,19 @@ ExitInfo GetAccountInfoJob::handleJsonResponse(const std::string &replyBody) {
     if (!JsonParserUtility::extractValue(dataObj, nameKey, _name)) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
+    if (!JsonParserUtility::extractValue(dataObj, logoKey, _logoUrl)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
     return ExitCode::Ok;
 }
 
 std::string GetAccountInfoJob::getSpecificUrl() {
     return "/accounts/" + std::to_string(_accountId);
 }
+
+void GetAccountInfoJob::setQueryParameters(Poco::URI &uri) {
+    uri.addQueryParameter("with", "logo");
+}
+
 
 } // namespace KDC
