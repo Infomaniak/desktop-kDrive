@@ -284,7 +284,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.driveLoggingErrorTitle,
                 description: KDriveLocalizable.driveLoggingErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonConnectAccount) {
-                    manager.navigateToLoginPage()
+                    await manager.relogin(error)
                 }
             )
         case .networkOther:
