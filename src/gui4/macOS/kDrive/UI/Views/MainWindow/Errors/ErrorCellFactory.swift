@@ -385,16 +385,6 @@ struct ErrorCellFactory {
                     manager.showResolutionTipsSheet(error)
                 }
             )
-        case .temporaryDirAccess:
-            return makeCell(
-                error: error,
-                title: KDriveLocalizable.informationBlockTmpDirAccessErrorTitle,
-                description: KDriveLocalizable.informationBlockTmpDirAccessErrorSubtitle,
-                action: .init(title: KDriveLocalizable.buttonClose) {
-                    matomo.track(eventWithCategory: .errors, name: "manageTmpDirError")
-                    await manager.closeApp()
-                }
-            )
         case .unknown:
             return nil
         }
