@@ -36,8 +36,13 @@ QtObject {
     readonly property real sidebarNotificationMinHeight: 40
     readonly property real sidebarNotificationIconSize: 14
     readonly property int sidebarNotificationDuration: 5000
-    readonly property real errorBannerHeight: 64
-    readonly property real errorBannerActionButtonHeight: 24
+    // Information blocks: one action is 64 px high, an action with its dismiss button below is 80 px.
+    readonly property real informationBlockMinHeight: 64
+    readonly property real informationBlockActionButtonHeight: 24
+    readonly property real informationBlockIconTileSize: 26
+    readonly property real informationBlockIconTileRadius: 5
+    readonly property real informationBlockIconSize: 14
+    readonly property real informationBlockExternalIconSpacing: IKSpacing.s8
     readonly property real homeAvatarSize: 44
     readonly property real homeAvatarSettingsIconSize: 16
     // The synchronization badge sits on the bottom-right of the avatar and overflows it.
