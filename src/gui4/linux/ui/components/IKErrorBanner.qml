@@ -19,12 +19,11 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 import kDrive.UI
 
 // Synchronization error banner shared by Home and Activities. The owning view supplies the height its screen
 // specifies and handles `actionTriggered`; the banner itself never reads a controller.
-Rectangle {
+IKInformationBlock {
     id: root
 
     required property int errorCount
@@ -33,71 +32,13 @@ Rectangle {
 
     // Gives the keyboard focus to the "Fix errors" button, for instance when the user comes back from the errors page.
     function focusAction() {
-        fixButton.forceActiveFocus();
+        root.focusPrimaryAction();
     }
 
-    implicitHeight: IKMainWindow.errorBannerHeight
-    radius: IKRadius.r12
-    color: IKColors.errorBannerSurface
-
-    Row {
-        anchors.fill: parent
-        anchors.margins: IKSpacing.s16
-        spacing: IKSpacing.s16
-
-        Column {
-            width: Math.max(0, parent.width - fixButton.width - parent.spacing)
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: IKSpacing.s2
-
-            Text {
-                width: parent.width
-                text: qsTrId("informationBlockSynchroErrorTitle", root.errorCount)
-                textFormat: Text.StyledText
-                color: IKColors.textPrimary
-                font.pixelSize: IKFonts.bodySize
-                elide: Text.ElideRight
-            }
-
-            Text {
-                width: parent.width
-                text: qsTrId("informationBlockSynchroErrorSubtitle")
-                color: IKColors.textSecondary
-                font.pixelSize: IKFonts.subheadlineSize
-                elide: Text.ElideRight
-            }
-        }
-
-        Button {
-            id: fixButton
-
-            anchors.verticalCenter: parent.verticalCenter
-            implicitHeight: IKMainWindow.errorBannerActionButtonHeight
-            text: qsTrId("buttonFixErrors")
-            focusPolicy: Qt.StrongFocus
-            onClicked: root.actionTriggered()
-
-            contentItem: Text {
-                text: fixButton.text
-                color: IKColors.actionOnPrimary
-                font.pixelSize: IKFonts.bodySize
-                font.weight: IKFonts.emphasized
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
-            }
-
-            background: Rectangle {
-                implicitHeight: IKMainWindow.errorBannerActionButtonHeight
-                radius: IKRadius.r6
-                color: IKColors.actionPrimary
-            }
-
-            padding: 0
-            leftPadding: IKSpacing.s16
-            rightPadding: IKSpacing.s16
-            topPadding: 0
-            bottomPadding: 0
-        }
-    }
+    title: qsTrId("informationBlockSynchroErrorTitle", root.errorCount)
+    titleTextFormat: Text.StyledText
+    subtitle: qsTrId("informationBlockSynchroErrorSubtitle")
+    surfaceColor: IKColors.errorBannerSurface
+    primaryActionText: qsTrId("buttonFixErrors")
+    onPrimaryActionTriggered: root.actionTriggered()
 }
