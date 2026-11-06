@@ -911,34 +911,45 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         // except for specific action codes where the path is optional (e.g. trash / access-right removal).
         if (actionInfo.path().empty() && shouldContainPath(actionInfo.actionCode)) continue;
 
-        bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) {
-            if (isWarning) {
-                // Error paths are relative to the sync root: strip the leading separator kept by the V3 to V2
-                // translation.
-                SyncName path = actionInfo.path();
-                if (CommonUtility::startsWith(path, Str("/"))) {
-                    (void) path.erase(0, 1);
-                }
-                Error error(_syncPal->syncDbId(), "", actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type(), path,
-                            ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
-                _syncPal->addError(error);
-            }
-            // Remove it from liveSnapshot
-            if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
-                                                                    << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
-                invalidateSnapshot();
-                return ExitCode::DataError;
-            }
-            continue;
-        }
+        bool excluded = false;
+        if (const auto exitInfo = handleExcludedItem(actionInfo, excluded); !exitInfo) return exitInfo;
+        if (excluded) continue;
 
 #if defined(KD_WINDOWS)
         actionInfo.snapshotItem.setName(
                 Utility::fixNameWithBackslash(actionInfo.snapshotItem.name()));
 #endif
         actionInfoList.push_back(actionInfo);
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::handleExcludedItem(const ActionInfo &actionInfo, bool &excluded) {
+    excluded = false;
+
+    bool isWarning = false;
+    if (!ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) return ExitCode::Ok;
+
+    excluded = true;
+
+    if (isWarning) {
+        // Error paths are relative to the sync root: strip the leading separator kept by the V3 to V2 translation.
+        SyncName path = actionInfo.path();
+        if (CommonUtility::startsWith(path, Str("/"))) {
+            (void) path.erase(0, 1);
+        }
+        Error error(_syncPal->syncDbId(), "", actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type(), path,
+                    ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
+        _syncPal->addError(error);
+    }
+
+    // Remove it from liveSnapshot
+    if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
+        LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+                                                            << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
+        invalidateSnapshot();
+        return ExitCode::DataError;
     }
 
     return ExitCode::Ok;
