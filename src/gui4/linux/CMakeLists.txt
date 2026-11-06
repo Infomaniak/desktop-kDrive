@@ -294,6 +294,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKTintedIcon.qml
         ui/components/IKExternalLinkIcon.qml
         ui/components/IKErrorBanner.qml
+        ui/components/IKInformationBlock.qml
         ui/features/syncconfiguration/RemoteFolderTree.qml
         ui/features/syncconfiguration/RemoteFolderPicker.qml
         ui/features/syncconfiguration/SyncConfigurationDialog.qml
@@ -449,6 +450,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/home/headphones.svg
         ui/assets/main/home/kdrive-folders-stacked.svg
         ui/assets/main/home/kdrive-outline.svg
+        ui/assets/main/home/kdrive-product.svg
         ui/assets/main/home/pause.svg
         ui/assets/main/home/play.svg
         ui/assets/main/home/search.svg
