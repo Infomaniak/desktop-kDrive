@@ -28,6 +28,11 @@ namespace Infomaniak.kDrive.CustomControls
     /// scenarios, in which the main window does not exist.
     public sealed partial class FileOpeningWindow : Window
     {
+        // Effective pixels: the window only carries an item name, a short message, a progress gauge and a Cancel
+        // button, and must hug this content. Fits the worst case, i.e. a two-line wrapped message.
+        private const int _width = 420;
+        private const int _height = 220;
+
         private readonly FileOpeningController _controller = App.ServiceProvider.GetRequiredService<AppModel>().FileOpeningController;
 
         public FileOpeningWindow(FileOpeningRequest request)
@@ -35,7 +40,16 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
             RootPanel.DataContext = request;
             CancelButton.Content = Localizer.Instance.GetString("buttonCancel");
+            Utility.SetWindowProperties(this, _width, _height, Utility.WindowResizeOptions.AllowMinimize);
+            AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             AppWindow.IsShownInSwitchers = false;
+            Activated += FileOpeningWindow_Activated;
+        }
+
+        private void FileOpeningWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            Utility.CenterWindow(this);
+            Activated -= FileOpeningWindow_Activated;
         }
 
         private async void OnCancelClicked(object sender, RoutedEventArgs e)

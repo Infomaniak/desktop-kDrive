@@ -22,14 +22,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="using:Infomaniak.kDrive.Converters"
-        mc:Ignorable="d">
+        mc:Ignorable="d"
+        Title="kDrive">
 
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
 
-    <Border Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
-        <StackPanel x:Name="RootPanel" HorizontalAlignment="Stretch" Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
+    <Border Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
+        <StackPanel x:Name="RootPanel"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
             <TextBlock Text="{Binding ItemName}"
                        FontWeight="Bold"
                        TextWrapping="Wrap"
@@ -41,7 +45,8 @@
                          IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay}" />
             <Button x:Name="CancelButton"
                     Click="OnCancelClicked"
-                    HorizontalAlignment="Right" />
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource Infomaniak.Style.Button.Secondary}" />
         </StackPanel>
     </Border>
 </Window>
