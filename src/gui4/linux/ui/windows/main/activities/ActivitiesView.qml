@@ -33,7 +33,8 @@ Item {
     property real modalScrimRadius: 0
 
     // One component per page of the ActivitiesNavigation chain, in chain order: the stack depth of a page is its index + 1.
-    readonly property list<Component> pageComponents: [listPageComponent, errorsPageComponent]
+    readonly property list<Component> pageComponents: [listPageComponent, errorsPageComponent, conflictsQuickPageComponent,
+        conflictsListPageComponent]
 
     // `moveFocus`: a page change requested by the user gives the keyboard focus to the new page, so that it does not stay
     // on a control that disappeared, such as the toolbar back button. Rebuilding the view leaves the focus where it is.
@@ -94,8 +95,41 @@ Item {
 
         ErrorsPage {
             controller: root.errorsPageController
+            conflictVersionDialog: sharedConflictVersionDialog
             modalScrimInset: root.modalScrimInset
             modalScrimRadius: root.modalScrimRadius
+        }
+    }
+
+    Component {
+        id: conflictsQuickPageComponent
+
+        ConflictsQuickPage {
+            controller: root.errorsPageController.conflicts
+        }
+    }
+
+    Component {
+        id: conflictsListPageComponent
+
+        ConflictsListPage {
+            controller: root.errorsPageController.conflicts
+            conflictVersionDialog: sharedConflictVersionDialog
+        }
+    }
+
+    // One dialog for the errors page and the conflicts list, which live in the stack at the same time: two dialogs on the
+    // same controller would open together.
+    ConflictVersionDialog {
+        id: sharedConflictVersionDialog
+
+        controller: root.errorsPageController.conflictVersion
+        scrimInset: root.modalScrimInset
+        scrimRadius: root.modalScrimRadius
+        onFallbackFocusRequested: {
+            if (stack.currentItem) {
+                stack.currentItem.focusDefault();
+            }
         }
     }
 }
