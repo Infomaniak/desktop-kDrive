@@ -1825,16 +1825,6 @@ Useful if you know the important work is online on kDrive.</source>
             <extracomment>Linux desktop app, "Errors to fix" page: title of the row and of its dialog, shown when the Linux system limit on watched folders (inotify) is reached, so kDrive stops synchronizing.</extracomment> 
             <translation>Límite de carpetas sincronizadas alcanzado</translation> 
         </message> 
-        <message id="linuxErrTmpDirAccessDescription"> 
-            <source>kDrive cannot write to its working folder (.kDrive-cache) inside the sync folder. Check the write permissions of the sync folder, then retry.</source> 
-            <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrTmpDirAccessTitle. Keep ".kDrive-cache" as is: it is the name of a hidden folder. The row offers a "Retry" button.</extracomment> 
-            <translation>kDrive no puede escribir en su carpeta de trabajo (.kDrive-cache) dentro de la carpeta de sincronización. Comprueba los permisos de escritura de la carpeta de sincronización y vuelve a intentarlo.</translation> 
-        </message> 
-        <message id="linuxErrTmpDirAccessTitle"> 
-            <source>Sync folder not writable</source> 
-            <extracomment>Linux desktop app, "Errors to fix" page: title of the row shown when kDrive cannot write to its hidden working folder (.kDrive-cache) inside the sync folder, for example after its permissions changed. The row offers a "Retry" button.</extracomment> 
-            <translation>Carpeta de sincronización sin permiso de escritura</translation> 
-        </message> 
         <message id="linuxLabelRemoteAccessRightsModifiedTip"> 
             <source>You may no longer have access rights to this folder on kDrive.</source> 
             <extracomment>Linux desktop app, explanation dialog "A change has been detected in your configuration" (the synchronized folder is no longer accessible on kDrive online): advice under the reason "Access rights modified". "This folder" is the synchronized folder on kDrive.</extracomment> 
