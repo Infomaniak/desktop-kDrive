@@ -33,6 +33,7 @@
 
 #include <log4cplus/loggingmacros.h>
 
+#include <algorithm>
 #include <functional>
 #include <string_view>
 #include <unordered_set>
@@ -60,6 +61,19 @@ void FileOpeningHandler::queueOpenFileJob() {
     if (OpenFileJob::Request request; !OpenFileJob::parseDeeplinkUrl(_url, request)) {
         LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
         handleFileOpeningFailure(tr("This kDrive link is invalid."));
+
+        return;
+    }
+
+    // Reject the request when too many file-opening flows are already active: each one holds a job-pool worker while
+    // it waits (for the item to be synchronized, then for its hydration), starving the dependent jobs (hydration,
+    // download) that must run in the same bounded pool. Like an invalid URL, a rejected request sends no status to
+    // the client and therefore opens no pop-up window: the user is informed through a notification only.
+    const auto maxFlows = maxConcurrentFileOpeningJobs();
+    if (const auto activeFlows = _appServer->fileOpeningJobCount(); activeFlows >= maxFlows) {
+        LOG_WARN(Log::instance()->getLogger(), "Too many concurrent file opening requests - active="
+                                                       << activeFlows << ", max=" << maxFlows << " - url=" << _url);
+        handleFileOpeningFailure(tr("Too many elements are currently being opened from kDrive links. Please try again later."));
 
         return;
     }
@@ -231,6 +245,19 @@ bool FileOpeningHandler::shouldOpenParentFolder(const SyncPath &path) {
                         (itemType.linkType == LinkType::None || itemType.targetType != NodeType::Directory);
     return (isFile && Poco::File(Path2Str(path)).canExecute()) ||
            executableExtensions.contains(CommonUtility::toLower(path.extension().string()));
+}
+
+Count FileOpeningHandler::maxConcurrentFileOpeningJobs(const Count jobPoolCapacity, const Count reservedWorkerCount) {
+    if (jobPoolCapacity <= reservedWorkerCount) {
+        return 1; // Degenerate pool: still allow a single flow.
+    }
+
+    return std::max<Count>(1, (jobPoolCapacity - reservedWorkerCount) / 2);
+}
+
+Count FileOpeningHandler::maxConcurrentFileOpeningJobs() {
+    const auto jobManager = SyncJobManagerSingleton::instance();
+    return maxConcurrentFileOpeningJobs(jobManager->capacity(), jobManager->highPriorityCapacity());
 }
 
 } // namespace KDC
