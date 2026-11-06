@@ -15,15 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using DynamicData.Binding;
 using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.System;
 
@@ -49,15 +45,6 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private async void TmpDirAccessError_Closed(InfoBar sender, InfoBarClosedEventArgs args)
-        {
-            if (!await ControlViewModel.ResolveTmpDirAccessError())
-            {
-                Logger.LogError("Failed to resolve tmp dir access error");
-                Utility.ShowUnexpectedErrorTeachingTip();
-            }
-        }
-
         private async void kDriveFullInfoBar_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (AppViewModel.SelectedSync is null)
@@ -74,33 +61,22 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
         }
-
-        private void TmpDirAccessError_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.RestartApp);
-            App.ExitApplicationAndShutdownServer();
-        }
     }
 
     public class HomeErrorInfoBarViewModel : UISafeObservableObject, IDisposable
     {
         private bool _showDriveFullError = false;
         private bool _isOpen = false;
-        private bool _showTmpDirAccessError = false;
-        private IDisposable? _appErrorsSubscriptions;
-        private IDisposable? _selectedSyncErrorsSubscriptions;
         private bool _isDisposed = false;
         private AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public HomeErrorInfoBarViewModel()
         {
-            // Subscribe to changes in the app errors and selected sync to update the error display
-            _appErrorsSubscriptions = ViewModel.AppErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
+            // Follow the selected sync drive to update the error display
             ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
             if (ViewModel.SelectedSync is not null)
             {
                 ViewModel.SelectedSync.Drive.PropertyChanged += SelectedSyncDrive_PropertyChanged;
-                _selectedSyncErrorsSubscriptions = ViewModel.SelectedSync.SyncErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
             }
             Refresh();
         }
@@ -109,8 +85,6 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (!_isDisposed)
             {
-                _appErrorsSubscriptions?.Dispose();
-                _selectedSyncErrorsSubscriptions?.Dispose();
                 ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
                 if (ViewModel.SelectedSync is not null)
                     ViewModel.SelectedSync.Drive.PropertyChanged -= SelectedSyncDrive_PropertyChanged;
@@ -121,16 +95,11 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ViewModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            _selectedSyncErrorsSubscriptions?.Dispose();
-
             if (e.OldValue is not null)
                 e.OldValue.Drive.PropertyChanged -= SelectedSyncDrive_PropertyChanged;
 
             if (e.NewValue is not null)
-            {
-                _selectedSyncErrorsSubscriptions = e.NewValue.SyncErrors.ToObservableChangeSet().Subscribe(_ => Refresh());
                 e.NewValue.Drive.PropertyChanged += SelectedSyncDrive_PropertyChanged;
-            }
 
             Refresh();
         }
@@ -151,11 +120,6 @@ namespace Infomaniak.kDrive.CustomControls
             get => _showDriveFullError;
             set => SetPropertyInUIThread(ref _showDriveFullError, value);
         }
-        public bool ShowTmpDirAccessError
-        {
-            get => _showTmpDirAccessError;
-            set => SetPropertyInUIThread(ref _showTmpDirAccessError, value);
-        }
 
         public async Task<bool> ResolveDriveFullError()
         {
@@ -166,36 +130,15 @@ namespace Infomaniak.kDrive.CustomControls
             return true;
         }
 
-        public async Task<bool> ResolveTmpDirAccessError()
-        {
-            List<Error> tmpDirAccessErrorsList = ViewModel.AppErrors.Where(e => e.ExitCause == Types.ExitCause.TmpDirAccessError).ToList();
-            var commService = App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>();
-            bool result = true;
-            foreach (var error in tmpDirAccessErrorsList)
-            {
-                result &= await commService.DeleteError(error.DbId, CancellationToken.None);
-            }
-            return result;
-        }
-
         private void HideAll()
         {
 
             ShowDriveFullError = false;
-            ShowTmpDirAccessError = false;
         }
         public void Refresh()
         {
 
-            if (HasTmpDirAccessError())
-            {
-                if (!ShowTmpDirAccessError)
-                {
-                    HideAll();
-                    ShowTmpDirAccessError = true;
-                }
-            }
-            else if (HasDriveFullError())
+            if (HasDriveFullError())
             {
                 if (!ShowDriveFullError)
                 {
@@ -207,17 +150,7 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 HideAll();
             }
-            IsOpen = ShowDriveFullError || ShowTmpDirAccessError;
-        }
-
-        private bool HasTmpDirAccessError()
-        {
-            bool result = ViewModel.AppErrors.Any(e => e.ExitCause == Types.ExitCause.TmpDirAccessError);
-
-            if (result || ViewModel.SelectedSync is null)
-                return result;
-
-            return ViewModel.SelectedSync.SyncErrors.Any(e => e.ExitCause == Types.ExitCause.TmpDirAccessError);
+            IsOpen = ShowDriveFullError;
         }
 
         private bool HasDriveFullError() =>
