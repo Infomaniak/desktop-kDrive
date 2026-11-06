@@ -117,6 +117,10 @@ namespace Infomaniak.kDrive.ViewModels
     {
         private readonly Dictionary<ulong, FileOpeningRequest> _requests = new();
 
+        /// Requests currently tracked, i.e. reported by the server and not finished yet. Used to replay the
+        /// pending requests to a presentation surface subscribing after the requests have started.
+        public IEnumerable<FileOpeningRequest> ActiveRequests => _requests.Values;
+
         /// Raised when a request was created or updated: the view must open its pop-up window for it, or refresh the
         /// bindings of the already open one.
         public event EventHandler<FileOpeningStatusEventArgs>? ShowRequested;
