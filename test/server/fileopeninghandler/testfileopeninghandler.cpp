@@ -139,7 +139,7 @@ void TestFileOpeningHandler::testShouldOpenParentFolder() {
     // shouldOpenParentFolder() inspects the item on disk: the asserted paths must exist for its on-disk checks to
     // run at all. Create real, non-executable files and assert against them.
     const LocalTemporaryDirectory tmpDir("TestFileOpeningHandler");
-    const auto createEmptyFile = [](const SyncPath &path) { std::ofstream ofs(path); };
+    const auto createEmptyFile = [](const SyncPath &path) { const std::ofstream ofs(path); };
 
     // Files with an executable extension open the parent folder, whether or not they are executable.
     const SyncPath setupExePath = tmpDir.path() / "setup.exe";
@@ -171,7 +171,7 @@ void TestFileOpeningHandler::testShouldOpenParentFolder() {
     const SyncPath executablePath = tmpDir.path() / "runnable.bin";
     createEmptyFile(executablePath);
     Poco::File file(executablePath.native());
-    file.setExecutable();
+    (void) file.setExecutable();
     CPPUNIT_ASSERT(file.canExecute());
 
     CPPUNIT_ASSERT(FileOpeningHandler::shouldOpenParentFolder(executablePath));
