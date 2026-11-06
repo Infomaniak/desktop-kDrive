@@ -1825,16 +1825,6 @@ Useful if you know the important work is online on kDrive.</source>
             <extracomment>Linux desktop app, "Errors to fix" page: title of the row and of its dialog, shown when the Linux system limit on watched folders (inotify) is reached, so kDrive stops synchronizing.</extracomment> 
             <translation>Limite de pastas sincronizadas atingido</translation> 
         </message> 
-        <message id="linuxErrTmpDirAccessDescription"> 
-            <source>kDrive cannot write to its working folder (.kDrive-cache) inside the sync folder. Check the write permissions of the sync folder, then retry.</source> 
-            <extracomment>Linux desktop app, "Errors to fix" page: description under linuxErrTmpDirAccessTitle. Keep ".kDrive-cache" as is: it is the name of a hidden folder. The row offers a "Retry" button.</extracomment> 
-            <translation>O kDrive não consegue escrever na sua pasta de trabalho (.kDrive-cache) dentro da pasta de sincronização. Verifique as permissões de escrita da pasta de sincronização e tente novamente.</translation> 
-        </message> 
-        <message id="linuxErrTmpDirAccessTitle"> 
-            <source>Sync folder not writable</source> 
-            <extracomment>Linux desktop app, "Errors to fix" page: title of the row shown when kDrive cannot write to its hidden working folder (.kDrive-cache) inside the sync folder, for example after its permissions changed. The row offers a "Retry" button.</extracomment> 
-            <translation>Pasta de sincronização sem permissão de escrita</translation> 
-        </message> 
         <message id="linuxLabelRemoteAccessRightsModifiedTip"> 
             <source>You may no longer have access rights to this folder on kDrive.</source> 
             <extracomment>Linux desktop app, explanation dialog "A change has been detected in your configuration" (the synchronized folder is no longer accessible on kDrive online): advice under the reason "Access rights modified". "This folder" is the synchronized folder on kDrive.</extracomment> 
