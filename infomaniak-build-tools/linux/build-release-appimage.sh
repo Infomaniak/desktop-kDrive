@@ -254,10 +254,6 @@ function clean_app_directory() {
   # Remove egldeviceintegrations (embedded systems)
   rm -rf ./usr/plugins/egldeviceintegrations
 
-  # Remove the SQL drivers (no Qt SQL driver is used on Linux)
-  echo "  Removing SQL drivers..."
-  rm -rf ./usr/plugins/sqldrivers
-
   # Clean translations - keep only de, es, fr, it, sv, pt, pl, nb, fi, da, el, en
   echo "  Cleaning translations..."
   cd ./usr/translations
@@ -309,8 +305,6 @@ function build_app_image() {
   # linuxdeploy bundles its own `strip` which can fail on newer ELF features.
   # Skipping linuxdeploy stripping avoids build failures; our binaries are already handled earlier.
   export NO_STRIP=1
-  # The Qt plugin deploys every SQL driver from the Qt installation, but no Qt SQL driver is used on Linux
-  export LINUXDEPLOY_EXCLUDED_LIBRARIES="libqsql*.so"
   linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0 --
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }

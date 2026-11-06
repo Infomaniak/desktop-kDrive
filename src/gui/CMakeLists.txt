@@ -4,7 +4,7 @@ else()
     project(gui LANGUAGES C CXX)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Network Sql Widgets SvgWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Network Widgets SvgWidgets)
 find_package(Qt6LinguistTools)
 find_package(Poco 1.15.2 REQUIRED Foundation Net)
 
@@ -340,7 +340,7 @@ target_include_directories(${APPLICATION_CLIENT_EXECUTABLE} PRIVATE
 
 # Link
 target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE}
-    Qt6::Network Qt6::Sql Qt6::SvgWidgets
+    Qt6::Network Qt6::SvgWidgets
     sentry::sentry
     Poco::Foundation Poco::Net
     ${libcommongui_NAME})
