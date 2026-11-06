@@ -50,8 +50,9 @@ struct FileOpeningStatusView: View {
 
     private var message: AttributedString {
         let text = phase == .hydrating
-            ? (itemName.isEmpty ? KDriveLocalizable.fileOpeningHydratingMessage
-                                : KDriveLocalizable.fileOpeningDownloadingMessage(itemName))
+            ? (itemName.isEmpty
+                ? KDriveLocalizable.fileOpeningHydratingMessage
+                : KDriveLocalizable.fileOpeningDownloadingMessage(itemName))
             : KDriveLocalizable.fileOpeningWaitingSyncMessage
 
         var attributedMessage = AttributedString(text)
