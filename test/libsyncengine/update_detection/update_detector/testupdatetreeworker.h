@@ -48,6 +48,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSearchForAncestorNode);
         CPPUNIT_TEST(testGetNewPathAfterMove);
         CPPUNIT_TEST(testCreateMissingNodesFromPath);
+        CPPUNIT_TEST(testCreateMissingNodesForDeletedItem);
         CPPUNIT_TEST(testStep1);
         CPPUNIT_TEST(testStep2);
         CPPUNIT_TEST(testStep3);
@@ -93,6 +94,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         void testSearchForAncestorNode();
         void testGetNewPathAfterMove();
         void testCreateMissingNodesFromPath();
+        void testCreateMissingNodesForDeletedItem();
 
         // Test with already existing UpdateTree
         void testStep1();
@@ -144,8 +146,9 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         std::shared_ptr<UpdateTree> _localUpdateTree;
         std::shared_ptr<UpdateTree> _remoteUpdateTree;
 
-        DbNodeId _dbnodeIdDir41;
-        DbNodeId _dbnodeIdDir411;
+        DbNodeId _dbnodeIdDir41 = 0;
+        DbNodeId _dbnodeIdDir411 = 0;
+        DbNodeId _dbnodeIdDir8 = 0;
 
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestUpdateTreeWorker");
 };

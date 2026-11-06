@@ -472,7 +472,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             logUpdate(currentNode, opType);
         } else {
             std::shared_ptr<Node> parentNode;
-            if (const auto createExitCode = createMissingNodesForDeletedItem(op->path(), parentNode);
+            if (const auto createExitCode = createMissingNodesForDeletedItem(deleteOp->path(), op->path(), parentNode);
                 createExitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::createMissingNodesForDeletedItem");
                 return createExitCode;
@@ -1128,10 +1128,11 @@ ExitCode UpdateTreeWorker::createMissingNodesFromPath(const SyncPath &path, cons
     return ExitCode::Ok;
 }
 
-ExitCode UpdateTreeWorker::createMissingNodesForDeletedItem(const SyncPath &path, std::shared_ptr<Node> &parentNode) {
+ExitCode UpdateTreeWorker::createMissingNodesForDeletedItem(const SyncPath &path, const SyncPath &createPath,
+                                                            std::shared_ptr<Node> &parentNode) {
     // Search for the nearest ancestor in the update tree
     std::shared_ptr<Node> ancestorNode;
-    if (const auto searchExitCode = searchForAncestorNode(path, ancestorNode); searchExitCode != ExitCode::Ok) {
+    if (const auto searchExitCode = searchForAncestorNode(createPath, ancestorNode); searchExitCode != ExitCode::Ok) {
         return searchExitCode;
     };
 
@@ -1150,6 +1151,10 @@ ExitCode UpdateTreeWorker::createMissingNodesForDeletedItem(const SyncPath &path
     }
 
     return ExitCode::Ok;
+}
+
+ExitCode UpdateTreeWorker::createMissingNodesForDeletedItem(const SyncPath &path, std::shared_ptr<Node> &parentNode) {
+    return createMissingNodesForDeletedItem(path, path, parentNode);
 }
 
 namespace {
