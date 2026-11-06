@@ -121,6 +121,19 @@ void StorageController::retry() {
     startScan(ScanTrigger::Retry);
 }
 
+void StorageController::refresh() {
+    if (_state == State::Unavailable) {
+        retry();
+        return;
+    }
+
+    if (!_viewActive || _selectedSyncDbId == 0 || _scanWatcher.isRunning()) {
+        return;
+    }
+
+    startScan(ScanTrigger::Refresh);
+}
+
 void StorageController::retranslate() {
     emit storageChanged();
 }
@@ -208,13 +221,24 @@ void StorageController::startScan(const ScanTrigger trigger) {
     _scanCancellation = std::make_shared<std::atomic_bool>(false);
     const auto cancellation = _scanCancellation;
     qCInfo(lcStorageController) << "Starting local Storage scan | syncDbId:" << requestedSyncDbId
-                                << "| root:" << Path2QStr(requestedSyncRoot)
-                                << "| trigger:" << (trigger == ScanTrigger::Retry ? "retry" : "automatic");
+                                << "| root:" << Path2QStr(requestedSyncRoot) << "| trigger:" << scanTriggerName(trigger);
     (void) _scanWatcher.setProperty("syncDbId", QVariant::fromValue<qint64>(requestedSyncDbId));
     (void) _scanWatcher.setProperty("syncRoot", Path2QStr(requestedSyncRoot));
     _scanWatcher.setFuture(QtConcurrent::run([requestedSyncRoot, cancellation] {
         return StorageScanner::scan(requestedSyncRoot, [cancellation] { return cancellation->load(std::memory_order_relaxed); });
     }));
+}
+
+const char *StorageController::scanTriggerName(const ScanTrigger trigger) {
+    switch (trigger) {
+        case ScanTrigger::Automatic:
+            return "automatic";
+        case ScanTrigger::Retry:
+            return "retry";
+        case ScanTrigger::Refresh:
+            return "refresh";
+    }
+    return "unknown";
 }
 
 void StorageController::cancelScan() {

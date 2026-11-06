@@ -42,6 +42,16 @@ IKShadowedWindow {
     // Dialog of the running "Sync a folder with kDrive" session, created for that session only.
     property AddAdvancedSyncDialog addAdvancedSyncDialog: null
     property Item advancedSyncCreationTrigger: null
+    readonly property SettingsNavigationPane currentNavigationPane: {
+        switch (selectedCategory) {
+        case SettingsWindow.Category.Accounts:
+            return accountsPane;
+        case SettingsWindow.Category.Advanced:
+            return advancedPane;
+        default:
+            return null;
+        }
+    }
 
     function selectGeneral() {
         accountsPane.reset(accountsRootComponent);
@@ -175,7 +185,7 @@ IKShadowedWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             visible: root.selectedCategory === SettingsWindow.Category.Accounts
-            canGoBack: accountsPane.canGoBack
+            hasPreviousPage: accountsPane.hasPreviousPage
             currentTitle: accountsPane.currentTitle
             previousTitle: accountsPane.previousTitle
             onBackRequested: accountsPane.pop()
@@ -188,7 +198,7 @@ IKShadowedWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             visible: root.selectedCategory === SettingsWindow.Category.Advanced
-            canGoBack: advancedPane.canGoBack
+            hasPreviousPage: advancedPane.hasPreviousPage
             currentTitle: advancedPane.currentTitle
             previousTitle: advancedPane.previousTitle
             onBackRequested: advancedPane.pop()
@@ -735,6 +745,72 @@ IKShadowedWindow {
                 localFolderDialog.close();
             }
         }
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.Quit ] // Ctrl+Q
+        autoRepeat: false
+        context: Qt.WindowShortcut
+        onActivated: root.controller.requestQuitConfirmation()
+    }
+
+    // Same entry points as the sidebar. Navigation wraps around.
+    function selectCategory(category) {
+        switch (category) {
+        case SettingsWindow.Category.General:
+            root.selectGeneral();
+            break;
+        case SettingsWindow.Category.Accounts:
+            root.selectAccounts();
+            break;
+        case SettingsWindow.Category.Advanced:
+            root.selectAdvanced();
+            break;
+        }
+    }
+
+    function selectAdjacentCategory(step) {
+        const categoryCount = 3;
+        root.selectCategory((root.selectedCategory + step + categoryCount) % categoryCount);
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.NextChild, "Ctrl+PgDown" ] // Ctrl+Tab
+        context: Qt.WindowShortcut
+        onActivated: root.selectAdjacentCategory(1)
+    }
+
+    Shortcut {
+        // StandardKey.PreviousChild only holds Ctrl+Shift+Backtab, which Qt never matches on Wayland.
+        sequences: [ "Ctrl+Shift+Tab", "Ctrl+PgUp" ]
+        context: Qt.WindowShortcut
+        onActivated: root.selectAdjacentCategory(-1)
+    }
+
+    Shortcut {
+        sequence: "Alt+1"
+        context: Qt.WindowShortcut
+        onActivated: root.selectCategory(SettingsWindow.Category.General)
+    }
+
+    Shortcut {
+        sequence: "Alt+2"
+        context: Qt.WindowShortcut
+        onActivated: root.selectCategory(SettingsWindow.Category.Accounts)
+    }
+
+    Shortcut {
+        sequence: "Alt+3"
+        context: Qt.WindowShortcut
+        onActivated: root.selectCategory(SettingsWindow.Category.Advanced)
+    }
+
+    Shortcut {
+        sequences: [ StandardKey.Back ] // Alt+Left
+        autoRepeat: false
+        enabled: root.currentNavigationPane !== null && root.currentNavigationPane.canGoBack
+        context: Qt.WindowShortcut
+        onActivated: root.currentNavigationPane.pop()
     }
 
     onClosing: {

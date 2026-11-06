@@ -25,7 +25,7 @@ import kDrive.UI
 FocusScope {
     id: root
 
-    required property bool canGoBack
+    required property bool hasPreviousPage
     required property string currentTitle
     property string previousTitle: ""
 
@@ -39,8 +39,8 @@ FocusScope {
         anchors.verticalCenter: parent.verticalCenter
         width: IKSettings.iconButtonSize
         height: IKSettings.iconButtonSize
-        visible: root.canGoBack
-        enabled: root.canGoBack
+        visible: root.hasPreviousPage
+        enabled: root.hasPreviousPage
         focusPolicy: enabled ? Qt.StrongFocus : Qt.NoFocus
         hoverEnabled: enabled
         display: AbstractButton.IconOnly
@@ -69,8 +69,8 @@ FocusScope {
     }
 
     Text {
-        anchors.left: root.canGoBack ? backButton.right : parent.left
-        anchors.leftMargin: root.canGoBack ? IKSpacing.s12 : IKSettings.pageMargin
+        anchors.left: root.hasPreviousPage ? backButton.right : parent.left
+        anchors.leftMargin: root.hasPreviousPage ? IKSpacing.s12 : IKSettings.pageMargin
         anchors.right: parent.right
         anchors.rightMargin: IKSettings.pageMargin
         anchors.verticalCenter: parent.verticalCenter

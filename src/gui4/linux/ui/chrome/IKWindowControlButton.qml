@@ -32,6 +32,7 @@ ToolButton {
 
     required property var targetWindow
     required property int controlType
+    property string shortcutText: ""
 
     readonly property bool closeControl: controlType === IKWindowControlButton.Close
     readonly property color iconColor: closeControl && (hovered || down)
@@ -76,7 +77,7 @@ ToolButton {
 
     IKToolTip {
         targetButton: root
-        text: root.text
+        text: root.shortcutText.length > 0 ? root.text + " (" + root.shortcutText + ")" : root.text
     }
 
     background: Rectangle {
