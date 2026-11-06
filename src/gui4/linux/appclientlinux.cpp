@@ -95,6 +95,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                       "HomeController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<BlockingErrorController>(AppConstants::Qml::moduleUri, 1, 0, "BlockingErrorController",
                                                                "BlockingErrorController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableType<SyncProgressState>(AppConstants::Qml::moduleUri, 1, 0, "SyncProgressState",
+                                                         "SyncProgressState is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ActivityListModel>(AppConstants::Qml::moduleUri, 1, 0, "ActivityListModel",
                                                          "ActivityListModel is owned by ActivitiesController.");
     (void) qmlRegisterUncreatableType<ErrorListModel>(AppConstants::Qml::moduleUri, 1, 0, "ErrorListModel",

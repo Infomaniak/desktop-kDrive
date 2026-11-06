@@ -558,6 +558,9 @@
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
   server starts its synchronizations a few seconds after launch, is presented as up to date (offline without network),
   as on macOS, instead of an empty loading state.
+- `app/mainwindow/syncprogressstate.*`: selected-sync progress shared by Home and Activities through their `syncProgress`
+  property. It exposes a phase and item counters, notifies only when one of them changes, and leaves the translation to
+  `ui/windows/main/SyncProgressText.qml`. A `Starting` status ignores the step, which still describes the previous run.
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
   reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
 - `app/mainwindow/searchcontroller.*`: QML-facing state of the search dialog for the drive of the selected

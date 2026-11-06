@@ -51,14 +51,16 @@ std::optional<AppConstants::WebDrive::Destination> toWebDriveDestination(const i
 
 HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
                                const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
-                               NetworkStatusObserver &networkStatusObserver, QObject *const parent) :
+                               NetworkStatusObserver &networkStatusObserver, SyncProgressState &syncProgress,
+                               QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _mainSelectionStore(mainSelectionStore),
     _syncErrorsProjection(syncErrorsProjection),
     _syncService(syncService),
     _appRouter(appRouter),
-    _networkStatusObserver(networkStatusObserver) {
+    _networkStatusObserver(networkStatusObserver),
+    _syncProgress(syncProgress) {
     (void) connect(&_mainSelectionStore, &MainSelectionStore::currentContextChanged, this, &HomeController::homeChanged);
     (void) connect(&_mainSelectionStore, &MainSelectionStore::currentSyncStatusChanged, this, &HomeController::homeChanged);
     (void) connect(&_appCache, &AppCache::usersChanged, this, &HomeController::homeChanged);

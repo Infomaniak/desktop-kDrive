@@ -19,8 +19,16 @@
 import kDrive.UI
 
 HomeStateContent {
+    id: root
+
     visualStatus: HomeController.Syncing
     title: qsTrId("synchroStatusInProgressTitle")
-    description: qsTrId("synchroStatusInProgressDescription")
+    description: progressText.text
     actionLabel: qsTrId("buttonSeeActivities")
+
+    SyncProgressText {
+        id: progressText
+
+        progress: root.controller.syncProgress
+    }
 }

@@ -22,6 +22,7 @@
 #include "app/cache/mainselectionstore.h"
 #include "app/mainwindow/activitylistmodel.h"
 #include "app/mainwindow/networkstatusobserver.h"
+#include "app/mainwindow/syncprogressstate.h"
 #include "app/services/activityservice.h"
 
 #include <QObject>
@@ -40,6 +41,7 @@ class AppRouter;
 class ActivitiesController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(ActivityListModel *model READ model CONSTANT)
+        Q_PROPERTY(SyncProgressState *syncProgress READ syncProgress CONSTANT)
         Q_PROPERTY(ActivityListModel::Filter filter READ filter WRITE setFilter NOTIFY filterChanged)
         Q_PROPERTY(QString title READ title NOTIFY titleChanged)
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
@@ -51,9 +53,11 @@ class ActivitiesController final : public QObject {
     public:
         explicit ActivitiesController(const ActivityStore &activityStore, const AppCache &appCache,
                                       MainSelectionStore &selectionStore, const NetworkStatusObserver &networkStatusObserver,
-                                      ActivityService &activityService, AppRouter &appRouter, QObject *parent = nullptr);
+                                      ActivityService &activityService, AppRouter &appRouter, SyncProgressState &syncProgress,
+                                      QObject *parent = nullptr);
 
         [[nodiscard]] ActivityListModel *model() { return &_model; }
+        [[nodiscard]] SyncProgressState *syncProgress() { return &_syncProgress; }
         [[nodiscard]] ActivityListModel::Filter filter() const { return _model.filter(); }
         void setFilter(ActivityListModel::Filter filter);
         void retranslate();
@@ -96,6 +100,7 @@ class ActivitiesController final : public QObject {
         const NetworkStatusObserver &_networkStatusObserver;
         ActivityService &_activityService;
         AppRouter &_appRouter;
+        SyncProgressState &_syncProgress;
         ActivityListModel _model;
         QString _title;
         bool _loading{true};

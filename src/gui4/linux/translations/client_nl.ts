@@ -2453,6 +2453,22 @@ Een internetverbinding is vereist om ze te openen.</translation>
             <source>Sync is running</source> 
             <translation>Synchronisatie is bezig</translation> 
         </message> 
+        <message id="syncStatusAnalysing"> 
+            <source>Searching for changes…</source> 
+            <translation>Zoeken naar wijzigingen…</translation> 
+        </message> 
+        <message id="syncStatusExploring"> 
+            <source>Scanning files to synchronize…</source> 
+            <translation>Te synchroniseren bestanden doorzoeken…</translation> 
+        </message> 
+        <message id="syncStatusPropagating"> 
+            <source>%1 item synchronized out of %2…</source> 
+            <translation>%1 van %2 elementen gesynchroniseerd…</translation> 
+        </message> 
+        <message id="syncStatusPropagating-plural"> 
+            <source>%1 items synchronized out of %2…</source> 
+            <translation>%1 van %2 elementen gesynchroniseerd…</translation> 
+        </message> 
         <message id="syncSuccessTooltip"> 
             <source>Synced</source> 
             <translation>Gesynchroniseerd</translation> 
@@ -2476,10 +2492,6 @@ Een internetverbinding is vereist om ze te openen.</translation>
         <message id="synchroPaused"> 
             <source>synchronization is paused</source> 
             <translation>de synchronisatie is onderbroken</translation> 
-        </message> 
-        <message id="synchroStatusInProgressDescription"> 
-            <source>Your recent files are being updated.</source> 
-            <translation>Uw recente bestanden worden bijgewerkt.</translation> 
         </message> 
         <message id="synchroStatusInProgressTitle"> 
             <source>Sync in progress</source> 
