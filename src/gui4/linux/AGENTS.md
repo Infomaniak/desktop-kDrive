@@ -553,6 +553,9 @@
   kDrive online opens the remote folder of an advanced synchronization (`itemRedirectUri`), the drive root otherwise;
   the other web shortcuts stay at the drive level. The Home avatar opens the user's card in Settings, its badge the
   drive management page, or the advanced synchronizations page focused on the selected advanced synchronization.
+  It reads `AppStateKey::ShowV4Onboarding` once on `ipcConnected`: the server sets it to `"1"` only when the database
+  comes from a version before 4. The "new kDrive app" banner shows under the errors banner while it is `"1"` and the
+  Home is neither loading nor unconfigured; closing it hides it at once and writes `"0"`.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the

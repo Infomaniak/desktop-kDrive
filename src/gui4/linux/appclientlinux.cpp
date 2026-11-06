@@ -208,6 +208,7 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &AppClientLinux::ipcConnected, &_sentryService, &SentryService::fetchAppUid);
     (void) connect(this, &AppClientLinux::ipcConnected, &_updateStatusService, &UpdateStatusService::refresh);
+    (void) connect(this, &AppClientLinux::ipcConnected, &_homeController, &HomeController::loadV4Onboarding);
     (void) connect(this, &AppClientLinux::ipcConnected, _settingsWindowController.advancedController(),
                    &AdvancedSettingsController::restoreUploadStatus);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
