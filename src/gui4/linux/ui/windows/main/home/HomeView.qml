@@ -48,6 +48,20 @@ Item {
             visible: root.controller.errorCount > 0
             onActionTriggered: root.controller.showErrors()
         }
+        IKInformationBlock {
+            Layout.fillWidth: true
+            Layout.preferredHeight: visible ? implicitHeight : 0
+            title: qsTrId("onboardingV4Title")
+            subtitle: qsTrId("onboardingV4Subtitle")
+            iconSource: "qrc:/assets/main/home/kdrive-product.svg"
+            primaryActionText: qsTrId("onboardingV4Faq")
+            primaryActionExternal: true
+            dismissText: qsTrId("buttonClose")
+            visible: root.controller.showV4Onboarding && root.controller.status !== HomeController.SetupRequired
+                     && root.controller.status !== HomeController.Loading
+            onPrimaryActionTriggered: root.controller.openV4OnboardingFaq()
+            onDismissRequested: root.controller.dismissV4Onboarding()
+        }
         Row {
             id: panelsRow
 

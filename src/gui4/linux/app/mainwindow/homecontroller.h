@@ -32,6 +32,7 @@ namespace KDC {
 
 class AppCache;
 class AppRouter;
+class CommService;
 class MainSelectionStore;
 class NetworkStatusObserver;
 class SyncErrorsProjection;
@@ -57,6 +58,7 @@ class HomeController final : public QObject {
         Q_PROPERTY(int32_t errorCount READ errorCount NOTIFY homeChanged)
         Q_PROPERTY(bool hasCurrentDrive READ hasCurrentDrive NOTIFY homeChanged)
         Q_PROPERTY(bool hasConnectedUser READ hasConnectedUser NOTIFY homeChanged)
+        Q_PROPERTY(bool showV4Onboarding READ showV4Onboarding NOTIFY v4OnboardingChanged)
 
     public:
         enum class HomeStatus : uint8_t {
@@ -88,7 +90,8 @@ class HomeController final : public QObject {
 
         explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
                                 const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
-                                NetworkStatusObserver &networkStatusObserver, QObject *parent = nullptr);
+                                NetworkStatusObserver &networkStatusObserver, CommService &commService,
+                                QObject *parent = nullptr);
 
         [[nodiscard]] HomeStatus status() const;
         [[nodiscard]] PrimaryAction primaryAction() const;
@@ -103,6 +106,12 @@ class HomeController final : public QObject {
         [[nodiscard]] bool hasCurrentDrive() const;
         [[nodiscard]] bool hasConnectedUser() const;
 
+        /** Whether the "new kDrive app" banner is shown: the server sets it once, when the app comes from a version before 4. */
+        [[nodiscard]] bool showV4Onboarding() const;
+
+        /** Reads `AppStateKey::ShowV4Onboarding` from the server. Called once the IPC connection is established. */
+        void loadV4Onboarding();
+
         Q_INVOKABLE void triggerPrimaryAction();
         Q_INVOKABLE void toggleSync();
         Q_INVOKABLE static void openSupport();
@@ -110,9 +119,14 @@ class HomeController final : public QObject {
         Q_INVOKABLE void showErrors() const;
         Q_INVOKABLE void openUserSettings();
         Q_INVOKABLE void openSyncSettings();
+        Q_INVOKABLE static void openV4OnboardingFaq();
+
+        /** Hides the "new kDrive app" banner and asks the server to never show it again. */
+        Q_INVOKABLE void dismissV4Onboarding();
 
     signals:
         void homeChanged();
+        void v4OnboardingChanged();
         void setupRequested();
         void userSettingsRequested(UserDbId userDbId);
         void driveSettingsRequested(DriveDbId driveDbId);
@@ -129,6 +143,8 @@ class HomeController final : public QObject {
         SyncService &_syncService;
         AppRouter &_appRouter;
         NetworkStatusObserver &_networkStatusObserver;
+        CommService &_commService;
+        bool _showV4Onboarding{false};
 };
 
 } // namespace KDC
