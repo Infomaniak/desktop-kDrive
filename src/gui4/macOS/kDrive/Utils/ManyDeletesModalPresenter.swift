@@ -131,7 +131,7 @@ final class ManyDeletesModalPresenter {
         case .SoftLimit:
             await runSoftLimitAlert(nbFiles: notification.nbFiles, driveId: Int(driveId))
         case .HardLimit:
-            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles) else {
+            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles, filesPaths: notification.filesPaths) else {
                 IKLogger.general.info("[KD] Many deletes confirmation aborted syncDbId=\(syncDbId)")
                 return
             }
@@ -140,6 +140,29 @@ final class ManyDeletesModalPresenter {
         default:
             break
         }
+    }
+
+    private func makeDeletedFilesAccessoryView(paths: [String]) -> NSView {
+        let width: CGFloat = 400
+        let height: CGFloat = min(CGFloat(paths.count) * 18 + 8, 180)
+
+        let scrollView = NSScrollView(frame: NSRect(x: 0, y: 0, width: width, height: height))
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.borderType = .bezelBorder
+
+        let textView = NSTextView(frame: scrollView.bounds)
+        textView.isEditable = false
+        textView.isSelectable = true          // permet de copier les chemins
+        textView.drawsBackground = false
+        textView.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        textView.textContainerInset = NSSize(width: 4, height: 4)
+        textView.autoresizingMask = [.width]
+        textView.textContainer?.lineBreakMode = .byTruncatingMiddle
+        textView.string = paths.joined(separator: "\n")
+
+        scrollView.documentView = textView
+        return scrollView
     }
 
     private func runSoftLimitAlert(nbFiles: UInt64, driveId: Int) async {
@@ -163,7 +186,7 @@ final class ManyDeletesModalPresenter {
         }
     }
 
-    private func runHardLimitAlert(nbFiles: UInt64) async -> KDC.TooManyDeletesUserChoice? {
+    private func runHardLimitAlert(nbFiles: UInt64, filesPaths: [String]) async -> KDC.TooManyDeletesUserChoice? {
         let alert = makeAlert(
             style: .critical,
             title: KDriveLocalizable.manyDeleteDialogTitle(nbFiles),
@@ -173,6 +196,7 @@ final class ManyDeletesModalPresenter {
         alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitPrimary)
         let secondaryButton = alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitSecondary)
         secondaryButton.hasDestructiveAction = true
+        alert.accessoryView = makeDeletedFilesAccessoryView(paths: filesPaths)
 
         let response = await runModal(for: alert)
 
