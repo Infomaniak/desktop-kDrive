@@ -21,9 +21,6 @@
 #include "jobs/network/abstracttokennetworkjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
-#if defined(KD_WINDOWS)
-#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-#endif
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -71,7 +68,7 @@ ExitInfo GetFilesSharedWithMeJob::deserializeDataArray() {
         }
 
 #if defined(KD_WINDOWS)
-        name = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name);
+        name = Utility::fixNameWithBackslash(name);
 #endif
 
         if (name.empty()) continue;

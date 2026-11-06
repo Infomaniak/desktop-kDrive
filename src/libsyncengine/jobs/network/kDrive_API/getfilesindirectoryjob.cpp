@@ -22,10 +22,6 @@
 #include "utility/jsonparserutility.h"
 #include "jobs/network/jobexceptions.h"
 
-#if defined(KD_WINDOWS)
-#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-#endif
-
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
@@ -90,7 +86,7 @@ ExitInfo GetFilesInDirectoryJob::extractName(const Poco::JSON::Object::Ptr &obj,
     }
     
 #if defined(KD_WINDOWS)
-    name = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name);
+    name = Utility::fixNameWithBackslash(name);
 #endif
 
     return ExitCode::Ok;
@@ -107,7 +103,7 @@ ExitInfo GetFilesInDirectoryJob::extractPath(const Poco::JSON::Object::Ptr &obj,
     }
 
 #if defined(KD_WINDOWS)
-    path = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(path);
+    path = Utility::fixNameWithBackslash(path);
 #endif
 
     return ExitCode::Ok;

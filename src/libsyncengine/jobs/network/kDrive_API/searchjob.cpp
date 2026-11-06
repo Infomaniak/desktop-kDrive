@@ -24,9 +24,7 @@
 #include "jobs/network/jobexceptions.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
-#if defined(KD_WINDOWS)
-#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-#endif
+
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
@@ -208,7 +206,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         }
 
 #if defined(KD_WINDOWS)
-        name = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name);
+        name = Utility::fixNameWithBackslash(name);
 #endif
 
         std::string type;
@@ -221,7 +219,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 #if defined(KD_WINDOWS)
-        pathStr = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(pathStr);
+        pathStr = Utility::fixNameWithBackslash(pathStr);
 #endif
         SyncPath path(pathStr);
 

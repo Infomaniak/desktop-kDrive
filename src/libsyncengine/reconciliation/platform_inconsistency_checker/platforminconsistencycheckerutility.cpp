@@ -161,24 +161,6 @@ ExitInfo PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
                          // used.
 }
 
-#if defined(KD_WINDOWS)
-SyncName PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &name) {
-    SyncName newName;
-    size_t pos = name.find('\\');
-    while (pos != std::string::npos) {
-        if (newName.empty()) {
-            newName = name; // Copy filename to newName only if necessary
-        }
-
-        newName.replace(pos, 1, charToHex(newName[pos]));
-        pos = newName.find('\\', pos);
-    }
-
-    // Return the original name if no backslash was found, otherwise return the modified name
-    return newName.empty() ? name : newName;
-}
-#endif
-
 bool PlatformInconsistencyCheckerUtility::isNameTooLong(const SyncName &name) const {
     return SyncName2Str(name).size() > maxNameLengh;
 }
@@ -226,12 +208,6 @@ bool PlatformInconsistencyCheckerUtility::isPathTooLong(size_t pathSize) {
 
 PlatformInconsistencyCheckerUtility::PlatformInconsistencyCheckerUtility() {
     setMaxPath();
-}
-
-SyncName PlatformInconsistencyCheckerUtility::charToHex(unsigned int c) {
-    OStringStream stm;
-    stm << '%' << std::hex << c;
-    return stm.str();
 }
 
 void PlatformInconsistencyCheckerUtility::setMaxPath() {

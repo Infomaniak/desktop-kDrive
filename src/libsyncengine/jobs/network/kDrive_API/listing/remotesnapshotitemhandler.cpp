@@ -18,8 +18,6 @@
 
 #include "remotesnapshotitemhandler.h"
 
-#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-
 namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");
@@ -60,7 +58,7 @@ bool RemoteSnapshotItemHandler::updateRemoteSnapshotItem(const std::string &str,
         case CsvIndexName: {
             SyncName name = Str2SyncName(str);
 #if defined(KD_WINDOWS)
-            name = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name);
+            name = Utility::fixNameWithBackslash(name);
 #endif
             item.setName(name);
             break;

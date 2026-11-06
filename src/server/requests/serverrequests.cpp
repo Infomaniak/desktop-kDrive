@@ -50,9 +50,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
-#if defined(KD_WINDOWS)
-#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-#endif
+
 #include "theme/theme.h"
 
 #include <QDir>
@@ -623,7 +621,7 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
     }
 
 #if defined(KD_WINDOWS)
-    name = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name);
+    name = Utility::fixNameWithBackslash(name);
 #endif
     nodeInfo.setName(SyncName2QStr(name));
 
@@ -639,7 +637,7 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
             return ExitCode::BackError;
         }
 #if defined(KD_WINDOWS)
-        pathStr = PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(pathStr);
+        pathStr = Utility::fixNameWithBackslash(pathStr);
 #endif
         nodeInfo.setPath(SyncName2QStr(pathStr));
     }
