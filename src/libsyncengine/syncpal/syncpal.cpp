@@ -46,6 +46,7 @@
 #include "propagation/executor/executorworker.h"
 #include "requests/syncnodecache.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
@@ -1148,6 +1149,45 @@ ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) cons
     if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(normalizedPath, nodeId); !exitInfo) return exitInfo;
     canShare = liveSnapshot(ReplicaSide::Remote).canShare(nodeId);
     return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::checkIfExistsOnServer(const NodeId &localNodeId, bool &exists) const {
+    NodeId remoteNodeId;
+
+    if (!syncDb()) {
+        LOG_WARN(_logger, "SyncDb is not available in checkIfExistsOnServer");
+        return ExitCode::DataError;
+    }
+
+    if (!syncDb()->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, exists)) {
+        LOG_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+        return ExitCode::DbError;
+    }
+
+    if (!exists) return ExitCode::Ok;
+
+    if (isRunning() && _remoteFSObserverWorker && liveSnapshot(ReplicaSide::Remote).isValid()) {
+        exists = liveSnapshot(ReplicaSide::Remote).exists(remoteNodeId);
+        return ExitCode::Ok;
+    }
+
+    // If the sync is not running, we call the server to check if the node exists.
+    // This is a costly operation, but it is necessary to ensure that we have the correct information.
+    GetFileInfoJob fileInfoJob(userDbId(), driveId(), remoteNodeId);
+    ExitInfo exitInfo = fileInfoJob.runSynchronously();
+
+    if (exitInfo) {
+        exists = true;
+        return ExitCode::Ok;
+    }
+
+    if (exitInfo == ExitInfo(ExitCode::BackError, ExitCause::NotFound)) {
+        exists = false;
+        return ExitCode::Ok;
+    }
+
+    LOG_WARN(_logger, "Error in GetFileInfoJob::runSynchronously for nodeId=" << remoteNodeId << ": " << exitInfo);
+    return exitInfo;
 }
 
 ExitCode SyncPal::syncIdSet(SyncNodeType type, NodeSet &nodeIdSet) {
