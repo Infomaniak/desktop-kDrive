@@ -66,6 +66,14 @@ class FileOpeningHandler : public QObject {
         //! Returns true if `path` designates executable content that must be revealed in its parent folder instead of
         //! being launched.
         static bool shouldOpenParentFolder(const SyncPath &path);
+        //! Returns the maximum number of file-opening flows that may run concurrently. A running flow holds one
+        //! job-pool worker while it waits (for the item to be synchronized, then for its download) and needs one more
+        //! worker for the download itself. At most half of the usable workers, i.e. the pool capacity minus the
+        //! workers JobManager reserves for PRIO_HIGHEST jobs, may be pinned by waiting flows, so that regular sync
+        //! jobs keep running.
+        [[nodiscard]] static Count maxConcurrentFileOpeningJobs(Count jobPoolCapacity, Count reservedWorkerCount);
+        //! Same as above, computed from the current job-pool state of the sync job manager.
+        [[nodiscard]] static Count maxConcurrentFileOpeningJobs();
 
     signals:
         //! Emitted once the file opening request has been processed, with true on success and false on failure. The

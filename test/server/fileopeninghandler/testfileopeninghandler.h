@@ -27,6 +27,7 @@ class TestFileOpeningHandler : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testIsOpenFileUrl);
         CPPUNIT_TEST(testParseUrl);
         CPPUNIT_TEST(testShouldOpenParentFolder);
+        CPPUNIT_TEST(testMaxConcurrentFileOpeningJobs);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -36,6 +37,7 @@ class TestFileOpeningHandler : public CppUnit::TestFixture, public TestBase {
         void testIsOpenFileUrl();
         void testParseUrl();
         void testShouldOpenParentFolder();
+        void testMaxConcurrentFileOpeningJobs();
 };
 
 } // namespace KDC

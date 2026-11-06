@@ -2937,6 +2937,11 @@ void AppServer::unregisterFileOpeningJob(const UniqueId jobId) {
     (void) _fileOpeningJobs.erase(jobId);
 }
 
+Count AppServer::fileOpeningJobCount() const {
+    const std::scoped_lock lock(_fileOpeningJobsMutex);
+    return static_cast<Count>(_fileOpeningJobs.size());
+}
+
 void AppServer::sendErrorAdded(const Error &error) const {
     if (useOldCommServer()) {
         int id = 0;
@@ -3089,11 +3094,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
