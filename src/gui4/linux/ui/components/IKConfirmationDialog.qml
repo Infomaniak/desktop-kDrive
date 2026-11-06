@@ -32,6 +32,8 @@ IKModal {
     // Optional failure shown under the description, for a confirmed action that can fail and be retried.
     property string errorText: ""
     property int confirmRole: IKModalButton.Primary
+    // Cancel keeps the focus by default, so Return never confirms a destructive action by accident.
+    property bool initialFocusOnConfirm: false
     readonly property real requiredActionsWidth: cancelButton.implicitWidth + confirmButton.implicitWidth
                                                  + IKModalTokens.actionSpacing
 
@@ -49,7 +51,7 @@ IKModal {
 
     actionsStacked: requiredActionsWidth > availableWidth
     escapeDismissible: !busy
-    initialFocusItem: cancelButton
+    initialFocusItem: initialFocusOnConfirm ? confirmButton : cancelButton
 
     bodyData: [
         Text {
