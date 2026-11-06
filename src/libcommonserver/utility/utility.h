@@ -218,6 +218,12 @@ struct COMMONSERVER_EXPORT Utility {
         static ExitInfo checkIfFileNamesCanEndWithSpace([[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
                                                         bool &canEndWithSpace);
 
+        static SyncName charToHex(unsigned int c);
+
+#if defined(KD_WINDOWS)
+        static SyncName fixNameWithBackslash(const SyncName &name);
+#endif
+
         static void msleep(int64_t msec);
 
         static bool getLinuxDesktopType(std::string &currentDesktop);

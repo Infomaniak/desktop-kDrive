@@ -204,6 +204,11 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
+
+#if defined(KD_WINDOWS)
+        name = Utility::fixNameWithBackslash(name);
+#endif
+
         std::string type;
         if (!JsonParserUtility::extractValue(obj, typeKey, type)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
@@ -213,6 +218,9 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         if (!JsonParserUtility::extractValue(obj, pathKey, pathStr)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
+#if defined(KD_WINDOWS)
+        pathStr = Utility::fixNameWithBackslash(pathStr);
+#endif
         SyncPath path(pathStr);
 
         SyncTime modifiedTime = 0;
