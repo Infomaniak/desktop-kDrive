@@ -20,6 +20,7 @@
 
 script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 source "$script_directory_path/build-utils.sh"
+source "$script_directory_path/appimage-v4.sh"
 
 program_name="$(basename "$0")"
 
@@ -122,6 +123,8 @@ function build_client_via_cmake() {
       -DCMAKE_BUILD_TYPE=$build_type \
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
       -DBUILD_UNIT_TESTS=0 \
+      -DBUILD_GUI=OFF \
+      -DBUILD_GUI_LEGACY=ON \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
       "${CMAKE_PARAMS[@]}" \
@@ -142,6 +145,60 @@ function build_client_via_cmake() {
   make DESTDIR=/app install
 }
 
+function build_client_via_cmake_v4() {
+  build_type=$1
+  conan_dependencies_folder=$2
+
+  echo "Building Linux v4 client via CMake..."
+
+  cd /build/client
+
+  CMAKE_PARAMS=()
+
+  if [ -n "$APPLICATION_SERVER_URL" ]; then
+    CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
+  fi
+
+  export KDRIVE_DEBUG=0
+
+  conan_folder=/build/conan
+  conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+
+  if [ ! -f "$conan_toolchain_file" ]; then
+    echo "ERROR: Conan toolchain file not found: $conan_toolchain_file" >&2
+    return 1
+  fi
+
+  # Ensure cmake is the one provided by Conan: Qt >= 6.12 requires CMake >= 3.25 to be
+  # consumed via find_package() (see QtPublicCMakeVersionHelpers.cmake).
+  # shellcheck disable=SC1091
+  source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
+
+  cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DQT_FEATURE_neon=OFF \
+      -DCMAKE_MODULE_PATH="$QT_BASE_DIR/lib/cmake/" \
+      -DCMAKE_BUILD_TYPE=$build_type \
+      -DKDRIVE_THEME_DIR="/src/infomaniak" \
+      -DBUILD_UNIT_TESTS=0 \
+      -DBUILD_GUI=ON \
+      -DBUILD_GUI_LEGACY=OFF \
+      -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
+      -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \
+      -DCONAN_DEP_DIR="$conan_dependencies_folder" \
+      -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
+      "${CMAKE_PARAMS[@]}" \
+      /src || return 1
+  make "-j$(nproc)" || return 1
+
+  v4_extract_debug_symbols ./bin /build kDrive kdrive_qml || return 1
+
+  bundle_sources_for_sentry /build/kDrive.dbg
+  bundle_sources_for_sentry /build/kdrive_qml.dbg
+
+  make DESTDIR=/app install || return 1
+}
+
 function bundle_sources_for_sentry() {
   local debug_file="$1"
   local source_bundle="${debug_file%.dbg}.src.zip"
@@ -153,7 +210,8 @@ function bundle_sources_for_sentry() {
 
   echo "Bundling sources for $(basename "$debug_file")..."
   rm -f "$source_bundle"
-  sentry-cli debug-files bundle-sources "$debug_file"
+  # Repository-relative paths in the debug info are resolved from the current directory.
+  (cd /src && sentry-cli debug-files bundle-sources "$debug_file")
 
   if [ ! -f "$source_bundle" ]; then
     echo "ERROR: Source bundle '${source_bundle}' was not created for '${debug_file}'." >&2
@@ -315,6 +373,19 @@ function build_app_image() {
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }
 
+function build_app_image_v4() {
+  v4_prepare_appdir /app || return 1
+  v4_check_appdir /app || return 1
+
+  cd /build || return 1
+  v4_linuxdeploy_deploy /app || return 1
+  v4_strip_unneeded_symbols /app || return 1
+  v4_verify_bundle /app || return 1
+  v4_package_appimage /app || return 1
+
+  mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
+}
+
 function build_recovery_updater_image() {
   architecture=$1
   updater_bin="/app/usr/bin/kDriveRecoveryUpdater"
@@ -367,6 +438,37 @@ EOF
     echo "ERROR: linuxdeploy failed for recovery updater AppImage" >&2
     return 1
   fi
+
+  mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
+  if [ "$?" -ne 0 ]; then
+    echo "ERROR: Failed to move recovery updater AppImage to /install/" >&2
+    return 1
+  fi
+
+  echo "Recovery updater AppImage created: /install/kDriveRecoveryUpdater-$architecture.AppImage"
+}
+
+function build_recovery_updater_image_v4() {
+  architecture=$1
+  updater_bin="/app/usr/bin/kDriveRecoveryUpdater"
+
+  if [ ! -f "$updater_bin" ]; then
+    echo "kDriveRecoveryUpdater not found at '$updater_bin'; the release requires its AppImage." >&2
+    return 1
+  fi
+
+  echo "Building recovery updater AppImage for ${architecture}..."
+
+  updater_appdir="/tmp/updater-app"
+  updater_icon="/src/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
+  v4_prepare_recovery_updater_appdir /app "$updater_appdir" "$updater_icon" || return 1
+  v4_check_recovery_updater_appdir "$updater_appdir" || return 1
+
+  cd /build || return 1
+  v4_linuxdeploy_recovery_updater "$updater_appdir" || return 1
+  v4_strip_unneeded_symbols "$updater_appdir" || return 1
+  v4_verify_bundle "$updater_appdir" || return 1
+  v4_package_appimage "$updater_appdir" || return 1
 
   mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
   if [ "$?" -ne 0 ]; then
@@ -435,6 +537,21 @@ fi
 architecture="$(get_host_arch)"
 build_type="RelWithDebInfo"
 conan_dependencies_folder="/build/conan/dependencies"
+release_flavor="$(get_linux_release_flavor /src)" || {
+    echo "Unable to determine the release flavor." >&2
+    exit 1
+}
+echo "Release flavor: $release_flavor"
+
+# The sentry recipe requires libc-ares-dev, which the build image does not provide.
+# TODO: Remove once the build image ships libc-ares-dev.
+if ! dpkg-query -W -f='${Status}' libc-ares-dev 2>/dev/null | grep -q "install ok installed"; then
+    echo "Installing libc-ares-dev..."
+    if ! { apt-get update -qq && apt-get install -y -qq libc-ares-dev; }; then
+        echo "Unable to install libc-ares-dev." >&2
+        exit 1
+    fi
+fi
 
 echo "Detecting Qt and building Conan dependencies for ${architecture}..."
 find_qt_from_conan "$build_type"
@@ -456,44 +573,77 @@ fi
 echo
 
 echo "Building desktop-kDrive application with type ${build_type} via CMake for architecture ${architecture}..."
-build_client_via_cmake "$build_type" "$conan_dependencies_folder"
+if [[ "$release_flavor" == "v4" ]]; then
+    build_client_via_cmake_v4 "$build_type" "$conan_dependencies_folder" || {
+        printf "\nCMake build failed." >&2
+        exit 1
+    }
 
-if [ ! "$?" -eq "0" ]; then
-    printf "\nCMake build failed." >&2
-    exit 1
-fi
+    echo
+    echo "Building recovery updater AppImage ..."
+    build_recovery_updater_image_v4 "$architecture" || {
+        printf "\nBuild of the recovery updater AppImage failed." >&2
+        exit 1
+    }
 
-echo
+    rm -f /app/usr/bin/kDriveRecoveryUpdater
+    check_main_appdir_updater_separation /app || {
+        printf "\nRecovery updater separation check failed." >&2
+        exit 1
+    }
 
-echo "Moving dependencies ..."
-move_dependencies "$architecture" "$conan_dependencies_folder"
+    echo
+    echo "Building AppImage ..."
+    build_app_image_v4 || {
+        printf "\nBuild of the AppImage failed." >&2
+        exit 1
+    }
+else
+    build_client_via_cmake "$build_type" "$conan_dependencies_folder"
 
-if [ ! "$?" -eq "0" ]; then
-    printf "\nMove of dependencies failed." >&2
-    exit 1
-fi
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nCMake build failed." >&2
+        exit 1
+    fi
 
-# TODO enable the cleaning of the appimage folder once the build is stable.
-echo
-echo "Cleaning unnecessary files ..."
-clean_app_directory "$architecture"
+    echo
 
-echo
-echo "Building AppImage ..."
-build_app_image "$architecture"
+    echo "Moving dependencies ..."
+    move_dependencies "$architecture" "$conan_dependencies_folder"
 
-if [ ! "$?" -eq "0" ]; then
-    printf "\nBuild of the AppImage failed." >&2
-    exit 1
-fi
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nMove of dependencies failed." >&2
+        exit 1
+    fi
 
-echo
-echo "Building recovery updater AppImage ..."
-build_recovery_updater_image "$architecture"
+    # TODO enable the cleaning of the appimage folder once the build is stable.
+    echo
+    echo "Cleaning unnecessary files ..."
+    clean_app_directory "$architecture"
 
-if [ ! "$?" -eq "0" ]; then
-    printf "\nBuild of the recovery updater AppImage failed." >&2
-    exit 1
+    echo
+    echo "Building recovery updater AppImage ..."
+    build_recovery_updater_image "$architecture"
+
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nBuild of the recovery updater AppImage failed." >&2
+        exit 1
+    fi
+
+    rm -f /app/usr/bin/kDriveRecoveryUpdater
+    check_main_appdir_updater_separation /app || {
+        printf "\nRecovery updater separation check failed." >&2
+        exit 1
+    }
+
+    echo
+    echo "Building AppImage ..."
+    build_app_image "$architecture"
+
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nBuild of the AppImage failed." >&2
+        exit 1
+    fi
 fi
 
 echo "Build of AppImage successfully completed for architecture ${architecture}."
