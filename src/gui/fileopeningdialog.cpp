@@ -24,16 +24,23 @@
 namespace KDC {
 
 static const int32_t boxHMargin = 40;
-static const int32_t messageVBMargin = 15;
+static const int32_t messageVBMargin = 12;
+static const int32_t progressVBMargin = 14;
+// The bottom margin of the main layout is generous in CustomDialog to leave room below the contents of larger
+// pop-ups: reduce it here so that this window can stay compact.
+static const int32_t mainLayoutVBMargin = 20;
 // The window only carries an informative message, a progress gauge and a cancel button: keep it more compact than
-// the default minimum size of CustomDialog.
-static const QSize windowMinimumSize(625, 280);
+// the default minimum size of CustomDialog, while remaining large enough for a two-line message.
+static const QSize windowMinimumSize(500, 230);
 
 FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     CustomDialog(true, parent) {
     setMinimumSize(windowMinimumSize);
     resize(windowMinimumSize);
 
+    mainLayout()->setContentsMargins(0, 0, 0, mainLayoutVBMargin);
+
+    // Spacers above and below the content keep it vertically centered in the window.
     mainLayout()->addStretch();
 
     // Message
@@ -50,15 +57,11 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
 
     // Progress bar
     auto *const progressHBox = new QHBoxLayout();
-    progressHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    progressHBox->setContentsMargins(boxHMargin, 0, boxHMargin, progressVBMargin);
     mainLayout()->addLayout(progressHBox);
 
     _progressBar = new QProgressBar(this);
-    _progressBar->setRange(0, 100);
-    _progressBar->setValue(0);
     progressHBox->addWidget(_progressBar);
-
-    mainLayout()->addStretch();
 
     // Cancel button
     auto *const buttonsHBox = new QHBoxLayout();
@@ -71,6 +74,8 @@ FileOpeningDialog::FileOpeningDialog(QWidget *parent) :
     _cancelButton->setText(tr("Cancel"));
     buttonsHBox->addWidget(_cancelButton);
     buttonsHBox->addStretch();
+
+    mainLayout()->addStretch();
 
     (void) connect(_cancelButton, &QPushButton::clicked, this, &FileOpeningDialog::canceled);
 
@@ -85,14 +90,17 @@ void FileOpeningDialog::updateStatus(const FileOpeningPhase phase, const int8_t 
     switch (phase) {
         case FileOpeningPhase::WaitingSync:
             _messageLabel->setText(tr("This item is not synchronized yet. Synchronizing it may take some time."));
-            _progressBar->hide();
+            // Keep the gauge visible in busy mode: it keeps reporting activity, and the layout does not jump when
+            // the download starts.
+            _progressBar->setRange(0, 0);
             break;
         case FileOpeningPhase::Hydrating:
             // The name of the item is always known once the download has started.
             _messageLabel->setText(itemName.isEmpty() ? tr("Downloading the item...")
                                                       : tr("Downloading <b>%1</b>...").arg(itemName.toHtmlEscaped()));
+            // The server reports the download progress in the range [0, 100], starting at 0.
+            _progressBar->setRange(0, 100);
             _progressBar->setValue(percent);
-            _progressBar->show();
             break;
         case FileOpeningPhase::Finished:
             // Handled by the caller: the window is closed when the file opening request has been processed.
