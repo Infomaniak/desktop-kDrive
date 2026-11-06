@@ -133,6 +133,10 @@ class OpenFileJob : public SyncJob {
         void sortSyncsByRunningState(std::vector<Sync> &syncs) const;
         //! Returns the live SyncDb of a sync whose engine is running, nullptr otherwise.
         std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;
+        //! Returns the SyncDb of `sync` read directly from its DB file when the engine of the sync is not running,
+        //! caching it in `_tempSyncDbMap` for the subsequent items of the same sync. Returns nullptr when the DB
+        //! file cannot be opened or prepared.
+        std::shared_ptr<SyncDb> getOrOpenSyncDb(const Sync &sync);
         //! Looks for the best admissible sync containing the requested item. Sets `found` with false if none has been
         //! found.
         ExitInfo getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath, bool &found);
