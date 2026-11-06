@@ -65,7 +65,6 @@ enum class SyncErrorKind : uint8_t {
     SystemSyncDirAccess,
     SystemSyncDirDiskMissing,
     DataSyncDirChanged,
-    TemporaryDirAccess,
     NotEnoughINotifyWatches,
     // No known kind matches: shown as an unexpected error with its technical details
     Unknown,
