@@ -250,6 +250,27 @@ std::shared_ptr<SyncDb> OpenFileJob::getSyncDb(const SyncDbId syncDbId) const {
     return syncPal ? syncPal->syncDb() : nullptr;
 }
 
+std::shared_ptr<SyncDb> OpenFileJob::getOrOpenSyncDb(const Sync &sync) {
+    if (const auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId()); tempSyncDbIt != _tempSyncDbMap.end()) {
+        return tempSyncDbIt->second;
+    }
+
+    try {
+        const auto tempSyncDb = std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId());
+        if (!tempSyncDb->prepare()) {
+            LOGW_WARN(_logger, L"Failed to prepare the sync DB - syncDbId=" << sync.dbId());
+
+            return nullptr;
+        }
+
+        return _tempSyncDbMap.try_emplace(sync.dbId(), tempSyncDb).first->second;
+    } catch (const std::runtime_error &e) {
+        LOGW_WARN(_logger, L"Failed to open the sync DB - syncDbId=" << sync.dbId() << L": " << CommonUtility::s2ws(e.what()));
+
+        return nullptr;
+    }
+}
+
 ExitInfo OpenFileJob::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath, bool &found) {
     bestSync = Sync{}; // Default value as long as an admissible sync is not found.
     relativePath.clear();
@@ -259,23 +280,9 @@ ExitInfo OpenFileJob::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync
         std::shared_ptr<SyncDb> syncDb = getSyncDb(sync.dbId());
         if (!syncDb) {
             // The engine of this sync is not running: read its DB directly.
-            auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId());
-            if (tempSyncDbIt == _tempSyncDbMap.end()) {
-                try {
-                    const auto tempSyncDb = std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId());
-                    if (!tempSyncDb->prepare()) {
-                        LOGW_WARN(_logger, L"Failed to prepare the sync DB - syncDbId=" << sync.dbId());
-                        continue;
-                    }
-                    tempSyncDbIt = _tempSyncDbMap.try_emplace(sync.dbId(), tempSyncDb).first;
-                } catch (const std::runtime_error &e) {
-                    LOGW_WARN(_logger,
-                              L"Failed to open the sync DB - syncDbId=" << sync.dbId() << L": " << CommonUtility::s2ws(e.what()));
-                    continue;
-                }
-            }
-            syncDb = tempSyncDbIt->second;
+            syncDb = getOrOpenSyncDb(sync);
         }
+        if (!syncDb) continue;
 
         bool nodeFound = false;
         DbNodeId dbNodeId{0};
@@ -283,15 +290,16 @@ ExitInfo OpenFileJob::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync
             LOGW_WARN(_logger, L"Error in SyncDb::dbId - syncDbId=" << sync.dbId());
             continue;
         }
+
         if (!nodeFound) continue;
 
-        SyncPath remotePath;
-        if (!syncDb->path(dbNodeId, relativePath, remotePath, nodeFound)) {
+        if (SyncPath unusedRemotePath; !syncDb->path(dbNodeId, relativePath, unusedRemotePath, nodeFound)) {
             LOGW_WARN(_logger, L"Error in SyncDb::path - syncDbId=" << sync.dbId());
             continue;
         }
 
         if (!nodeFound) continue;
+
         bestSync = sync;
         found = true;
 
