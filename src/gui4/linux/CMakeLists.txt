@@ -294,6 +294,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKTintedIcon.qml
         ui/components/IKExternalLinkIcon.qml
         ui/components/IKErrorBanner.qml
+        ui/components/IKInformationBlock.qml
         ui/features/syncconfiguration/RemoteFolderTree.qml
         ui/features/syncconfiguration/RemoteFolderPicker.qml
         ui/features/syncconfiguration/SyncConfigurationDialog.qml
