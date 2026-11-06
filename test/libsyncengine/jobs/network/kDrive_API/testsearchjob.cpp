@@ -221,7 +221,7 @@ void TestSearchJob::testHandleResponseBackslashNameAndPath() {
 
     const auto results = job.searchResults();
     CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
-    CPPUNIT_ASSERT_EQUAL(SyncName("result%5cfile.txt"), results.front().name());
+    CPPUNIT_ASSERT_EQUAL(Str2SyncName("result%5cfile.txt"), results.front().name());
     CPPUNIT_ASSERT_EQUAL(SyncPath(Str("ancestor%5cfolder/result%5cfile.txt")), results.front().path());
     CPPUNIT_ASSERT(results.front().isAvailableLocally());
 }
