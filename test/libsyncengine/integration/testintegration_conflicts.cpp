@@ -183,8 +183,7 @@ void TestIntegration::testEditEditConflictIdenticalContent() {
     // 1st case: the file has been edited on both replicas with an identical content, the remote modification date is the
     // most recent one. The remote modification date shall be propagated to the local replica, without creating a conflict.
     {
-        const auto now = std::time(nullptr);
-        const auto remoteModificationTime = static_cast<SyncTime>(now);
+        const auto now = CommonUtility::now();
         std::ofstream ofs(absoluteLocalPath, std::ios_base::in | std::ios_base::trunc);
         ofs << "Identical content on both replicas.";
         ofs.close();
@@ -219,8 +218,8 @@ void TestIntegration::testEditEditConflictIdenticalContent() {
     // 2nd case: the file has been edited on both replicas with an identical content, the local modification date is the
     // most recent one. The local modification date shall be propagated to the remote replica, without creating a conflict.
     {
-        const auto now = std::time(nullptr);
-        const auto localModificationTime = static_cast<SyncTime>(now);
+        const auto now = CommonUtility::now();
+        const auto localModificationTime = now;
         std::ofstream ofs(absoluteLocalPath, std::ios_base::in | std::ios_base::trunc);
         ofs << "Identical content on both replicas, 2nd edition.";
         ofs.close();
