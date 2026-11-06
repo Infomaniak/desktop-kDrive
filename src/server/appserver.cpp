@@ -2927,7 +2927,7 @@ ExitInfo AppServer::cancelFileOpeningJob(const UniqueId jobId) {
     return {ExitCode::DataError, ExitCause::NotFound};
 }
 
-void AppServer::registerFileOpeningJob(const UniqueId jobId, FileOpeningHandler *handler) {
+void AppServer::registerFileOpeningJob(const UniqueId jobId, FileOpeningHandler *const handler) {
     const std::scoped_lock lock(_fileOpeningJobsMutex);
     _fileOpeningJobs[jobId] = handler;
 }
