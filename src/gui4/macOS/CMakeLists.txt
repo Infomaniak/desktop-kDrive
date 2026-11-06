@@ -25,11 +25,14 @@ add_custom_command(
     OUTPUT "${CLIENT_STAMP}"
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${CLIENT_DEST}"
     COMMAND xcodebuild -version
-    COMMAND xcodebuild -project "${CLIENT_PROJECT}" -scheme "${CLIENT_SCHEME}" -configuration Release -arch x86_64 -arch arm64 ONLY_ACTIVE_ARCH=NO SYMROOT=${CLIENT_PATH}/build build
+    COMMAND xcodebuild -project "${CLIENT_PROJECT}" -scheme "${CLIENT_SCHEME}" -configuration Release
+        -arch x86_64 -arch arm64 ONLY_ACTIVE_ARCH=NO
+        MARKETING_VERSION=${KDRIVE_VERSION} CURRENT_PROJECT_VERSION=${KDRIVE_VERSION_BUILD}
+        SYMROOT=${CLIENT_PATH}/build build
     COMMAND cp -RP "${CLIENT_OUTPUT_DIRECTORY}/kDrive.app" "${CLIENT_DEST}"
     COMMAND ${CMAKE_COMMAND} -E touch "${CLIENT_STAMP}"
     COMMAND xcodebuild -version
-    DEPENDS "${CLIENT_PROJECT}" ${CLIENT_SOURCES}
+    DEPENDS "${CLIENT_PROJECT}" "${CMAKE_SOURCE_DIR}/version.json" ${CLIENT_SOURCES}
 )
 
 add_custom_target(build_kDrive_client ALL

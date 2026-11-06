@@ -17,11 +17,11 @@ on:
         default: true
       build_macos:
         type: choice
-        description: Build macOS executables
+        description: Build the redesigned macOS Swift client
         options:
           - Do not build
-          - Legacy client
-        default: Legacy client
+          - Native client
+        default: Native client
       build_linux:
         type: choice
         description: Build Linux executables
@@ -142,8 +142,8 @@ jobs:
             for lang in "${LANGUAGES[@]}"; do
               FILE="${base_path}/kDrive-${version_number}-${os}-${lang}.html"
               if [ ! -f "$FILE" ]; then
-                echo "<h1>:stop_sign: Release Notes for kDrive-${version_number} (${os}) not found </h1>" >> $GITHUB_STEP_SUMMARY
-                echo "$FILE is missing." >> $GITHUB_STEP_SUMMARY
+                echo "<h1>:stop_sign: Release Notes for kDrive-${version_number} (${os}) not found </h1>" >> "$GITHUB_STEP_SUMMARY"
+                echo "$FILE is missing." >> "$GITHUB_STEP_SUMMARY"
                 exit 1
               fi
             done
@@ -171,7 +171,7 @@ jobs:
             fi
             echo "  </td>"
             echo "  <td valign='top' width='33%'>"
-            echo "    <h3>macOS (${MACOS_VERSION_NUMBER})</h3>"
+            echo "    <h3>macOS Swift client (${MACOS_VERSION_NUMBER})</h3>"
             if [ "${{ inputs.build_macos }}" != "Do not build" ]; then
               cat "./release_notes/kDrive-${MACOS_VERSION_NUMBER}/kDrive-${MACOS_VERSION_NUMBER}-macos-en.html"
             else
@@ -180,14 +180,14 @@ jobs:
             echo "  </td>"
             echo "</tr>"
             echo "</table>"
-          } >> $GITHUB_STEP_SUMMARY
+          } >> "$GITHUB_STEP_SUMMARY"
         shell: bash
 
       - name: Skip release notes check
         if: ${{ !inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         run: |
           echo "Safety checks and uploads are disabled: release notes check skipped."
-          echo "<h1>:warning: Safety checks disabled: release notes check skipped.</h1>" >> $GITHUB_STEP_SUMMARY
+          echo "<h1>:warning: Safety checks disabled: release notes check skipped.</h1>" >> "$GITHUB_STEP_SUMMARY"
         shell: bash
 
 # Build apps
@@ -253,7 +253,8 @@ jobs:
           release_build: true
 
   build-MacOS:
-    if: ${{ inputs.build_macos != 'Do not build' }}
+    name: Build macOS redesigned Swift client
+    if: ${{ inputs.build_macos == 'Native client' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     env:
@@ -265,7 +266,7 @@ jobs:
           submodules: recursive
       - name: Set up Xcode 26
         uses: ./.github/actions/setup_xcode
-      - name: Build macOS
+      - name: Build macOS redesigned Swift client
         uses: ./.github/actions/build_macos
         with:  
           qt_account_email: ${{ secrets.QT_ACCOUNT_EMAIL }}
@@ -414,10 +415,13 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-macOS:
-    if: ${{ inputs.build_macos != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+    if: ${{ inputs.build_macos == 'Native client' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-MacOS]
     runs-on: [windows-latest]
     env:
+        SENTRY_URL: https://sentry-desktop.infomaniak.com
+        SENTRY_ORG: sentry
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
@@ -451,9 +455,16 @@ jobs:
       - name: Upload sentry artifacts - macOS
         run: |
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-macos\kDrive.dSYM
-          .\sentry-cli.exe debug-files upload --project kdrive-client .\build-macos\kDrive_client.dSYM
-          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-macos\kDrive.src.zip
-          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-macos\kDrive_client.src.zip
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $serverSources = @(Get-ChildItem .\build-macos\kDrive*.src.zip | Where-Object { $_.Name -match '^kDrive(\.\d+)?\.src\.zip$' } | ForEach-Object { $_.FullName })
+          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle @serverSources
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # The Swift client's DSN targets project 8 (kdrive-client4).
+          .\sentry-cli.exe debug-files upload --project kdrive-client4 .\build-macos\kDrive_client.dSYM .\build-macos\client-frameworks
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $clientSources = @(Get-ChildItem .\build-macos\kDrive_client*.src.zip | ForEach-Object { $_.FullName })
+          .\sentry-cli.exe debug-files upload --project kdrive-client4 --type sourcebundle @clientSources .\build-macos\client-frameworks
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         shell: powershell
 
   display-version:
@@ -480,7 +491,7 @@ jobs:
             echo "<tr><th>OS</th><th>Version</th></tr>"
             echo "<tr><td>Windows</td><td>${WIN_VERSION}</td></tr>"
             echo "<tr><td>Linux</td><td>${LINUX_VERSION}</td></tr>"
-            echo "<tr><td>macOS</td><td>${MACOS_VERSION}</td></tr>"
+            echo "<tr><td>macOS redesigned Swift client</td><td>${MACOS_VERSION}</td></tr>"
             echo "</table>"
-          } >> $GITHUB_STEP_SUMMARY
+          } >> "$GITHUB_STEP_SUMMARY"
         shell: bash

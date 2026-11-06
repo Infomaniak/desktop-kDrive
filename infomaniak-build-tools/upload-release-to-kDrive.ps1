@@ -341,7 +341,10 @@ if ($os -eq "macos") {
         @("kDrive.dSYM", $true),
         @("kDrive_client.dSYM", $true),
         @("kDrive.src.zip", $true),
+        @("kDrive.1.src.zip", $true),
         @("kDrive_client.src.zip", $true),
+        @("kDrive_client.1.src.zip", $true),
+        @("client-frameworks", $true),
         @("kDriveRecoveryUpdater-$version.zip", $true),
         @("kDriveRecoveryUpdater-$version.zip.sha256", $true)
     )
