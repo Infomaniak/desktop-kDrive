@@ -892,7 +892,7 @@ ExitInfo ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &
     if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
 
     bool exists = false;
-    if (ExitInfo exitInfo = syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, exists); !exitInfo) {
+    if (ExitInfo exitInfo = syncPalMapIt->second->checkIfExistsOnServer(fileData.localNodeId, exists); !exitInfo) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
@@ -1350,6 +1350,11 @@ FileData FileData::get(const SyncPath &path) {
     data.virtualFileMode = sync.virtualFileMode();
     data.localPath = tmpPath.native();
     data.relativePath = CommonUtility::relativePath(sync.localPath(), tmpPath).native();
+
+    if (!IoHelper::getNodeId(tmpPath, data.localNodeId)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getNodeId - " << Utility::formatSyncPath(tmpPath));
+        return {};
+    }
 
     ItemType itemType;
     if (auto result = IoHelper::getItemTypeAndProcessIoError(tmpPath, itemType);
