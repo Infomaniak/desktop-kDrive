@@ -96,7 +96,11 @@ struct ActivitiesTable: View {
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: context.node.parentFolder.path, synchroPath: context.synchro.localPath)
 
-        NSWorkspace.shared.open(url)
+        if NSWorkspace.shared.open(url) {
+            IKLogger.general.info("[KD] [Activity] Parent folder open accepted itemId=\(context.node.id)")
+        } else {
+            IKLogger.general.error("[KD] [Activity] Parent folder open failed itemId=\(context.node.id) path=\(url.path)")
+        }
     }
 }
 

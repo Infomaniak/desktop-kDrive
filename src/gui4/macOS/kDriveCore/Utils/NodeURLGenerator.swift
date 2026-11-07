@@ -26,9 +26,23 @@ public protocol NodeURLGenerator: Sendable {
     func shopURL(forDriveId driveId: Int) -> URL
 }
 
+public enum NodePathResolver {
+    /// Resolves a node path against the sync root folder, without ever involving the process working directory.
+    /// `URL(fileURLWithPath:)` applied to a relative path silently resolves it against the CWD, and
+    /// `URL(fileURLWithPath:relativeTo:)` gives directory or file merge semantics depending on whether the base
+    /// folder exists on disk, so neither is suitable for building the local location of a synced item.
+    public static func localURL(for nodePath: String, synchroPath: URL) -> URL {
+        guard !nodePath.isEmpty else { return synchroPath }
+        // Absolute node paths are tolerated and used as is.
+        guard !nodePath.hasPrefix("/") else { return URL(fileURLWithPath: nodePath) }
+
+        return synchroPath.appendingPathComponent(nodePath)
+    }
+}
+
 public struct DriveNodeURLGenerator: NodeURLGenerator {
     public func localURL(for nodePath: String, synchroPath: URL) -> URL {
-        return synchroPath.appendingPathComponent(nodePath)
+        return NodePathResolver.localURL(for: nodePath, synchroPath: synchroPath)
     }
 
     public func remoteURL(for nodeId: String, driveId: Int) -> URL {

@@ -39,6 +39,7 @@
 #include "jobs/network/kDrive_API/getthumbnailjob.h"
 #include "jobs/network/getavatarjob.h"
 #include "jobs/network/infomaniak_API/getaccountinfojob.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/getsizejob.h"
@@ -318,7 +319,8 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, const SyncC
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"The provided path indicates the root of a drive, which is not allowed for sync with folder " << Utility::formatSyncPath(path));
+                  L"The provided path indicates the root of a drive, which is not allowed for sync with folder "
+                          << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
@@ -628,7 +630,12 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
         if (!JsonParserUtility::extractValue(dataObj, pathKey, tmp)) {
             return ExitCode::BackError;
         }
-        nodeInfo.setPath(QString::fromStdString(tmp));
+
+        // Use the QString overload of the translation: NodeInfo paths keep their leading separator, so that the
+        // consumers can concatenate them directly onto the sync root.
+        QString path = QString::fromStdString(tmp);
+        ApiTranslator::translateV3ToV2(path);
+        nodeInfo.setPath(path);
     }
 
     return ExitCode::Ok;
