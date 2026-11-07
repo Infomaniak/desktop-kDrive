@@ -182,6 +182,14 @@ bool Node::insertChild(std::shared_ptr<Node> child) {
     }
 
     if (child->parentNode() != shared_from_this()) {
+        // Remove the child from the children list of its previous parent. Otherwise, the child remains reachable
+        // through two different parents and gets processed twice by the workers visiting the tree, e.g. a tmp node
+        // merged twice by UpdateTreeWorker::tryToMergeTmpNode, the second attempt failing in Node::deleteChild and
+        // aborting the whole sync.
+        if (std::shared_ptr<Node> previousParent = child->parentNode(); previousParent) {
+            (void) previousParent->deleteChild(child);
+        }
+
         if (!child->setParentNode(shared_from_this())) {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::setParentNode: node "
                                                             << Utility::formatSyncName(child->name()) << L" parent node "

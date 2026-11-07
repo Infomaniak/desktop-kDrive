@@ -1207,9 +1207,11 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
                                       << Utility::formatSyncName(realNode->name()));
 
     // merging tmpNode's children to realNode
-    for (auto &child: tmpNode->children()) {
-        if (!realNode->insertChild(child.second)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << Utility::formatSyncName(child.second->name())
+    // Copy the children map: insertChild detaches each child from tmpNode while the loop iterates it.
+    const auto tmpChildren = tmpNode->children();
+    for (const auto &[_, childNode]: tmpChildren) {
+        if (!realNode->insertChild(childNode)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << Utility::formatSyncName(childNode->name())
                                                                             << L" parent node "
                                                                             << Utility::formatSyncName(realNode->name()));
             return false;
@@ -1459,7 +1461,9 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
         if (brotherNode == tmpNode || brotherNode->isTmp() || brotherNode->hasChangeEvent(OperationType::Delete)) continue;
         if (brotherNode->name() == tmpNode->name()) {
             // Move tmpNode children to its brother
-            for (const auto &[__, childNode]: tmpNode->children()) {
+            // Copy the children map: insertChild detaches each child from tmpNode while the loop iterates it.
+            const auto tmpChildren = tmpNode->children();
+            for (const auto &[__, childNode]: tmpChildren) {
                 if (!brotherNode->insertChild(childNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node "
                                                        << Utility::formatSyncName(childNode->name()) << L" parent node "
@@ -1468,11 +1472,12 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
                 }
             }
             tmpNode->children().clear();
-            if (!tmpNode->parentNode()->deleteChild(tmpNode)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::deleteChild: node "
-                                                   << Utility::formatSyncName(tmpNode->name()) << L" parent node "
-                                                   << Utility::formatSyncName(tmpNode->parentNode()->name()));
-                return ExitCode::DataError;
+            if (tmpNode->parentNode()->deleteChild(tmpNode) == 0) {
+                // The tmp node has already been merged and detached from its parent during a previous visit.
+                // Consider it merged instead of failing the update tree generation, which used to restart the
+                // sync endlessly.
+                LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Tmp node " << Utility::formatSyncName(tmpNode->name())
+                                                 << L" is no longer referenced by its parent children map: already merged.");
             }
             merged = true;
             break;
@@ -1527,7 +1532,9 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     const auto &prevNode = _updateTree->nodes()[*id];
     if (prevNode) {
         // Update children list
-        for (const auto &[_, childNode]: prevNode->children()) {
+        // Copy the children map: insertChild detaches each child from prevNode while the loop iterates it.
+        const auto prevNodeChildren = prevNode->children();
+        for (const auto &[_, childNode]: prevNodeChildren) {
             if (!tmpNode->insertChild(childNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << SyncName2WStr(childNode->name())
                                                                                 << L" parent node "
