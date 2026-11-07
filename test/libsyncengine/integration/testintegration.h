@@ -93,6 +93,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testCreateCreateConflict();
         void testEditEditPseudoConflict();
         void testEditEditConflict();
+        void testEditEditConflictIdenticalContent();
         void testMoveCreateConflict();
         void testEditDeleteConflict();
         void testMoveDeleteConflict();
