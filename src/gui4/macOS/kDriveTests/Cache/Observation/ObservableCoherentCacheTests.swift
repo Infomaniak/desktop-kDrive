@@ -112,4 +112,38 @@ struct ObservableCoherentCacheTests {
             Issue.record("Expected to find values")
         }
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func routeSyncPalUpdateRequiredErrorToServerErrors() async throws {
+        // GIVEN
+        let syncPalError = ObservableData.syncPalUpdateRequiredError
+        let cache = ServerCoherentCache()
+        let receivedValues = await cache.receivedErrorValues // Start to save the received values
+
+        var receivedServerErrors: IndexedErrors?
+        var cancellables = Set<AnyCancellable>()
+
+        // WHEN
+        let publisher = cache.serverErrorsPublisher
+        let subscription = publisher
+            .sink { indexedErrors in
+                receivedServerErrors = indexedErrors
+            }
+
+        subscription.store(in: &cancellables)
+
+        try await cache.addOrUpdateError(syncPalError)
+
+        // THEN
+        _ = await receivedValues.first(where: { _ in true })
+
+        #expect(receivedServerErrors != nil, "Should have received errors")
+        #expect(receivedServerErrors!.count == 1, "Should have routed the UpdateRequired error to server errors")
+
+        if let receivedError = receivedServerErrors?.values.first {
+            #expect(receivedError.dbId == ObservableData.syncPalUpdateRequiredErrorDbId, "Received error ID should match expected")
+        } else {
+            Issue.record("Expected to find values")
+        }
+    }
 }
