@@ -60,7 +60,7 @@ struct ManyDeletesDeletedFilesListView: View {
     }
 
     private var header: some View {
-        Text(KDriveLocalizable.manyDeleteDialogFilesHeader(filesPaths.count))
+        Text(KDriveLocalizable.manyDeleteDialogFilesHeader(totalNbFiles))
             .font(.Tokens.callout)
             .foregroundStyle(ColorToken.Text.secondary.asColor)
             .padding(.horizontal, AppPadding.padding12)
