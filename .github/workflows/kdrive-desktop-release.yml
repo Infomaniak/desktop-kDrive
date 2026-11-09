@@ -110,7 +110,7 @@ jobs:
         uses: ./.github/actions/get_version
 
       - name: Check release notes
-        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        if: ${{ false }}  # Temporary bypass for the 4.0.0.99 AppImage updater POC build
         run: |
           # Each OS has its own version (example: 3.9.20.23), the build number is dropped for release notes.
           WIN_VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version_windows }}"
@@ -354,7 +354,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-amd"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-amd" -test  # Temporary: upload the AppImage updater POC build under Test/
 
       - name: Download sentry-cli and login
         run: |
@@ -401,7 +401,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-arm"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-arm" -test  # Temporary: upload the AppImage updater POC build under Test/
 
       - name: Download sentry-cli and login
         run: |
