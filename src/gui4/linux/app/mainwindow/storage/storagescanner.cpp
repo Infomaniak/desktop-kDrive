@@ -55,7 +55,7 @@ struct FileIdentity {
     return isCanceled && isCanceled();
 }
 
-[[nodiscard]] StorageScanError errorFromErrno(const int errorNumber) {
+[[nodiscard]] StorageScanError errorFromErrno(const int32_t errorNumber) {
     switch (errorNumber) {
         case EACCES:
         case EPERM:
@@ -69,7 +69,7 @@ struct FileIdentity {
     }
 }
 
-void logFilesystemError(const char *operation, const SyncPath &path, const int errorNumber) {
+void logFilesystemError(const char *operation, const SyncPath &path, const int32_t errorNumber) {
     const auto errorMessage = std::error_code(errorNumber, std::generic_category()).message();
     qCWarning(lcStorageScanner) << operation << "| path:" << Path2QStr(path)
                                 << "| error:" << QString::fromLocal8Bit(errorMessage.c_str()) << "| errno:" << errorNumber;
@@ -123,7 +123,7 @@ struct DirectoryScanState {
 [[nodiscard]] StorageScanError processEntry(const SyncPath &entryPath, DirectoryScanState &state) {
     struct stat entryStat{};
     if (lstat(entryPath.c_str(), &entryStat) != 0) {
-        const int errorNumber = errno;
+        const int32_t errorNumber = errno;
         if (errorNumber == ENOENT || errorNumber == ENOTDIR) {
             return StorageScanError::None;
         }
@@ -178,7 +178,7 @@ struct DirectoryScanState {
 [[nodiscard]] StorageScanError calculateSyncBytes(const SyncPath &syncRoot, const dev_t rootDevice,
                                                   const StorageScanner::CancellationCheck &isCanceled, uint64_t &syncBytes) {
     if (access(syncRoot.c_str(), R_OK | X_OK) != 0) {
-        const int errorNumber = errno;
+        const int32_t errorNumber = errno;
         logFilesystemError("Unable to read Storage synchronization root", syncRoot, errorNumber);
         return errorFromErrno(errorNumber);
     }
@@ -195,7 +195,7 @@ struct DirectoryScanState {
         const SyncPath directoryPath = std::move(state.pendingDirectories.back());
         state.pendingDirectories.pop_back();
         if (access(directoryPath.c_str(), R_OK | X_OK) != 0) {
-            const int errorNumber = errno;
+            const int32_t errorNumber = errno;
             logFilesystemError("Skipping unreadable Storage directory", directoryPath, errorNumber);
             continue;
         }
@@ -249,7 +249,7 @@ StorageVolumeResult StorageScanner::readVolume(const SyncPath &syncRoot, const b
 
     struct stat rootStat{};
     if (stat(syncRoot.c_str(), &rootStat) != 0) {
-        const int errorNumber = errno;
+        const int32_t errorNumber = errno;
         if (logFailures) {
             logFilesystemError("Unable to inspect Storage synchronization root", syncRoot, errorNumber);
         }
@@ -279,7 +279,7 @@ StorageVolumeResult StorageScanner::readVolume(const SyncPath &syncRoot, const b
         return {.volume = std::nullopt, .error = StorageScanError::Unavailable};
     }
     if (stat(volumeRoot.c_str(), &volumeRootStat) != 0) {
-        const int errorNumber = errno;
+        const int32_t errorNumber = errno;
         if (logFailures) {
             logFilesystemError("Unable to inspect Storage volume root", volumeRoot, errorNumber);
         }
