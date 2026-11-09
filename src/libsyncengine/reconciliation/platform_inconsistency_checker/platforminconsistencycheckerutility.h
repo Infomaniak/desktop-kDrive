@@ -44,9 +44,6 @@ class PlatformInconsistencyCheckerUtility {
                                                           [[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
                                                           bool &endsWithForbiddenSpace);
 
-#if defined(KD_WINDOWS)
-        bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
-#endif
         bool checkReservedNames(const SyncName &name);
         SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
         static ExitInfo renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
@@ -54,7 +51,6 @@ class PlatformInconsistencyCheckerUtility {
     private:
         PlatformInconsistencyCheckerUtility();
 
-        SyncName charToHex(unsigned int c);
         void setMaxPath();
         SyncName generateSuffix(SuffixType suffixType);
 

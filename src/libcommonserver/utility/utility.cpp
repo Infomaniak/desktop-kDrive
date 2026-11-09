@@ -653,6 +653,30 @@ ExitInfo Utility::checkIfFileNamesCanEndWithSpace([[maybe_unused]] const std::sh
     return ExitCode::Ok;
 }
 
+SyncName Utility::charToHex(unsigned int c) {
+    OStringStream stm;
+    stm << '%' << std::hex << c;
+    return stm.str();
+}
+
+#if defined(KD_WINDOWS)
+SyncName Utility::fixNameWithBackslash(const SyncName &name) {
+    SyncName newName;
+    size_t pos = name.find('\\');
+    while (pos != std::string::npos) {
+        if (newName.empty()) {
+            newName = name; // Copy filename to newName only if necessary
+        }
+
+        newName.replace(pos, 1, charToHex(newName[pos]));
+        pos = newName.find('\\', pos);
+    }
+
+    // Return the original name if no backslash was found, otherwise return the modified name
+    return newName.empty() ? name : newName;
+}
+#endif
+
 void Utility::msleep(const int64_t msec) {
     const std::chrono::milliseconds dura(msec);
     std::this_thread::sleep_for(dura);

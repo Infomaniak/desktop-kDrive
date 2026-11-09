@@ -42,6 +42,8 @@
 #include <QElapsedTimer>
 #include <QPointer>
 #include <memory>
+#include <mutex>
+#include <unordered_set>
 #include <QProcess>
 #include <QQueue>
 #include <QTimer>
@@ -154,7 +156,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         void addError(const Error &error) const;
         void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
         void manageDriveAccessError(Drive &drive) const;
+        void checkTokenAfterDriveAccessError(const User &user) const;
         void manageInvalidTokenError(User &user) const;
+        void manageInvalidTokenError(UserDbId userDbId) const;
         void manageSocketsDefunctedError() const;
         void manageFileAccessErrorError(const std::vector<Error> &errorList) const;
         void manageUpdateRequiredErrorError() const;
@@ -305,6 +309,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         QProcess *_clientProcess = nullptr;
 
         static std::unique_ptr<UpdateManager> _updateManager;
+
+        // Users whose token is being checked asynchronously after a DriveAccessError
+        mutable std::mutex _tokenCheckMutex;
+        mutable std::unordered_set<UserDbId> _tokenCheckInProgress;
 
         virtual std::filesystem::path makeDbName();
         virtual std::shared_ptr<ParmsDb> initParmsDB(const std::filesystem::path &dbPath, const std::string &version);

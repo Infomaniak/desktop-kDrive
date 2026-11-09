@@ -47,7 +47,7 @@ public extension UISynchroContext {
         blockingError = .init(
             drive: synchroContext.drive,
             synchro: synchroContext.synchro,
-            error: synchroContext.synchro.latestError
+            error: synchroContext.blockingError
         )
     }
 }
