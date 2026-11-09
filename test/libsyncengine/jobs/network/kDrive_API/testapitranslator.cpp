@@ -32,6 +32,8 @@
 #include "test_utility/testhelpers.h"
 #include "test_utility/iohelpertestutilities.h"
 
+#include <algorithm>
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -72,25 +74,6 @@ void TestApiTranslator::testTranslateV2ToV3() {
 }
 
 void TestApiTranslator::testTranslateV3ToV2() {
-    SyncPath remotePath =
-            SyncPath{ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private)} / Str("folder_A") / Str("text.txt");
-    ApiTranslator::translateV3ToV2(remotePath);
-
-    const auto expectedPath = SyncPath{Str("folder_A")} / Str("text.txt");
-    CPPUNIT_ASSERT_EQUAL(expectedPath, remotePath);
-
-    remotePath = SyncPath{"Common documents"} / Str("folder_A");
-    ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(SyncPath{"Common documents"} / Str("folder_A"), remotePath);
-
-    remotePath = SyncPath{};
-    ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(SyncPath{}, remotePath);
-
-    remotePath = SyncPath{ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private)};
-    ApiTranslator::translateV3ToV2(remotePath);
-    CPPUNIT_ASSERT_EQUAL(SyncPath{}, remotePath);
-
     RemoteNodeId remoteNodeId;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getSpecialFolderRemoteId(
                                                          _userDbId, _driveId, SpecialRemoteFolder::Private, remoteNodeId));
@@ -104,32 +87,174 @@ void TestApiTranslator::testTranslateV3ToV2() {
     CPPUNIT_ASSERT(ApiTranslator::v2RootFolderRemoteId() != remoteNodeId);
 }
 
+void TestApiTranslator::testTranslateV3ToV2Paths() {
+    // Pure path conversion tests, no API access required.
+    // The API v3 only sends absolute paths ("/Private/...", "/Common documents/...", "/Shared/..."): the private space
+    // is the root of the synchronized tree, while "Common documents" and "Shared" stay folders in it. Relative paths
+    // are outside of the contract and are not covered here.
+    const SyncName privateFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private);
+    const SyncName commonDocumentsFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::CommonDocuments);
+    const SyncName sharedFolderName = ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared);
+    const SyncName rootSeparator = Str("/");
+
+    // Absolute private path: the private folder name is stripped, the deeper components are preserved. The result
+    // keeps its leading separator.
+    SyncName remotePath = rootSeparator + privateFolderName + Str("/folder_A/text.txt");
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(std::string("/folder_A/text.txt"), SyncName2Str(remotePath));
+
+    // A component deeper than the private folder may be named like the private folder: only the leading one is
+    // stripped.
+    remotePath = rootSeparator + privateFolderName + Str("/") + privateFolderName + Str("/text.txt");
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(std::string("/") + SyncName2Str(privateFolderName) + std::string("/text.txt"), SyncName2Str(remotePath));
+
+    // A first component that merely starts with the private folder name is a non-private path: unchanged.
+    remotePath = rootSeparator + Str("Privatex") + Str("/folder_A");
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(std::string("/Privatex/folder_A"), SyncName2Str(remotePath));
+
+    // The private folder itself translates to the empty path, which represents the V2 drive root.
+    remotePath = rootSeparator + privateFolderName;
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(std::string(""), SyncName2Str(remotePath));
+
+    // The drive root translates to itself.
+    remotePath = rootSeparator;
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(std::string("/"), SyncName2Str(remotePath));
+
+    // Non-private absolute paths are unchanged, as the V2 tree uses the same paths for the other roots.
+    remotePath = rootSeparator + commonDocumentsFolderName + Str("/folder_A");
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(std::string("/") + SyncName2Str(commonDocumentsFolderName) + std::string("/folder_A"),
+                         SyncName2Str(remotePath));
+
+    remotePath = rootSeparator + sharedFolderName + Str("/folder_A/text.txt");
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(std::string("/") + SyncName2Str(sharedFolderName) + std::string("/folder_A/text.txt"),
+                         SyncName2Str(remotePath));
+
+    // Empty path: unchanged.
+    remotePath = SyncName{};
+    ApiTranslator::translateV3ToV2(remotePath);
+    CPPUNIT_ASSERT_EQUAL(std::string(""), SyncName2Str(remotePath));
+
+#if defined(KD_WINDOWS)
+    // On Windows, the engine uses the native wide strings while the raw strings extracted from the API replies are
+    // UTF-8: check that the narrow overload applies the same translation rules.
+    const std::string privateSegment = std::string("/") + SyncName2Str(privateFolderName);
+
+    std::string remotePathStr = privateSegment + "/folder_A/text.txt";
+    ApiTranslator::translateV3ToV2(remotePathStr);
+    CPPUNIT_ASSERT_EQUAL(std::string("/folder_A/text.txt"), remotePathStr);
+
+    // The private folder itself translates to the empty path.
+    remotePathStr = privateSegment;
+    ApiTranslator::translateV3ToV2(remotePathStr);
+    CPPUNIT_ASSERT_EQUAL(std::string(""), remotePathStr);
+
+    // A first component that merely starts with the private folder name is a non-private path: unchanged.
+    remotePathStr = "/Privatex/folder_A";
+    ApiTranslator::translateV3ToV2(remotePathStr);
+    CPPUNIT_ASSERT_EQUAL(std::string("/Privatex/folder_A"), remotePathStr);
+#endif
+}
+
 void TestApiTranslator::translateRemoteNodeInfoListFromV3ToV2() {
+    const auto privateFolderNameQStr = SyncName2QStr(ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
+    const auto commonDocumentsFolderNameQStr =
+            SyncName2QStr(ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::CommonDocuments));
+    const auto sharedFolderNameQStr = SyncName2QStr(ApiTranslator::v3SpecialFolderNames.at(SpecialRemoteFolder::Shared));
+
     RemoteNodeId privateFolderId;
-    (void) ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::Private, privateFolderId);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::getSpecialFolderRemoteId(
+                                                         _userDbId, _driveId, SpecialRemoteFolder::Private, privateFolderId));
     const auto privateFolderIdQStr = QString::fromStdString(privateFolderId);
 
-    NodeInfo nodeInfo1;
-    nodeInfo1.setParentNodeId(QString::fromStdString(ApiTranslator::v2RootFolderRemoteId()));
-    nodeInfo1.setNodeId(privateFolderIdQStr);
+    RemoteNodeId commonDocumentsFolderId;
+    (void) ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::CommonDocuments,
+                                                   commonDocumentsFolderId);
+    RemoteNodeId sharedFolderId;
+    (void) ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::Shared, sharedFolderId);
 
-    NodeInfo nodeInfo2;
-    nodeInfo2.setParentNodeId(privateFolderIdQStr);
-    nodeInfo2.setNodeId("private_sub_folder");
+    // The private folder node: removed from the list by the translation.
+    NodeInfo privateFolderNodeInfo;
+    privateFolderNodeInfo.setParentNodeId(QString::fromStdString(ApiTranslator::v2RootFolderRemoteId()));
+    privateFolderNodeInfo.setNodeId(privateFolderIdQStr);
+    privateFolderNodeInfo.setPath(QString("/") + privateFolderNameQStr);
 
-    NodeInfo nodeInfo3;
-    RemoteNodeId parentId;
-    (void) ApiTranslator::getSpecialFolderRemoteId(_userDbId, _driveId, SpecialRemoteFolder::CommonDocuments, parentId);
-    nodeInfo3.setParentNodeId(QString::fromStdString(parentId));
-    nodeInfo3.setNodeId("sub_common_documents_folder");
+    // Immediate child of the private folder: re-parented to the V2 root folder, private folder name stripped from
+    // its path.
+    NodeInfo privateChildNodeInfo;
+    privateChildNodeInfo.setParentNodeId(privateFolderIdQStr);
+    privateChildNodeInfo.setNodeId("private_sub_folder");
+    privateChildNodeInfo.setPath(QString("/") + privateFolderNameQStr + "/private_sub_folder");
 
-    RemoteNodeInfoList v3RemoteNodeInfoList{nodeInfo1, nodeInfo2, nodeInfo3};
+    // Immediate child named like the private folder: only the leading private folder name is stripped.
+    NodeInfo privateNamedChildNodeInfo;
+    privateNamedChildNodeInfo.setParentNodeId(privateFolderIdQStr);
+    privateNamedChildNodeInfo.setNodeId("private_named_sub_folder");
+    privateNamedChildNodeInfo.setPath(QString("/") + privateFolderNameQStr + "/" + privateFolderNameQStr);
+
+    // Deeper node of the private tree: private folder name stripped from its path, parent node left untouched.
+    NodeInfo nestedPrivateChildNodeInfo;
+    nestedPrivateChildNodeInfo.setParentNodeId(privateChildNodeInfo.nodeId());
+    nestedPrivateChildNodeInfo.setNodeId("nested_file");
+    nestedPrivateChildNodeInfo.setPath(QString("/") + privateFolderNameQStr + "/private_sub_folder/nested_file.txt");
+
+    // Child of Common documents: path unchanged.
+    NodeInfo commonDocumentsChildNodeInfo;
+    commonDocumentsChildNodeInfo.setParentNodeId(QString::fromStdString(commonDocumentsFolderId));
+    commonDocumentsChildNodeInfo.setNodeId("sub_common_documents_folder");
+    commonDocumentsChildNodeInfo.setPath(QString("/") + commonDocumentsFolderNameQStr + "/sub_common_documents_folder");
+
+    // Child of Shared: path unchanged.
+    NodeInfo sharedChildNodeInfo;
+    sharedChildNodeInfo.setParentNodeId(QString::fromStdString(sharedFolderId));
+    sharedChildNodeInfo.setNodeId("sub_shared_folder");
+    sharedChildNodeInfo.setPath(QString("/") + sharedFolderNameQStr + "/sub_shared_folder");
+
+    RemoteNodeInfoList v3RemoteNodeInfoList{privateFolderNodeInfo,      privateChildNodeInfo,         privateNamedChildNodeInfo,
+                                            nestedPrivateChildNodeInfo, commonDocumentsChildNodeInfo, sharedChildNodeInfo};
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ApiTranslator::translateV3ToV2(_userDbId, _driveId, v3RemoteNodeInfoList));
+
+    // The private folder node is removed from the list.
+    CPPUNIT_ASSERT_EQUAL(size_t{5}, v3RemoteNodeInfoList.size());
     for (const auto &v2NodeInfo: v3RemoteNodeInfoList) {
-        CPPUNIT_ASSERT(privateFolderIdQStr != v2NodeInfo.parentNodeId());
         CPPUNIT_ASSERT(privateFolderIdQStr != v2NodeInfo.nodeId());
+        CPPUNIT_ASSERT(privateFolderIdQStr != v2NodeInfo.parentNodeId());
     }
+
+    const auto findNode = [&v3RemoteNodeInfoList](const QString &nodeId) {
+        return std::ranges::find_if(v3RemoteNodeInfoList,
+                                    [&nodeId](const NodeInfo &nodeInfo) { return nodeInfo.nodeId() == nodeId; });
+    };
+
+    // The parent of an immediate private child is the V2 root folder.
+    const auto privateSubFolderIt = findNode("private_sub_folder");
+    CPPUNIT_ASSERT(privateSubFolderIt != v3RemoteNodeInfoList.cend());
+    CPPUNIT_ASSERT(privateSubFolderIt->parentNodeId() == QString::fromStdString(ApiTranslator::v2RootFolderRemoteId()));
+    CPPUNIT_ASSERT(privateSubFolderIt->path() == QString("/private_sub_folder"));
+
+    const auto privateNamedSubFolderIt = findNode("private_named_sub_folder");
+    CPPUNIT_ASSERT(privateNamedSubFolderIt != v3RemoteNodeInfoList.cend());
+    CPPUNIT_ASSERT(privateNamedSubFolderIt->path() == QString("/") + privateFolderNameQStr);
+
+    const auto nestedFileIt = findNode("nested_file");
+    CPPUNIT_ASSERT(nestedFileIt != v3RemoteNodeInfoList.cend());
+    CPPUNIT_ASSERT(nestedFileIt->parentNodeId() == QString("private_sub_folder"));
+    CPPUNIT_ASSERT(nestedFileIt->path() == QString("/private_sub_folder/nested_file.txt"));
+
+    const auto commonDocumentsSubFolderIt = findNode("sub_common_documents_folder");
+    CPPUNIT_ASSERT(commonDocumentsSubFolderIt != v3RemoteNodeInfoList.cend());
+    CPPUNIT_ASSERT(commonDocumentsSubFolderIt->path() ==
+                   QString("/") + commonDocumentsFolderNameQStr + "/sub_common_documents_folder");
+
+    const auto sharedSubFolderIt = findNode("sub_shared_folder");
+    CPPUNIT_ASSERT(sharedSubFolderIt != v3RemoteNodeInfoList.cend());
+    CPPUNIT_ASSERT(sharedSubFolderIt->path() == QString("/") + sharedFolderNameQStr + "/sub_shared_folder");
 }
 
 void TestApiTranslator::testGetSpecialFolders() {

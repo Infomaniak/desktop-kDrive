@@ -90,12 +90,11 @@ ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
         if (!JsonParserUtility::extractValue(dataObj, pathKey, relativePathStr)) {
             return {};
         }
+        ApiTranslator::translateV3ToV2(relativePathStr);
         if (CommonUtility::startsWith(relativePathStr, "/")) {
             relativePathStr.erase(0, 1);
         }
-
         _path = relativePathStr;
-        ApiTranslator::translateV3ToV2(_path);
     }
 
     return ExitCode::Ok;
