@@ -1074,7 +1074,7 @@ bool AppServer::noMacVfsSync() {
 
 bool AppServer::areMacVfsAuthsOk() const {
     std::string liteSyncExtErrorDescr;
-    bool ret = CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
+    bool ret = CommonUtility::isLiteSyncExtEnabled() && Utility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
     if (!ret) {
         if (liteSyncExtErrorDescr.empty()) {
             LOG_WARN(_logger, "LiteSync extension is not enabled or doesn't have full disk access");

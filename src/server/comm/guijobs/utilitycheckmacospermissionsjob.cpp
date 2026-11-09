@@ -21,6 +21,7 @@
 #include "libcommon/comm.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 // Output parameters keys
 static const auto outParamsFullDiskAccess = "fullDiskAccess";
@@ -55,9 +56,9 @@ ExitInfo UtilityCheckMacOsPermissionsJob::process() {
     _liteSyncExtEnabled = CommonUtility::isLiteSyncExtEnabled();
 
     std::string liteSyncExtErrorDescr;
-    _liteSyncExtFullDiskAccess = CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
+    _liteSyncExtFullDiskAccess = Utility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
     if (!_liteSyncExtFullDiskAccess && !liteSyncExtErrorDescr.empty()) {
-        LOG_WARN(_logger, "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescr);
+        LOG_WARN(_logger, "Error in Utility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescr);
     }
 
     return ExitCode::Ok;

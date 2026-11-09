@@ -41,7 +41,6 @@
 #include <QMimeType>
 #include <QStorageInfo>
 #include <QProcess>
-#include <QOperatingSystemVersion>
 
 #include <Poco/UnicodeConverter.h>
 #include <Poco/Base64Decoder.h>
@@ -57,7 +56,6 @@
 #if defined(KD_MACOS)
 #include <sys/mount.h>
 #include <mach-o/dyld.h>
-#include <sqlite3.h>
 #elif defined(KD_LINUX)
 #include <sys/statfs.h>
 #elif defined(KD_WINDOWS)
@@ -1325,40 +1323,6 @@ bool CommonUtility::isLiteSyncExtEnabled() {
     QByteArray result = process.readAll();
 
     return result.trimmed().toInt() == 1;
-}
-
-bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
-    // Without SQLITE_OPEN_READONLY, SQLite still falls back to read-only access when the file is not writable.
-    sqlite3 *rawDb = nullptr;
-    const auto openResult =
-            sqlite3_open_v2("/Library/Application Support/com.apple.TCC/TCC.db", &rawDb, SQLITE_OPEN_READWRITE, nullptr);
-    const std::unique_ptr<sqlite3, decltype(&sqlite3_close)> db(rawDb, &sqlite3_close);
-    if (openResult != SQLITE_OK) {
-        errorDescr = "Cannot open TCC database!";
-        return false;
-    }
-
-    // The system TCC daemon can briefly lock the database.
-    static constexpr int32_t busyTimeoutMs = 5000;
-    (void) sqlite3_busy_timeout(db.get(), busyTimeoutMs);
-
-    const auto *sql = "SELECT auth_value FROM access WHERE service = ?1 AND client = ?2 AND client_type = 0";
-    // Qt 6.2.3, used on macOS, has no QOperatingSystemVersion::MacOSVentura.
-    const bool macOs13orLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 13);
-    const auto *service = macOs13orLater ? "kTCCServiceEndpointSecurityClient" : "kTCCServiceSystemPolicyAllFiles";
-
-    sqlite3_stmt *rawStatement = nullptr;
-    const auto prepareResult = sqlite3_prepare_v2(db.get(), sql, -1, &rawStatement, nullptr);
-    const std::unique_ptr<sqlite3_stmt, decltype(&sqlite3_finalize)> statement(rawStatement, &sqlite3_finalize);
-    if (prepareResult != SQLITE_OK || sqlite3_bind_text(statement.get(), 1, service, -1, SQLITE_STATIC) != SQLITE_OK ||
-        sqlite3_bind_text(statement.get(), 2, liteSyncExtBundleIdStr.data(), -1, SQLITE_STATIC) != SQLITE_OK ||
-        sqlite3_step(statement.get()) != SQLITE_ROW) {
-        errorDescr = "Unable to find Full Disk Access auth for Lite Sync Extension!";
-        return false;
-    }
-
-    // TCC auth_value: 2 means allowed.
-    return sqlite3_column_int(statement.get(), 0) == 2;
 }
 
 bool CommonUtility::isFullDiskAccessAuthOk() {
