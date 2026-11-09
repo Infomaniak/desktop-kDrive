@@ -132,7 +132,8 @@ final class ManyDeletesModalPresenter {
         case .SoftLimit:
             await runSoftLimitAlert(nbFiles: notification.nbFiles, driveId: Int(driveId))
         case .HardLimit:
-            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles, filesPaths: notification.filesPaths) else {
+            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles, filesPaths: notification.filesPaths)
+            else {
                 IKLogger.general.info("[KD] Many deletes confirmation aborted syncDbId=\(syncDbId)")
                 return
             }
