@@ -54,11 +54,18 @@ ScrollView {
                 title: qsTrId("updateSettings")
                 description: root.controller.updateText
                 IKModalButton {
+                    readonly property bool manual: !root.controller.updateReadyToInstall
+                                                   && !root.controller.updateDownloading
+
                     visible: root.controller.updateAvailable
-                    text: qsTrId("buttonDownloadManually")
-                    external: true
+                    text: root.controller.updateReadyToInstall ? qsTrId("buttonUpdate")
+                                                               : root.controller.updateDownloading
+                                                                 ? qsTrId("buttonDownloadInProgress")
+                                                                 : qsTrId("buttonDownloadManually")
+                    external: manual
+                    actionEnabled: !root.controller.updateDownloading
                     implicitHeight: IKSettings.buttonHeight
-                    onClicked: root.controller.openDownload()
+                    onClicked: manual ? root.controller.openDownload() : root.controller.installUpdate()
                 }
                 SettingsInfoButton {
                     id: releaseInfo

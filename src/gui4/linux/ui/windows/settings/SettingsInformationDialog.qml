@@ -107,10 +107,15 @@ IKModal {
             onClicked: root.close()
         },
         IKModalButton {
+            readonly property bool manual: !root.controller.updateReadyToInstall && !root.controller.updateDownloading
+
             visible: !root.about && root.controller.updateAvailable
-            text: qsTrId("buttonDownloadManually")
-            external: true
-            onClicked: root.controller.openDownload()
+            text: root.controller.updateReadyToInstall ? qsTrId("buttonUpdate")
+                                                       : root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
+                                                                                           : qsTrId("buttonDownloadManually")
+            external: manual
+            actionEnabled: !root.controller.updateDownloading
+            onClicked: manual ? root.controller.openDownload() : root.controller.installUpdate()
         }
     ]
 }

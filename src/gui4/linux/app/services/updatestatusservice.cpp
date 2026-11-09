@@ -18,20 +18,50 @@
 
 #include "updatestatusservice.h"
 
+#include <QLoggingCategory>
 #include <QPointer>
 
 #include <utility>
 
 namespace KDC {
 
-UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, QObject *const parent) :
+Q_LOGGING_CATEGORY(lcUpdateStatusService, "gui.v4.updatestatusservice", QtInfoMsg)
+
+UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, InstallRequest installRequest,
+                                         QObject *const parent) :
     QObject(parent),
     _stateRequest(std::move(stateRequest)),
-    _versionRequest(std::move(versionRequest)) {}
+    _versionRequest(std::move(versionRequest)),
+    _installRequest(std::move(installRequest)) {}
 
 bool UpdateStatusService::available() const {
-    // The Linux updater on the server side currently returns only ManualUpdateAvailable.
-    return _state == UpdateState::ManualUpdateAvailable || _state == UpdateState::Available || _state == UpdateState::Ready;
+    // Download and installation errors keep the update available: the user can still download it manually.
+    switch (_state) {
+        case UpdateState::ManualUpdateAvailable:
+        case UpdateState::Available:
+        case UpdateState::Downloading:
+        case UpdateState::Ready:
+        case UpdateState::DownloadError:
+        case UpdateState::UpdateError:
+            return true;
+        default:
+            return false;
+    }
+}
+
+void UpdateStatusService::startInstaller() const {
+    if (!readyToInstall()) {
+        return;
+    }
+
+    // On success the server replaces the AppImage, then asks this client to quit before relaunching.
+    qCInfo(lcUpdateStatusService) << "Requesting the update installation";
+    _installRequest([](const ExitInfo &result) {
+        if (!result) {
+            qCWarning(lcUpdateStatusService)
+                    << "Update installation request failed | code:" << result.code() << "/ cause:" << result.cause();
+        }
+    });
 }
 
 void UpdateStatusService::refresh() {

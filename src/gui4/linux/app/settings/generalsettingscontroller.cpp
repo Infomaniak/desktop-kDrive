@@ -120,6 +120,14 @@ bool GeneralSettingsController::updateAvailable() const {
     return _updateStatusService.available();
 }
 
+bool GeneralSettingsController::updateDownloading() const {
+    return _updateStatusService.downloading();
+}
+
+bool GeneralSettingsController::updateReadyToInstall() const {
+    return _updateStatusService.readyToInstall();
+}
+
 QString GeneralSettingsController::releaseVersion() const {
     return _updateStatusService.version() ? QString::fromStdString(_updateStatusService.version()->tag) : installedVersion();
 }
@@ -213,11 +221,13 @@ void GeneralSettingsController::openUrl(const QUrl &url) {
     emit changed();
 }
 
+// Manual fallback when the AppImage cannot be replaced in place (not an AppImage, read-only folder, download error).
 void GeneralSettingsController::openDownload() {
-    // TODO: The Linux server has no installer yet (`LinuxUpdater::startInstaller` is empty): the user downloads the new
-    // version from the website, from Settings or from the update-required screen. Once the packaging rework brings one,
-    // send UPDATER_START_INSTALLER instead, as on Windows and macOS, and present the installation state.
     openUrl(AppConstants::Settings::downloadUri());
+}
+
+void GeneralSettingsController::installUpdate() const {
+    _updateStatusService.startInstaller();
 }
 
 void GeneralSettingsController::openTrashHelp() {
