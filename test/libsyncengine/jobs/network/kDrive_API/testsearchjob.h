@@ -34,6 +34,9 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testHandleResponseSharedPath);
         CPPUNIT_TEST(testHandleResponseLeadingSlash);
         CPPUNIT_TEST(testHandleResponseIsAvailableLocally);
+#if defined(KD_WINDOWS)
+        CPPUNIT_TEST(testHandleResponseBackslashNameAndPath);
+#endif
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_TEST(testHandleResponseIsHydratedWithVfsOn);
 #endif
@@ -52,6 +55,9 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         void testHandleResponseSharedPath();
         void testHandleResponseLeadingSlash();
         void testHandleResponseIsAvailableLocally();
+#if defined(KD_WINDOWS)
+        void testHandleResponseBackslashNameAndPath();
+#endif
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         void testHandleResponseIsHydratedWithVfsOn();
 #endif

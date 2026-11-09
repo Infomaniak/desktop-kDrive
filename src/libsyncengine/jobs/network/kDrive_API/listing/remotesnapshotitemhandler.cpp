@@ -18,8 +18,6 @@
 
 #include "remotesnapshotitemhandler.h"
 
-#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-
 namespace KDC {
 
 static const std::string endOfFileDelimiter("#EOF");
@@ -60,10 +58,7 @@ bool RemoteSnapshotItemHandler::updateRemoteSnapshotItem(const std::string &str,
         case CsvIndexName: {
             SyncName name = Str2SyncName(str);
 #if defined(KD_WINDOWS)
-            SyncName newName;
-            if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name, newName)) {
-                name = newName;
-            }
+            name = Utility::fixNameWithBackslash(name);
 #endif
             item.setName(name);
             break;
@@ -140,6 +135,10 @@ void RemoteSnapshotItemHandler::readRemoteSnapshotItemFields(RemoteSnapshotItem 
         if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
             if (c != ',' && c != '"') {
                 // After a closing double quote, we must have a comma or another double quote. Otherwise, ignore the line.
+                // Keep the name read so far so that an error can be reported for this item.
+                if (state.index == CsvIndexName && item.name().empty()) {
+                    item.setName(Str2SyncName(state.tmp));
+                }
                 state.index = CsvIndexId; // Make sure that `state` is not equal to `CsvIndexEnd`.
                 state.readingDoubleQuotedValue = false; // Exit the `readingDoubleQuotedValue` mode.
                 LOG_WARN(_logger, "Item '" << line.c_str()
@@ -215,16 +214,6 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
 
         readRemoteSnapshotItemFields(item, line, error, state);
 
-        // Ignore the lines containing escaped double quotes
-        if (line.find(R"(\")") != std::string::npos) {
-            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << CommonUtility::s2ws(line));
-            if (state.index == CsvIndexName && item.name().empty()) {
-                item.setName(Str2SyncName(state.tmp));
-            }
-            ignore = true;
-            return true;
-        }
-
         if (error) return true;
 
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
@@ -235,11 +224,14 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
                 return true;
             }
 
-            state.tmp.push_back('\n');
+            // A closing double quote at the end of the line is not part of the name, so the line return is not either.
+            if (!state.prevCharDoubleQuotes) state.tmp.push_back('\n');
             state.readNextLine = true;
             (void) std::getline(ss, line);
         }
     }
+
+    LOG_IF_FAIL(_logger, state.doubleQuoteCount % 2 == 0);
 
     if (state.index < CsvIndexEnd - 1) {
         LOG_WARN(_logger, "Invalid item");

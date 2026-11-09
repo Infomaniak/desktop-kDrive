@@ -22,7 +22,6 @@
 #include "utility/jsonparserutility.h"
 #include "jobs/network/jobexceptions.h"
 
-
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
@@ -85,6 +84,10 @@ ExitInfo GetFilesInDirectoryJob::extractName(const Poco::JSON::Object::Ptr &obj,
     if (!Utility::normalizedSyncName(rawName, name)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
     }
+    
+#if defined(KD_WINDOWS)
+    name = Utility::fixNameWithBackslash(name);
+#endif
 
     return ExitCode::Ok;
 }
@@ -98,6 +101,10 @@ ExitInfo GetFilesInDirectoryJob::extractPath(const Poco::JSON::Object::Ptr &obj,
     if (!Utility::normalizedSyncName(rawPath, path)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawPath));
     }
+
+#if defined(KD_WINDOWS)
+    path = Utility::fixNameWithBackslash(path);
+#endif
 
     return ExitCode::Ok;
 }

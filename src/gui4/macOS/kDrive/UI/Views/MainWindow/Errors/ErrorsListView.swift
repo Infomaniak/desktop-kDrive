@@ -18,6 +18,7 @@
 
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 struct ErrorsListView: View {
@@ -70,6 +71,15 @@ struct ErrorsListView: View {
             }
         }
         .genericErrorAlert(isPresented: $synchroErrorManager.isShowingGenericError)
+        .alert(
+            KDriveLocalizable.driveLoggingErrorUserMismatchTitle,
+            isPresented: Binding(
+                get: { synchroErrorManager.userMismatchEmail != nil },
+                set: { if !$0 { synchroErrorManager.userMismatchEmail = nil } }
+            )
+        ) {} message: {
+            Text(KDriveLocalizable.driveLoggingErrorUserMismatchDescription(synchroErrorManager.userMismatchEmail ?? ""))
+        }
         .onAppear(perform: recomputeErrors)
         .onChange(of: errors) { _ in
             recomputeErrors()
