@@ -48,21 +48,5 @@
                         Visibility="{x:Bind AppViewModel.SelectedSync.Drive.IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
             </InfoBar.ActionButton>
         </InfoBar>
-
-        <InfoBar x:Name="TmpDirAccessError"
-                 IsOpen="{x:Bind ControlViewModel.ShowTmpDirAccessError, Mode=OneWay}"
-                 Title="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockTmpDirAccessErrorTitle')}"
-                 Message="{x:Bind kDrive:Localizer.Instance.GetString('informationBlockTmpDirAccessErrorSubtitle')}"
-                 IsClosable="True"
-                 Closed="TmpDirAccessError_Closed">
-            <InfoBar.IconSource>
-                <controls:SvgIconSource UriSource="{StaticResource Infomaniak.DS.Icons.Network.cloud-offline}"
-                                        Foreground="{ThemeResource SystemFillColorAttentionBrush}" />
-            </InfoBar.IconSource>
-            <InfoBar.ActionButton>
-                <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonCloseKDrive')}"
-                        Click="TmpDirAccessError_Click" />
-            </InfoBar.ActionButton>
-        </InfoBar>
     </Grid>
 </UserControl>
