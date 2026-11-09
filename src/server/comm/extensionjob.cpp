@@ -887,17 +887,18 @@ ExitInfo ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &
     if (!fileData.isValid()) return ExitCode::LogicError;
 
     SyncPalMap::const_iterator syncPalMapIt;
+    std::shared_ptr<SyncPal> syncPal;
     {
         const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
         syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+        if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
+        syncPal = syncPalMapIt->second;
     }
 
-    if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
 
     bool exists = false;
-    if (ExitInfo exitInfo = syncPalMapIt->second->checkIfExistsOnServer(fileData.localNodeId, exists); !exitInfo) {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
+    if (ExitInfo exitInfo = syncPal->checkIfExistsOnServer(fileData.localNodeId, exists); !exitInfo) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Error in SyncPal::checkIfExistsOnServer: " << fileData.localNodeId);
         // Occurs when the sync is stopped
         return exitInfo;
     }
@@ -906,13 +907,17 @@ ExitInfo ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &
         status = SyncFileStatus::Success;
     }
 
-    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+    std::shared_ptr<Vfs> vfs;
 
-    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _commManager->appServer().vfsMap.end() || !vfsMapIt->second) return ExitCode::SyncPaused;
+    {
+        const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+        const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
+        if (vfsMapIt == _commManager->appServer().vfsMap.end() || !vfsMapIt->second) return ExitCode::SyncPaused;
+        vfs = vfsMapIt->second;
+    }
 
-    if (vfsMapIt->second->mode() == VirtualFileMode::Mac || vfsMapIt->second->mode() == VirtualFileMode::Win) {
-        if (ExitInfo exitInfo = vfsMapIt->second->status(fileData.localPath, vfsStatus); !exitInfo) {
+    if (vfs->mode() == VirtualFileMode::Mac || vfs->mode() == VirtualFileMode::Win) {
+        if (ExitInfo exitInfo = vfs->status(fileData.localPath, vfsStatus); !exitInfo) {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatSyncPath(fileData.localPath));
             return exitInfo;
         }
