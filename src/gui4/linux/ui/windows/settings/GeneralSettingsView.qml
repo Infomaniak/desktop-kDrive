@@ -26,6 +26,7 @@ ScrollView {
     required property var controller
     signal releaseInformationRequested(var trigger)
     signal aboutRequested(var trigger)
+    signal betaProgramRequested(var trigger)
     contentWidth: availableWidth
     clip: true
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -74,10 +75,24 @@ ScrollView {
             }
             SettingsRow {
                 title: qsTrId("aboutKDrive")
-                separator: false
                 SettingsInfoButton {
                     id: aboutInfo
                     onClicked: root.aboutRequested(aboutInfo)
+                }
+            }
+            SettingsRow {
+                // TODO(translation): create betaProgramSetting in Loco.
+                title: qsTrId("betaProgramSetting")
+                separator: false
+                Text {
+                    text: root.controller.betaProgramStatus
+                    color: IKColors.textSecondary
+                    font.pixelSize: IKFonts.bodySize
+                }
+                SettingsInfoButton {
+                    id: betaProgramInfo
+                    enabled: root.controller.ready
+                    onClicked: root.betaProgramRequested(betaProgramInfo)
                 }
             }
         }

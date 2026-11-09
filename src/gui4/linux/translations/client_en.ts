@@ -227,6 +227,18 @@ You can open them at any time, even without an internet connection.</translation
             <source>Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your improvement ideas with us.</source> 
             <translation>Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your improvement ideas with us.</translation> 
         </message> 
+        <message id="betaProgramJoin"> 
+            <source>Join</source> 
+            <translation>Join</translation> 
+        </message> 
+        <message id="betaProgramJoinLabel"> 
+            <source>Join the beta:</source> 
+            <translation>Join the beta:</translation> 
+        </message> 
+        <message id="betaProgramSetting"> 
+            <source>Beta program</source> 
+            <translation>Beta program</translation> 
+        </message> 
         <message id="betaProgramTitle"> 
             <source>Join the beta program</source> 
             <translation>Join the beta program</translation> 

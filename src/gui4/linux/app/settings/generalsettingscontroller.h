@@ -28,6 +28,7 @@ namespace KDC {
 class ParametersStore;
 class TranslationService;
 class UpdateStatusService;
+class AppCache;
 
 /** Presentation and immediate-save actions for General settings; the server remains authoritative. */
 class GeneralSettingsController final : public QObject {
@@ -44,6 +45,9 @@ class GeneralSettingsController final : public QObject {
         Q_PROPERTY(bool updateAvailable READ updateAvailable NOTIFY changed)
         Q_PROPERTY(bool updateDownloading READ updateDownloading NOTIFY changed)
         Q_PROPERTY(bool updateReadyToInstall READ updateReadyToInstall NOTIFY changed)
+        Q_PROPERTY(int32_t distributionChannel READ distributionChannel NOTIFY changed)
+        Q_PROPERTY(QString betaProgramStatus READ betaProgramStatus NOTIFY changed)
+        Q_PROPERTY(QVariantList distributionChannels READ distributionChannels NOTIFY changed)
         Q_PROPERTY(QString releaseVersion READ releaseVersion NOTIFY changed)
         Q_PROPERTY(QString releaseDetails READ releaseDetails NOTIFY changed)
         Q_PROPERTY(QString installedDetails READ installedDetails NOTIFY changed)
@@ -51,7 +55,7 @@ class GeneralSettingsController final : public QObject {
     public:
         GeneralSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
                                   TranslationService &translationService, UpdateStatusService &updateStatusService,
-                                  QObject *parent = nullptr);
+                                  const AppCache &appCache, QObject *parent = nullptr);
 
         [[nodiscard]] bool ready() const;
 
@@ -69,6 +73,9 @@ class GeneralSettingsController final : public QObject {
         [[nodiscard]] bool updateAvailable() const;
         [[nodiscard]] bool updateDownloading() const;
         [[nodiscard]] bool updateReadyToInstall() const;
+        [[nodiscard]] int32_t distributionChannel() const;
+        [[nodiscard]] QString betaProgramStatus() const;
+        [[nodiscard]] QVariantList distributionChannels() const;
         [[nodiscard]] QString releaseVersion() const;
         [[nodiscard]] QString releaseDetails() const;
         [[nodiscard]] static QString installedDetails();
@@ -77,6 +84,7 @@ class GeneralSettingsController final : public QObject {
         Q_INVOKABLE void setNotificationsEnabled(bool enabled);
         Q_INVOKABLE void setMoveToTrash(bool enabled);
         Q_INVOKABLE void setLanguage(int32_t languageValue);
+        Q_INVOKABLE void setDistributionChannel(int32_t channelValue);
 
         Q_INVOKABLE void openDownload();
         Q_INVOKABLE void installUpdate() const;
@@ -99,6 +107,7 @@ class GeneralSettingsController final : public QObject {
         ParametersService &_parametersService;
         TranslationService &_translationService;
         UpdateStatusService &_updateStatusService;
+        const AppCache &_appCache;
 
         bool _saving{false};
 

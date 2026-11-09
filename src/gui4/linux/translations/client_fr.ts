@@ -227,6 +227,18 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</translati
             <source>Get early access to new versions of the application before they are released to the general public and help improve the app by sharing your improvement ideas with us.</source> 
             <translation>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations.</translation> 
         </message> 
+        <message id="betaProgramJoin"> 
+            <source>Join</source> 
+            <translation>Rejoindre</translation> 
+        </message> 
+        <message id="betaProgramJoinLabel"> 
+            <source>Join the beta:</source> 
+            <translation>Rejoindre la bêta :</translation> 
+        </message> 
+        <message id="betaProgramSetting"> 
+            <source>Beta program</source> 
+            <translation>Programme bêta</translation> 
+        </message> 
         <message id="betaProgramTitle"> 
             <source>Join the beta program</source> 
             <translation>Rejoindre le programme bêta</translation> 

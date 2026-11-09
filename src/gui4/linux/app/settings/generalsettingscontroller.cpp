@@ -19,6 +19,7 @@
 #include "generalsettingscontroller.h"
 
 #include "app/appconstants.h"
+#include "app/cache/appcache.h"
 #include "app/cache/parametersstore.h"
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
@@ -31,6 +32,8 @@
 #include <QLoggingCategory>
 #include <QPointer>
 
+#include <algorithm>
+
 namespace KDC {
 
 using namespace Qt::StringLiterals;
@@ -42,6 +45,31 @@ QString installedVersion() {
     return QString::fromLatin1(KDRIVE_VERSION_STRING);
 }
 
+// Channels without their own choice in the beta program are shown as "Do not join".
+DistributionChannel displayedChannel(const DistributionChannel channel) {
+    switch (channel) {
+        case DistributionChannel::Beta:
+        case DistributionChannel::Internal:
+        case DistributionChannel::Test:
+            return channel;
+        default:
+            return DistributionChannel::Prod;
+    }
+}
+
+QString channelLabel(const DistributionChannel channel) {
+    switch (channel) {
+        case DistributionChannel::Beta:
+            return qtTrId("releaseChannelBeta");
+        case DistributionChannel::Internal:
+            return qtTrId("releaseChannelInternal");
+        case DistributionChannel::Test:
+            return qtTrId("releaseChannelTest");
+        default:
+            return qtTrId("doNotJoin");
+    }
+}
+
 QString versionDetails(const QString &version, const uint64_t build) {
     return qtTrId("aboutAppVersionCopyrightMac").arg(version).arg(build).arg(QDate::currentDate().year());
 }
@@ -49,13 +77,16 @@ QString versionDetails(const QString &version, const uint64_t build) {
 
 GeneralSettingsController::GeneralSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
                                                      TranslationService &translationService,
-                                                     UpdateStatusService &updateStatusService, QObject *const parent) :
+                                                     UpdateStatusService &updateStatusService, const AppCache &appCache,
+                                                     QObject *const parent) :
     QObject(parent),
     _parametersStore(parametersStore),
     _parametersService(parametersService),
     _translationService(translationService),
-    _updateStatusService(updateStatusService) {
+    _updateStatusService(updateStatusService),
+    _appCache(appCache) {
     (void) connect(&parametersStore, &ParametersStore::parametersChanged, this, &GeneralSettingsController::changed);
+    (void) connect(&appCache, &AppCache::usersChanged, this, &GeneralSettingsController::changed);
     (void) connect(&translationService, &TranslationService::languageChanged, this, &GeneralSettingsController::changed);
     (void) connect(&updateStatusService, &UpdateStatusService::changed, this, &GeneralSettingsController::changed);
 }
@@ -128,6 +159,47 @@ bool GeneralSettingsController::updateReadyToInstall() const {
     return _updateStatusService.readyToInstall();
 }
 
+int32_t GeneralSettingsController::distributionChannel() const {
+    const auto parameters = _parametersStore.parameters();
+    const auto channel = parameters ? parameters->distributionChannel() : DistributionChannel::Prod;
+    return static_cast<int32_t>(displayedChannel(channel));
+}
+
+QString GeneralSettingsController::betaProgramStatus() const {
+    const auto channel = static_cast<DistributionChannel>(distributionChannel());
+    if (channel == DistributionChannel::Prod) {
+        // TODO(translation): create betaProgramJoin in Loco.
+        return qtTrId("betaProgramJoin");
+    }
+
+    return channelLabel(channel);
+}
+
+// Internal and Test are offered only when a connected account belongs to the staff. The current channel stays listed
+// so that the picker never shows a wrong value, even after the staff account is disconnected.
+QVariantList GeneralSettingsController::distributionChannels() const {
+    const auto users = _appCache.users();
+    const bool staff = std::ranges::any_of(users, [](const User &user) { return user.connected() && user.isStaff(); });
+
+    std::vector<DistributionChannel> channels{DistributionChannel::Prod, DistributionChannel::Beta};
+    if (staff) {
+        channels.push_back(DistributionChannel::Internal);
+        channels.push_back(DistributionChannel::Test);
+    }
+
+    const auto current = static_cast<DistributionChannel>(distributionChannel());
+    if (std::ranges::find(channels, current) == channels.end()) {
+        channels.push_back(current);
+    }
+
+    QVariantList options;
+    for (const auto channel: channels) {
+        options.append(QVariantMap{{u"value"_s, static_cast<int32_t>(channel)}, {u"label"_s, channelLabel(channel)}});
+    }
+
+    return options;
+}
+
 QString GeneralSettingsController::releaseVersion() const {
     return _updateStatusService.version() ? QString::fromStdString(_updateStatusService.version()->tag) : installedVersion();
 }
@@ -187,6 +259,21 @@ void GeneralSettingsController::setMoveToTrash(const bool enabled) {
     }
 
     save([enabled](Parameters &parameters) { parameters.setMoveToTrash(enabled); });
+}
+
+void GeneralSettingsController::setDistributionChannel(const int32_t channelValue) {
+    const auto channel = static_cast<DistributionChannel>(channelValue);
+    if (displayedChannel(channel) != channel) {
+        qCWarning(lcGeneralSettings) << "Ignoring unsupported distribution channel" << channelValue;
+        return;
+    }
+
+    if (channelValue == distributionChannel()) {
+        return;
+    }
+
+    qCInfo(lcGeneralSettings) << "Distribution channel changed | channel:" << channelValue;
+    save([channel](Parameters &parameters) { parameters.setDistributionChannel(channel); });
 }
 
 void GeneralSettingsController::setLanguage(const int32_t languageValue) {
