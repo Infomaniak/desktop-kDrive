@@ -297,6 +297,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKSearchField.qml
         ui/components/IKSidebarItem.qml
         ui/components/IKDriveSyncSelectorItem.qml
+        ui/components/IKSyncIcon.qml
         ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
         ui/components/IKExternalLinkIcon.qml
