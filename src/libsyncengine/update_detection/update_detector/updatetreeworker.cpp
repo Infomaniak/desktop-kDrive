@@ -1318,7 +1318,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
     nodeQueue.push(parentNode);
 
     while (!nodeQueue.empty()) {
-        std::shared_ptr<Node> node = nodeQueue.front();
+        const auto node = nodeQueue.front();
         nodeQueue.pop();
 
         if (stopAsked()) {
@@ -1355,7 +1355,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         }
 
         queueChildren();
-        visitedNodes.insert(node);
+        (void) visitedNodes.insert(node);
 
         // update myself
         // if it's a Create we don't have node's database data

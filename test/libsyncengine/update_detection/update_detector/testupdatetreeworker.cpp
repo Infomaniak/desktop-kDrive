@@ -528,7 +528,7 @@ void TestUpdateTreeWorker::testStep2() {
                                                           "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1", "Dir 1/File 1.1"));
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step2MoveFile());
-    std::shared_ptr<Node> node = _localUpdateTree->getNodeByPath("Dir 1/File 1.1");
+    const auto node = _localUpdateTree->getNodeByPath("Dir 1/File 1.1");
     CPPUNIT_ASSERT(node);
     CPPUNIT_ASSERT(node->hasChangeEvent(OperationType::Move));
     CPPUNIT_ASSERT(node->id() == "id1111");
@@ -774,7 +774,7 @@ void TestUpdateTreeWorker::testClearTreeStep2() {
                                                           "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1", "Dir 1/File 1.1"));
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step2MoveFile());
-    std::shared_ptr<Node> node = _localUpdateTree->getNodeByPath("Dir 1/File 1.1");
+    const auto node = _localUpdateTree->getNodeByPath("Dir 1/File 1.1");
     CPPUNIT_ASSERT(node);
     CPPUNIT_ASSERT(node->hasChangeEvent(OperationType::Move));
     CPPUNIT_ASSERT(node->id() == "id1111");
@@ -911,7 +911,7 @@ void TestUpdateTreeWorker::testGetOriginPath() {
     setUpUpdateTree(ReplicaSide::Local);
 
     // Test without move operation
-    std::shared_ptr<Node> node = _localUpdateTree->getNodeById("id4111");
+    const auto node = _localUpdateTree->getNodeById("id4111");
     SyncPath path;
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
@@ -931,7 +931,7 @@ void TestUpdateTreeWorker::testGetOriginPath2() {
     setUpUpdateTree(ReplicaSide::Local);
 
     // Test with move operation on some parents
-    std::shared_ptr<Node> node = _localUpdateTree->getNodeById("id411");
+    auto node = _localUpdateTree->getNodeById("id411");
     node->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1", "id41"});
     node->insertChangeEvent(OperationType::Move);
     CPPUNIT_ASSERT(node->moveTo(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
@@ -1142,11 +1142,13 @@ void TestUpdateTreeWorker::testGetNodeFromDeletedPath() {
 
         updateTree->drawUpdateTree(0);
 
-        std::shared_ptr<Node> node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
+        auto node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
         CPPUNIT_ASSERT_EQUAL(nodeAAAdelete->id().value(), node->id().value());
         (void) updateTreeWorker->getOrCreateNodeFromPath(SyncPath("/A/AA/AAA"), node);
         CPPUNIT_ASSERT_EQUAL(nodeAAAcreate->id().value(), node->id().value());
     }
+
+
     {
         // More complex case where a branch is deleted and re-created, and a file is moved inside the newly created branch.
         auto updateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
@@ -1201,7 +1203,7 @@ void TestUpdateTreeWorker::testGetNodeFromDeletedPath() {
 
         updateTree->drawUpdateTree(0);
 
-        std::shared_ptr<Node> node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
+        auto node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
         CPPUNIT_ASSERT_EQUAL(nodeAAAdelete->id().value(), node->id().value());
         node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA1"));
         CPPUNIT_ASSERT_EQUAL(nodeAAA1delete->id().value(), node->id().value());
@@ -1230,13 +1232,13 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->updateTmpNode(newNode->parentNode()));
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
-    newNode->setId(std::nullopt);
+    (void) newNode->setId(std::nullopt);
     CPPUNIT_ASSERT_THROW(_localUpdateTreeWorker->checkTreeIntegrity(), UpdateTreeWorker::IntegrityError);
 
-    newNode->setId(NodeId{});
+    (void) newNode->setId(NodeId{});
     CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity());
 
-    newNode->setId(NodeId{"123"});
+    (void) newNode->setId(NodeId{"123"});
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setChangeEvents(OperationType::Create);

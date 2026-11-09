@@ -66,11 +66,11 @@ class Node : public std::enable_shared_from_this<Node> {
 
         Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
              OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-             std::optional<SyncTime> lastmodified, int64_t size, const MoveOriginInfos &moveOriginInfos);
+             const std::optional<SyncTime> lastmodified, const int64_t size, const MoveOriginInfos &moveOriginInfos);
 
         Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
-             const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
-             int64_t size);
+             const std::optional<NodeId> &id, const std::optional<SyncTime> createdAt, const std::optional<SyncTime> lastmodified,
+             const int64_t size);
 
         /**
          * @brief Node
@@ -83,7 +83,7 @@ class Node : public std::enable_shared_from_this<Node> {
          * @param type
          * @param parentNode
          */
-        Node(const ReplicaSide &side, const SyncName &name, NodeType type);
+        Node(const ReplicaSide &side, const SyncName &name, const NodeType type);
 
         bool operator==(const Node &n) const;
 
@@ -146,7 +146,7 @@ class Node : public std::enable_shared_from_this<Node> {
         inline void clearMoveOriginInfos() { _moveOriginInfos.clear(); }
         inline void setStatus(const NodeStatus &status) { _status = status; }
 
-        inline const std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }
+        inline const std::unordered_map<NodeId, std::shared_ptr<Node>> &children() const { return _childrenById; }
 
         /**
          * @brief Retrieve a child node based on its name and optionally its id.

@@ -43,18 +43,18 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
 
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-           std::optional<SyncTime> lastmodified, int64_t size, const MoveOriginInfos &moveOriginInfos) :
+           const std::optional<SyncTime> lastmodified, const int64_t size, const MoveOriginInfos &moveOriginInfos) :
     Node(idb, side, name, type, OperationType::None, id, createdAt, lastmodified, size) {
     setMoveOriginInfos(moveOriginInfos);
     setChangeEvents(changeEvents);
 }
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
-           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
-           int64_t size) :
+           const std::optional<NodeId> &id, const std::optional<SyncTime> createdAt, const std::optional<SyncTime> lastmodified,
+           const int64_t size) :
     Node(std::nullopt, side, name, type, changeEvents, id, createdAt, lastmodified, size) {}
 
-Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type) :
+Node::Node(const ReplicaSide &side, const SyncName &name, const NodeType type) :
     Node(std::nullopt, side, name, type, OperationType::None, "tmp_" + CommonUtility::generateRandomStringAlphaNum(),
          std::nullopt, std::nullopt, 0) {
     _isTmp = true;
@@ -126,7 +126,7 @@ void Node::detach() {
         if (_id) {
             if (auto it = _parentNode->_childrenById.find(*_id);
                 it != _parentNode->_childrenById.end() && it->second.get() == this) {
-                _parentNode->_childrenById.erase(it);
+                (void) _parentNode->_childrenById.erase(it);
             } else {
                 // This should not happen, the ID is not found or corresponds to another node.
                 LOG_IF_FAIL(Log::instance()->getLogger(), false);
@@ -231,7 +231,7 @@ bool Node::setId(const std::optional<NodeId> &nodeId) {
         }
 
         if (nodeId) {
-            const auto [_, inserted] = _parentNode->_childrenById.emplace(*nodeId, shared_from_this());
+            const auto [_, inserted] = _parentNode->_childrenById.try_emplace(*nodeId, shared_from_this());
             if (!inserted) {
                 LOGW_WARN(Log::instance()->getLogger(), L"The list of children of the parent node couldn't be updated: "
                                                                 << Node::formatNodeWithParent(shared_from_this(), _parentNode));

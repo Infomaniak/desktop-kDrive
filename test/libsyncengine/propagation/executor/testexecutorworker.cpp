@@ -798,9 +798,9 @@ void TestExecutorWorker::testRemoveDependentOps() {
         auto affectedNode4 = std::make_shared<Node>(ReplicaSide::Remote, Str2SyncName("an4"), NodeType::Unknown,
                                                     OperationType::None, "idAn4", 1234, 1234, 1);
 
-        affectedNode4->moveTo(affectedNode3);
-        affectedNode3->moveTo(affectedNode2);
-        affectedNode2->moveTo(affectedNode1);
+        (void) affectedNode4->moveTo(affectedNode3);
+        (void) affectedNode3->moveTo(affectedNode2);
+        (void) affectedNode2->moveTo(affectedNode1);
 
         op1Create->setAffectedNode(affectedNode2);
         op2Create->setAffectedNode(affectedNode3);
@@ -833,7 +833,7 @@ void TestExecutorWorker::testRemoveDependentOps() {
         auto correspondingNode2 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn2"), NodeType::Unknown,
                                                          OperationType::None, "idCn2", 1234, 1234, 1); // b/
 
-        affectedNode2->moveTo(affectedNode1);
+        (void) affectedNode2->moveTo(affectedNode1);
 
         op1Create->setAffectedNode(affectedNode1);
         op2Move->setAffectedNode(affectedNode2);
@@ -865,7 +865,7 @@ void TestExecutorWorker::testRemoveDependentOps() {
         auto correspondingNode2 = std::make_shared<Node>(ReplicaSide::Local, Str2SyncName("cn2"), NodeType::Unknown,
                                                          OperationType::None, "idCn2", 1234, 1234, 1); // y
 
-        affectedNode2->moveTo(affectedNode1);
+        (void) affectedNode2->moveTo(affectedNode1);
 
         op1Move->setAffectedNode(affectedNode1);
         op1Move->setCorrespondingNode(correspondingNode1);

@@ -65,7 +65,7 @@ void TestUpdateTree::testConstructors() {
         const auto node = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory,
                                                  OperationType::None, "l1", 0, 0, 12345);
         CPPUNIT_ASSERT(node->moveTo(_myTree->rootNode()));
-        node.setName(nfdName);
+        node->setName(nfdName);
         CPPUNIT_ASSERT(node->name() == nfdName);
     }
 }
@@ -197,19 +197,19 @@ void TestUpdateTree::testAll() {
 }
 
 void TestUpdateTree::testChangeEvents() {
-    std::shared_ptr<Node> node =
+    const auto node =
             std::make_shared<Node>(_myTree->side(), Str("Dir 0"), NodeType::Directory, OperationType::None, "0", 0, 0, 12345);
     CPPUNIT_ASSERT(node->moveTo(_myTree->rootNode()));
 
-    const std::shared_ptr<Node> nodeCreate =
+    const auto nodeCreate =
             std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::Create, "l1", 0, 0, 12345);
     CPPUNIT_ASSERT(nodeCreate->moveTo(_myTree->rootNode()));
 
-    const std::shared_ptr<Node> nodeEdit =
+    const auto nodeEdit =
             std::make_shared<Node>(_myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::Edit, "l2", 0, 0, 12345);
     CPPUNIT_ASSERT(nodeEdit->moveTo(_myTree->rootNode()));
 
-    const std::shared_ptr<Node> nodeMove =
+    const auto nodeMove =
             std::make_shared<Node>(_myTree->side(), Str("Dir 3*"), NodeType::Directory, OperationType::None, "l3", 0, 0, 12345);
     CPPUNIT_ASSERT(nodeMove->moveTo(_myTree->rootNode()));
     nodeMove->setMoveOriginInfos({Str("Dir 3"), _myTree->rootNode()->id().value()});
