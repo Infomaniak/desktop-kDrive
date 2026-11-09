@@ -344,11 +344,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\KSuiteUpgradeBar.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="CustomControls\SyncStartPauseButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
