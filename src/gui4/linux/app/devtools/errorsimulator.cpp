@@ -169,10 +169,11 @@ std::vector<Fixture> fixtures() {
             {SystemSyncDirAccess, syncPalError(ExitCode::SystemError, ExitCause::SyncDirAccessError)},
             {SystemSyncDirDiskMissing, syncPalError(ExitCode::SystemError, ExitCause::SyncDirDiskMissing)},
             {DataSyncDirChanged, syncPalError(ExitCode::DataError, ExitCause::SyncDirChanged)},
-            {TemporaryDirAccess, syncPalError(ExitCode::SystemError, ExitCause::TmpDirAccessError)},
             {NotEnoughINotifyWatches, syncPalError(ExitCode::SystemError, ExitCause::NotEnoughINotifyWatches)},
             // A LiteSync error: its kind does not exist on Linux.
             {Unknown, syncPalError(ExitCode::SystemError, ExitCause::UnableToStartVfs)},
+            // Rare and caused by the user changing the rights of the cache folder: shown as an unexpected error.
+            {Unknown, syncPalError(ExitCode::SystemError, ExitCause::TmpDirAccessError)},
     };
 }
 

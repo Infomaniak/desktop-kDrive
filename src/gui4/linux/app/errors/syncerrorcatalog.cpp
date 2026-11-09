@@ -313,17 +313,6 @@ CatalogEntry catalogEntry(const SyncErrorKind kind) {
                                      .actionLabel = kExplainLabel},
             };
 
-        case TemporaryDirAccess:
-            // The cache folder now lives inside the synchronization folder: retrying the synchronization is enough, there is
-            // no need to restart the application.
-            return {
-                    .traits = {.category = Category::SystemAndPermissions, .showsInTray = true},
-                    .presentation = {.title = {"linuxErrTmpDirAccessTitle"},
-                                     .description = {"linuxErrTmpDirAccessDescription"},
-                                     .action = Action::RestartSync,
-                                     .actionLabel = {"buttonRetry"}},
-            };
-
         case NotEnoughINotifyWatches:
             return {
                     .traits = {.category = Category::SystemAndPermissions,
