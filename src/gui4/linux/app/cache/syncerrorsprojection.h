@@ -26,6 +26,7 @@
 
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace KDC {
@@ -62,6 +63,9 @@ class SyncErrorsProjection final : public QObject {
         [[nodiscard]] std::vector<ErrorDbId> currentConflictIds() const;
         [[nodiscard]] int32_t currentErrorCount() const { return static_cast<int32_t>(_currentErrors.size()); }
         [[nodiscard]] std::optional<BlockingErrorKind> currentBlockingError() const { return _currentBlockingError; }
+        // Whether a synchronization, selected or not, has a blocking error (including a disconnected user). Unlike
+        // currentBlockingError, it follows a selection change only after the coalesced refresh.
+        [[nodiscard]] bool isSyncBlocked(const SyncDbId syncDbId) const { return _blockedSyncDbIds.contains(syncDbId); }
 
         // Whether an error of any synchronization turns the system tray icon to its error state.
         [[nodiscard]] bool hasTrayRelevantError() const { return _hasTrayRelevantError; }
@@ -70,6 +74,7 @@ class SyncErrorsProjection final : public QObject {
     signals:
         void currentErrorsChanged();
         void currentBlockingErrorChanged();
+        void blockedSyncsChanged();
         void trayRelevanceChanged();
         void updateRequiredChanged();
 
@@ -78,6 +83,7 @@ class SyncErrorsProjection final : public QObject {
         void refresh();
         void refreshClassifications(const std::vector<Error> &syncErrors);
         void refreshCurrentErrors();
+        void refreshBlockedSyncs();
         void refreshTrayRelevance();
         void refreshUpdateRequired(const std::vector<Error> &syncErrors);
 
@@ -88,6 +94,7 @@ class SyncErrorsProjection final : public QObject {
         std::unordered_map<ErrorDbId, ClassifiedSyncError> _classifiedByDbId;
         std::vector<ClassifiedSyncError> _currentErrors;
         std::optional<BlockingErrorKind> _currentBlockingError;
+        std::unordered_set<SyncDbId> _blockedSyncDbIds;
         bool _hasTrayRelevantError{false};
         bool _updateRequired{false};
 };
