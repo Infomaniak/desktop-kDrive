@@ -146,7 +146,19 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             FolderPicker openPicker = new(window.AppWindow.Id);
             openPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
-            PickFolderResult folder = await openPicker.PickSingleFolderAsync();
+            PickFolderResult folder;
+            try
+            {
+                folder = await openPicker.PickSingleFolderAsync();
+            }
+            catch (Exception ex)
+            {
+                Utility.ShowUnexpectedErrorTeachingTip();
+                Logger.LogError($"Folder picker failed: {ex}", "SyncSetupPage: Folder picker failed");
+                control.IsEnabled = true;
+                return;
+            }
+
             if (folder is null)
             {
                 Logger.LogInfo("No folder was picked");
