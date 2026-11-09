@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */; };
-		B6DDA4E130CE010000000003 /* UIAppLanguageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000004 /* UIAppLanguageTests.swift */; };
 		37A1C4452E546A9600596DBB /* kDriveCoreUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; };
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
@@ -24,6 +22,7 @@
 		A7776BCA2FE519E400989B60 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = A7776BC92FE519E400989B60 /* InfomaniakDI */; };
 		A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */; };
 		B6DDA4E130CE010000000001 /* kDriveTests/UI/PreferencesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */; };
+		B6DDA4E130CE010000000003 /* kDriveTests/UI/UIAppLanguageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000004 /* kDriveTests/UI/UIAppLanguageTests.swift */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
@@ -109,8 +108,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/PreferencesRepositoryTests.swift; sourceTree = SOURCE_ROOT; };
-		B6DDA4E130CE010000000004 /* UIAppLanguageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/UIAppLanguageTests.swift; sourceTree = SOURCE_ROOT; };
 		37A1C4262E546A5200596DBB /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCoreUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C45A2E546CB600596DBB /* kDriveCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,21 +116,12 @@
 		7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A21DC5C3300EDEED00D5257F /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/PreferencesRepositoryTests.swift; sourceTree = SOURCE_ROOT; };
+		B6DDA4E130CE010000000004 /* kDriveTests/UI/UIAppLanguageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/UIAppLanguageTests.swift; sourceTree = SOURCE_ROOT; };
 		F967009E2E95352C00EDD4D7 /* kDriveResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9ACC5372E5DF50B0081E80B /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B3E497B03100000000000001 /* Exceptions for "kDriveCore" folder in "kDriveCore" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			publicHeaders = (
-				kDriveCore.h,
-				ServerBridge/XPC/xpcGuiProtocol.h,
-				ServerBridge/XPC/xpcLoginItemProtocol.h,
-				Utils/FinderSidebarLegacy.h,
-			);
-			target = 37A1C4592E546CB600596DBB /* kDriveCore */;
-		};
 		7A03B6FD2EBA59F40020A47B /* Exceptions for "kDriveTests" folder in "kDriveTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -237,6 +225,7 @@
 				Parsing/Jobs/UtilityIsValidPathNewSyncTest.swift,
 				Parsing/SignalMessageTests.swift,
 				Parsing/Signals/JSON/SYNC_COMPLETEDITEM.json,
+				Parsing/Signals/JSON/SYNC_NOTIFY_MANY_DELETES.json,
 				Parsing/Signals/JSON/UPDATER_SHOW_DIALOG.json,
 				Parsing/Signals/JSON/USER_ADDED.json,
 				Parsing/Signals/JSON/UTILITY_ERROR_ADDED.json,
@@ -244,6 +233,7 @@
 				Parsing/Signals/JSON/UTILITY_SHOW_NOTIFICATION.json,
 				Parsing/Signals/LogUploadStatusUpdatedParsingTest.swift,
 				Parsing/Signals/SyncCompletedItemParsingTest.swift,
+				Parsing/Signals/SyncNotifyManyDeletesParsingTest.swift,
 				Parsing/Signals/UpdaterShowDialogTest.swift,
 				Parsing/Signals/UserAddedParsingTest.swift,
 				Parsing/Signals/UtilityErrorAddedTest.swift,
@@ -282,6 +272,16 @@
 				UI/SwiftUI/Components/OptionPicker.swift,
 			);
 			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
+		};
+		B3E497B03100000000000001 /* Exceptions for "kDriveCore" folder in "kDriveCore" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			publicHeaders = (
+				kDriveCore.h,
+				ServerBridge/XPC/xpcGuiProtocol.h,
+				ServerBridge/XPC/xpcLoginItemProtocol.h,
+				Utils/FinderSidebarLegacy.h,
+			);
+			target = 37A1C4592E546CB600596DBB /* kDriveCore */;
 		};
 		F97805C62E97E4DF00BC146C /* Exceptions for "kDrive" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -426,6 +426,7 @@
 			isa = PBXGroup;
 			children = (
 				B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */,
+				B6DDA4E130CE010000000004 /* kDriveTests/UI/UIAppLanguageTests.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -760,8 +761,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */,
-				B6DDA4E130CE010000000003 /* UIAppLanguageTests.swift in Sources */,
+				B6DDA4E130CE010000000001 /* kDriveTests/UI/PreferencesRepositoryTests.swift in Sources */,
+				B6DDA4E130CE010000000003 /* kDriveTests/UI/UIAppLanguageTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -861,7 +862,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				/* No App Intents are declared; skip empty metadata extraction (verified with Xcode 26.5). */
 				LM_SKIP_METADATA_EXTRACTION = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
@@ -924,7 +924,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				/* No App Intents are declared; skip empty metadata extraction (verified with Xcode 26.5). */
 				LM_SKIP_METADATA_EXTRACTION = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
