@@ -117,21 +117,11 @@ void SyncService::createRemoteFolder(const UserDbId userDbId, const DriveId driv
 }
 
 void SyncService::startSync(const qint64 syncDbId) {
-    if (isStartOrStopSyncPending(syncDbId)) {
-        qCWarning(lcSyncService) << "Sync start ignored: a start or stop is already pending | syncDbId:" << syncDbId;
-        return;
-    }
+    startSyncs({static_cast<SyncDbId>(syncDbId)});
+}
 
-    beginAction(actionStartSync, syncDbId);
-    const auto previousStatus = setSyncStatusOptimistically(syncDbId, SyncStatus::Starting);
-
-    _commService.requestSyncStart(syncDbId, [this, syncDbId, previousStatus](const ExitInfo &exitInfo) {
-        endAction(actionStartSync, syncDbId);
-        if (!exitInfo) {
-            revertOptimisticSyncStatus(syncDbId, SyncStatus::Starting, previousStatus);
-            notifyRequestFailure(exitInfo, RequestNum::SYNC_START);
-        }
-    });
+void SyncService::startSyncs(const std::vector<SyncDbId> &syncDbIds) {
+    controlSyncs(SyncControlRequest::Start, syncDbIds);
 }
 
 void SyncService::startSyncsAfterLogin(const UserDbId userDbId) {
@@ -153,21 +143,11 @@ void SyncService::startSyncsAfterLogin(const UserDbId userDbId) {
 }
 
 void SyncService::stopSync(const qint64 syncDbId) {
-    if (isStartOrStopSyncPending(syncDbId)) {
-        qCWarning(lcSyncService) << "Sync stop ignored: a start or stop is already pending | syncDbId:" << syncDbId;
-        return;
-    }
+    stopSyncs({static_cast<SyncDbId>(syncDbId)});
+}
 
-    beginAction(actionStopSync, syncDbId);
-    const auto previousStatus = setSyncStatusOptimistically(syncDbId, SyncStatus::StopAsked);
-
-    _commService.requestSyncStop(syncDbId, [this, syncDbId, previousStatus](const ExitInfo &exitInfo) {
-        endAction(actionStopSync, syncDbId);
-        if (!exitInfo) {
-            revertOptimisticSyncStatus(syncDbId, SyncStatus::StopAsked, previousStatus);
-            notifyRequestFailure(exitInfo, RequestNum::SYNC_STOP);
-        }
-    });
+void SyncService::stopSyncs(const std::vector<SyncDbId> &syncDbIds) {
+    controlSyncs(SyncControlRequest::Stop, syncDbIds);
 }
 
 void SyncService::deleteSync(const qint64 syncDbId) {
@@ -294,6 +274,90 @@ bool SyncService::isActionPending(const ServiceActionTracker::ActionKey &actionK
  */
 bool SyncService::isStartOrStopSyncPending(const qint64 syncDbId) const {
     return isStartSyncPending(syncDbId) || isStopSyncPending(syncDbId);
+}
+
+/**
+ * Marks every target pending with its optimistic status at once, so that it is counted nowhere until its own reply, then
+ * sends the requests one after the other: the server jobs of SYNC_START and SYNC_STOP clear a cache shared by every
+ * synchronization (`AppServer::_syncCacheMap`) without a lock.
+ */
+void SyncService::controlSyncs(const SyncControlRequest request, const std::vector<SyncDbId> &syncDbIds) {
+    const bool start = request == SyncControlRequest::Start;
+    const auto batch = std::make_shared<SyncControlBatch>();
+    batch->request = request;
+
+    for (const SyncDbId syncDbId: syncDbIds) {
+        if (isStartOrStopSyncPending(syncDbId)) {
+            qCWarning(lcSyncService) << (start ? "Sync start" : "Sync stop")
+                                     << "ignored: a start or stop is already pending | syncDbId:" << syncDbId;
+            continue;
+        }
+
+        beginAction(start ? actionStartSync : actionStopSync, syncDbId);
+        const auto previousStatus = setSyncStatusOptimistically(syncDbId, start ? SyncStatus::Starting : SyncStatus::StopAsked);
+        batch->queue.push_back({syncDbId, previousStatus});
+    }
+
+    if (batch->queue.size() > 1) {
+        qCInfo(lcSyncService) << (start ? "Starting" : "Stopping") << "syncs one after the other | count:" << batch->queue.size();
+    }
+
+    sendNextSyncControl(batch);
+}
+
+/**
+ * Sends the next queued request of a batch. A synchronization removed while it was waiting is skipped.
+ */
+void SyncService::sendNextSyncControl(const std::shared_ptr<SyncControlBatch> &batch) {
+    const bool start = batch->request == SyncControlRequest::Start;
+    if (batch->queue.empty()) {
+        if (batch->sentCount > 1) {
+            qCInfo(lcSyncService) << (start ? "Sync starts" : "Sync stops") << "sent | count:" << batch->sentCount
+                                  << "/ failures:" << batch->failureCount;
+        }
+        return;
+    }
+
+    const QueuedSyncControl queued = batch->queue.front();
+    batch->queue.pop_front();
+
+    if (!_appCache.syncContext(queued.syncDbId).has_value()) {
+        qCInfo(lcSyncService) << (start ? "Sync start" : "Sync stop")
+                              << "skipped: the sync was removed | syncDbId:" << queued.syncDbId;
+        endAction(start ? actionStartSync : actionStopSync, queued.syncDbId);
+        sendNextSyncControl(batch);
+        return;
+    }
+
+    ++batch->sentCount;
+    const auto onReply = [this, batch, queued](const ExitInfo &exitInfo) {
+        finishSyncControl(batch->request, queued, exitInfo);
+        if (!exitInfo) {
+            ++batch->failureCount;
+        }
+
+        sendNextSyncControl(batch);
+    };
+
+    if (start) {
+        _commService.requestSyncStart(queued.syncDbId, onReply);
+    } else {
+        _commService.requestSyncStop(queued.syncDbId, onReply);
+    }
+}
+
+/**
+ * Ends the pending state of one request, and restores the status it replaced if it failed.
+ */
+void SyncService::finishSyncControl(const SyncControlRequest request, const QueuedSyncControl &queued, const ExitInfo &exitInfo) {
+    const bool start = request == SyncControlRequest::Start;
+    endAction(start ? actionStartSync : actionStopSync, queued.syncDbId);
+    if (exitInfo) {
+        return;
+    }
+
+    revertOptimisticSyncStatus(queued.syncDbId, start ? SyncStatus::Starting : SyncStatus::StopAsked, queued.previousStatus);
+    notifyRequestFailure(exitInfo, start ? RequestNum::SYNC_START : RequestNum::SYNC_STOP);
 }
 
 /**

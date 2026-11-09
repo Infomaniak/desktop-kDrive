@@ -27,9 +27,12 @@
 #include <QString>
 
 #include <cstdint>
+#include <deque>
+#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace KDC {
 
@@ -73,6 +76,13 @@ class SyncService : public QObject {
         // Restarts the synchronizations of a user who logged in again (SYNC_START_AFTER_LOGIN).
         void startSyncsAfterLogin(UserDbId userDbId);
         Q_INVOKABLE void stopSync(qint64 syncDbId);
+        /**
+         * Resumes or pauses several synchronizations, one SYNC_START or SYNC_STOP after the other. Every target is marked
+         * pending with its optimistic status at once; a failure restores its status without stopping the next requests. A
+         * target that already has a start or stop in flight is skipped.
+         */
+        void startSyncs(const std::vector<SyncDbId> &syncDbIds);
+        void stopSyncs(const std::vector<SyncDbId> &syncDbIds);
         Q_INVOKABLE void deleteSync(qint64 syncDbId);
         // Sends SYNC_DELETE and reports its outcome. The cache still learns the removal from the SYNC_REMOVED push.
         void deleteSync(SyncDbId syncDbId, const CommService::VoidCallback &callback);
@@ -95,6 +105,26 @@ class SyncService : public QObject {
         void pathValidationReceived(bool isValid);
 
     private:
+        enum class SyncControlRequest : uint8_t {
+            Start,
+            Stop,
+        };
+
+        struct QueuedSyncControl {
+                SyncDbId syncDbId{0};
+                std::optional<SyncStatus> previousStatus;
+        };
+
+        struct SyncControlBatch {
+                SyncControlRequest request{SyncControlRequest::Start};
+                std::deque<QueuedSyncControl> queue;
+                std::size_t sentCount{0};
+                std::size_t failureCount{0};
+        };
+
+        void controlSyncs(SyncControlRequest request, const std::vector<SyncDbId> &syncDbIds);
+        void sendNextSyncControl(const std::shared_ptr<SyncControlBatch> &batch);
+        void finishSyncControl(SyncControlRequest request, const QueuedSyncControl &queued, const ExitInfo &exitInfo);
         void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
         void endAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
         [[nodiscard]] bool isActionPending(const ServiceActionTracker::ActionKey &actionKey,
