@@ -19,7 +19,6 @@
 #include "getinfodrivejob.h"
 
 #include "libcommonserver/utility/jsonparserutility.h"
-
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
@@ -60,7 +59,13 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
-    if (!JsonParserUtility::extractValue(dataObj, nameKey, _name)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+    SyncName name;
+    if (!JsonParserUtility::extractValue(dataObj, nameKey, name)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+#if defined(KD_WINDOWS)
+    name = Utility::fixNameWithBackslash(name);
+#endif
+    _name = SyncName2Str(name);
 
     if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 

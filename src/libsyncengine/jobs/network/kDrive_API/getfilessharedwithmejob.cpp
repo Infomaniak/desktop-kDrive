@@ -66,6 +66,11 @@ ExitInfo GetFilesSharedWithMeJob::deserializeDataArray() {
         if (!Utility::normalizedSyncName(rawName, name)) {
             LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
         }
+
+#if defined(KD_WINDOWS)
+        name = Utility::fixNameWithBackslash(name);
+#endif
+
         if (name.empty()) continue;
 
         RemoteNodeId parentId;

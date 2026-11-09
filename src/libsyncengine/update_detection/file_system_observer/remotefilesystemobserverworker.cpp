@@ -27,10 +27,6 @@
 #include "jobs/network/kDrive_API/getfilessharedwithmejob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
-
-#if defined(KD_WINDOWS)
-#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-#endif
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
@@ -933,10 +929,8 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         }
 
 #if defined(KD_WINDOWS)
-        SyncName newName;
-        if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(actionInfo.snapshotItem.name(), newName)) {
-            actionInfo.snapshotItem.setName(newName);
-        }
+        actionInfo.snapshotItem.setName(
+                Utility::fixNameWithBackslash(actionInfo.snapshotItem.name()));
 #endif
         actionInfoList.push_back(actionInfo);
     }

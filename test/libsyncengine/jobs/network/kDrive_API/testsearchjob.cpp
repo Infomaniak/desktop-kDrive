@@ -204,6 +204,29 @@ void TestSearchJob::testHandleResponseIsAvailableLocally() {
     }
 }
 
+#if defined(KD_WINDOWS)
+void TestSearchJob::testHandleResponseBackslashNameAndPath() {
+    const SyncPath localFile = _localTempDir.path() / "ancestor%5cfolder" / "result%5cfile.txt";
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::create_directories(localFile.parent_path(), ec));
+    CPPUNIT_ASSERT_MESSAGE("Failed to create test directory", !ec);
+    { std::ofstream ofs(localFile); }
+
+    SearchJob job(_driveDbId, "doc");
+    job._syncRootPath = _localTempDir.path();
+    const std::string json =
+            R"({"cursor":"c1","has_more":false,"data":[{"id":"1","name":"result\\file.txt","type":"file","path":"/Private/ancestor\\folder/result\\file.txt","last_modified_at":1700000000,"size":100}]})";
+    std::istringstream is(json);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+
+    const auto results = job.searchResults();
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+    CPPUNIT_ASSERT(Str2SyncName("result%5cfile.txt") == results.front().name());
+    CPPUNIT_ASSERT(SyncPath(Str("ancestor%5cfolder/result%5cfile.txt")) == results.front().path());
+    CPPUNIT_ASSERT(results.front().isAvailableLocally());
+}
+#endif
+
 void TestSearchJob::testHandleResponseIsHydratedWithVfsOff() {
     // Create an actual file.
     // SearchInfo::isAvailableLocally() and SearchInfo::isHydrated() should be true for it.
