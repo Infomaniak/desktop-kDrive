@@ -93,6 +93,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                          "SyncSelectorModel is owned by MainSidebarController.");
     (void) qmlRegisterUncreatableType<HomeController>(AppConstants::Qml::moduleUri, 1, 0, "HomeController",
                                                       "HomeController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableType<SyncControlController>(AppConstants::Qml::moduleUri, 1, 0, "SyncControlController",
+                                                             "SyncControlController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableMetaObject(SyncControl::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "SyncControl",
+                                            QStringLiteral("SyncControl only exposes enums."));
     (void) qmlRegisterUncreatableType<BlockingErrorController>(AppConstants::Qml::moduleUri, 1, 0, "BlockingErrorController",
                                                                "BlockingErrorController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ActivityListModel>(AppConstants::Qml::moduleUri, 1, 0, "ActivityListModel",
@@ -137,6 +141,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("settingsController"), QVariant::fromValue<QObject *>(&_settingsWindowController)},
             {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
+            {QStringLiteral("syncControlController"), QVariant::fromValue<QObject *>(&_syncControlController)},
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
             {QStringLiteral("blockingErrorController"), QVariant::fromValue<QObject *>(&_blockingErrorController)},
             {QStringLiteral("errorsPageController"), QVariant::fromValue<QObject *>(&_errorsPageController)},

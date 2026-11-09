@@ -75,6 +75,22 @@ QtObject {
     readonly property real toolbarActionGroupSpacing: 4
     readonly property real toolbarActionGroupWidth: toolbarActionGroupButtonSize * 2 + toolbarActionGroupSpacing
                                                      + toolbarActionGroupPadding * 2
+    // With several synchronizations, a chevron that opens the menu follows Pause/Resume, separated from Settings.
+    readonly property real toolbarSyncMenuChevronButtonWidth: 16
+    readonly property real toolbarSyncMenuChevronSize: 12
+    readonly property real toolbarActionGroupSeparatorSlotWidth: 3
+    readonly property real toolbarActionGroupSeparatorHeight: 20
+    readonly property real toolbarActionGroupMenuWidth: toolbarActionGroupPadding * 2 + toolbarActionGroupButtonSize * 2
+                                                         + toolbarSyncMenuChevronButtonWidth
+                                                         + toolbarActionGroupSpacing * 2
+                                                         + toolbarActionGroupSeparatorSlotWidth
+    // Pause/Resume menu, opened below the toolbar group.
+    readonly property real syncControlMenuWidth: 250
+    readonly property real syncControlMenuOffset: 4
+    readonly property real syncControlMenuItemHeight: 24
+    readonly property real syncControlMenuSeparatorHeight: 11
+    readonly property real syncControlMenuIconSize: 12
+    readonly property real syncControlMenuIconSpacing: 6
 
     // Single source of the selector row height, shared by the row and the popup that sizes itself on its rows.
     function syncSelectorItemHeight(hasSubtitle: bool): real {

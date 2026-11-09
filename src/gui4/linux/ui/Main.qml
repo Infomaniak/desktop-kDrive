@@ -40,6 +40,7 @@ IKShadowedWindow {
     required property var onboardingSessionManager
     required property var storageController
     required property var searchController
+    required property var syncControlController
     required property var syncErrorsProjection
     required property var systemTrayController
 
@@ -120,6 +121,8 @@ IKShadowedWindow {
             anchors.bottom: parent.bottom
             appRouter: mainWindow.appRouter
             controller: mainWindow.homeController
+            syncControl: mainWindow.syncControlController
+            sidebarController: mainWindow.mainSidebarController
             searchAvailable: mainWindow.searchController.available
             searchShortcutText: searchShortcut.nativeText
             settingsShortcutText: preferencesShortcut.nativeText
