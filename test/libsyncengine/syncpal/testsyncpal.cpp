@@ -359,17 +359,17 @@ void TestSyncPal::testConflictQueue() {
     CPPUNIT_ASSERT(localDirD2->moveTo(localDirC2));
 
     const auto remoteDirD1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("D1"), NodeType::Directory,
-                                                    OperationType::None, std::nullopt, 1234567890, 1234567890, 12345);
+                                                    OperationType::None, "rDirD1", 1234567890, 1234567890, 12345);
     CPPUNIT_ASSERT(remoteDirD1->moveTo(remoterootNode));
     const auto remoteDirD2 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("D2"), NodeType::Directory,
-                                                    OperationType::None, std::nullopt, 1234567890, 1234567890, 12345);
+                                                    OperationType::None, "rDirD2", 1234567890, 1234567890, 12345);
     CPPUNIT_ASSERT(remoteDirD2->moveTo(remoterootNode));
     const auto remoteDirC1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c2"), NodeType::Directory,
-                                                    OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345,
+                                                    OperationType::Move, "rDirC1", 1234567890, 1234567890, 12345,
                                                     Node::MoveOriginInfos("C1", localrootNode->id().value()));
     CPPUNIT_ASSERT(remoteDirC1->moveTo(remoteDirD1));
     const auto remoteDirC2 = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("c2"), NodeType::Directory,
-                                                    OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345,
+                                                    OperationType::Move, "rDirC2", 1234567890, 1234567890, 12345,
                                                     Node::MoveOriginInfos("C2", localrootNode->id().value()));
     CPPUNIT_ASSERT(remoteDirC2->moveTo(remoteDirD2));
 

@@ -88,9 +88,11 @@ bool Node::moveTo(std::shared_ptr<Node> parentNode) {
             assert(false);
             sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node without ID");
             return false;
-        } else if (parentNode->children().contains(*_id)) {
+        } else if (const auto it = parentNode->children().find(*_id);
+                   it != parentNode->children().end() && it->second.get() != this) {
             LOGW_WARN(Log::instance()->getLogger(), L"The parent already has a child with the same node ID: "
                                                             << Node::formatNodeWithParent(shared_from_this(), parentNode));
+
             assert(false);
             sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node is a child");
             return false;

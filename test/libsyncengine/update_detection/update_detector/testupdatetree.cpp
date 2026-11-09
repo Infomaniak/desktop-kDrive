@@ -62,10 +62,11 @@ void TestUpdateTree::testConstructors() {
     }
 
     {
-        Node node(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0, 12345);
-        CPPUNIT_ASSERT(node.moveTo(_myTree->rootNode()));
+        const auto node = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory,
+                                                 OperationType::None, "l1", 0, 0, 12345);
+        CPPUNIT_ASSERT(node->moveTo(_myTree->rootNode()));
         node.setName(nfdName);
-        CPPUNIT_ASSERT(node.name() == nfdName);
+        CPPUNIT_ASSERT(node->name() == nfdName);
     }
 }
 

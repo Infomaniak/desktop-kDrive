@@ -179,6 +179,9 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 
 SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,
                                                     const OperationType opType) {
+    (void) _syncPal->updateTree(ReplicaSide::Local)->deleteNode("lid");
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->deleteNode("rid");
+
     const auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid",
                                              testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
     CPPUNIT_ASSERT(node->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
@@ -198,6 +201,8 @@ SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, con
 
 SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeId dbNodeId, const SyncName &parentFilename,
                                                                    const OperationType opType, const NodeType nodeType) {
+    (void) _syncPal->updateTree(ReplicaSide::Local)->deleteNode("local_parent_id");
+
     auto parentNode = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, parentFilename, NodeType::Directory,
                                              OperationType::None, "local_parent_id", testhelpers::defaultTime,
                                              testhelpers::defaultTime, testhelpers::defaultFileSize);
@@ -486,6 +491,9 @@ void TestExecutorWorker::testPropagateConflictToDbAndTree() {
 }
 
 void TestExecutorWorker::testInitSyncFileItem() {
+    (void) _syncPal->updateTree(ReplicaSide::Local)->deleteNode("lid");
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->deleteNode("rid");
+
     const auto localNode =
             std::make_shared<Node>(ReplicaSide::Local, Str("test_file.txt"), NodeType::File, OperationType::None, "lid",
                                    testhelpers::defaultTime, testhelpers::defaultTime + 1, testhelpers::defaultFileSize);
@@ -597,6 +605,9 @@ void TestExecutorWorker::testInitSyncFileItem() {
 
     // Move special case
     {
+        (void) _syncPal->updateTree(ReplicaSide::Local)->deleteNode("lid");
+        (void) _syncPal->updateTree(ReplicaSide::Remote)->deleteNode("rid");
+
         const auto localParentNode =
                 std::make_shared<Node>(ReplicaSide::Local, Str("parent_dir"), NodeType::Directory, OperationType::None, "lid",
                                        testhelpers::defaultTime, testhelpers::defaultTime + 1, testhelpers::defaultFileSize);
