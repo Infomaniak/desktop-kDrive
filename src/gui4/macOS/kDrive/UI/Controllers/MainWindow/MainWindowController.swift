@@ -28,6 +28,7 @@ final class MainWindowController: NSWindowController {
     enum WindowConstants {
         static let frameName = "kDriveMainWindow"
         static let initialSize = NSRect(origin: .zero, size: CGSize(width: 900, height: 600))
+        static let minimumSize = NSSize(width: 800, height: 550)
         static let properties: NSWindow.StyleMask = [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView]
     }
 
@@ -51,7 +52,7 @@ final class MainWindowController: NSWindowController {
 
         window.center()
         window.setFrameAutosaveName(WindowConstants.frameName)
-        window.minSize = NSSize(width: 800, height: 550)
+        window.applyMinimumSize(WindowConstants.minimumSize)
         window.collectionBehavior = [.managed, .moveToActiveSpace]
         window.delegate = self
 
@@ -186,6 +187,8 @@ final class MainWindowController: NSWindowController {
     private func setViewController(_ viewController: NSViewController) {
         self.viewController = viewController
         window?.contentView = viewController.view
+        // Replacing a content view backed by SwiftUI resets the window's minimum size.
+        window?.applyMinimumSize(WindowConstants.minimumSize)
     }
 
     @discardableResult
