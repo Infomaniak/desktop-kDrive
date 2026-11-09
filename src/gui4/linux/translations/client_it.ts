@@ -1954,6 +1954,22 @@ Analyzing this data allows our team to continuously improve the application’s 
 
 L’analisi di questi dati consente al nostro team di migliorare continuamente l’interfaccia dell’applicazione.</translation> 
         </message> 
+        <message id="menuSyncPause"> 
+            <source>Pause</source> 
+            <translation>Sospendi</translation> 
+        </message> 
+        <message id="menuSyncPauseAll"> 
+            <source>Pause all</source> 
+            <translation>Sospendi tutto</translation> 
+        </message> 
+        <message id="menuSyncResume"> 
+            <source>Resume</source> 
+            <translation>Riprendi</translation> 
+        </message> 
+        <message id="menuSyncResumeAll"> 
+            <source>Resume all</source> 
+            <translation>Riprendi tutto</translation> 
+        </message> 
         <message id="moveCancelErrorTitle"> 
             <source>Move canceled</source> 
             <translation>Spostamento annullato</translation> 

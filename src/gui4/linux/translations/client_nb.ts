@@ -1954,6 +1954,22 @@ Analyzing this data allows our team to continuously improve the application’s 
 
 Analyse av disse dataene lar teamet vårt kontinuerlig forbedre programmets grensesnitt.</translation> 
         </message> 
+        <message id="menuSyncPause"> 
+            <source>Pause</source> 
+            <translation>Sett på pause</translation> 
+        </message> 
+        <message id="menuSyncPauseAll"> 
+            <source>Pause all</source> 
+            <translation>Sett alle på pause</translation> 
+        </message> 
+        <message id="menuSyncResume"> 
+            <source>Resume</source> 
+            <translation>Fortsett</translation> 
+        </message> 
+        <message id="menuSyncResumeAll"> 
+            <source>Resume all</source> 
+            <translation>Fortsett alle</translation> 
+        </message> 
         <message id="moveCancelErrorTitle"> 
             <source>Move canceled</source> 
             <translation>Flytting avbrutt</translation> 

@@ -1954,6 +1954,22 @@ Analyzing this data allows our team to continuously improve the application’s 
 
 Het analyseren van deze gegevens stelt ons team in staat de interface van de applicatie voortdurend te verbeteren.</translation> 
         </message> 
+        <message id="menuSyncPause"> 
+            <source>Pause</source> 
+            <translation>Pauzeren</translation> 
+        </message> 
+        <message id="menuSyncPauseAll"> 
+            <source>Pause all</source> 
+            <translation>Alles pauzeren</translation> 
+        </message> 
+        <message id="menuSyncResume"> 
+            <source>Resume</source> 
+            <translation>Hervatten</translation> 
+        </message> 
+        <message id="menuSyncResumeAll"> 
+            <source>Resume all</source> 
+            <translation>Alles hervatten</translation> 
+        </message> 
         <message id="moveCancelErrorTitle"> 
             <source>Move canceled</source> 
             <translation>Verplaatsing geannuleerd</translation> 
