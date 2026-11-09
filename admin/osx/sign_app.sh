@@ -64,12 +64,14 @@ codesign -s "$identity" --force --verbose=4 --options=runtime "$client_app/Conte
 echo "Signing kDrive.app client"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$client_app"
 
-codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"
-codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive.entitlements "$src_app"
 codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDriveUninstaller.entitlements "$src_app/Contents/Frameworks/kDrive Uninstaller.app"
+codesign -s "$identity" --force --verbose=4 --deep --options=runtime --preserve-metadata=entitlements "$src_app"
 
 echo "Re-Signing kDrive.app client without entitlements"
 codesign -s "$identity" --force --verbose=4 --deep --options=runtime "$client_app"
+
+# Sign the outer bundle only after all nested code has its final signature.
+codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements $(dirname $0)/kDrive.entitlements "$src_app"
 
 # Verify the signature
 codesign -dv $src_app
