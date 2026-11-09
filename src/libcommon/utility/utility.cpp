@@ -1342,10 +1342,9 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
     static constexpr int32_t busyTimeoutMs = 5000;
     (void) sqlite3_busy_timeout(db.get(), busyTimeoutMs);
 
-    const bool beforeBigSur = QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSBigSur;
-    const auto *sql = beforeBigSur ? "SELECT allowed FROM access WHERE service = ?1 AND client = ?2 AND client_type = 0"
-                                   : "SELECT auth_value FROM access WHERE service = ?1 AND client = ?2 AND client_type = 0";
-    const bool macOs13orLater = QSysInfo::productVersion().toDouble() >= 13.0;
+    const auto *sql = "SELECT auth_value FROM access WHERE service = ?1 AND client = ?2 AND client_type = 0";
+    // Qt 6.2.3, used on macOS, has no QOperatingSystemVersion::MacOSVentura.
+    const bool macOs13orLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 13);
     const auto *service = macOs13orLater ? "kTCCServiceEndpointSecurityClient" : "kTCCServiceSystemPolicyAllFiles";
 
     sqlite3_stmt *rawStatement = nullptr;
@@ -1358,8 +1357,8 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
         return false;
     }
 
-    const int32_t value = sqlite3_column_int(statement.get(), 0);
-    return beforeBigSur ? value == 1 : value == 2;
+    // TCC auth_value: 2 means allowed.
+    return sqlite3_column_int(statement.get(), 0) == 2;
 }
 
 bool CommonUtility::isFullDiskAccessAuthOk() {
