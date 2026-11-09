@@ -238,16 +238,54 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
     return translateV2ToV3(account.userDbId(), drive.driveId(), remoteDirectoryId);
 }
 
-void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
-    if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialRemoteFolder::Private)) return;
+// Precondition: every non-empty input path is absolute, as always sent by the API v3 ("/Private/...",
+// "/Common documents/...", "/Shared/..."). The private space is the root of the synchronized tree, while the other
+// roots stay folders in it. The translated path keeps its leading separator: the consumers strip it when they need a
+// path relative to the v2 drive root.
+void ApiTranslator::translateV3ToV2(std::string &remotePath) {
+    if (remotePath.empty()) return;
 
-    try {
-        remotePath = remotePath.lexically_relative(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
-    } catch (const std::exception &) {
-        remotePath = SyncPath{};
+    const std::string privateSegment = std::string("/") + SyncName2Str(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
+
+    if (remotePath == privateSegment) {
+        // The v3 private root translates to the empty path, which represents the v2 drive root.
+        remotePath.clear();
+    } else if (CommonUtility::startsWith(remotePath, privateSegment + "/")) {
+        // Only the leading private folder name is stripped, without the separator that follows it: a deeper component
+        // may be named like the private folder.
+        remotePath = remotePath.substr(privateSegment.size());
     }
+}
 
-    if (remotePath == ".") remotePath = SyncPath{};
+#if defined(KD_WINDOWS)
+void ApiTranslator::translateV3ToV2(SyncName &remotePath) {
+    if (remotePath.empty()) return;
+
+    const SyncName privateSegment = Str("/") + v3SpecialFolderNames.at(SpecialRemoteFolder::Private);
+
+    if (remotePath == privateSegment) {
+        remotePath.clear();
+    } else if (CommonUtility::startsWith(remotePath, privateSegment + Str("/"))) {
+        remotePath = remotePath.substr(privateSegment.size());
+    }
+}
+#endif
+
+// Like the string overloads above, the translated path keeps its leading separator, as expected for NodeInfo paths:
+// "/Private/<path>" translates to "/<path>", and "/Private" to the empty path.
+void ApiTranslator::translateV3ToV2(QString &v3Path) {
+    if (v3Path.isEmpty()) return;
+
+    const QString privateSegment = QString("/") + SyncName2QStr(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
+
+    if (v3Path == privateSegment) {
+        // The v3 private root translates to the empty path.
+        v3Path.clear();
+    } else if (v3Path.startsWith(privateSegment + "/")) {
+        // Only the leading private folder name is removed, without the separator that follows it: a deeper component
+        // may be named like the private folder.
+        v3Path = v3Path.mid(privateSegment.length());
+    }
 }
 
 ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId driveId, RemoteNodeId &remoteNodeId) {
@@ -278,6 +316,10 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
     for (auto &nodeInfo: v3RemoteNodeInfoList) {
         if (nodeInfo.parentNodeId().toStdString() == privateFolderId)
             nodeInfo.setParentNodeId(QString::fromStdString(v2RootFolderRemoteId()));
+
+        QString translatedPath = nodeInfo.path();
+        translateV3ToV2(translatedPath);
+        nodeInfo.setPath(translatedPath);
     }
 
     return ExitCode::Ok;
