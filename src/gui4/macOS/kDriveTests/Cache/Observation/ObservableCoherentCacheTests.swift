@@ -48,4 +48,23 @@ struct ObservableCoherentCacheTests {
         let storedError = await cache.serverErrors[ObservableData.syncPalUpdateRequiredErrorDbId]
         #expect(storedError != nil, "SyncPal level UpdateRequired error should be routed to serverErrors")
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func reportsUpdateRequiredErrorAfterStartupPreload() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        #expect(await !cache.hasUpdateRequiredError(), "A fresh cache must not report an UpdateRequired error")
+
+        // WHEN the startup preload refreshes the cache with errors persisted by the server
+        try await cache.updateErrors([ObservableData.syncPalUpdateRequiredError, ObservableData.expectedServerError])
+
+        // THEN
+        #expect(await cache.hasUpdateRequiredError(), "Post-preload navigation must see the cached UpdateRequired error")
+
+        // WHEN a later refresh no longer contains the UpdateRequired error
+        try await cache.updateErrors([ObservableData.expectedServerError])
+
+        // THEN
+        #expect(await !cache.hasUpdateRequiredError(), "Resolving the UpdateRequired error must unblock the UI")
+    }
 }

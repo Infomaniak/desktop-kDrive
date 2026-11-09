@@ -390,6 +390,12 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         return error.level == .Server || error.exitCode == .UpdateRequired
     }
 
+    /// Returns true when a persisted UpdateRequired error is outstanding, used by the UI to restore
+    /// the blocking UpdateRequired view when navigating after the startup cache preload
+    public func hasUpdateRequiredError() -> Bool {
+        serverErrors.values.contains { $0.exitCode == .UpdateRequired }
+    }
+
     public func addOrUpdateError(_ error: ErrorInfo) async throws {
         if isServerError(error) {
             try await addOrUpdateServerError(error)
