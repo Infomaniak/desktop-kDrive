@@ -5,9 +5,6 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui)
-if(APPLE)
-    find_package(SQLite3 3.53.0 REQUIRED)
-endif()
 find_package(Poco 1.15.2 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
@@ -142,7 +139,6 @@ if(APPLE)
     find_library(APPKIT_LIBRARY NAMES AppKit)
 
     target_link_libraries(${libcommon_NAME}
-        SQLite::SQLite3
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})

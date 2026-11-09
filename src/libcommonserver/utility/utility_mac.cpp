@@ -18,8 +18,11 @@
 
 #include "utility.h"
 
+#include "db/tccdatabase_mac.h"
 #include "log/log.h"
 #include "libcommon/utility/utility.h"
+
+#include <QOperatingSystemVersion>
 
 #include <config.h>
 #include <sstream>
@@ -150,6 +153,15 @@ SyncPath Utility::getTrashPath() {
     }
 
     return SyncPath(homePathEnv) / ".Trash";
+}
+
+bool Utility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
+    // Qt 6.2.3, used on macOS, has no QOperatingSystemVersion::MacOSVentura.
+    const bool macOs13orLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 13);
+    const std::string service = macOs13orLater ? "kTCCServiceEndpointSecurityClient" : "kTCCServiceSystemPolicyAllFiles";
+
+    // TCC auth_value: 2 means allowed.
+    return TccDatabase::authValue(service, CommonUtility::liteSyncExtBundleId(), errorDescr) == 2;
 }
 
 bool Utility::registerLoginRedirection() {
