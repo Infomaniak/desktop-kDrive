@@ -50,6 +50,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
+
 #include "theme/theme.h"
 
 #include <QDir>
@@ -318,7 +319,8 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, const SyncC
     // Check if the path is the root of a drive, which is not allowed for sync*
     if (CommonUtility::isDiskRootFolder(path)) {
         LOGW_INFO(Log::instance()->getLogger(),
-                  L"The provided path indicates the root of a drive, which is not allowed for sync with folder " << Utility::formatSyncPath(path));
+                  L"The provided path indicates the root of a drive, which is not allowed for sync with folder "
+                          << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
 
@@ -613,22 +615,31 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
     }
     nodeInfo.setModtime(modTime);
 
-    std::string tmp;
-    if (!JsonParserUtility::extractValue(dataObj, nameKey, tmp)) {
+    SyncName name;
+    if (!JsonParserUtility::extractValue(dataObj, nameKey, name)) {
         return ExitCode::BackError;
     }
-    nodeInfo.setName(QString::fromStdString(tmp));
 
+#if defined(KD_WINDOWS)
+    name = Utility::fixNameWithBackslash(name);
+#endif
+    nodeInfo.setName(SyncName2QStr(name));
+
+    std::string tmp;
     if (!JsonParserUtility::extractValue(dataObj, parentIdKey, tmp)) {
         return ExitCode::BackError;
     }
     nodeInfo.setParentNodeId(QString::fromStdString(tmp));
 
     if (withPath) {
-        if (!JsonParserUtility::extractValue(dataObj, pathKey, tmp)) {
+        SyncName pathStr;
+        if (!JsonParserUtility::extractValue(dataObj, pathKey, pathStr)) {
             return ExitCode::BackError;
         }
-        nodeInfo.setPath(QString::fromStdString(tmp));
+#if defined(KD_WINDOWS)
+        pathStr = Utility::fixNameWithBackslash(pathStr);
+#endif
+        nodeInfo.setPath(SyncName2QStr(pathStr));
     }
 
     return ExitCode::Ok;
