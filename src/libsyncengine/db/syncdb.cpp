@@ -2027,7 +2027,7 @@ bool SyncDb::id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found
     return true;
 }
 
-bool SyncDb::correspondingNodeId(ReplicaSide sideIn, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found) {
+bool SyncDb::correspondingNodeId(const ReplicaSide sideIn, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found) {
     DbNodeId dbNodeId;
     if (!dbId(sideIn, nodeIdIn, dbNodeId, found)) {
         return false;

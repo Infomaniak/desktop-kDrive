@@ -1173,21 +1173,33 @@ ExitInfo SyncPal::checkIfExistsOnServer(const NodeId &localNodeId, bool &exists)
 
     // If the sync is not running, we call the server to check if the node exists.
     // This is a costly operation, but it is necessary to ensure that we have the correct information.
-    GetFileInfoJob fileInfoJob(userDbId(), driveId(), remoteNodeId);
-    ExitInfo exitInfo = fileInfoJob.runSynchronously();
+    std::unique_ptr<GetFileInfoJob> job;
+    try {
+        job = std::make_unique<GetFileInfoJob>(driveDbId(), remoteNodeId);
+    } catch (const JobException &e) {
+        LOG_WARN(_logger, "Error in GetFileInfoJob constructor for nodeId=" << remoteNodeId << ": " << e.what());
+        return ExitCode::DataError;
+    }
 
-    if (exitInfo) {
+    if (job->exitInfo() && job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
         exists = true;
         return ExitCode::Ok;
     }
 
-    if (exitInfo == ExitInfo(ExitCode::BackError, ExitCause::NotFound)) {
+    if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         exists = false;
+        LOG_DEBUG(_logger, "Access forbidden for remote node ID: " << remoteNodeId << " ");
+        return {ExitCode::BackError, ExitCause::FileAccessError};
+    }
+
+    if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+        exists = false;
+        LOGW_DEBUG(_logger, L"Item not found on server for remote node ID: " << CommonUtility::s2ws(remoteNodeId));
         return ExitCode::Ok;
     }
 
-    LOG_WARN(_logger, "Error in GetFileInfoJob::runSynchronously for nodeId=" << remoteNodeId << ": " << exitInfo);
-    return exitInfo;
+    LOG_ERROR(_logger, "Error in GetFileInfoJob for remote node ID: " << remoteNodeId << ": " << job->exitInfo());
+    return job->exitInfo();
 }
 
 ExitCode SyncPal::syncIdSet(SyncNodeType type, NodeSet &nodeIdSet) {

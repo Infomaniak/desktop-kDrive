@@ -886,9 +886,12 @@ ExitInfo ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &
 
     if (!fileData.isValid()) return ExitCode::LogicError;
 
-    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex, _commManager->appServer().vfsMapMutex);
+    SyncPalMap::const_iterator syncPalMapIt;
+    {
+        const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+        syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+    }
 
-    const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
 
     bool exists = false;
@@ -902,6 +905,8 @@ ExitInfo ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &
     if (exists) {
         status = SyncFileStatus::Success;
     }
+
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
     if (vfsMapIt == _commManager->appServer().vfsMap.end() || !vfsMapIt->second) return ExitCode::SyncPaused;
