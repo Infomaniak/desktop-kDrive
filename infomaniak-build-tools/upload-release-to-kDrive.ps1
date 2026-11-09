@@ -78,6 +78,12 @@ if ($simplifiedOs -eq "linux-arm" -Or $simplifiedOs -eq "linux-amd") {
     $simplifiedOs = "linux"
 }
 
+# Test builds do not publish release notes: their upload path is not under Test/.
+if ($test) {
+    Write-Host "Test build: release notes upload skipped."
+    $languages = @()
+}
+
 foreach ($lang in $languages)
 {
     $fileName = "kDrive-$versionNumber-$simplifiedOs-$lang.html"
