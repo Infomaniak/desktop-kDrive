@@ -24,6 +24,7 @@
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/checksumverifier.h"
+#include "libcommon/utility/utility.h"
 
 #include <QProcess>
 #include <QProcessEnvironment>
@@ -67,24 +68,29 @@ void LinuxUpdater::onUpdateFound() {
     }
 
     if (_downloadInProgress) {
-        // A periodic check found the same version while it is still downloading.
+        // A periodic check found an update while the previous one is still being prepared.
         setState(UpdateState::Downloading);
         return;
     }
 
-    // Reuse a download left by a previous session if it matches the announced version.
-    const auto partPath = partialDownloadPath(_appImagePath);
-    if (std::error_code ec; std::filesystem::exists(partPath, ec)) {
-        _expectedChecksum.clear();
-        if (verifyChecksum(partPath)) {
-            LOGW_INFO(logger(), L"AppImage already downloaded at " << Utility::formatSyncPath(partPath)
-                                                                   << L". Update is ready to be installed.");
-            setState(UpdateState::Ready);
-            return;
-        }
+    const auto version = versionInfo().fullVersion();
+    bool alreadyVerified = false;
+    if (std::error_code ec; std::filesystem::exists(partialDownloadPath(_appImagePath), ec)) {
+        const std::scoped_lock lock(_checksumMutex);
+        alreadyVerified = _verifiedVersion == version;
+    }
+    if (alreadyVerified) {
+        // Periodic check of the version already downloaded: the file is verified again at install time only.
+        setState(UpdateState::Ready);
+        return;
     }
 
-    downloadUpdate();
+    if (expectedChecksum(version).empty()) {
+        fetchChecksum(version);
+        return;
+    }
+
+    prepareUpdate(version);
 }
 
 void LinuxUpdater::startInstaller() {
@@ -95,7 +101,7 @@ void LinuxUpdater::startInstaller() {
         return;
     }
 
-    if (!verifyChecksum(partPath)) {
+    if (!verifyChecksum(partPath, versionInfo().fullVersion())) {
         setState(UpdateState::UpdateError);
         return;
     }
@@ -181,27 +187,95 @@ bool LinuxUpdater::canUpdateInPlace() const {
     return true;
 }
 
-void LinuxUpdater::downloadUpdate() {
+/**
+ * Fetches the `.sha256` sidecar before the AppImage: without it the update can never be verified, so the large download
+ * is skipped when the sidecar is missing.
+ */
+void LinuxUpdater::fetchChecksum(const std::string &version) {
+    _downloadInProgress = true;
+    setState(UpdateState::Downloading);
+
+    const auto sha256Path = SyncPath(partialDownloadPath(_appImagePath).string() + ".sha256");
+    const auto job = std::make_shared<DirectDownloadJob>(sha256Path, ChecksumVerifier::buildSha256Url(versionInfo().downloadUrl));
+    const std::function<void(UniqueId)> callback = [this, version](const UniqueId jobId) { checksumFetched(jobId, version); };
+    job->setAdditionalCallback(callback);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+}
+
+void LinuxUpdater::checksumFetched(const UniqueId jobId, const std::string &version) {
+    const auto job = std::dynamic_pointer_cast<DirectDownloadJob>(SyncJobManagerSingleton::instance()->getJob(jobId));
+    if (!job) {
+        LOG_ERROR(logger(), "Could not cast job pointer.");
+        finishPreparation(UpdateState::DownloadError);
+        assert(false);
+        return;
+    }
+
+    std::string checksum;
+    if (!job->hasErrorApi() && job->exitInfo() && !job->isAborted()) {
+        std::ifstream file(job->getDestinationFilePath());
+        file >> checksum;
+    }
+    auto ioError = IoError::Success;
+    (void) IoHelper::deleteItem(job->getDestinationFilePath(), ioError);
+
+    if (checksum.empty()) {
+        LOG_WARN(logger(), "SHA-256 sidecar unavailable or empty, the AppImage is not downloaded: "
+                                   << ChecksumVerifier::buildSha256Url(versionInfo().downloadUrl));
+        sentry::Handler::captureMessage(sentry::Level::Error, "LinuxUpdater::checksumFetched",
+                                        "Checksum verification failed: sha256FileUnavailable");
+        finishPreparation(UpdateState::DownloadError);
+        return;
+    }
+
+    {
+        const std::scoped_lock lock(_checksumMutex);
+        _checksumVersion = version;
+        _expectedChecksum = CommonUtility::trim(CommonUtility::toLower(checksum));
+    }
+
+    prepareUpdate(version);
+}
+
+// Reuses a download left by a previous session when it matches the announced version, downloads the AppImage otherwise.
+void LinuxUpdater::prepareUpdate(const std::string &version) {
+    const auto partPath = partialDownloadPath(_appImagePath);
+    if (std::error_code ec; std::filesystem::exists(partPath, ec)) {
+        const auto checksum = ChecksumVerifier::computeFileChecksum(partPath);
+        if (!checksum.empty() && checksum == expectedChecksum(version)) {
+            LOGW_INFO(logger(), L"AppImage already downloaded at " << Utility::formatSyncPath(partPath)
+                                                                   << L". Update is ready to be installed.");
+            setReady(version);
+            return;
+        }
+        LOGW_INFO(logger(), L"Discarding outdated or incomplete AppImage download at " << Utility::formatSyncPath(partPath));
+    }
+
+    downloadUpdate(version);
+}
+
+void LinuxUpdater::downloadUpdate(const std::string &version) {
     const auto partPath = partialDownloadPath(_appImagePath);
     auto ioError = IoError::Success;
     (void) IoHelper::deleteItem(partPath, ioError);
-    _expectedChecksum.clear();
+    {
+        const std::scoped_lock lock(_checksumMutex);
+        _verifiedVersion.clear();
+    }
 
     _downloadInProgress = true;
     const auto job = std::make_shared<DirectDownloadJob>(partPath, versionInfo().downloadUrl);
-    const std::function<void(UniqueId)> callback = std::bind_front(&LinuxUpdater::downloadFinished, this);
+    const std::function<void(UniqueId)> callback = [this, version](const UniqueId jobId) { downloadFinished(jobId, version); };
     job->setAdditionalCallback(callback);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     setState(UpdateState::Downloading);
 }
 
-void LinuxUpdater::downloadFinished(const UniqueId jobId) {
-    _downloadInProgress = false;
-
+void LinuxUpdater::downloadFinished(const UniqueId jobId, const std::string &version) {
     const auto downloadJob = std::dynamic_pointer_cast<DirectDownloadJob>(SyncJobManagerSingleton::instance()->getJob(jobId));
     if (!downloadJob) {
         LOG_ERROR(logger(), "Could not cast job pointer.");
-        setState(UpdateState::DownloadError);
+        finishPreparation(UpdateState::DownloadError);
         assert(false);
         return;
     }
@@ -209,13 +283,19 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId) {
     if (downloadJob->hasErrorApi() || !downloadJob->exitInfo() || downloadJob->isAborted()) {
         LOGW_WARN(logger(),
                   L"Unable to download the AppImage to " << Utility::formatSyncPath(downloadJob->getDestinationFilePath()));
-        setState(UpdateState::DownloadError);
+        finishPreparation(UpdateState::DownloadError);
         return;
     }
 
     const auto partPath = partialDownloadPath(_appImagePath);
-    if (!verifyChecksum(partPath)) {
-        setState(UpdateState::DownloadError);
+    if (!verifyChecksum(partPath, version)) {
+        // The sidecar itself may be wrong: fetch it again at the next attempt.
+        {
+            const std::scoped_lock lock(_checksumMutex);
+            _checksumVersion.clear();
+            _expectedChecksum.clear();
+        }
+        finishPreparation(UpdateState::DownloadError);
         return;
     }
 
@@ -227,41 +307,46 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId) {
                                  std::filesystem::perm_options::replace, ec);
     if (ec) {
         LOGW_WARN(logger(), L"Failed to make the AppImage executable: " << Utility::formatStdError(partPath, ec));
-        setState(UpdateState::DownloadError);
+        finishPreparation(UpdateState::DownloadError);
         return;
     }
 
     LOGW_INFO(logger(), L"AppImage downloaded at " << Utility::formatSyncPath(partPath) << L". Update is ready to be installed.");
-    setState(UpdateState::Ready);
+    setReady(version);
+}
+
+// Ends the sidecar and AppImage downloads: a periodic check may start a new preparation from now on.
+void LinuxUpdater::finishPreparation(const UpdateState state) {
+    _downloadInProgress = false;
+    setState(state);
+}
+
+void LinuxUpdater::setReady(const std::string &version) {
+    {
+        const std::scoped_lock lock(_checksumMutex);
+        _verifiedVersion = version;
+    }
+    finishPreparation(UpdateState::Ready);
+}
+
+std::string LinuxUpdater::expectedChecksum(const std::string &version) const {
+    const std::scoped_lock lock(_checksumMutex);
+    return _checksumVersion == version ? _expectedChecksum : std::string{};
 }
 
 /**
- * Verifies the file against the `.sha256` sidecar of the download URL. The sidecar is fetched once per download and
- * cached for the verification done at install time. The file is deleted on mismatch.
+ * Verifies the file against the checksum fetched for this version. The file is deleted on mismatch; it is kept when no
+ * checksum is known, since nothing proves it is wrong.
  */
-bool LinuxUpdater::verifyChecksum(const SyncPath &filepath) {
-    ChecksumVerifier::Sha256Fetcher fetcher;
-    if (_expectedChecksum.empty()) {
-        fetcher = [this](const std::string &sha256Url) -> std::string {
-            DirectDownloadJob job(partialDownloadPath(_appImagePath).string() + ".sha256", sha256Url);
-            (void) job.runSynchronously();
-            if (job.hasErrorApi() || job.exitInfo().code() != ExitCode::Ok) return "";
-
-            std::ifstream file(job.getDestinationFilePath());
-            std::string checksum;
-            file >> checksum;
-            file.close();
-
-            auto ioError = IoError::Success;
-            (void) IoHelper::deleteItem(job.getDestinationFilePath(), ioError);
-            _expectedChecksum = checksum;
-            return checksum;
-        };
-    } else {
-        fetcher = [this](const std::string &) { return _expectedChecksum; };
+bool LinuxUpdater::verifyChecksum(const SyncPath &filepath, const std::string &version) {
+    const auto checksum = expectedChecksum(version);
+    if (checksum.empty()) {
+        LOG_WARN(logger(), "No SHA-256 checksum known for version " << version << ", the AppImage cannot be verified");
+        return false;
     }
 
-    return ChecksumVerifier::verifyFileChecksum(filepath, versionInfo().downloadUrl, fetcher);
+    return ChecksumVerifier::verifyFileChecksum(filepath, versionInfo().downloadUrl,
+                                                [&checksum](const std::string &) { return checksum; });
 }
 
 /**
