@@ -1403,7 +1403,7 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     newNode->setChangeEvents(OperationType::Edit | OperationType::Move);
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
-    newNode->parentNode()->setId(NodeId{"tmp_123"});
+    (void) newNode->parentNode()->setId(NodeId{"tmp_123"});
 
     CPPUNIT_ASSERT_THROW(_localUpdateTreeWorker->checkTreeIntegrity(), UpdateTreeWorker::IntegrityError);
 }

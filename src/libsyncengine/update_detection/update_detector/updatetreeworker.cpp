@@ -1334,7 +1334,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         // copy them before merging
         const auto children = node->children();
 
-        auto queueChildren = [&nodeQueue, children]() {
+        auto queueChildren = [&nodeQueue, &children]() {
             for (const auto &[_, child]: children) {
                 nodeQueue.push(child);
             }

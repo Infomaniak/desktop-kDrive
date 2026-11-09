@@ -93,7 +93,7 @@ bool Node::moveTo(std::shared_ptr<Node> parentNode) {
             LOGW_WARN(Log::instance()->getLogger(), L"The parent already has a child with the same node ID: "
                                                             << Node::formatNodeWithParent(shared_from_this(), parentNode));
 
-            assert(false);
+            // assert(false);
             sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node is a child");
             return false;
         }

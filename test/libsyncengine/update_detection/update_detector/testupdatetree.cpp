@@ -215,11 +215,11 @@ void TestUpdateTree::testChangeEvents() {
     nodeMove->setMoveOriginInfos({Str("Dir 3"), _myTree->rootNode()->id().value()});
     nodeMove->setChangeEvents(OperationType::Move);
 
-    const std::shared_ptr<Node> nodeDelete =
+    const auto nodeDelete =
             std::make_shared<Node>(_myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::Delete, "l4", 0, 0, 12345);
     CPPUNIT_ASSERT(nodeDelete->moveTo(_myTree->rootNode()));
 
-    const std::shared_ptr<Node> nodeMoveEdit =
+    const auto nodeMoveEdit =
             std::make_shared<Node>(_myTree->side(), Str("Dir 5*"), NodeType::Directory, OperationType::None, "l5", 0, 0, 12345);
     CPPUNIT_ASSERT(nodeMoveEdit->moveTo(_myTree->rootNode()));
 
