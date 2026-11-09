@@ -316,26 +316,10 @@ void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {
 
     const auto node8 = std::make_shared<Node>(_dbnodeIdDir8, updateTree->side(), Str("Dir 8") + testhelpers::makeNfcSyncName(),
                                               NodeType::Directory, OperationType::None, "id8", testhelpers::defaultTime,
-                                              testhelpers::defaultTime, testhelpers::defaultFileSize, updateTree->rootNode());
+                                              testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node8->moveTo(updateTree->rootNode()));
 
     updateTree->init();
-
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node1));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node2));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node3));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node4));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node6));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node6a));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node7));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node8));
-
-    CPPUNIT_ASSERT(node1->insertChild(node11));
-    CPPUNIT_ASSERT(node11->insertChild(node111));
-    CPPUNIT_ASSERT(node111->insertChild(node1111));
-    CPPUNIT_ASSERT(node3->insertChild(node31));
-    CPPUNIT_ASSERT(node4->insertChild(node41));
-    CPPUNIT_ASSERT(node41->insertChild(node411));
-    CPPUNIT_ASSERT(node411->insertChild(node4111));
 
     updateTree->insertNode(node1111);
     updateTree->insertNode(node111);
