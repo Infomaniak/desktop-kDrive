@@ -56,7 +56,7 @@ class LinuxUpdater final : public AbstractUpdater {
         void downloadUpdate(const std::string &version);
         void downloadFinished(UniqueId jobId, const std::string &version);
         void finishPreparation(UpdateState state);
-        void setReady(const std::string &version);
+        void installUpdate(const std::string &version);
         [[nodiscard]] std::string expectedChecksum(const std::string &version) const;
         [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const std::string &version);
         [[nodiscard]] bool launchRelauncher(const SyncPath &targetPath) const;
@@ -64,10 +64,11 @@ class LinuxUpdater final : public AbstractUpdater {
         SyncPath _appImagePath;
         std::atomic_bool _downloadInProgress{false};
 
-        mutable std::mutex _checksumMutex;
+        mutable std::mutex _stateMutex;
         std::string _checksumVersion; // Version the cached checksum belongs to.
         std::string _expectedChecksum;
-        std::string _verifiedVersion; // Version of the `.part` file already verified against the checksum.
+        std::string _installedVersion; // Version installed on disk, active once the application restarts.
+        SyncPath _installedPath;
 
         std::function<void()> _quitCallback;
 };

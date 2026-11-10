@@ -59,7 +59,9 @@ ScrollView {
                                                    && !root.controller.updateDownloading
 
                     visible: root.controller.updateAvailable
-                    text: root.controller.updateReadyToInstall ? qsTrId("buttonUpdate")
+                    // The update is already installed: the button restarts the application on the new version.
+                    // TODO(translation): create buttonRestart in Loco.
+                    text: root.controller.updateReadyToInstall ? qsTrId("buttonRestart")
                                                                : root.controller.updateDownloading
                                                                  ? qsTrId("buttonDownloadInProgress")
                                                                  : qsTrId("buttonDownloadManually")

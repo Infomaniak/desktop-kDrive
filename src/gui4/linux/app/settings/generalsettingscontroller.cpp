@@ -133,6 +133,11 @@ QString GeneralSettingsController::errorText() const {
 }
 
 QString GeneralSettingsController::updateText() const {
+    if (_updateStatusService.readyToInstall() && _updateStatusService.version()) {
+        // TODO(translation): create updateInstalled in Loco.
+        return qtTrId("updateInstalled").arg(releaseVersion());
+    }
+
     if (_updateStatusService.available()) {
         return _updateStatusService.version() ? qtTrId("updateAvailable").arg(releaseVersion()) : qtTrId("updateDialogTitle");
     }

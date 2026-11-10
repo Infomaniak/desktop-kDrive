@@ -522,6 +522,10 @@ You can open them at any time, even without an internet connection.</translation
             <source>Rename %1</source> 
             <translation>Rename %1</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Restart</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Restart sign-in</translation> 
@@ -2663,6 +2667,10 @@ Your synchronization will resume automatically at the end.</translation>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Update available</translation> 
+        </message> 
+        <message id="updateInstalled"> 
+            <source>kDrive %1 installed. Restart the application to use it.</source> 
+            <translation>kDrive %1 installed. Restart the application to use it.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.

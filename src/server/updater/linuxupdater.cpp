@@ -63,6 +63,18 @@ LinuxUpdater::LinuxUpdater() :
     _appImagePath(CommonUtility::envVarValue("APPIMAGE")) {}
 
 void LinuxUpdater::onUpdateFound() {
+    const auto version = versionInfo().fullVersion();
+    bool alreadyInstalled = false;
+    {
+        const std::scoped_lock lock(_stateMutex);
+        alreadyInstalled = _installedVersion == version;
+    }
+    if (alreadyInstalled) {
+        // Periodic check of the version already installed: it only waits for the application to restart.
+        setState(UpdateState::Ready);
+        return;
+    }
+
     if (!canUpdateInPlace()) {
         setState(UpdateState::ManualUpdateAvailable);
         return;
@@ -74,18 +86,6 @@ void LinuxUpdater::onUpdateFound() {
         return;
     }
 
-    const auto version = versionInfo().fullVersion();
-    bool alreadyVerified = false;
-    if (std::error_code ec; std::filesystem::exists(partialDownloadPath(_appImagePath), ec)) {
-        const std::scoped_lock lock(_checksumMutex);
-        alreadyVerified = _verifiedVersion == version;
-    }
-    if (alreadyVerified) {
-        // Periodic check of the version already downloaded: the file is verified again at install time only.
-        setState(UpdateState::Ready);
-        return;
-    }
-
     if (expectedChecksum(version).empty()) {
         fetchChecksum(version);
         return;
@@ -94,40 +94,20 @@ void LinuxUpdater::onUpdateFound() {
     prepareUpdate(version);
 }
 
+// The update is already installed on disk: restarting starts the new version.
 void LinuxUpdater::startInstaller() {
-    const auto partPath = partialDownloadPath(_appImagePath);
-    if (std::error_code ec; _appImagePath.empty() || !std::filesystem::exists(partPath, ec)) {
-        LOGW_WARN(logger(), L"No downloaded AppImage to install at " << Utility::formatSyncPath(partPath));
+    SyncPath installedPath;
+    {
+        const std::scoped_lock lock(_stateMutex);
+        installedPath = _installedPath;
+    }
+    if (installedPath.empty()) {
+        LOG_WARN(logger(), "No installed AppImage update to restart on");
         setState(UpdateState::UpdateError);
         return;
     }
 
-    if (!verifyChecksum(partPath, versionInfo().fullVersion())) {
-        setState(UpdateState::UpdateError);
-        return;
-    }
-
-    const auto targetPath = installTargetPath(_appImagePath);
-    std::error_code renameError;
-    std::filesystem::rename(partPath, targetPath, renameError);
-    if (renameError) {
-        LOGW_WARN(logger(), L"Failed to install the new AppImage: " << Utility::formatStdError(targetPath, renameError));
-        setState(UpdateState::UpdateError);
-        return;
-    }
-    LOGW_INFO(logger(), L"New AppImage installed at " << Utility::formatSyncPath(targetPath));
-
-    if (targetPath != _appImagePath) {
-        // The running process keeps its mount of the old file, so removing it is safe. Launchers pointing to the old
-        // name (symlinks, user desktop entries) break; ours are rewritten at the next start.
-        if (std::error_code ec; !std::filesystem::remove(_appImagePath, ec) && ec) {
-            LOGW_WARN(logger(), L"Failed to remove the previous AppImage: " << Utility::formatStdError(_appImagePath, ec));
-        } else {
-            LOGW_INFO(logger(), L"Previous AppImage removed: " << Utility::formatSyncPath(_appImagePath));
-        }
-    }
-
-    if (!launchRelauncher(targetPath)) {
+    if (!launchRelauncher(installedPath)) {
         // The new version is in place and starts at the next launch.
         setState(UpdateState::UpdateError);
         return;
@@ -230,7 +210,7 @@ void LinuxUpdater::checksumFetched(const UniqueId jobId, const std::string &vers
     }
 
     {
-        const std::scoped_lock lock(_checksumMutex);
+        const std::scoped_lock lock(_stateMutex);
         _checksumVersion = version;
         _expectedChecksum = CommonUtility::trim(CommonUtility::toLower(checksum));
     }
@@ -246,7 +226,7 @@ void LinuxUpdater::prepareUpdate(const std::string &version) {
         if (!checksum.empty() && checksum == expectedChecksum(version)) {
             LOGW_INFO(logger(), L"AppImage already downloaded at " << Utility::formatSyncPath(partPath)
                                                                    << L". Update is ready to be installed.");
-            setReady(version);
+            installUpdate(version);
             return;
         }
         LOGW_INFO(logger(), L"Discarding outdated or incomplete AppImage download at " << Utility::formatSyncPath(partPath));
@@ -259,11 +239,6 @@ void LinuxUpdater::downloadUpdate(const std::string &version) {
     const auto partPath = partialDownloadPath(_appImagePath);
     auto ioError = IoError::Success;
     (void) IoHelper::deleteItem(partPath, ioError);
-    {
-        const std::scoped_lock lock(_checksumMutex);
-        _verifiedVersion.clear();
-    }
-
     _downloadInProgress = true;
     const auto job = std::make_shared<DirectDownloadJob>(partPath, versionInfo().downloadUrl);
     const std::function<void(UniqueId)> callback = [this, version](const UniqueId jobId) { downloadFinished(jobId, version); };
@@ -292,7 +267,7 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId, const std::string &ver
     if (!verifyChecksum(partPath, version)) {
         // The sidecar itself may be wrong: fetch it again at the next attempt.
         {
-            const std::scoped_lock lock(_checksumMutex);
+            const std::scoped_lock lock(_stateMutex);
             _checksumVersion.clear();
             _expectedChecksum.clear();
         }
@@ -312,8 +287,8 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId, const std::string &ver
         return;
     }
 
-    LOGW_INFO(logger(), L"AppImage downloaded at " << Utility::formatSyncPath(partPath) << L". Update is ready to be installed.");
-    setReady(version);
+    LOGW_INFO(logger(), L"AppImage downloaded at " << Utility::formatSyncPath(partPath));
+    installUpdate(version);
 }
 
 // Ends the sidecar and AppImage downloads: a periodic check may start a new preparation from now on.
@@ -322,16 +297,42 @@ void LinuxUpdater::finishPreparation(const UpdateState state) {
     setState(state);
 }
 
-void LinuxUpdater::setReady(const std::string &version) {
+/**
+ * Replaces the AppImage on disk with the verified download. The running process keeps its mount of the old file, so the
+ * new version only starts at the next launch or when the user restarts from Settings.
+ */
+void LinuxUpdater::installUpdate(const std::string &version) {
+    const auto partPath = partialDownloadPath(_appImagePath);
+    const auto targetPath = installTargetPath(_appImagePath);
+    std::error_code ec;
+    std::filesystem::rename(partPath, targetPath, ec);
+    if (ec) {
+        LOGW_WARN(logger(), L"Failed to install the new AppImage: " << Utility::formatStdError(targetPath, ec));
+        finishPreparation(UpdateState::UpdateError);
+        return;
+    }
+    LOGW_INFO(logger(), L"New AppImage installed at " << Utility::formatSyncPath(targetPath)
+                                                      << L". Update is active once the application restarts.");
+
+    if (targetPath != _appImagePath) {
+        // Launchers pointing to the old name (symlinks, user desktop entries) break; ours are rewritten at the next start.
+        if (std::filesystem::remove(_appImagePath, ec)) {
+            LOGW_INFO(logger(), L"Previous AppImage removed: " << Utility::formatSyncPath(_appImagePath));
+        } else if (ec) {
+            LOGW_WARN(logger(), L"Failed to remove the previous AppImage: " << Utility::formatStdError(_appImagePath, ec));
+        }
+    }
+
     {
-        const std::scoped_lock lock(_checksumMutex);
-        _verifiedVersion = version;
+        const std::scoped_lock lock(_stateMutex);
+        _installedVersion = version;
+        _installedPath = targetPath;
     }
     finishPreparation(UpdateState::Ready);
 }
 
 std::string LinuxUpdater::expectedChecksum(const std::string &version) const {
-    const std::scoped_lock lock(_checksumMutex);
+    const std::scoped_lock lock(_stateMutex);
     return _checksumVersion == version ? _expectedChecksum : std::string{};
 }
 
