@@ -202,17 +202,26 @@ void AppServer::init() {
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
-    // OAuth deeplinks start a short-lived helper process. It must not initialize logging because doing so would archive the
-    // running server's active log file.
+    // Only the main server initializes logging: doing so archives and purges the log files of the folder, including the
+    // active ones of a running server and client. A secondary process (OAuth callback, help or version, request forwarded
+    // to the running server) stops before, and reports on the console only.
     parseOptions(_arguments);
-    if (!_authorizationCodeStr.isEmpty()) {
-        if (!isRunning()) {
+    if (_helpAsked || _versionAsked) {
+        return;
+    }
+
+    if (isRunning()) {
+        return;
+    }
 #if defined(KD_LINUX)
-            if (const auto processPid = runningProcessPid(APPLICATION_EXECUTABLE); processPid.has_value()) {
-                _runningServerPid = *processPid;
-            }
+    if (const auto processPid = runningProcessPid(APPLICATION_EXECUTABLE); processPid.has_value()) {
+        _runningServerPid = *processPid;
+        return;
+    }
 #endif
-        }
+
+    // OAuth callbacks start a short-lived helper process: without a running server, there is nothing to forward to.
+    if (!_authorizationCodeStr.isEmpty()) {
         return;
     }
 
@@ -221,22 +230,10 @@ void AppServer::init() {
         throw std::runtime_error("Unable to init logging.");
     }
 
-    if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
+    if (_clearSyncNodesAsked || _clearKeychainKeysAsked) {
         LOG_INFO(_logger, "Command line options processed");
         return;
     }
-
-    if (isRunning()) {
-        LOG_INFO(_logger, "AppServer already running");
-        return;
-    }
-#if defined(KD_LINUX)
-    if (const auto processPid = runningProcessPid(APPLICATION_EXECUTABLE); processPid.has_value()) {
-        _runningServerPid = *processPid;
-        LOG_INFO(_logger, "AppServer already running with PID " << _runningServerPid);
-        return;
-    }
-#endif
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
 
@@ -3882,19 +3879,19 @@ void AppServer::clearSyncNodes() {
 
 void AppServer::sendShowSettingsMsg(qint64 pid) {
     if (!sendMessage(showSettingsMsg, singleApplicationMessageTimeoutMs, pid)) {
-        LOG_WARN(_logger, "Failed to forward show-settings request to the running server");
+        std::cerr << "Failed to forward show-settings request to the running server" << std::endl;
     }
 }
 
 void AppServer::sendShowSynthesisMsg(qint64 pid) {
     if (!sendMessage(showSynthesisMsg, singleApplicationMessageTimeoutMs, pid)) {
-        LOG_WARN(_logger, "Failed to forward show-synthesis request to the running server");
+        std::cerr << "Failed to forward show-synthesis request to the running server" << std::endl;
     }
 }
 
 void AppServer::sendRestartClientMsg(qint64 pid) {
     if (!sendMessage(restartClientMsg, singleApplicationMessageTimeoutMs, pid)) {
-        LOG_WARN(_logger, "Failed to forward restart-client request to the running server");
+        std::cerr << "Failed to forward restart-client request to the running server" << std::endl;
     }
 }
 

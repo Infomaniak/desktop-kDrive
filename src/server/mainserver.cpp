@@ -59,6 +59,15 @@ extern "C" {
 }
 #endif
 
+// Secondary processes (help, version, request forwarded to the running server) never initialize logging.
+static void logWarning(const std::string &message) {
+    if (KDC::Log::isSet()) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), message);
+    } else {
+        std::cerr << message << std::endl;
+    }
+}
+
 void signalHandler(int signum) {
     KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(signum);
     std::cerr << "Server stopped with signal " << signalType << std::endl;
@@ -150,6 +159,13 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
         return 0;
     }
 
+    // Maintenance options write to the databases: they must not run under a running server.
+    if ((appPtr->clearSyncNodesAsked() || appPtr->clearKeychainKeysAsked()) &&
+        (appPtr->isRunning() || appPtr->runningServerPid() != -1)) {
+        std::cerr << "kDrive is running: quit it before using this option." << std::endl;
+        return 1;
+    }
+
     if (appPtr->clearSyncNodesAsked()) {
         appPtr->clearSyncNodes();
         return 0;
@@ -167,7 +183,7 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     std::filesystem::copy(uninstallerPath, destPath,
                           std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive, ec);
     if (ec.value()) {
-        LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to copy uninstaller: " << ec.value());
+        logWarning("Failed to copy uninstaller: " + std::to_string(ec.value()));
     }
 #endif
 
@@ -225,18 +241,15 @@ int main(int argc, char **argv) {
         try {
             result = exec(appPtr);
         } catch (const std::bad_alloc &badAllocationException) {
-            LOG_WARN(KDC::Log::instance()->getLogger(),
-                     std::string("A bad allocation caused the interruption of the server application: ") +
-                             badAllocationException.what());
+            logWarning(std::string("A bad allocation caused the interruption of the server application: ") +
+                       badAllocationException.what());
             result = -1;
         } catch (const std::exception &standardException) {
-            LOG_WARN(KDC::Log::instance()->getLogger(),
-                     std::string("A standard exception caused the interruption of the server application: ") +
-                             standardException.what());
+            logWarning(std::string("A standard exception caused the interruption of the server application: ") +
+                       standardException.what());
             result = -1;
         } catch (...) {
-            LOG_WARN(KDC::Log::instance()->getLogger(),
-                     std::string("An exception of unknown type caused the interruption of the server application."));
+            logWarning("An exception of unknown type caused the interruption of the server application.");
             result = -1;
         }
     }
