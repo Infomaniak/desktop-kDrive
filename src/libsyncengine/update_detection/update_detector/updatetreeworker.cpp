@@ -434,15 +434,24 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             }
             if (auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
                 createFileOpSetIt != _createFileOperationSet.end()) {
-                FSOpPtr tmp = nullptr;
+                FSOpPtr createOp = nullptr;
                 if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(),
-                                           tmp)) {
+                                           createOp)) {
                     continue;
                 }
 
-                // op is now the createOperation
-                op = tmp;
-                _createFileOperationSet.erase(normalizedPath);
+                bool canMerge = false;
+                if (const auto checkExitCode = checkIfDeleteAndCreateCanBeMerged(deleteOp, createOp, canMerge);
+                    checkExitCode != ExitCode::Ok) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::checkIfDeleteAndCreateCanBeMerged"
+                                                       << Utility::formatExitInfo(deleteOp->path(), checkExitCode));
+                    return checkExitCode;
+                }
+                if (canMerge) {
+                    // op is now the createOperation
+                    op = createOp;
+                    _createFileOperationSet.erase(normalizedPath);
+                }
             }
         }
 
@@ -524,6 +533,56 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 logUpdate(newNode, opType, parentNode);
             }
         }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode UpdateTreeWorker::checkIfDeleteAndCreateCanBeMerged(const FSOpPtr &deleteOp, const FSOpPtr &createOp, bool &canMerge) {
+    canMerge = true;
+    if (deleteOp->objectType() != createOp->objectType()) {
+        canMerge = false;
+
+        return ExitCode::Ok;
+    }
+
+    // A symbolic link is stored as a File node, both in the snapshots and in the database. A change of type between
+    // the deleted item and the newly created one (e.g., a symbolic link replaced by a regular file) can therefore
+    // only be detected by comparing the link flags of the two items.
+    if (!_syncPal) {
+        // A worker instantiated without a SyncPal (e.g., in some tests) cannot access the snapshots.
+        return ExitCode::Ok;
+    }
+
+    // The deleted item is not present in the local snapshot anymore, since the newly created item replaced it at the
+    // same path. Its link flag is thus retrieved from the corresponding item of the other replica, through the sync DB.
+    NodeId deletedItemCorrespondingNodeId;
+    bool found = false;
+    if (!_syncDbReadOnlyCache.correspondingNodeId(_side, deleteOp->nodeId(), deletedItemCorrespondingNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDbReadOnlyCache::correspondingNodeId");
+
+        return ExitCode::DbError;
+    }
+
+    bool deletedItemIsLink = false;
+    if (found) {
+        if (const auto otherReplicaSnapshot = _syncPal->snapshot(otherSide(_side))) {
+            deletedItemIsLink = otherReplicaSnapshot->isLink(deletedItemCorrespondingNodeId);
+        }
+    }
+
+    bool createdItemIsLink = false;
+    if (const auto snapshot = _syncPal->snapshot(_side)) {
+        createdItemIsLink = snapshot->isLink(createOp->nodeId());
+    }
+
+    if (deletedItemIsLink != createdItemIsLink) {
+        // Do not merge the Delete and Create operations into an Edit operation, as the API does not support
+        // editing an item while changing its type (e.g., replacing a symbolic link with a regular file).
+        // Keeping both operations separate allows the corresponding remote item to be deleted and re-created.
+        LOGW_SYNCPAL_WARN(_logger, L"Type of the item " << Utility::formatSyncPath(deleteOp->path())
+                                                        << L" has changed. Do not merge Delete and Create operations.");
+        canMerge = false;
     }
 
     return ExitCode::Ok;
