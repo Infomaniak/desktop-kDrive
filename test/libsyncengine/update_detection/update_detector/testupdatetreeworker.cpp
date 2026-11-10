@@ -64,8 +64,16 @@ void TestUpdateTreeWorker::setUp() {
 }
 
 void TestUpdateTreeWorker::tearDown() {
-    if (_syncPal && _syncPal->syncDb()) {
-        _syncPal->syncDb()->close();
+    // Detach the worker under test and break the SyncPal ownership cycles (SyncPal <-> workers, SyncPal <->
+    // ProgressInfo), otherwise the SyncPal, its workers and its snapshots are leaked once the fixture is destroyed.
+    _localUpdateTreeWorker->setSyncPal(nullptr);
+    if (_syncPal) {
+        _syncPal->freeWorkers();
+        _syncPal->freeSharedObjects();
+        if (_syncPal->syncDb()) {
+            _syncPal->syncDb()->close();
+        }
+        _syncPal.reset();
     }
     ParmsDb::instance()->close();
     // The singleton ParmsDb calls KDC::Log()->instance() in its destructor.
