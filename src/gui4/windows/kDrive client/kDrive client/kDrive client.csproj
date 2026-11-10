@@ -42,6 +42,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.2.250604" />
+    <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.2.251219" />
     <PackageReference Include="DynamicData" Version="9.4.31" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
@@ -285,6 +286,12 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\QuickAccess.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Upsell\KsuiteBanner.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Upsell\MyKsuiteBanner.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="HomePage.xaml">

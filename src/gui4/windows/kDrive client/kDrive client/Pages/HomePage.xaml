@@ -24,6 +24,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:upsell="using:Infomaniak.kDrive.CustomControls.Upsell"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
       xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
@@ -284,6 +285,9 @@
             <RowDefinition Height="Auto" />
             <!-- State widget -->
             <RowDefinition Height="*" />
+
+            <!-- Upsell infobar -->
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Sync Status Bar -->
@@ -359,10 +363,27 @@
             </Grid>
         </Border>
 
-        <!-- Right Side Buttons -->
+        <!-- Right Side infobar -->
         <controls:QuickAccess Grid.Row="3"
                               Grid.Column="1"
                               Margin="{StaticResource Infomaniak.Style.Thickness.Left.M}"
                               Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+
+        <!-- Upsell Banner -->
+        <StackPanel Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Grid.Row="4">
+            <upsell:MyKsuiteBanner Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}"
+                                   Grid.Column="0"
+                                   Grid.ColumnSpan="2"
+                                   Grid.Row="4"
+                                   HorizontalAlignment="Stretch" 
+                                   Visibility="Collapsed"/>
+            <upsell:KsuiteBanner Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}"
+                                   Grid.Column="0"
+                                   Grid.ColumnSpan="2"
+                                   Grid.Row="4"
+                                   HorizontalAlignment="Stretch" />
+        </StackPanel>
     </Grid>
 </Page>
