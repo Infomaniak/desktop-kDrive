@@ -175,6 +175,11 @@ QtObject {
 
     readonly property color driveDefaultColor: _p.infomaniak
     readonly property color errorBannerSurface: darkMode ? _p.blue950 : _p.blue100
+    readonly property color informationBlockDismissForeground: textTertiary
+    readonly property color informationBlockDismissHover: surfaceTertiary
+    readonly property color informationBlockIconTile: _p.kDrive500
+    // Same surface as the other Home cards: the page background is surfacePrimary.
+    readonly property color informationBlockSurface: surfaceSecondary
     readonly property color homeIdleBadgeForeground: darkMode ? _p.green400 : _p.green600
     readonly property color homeIdleBadgeSurface: darkMode ? _p.green950 : _p.green100
     readonly property color homeIdleIllustrationStroke: darkMode ? _p.kDriveLight : _p.blue600
