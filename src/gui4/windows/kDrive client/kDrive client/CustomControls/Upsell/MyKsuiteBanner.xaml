@@ -67,11 +67,13 @@
 
         <TextBlock Grid.Column="0"
                    Grid.Row="1"
-                   Text="Plus d’espace, plus de fonctionnalités, avec my kSuite+" />
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('myksuitePlusBannerDescription')}" />
 
         <Button Grid.Column="1"
                 Grid.Row="0"
-                Content="Faire évoluer" 
-                Style="{ThemeResource SubtleButtonStyle}"/>
+                Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpgradeSubscriptionShort')}"
+                Style="{ThemeResource SubtleButtonStyle}"
+                Click="Button_Click" />
+
     </Grid>
 </UserControl>

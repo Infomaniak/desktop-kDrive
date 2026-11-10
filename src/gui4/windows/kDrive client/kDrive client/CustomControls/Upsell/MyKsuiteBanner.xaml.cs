@@ -26,12 +26,16 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
     public sealed partial class MyKsuiteBanner : UserControl
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
-        private AppModel AppViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public MyKsuiteBanner()
         {
             InitializeComponent();
         }
 
+        private async void Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Upsell, Analytics.Keys.EventName.myKsuitePlus);
+            await Localizer.Instance.TryLaunchUriAsync("mykSuiteUpsellLink");
+        }
     }
 }
