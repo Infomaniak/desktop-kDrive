@@ -268,7 +268,8 @@ void GeneralSettingsController::setDistributionChannel(const int32_t channelValu
         return;
     }
 
-    if (channelValue == distributionChannel()) {
+    // Compared with the stored channel: a hidden channel such as Next is displayed as Prod but must still be replaced.
+    if (const auto parameters = _parametersStore.parameters(); parameters && parameters->distributionChannel() == channel) {
         return;
     }
 
