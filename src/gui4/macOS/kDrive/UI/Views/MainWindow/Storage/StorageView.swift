@@ -48,8 +48,15 @@ enum VolumeStorageItems {
     case usedByKDrive
 }
 
+enum DriveStorageItems {
+    case usedSpace
+    case freeSpace
+}
+
 struct StorageView: View {
     static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
+
+    private static let isRunningInPreviews = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
 
     @InjectService private var storageDataProviding: StorageDataProviding
 
@@ -59,8 +66,15 @@ struct StorageView: View {
         .usedSpace: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
         .freeSpace: StorageItem(title: KDriveLocalizable.storageMacFreeSpace, color: .gray, usedBytes: nil, isDefault: true)
     ]
-
     @State private var isShowingVolumeNotFound = false
+
+    @State private var subscriptionName = KDriveLocalizable.labelMySubscription
+    @State private var driveStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
+        .usedSpace: StorageItem(title: KDriveLocalizable.storageOnlineUsed, color: .blue, usedBytes: nil),
+        .freeSpace: StorageItem(title: KDriveLocalizable.storageOnlineFree, color: .gray, usedBytes: nil, isDefault: true)
+    ]
+    @State private var driveSize: Int64 = 0
+    @State private var driveUsedSize: Int64 = 0
 
     @ObservedObject var mainViewModel: MainViewModel
 
@@ -76,6 +90,14 @@ struct StorageView: View {
         }
 
         let usedSpace = usedByKDrive + usedByComputer
+        return .data(usedBytes: usedSpace, availableBytes: usedSpace + freeSpace)
+    }
+
+    private var driveStorageData: StorageSectionView.StorageData {
+        guard let usedSpace = driveStorageItems[.usedSpace]?.usedBytes,
+              let freeSpace = driveStorageItems[.freeSpace]?.usedBytes else {
+            return .loading
+        }
         return .data(usedBytes: usedSpace, availableBytes: usedSpace + freeSpace)
     }
 
@@ -101,23 +123,27 @@ struct StorageView: View {
                         InformationBlockContentView(
                             title: KDriveLocalizable.storageSyncBlockTitle,
                             subtitle: KDriveLocalizable.storageSyncBlockMacDescription,
-                            button: InformationBlockButton(title: KDriveLocalizable.buttonManage, action: didTapFreeUpSpace)
+                            button: InformationBlockButton(title: KDriveLocalizable.buttonManage, action: didTapManage)
                         )
                     }
+                    
+                    StorageSectionView(title: subscriptionName, storageData: driveStorageData, items: Array(driveStorageItems.values))
                 }
                 .groupedFormatStyle()
             }
         }
         .onReceive(storagePublisher.receive(on: RunLoop.main), perform: handleUpdatedStorageData)
         .onAppear {
-            getCachedStorageData()
+            Task {
+                await getCachedStorageData()
+            }
         }
         .task(id: mainViewModel.currentSynchro?.dbId) {
             await fetchStorageData()
         }
     }
 
-    private func didTapFreeUpSpace() {
+    private func didTapManage() {
         (NSApp.delegate as? AppDelegate)?.openPreferencesWindow()
 
         @InjectService var router: PreferencesViewRouter
@@ -131,18 +157,35 @@ struct StorageView: View {
         guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
             return
         }
-
         try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
+        
+        // In previews, drive values are pinned by the preview initializer; skip the real ones.
+        guard !Self.isRunningInPreviews else {
+            return
+        }
+
+        if let currentDrive = mainViewModel.currentDrive {
+            @InjectService var coherentCache: CoherentCache
+            guard let drive = await coherentCache.getDrive(driveDbId: Int32(currentDrive.dbId)) else {
+                IKLogger.general.warning("[KD] Failed to get drive for driveDbId=\(currentDrive.dbId)")
+                return
+            }
+            driveSize = drive.size
+            driveUsedSize = drive.usedSize
+        }
     }
 
-    private func getCachedStorageData() {
+    private func getCachedStorageData() async {
         updateVolumeStorage(from: storageDataProviding.storageData)
+        updateDriveStorage()
     }
 
     private func handleUpdatedStorageData(_ indexedStorageData: IndexedStorageData) {
         withAnimation {
             updateVolumeStorage(from: indexedStorageData)
+            updateDriveStorage()
         }
+        
     }
 
     private func updateVolumeStorage(from indexedStorageData: IndexedStorageData) {
@@ -167,8 +210,29 @@ struct StorageView: View {
             isShowingVolumeNotFound = true
         }
     }
+    
+    private func updateDriveStorage() {
+        subscriptionName = KDriveLocalizable.labelMySubscription
+        driveStorageItems[.usedSpace]?.usedBytes = driveUsedSize
+        driveStorageItems[.freeSpace]?.usedBytes = driveSize - driveUsedSize
+    }
 }
 
+#if DEBUG
+extension StorageView {
+    /// Preview-only initializer that pins the subscription storage values, so previews don't depend on the real drive.
+    init(mainViewModel: MainViewModel, previewDriveSize: Int64, previewDriveUsedSize: Int64) {
+        self.init(mainViewModel: mainViewModel)
+        _driveSize = State(initialValue: previewDriveSize)
+        _driveUsedSize = State(initialValue: previewDriveUsedSize)
+    }
+}
+#endif
+
 #Preview {
-    StorageView(mainViewModel: MainViewModel())
+    StorageView(
+        mainViewModel: MainViewModel(),
+        previewDriveSize: 3_000_000_000_000,
+        previewDriveUsedSize: 123_456_789_000
+    )
 }

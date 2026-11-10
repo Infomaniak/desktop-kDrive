@@ -34,6 +34,9 @@ struct DriveInfoSignalMetadata: Codable, Sendable {
     let maintenance: Bool
     let locked: Bool
     let accessDenied: Bool
+    let size: Int64
+    let usedSize: Int64
+    let packInfo: PackInfo
 }
 
 extension DriveInfoSignalMetadata {
@@ -50,6 +53,9 @@ extension DriveInfoSignalMetadata {
               locked: locked,
               maintenance: maintenance,
               notifications: notifications,
+              size: size,
+              usedSize: usedSize,
+              packInfo: packInfo,
               synchros: synchros)
     }
 }

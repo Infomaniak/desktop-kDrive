@@ -120,7 +120,10 @@ extension SharedDITests.CoherentCacheDriveTests {
                                                   admin: true,
                                                   maintenance: false,
                                                   locked: false,
-                                                  accessDenied: false)
+                                                  accessDenied: false,
+                                                  size: 0,
+                                                  usedSize: 0,
+                                                  packInfo: PackInfo(id: 0, name: "", displayName: "", isFree: false))
 
         // WHEN
         try await cache.addOrUpdateDriveSignal(driveSignal)

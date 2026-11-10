@@ -765,6 +765,8 @@ public enum KDriveLocalizable {
   }
   /// loco:69a6a3ed7dda553eac028752
   public static let labelMostRecent = KDriveLocalizable.tr("Localizable", "labelMostRecent", fallback: "Most recent")
+  /// loco:6ad371f8a1b7e5f4b90d86b2
+  public static let labelMySubscription = KDriveLocalizable.tr("Localizable", "labelMySubscription", fallback: "My Subscription")
   /// loco:6989fec57ca0d7305008b1e2
   public static let labelName = KDriveLocalizable.tr("Localizable", "labelName", fallback: "Name")
   /// loco:69a0675de82f7e271b0c54d2
@@ -1112,6 +1114,10 @@ public enum KDriveLocalizable {
   public static let storageMissingDiskMacOSDescription = KDriveLocalizable.tr("Localizable", "storageMissingDiskMacOSDescription", fallback: "kDrive can’t access the volume\nMake sure it is connected,\nunlocked and accessible from your computer.")
   /// loco:69c67d717e089c303405cee2
   public static let storageMissingDiskMacOSTitle = KDriveLocalizable.tr("Localizable", "storageMissingDiskMacOSTitle", fallback: "The volume is not accessible")
+  /// loco:6ad372caea3d77581a00dfc7
+  public static let storageOnlineFree = KDriveLocalizable.tr("Localizable", "storageOnlineFree", fallback: "Available space on your subscription")
+  /// loco:6ad372c478eb7e021a003dcc
+  public static let storageOnlineUsed = KDriveLocalizable.tr("Localizable", "storageOnlineUsed", fallback: "kDrive files stored online")
   /// loco:697a2640c1c052cea305d2d6
   public static let storageSyncBlockMacDescription = KDriveLocalizable.tr("Localizable", "storageSyncBlockMacDescription", fallback: "Manage synchronized folders to free up space on your Mac.")
   /// loco:697a26183f570e1362040242

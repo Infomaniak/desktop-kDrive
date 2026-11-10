@@ -41,6 +41,9 @@ extension Drive {
               locked: false,
               maintenance: false,
               notifications: false,
+              size: 0,
+              usedSize: 0,
+              packInfo: PackInfo(id: 0, name: "", displayName: "", isFree: false),
               synchros: synchros)
     }
 }
@@ -84,7 +87,10 @@ public enum ObservableData {
                                                      admin: true,
                                                      locked: false,
                                                      maintenance: false,
-                                                     notifications: true)
+                                                     notifications: true,
+                                                     size: 0,
+                                                     usedSize: 0,
+                                                     packInfo: PackInfo(id: 0, name: "", displayName: "", isFree: false))
 
     static let updatedDrive = Drive.some(driveDbId: expectedDriveDbId,
                                          driveId: expectedDriveId,

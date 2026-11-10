@@ -1013,6 +1013,9 @@
 /* loco:69a6a3ed7dda553eac028752 */
 "labelMostRecent" = "Más reciente";
 
+/* loco:6ad371f8a1b7e5f4b90d86b2 */
+"labelMySubscription" = "Mi suscripción";
+
 /* loco:6989fec57ca0d7305008b1e2 */
 "labelName" = "Nombre";
 
@@ -1506,6 +1509,12 @@
 
 /* loco:69c67d717e089c303405cee2 */
 "storageMissingDiskMacOSTitle" = "No se puede acceder al volumen";
+
+/* loco:6ad372caea3d77581a00dfc7 */
+"storageOnlineFree" = "Espacio libre de tu suscripción";
+
+/* loco:6ad372c478eb7e021a003dcc */
+"storageOnlineUsed" = "Archivos de kDrive almacenados en línea";
 
 /* loco:697a2640c1c052cea305d2d6 */
 "storageSyncBlockMacDescription" = "Gestiona las carpetas sincronizadas para liberar espacio en tu Mac.";

@@ -42,7 +42,7 @@ enum Base64Helper {
 }
 
 @propertyWrapper
-public struct Base64CodedString: Codable, Sendable {
+public struct Base64CodedString: Codable, Hashable, Sendable {
     public let wrappedValue: String
 
     public init(wrappedValue: String) {
