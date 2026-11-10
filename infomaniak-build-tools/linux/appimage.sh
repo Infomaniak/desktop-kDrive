@@ -468,6 +468,21 @@ function appimage_verify_bundle() (
 
     echo "Bundle floor: ${glibc_floor:-none} / ${glibcxx_floor:-none}"
 
+    # Ubuntu 22.04 is the oldest supported system.
+    local version_floor
+    local version_ceiling
+    for version_floor in "$glibc_floor" "$glibcxx_floor"; do
+        [[ -n "$version_floor" ]] || continue
+        case "$version_floor" in
+        GLIBC_*) version_ceiling="GLIBC_2.35" ;;
+        GLIBCXX_*) version_ceiling="GLIBCXX_3.4.30" ;;
+        esac
+        if [[ "$(printf '%s\n%s\n' "$version_floor" "$version_ceiling" | sort -V | tail -1)" != "$version_ceiling" ]]; then
+            echo "The bundle requires $version_floor, above the Ubuntu 22.04 baseline $version_ceiling" >&2
+            failures=1
+        fi
+    done
+
     exit "$failures"
 )
 
