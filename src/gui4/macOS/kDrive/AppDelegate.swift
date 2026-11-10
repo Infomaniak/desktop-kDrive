@@ -28,6 +28,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var preferencesWindow: PreferencesWindowController?
     private var onboardingWindow: OnboardingWindowController?
     private var isHandingOffToServer = false
+    private lazy var shutdown: ApplicationShutdown = {
+        @InjectService var connectionLifecycle: XPCConnectionLifecycle
+        return ApplicationShutdown(connectionLifecycle: connectionLifecycle, quitServer: {
+            #if !DEBUG
+            try? await UtilityJobs().quit()
+            #endif
+        }, reply: {
+            NSApp.reply(toApplicationShouldTerminate: true)
+        })
+    }()
 
     // periphery:ignore - We keep a strong reference on the statusBarManager
     private(set) var statusBarManager: StatusBarManager?
@@ -197,17 +207,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         // The server will relaunch the client; do not send it the normal quit request.
-        guard !isHandingOffToServer else {
-            return .terminateNow
-        }
+        return shutdown.requestTermination(notifyServer: !isHandingOffToServer)
+    }
 
-        Task {
-            #if !DEBUG
-            try? await UtilityJobs().quit()
-            #endif
-            NSApp.reply(toApplicationShouldTerminate: true)
-        }
-        return .terminateLater
+    func applicationWillTerminate(_ notification: Notification) {
+        @InjectService var connectionLifecycle: XPCConnectionLifecycle
+        connectionLifecycle.finishShutdown()
     }
 
     private enum ServerStartResult {

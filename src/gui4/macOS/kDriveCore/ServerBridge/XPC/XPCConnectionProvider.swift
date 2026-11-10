@@ -38,18 +38,26 @@ public enum XPCLoginItemAgentConnectionState: Sendable, Equatable {
 public protocol XPCConnectionProvider: Sendable {
     func sendQuery(_ requestData: Data) async throws -> Data
 
-    var guiConnectionState: XPCConnectionState { get }
-    var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
+    @MainActor var guiConnectionState: XPCConnectionState { get }
+    @MainActor var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
 
-    var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState { get }
-    var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> { get }
+    @MainActor var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState { get }
+    @MainActor var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> { get }
 
     func reconnectToLoginAgent() async
 }
 
+public protocol XPCConnectionLifecycle: Sendable {
+    /// Stops connection attempts while keeping the existing transport available for the quit request.
+    @MainActor func beginShutdown()
+    @MainActor func finishShutdown()
+}
+
 extension XPCConnectionManager: XPCConnectionProvider {
+    @MainActor
     public var connection: NSXPCConnection {
         get throws {
+            guard lifecycleState != .stopped else { throw XPCError.shuttingDown }
             guard let appConnection else {
                 throw XPCError.noAppConnectionAvailable
             }
@@ -58,6 +66,7 @@ extension XPCConnectionManager: XPCConnectionProvider {
         }
     }
 
+    @MainActor
     public func sendQuery(_ requestData: Data) async throws -> Data {
         try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
 
@@ -79,10 +88,12 @@ extension XPCConnectionManager: XPCConnectionProvider {
         }
     }
 
+    @MainActor
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {
         return $guiConnectionState.eraseToAnyPublisher()
     }
 
+    @MainActor
     public var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> {
         return $loginItemAgentConnectionState.eraseToAnyPublisher()
     }
