@@ -254,8 +254,6 @@ bool Utility::hasLaunchOnStartup(const std::string &appName) {
 }
 
 bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
-    const auto userAutoStartDirPath = getUserAutostartDir();
-    const auto userAutoStartFilePath = userAutoStartDirPath / (appName + ".desktop");
     if (enable) {
         // Outside an AppImage (development build, extracted AppImage) there is no file to launch: an entry with an empty
         // Exec would replace a valid one written by an installed AppImage.
@@ -265,39 +263,48 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             return false;
         }
 
-        std::error_code ec;
-        if (auto ioError = IoError::Unknown; !std::filesystem::exists(userAutoStartDirPath, ec) &&
-                                             !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
-            LOGW_WARN(logger(), L"Could not create autostart folder: " << Utility::formatIoError(userAutoStartDirPath, ioError));
-            return false;
-        }
-
-        std::ofstream autoStartFile{userAutoStartFilePath};
-        if (!autoStartFile.is_open()) {
-            LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(userAutoStartFilePath));
-            return false;
-        }
-        LOGW_DEBUG(logger(), L"APPIMAGE: " << Utility::formatSyncPath(appImagePath));
-        autoStartFile << "[Desktop Entry]" << std::endl;
-        autoStartFile << "Name=" << guiName << std::endl;
-        autoStartFile << "GenericName=File Synchronizer" << std::endl;
-        autoStartFile << "Exec=" << "'" << appImagePath.native() << "'" << std::endl;
-        autoStartFile << "Terminal=false" << std::endl;
-        autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
-        autoStartFile << "Categories=Network" << std::endl;
-        autoStartFile << "Type=Application" << std::endl;
-        autoStartFile << "StartupNotify=false" << std::endl;
-        autoStartFile << "X-GNOME-Autostart-enabled=true" << std::endl;
-        autoStartFile << "X-GNOME-Autostart-Delay=10" << std::endl;
-        autoStartFile.close();
-    } else {
-        IoError ioError = IoError::Unknown;
-        if (!IoHelper::deleteItem(userAutoStartFilePath, ioError)) {
-            LOGW_WARN(logger(),
-                      L"Could not remove autostart desktop file: " << Utility::formatIoError(userAutoStartDirPath, ioError));
-            return false;
-        }
+        return setLaunchOnStartup(appName, guiName, appImagePath);
     }
+
+    const auto userAutoStartFilePath = getUserAutostartDir() / (appName + ".desktop");
+    IoError ioError = IoError::Unknown;
+    if (!IoHelper::deleteItem(userAutoStartFilePath, ioError)) {
+        LOGW_WARN(logger(),
+                  L"Could not remove autostart desktop file: " << Utility::formatIoError(userAutoStartFilePath, ioError));
+        return false;
+    }
+
+    return true;
+}
+
+bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, const SyncPath &appImagePath) {
+    const auto userAutoStartDirPath = getUserAutostartDir();
+    const auto userAutoStartFilePath = userAutoStartDirPath / (appName + ".desktop");
+    std::error_code ec;
+    if (auto ioError = IoError::Unknown;
+        !std::filesystem::exists(userAutoStartDirPath, ec) && !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
+        LOGW_WARN(logger(), L"Could not create autostart folder: " << Utility::formatIoError(userAutoStartDirPath, ioError));
+        return false;
+    }
+
+    std::ofstream autoStartFile{userAutoStartFilePath};
+    if (!autoStartFile.is_open()) {
+        LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(userAutoStartFilePath));
+        return false;
+    }
+    LOGW_DEBUG(logger(), L"APPIMAGE: " << Utility::formatSyncPath(appImagePath));
+    autoStartFile << "[Desktop Entry]" << std::endl;
+    autoStartFile << "Name=" << guiName << std::endl;
+    autoStartFile << "GenericName=File Synchronizer" << std::endl;
+    autoStartFile << "Exec=" << "'" << appImagePath.native() << "'" << std::endl;
+    autoStartFile << "Terminal=false" << std::endl;
+    autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
+    autoStartFile << "Categories=Network" << std::endl;
+    autoStartFile << "Type=Application" << std::endl;
+    autoStartFile << "StartupNotify=false" << std::endl;
+    autoStartFile << "X-GNOME-Autostart-enabled=true" << std::endl;
+    autoStartFile << "X-GNOME-Autostart-Delay=10" << std::endl;
+    autoStartFile.close();
 
     return true;
 }
@@ -321,6 +328,15 @@ SyncPath Utility::getTrashPath() {
 }
 
 bool Utility::registerLoginRedirection() {
+    SyncPath execPath = CommonUtility::appImagePath();
+    if (execPath.empty()) {
+        execPath = CommonUtility::applicationFilePath();
+    }
+
+    return registerLoginRedirection(execPath);
+}
+
+bool Utility::registerLoginRedirection(const SyncPath &execPath) {
     // Create file .desktop
     const char *homePathEnv = std::getenv("HOME");
     if (!homePathEnv) {
@@ -346,13 +362,6 @@ bool Utility::registerLoginRedirection() {
     if (!urlSchemeFile.is_open()) {
         LOGW_WARN(logger(), L"Could register login redirection: " << Utility::formatSyncPath(urlSchemeFilePath));
         return false;
-    }
-
-    SyncPath execPath;
-    if (const std::string appImageEnv = KDC::CommonUtility::envVarValue("APPIMAGE"); !appImageEnv.empty()) {
-        execPath = SyncPath(appImageEnv);
-    } else {
-        execPath = CommonUtility::applicationFilePath();
     }
 
     LOGW_INFO(logger(), L"Registering login URL scheme in " << Utility::formatSyncPath(urlSchemeFilePath) << L" with executable "
