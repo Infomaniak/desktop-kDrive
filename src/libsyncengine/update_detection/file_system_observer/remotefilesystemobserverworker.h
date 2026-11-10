@@ -105,6 +105,12 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
         ExitInfo extractActionFileInfo(const Poco::JSON::Object::Ptr actionFileObj, ActionInfoList &actionInfoList);
 
+        // Handles the file exclusion of the item targeted by the given action: if the item is excluded by an exclusion
+        // template, removes it from the live snapshot and raises the corresponding Error (only when the matching rule is
+        // a warning). Sets `excluded` to true when the action must be skipped. Returns a non-Ok ExitInfo if the live
+        // snapshot had to be invalidated.
+        ExitInfo handleExcludedItem(const ActionInfo &actionInfo, bool &excluded);
+
         using MoveItemMap = std::unordered_map<NodeId, ActionCode, StringHashFunction, std::equal_to<>>;
         [[nodiscard]] ExitInfo handleMovedItems(const MoveItemMap &movedItems);
         ExitInfo processAction(ActionInfo &actionInfo, MoveItemMap &movedItems);

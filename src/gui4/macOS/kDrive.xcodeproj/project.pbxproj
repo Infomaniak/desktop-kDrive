@@ -251,6 +251,7 @@
 				UI/UISynchroNodeTests.swift,
 				Utils/FinderSidebarFavoritesTests.swift,
 				Utils/MacOSPermissionHandlerTests.swift,
+				Utils/NodeURLGeneratorTests.swift,
 				XPC/JSON/AnyValidJobResponse.json,
 				XPC/JSON/ParsingError.json,
 				XPC/XPCContinuationTests.swift,
