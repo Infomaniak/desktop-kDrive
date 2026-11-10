@@ -156,8 +156,12 @@ SyncPath Utility::getTrashPath() {
 }
 
 bool Utility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
-    // Qt 6.2.3, used on macOS, has no QOperatingSystemVersion::MacOSVentura.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    const bool macOs13orLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSVentura;
+#else
+    // QOperatingSystemVersion::MacOSVentura was added in Qt 6.5.
     const bool macOs13orLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 13);
+#endif
     const std::string service = macOs13orLater ? "kTCCServiceEndpointSecurityClient" : "kTCCServiceSystemPolicyAllFiles";
 
     // TCC auth_value: 2 means allowed.
