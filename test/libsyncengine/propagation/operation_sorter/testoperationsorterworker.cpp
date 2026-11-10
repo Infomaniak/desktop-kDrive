@@ -281,108 +281,108 @@ bool isFirstBeforeSecond(const std::shared_ptr<SyncOperationList> list, const Sy
 void TestOperationSorterWorker::testFixCreateBeforeCreate() {
     // Insert the branch
     // .
-    // └── D
-    //     ├── DA
-    //     │   ├── DAA
-    //     │   └── DAB
-    //     └── DB
-    const auto nodeD = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "d", "");
-    const auto opD = generateSyncOperation(OperationType::Create, nodeD);
-    const auto nodeDA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "da", nodeD);
-    const auto opDA = generateSyncOperation(OperationType::Create, nodeDA);
-    const auto nodeDB = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "db", nodeD);
-    const auto opDB = generateSyncOperation(OperationType::Create, nodeDB);
-    const auto nodeDAA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "daa", nodeDA);
-    const auto opDAA = generateSyncOperation(OperationType::Create, nodeDAA);
-    const auto nodeDAB = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "dab", nodeDA);
-    const auto opDAB = generateSyncOperation(OperationType::Create, nodeDAB);
+    // └── E
+    //     ├── EA
+    //     │   ├── EAA
+    //     │   └── EAB
+    //     └── EB
+    const auto nodeE = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "e", "");
+    const auto opE = generateSyncOperation(OperationType::Create, nodeE);
+    const auto nodeEA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "ea", nodeE);
+    const auto opEA = generateSyncOperation(OperationType::Create, nodeEA);
+    const auto nodeEB = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "eb", nodeE);
+    const auto opEB = generateSyncOperation(OperationType::Create, nodeEB);
+    const auto nodeEAA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "eaa", nodeEA);
+    const auto opEAA = generateSyncOperation(OperationType::Create, nodeEAA);
+    const auto nodeEAB = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "eab", nodeEA);
+    const auto opEAB = generateSyncOperation(OperationType::Create, nodeEAB);
 
     _syncPal->syncOps()->clear();
     {
-        // Case : DAA DAB DA DB D
-        (void) _syncPal->syncOps()->pushOp(opDAA);
-        (void) _syncPal->syncOps()->pushOp(opDAB);
-        (void) _syncPal->syncOps()->pushOp(opDA);
-        (void) _syncPal->syncOps()->pushOp(opDB);
-        (void) _syncPal->syncOps()->pushOp(opD);
+        // Case : EAA EAB EA EB E
+        (void) _syncPal->syncOps()->pushOp(opEAA);
+        (void) _syncPal->syncOps()->pushOp(opEAB);
+        (void) _syncPal->syncOps()->pushOp(opEA);
+        (void) _syncPal->syncOps()->pushOp(opEB);
+        (void) _syncPal->syncOps()->pushOp(opE);
 
         // Test hasAncestorWithHigherIndex
         std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
         _syncPal->syncOps()->getOpIdToIndexMap(opIdToIndexMap, OperationType::Create);
         int32_t depth = 0;
         auto ancestorOpWithHighestIndex =
-                _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opDAA, depth);
+                _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opEAA, depth);
         CPPUNIT_ASSERT(ancestorOpWithHighestIndex);
-        CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestIndex->id());
+        CPPUNIT_ASSERT_EQUAL(opE->id(), ancestorOpWithHighestIndex->id());
         CPPUNIT_ASSERT_EQUAL(3, depth);
 
         ancestorOpWithHighestIndex =
-                _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opDA, depth);
+                _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opEA, depth);
         CPPUNIT_ASSERT(ancestorOpWithHighestIndex);
-        CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestIndex->id());
+        CPPUNIT_ASSERT_EQUAL(opE->id(), ancestorOpWithHighestIndex->id());
         CPPUNIT_ASSERT_EQUAL(2, depth);
 
-        ancestorOpWithHighestIndex = _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opD, depth);
+        ancestorOpWithHighestIndex = _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opE, depth);
         CPPUNIT_ASSERT(!ancestorOpWithHighestIndex);
         CPPUNIT_ASSERT_EQUAL(1, depth);
 
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opEA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opEB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opEA, opEAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opEA, opEAB));
     }
 
     _syncPal->syncOps()->clear();
     {
-        // Case : DAA DAB D DA DB
-        (void) _syncPal->syncOps()->pushOp(opDAA);
-        (void) _syncPal->syncOps()->pushOp(opDAB);
-        (void) _syncPal->syncOps()->pushOp(opD);
-        (void) _syncPal->syncOps()->pushOp(opDA);
-        (void) _syncPal->syncOps()->pushOp(opDB);
+        // Case : EAA EAB E EA EB
+        (void) _syncPal->syncOps()->pushOp(opEAA);
+        (void) _syncPal->syncOps()->pushOp(opEAB);
+        (void) _syncPal->syncOps()->pushOp(opE);
+        (void) _syncPal->syncOps()->pushOp(opEA);
+        (void) _syncPal->syncOps()->pushOp(opEB);
 
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opEA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opEB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opEA, opEAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opEA, opEAB));
     }
 
     _syncPal->syncOps()->clear();
     {
-        // Case : DA DAA DAB D DB
-        (void) _syncPal->syncOps()->pushOp(opDA);
-        (void) _syncPal->syncOps()->pushOp(opDAA);
-        (void) _syncPal->syncOps()->pushOp(opDAB);
-        (void) _syncPal->syncOps()->pushOp(opD);
-        (void) _syncPal->syncOps()->pushOp(opDB);
+        // Case : EA EAA EAB E EB
+        (void) _syncPal->syncOps()->pushOp(opEA);
+        (void) _syncPal->syncOps()->pushOp(opEAA);
+        (void) _syncPal->syncOps()->pushOp(opEAB);
+        (void) _syncPal->syncOps()->pushOp(opE);
+        (void) _syncPal->syncOps()->pushOp(opEB);
 
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opEA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opEB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opEA, opEAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opEA, opEAB));
     }
 
     _syncPal->syncOps()->clear();
     {
-        // Case : D DA DB DAA DAB
-        (void) _syncPal->syncOps()->pushOp(opD);
-        (void) _syncPal->syncOps()->pushOp(opDA);
-        (void) _syncPal->syncOps()->pushOp(opDB);
-        (void) _syncPal->syncOps()->pushOp(opDAA);
-        (void) _syncPal->syncOps()->pushOp(opDAB);
+        // Case : E EA EB EAA EAB
+        (void) _syncPal->syncOps()->pushOp(opE);
+        (void) _syncPal->syncOps()->pushOp(opEA);
+        (void) _syncPal->syncOps()->pushOp(opEB);
+        (void) _syncPal->syncOps()->pushOp(opEAA);
+        (void) _syncPal->syncOps()->pushOp(opEAB);
 
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAA));
-        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opEA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opEB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opEA, opEAA));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opEA, opEAB));
     }
 }
 
@@ -917,7 +917,7 @@ void TestOperationSorterWorker::testSwapNames() {
     // .
     // └── A(b)
     //     └── AA(a)
-    // └── B(c)
+    // └── B(e)
 
     // Move A(a) to B(b)/AA(a)
     const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", "b", Str("AA"));
@@ -927,8 +927,8 @@ void TestOperationSorterWorker::testSwapNames() {
     const auto nodeB = _testSituationGenerator.moveNode(ReplicaSide::Local, "b", {}, Str("A"));
     const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeB);
 
-    // Create B(c)
-    const auto nodeC = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "c", "");
+    // Create B(e)
+    const auto nodeC = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "e", "");
     nodeC->setName(Str("B"));
     const auto createOp = generateSyncOperation(OperationType::Create, nodeC);
 

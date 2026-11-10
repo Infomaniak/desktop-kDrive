@@ -201,7 +201,8 @@ SyncOpPtr TestExecutorWorker::generateSyncOperation(const DbNodeId dbNodeId, con
 
 SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeId dbNodeId, const SyncName &parentFilename,
                                                                    const OperationType opType, const NodeType nodeType) {
-    (void) _syncPal->updateTree(ReplicaSide::Local)->deleteNode("local_parent_id");
+    _syncPal->updateTree(ReplicaSide::Local)->clear();
+    _syncPal->updateTree(ReplicaSide::Remote)->clear();
 
     auto parentNode = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, parentFilename, NodeType::Directory,
                                              OperationType::None, "local_parent_id", testhelpers::defaultTime,
@@ -605,8 +606,8 @@ void TestExecutorWorker::testInitSyncFileItem() {
 
     // Move special case
     {
-        (void) _syncPal->updateTree(ReplicaSide::Local)->deleteNode("lid");
-        (void) _syncPal->updateTree(ReplicaSide::Remote)->deleteNode("rid");
+        (void) _syncPal->updateTree(ReplicaSide::Local)->clear();
+        (void) _syncPal->updateTree(ReplicaSide::Remote)->clear();
 
         const auto localParentNode =
                 std::make_shared<Node>(ReplicaSide::Local, Str("parent_dir"), NodeType::Directory, OperationType::None, "lid",

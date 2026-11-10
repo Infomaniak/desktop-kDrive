@@ -232,6 +232,7 @@ void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {
      */
 
     std::shared_ptr<UpdateTree> updateTree = side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
+    updateTree->clear();
 
     bool found = false;
     DbNodeId dbNodeIdDir;
