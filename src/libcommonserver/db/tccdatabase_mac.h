@@ -27,7 +27,8 @@ namespace KDC {
 // Reads the system TCC database, which only processes granted the Full Disk Access authorization can open.
 struct TccDatabase {
         /**
-         * @brief Read the authorization value of `client` for `service`.
+         * @brief Read the authorization value of `client` for `service`, and log the outcome with the file information of the
+         * database.
          * @return The `auth_value` of the matching row, or nothing when the database cannot be read or has no such row.
          */
         static std::optional<int32_t> authValue(const std::string &service, const std::string &client, std::string &errorDescr);
