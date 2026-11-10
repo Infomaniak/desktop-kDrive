@@ -23,6 +23,7 @@
 #include "app/cache/parametersstore.h"
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
 
 #include "version.h"
@@ -43,6 +44,10 @@ Q_LOGGING_CATEGORY(lcGeneralSettings, "gui.v4.settings", QtInfoMsg)
 
 QString installedVersion() {
     return QString::fromLatin1(KDRIVE_VERSION_STRING);
+}
+
+QString installedRelease() {
+    return u"%1.%2.%3"_s.arg(KDRIVE_VERSION_MAJOR).arg(KDRIVE_VERSION_MINOR).arg(KDRIVE_VERSION_PATCH);
 }
 
 // Channels without their own choice in the beta program are shown as "Do not join".
@@ -84,11 +89,13 @@ GeneralSettingsController::GeneralSettingsController(ParametersStore &parameters
     _parametersService(parametersService),
     _translationService(translationService),
     _updateStatusService(updateStatusService),
-    _appCache(appCache) {
+    _appCache(appCache),
+    _releaseNotes(parametersStore) {
     (void) connect(&parametersStore, &ParametersStore::parametersChanged, this, &GeneralSettingsController::changed);
     (void) connect(&appCache, &AppCache::usersChanged, this, &GeneralSettingsController::changed);
     (void) connect(&translationService, &TranslationService::languageChanged, this, &GeneralSettingsController::changed);
     (void) connect(&updateStatusService, &UpdateStatusService::changed, this, &GeneralSettingsController::changed);
+    (void) connect(&_releaseNotes, &ReleaseNotesService::changed, this, &GeneralSettingsController::changed);
 }
 
 bool GeneralSettingsController::ready() const {
@@ -215,12 +222,19 @@ QVariantList GeneralSettingsController::distributionChannels() const {
 }
 
 QString GeneralSettingsController::releaseVersion() const {
-    return _updateStatusService.version() ? QString::fromStdString(_updateStatusService.version()->tag) : installedVersion();
+    const auto &version = _updateStatusService.version();
+    if (!version) {
+        return installedVersion();
+    }
+
+    // A new build of the installed release shares its tag: the build number tells them apart.
+    const auto tag = QString::fromStdString(version->tag);
+    return tag == installedRelease() ? u"%1.%2"_s.arg(tag).arg(version->buildVersion) : tag;
 }
 
 QString GeneralSettingsController::releaseDetails() const {
-    return _updateStatusService.version() ? versionDetails(releaseVersion(), _updateStatusService.version()->buildVersion)
-                                          : installedDetails();
+    const auto &version = _updateStatusService.version();
+    return version ? versionDetails(QString::fromStdString(version->tag), version->buildVersion) : installedDetails();
 }
 
 QString GeneralSettingsController::installedDetails() {
@@ -338,6 +352,16 @@ void GeneralSettingsController::openDownload() {
 
 void GeneralSettingsController::installUpdate() const {
     _updateStatusService.installUpdate();
+}
+
+// Loaded when the release information is shown, for the announced version in the application language.
+void GeneralSettingsController::loadReleaseNotes() {
+    const auto &version = _updateStatusService.version();
+    auto languageCode = CommonUtility::languageCode(_translationService.language()).left(2);
+    if (languageCode.isEmpty()) {
+        languageCode = u"en"_s;
+    }
+    _releaseNotes.load(version ? QString::fromStdString(version->tag) : QString(), languageCode);
 }
 
 void GeneralSettingsController::openTrashHelp() {

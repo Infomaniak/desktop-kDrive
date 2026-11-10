@@ -38,6 +38,9 @@ IKModal {
     }
     function showFrom(item) {
         returnFocusItem = item;
+        if (!about) {
+            controller.loadReleaseNotes();
+        }
         open();
     }
     bodyData: ScrollView {
@@ -72,6 +75,41 @@ IKModal {
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
+            }
+            // Release notes of the announced version, hidden when they cannot be loaded.
+            Column {
+                width: parent.width
+                visible: !root.about && root.controller.releaseNotes.length > 0
+                spacing: IKSpacing.s12
+                Repeater {
+                    model: root.controller.releaseNotes
+                    Column {
+                        id: releaseNotesSection
+                        required property var modelData
+                        width: parent.width
+                        spacing: IKSpacing.s4
+                        Text {
+                            width: parent.width
+                            visible: text.length > 0
+                            text: releaseNotesSection.modelData.title
+                            color: IKColors.textPrimary
+                            font.pixelSize: IKFonts.bodySize
+                            font.weight: IKFonts.emphasized
+                            wrapMode: Text.WordWrap
+                        }
+                        Repeater {
+                            model: releaseNotesSection.modelData.items
+                            Text {
+                                required property string modelData
+                                width: parent.width
+                                text: "• " + modelData
+                                color: IKColors.textSecondary
+                                font.pixelSize: IKFonts.bodySize
+                                wrapMode: Text.WordWrap
+                            }
+                        }
+                    }
+                }
             }
             Text {
                 width: parent.width

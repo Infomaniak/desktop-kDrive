@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/services/parametersservice.h"
+#include "app/services/releasenotesservice.h"
 
 #include <QObject>
 #include <QUrl>
@@ -53,6 +54,7 @@ class GeneralSettingsController final : public QObject {
         Q_PROPERTY(QString releaseVersion READ releaseVersion NOTIFY changed)
         Q_PROPERTY(QString releaseDetails READ releaseDetails NOTIFY changed)
         Q_PROPERTY(QString installedDetails READ installedDetails NOTIFY changed)
+        Q_PROPERTY(QVariantList releaseNotes READ releaseNotes NOTIFY changed)
 
     public:
         GeneralSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
@@ -83,6 +85,7 @@ class GeneralSettingsController final : public QObject {
         [[nodiscard]] QString releaseVersion() const;
         [[nodiscard]] QString releaseDetails() const;
         [[nodiscard]] static QString installedDetails();
+        [[nodiscard]] const QVariantList &releaseNotes() const { return _releaseNotes.sections(); }
 
         Q_INVOKABLE void setAutoStart(bool enabled);
         Q_INVOKABLE void setNotificationsEnabled(bool enabled);
@@ -93,6 +96,7 @@ class GeneralSettingsController final : public QObject {
 
         Q_INVOKABLE void openDownload();
         Q_INVOKABLE void installUpdate() const;
+        Q_INVOKABLE void loadReleaseNotes();
         Q_INVOKABLE void openTrashHelp();
         Q_INVOKABLE void openSupport();
         Q_INVOKABLE void openFeedback();
@@ -113,6 +117,7 @@ class GeneralSettingsController final : public QObject {
         TranslationService &_translationService;
         UpdateStatusService &_updateStatusService;
         const AppCache &_appCache;
+        ReleaseNotesService _releaseNotes;
 
         bool _saving{false};
 
