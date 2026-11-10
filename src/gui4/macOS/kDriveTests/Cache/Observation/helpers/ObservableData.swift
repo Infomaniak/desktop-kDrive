@@ -208,7 +208,7 @@ public enum ObservableData {
                                                destinationPath: "",
                                                autoResolved: false)
 
-    static let syncPalUpdateRequiredErrorDbId = Int32.random(in: 0 ... 10000)
+    static let syncPalUpdateRequiredErrorDbId = expectedServerErrorDbId + 1
     static let syncPalUpdateRequiredError = ErrorInfo(dbId: syncPalUpdateRequiredErrorDbId,
                                                       synchroDbId: expectedSynchroDbId,
                                                       time: Date().timeIntervalSince1970,
