@@ -23,11 +23,11 @@ using System;
 
 namespace Infomaniak.kDrive.CustomControls.Upsell
 {
-    public sealed partial class MyKsuiteBanner : UserControl
+    public sealed partial class MyKsuiteInfoBar : UserControl
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
 
-        public MyKsuiteBanner()
+        public MyKsuiteInfoBar()
         {
             InitializeComponent();
         }
