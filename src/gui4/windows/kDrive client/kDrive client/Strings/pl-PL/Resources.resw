@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: pl, Polish
   Tagged: windows
-  Exported by: Clément Kunz
-  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
+  Exported by: Herve Eruam
+  Exported at: Tue, 10 Nov 2026 10:09:15 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -455,6 +455,13 @@ Możesz je otwierać w dowolnym momencie, nawet bez połączenia z Internetem.</
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Uaktualnij</value> 
+  </data> 
+  <data name="buttonUpgradeSubscription" xml:space="preserve"> 
+    <value>Rozszerz moją subskrypcję</value> 
+    <comment>Storage page, subscription card: link shown when the kDrive subscription storage is full, and tooltip and accessible name of the cart icon button otherwise. Opens the Infomaniak shop for the drive, admins only.</comment> 
+  </data> 
+  <data name="buttonUpgradeSubscriptionShort" xml:space="preserve"> 
+    <value>Rozwijać</value> 
   </data> 
   <data name="buttonValidate" xml:space="preserve"> 
     <value>Zatwierdź</value> 
@@ -976,6 +983,12 @@ Plik otworzy się w serwisie kDrive online.</value>
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
   </data> 
+  <data name="kSuiteProUpsellLink" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/ksuite/ksuite-pro</value> 
+  </data> 
+  <data name="ksuiteProBannerDescription" xml:space="preserve"> 
+    <value>Twórz i współpracuj bez ograniczeń</value> 
+  </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Prawa dostępu zmienione</value> 
   </data> 
@@ -1349,8 +1362,11 @@ Analiza tych danych pozwala naszemu zespołowi na ciągłe ulepszanie interfejsu
   <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
     <value>Niektóre elementy mogą nie być możliwe do przeniesienia.</value> 
   </data> 
+  <data name="myKsuiteUpsellLink" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/ksuite/myksuite</value> 
+  </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
-    <value>Więcej miejsca na dane, więcej funkcji z my kSuite+</value> 
+    <value>Więcej miejsca na dane, więcej funkcji dzięki my kSuite+</value> 
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Potrzebujesz pomocy?</value> 
@@ -1578,11 +1594,23 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
     <value>Inne pliki na komputerze</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageComputerUsedByOtherSyncs" xml:space="preserve"> 
+    <value>Pliki kDrive z innych synchronizacji</value> 
+    <comment>Storage page, local disk card: legend row for the space used on the same disk by the other kDrive synchronizations of the computer.</comment> 
+  </data> 
+  <data name="storageDiskAlmostFullDescription" xml:space="preserve"> 
+    <value>Dysk jest prawie pełny. Usuń lub przenieś pliki osobiste z tego dysku, aby nadal synchronizować swoje dane.</value> 
+    <comment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</comment> 
+  </data> 
   <data name="storageOnlineFree" xml:space="preserve"> 
     <value>Wolne miejsce w ramach Twojej subskrypcji</value> 
   </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Pliki kDrive przechowywane w chmurze</value> 
+  </data> 
+  <data name="storageSyncBlockDescription" xml:space="preserve"> 
+    <value>Zarządzaj zsynchronizowanymi folderami, aby zwolnić miejsce na komputerze.</value> 
+    <comment>Storage page: description of the Sync card (storageSyncBlockTitle), next to the titleManageSynchronization link. Computer variant of storageSyncBlockMacDescription.</comment> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronizacja</value> 
@@ -1629,16 +1657,16 @@ Do ich dostępu wymagane jest połączenie z Internetem.</value>
     <value>Synchronizacja jest w toku</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Wyszukiwanie zmian</value> 
+    <value>Wyszukiwanie zmian…</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Przygotowanie plików</value> 
+    <value>Przeglądanie plików do synchronizacji…</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ element zsynchronizowany z %@</value> 
+    <value>%@ element zsynchronizowany z %@…</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ elementów zsynchronizowanych z %@</value> 
+    <value>%@ elementów zsynchronizowanych z %@…</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Zsynchronizowano</value> 

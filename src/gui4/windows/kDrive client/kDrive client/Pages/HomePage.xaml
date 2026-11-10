@@ -378,7 +378,7 @@
                                    Grid.ColumnSpan="2"
                                    Grid.Row="4"
                                    HorizontalAlignment="Stretch" 
-                                   Visibility="Collapsed"/>
+                                   Visibility="Visible"/>
             <upsell:KsuiteBanner Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}"
                                    Grid.Column="0"
                                    Grid.ColumnSpan="2"

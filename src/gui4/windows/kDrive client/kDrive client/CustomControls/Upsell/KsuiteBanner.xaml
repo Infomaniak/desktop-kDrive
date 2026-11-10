@@ -21,6 +21,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:media="using:CommunityToolkit.WinUI.Media"
+             xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
 
     <Grid Background="{ThemeResource Infomaniak.DS.kSuite.Pro.Background}"
@@ -137,14 +138,15 @@
                            LineHeight="20"
                            Foreground="WhiteSmoke"
                            TextTrimming="CharacterEllipsis"
-                           Text="Créer et collaborer sans limite" />
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('ksuiteProBannerDescription')}" />
 
             </StackPanel>
 
             <Button Grid.Column="1"
-                    Content="Faire évoluer"
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpgradeSubscriptionShort')}"
                     Style="{ThemeResource SubtleButtonStyle}"
-                    Foreground="WhiteSmoke" />
+                    Foreground="WhiteSmoke"
+                    Click="Button_Click" />
 
         </Grid>
 

@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: nl, Dutch; Flemish
   Tagged: windows
-  Exported by: Clément Kunz
-  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
+  Exported by: Herve Eruam
+  Exported at: Tue, 10 Nov 2026 10:09:15 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -455,6 +455,13 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</value>
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Upgraden</value> 
+  </data> 
+  <data name="buttonUpgradeSubscription" xml:space="preserve"> 
+    <value>Mijn abonnement upgraden</value> 
+    <comment>Storage page, subscription card: link shown when the kDrive subscription storage is full, and tooltip and accessible name of the cart icon button otherwise. Opens the Infomaniak shop for the drive, admins only.</comment> 
+  </data> 
+  <data name="buttonUpgradeSubscriptionShort" xml:space="preserve"> 
+    <value>Ontwikkelen</value> 
   </data> 
   <data name="buttonValidate" xml:space="preserve"> 
     <value>Bevestigen</value> 
@@ -976,6 +983,12 @@ Het wordt online in kDrive geopend.</value>
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
   </data> 
+  <data name="kSuiteProUpsellLink" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/nl/ksuite/ksuite-pro</value> 
+  </data> 
+  <data name="ksuiteProBannerDescription" xml:space="preserve"> 
+    <value>Onbeperkt creëren en samenwerken</value> 
+  </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Toegangsrechten gewijzigd</value> 
   </data> 
@@ -1349,8 +1362,11 @@ Het analyseren van deze gegevens stelt ons team in staat de interface van de app
   <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
     <value>Sommige items kunnen mogelijk niet worden verplaatst.</value> 
   </data> 
+  <data name="myKsuiteUpsellLink" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/nl/ksuite/myksuite</value> 
+  </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
-    <value>Meer opslag, meer functies met my kSuite+</value> 
+    <value>Meer opslagruimte, meer functies met my kSuite+</value> 
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Hulp nodig?</value> 
@@ -1578,11 +1594,23 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
     <value>Andere bestanden op computer</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageComputerUsedByOtherSyncs" xml:space="preserve"> 
+    <value>kDrive-bestanden van andere synchronisaties</value> 
+    <comment>Storage page, local disk card: legend row for the space used on the same disk by the other kDrive synchronizations of the computer.</comment> 
+  </data> 
+  <data name="storageDiskAlmostFullDescription" xml:space="preserve"> 
+    <value>Uw schijf is bijna vol. Verwijder of verplaats persoonlijke bestanden van deze schijf om uw gegevens te blijven synchroniseren.</value> 
+    <comment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</comment> 
+  </data> 
   <data name="storageOnlineFree" xml:space="preserve"> 
     <value>Beschikbare ruimte van uw abonnement</value> 
   </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Online opgeslagen kDrive-bestanden</value> 
+  </data> 
+  <data name="storageSyncBlockDescription" xml:space="preserve"> 
+    <value>Beheer gesynchroniseerde mappen om ruimte vrij te maken op uw computer.</value> 
+    <comment>Storage page: description of the Sync card (storageSyncBlockTitle), next to the titleManageSynchronization link. Computer variant of storageSyncBlockMacDescription.</comment> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronisatie</value> 
@@ -1629,16 +1657,16 @@ Een internetverbinding is vereist om ze te openen.</value>
     <value>Synchronisatie is bezig</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Zoeken naar wijzigingen</value> 
+    <value>Zoeken naar wijzigingen…</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Het voorbereiden van uw bestanden</value> 
+    <value>Te synchroniseren bestanden doorzoeken…</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ element gesynchroniseerd met %@</value> 
+    <value>%@ van %@ elementen gesynchroniseerd…</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ gesynchroniseerde elementen op %@</value> 
+    <value>%@ van %@ elementen gesynchroniseerd…</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Gesynchroniseerd</value> 

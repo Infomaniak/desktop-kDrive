@@ -27,7 +27,6 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
     public sealed partial class KsuiteBanner : UserControl
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
-        private AppModel AppViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public KsuiteBanner()
         {
@@ -49,5 +48,10 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
             Ellipse3.Width = e.NewSize.Width * ratio;
         }
 
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Upsell, Analytics.Keys.EventName.kSuitePro);
+            await Localizer.Instance.TryLaunchUriAsync("kSuiteProUpsellLink");
+        }
     }
 }
