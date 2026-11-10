@@ -48,27 +48,12 @@ function get_linux_major_version() {
     echo "${version%%.*}"
 }
 
-function get_linux_release_flavor() {
+function check_linux_v4_version() {
     local major
     major="$(get_linux_major_version "$1")" || return 1
 
-    if (( major >= 4 )); then
-        echo "v4"
-    elif (( major == 3 )); then
-        echo "legacy"
-    else
-        echo "Unsupported Linux major version '$major' in '$1/version.json'" >&2
+    if [[ "$major" != "4" ]]; then
+        echo "Unsupported Linux major version '$major' in '$1/version.json': these scripts only build Linux 4.x." >&2
         return 1
-    fi
-}
-
-function get_linux_client_executable() {
-    local flavor
-    flavor="$(get_linux_release_flavor "$1")" || return 1
-
-    if [[ "$flavor" == "v4" ]]; then
-        echo "kdrive_qml"
-    else
-        echo "kDrive_client"
     fi
 }
