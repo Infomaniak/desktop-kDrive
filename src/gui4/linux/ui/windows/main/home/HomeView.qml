@@ -57,7 +57,9 @@ Item {
             primaryActionText: qsTrId("onboardingV4Faq")
             primaryActionExternal: true
             dismissText: qsTrId("buttonClose")
-            visible: root.controller.showV4Onboarding && root.controller.status !== HomeController.SetupRequired
+            // One banner at a time: both would push the shortcuts card out of a minimum-size window.
+            visible: root.controller.showV4Onboarding && root.controller.errorCount === 0
+                     && root.controller.status !== HomeController.SetupRequired
                      && root.controller.status !== HomeController.Loading
             onPrimaryActionTriggered: root.controller.openV4OnboardingFaq()
             onDismissRequested: root.controller.dismissV4Onboarding()
