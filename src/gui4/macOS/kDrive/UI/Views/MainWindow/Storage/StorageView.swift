@@ -42,6 +42,12 @@ struct StorageItem: Sendable, Identifiable {
     }
 }
 
+struct DriveStorageInfo {
+    var name: String
+    var size: Int64
+    var usedSize: Int64
+}
+
 enum VolumeStorageItems {
     case freeSpace
     case usedSpace
@@ -68,13 +74,15 @@ struct StorageView: View {
     ]
     @State private var isShowingVolumeNotFound = false
 
-    @State private var subscriptionName = KDriveLocalizable.labelMySubscription
-    @State private var driveStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
+    @State private var driveStorageItems: OrderedDictionary<DriveStorageItems, StorageItem> = [
         .usedSpace: StorageItem(title: KDriveLocalizable.storageOnlineUsed, color: .blue, usedBytes: nil),
         .freeSpace: StorageItem(title: KDriveLocalizable.storageOnlineFree, color: .gray, usedBytes: nil, isDefault: true)
     ]
-    @State private var driveSize: Int64 = 0
-    @State private var driveUsedSize: Int64 = 0
+    @State private var driveStorageInfo = DriveStorageInfo(
+        name: KDriveLocalizable.labelMySubscription,
+        size: 0,
+        usedSize: 0
+    )
 
     @ObservedObject var mainViewModel: MainViewModel
 
@@ -126,8 +134,8 @@ struct StorageView: View {
                             button: InformationBlockButton(title: KDriveLocalizable.buttonManage, action: didTapManage)
                         )
                     }
-                    
-                    StorageSectionView(title: subscriptionName, storageData: driveStorageData, items: Array(driveStorageItems.values))
+
+                    StorageSectionView(title: driveStorageInfo.name, storageData: driveStorageData, items: Array(driveStorageItems.values))
                 }
                 .groupedFormatStyle()
             }
@@ -153,12 +161,17 @@ struct StorageView: View {
         }
     }
 
+    private func isStandaloneDrivePack(_ packName: String) -> Bool {
+        let prefixes = ["solo", "team", "pro", "free"]
+        return prefixes.contains { packName.hasPrefix($0) }
+    }
+
     private func fetchStorageData() async {
         guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
             return
         }
         try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
-        
+
         // In previews, drive values are pinned by the preview initializer; skip the real ones.
         guard !Self.isRunningInPreviews else {
             return
@@ -170,8 +183,14 @@ struct StorageView: View {
                 IKLogger.general.warning("[KD] Failed to get drive for driveDbId=\(currentDrive.dbId)")
                 return
             }
-            driveSize = drive.size
-            driveUsedSize = drive.usedSize
+
+            driveStorageInfo.name = KDriveLocalizable.labelMySubscription
+            if isStandaloneDrivePack(drive.packInfo.name) {
+                driveStorageInfo.name.append(" kDrive ")
+            }
+            driveStorageInfo.name.append(drive.packInfo.displayName)
+            driveStorageInfo.size = drive.size
+            driveStorageInfo.usedSize = drive.usedSize
         }
     }
 
@@ -185,7 +204,6 @@ struct StorageView: View {
             updateVolumeStorage(from: indexedStorageData)
             updateDriveStorage()
         }
-        
     }
 
     private func updateVolumeStorage(from indexedStorageData: IndexedStorageData) {
@@ -212,9 +230,8 @@ struct StorageView: View {
     }
     
     private func updateDriveStorage() {
-        subscriptionName = KDriveLocalizable.labelMySubscription
-        driveStorageItems[.usedSpace]?.usedBytes = driveUsedSize
-        driveStorageItems[.freeSpace]?.usedBytes = driveSize - driveUsedSize
+        driveStorageItems[.usedSpace]?.usedBytes = driveStorageInfo.usedSize
+        driveStorageItems[.freeSpace]?.usedBytes = driveStorageInfo.size - driveStorageInfo.usedSize
     }
 }
 
@@ -223,8 +240,11 @@ extension StorageView {
     /// Preview-only initializer that pins the subscription storage values, so previews don't depend on the real drive.
     init(mainViewModel: MainViewModel, previewDriveSize: Int64, previewDriveUsedSize: Int64) {
         self.init(mainViewModel: mainViewModel)
-        _driveSize = State(initialValue: previewDriveSize)
-        _driveUsedSize = State(initialValue: previewDriveUsedSize)
+        _driveStorageInfo = State(initialValue: DriveStorageInfo(
+            name: KDriveLocalizable.labelMySubscription,
+            size: previewDriveSize,
+            usedSize: previewDriveUsedSize
+        ))
     }
 }
 #endif

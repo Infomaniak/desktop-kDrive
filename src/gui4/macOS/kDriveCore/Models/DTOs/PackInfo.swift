@@ -21,7 +21,7 @@ import Foundation
 // periphery:ignore - This is a DTO
 public struct PackInfo: Codable, Hashable, Sendable {
     public let id: UInt64
-    @Base64CodedString var name: String
-    @Base64CodedString var displayName: String
+    @Base64CodedString public var name: String
+    @Base64CodedString public var displayName: String
     public let isFree: Bool
 }
