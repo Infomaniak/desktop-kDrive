@@ -76,6 +76,9 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
     if (continueSolving) return ExitCode::Ok;
 
     if (conflict.type() == ConflictType::EditEdit) {
+        // Files with the same size and modification time do not generate a true conflict.
+        // The case of files with identical content and modification time is still handled as a pseudo-conflict. In this case, we
+        // will never reach this call.
         handleConflictOnIdenticalContent(conflict, continueSolving);
         if (continueSolving) return ExitCode::Ok;
     }
@@ -156,6 +159,11 @@ void ConflictResolverWorker::handleConflictOnIdenticalContent(const Conflict &co
     // Content equality can only be checked on files. Directories always have identical content.
     if (localNode->type() != NodeType::File || remoteNode->type() != NodeType::File) return;
 
+    // The sizes are different so that contents are different, except for links for which  local and remote sizes can
+    // different although the files are identical.
+    const auto snapshot = _syncPal->snapshot(localNode->side());
+    if (const bool sameSize = !snapshot->isLink(*localNode->id()) && localNode->size() == remoteNode->size(); !sameSize) return;
+
     // The content of a dehydrated placeholder is not available on the local replica: fall back to the regular conflict
     // resolution.
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
@@ -188,17 +196,12 @@ void ConflictResolverWorker::handleConflictOnIdenticalContent(const Conflict &co
                               << Utility::formatSyncPath(localNode->getPath())
                               << L". The most recent modification date will be propagated, no conflict will be created.");
 
-    // The content is identical on both replicas: propagate only the most recent modification date to the other replica.
-    // The upload and download jobs detect the identical content through the hash match and then propagate only the dates.
+    // The content is identical on both replicas: propagate only the modification date of the remote replica to the local one.
+    // The retained modification date is always the remote one because we prefer avoiding the propagation of changes to the remote
+    // replica.
     const auto op = std::make_shared<SyncOperation>();
     op->setType(OperationType::Edit);
-    if (localNode->modificationTime().value_or(0) >= remoteNode->modificationTime().value_or(0)) {
-        // The local modification date is the most recent one: propagate it to the remote replica.
-        op->setAffectedNode(localNode);
-        op->setCorrespondingNode(remoteNode);
-        op->setTargetSide(ReplicaSide::Remote);
-    } else {
-        // The remote modification date is the most recent one: propagate it to the local replica.
+    if (localNode->modificationTime().value_or(0) != remoteNode->modificationTime().value_or(0)) {
         op->setAffectedNode(remoteNode);
         op->setCorrespondingNode(localNode);
         op->setTargetSide(ReplicaSide::Local);
