@@ -568,6 +568,10 @@
   kDrive online opens the remote folder of an advanced synchronization (`itemRedirectUri`), the drive root otherwise;
   the other web shortcuts stay at the drive level. The Home avatar opens the user's card in Settings, its badge the
   drive management page, or the advanced synchronizations page focused on the selected advanced synchronization.
+  It reads `AppStateKey::ShowV4Onboarding` once on `ipcConnected`: the server sets it to `"1"` only when the database
+  comes from a version before 4. The "new kDrive app" banner shows while it is `"1"`, the Home is neither loading nor
+  unconfigured, and the errors banner is hidden: Home shows one banner at a time, so both cannot push the shortcuts card
+  out of a minimum-size window. Closing it hides it at once and writes `"0"`.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
@@ -796,15 +800,20 @@
       feature dialogs supply their own wording, state, and actions. Use `IKConfirmationDialog` for standard
       cancel/confirm
       prompts so consumers only provide copy, busy state, an optional retryable `errorText`, and the confirmed/dismissed
-      workflows. `IKSearchField` is the rounded search
-      field (magnifier, clear button); its owner keeps the query through `text`, `textEdited` and `cleared`.
-      `IKLinkButton` is the inline textual action for rows and cards that must not carry a button surface of their own.
-      `IKCheckBox` is the
-      shared tri-state indicator: it
-      renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
+      workflows. `IKLinkButton` is the
+      inline textual action for rows and cards that must not carry a button surface of their own. `IKInformationBlock`
+      is the main-window information block: optional icon tile, title, subtitle, primary action (with the external-link
+      marker when it opens the browser) and optional dismiss button below it; `IKErrorBanner` is its synchronization
+      errors variant, so both banners share one geometry. `IKCheckBox` is the renders the state it is given and only 
+      reports clicks, so a model owning the selection stays authoritative.
       `IKBlockingState` is the shared card of full-page blocking states (update required, blocking synchronization
       errors): visual, title, description and a row of actions; the owner places it and supplies the visual and the
       actions. Its tokens live in `IKBlockingStateTokens`.
+      `IKSearchField` is the rounded search
+      field (magnifier, clear button); its owner keeps the query through `text`, `textEdited` and `cleared`.
+      `IKLinkButton` is the inline textual action for rows and cards that must not carry a button surface of their own.
+      `IKCheckBox` is the shared tri-state indicator: it
+
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,

@@ -25,16 +25,21 @@
 #include "app/mainwindow/homestateresolver.h"
 #include "app/mainwindow/networkstatusobserver.h"
 #include "app/navigation/approuter.h"
+#include "app/services/commservice.h"
 #include "app/services/syncservice.h"
+#include "libcommon/utility/utility.h"
 
 #include <QDesktopServices>
 #include <QLoggingCategory>
 #include <QMetaEnum>
+#include <QPointer>
 #include <QUrl>
 
 #include <algorithm>
 
 namespace KDC {
+
+using namespace Qt::StringLiterals;
 
 namespace {
 Q_LOGGING_CATEGORY(lcHomeController, "gui.v4.homecontroller", QtInfoMsg)
@@ -51,14 +56,15 @@ std::optional<AppConstants::WebDrive::Destination> toWebDriveDestination(const i
 
 HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
                                const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
-                               NetworkStatusObserver &networkStatusObserver, QObject *const parent) :
+                               NetworkStatusObserver &networkStatusObserver, CommService &commService, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _mainSelectionStore(mainSelectionStore),
     _syncErrorsProjection(syncErrorsProjection),
     _syncService(syncService),
     _appRouter(appRouter),
-    _networkStatusObserver(networkStatusObserver) {
+    _networkStatusObserver(networkStatusObserver),
+    _commService(commService) {
     (void) connect(&_mainSelectionStore, &MainSelectionStore::currentContextChanged, this, &HomeController::homeChanged);
     (void) connect(&_mainSelectionStore, &MainSelectionStore::currentSyncStatusChanged, this, &HomeController::homeChanged);
     (void) connect(&_appCache, &AppCache::usersChanged, this, &HomeController::homeChanged);
@@ -181,6 +187,34 @@ bool HomeController::hasConnectedUser() const {
     return std::ranges::any_of(users, [](const User &user) { return user.connected(); });
 }
 
+bool HomeController::showV4Onboarding() const {
+    return _showV4Onboarding;
+}
+
+void HomeController::loadV4Onboarding() {
+    _commService.requestGetAppState(
+            AppStateKey::ShowV4Onboarding, [self = QPointer(this)](const ExitInfo &result, const QString &value) {
+                if (!self) {
+                    return;
+                }
+
+                if (!result) {
+                    qCWarning(lcHomeController)
+                            << "Cannot read the new app banner state | code:" << result.code() << "/ cause:" << result.cause();
+                    return;
+                }
+
+                const bool show = value == u"1"_s;
+                if (show == self->_showV4Onboarding) {
+                    return;
+                }
+
+                qCInfo(lcHomeController) << "New app banner state loaded | shown:" << show;
+                self->_showV4Onboarding = show;
+                emit self->v4OnboardingChanged();
+            });
+}
+
 void HomeController::triggerPrimaryAction() {
     switch (primaryAction()) {
         case PrimaryAction::ShowActivities:
@@ -278,6 +312,40 @@ void HomeController::openSyncSettings() {
     } else {
         emit advancedSyncSettingsRequested(context->drive.dbId(), context->syncInfo.dbId());
     }
+}
+
+void HomeController::openV4OnboardingFaq() {
+    const auto url = AppConstants::Support::v4OnboardingFaqUri();
+    qCInfo(lcHomeController) << "Opening the new app FAQ:" << url;
+    if (!QDesktopServices::openUrl(url)) {
+        qCWarning(lcHomeController) << "Failed to open the new app FAQ:" << url;
+    }
+}
+
+void HomeController::dismissV4Onboarding() {
+    if (!_showV4Onboarding) {
+        return;
+    }
+
+    std::string value;
+    if (!CommonUtility::appStateValueToString(AppStateValue{std::in_place_type<bool>, false}, value)) {
+        qCWarning(lcHomeController) << "Failed to serialize the new app banner state";
+        return;
+    }
+
+    // The banner is hidden at once. If the server cannot save it, it comes back on the next launch.
+    qCInfo(lcHomeController) << "New app banner dismissed";
+    _showV4Onboarding = false;
+    emit v4OnboardingChanged();
+
+    _commService.requestSetAppState(AppStateKey::ShowV4Onboarding, QString::fromStdString(value), [](const ExitInfo &result) {
+        if (result) {
+            return;
+        }
+
+        qCWarning(lcHomeController) << "Failed to save the dismissed new app banner | code:" << result.code()
+                                    << "/ cause:" << result.cause();
+    });
 }
 
 std::optional<SyncStatus> HomeController::currentRuntimeStatus() const {
