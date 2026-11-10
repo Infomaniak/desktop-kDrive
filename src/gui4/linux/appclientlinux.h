@@ -132,7 +132,6 @@ class AppClientLinux : public QApplication {
         void retranslatePresentation();
         void updateLoggerSettings();
         void requestQuit();
-        void quitOnServerDisconnection();
         void handleManyDeletesPresentationRequested();
         void openMainWindow();
         void openOnboardingFromHome();
