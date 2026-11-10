@@ -257,6 +257,14 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     const auto userAutoStartDirPath = getUserAutostartDir();
     const auto userAutoStartFilePath = userAutoStartDirPath / (appName + ".desktop");
     if (enable) {
+        // Outside an AppImage (development build, extracted AppImage) there is no file to launch: an entry with an empty
+        // Exec would replace a valid one written by an installed AppImage.
+        const auto appImagePath = CommonUtility::appImagePath();
+        if (appImagePath.empty()) {
+            LOG_INFO(logger(), "Not running from an AppImage, the autostart entry is left unchanged");
+            return false;
+        }
+
         std::error_code ec;
         if (auto ioError = IoError::Unknown; !std::filesystem::exists(userAutoStartDirPath, ec) &&
                                              !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
@@ -269,12 +277,11 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(userAutoStartFilePath));
             return false;
         }
-        const SyncPath appimageDir{CommonUtility::envVarValue("APPIMAGE")};
-        LOGW_DEBUG(logger(), L"APPIMAGE: " << Utility::formatSyncPath(appimageDir));
+        LOGW_DEBUG(logger(), L"APPIMAGE: " << Utility::formatSyncPath(appImagePath));
         autoStartFile << "[Desktop Entry]" << std::endl;
         autoStartFile << "Name=" << guiName << std::endl;
         autoStartFile << "GenericName=File Synchronizer" << std::endl;
-        autoStartFile << "Exec=" << "'" << appimageDir.native() << "'" << std::endl;
+        autoStartFile << "Exec=" << "'" << appImagePath.native() << "'" << std::endl;
         autoStartFile << "Terminal=false" << std::endl;
         autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
         autoStartFile << "Categories=Network" << std::endl;
