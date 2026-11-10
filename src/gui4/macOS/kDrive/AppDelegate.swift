@@ -67,6 +67,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        do {
+            try InheritedOutputStreams().configure()
+        } catch {
+            IKLogger.general.warning("Could not protect inherited output streams from broken pipes: \(error)")
+        }
+
         switch startServerIfNeeded() {
         case .startedAndHandedOff:
             return
