@@ -45,6 +45,7 @@
 
 #include <chrono>
 #include <thread>
+#include <utility>
 #include <unistd.h>
 
 namespace KDC {
@@ -69,6 +70,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     setupSystemTray();
     setupSignalConnections();
     setupQmlEngine(appIcon);
+    handleLaunchArguments();
     setupIpcConnection();
 }
 
@@ -276,6 +278,19 @@ void AppClientLinux::setupIpcConnection() {
     }
 }
 
+// The server forwards --settings or --synthesis when a window is requested at launch. --synthesis is the legacy name of
+// --home, kept because the server and the other clients still use it.
+void AppClientLinux::handleLaunchArguments() {
+    const QStringList arguments = QCoreApplication::arguments();
+    if (arguments.contains(QStringLiteral("--settings"))) {
+        qCInfo(lcAppClientLinux) << "--settings argument detected, Settings window opened after bootstrap";
+        _settingsActivationPending = true;
+    } else if (arguments.contains(QStringLiteral("--home")) || arguments.contains(QStringLiteral("--synthesis"))) {
+        qCInfo(lcAppClientLinux) << "--home argument detected, opening the main window";
+        openMainWindow();
+    }
+}
+
 void AppClientLinux::handleIpcDisconnection() {
     if (_quitPending) {
         // The server closed the socket because it is shutting down, as awaited by quitOnServerDisconnection(). Resetting
@@ -295,6 +310,9 @@ void AppClientLinux::handleBootstrapCompletion() {
     _hadConfiguredSync = hasConfiguredSyncs();
     _onboardingSessionManager.completeBootstrap();
 
+    // Settings are opened only once the cache is populated, so that they show the actual state.
+    const bool openSettings = std::exchange(_settingsActivationPending, false);
+
     if (!_hadConfiguredSync) {
         const bool shouldOpenOnboarding = !_systemTrayController.trayModeActive() || !_mainWindowDismissedDuringBootstrap;
         _mainWindowActivationPending = false;
@@ -304,6 +322,10 @@ void AppClientLinux::handleBootstrapCompletion() {
             qCInfo(lcAppClientLinux) << "Onboarding route ready but kept hidden because the waiting screen was dismissed";
         }
         return;
+    }
+
+    if (openSettings) {
+        openSettingsWindow();
     }
 
     if (_systemTrayController.trayModeActive() && !_mainWindowActivationPending) {
