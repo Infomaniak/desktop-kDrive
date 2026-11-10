@@ -42,7 +42,8 @@ namespace {
 constexpr auto installedFileName = "kDrive.AppImage";
 constexpr auto partialFileName = ".kDrive.AppImage.part";
 
-// Waits for the old server to exit (30 s at most), then starts the new AppImage. Arguments: $1 = PID, $2 = AppImage.
+// Waits for the old server to exit (30 s at most), then starts the new AppImage on the Settings window, where the update
+// was requested. Arguments: $1 = PID, $2 = AppImage.
 constexpr auto relauncherScript = R"(pid="$1"
 target="$2"
 i=0
@@ -50,7 +51,7 @@ while kill -0 "$pid" 2>/dev/null && [ "$i" -lt 150 ]; do
     sleep 0.2
     i=$((i + 1))
 done
-exec "$target")";
+exec "$target" --settings)";
 
 log4cplus::Logger logger() {
     return Log::instance()->getLogger();
