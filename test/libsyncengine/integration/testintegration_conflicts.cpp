@@ -180,8 +180,9 @@ void TestIntegration::testEditEditConflictIdenticalContent() {
         return job.modificationTime();
     };
 
-    // 1st case: the file has been edited on both replicas with an identical content, the remote modification date is the
-    // most recent one. The remote modification date shall be propagated to the local replica, without creating a conflict.
+    // The file has been edited on both replicas with an identical content, modification date are different .
+    // The remote modification date is the most recent one, but this is irrelevant in the resolution process: we always favour the
+    // remote date. The remote modification date shall be propagated to the local replica, without creating a conflict.
     {
         const auto now = CommonUtility::now();
         std::ofstream ofs(absoluteLocalPath, std::ios_base::in | std::ios_base::trunc);
@@ -196,7 +197,7 @@ void TestIntegration::testEditEditConflictIdenticalContent() {
 
         assertNoConflictAndNoRename();
 
-        // Check that the most recent modification date has been propagated to the local replica.
+        // Check that the remote modification date has been propagated to the local replica.
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(absoluteLocalPath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
@@ -213,44 +214,6 @@ void TestIntegration::testEditEditConflictIdenticalContent() {
         CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Local, *dbNode.nodeIdLocal(), lastModified, found) && found);
         CPPUNIT_ASSERT_EQUAL(appliedRemoteModificationTime, *lastModified);
         logStep("testEditEditConflictIdenticalContent: remote modification date is the most recent one");
-    }
-
-    // 2nd case: the file has been edited on both replicas with an identical content, the local modification date is the
-    // most recent one. The local modification date shall be propagated to the remote replica, without creating a conflict.
-    {
-        const auto now = CommonUtility::now();
-        const auto localModificationTime = now;
-        std::ofstream ofs(absoluteLocalPath, std::ios_base::in | std::ios_base::trunc);
-        ofs << "Identical content on both replicas, 2nd edition.";
-        ofs.close();
-        (void) IoHelper::setFileDates(absoluteLocalPath, now - 2000, localModificationTime, false);
-
-        const auto appliedRemoteModificationTime =
-                editRemoteFile("Identical content on both replicas, 2nd edition.", localModificationTime - 1000);
-        CPPUNIT_ASSERT_EQUAL(localModificationTime - 1000, appliedRemoteModificationTime);
-
-        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-        waitForSyncToBeIdle(std::source_location::current());
-
-        assertNoConflictAndNoRename();
-
-        // Check that the local modification date, which is the most recent one, has not been overwritten.
-        FileStat fileStat;
-        bool exists = false;
-        IoHelper::getFileStat(absoluteLocalPath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
-        CPPUNIT_ASSERT(exists);
-        CPPUNIT_ASSERT_EQUAL(localModificationTime, fileStat.modificationTime);
-
-        // Check that the modification dates have been updated in DB on both replicas.
-        std::optional<SyncTime> lastModified = std::nullopt;
-        bool found = false;
-        CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Remote, _testFileRemoteId, lastModified, found) && found);
-        CPPUNIT_ASSERT_EQUAL(localModificationTime, *lastModified);
-        DbNode dbNode;
-        CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Remote, _testFileRemoteId, dbNode, found) && found);
-        CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Local, *dbNode.nodeIdLocal(), lastModified, found) && found);
-        CPPUNIT_ASSERT_EQUAL(localModificationTime, *lastModified);
-        logStep("testEditEditConflictIdenticalContent: local modification date is the most recent one");
     }
 }
 
