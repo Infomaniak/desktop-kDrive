@@ -41,7 +41,7 @@ class MockUpdateTreeWorker : public UpdateTreeWorker {
 };
 
 class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestUpdateTreeWorker); 
+        CPPUNIT_TEST_SUITE(TestUpdateTreeWorker);
         CPPUNIT_TEST(testUtilsFunctions);
         CPPUNIT_TEST(testUpdateTmpFileNode);
         CPPUNIT_TEST(testHandleCreateOperationsWithSamePath);
@@ -54,6 +54,8 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStep3);
         CPPUNIT_TEST(testStep3b);
         CPPUNIT_TEST(testStep4);
+        CPPUNIT_TEST(testStep4ItemTypeChanged);
+        CPPUNIT_TEST(testStep4ItemTypeUnchanged);
         CPPUNIT_TEST(testStep5);
         CPPUNIT_TEST(testStep6);
         CPPUNIT_TEST(testStep7);
@@ -102,6 +104,18 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         void testStep3();
         void testStep3b();
         void testStep4();
+        /**
+         * A synchronized symbolic link is replaced by a regular file reusing the same path. The type of the item has
+         * changed, therefore the Delete and Create operations must not be merged into an Edit operation, as the API does
+         * not support editing an item while changing its type.
+         */
+        void testStep4ItemTypeChanged();
+        /**
+         * A synchronized regular file is replaced by another regular file reusing the same path (e.g., a file saved by
+         * an editor such as Excel). The type of the item has not changed, therefore the Delete and Create operations are
+         * merged into an Edit operation.
+         */
+        void testStep4ItemTypeUnchanged();
         void testStep5();
         void testStep6();
         void testStep7();
@@ -145,6 +159,16 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         std::shared_ptr<FSOperationSet> _operationSet;
         std::shared_ptr<UpdateTree> _localUpdateTree;
         std::shared_ptr<UpdateTree> _remoteUpdateTree;
+
+        /**
+         * Create a SyncPal with initialized snapshots containing a deleted item "Dir 5/File 5.1" on the remote replica
+         * (local ID "id51", remote ID "id drive 51") and a newly created item "Dir 5/File 5.1" on the local replica
+         * (local ID "id511"). The link flags of both items are set according to the input parameters. The created SyncPal
+         * is kept in `_syncPal` and attached to the local update tree worker.
+         */
+        void createSyncPalWithItemSnapshots(bool deletedItemIsLink, bool createdItemIsLink);
+
+        std::shared_ptr<SyncPal> _syncPal;
 
         DbNodeId _dbnodeIdDir41 = 0;
         DbNodeId _dbnodeIdDir411 = 0;
