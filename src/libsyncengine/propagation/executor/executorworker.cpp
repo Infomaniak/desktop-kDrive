@@ -842,63 +842,11 @@ ExitInfo ExecutorWorker::propagateDateOnlyUpdate(SyncOpPtr syncOp) {
     // cost and a latency, and they impact other users.
     const SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
     const SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
-    const auto remoteNode = syncOp->affectedNode();
 
-    const auto proceedWithRename = [&]() {
+    if (!areContentsIdentical(syncOp, absoluteLocalFilePath)) {
         LOGW_SYNCPAL_INFO(_logger, L"Date-only update skipped for "
                                            << Utility::formatSyncPath(absoluteLocalFilePath)
                                            << L". Proceeding with the resolution of the conflict by renaming the local file.");
-    };
-
-    // Content equality can only be checked on files.
-    if (syncOp->nodeType() != NodeType::File) return ExitCode::Ok;
-
-    // The content of a dehydrated placeholder is not available on the local replica: renaming the placeholder is safe,
-    // propagating a date without being able to compare the contents is not.
-    if (isLiteSyncActivated()) {
-        VfsStatus vfsStatus;
-        if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": " << exitInfo);
-            return ExitCode::Ok;
-        }
-        if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
-            LOGW_SYNCPAL_INFO(_logger, L"Cannot check the content equality for the dehydrated placeholder "
-                                               << Utility::formatSyncPath(absoluteLocalFilePath));
-            return ExitCode::Ok;
-        }
-    }
-
-    FileStat fileStat;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
-        return ExitCode::Ok;
-    }
-    if (ioError != IoError::Success) {
-        LOGW_SYNCPAL_WARN(_logger, L"Unable to read file stats for " << Utility::formatSyncPath(absoluteLocalFilePath));
-        return ExitCode::Ok;
-    }
-
-    // The sizes are different so the contents are different: proceed with the regular conflict resolution. The same check is
-    // performed by the hash job, doing it here avoids running the job when unnecessary.
-    if (fileStat.size != remoteNode->size()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"The local file size (" << fileStat.size << L") does not match the remote one ("
-                                                             << remoteNode->size() << L") for "
-                                                             << Utility::formatSyncPath(absoluteLocalFilePath));
-        return ExitCode::Ok;
-    }
-
-    // Check the content equality with the same hash mechanism as the one used by the upload and download jobs.
-    bool contentEquality = false;
-    if (const ExitInfo exitInfo = _checkContentEqualityFn(_syncPal->driveDbId(), absoluteLocalFilePath,
-                                                          remoteNode->id().value_or(""), remoteNode->size(), contentEquality);
-        !exitInfo || !contentEquality) {
-        if (!exitInfo) {
-            LOGW_SYNCPAL_WARN(_logger, L"Failed to check the content equality for "
-                                               << Utility::formatSyncPath(absoluteLocalFilePath) << L" " << exitInfo);
-        }
-        proceedWithRename();
         return ExitCode::Ok;
     }
 
@@ -908,8 +856,69 @@ ExitInfo ExecutorWorker::propagateDateOnlyUpdate(SyncOpPtr syncOp) {
                               << L". The last modification date of the remote replica will be applied to the local file, "
                                  L"no conflict will be created.");
 
-    // The contents are identical on both replicas: propagate only the modification date of the remote replica to the local
-    // file. The file content is never modified: only the dates are updated.
+    return applyDateOnlyUpdate(syncOp, absoluteLocalFilePath);
+}
+
+bool ExecutorWorker::areContentsIdentical(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilePath) const {
+    // Content equality can only be checked on files.
+    if (syncOp->nodeType() != NodeType::File) return false;
+
+    // The content of a dehydrated placeholder is not available on the local replica: renaming the placeholder is safe,
+    // propagating a date without being able to compare the contents is not.
+    if (isLiteSyncActivated()) {
+        VfsStatus vfsStatus;
+        if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": " << exitInfo);
+            return false;
+        }
+        if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
+            LOGW_SYNCPAL_INFO(_logger, L"Cannot check the content equality for the dehydrated placeholder "
+                                               << Utility::formatSyncPath(absoluteLocalFilePath));
+            return false;
+        }
+    }
+
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
+        return false;
+    }
+    if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unable to read file stats for " << Utility::formatSyncPath(absoluteLocalFilePath));
+        return false;
+    }
+
+    // The sizes are different so the contents are different. The same check is performed by the hash job, doing it here
+    // avoids running the job when unnecessary.
+    if (fileStat.size != syncOp->affectedNode()->size()) {
+        LOGW_SYNCPAL_DEBUG(_logger, L"The local file size (" << fileStat.size << L") does not match the remote one ("
+                                                             << syncOp->affectedNode()->size() << L") for "
+                                                             << Utility::formatSyncPath(absoluteLocalFilePath));
+        return false;
+    }
+
+    // Check the content equality with the same hash mechanism as the one used by the upload and download jobs.
+    bool contentEquality = false;
+    if (const ExitInfo exitInfo =
+                _checkContentEqualityFn(_syncPal->driveDbId(), absoluteLocalFilePath, syncOp->affectedNode()->id().value_or(""),
+                                        syncOp->affectedNode()->size(), contentEquality);
+        !exitInfo || !contentEquality) {
+        if (!exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to check the content equality for "
+                                               << Utility::formatSyncPath(absoluteLocalFilePath) << L" " << exitInfo);
+        }
+        return false;
+    }
+
+    return true;
+}
+
+ExitInfo ExecutorWorker::applyDateOnlyUpdate(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilePath) {
+    const auto remoteNode = syncOp->affectedNode();
+
+    // Apply the remote dates to the local file. The file content is never modified: only the dates are updated.
     if (const IoError dateError = IoHelper::setFileDates(absoluteLocalFilePath, remoteNode->createdAt().value_or(0),
                                                          remoteNode->modificationTime().value_or(0), false);
         dateError != IoError::Success) {

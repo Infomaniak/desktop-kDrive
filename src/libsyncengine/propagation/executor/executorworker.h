@@ -99,6 +99,26 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
          * never modified in this flow, since HTTP requests have a cost and a latency, and they impact other users.
          */
         ExitInfo propagateDateOnlyUpdate(SyncOpPtr syncOp);
+        /**
+         * @brief Checks whether the contents of the local and remote files of an Edit-Edit conflict are identical, i.e.,
+         * whether the conflict resolution can be propagated as a date-only update. The local file must be a regular hydrated
+         * file whose size matches the remote one, and the content equality is verified with the same hash mechanism as the
+         * one used by the upload and download jobs.
+         * @param syncOp The operation resolving the conflict by renaming the local file.
+         * @param absoluteLocalFilePath The absolute path of the local file.
+         * @return True if the contents are identical. False if they are not or if the equality cannot be verified, in which
+         * case the caller must proceed with the standard resolution, i.e., rename the local file.
+         */
+        [[nodiscard]] bool areContentsIdentical(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilePath) const;
+        /**
+         * @brief Applies the date-only update of an Edit-Edit conflict resolved on identical contents: applies the last
+         * modification date of the remote replica to the local file, propagates the change to the DB, the update trees and
+         * the VFS status, and flags the operation with `setDateOnlyUpdate` so that no conflicted copy is reported.
+         * @param syncOp The operation resolving the conflict by renaming the local file.
+         * @param absoluteLocalFilePath The absolute path of the local file.
+         * @return ExitCode indicating if the operation was successful.
+         */
+        ExitInfo applyDateOnlyUpdate(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilePath);
         /// Check the content equality between the local file and the remote file with the same hash mechanism as the one
         /// used by the upload and download jobs.
         static ExitInfo checkContentEquality(const DriveDbId driveDbId, const SyncPath &absoluteLocalPath,
