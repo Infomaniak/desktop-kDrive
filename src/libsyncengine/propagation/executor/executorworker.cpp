@@ -2308,6 +2308,12 @@ ExitInfo ExecutorWorker::handleOpsBlacklistRemoteFile(SyncOpPtr syncOp, const Ex
     if (!remoteNodeId.empty() && syncOp->remoteNode()) {
         _syncPal->blacklistTemporarily(remoteNodeId, syncOp->remoteNode()->getPath(), ReplicaSide::Remote);
     }
+
+    if (auto exitInfo = removeDependentOps(syncOp); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::removeDependentOps");
+        return exitInfo;
+    }
+
     // Clear update tree
     if (!deleteOpNodes(syncOp)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
@@ -2315,7 +2321,8 @@ ExitInfo ExecutorWorker::handleOpsBlacklistRemoteFile(SyncOpPtr syncOp, const Ex
     }
 
     _syncPal->setRestart(true);
-    return removeDependentOps(syncOp);
+
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::handleOpsAlreadyExistError(const SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
