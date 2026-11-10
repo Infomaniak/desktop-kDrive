@@ -2,7 +2,7 @@
 
 # Post-build steps of the Linux v4 AppImage, shared by the native and container release builds.
 
-function v4_extract_debug_symbols() (
+function appimage_extract_debug_symbols() (
     set -eo pipefail
     local bin_dir="$1"
     local dbg_dir="$2"
@@ -15,7 +15,7 @@ function v4_extract_debug_symbols() (
     done
 )
 
-function v4_strip_unneeded_symbols() (
+function appimage_strip_unneeded_symbols() (
     set -eo pipefail
     local app_dir="$1"
     local file
@@ -28,7 +28,7 @@ function v4_strip_unneeded_symbols() (
     done < <(find "$app_dir/usr" -type f -print0)
 )
 
-function v4_copy_runtime_dependencies() (
+function appimage_copy_runtime_dependencies() (
     set -eo pipefail
     local source_lib_dir="$1"
     local app_dir="$2"
@@ -74,7 +74,7 @@ function v4_copy_runtime_dependencies() (
     fi
 )
 
-function v4_prepare_recovery_updater_appdir() (
+function appimage_prepare_recovery_updater_appdir() (
     set -eo pipefail
     local main_app_dir="$1"
     local updater_app_dir="$2"
@@ -122,10 +122,10 @@ EOF
     for plugin in "${plugins[@]}"; do
         runtime_files+=("$updater_app_dir/$plugin")
     done
-    v4_copy_runtime_dependencies "$main_app_dir/usr/lib" "$updater_app_dir" "${runtime_files[@]}"
+    appimage_copy_runtime_dependencies "$main_app_dir/usr/lib" "$updater_app_dir" "${runtime_files[@]}"
 )
 
-function v4_check_recovery_updater_appdir() (
+function appimage_check_recovery_updater_appdir() (
     set -eo pipefail
     local app_dir="$1"
     local -a required=(
@@ -192,7 +192,7 @@ function check_main_appdir_updater_separation() (
     exit "$failures"
 )
 
-function v4_create_linuxdeploy_resolver() (
+function appimage_create_linuxdeploy_resolver() (
     set -eo pipefail
     local app_dir="$1"
     local resolver_dir
@@ -211,7 +211,7 @@ function v4_create_linuxdeploy_resolver() (
     printf '%s\n' "$resolver_dir"
 )
 
-function v4_prepare_appdir() (
+function appimage_prepare_appdir() (
     set -eo pipefail
     if [[ -z "$1" || "$1" == "/" ]]; then
         echo "Unsafe AppDir: '$1'" >&2
@@ -270,7 +270,7 @@ function v4_prepare_appdir() (
     ln -sfn "$icon_name.png" .DirIcon
 )
 
-function v4_check_appdir() (
+function appimage_check_appdir() (
     set -eo pipefail
     cd "$1"
 
@@ -337,7 +337,7 @@ function v4_check_appdir() (
     exit "$missing"
 )
 
-function v4_linuxdeploy_deploy() (
+function appimage_linuxdeploy_deploy() (
     set -eo pipefail
     local app_dir="$1"
     local linuxdeploy_help
@@ -357,7 +357,7 @@ function v4_linuxdeploy_deploy() (
         -type f -name '*.so*' -printf '%h\n' | sort -u)
 
     local resolver_dir
-    resolver_dir="$(v4_create_linuxdeploy_resolver "$app_dir")"
+    resolver_dir="$(appimage_create_linuxdeploy_resolver "$app_dir")"
     trap 'rm -rf "$resolver_dir"' EXIT
 
     # Keep linuxdeploy itself on the host libpng/libz while exposing the other
@@ -368,7 +368,7 @@ function v4_linuxdeploy_deploy() (
         "${deps_only[@]}" -v1
 )
 
-function v4_linuxdeploy_recovery_updater() (
+function appimage_linuxdeploy_recovery_updater() (
     set -eo pipefail
     local app_dir="$1"
     local linuxdeploy_help
@@ -382,7 +382,7 @@ function v4_linuxdeploy_recovery_updater() (
     # bundled libraries to its dependency resolver. Loading the AppDir's libpng
     # or libz into linuxdeploy makes the ARM64 build crash.
     local resolver_dir
-    resolver_dir="$(v4_create_linuxdeploy_resolver "$app_dir")"
+    resolver_dir="$(appimage_create_linuxdeploy_resolver "$app_dir")"
     trap 'rm -rf "$resolver_dir"' EXIT
 
     local -a runtime_files=("$app_dir/usr/bin/kDriveRecoveryUpdater")
@@ -414,7 +414,7 @@ function v4_linuxdeploy_recovery_updater() (
         "${deps_only[@]}" -v1
 )
 
-function v4_verify_bundle() (
+function appimage_verify_bundle() (
     set -eo pipefail
     export LC_ALL=C # avoid 'Shared library: ' to be translated
     local app_dir="$1"
@@ -467,10 +467,11 @@ function v4_verify_bundle() (
     done < <(find "$app_dir/usr" -type f -print0)
 
     echo "Bundle floor: ${glibc_floor:-none} / ${glibcxx_floor:-none}"
+
     exit "$failures"
 )
 
-function v4_package_appimage() (
+function appimage_package() (
     set -eo pipefail
     env -u LD_LIBRARY_PATH linuxdeploy --list-plugins 2>&1 | grep -qw appimage || {
         echo "linuxdeploy-plugin-appimage is not available" >&2

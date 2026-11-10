@@ -353,6 +353,6 @@ dialog.
 To validate the CMake deployment without producing an AppImage, configure a release build with
 `-DKDRIVE_DEPLOY_QT_RUNTIME=ON -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON`, build it, and install it into an
 AppDir with `DESTDIR=<app-dir> cmake --install <build-dir> --prefix /usr`. Then source
-`infomaniak-build-tools/linux/appimage-v4.sh` and run `v4_prepare_appdir`, `v4_check_appdir`, and
-`v4_verify_bundle` on that AppDir. Never set `LD_LIBRARY_PATH` when launching the resulting
+`infomaniak-build-tools/linux/appimage.sh` and run `appimage_prepare_appdir`, `appimage_check_appdir`, and
+`appimage_verify_bundle` on that AppDir. Never set `LD_LIBRARY_PATH` when launching the resulting
 AppImage; it must resolve its bundled runtime on its own.

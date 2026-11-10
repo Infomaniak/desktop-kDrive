@@ -22,7 +22,7 @@ set -e
 
 script_directory_path="$(cd -- "$(dirname "$0")" >/dev/null 2>&1; pwd -P)"
 source "$script_directory_path/build-utils.sh"
-source "$script_directory_path/appimage-v4.sh"
+source "$script_directory_path/appimage.sh"
 
 program_name="$(basename "$0")"
 
@@ -155,7 +155,7 @@ build_release() {
 
   make -j"$(nproc)"
 
-  v4_extract_debug_symbols ./bin "$build_dir" kDrive kdrive_qml
+  appimage_extract_debug_symbols ./bin "$build_dir" kDrive kdrive_qml
 
   make DESTDIR="$app_dir" install
 
@@ -169,14 +169,14 @@ package_release() {
 
   local full_version
 
-  v4_prepare_appdir "$app_dir"
-  v4_check_appdir "$app_dir"
+  appimage_prepare_appdir "$app_dir"
+  appimage_check_appdir "$app_dir"
 
   cd "$build_dir"
-  v4_linuxdeploy_deploy "$app_dir"
-  v4_strip_unneeded_symbols "$app_dir"
-  v4_verify_bundle "$app_dir"
-  v4_package_appimage "$app_dir"
+  appimage_linuxdeploy_deploy "$app_dir"
+  appimage_strip_unneeded_symbols "$app_dir"
+  appimage_verify_bundle "$app_dir"
+  appimage_package "$app_dir"
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   mkdir -p "$artifact_dir"
@@ -194,17 +194,17 @@ package_recovery_updater() {
     return 1
   fi
 
-  v4_prepare_recovery_updater_appdir \
+  appimage_prepare_recovery_updater_appdir \
     "$app_dir" \
     "$updater_appdir" \
     "$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
-  v4_check_recovery_updater_appdir "$updater_appdir"
+  appimage_check_recovery_updater_appdir "$updater_appdir"
 
   cd "$build_dir"
-  v4_linuxdeploy_recovery_updater "$updater_appdir"
-  v4_strip_unneeded_symbols "$updater_appdir"
-  v4_verify_bundle "$updater_appdir"
-  v4_package_appimage "$updater_appdir"
+  appimage_linuxdeploy_recovery_updater "$updater_appdir"
+  appimage_strip_unneeded_symbols "$updater_appdir"
+  appimage_verify_bundle "$updater_appdir"
+  appimage_package "$updater_appdir"
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
