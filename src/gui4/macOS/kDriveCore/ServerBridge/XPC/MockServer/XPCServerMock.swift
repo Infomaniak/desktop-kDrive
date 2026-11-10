@@ -35,7 +35,8 @@ public struct ReplyMock: Codable, Sendable {
 public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider, XPCConnectionLifecycle {
     @MainActor public var guiConnectionState: XPCConnectionState = .notConnected
 
-    @MainActor public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+    @MainActor public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> = Just(.connected)
+        .eraseToAnyPublisher()
 
     @MainActor public var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState = .connected
 
