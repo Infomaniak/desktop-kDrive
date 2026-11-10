@@ -44,8 +44,8 @@ struct StorageItem: Sendable, Identifiable {
 
 struct DriveStorageInfo {
     var name: String
-    var size: Int64
-    var usedSize: Int64
+    var size: Int64?
+    var usedSize: Int64?
 }
 
 enum VolumeStorageItems {
@@ -74,14 +74,10 @@ struct StorageView: View {
     ]
     @State private var isShowingVolumeNotFound = false
 
-    @State private var driveStorageItems: OrderedDictionary<DriveStorageItems, StorageItem> = [
-        .usedSpace: StorageItem(title: KDriveLocalizable.storageOnlineUsed, color: .blue, usedBytes: nil),
-        .freeSpace: StorageItem(title: KDriveLocalizable.storageOnlineFree, color: .gray, usedBytes: nil, isDefault: true)
-    ]
     @State private var driveStorageInfo = DriveStorageInfo(
         name: KDriveLocalizable.labelMySubscription,
-        size: 0,
-        usedSize: 0
+        size: nil,
+        usedSize: nil
     )
 
     @ObservedObject var mainViewModel: MainViewModel
@@ -99,6 +95,18 @@ struct StorageView: View {
 
         let usedSpace = usedByKDrive + usedByComputer
         return .data(usedBytes: usedSpace, availableBytes: usedSpace + freeSpace)
+    }
+
+    private var driveStorageItems: OrderedDictionary<DriveStorageItems, StorageItem> {
+        var freeSpace: Int64?
+        if let size = driveStorageInfo.size, let usedSize = driveStorageInfo.usedSize {
+            freeSpace = max(size - usedSize, 0)
+        }
+
+        return [
+            .usedSpace: StorageItem(title: KDriveLocalizable.storageOnlineUsed, color: .blue, usedBytes: driveStorageInfo.usedSize),
+            .freeSpace: StorageItem(title: KDriveLocalizable.storageOnlineFree, color: .gray, usedBytes: freeSpace, isDefault: true)
+        ]
     }
 
     private var driveStorageData: StorageSectionView.StorageData {
@@ -196,13 +204,11 @@ struct StorageView: View {
 
     private func getCachedStorageData() async {
         updateVolumeStorage(from: storageDataProviding.storageData)
-        updateDriveStorage()
     }
 
     private func handleUpdatedStorageData(_ indexedStorageData: IndexedStorageData) {
         withAnimation {
             updateVolumeStorage(from: indexedStorageData)
-            updateDriveStorage()
         }
     }
 
@@ -227,11 +233,6 @@ struct StorageView: View {
             }
             isShowingVolumeNotFound = true
         }
-    }
-    
-    private func updateDriveStorage() {
-        driveStorageItems[.usedSpace]?.usedBytes = driveStorageInfo.usedSize
-        driveStorageItems[.freeSpace]?.usedBytes = driveStorageInfo.size - driveStorageInfo.usedSize
     }
 }
 
