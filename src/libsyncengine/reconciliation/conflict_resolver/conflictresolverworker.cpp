@@ -159,6 +159,10 @@ void ConflictResolverWorker::handleConflictOnIdenticalContent(const Conflict &co
     // Content equality can only be checked on files. Directories always have identical content.
     if (localNode->type() != NodeType::File || remoteNode->type() != NodeType::File) return;
 
+    if (localNode->hasChangeEvent(OperationType::Move) || remoteNode->hasChangeEvent(OperationType::Move)) {
+        return;
+    }
+
     // The sizes are different so that contents are different, except for links for which  local and remote sizes can
     // different although the files are identical.
     const auto snapshot = _syncPal->snapshot(localNode->side());
