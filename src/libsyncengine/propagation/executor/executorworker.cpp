@@ -26,6 +26,7 @@
 #include "jobs/network/jobexceptions.h"
 
 #include "jobs/network/kDrive_API/apitranslator.h"
+#include "jobs/network/kDrive_API/checkhashmatchjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
@@ -56,6 +57,20 @@
 
 namespace KDC {
 #define SNAPSHOT_INVALIDATION_THRESHOLD 100 // Changes
+
+std::function<ExitInfo(const DriveDbId, const SyncPath &, const NodeId &, int64_t, bool &)>
+        ExecutorWorker::_checkContentEqualityFn = &ExecutorWorker::checkContentEquality;
+
+ExitInfo ExecutorWorker::checkContentEquality(const DriveDbId driveDbId, const SyncPath &absoluteLocalPath,
+                                              const NodeId &remoteNodeId, const int64_t remoteSize, bool &contentEquality) {
+    contentEquality = false;
+    CheckHashMatchJob hashJob(driveDbId, absoluteLocalPath, remoteNodeId, remoteSize);
+    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
+        return exitInfo;
+    }
+    contentEquality = hashJob.hashMatch();
+    return ExitCode::Ok;
+}
 
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
     OperationProcessor(syncPal, name, shortName, false) {}
@@ -316,7 +331,8 @@ void ExecutorWorker::setProgressComplete(const SyncPath &relativePath, const Syn
     assert(syncOp->affectedNode());
     SyncPath relativeLocalFilePath = relativePath.empty() ? syncOp->affectedNode()->getPath() : relativePath;
 
-    if (syncOp->hasConflict() && status == SyncFileStatus::Success &&
+    // A date-only update resolves the conflict without creating a conflicted copy: do not report a conflict.
+    if (syncOp->hasConflict() && !syncOp->isDateOnlyUpdate() && status == SyncFileStatus::Success &&
         (syncOp->conflict().type() == ConflictType::CreateCreate || syncOp->conflict().type() == ConflictType::EditEdit)) {
         status = SyncFileStatus::Conflict;
     }
@@ -817,6 +833,144 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob>
     return ExitCode::Ok;
 }
 
+ExitInfo ExecutorWorker::propagateDateOnlyUpdate(SyncOpPtr syncOp) {
+    // The operation resolves an Edit-Edit conflict by renaming the local file. Before executing the rename, the content
+    // equality is verified at execution time: this is the only moment where it can be checked without risking to act on
+    // outdated information, since the files may have been modified since the conflict was detected. If the contents are
+    // identical, the conflict is resolved without renaming the local file: only the last modification date of the remote
+    // replica is applied to the local file. The remote replica is never modified in this flow, since HTTP requests have a
+    // cost and a latency, and they impact other users.
+    const SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
+    const SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
+    const auto remoteNode = syncOp->affectedNode();
+
+    const auto proceedWithRename = [&]() {
+        LOGW_SYNCPAL_INFO(_logger, L"Date-only update skipped for "
+                                           << Utility::formatSyncPath(absoluteLocalFilePath)
+                                           << L". Proceeding with the resolution of the conflict by renaming the local file.");
+    };
+
+    // Content equality can only be checked on files.
+    if (syncOp->nodeType() != NodeType::File) return ExitCode::Ok;
+
+    // The content of a dehydrated placeholder is not available on the local replica: renaming the placeholder is safe,
+    // propagating a date without being able to compare the contents is not.
+    if (isLiteSyncActivated()) {
+        VfsStatus vfsStatus;
+        if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": " << exitInfo);
+            return ExitCode::Ok;
+        }
+        if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
+            LOGW_SYNCPAL_INFO(_logger, L"Cannot check the content equality for the dehydrated placeholder "
+                                               << Utility::formatSyncPath(absoluteLocalFilePath));
+            return ExitCode::Ok;
+        }
+    }
+
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError));
+        return ExitCode::Ok;
+    }
+    if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unable to read file stats for " << Utility::formatSyncPath(absoluteLocalFilePath));
+        return ExitCode::Ok;
+    }
+
+    // The sizes are different so the contents are different: proceed with the regular conflict resolution. The same check is
+    // performed by the hash job, doing it here avoids running the job when unnecessary.
+    if (fileStat.size != remoteNode->size()) {
+        LOGW_SYNCPAL_DEBUG(_logger, L"The local file size (" << fileStat.size << L") does not match the remote one ("
+                                                             << remoteNode->size() << L") for "
+                                                             << Utility::formatSyncPath(absoluteLocalFilePath));
+        return ExitCode::Ok;
+    }
+
+    // Check the content equality with the same hash mechanism as the one used by the upload and download jobs.
+    bool contentEquality = false;
+    if (const ExitInfo exitInfo = _checkContentEqualityFn(_syncPal->driveDbId(), absoluteLocalFilePath,
+                                                          remoteNode->id().value_or(""), remoteNode->size(), contentEquality);
+        !exitInfo || !contentEquality) {
+        if (!exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to check the content equality for "
+                                               << Utility::formatSyncPath(absoluteLocalFilePath) << L" " << exitInfo);
+        }
+        proceedWithRename();
+        return ExitCode::Ok;
+    }
+
+    LOGW_SYNCPAL_INFO(_logger,
+                      L"Edit-Edit conflict on identical content for item "
+                              << Utility::formatSyncPath(relativeLocalFilePath)
+                              << L". The last modification date of the remote replica will be applied to the local file, "
+                                 L"no conflict will be created.");
+
+    // The contents are identical on both replicas: propagate only the modification date of the remote replica to the local
+    // file. The file content is never modified: only the dates are updated.
+    if (const IoError dateError = IoHelper::setFileDates(absoluteLocalFilePath, remoteNode->createdAt().value_or(0),
+                                                         remoteNode->modificationTime().value_or(0), false);
+        dateError != IoError::Success) {
+        if (dateError == IoError::NoSuchFileOrDirectory) {
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath));
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        } else if (dateError == IoError::AccessDenied) {
+            LOGW_WARN(_logger, L"Item misses write permission: " << Utility::formatSyncPath(absoluteLocalFilePath));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+        // Do not fail the operation if the dates cannot be set, as done in DownloadJob. The dates will be corrected during
+        // the next sync.
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(absoluteLocalFilePath));
+    }
+
+    // Retrieve the effective dates of the local file: they may differ from the requested ones (e.g., if the file system does
+    // not support the creation date).
+    FileStat updatedFileStat;
+    IoError updatedStatIoError = IoError::Success;
+    if (!IoHelper::getFileStat(absoluteLocalFilePath, &updatedFileStat, updatedStatIoError,
+                               IoHelper::PathCheckOption::Insensitive)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: "
+                                           << Utility::formatIoError(absoluteLocalFilePath, updatedStatIoError));
+        return ExitCode::SystemError;
+    }
+    if (updatedStatIoError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath));
+        return {ExitCode::SystemError, ExitCause::NotFound};
+    }
+
+    std::shared_ptr<Node> node;
+    if (const ExitInfo exitInfo =
+                propagateEditToDbAndTree(syncOp, syncOp->correspondingNode()->id().value_or(""), updatedFileStat.creationTime,
+                                         updatedFileStat.modificationTime, node, updatedFileStat.size);
+        !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for "
+                                           << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
+        return exitInfo;
+    }
+
+    // Update the VFS status, as done after the propagation of a regular Edit operation.
+    VfsStatus vfsStatus;
+    if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": " << exitInfo);
+    } else {
+        const bool isSyncing = !_syncPal->isLocalItemInSyncWithDb(absoluteLocalFilePath);
+        vfsStatus.isSyncing = isSyncing;
+        vfsStatus.progress = isSyncing ? vfsStatus.progress : 100;
+        if (ExitInfo exitInfoForceStatus = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus); !exitInfoForceStatus) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": "
+                                                                     << exitInfoForceStatus);
+        }
+    }
+
+    // The conflict has been resolved without renaming the local file: report a success, not a conflict.
+    syncOp->setDateOnlyUpdate(true);
+
+    return ExitCode::Ok;
+}
+
 ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job) {
     // 1. If omit-flag is False, propagate the file to replicaY, replacing the existing one.
     SyncPath relativeLocalFilePath;
@@ -981,6 +1135,18 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
         FileRescuer fileRescuer(_syncPal);
         if (const auto exitInfo = fileRescuer.executeRescueMoveJob(syncOp); !exitInfo) return exitInfo;
     } else {
+        // An Edit-Edit conflict is resolved by renaming the local file, but the file contents may be identical, in which case
+        // no conflicted copy must be created: the operation is propagated as a date-only update instead.
+        if (syncOp->conflict().type() == ConflictType::EditEdit && syncOp->targetSide() == ReplicaSide::Local) {
+            if (const auto exitInfo = propagateDateOnlyUpdate(syncOp); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in propagateDateOnlyUpdate for: "
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                                   << exitInfo);
+                return exitInfo;
+            }
+            if (syncOp->isDateOnlyUpdate()) return ExitCode::Ok;
+        }
+
         if (const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);

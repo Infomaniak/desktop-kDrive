@@ -90,6 +90,9 @@ void TestExecutorWorker::setUp() {
 }
 
 void TestExecutorWorker::tearDown() {
+    // Restore the production content-equality check that may have been overridden in testPropagateDateOnlyUpdate.
+    ExecutorWorker::_checkContentEqualityFn = &ExecutorWorker::checkContentEquality;
+
     ParmsDb::instance()->close();
     ParmsDb::reset();
     if (_syncPal && _syncPal->syncDb()) {
@@ -222,7 +225,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName) {};
+            ExecutorWorker(syncPal, name, shortName){};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };
@@ -475,6 +478,173 @@ void TestExecutorWorker::testPropagateConflictToDbAndTree() {
     syncOp->setConflict(Conflict(syncOp->affectedNode(), syncOp->correspondingNode(), ConflictType::MoveMoveSource));
     _executorWorker->propagateConflictToDbAndTree(syncOp, propagateChange);
     CPPUNIT_ASSERT_EQUAL(false, propagateChange);
+}
+
+void TestExecutorWorker::testPropagateDateOnlyUpdate() {
+    const SyncName filename = Str("test_file.txt");
+    const SyncName conflictedFilename = Str("test_file_conflicted.txt");
+    const SyncPath localFilePath = _localTempDir.path() / filename;
+    const SyncPath conflictedFilePath = _localTempDir.path() / conflictedFilename;
+
+    const auto createLocalFile = [&localFilePath, &conflictedFilePath](const std::string &content, const SyncTime creationTime,
+                                                                       const SyncTime modificationTime) {
+        std::error_code ec;
+        std::filesystem::remove(conflictedFilePath, ec); // Remove the conflicted copy created by the previous case.
+        std::ofstream ofs(localFilePath, std::ios_base::in | std::ios_base::trunc);
+        ofs << content;
+        ofs.close();
+        CPPUNIT_ASSERT(IoHelper::setFileDates(localFilePath, creationTime, modificationTime, false) == IoError::Success);
+    };
+
+    // Insert a fresh DB node before each case, so that the cases are independent from each other.
+    DbNodeId dbNodeId = 0;
+    const auto resetDbNode = [this, &filename, &dbNodeId]() {
+        if (dbNodeId != 0) {
+            bool deleted = false;
+            CPPUNIT_ASSERT(_syncPal->syncDb()->deleteNode(dbNodeId, deleted));
+        }
+        const DbNode rootDbNode = _syncPal->syncDb()->rootNode();
+        const DbNode dbNode(rootDbNode.nodeId(), filename, filename, "lid", "rid", testhelpers::defaultTime,
+                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize);
+        bool constraintError = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError) && !constraintError);
+        CPPUNIT_ASSERT(dbNodeId != 0);
+    };
+
+    // The conflict resolver generates a Move operation renaming the local file to a conflicted copy.
+    const auto createSyncOp = [this, &filename, &conflictedFilename](const DbNodeId dbNodeId, const int64_t remoteSize,
+                                                                     const SyncTime remoteModificationTime) {
+        const auto localNode = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None,
+                                                      "lid", testhelpers::defaultTime, testhelpers::defaultTime, remoteSize,
+                                                      _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+        const auto remoteNode = std::make_shared<Node>(
+                dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
+                remoteModificationTime, remoteSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+
+        auto op = std::make_shared<SyncOperation>();
+        op->setType(OperationType::Move);
+        op->setAffectedNode(remoteNode);
+        op->setCorrespondingNode(localNode);
+        op->setTargetSide(ReplicaSide::Local);
+        op->setNewName(conflictedFilename);
+        op->setConflict(Conflict(localNode, remoteNode, ConflictType::EditEdit));
+        return op;
+    };
+
+    const auto getFileModificationTime = [&localFilePath]() {
+        FileStat fileStat;
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(IoHelper::getFileStat(localFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive));
+        CPPUNIT_ASSERT(ioError == IoError::Success);
+        return fileStat.modificationTime;
+    };
+
+    // 1 - The contents are identical on both replicas: the conflict is resolved by propagating the last modification date of
+    // the remote replica to the local file, without renaming the local file and without any upload or download.
+    {
+        resetDbNode();
+        _syncPal->setRestart(false);
+        const std::string content(10, 'x');
+        createLocalFile(content, testhelpers::defaultTime - 2000, testhelpers::defaultTime - 1000);
+        const auto op = createSyncOp(dbNodeId, static_cast<int64_t>(content.size()), testhelpers::defaultTime + 500);
+
+        ExecutorWorker::_checkContentEqualityFn = [](const DriveDbId /*driveDbId*/, const SyncPath & /*absoluteLocalPath*/,
+                                                     const NodeId & /*remoteNodeId*/, int64_t /*remoteSize*/,
+                                                     bool &contentEquality) {
+            contentEquality = true;
+            return ExitCode::Ok;
+        };
+
+        bool ignored = true;
+        bool bypassProgressComplete = true;
+        const ExitInfo exitInfo = _executorWorker->handleMoveOp(op, ignored, bypassProgressComplete);
+
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT(op->isDateOnlyUpdate());
+        CPPUNIT_ASSERT(!ignored);
+        CPPUNIT_ASSERT(!bypassProgressComplete);
+
+        // The local file has not been renamed, and the remote modification date has been applied to it.
+        CPPUNIT_ASSERT(std::filesystem::exists(localFilePath));
+        CPPUNIT_ASSERT(!std::filesystem::exists(conflictedFilePath));
+        CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime + 500), getFileModificationTime());
+
+        // The modification date has been updated in DB on both replicas.
+        std::optional<SyncTime> lastModified;
+        bool found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Local, "lid", lastModified, found) && found);
+        CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime + 500), *lastModified);
+        CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Remote, "rid", lastModified, found) && found);
+        CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime + 500), *lastModified);
+        CPPUNIT_ASSERT(!_syncPal->restart());
+    }
+
+    // 2 - The contents are different: the standard resolution is applied, i.e., the local file is renamed as a conflicted copy
+    // and the remote file will be pulled at the next sync.
+    {
+        resetDbNode();
+        _syncPal->setRestart(false);
+        const std::string content(10, 'x');
+        createLocalFile(content, testhelpers::defaultTime - 2000, testhelpers::defaultTime - 1000);
+        const auto op = createSyncOp(dbNodeId, static_cast<int64_t>(content.size()), testhelpers::defaultTime + 500);
+
+        bool equalityChecked = false;
+        ExecutorWorker::_checkContentEqualityFn =
+                [&equalityChecked](const DriveDbId /*driveDbId*/, const SyncPath & /*absoluteLocalPath*/,
+                                   const NodeId & /*remoteNodeId*/, int64_t /*remoteSize*/, bool &contentEquality) {
+                    equalityChecked = true;
+                    contentEquality = false;
+                    return ExitCode::Ok;
+                };
+
+        bool ignored = false;
+        bool bypassProgressComplete = false;
+        const ExitInfo exitInfo = _executorWorker->handleMoveOp(op, ignored, bypassProgressComplete);
+
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT(!op->isDateOnlyUpdate());
+        CPPUNIT_ASSERT(equalityChecked);
+        CPPUNIT_ASSERT(!_syncPal->restart());
+
+        // The local file has been renamed as a conflicted copy.
+        CPPUNIT_ASSERT(!std::filesystem::exists(localFilePath));
+        CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
+
+        // The DB entry has been removed, so that the remote file is detected as new at the next sync.
+        std::optional<SyncTime> lastModified;
+        bool found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Local, "lid", lastModified, found));
+        CPPUNIT_ASSERT(!found);
+    }
+
+    // 3 - The local file size does not match the remote one: the contents are different, the content equality is not checked
+    // and the standard resolution is applied.
+    {
+        resetDbNode();
+        _syncPal->setRestart(false);
+        const std::string content(10, 'x');
+        createLocalFile(content, testhelpers::defaultTime - 2000, testhelpers::defaultTime - 1000);
+        const auto op = createSyncOp(dbNodeId, testhelpers::defaultFileSize, testhelpers::defaultTime + 500);
+
+        bool equalityChecked = false;
+        ExecutorWorker::_checkContentEqualityFn =
+                [&equalityChecked](const DriveDbId /*driveDbId*/, const SyncPath & /*absoluteLocalPath*/,
+                                   const NodeId & /*remoteNodeId*/, int64_t /*remoteSize*/, bool &contentEquality) {
+                    equalityChecked = true;
+                    contentEquality = true;
+                    return ExitCode::Ok;
+                };
+
+        bool ignored = false;
+        bool bypassProgressComplete = false;
+        const ExitInfo exitInfo = _executorWorker->handleMoveOp(op, ignored, bypassProgressComplete);
+
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT(!equalityChecked);
+        CPPUNIT_ASSERT(!op->isDateOnlyUpdate());
+        CPPUNIT_ASSERT(!std::filesystem::exists(localFilePath));
+        CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
+    }
 }
 
 void TestExecutorWorker::testInitSyncFileItem() {
