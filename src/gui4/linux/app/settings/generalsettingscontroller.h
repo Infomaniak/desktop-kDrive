@@ -20,6 +20,7 @@
 
 #include "app/services/parametersservice.h"
 #include "app/services/releasenotesservice.h"
+#include "libcommon/utility/utility.h"
 
 #include <QObject>
 #include <QUrl>
@@ -48,13 +49,14 @@ class GeneralSettingsController final : public QObject {
         Q_PROPERTY(bool updateReadyToInstall READ updateReadyToInstall NOTIFY changed)
         Q_PROPERTY(bool updateInstallable READ updateInstallable NOTIFY changed)
         Q_PROPERTY(bool automaticUpdates READ automaticUpdates NOTIFY changed)
+        Q_PROPERTY(bool automaticUpdatesAvailable READ automaticUpdatesAvailable CONSTANT)
         Q_PROPERTY(int32_t distributionChannel READ distributionChannel NOTIFY changed)
         Q_PROPERTY(QString betaProgramStatus READ betaProgramStatus NOTIFY changed)
         Q_PROPERTY(QVariantList distributionChannels READ distributionChannels NOTIFY changed)
         Q_PROPERTY(QString releaseVersion READ releaseVersion NOTIFY changed)
         Q_PROPERTY(QString releaseDetails READ releaseDetails NOTIFY changed)
         Q_PROPERTY(QString installedDetails READ installedDetails NOTIFY changed)
-        Q_PROPERTY(QVariantList releaseNotes READ releaseNotes NOTIFY changed)
+        Q_PROPERTY(QVariantList releaseNotes READ releaseNotes NOTIFY releaseNotesChanged)
 
     public:
         GeneralSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
@@ -79,6 +81,7 @@ class GeneralSettingsController final : public QObject {
         [[nodiscard]] bool updateReadyToInstall() const;
         [[nodiscard]] bool updateInstallable() const;
         [[nodiscard]] bool automaticUpdates() const;
+        [[nodiscard]] bool automaticUpdatesAvailable() const { return _automaticUpdatesAvailable; }
         [[nodiscard]] int32_t distributionChannel() const;
         [[nodiscard]] QString betaProgramStatus() const;
         [[nodiscard]] QVariantList distributionChannels() const;
@@ -107,6 +110,8 @@ class GeneralSettingsController final : public QObject {
 
     signals:
         void changed();
+        // Separate from changed(): a new list rebuilds the release notes Repeater.
+        void releaseNotesChanged();
 
     private:
         void save(const ParametersService::ParametersMutation &mutation);
@@ -118,6 +123,8 @@ class GeneralSettingsController final : public QObject {
         UpdateStatusService &_updateStatusService;
         const AppCache &_appCache;
         ReleaseNotesService _releaseNotes;
+        // Same rule as the server updater: only a writable AppImage installation can update itself.
+        const bool _automaticUpdatesAvailable{CommonUtility::isAppImageUpdatable()};
 
         bool _saving{false};
 

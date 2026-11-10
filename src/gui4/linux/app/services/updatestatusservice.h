@@ -66,7 +66,7 @@ class UpdateStatusService final : public QObject {
 
     private:
         void requestVersion();
-        void requestInstaller() const;
+        void requestInstaller();
 
         StateRequest _stateRequest;
         VersionRequest _versionRequest;

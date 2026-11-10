@@ -95,7 +95,7 @@ GeneralSettingsController::GeneralSettingsController(ParametersStore &parameters
     (void) connect(&appCache, &AppCache::usersChanged, this, &GeneralSettingsController::changed);
     (void) connect(&translationService, &TranslationService::languageChanged, this, &GeneralSettingsController::changed);
     (void) connect(&updateStatusService, &UpdateStatusService::changed, this, &GeneralSettingsController::changed);
-    (void) connect(&_releaseNotes, &ReleaseNotesService::changed, this, &GeneralSettingsController::changed);
+    (void) connect(&_releaseNotes, &ReleaseNotesService::changed, this, &GeneralSettingsController::releaseNotesChanged);
 }
 
 bool GeneralSettingsController::ready() const {

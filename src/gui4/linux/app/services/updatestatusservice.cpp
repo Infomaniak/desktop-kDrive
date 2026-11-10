@@ -60,12 +60,18 @@ void UpdateStatusService::installUpdate() {
 }
 
 // Prepares the available update, or restarts on the installed one: the server picks the step from its own state.
-void UpdateStatusService::requestInstaller() const {
+void UpdateStatusService::requestInstaller() {
     qCInfo(lcUpdateStatusService) << "Requesting the update installer | state:" << _state;
-    _installRequest([](const ExitInfo &result) {
-        if (!result) {
-            qCWarning(lcUpdateStatusService)
-                    << "Update installer request failed | code:" << result.code() << "/ cause:" << result.cause();
+    _installRequest([self = QPointer(this)](const ExitInfo &result) {
+        if (result) {
+            return;
+        }
+
+        qCWarning(lcUpdateStatusService) << "Update installer request failed | code:" << result.code()
+                                         << "/ cause:" << result.cause();
+        // A later automatic preparation must not restart the application without the user's request.
+        if (self) {
+            self->_restartWhenReady = false;
         }
     });
 }

@@ -78,6 +78,7 @@ IKModal {
             }
             // Release notes of the announced version, hidden when they cannot be loaded.
             Column {
+                id: releaseNotesColumn
                 width: parent.width
                 visible: !root.about && root.controller.releaseNotes.length > 0
                 spacing: IKSpacing.s12
@@ -86,12 +87,14 @@ IKModal {
                     Column {
                         id: releaseNotesSection
                         required property var modelData
-                        width: parent.width
+                        // Repeater delegates lose their parent while being destroyed: bind to ids, not to parent.
+                        width: releaseNotesColumn.width
                         spacing: IKSpacing.s4
                         Text {
-                            width: parent.width
+                            width: releaseNotesSection.width
                             visible: text.length > 0
                             text: releaseNotesSection.modelData.title
+                            textFormat: Text.PlainText
                             color: IKColors.textPrimary
                             font.pixelSize: IKFonts.bodySize
                             font.weight: IKFonts.emphasized
@@ -101,8 +104,9 @@ IKModal {
                             model: releaseNotesSection.modelData.items
                             Text {
                                 required property string modelData
-                                width: parent.width
+                                width: releaseNotesSection.width
                                 text: "• " + modelData
+                                textFormat: Text.PlainText
                                 color: IKColors.textSecondary
                                 font.pixelSize: IKFonts.bodySize
                                 wrapMode: Text.WordWrap

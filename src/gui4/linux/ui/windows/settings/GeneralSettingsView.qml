@@ -80,6 +80,7 @@ ScrollView {
                 }
             }
             SettingsRow {
+                visible: root.controller.automaticUpdatesAvailable
                 title: qsTrId("automaticUpdatesSetting")
                 IKSwitch {
                     text: qsTrId("automaticUpdatesSetting")
@@ -89,16 +90,8 @@ ScrollView {
                 }
             }
             SettingsRow {
-                title: qsTrId("aboutKDrive")
-                SettingsInfoButton {
-                    id: aboutInfo
-                    onClicked: root.aboutRequested(aboutInfo)
-                }
-            }
-            SettingsRow {
                 // TODO(translation): create betaProgramSetting in Loco.
                 title: qsTrId("betaProgramSetting")
-                separator: false
                 Text {
                     text: root.controller.betaProgramStatus
                     color: IKColors.textSecondary
@@ -108,6 +101,14 @@ ScrollView {
                     id: betaProgramInfo
                     enabled: root.controller.ready
                     onClicked: root.betaProgramRequested(betaProgramInfo)
+                }
+            }
+            SettingsRow {
+                title: qsTrId("aboutKDrive")
+                separator: false
+                SettingsInfoButton {
+                    id: aboutInfo
+                    onClicked: root.aboutRequested(aboutInfo)
                 }
             }
         }
