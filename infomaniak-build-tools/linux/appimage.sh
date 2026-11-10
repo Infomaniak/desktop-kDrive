@@ -424,6 +424,14 @@ function appimage_verify_bundle() (
     local file
     local verify_bundled_glib=0
 
+    # Oldest supported system: Ubuntu 22.04 on amd64, Ubuntu 24.04 on arm64.
+    local glibc_ceiling="GLIBC_2.35"
+    local glibcxx_ceiling="GLIBCXX_3.4.30"
+    if [[ "$(uname -m)" == "aarch64" ]]; then
+        glibc_ceiling="GLIBC_2.39"
+        glibcxx_ceiling="GLIBCXX_3.4.33"
+    fi
+
     if compgen -G "$app_dir/usr/lib/libglib-2.0.so*" >/dev/null ||
         compgen -G "$app_dir/usr/lib/libgio-2.0.so*" >/dev/null ||
         compgen -G "$app_dir/usr/lib/libgobject-2.0.so*" >/dev/null ||
@@ -462,27 +470,25 @@ function appimage_verify_bundle() (
             failures=1
         fi
 
-        glibc_floor="$(printf '%s\n%s\n' "$glibc_floor" "$(objdump -T "$file" 2>/dev/null | grep -oE 'GLIBC_[0-9.]+' | sort -V | tail -1)" | sort -V | tail -1)"
-        glibcxx_floor="$(printf '%s\n%s\n' "$glibcxx_floor" "$(objdump -T "$file" 2>/dev/null | grep -oE 'GLIBCXX_[0-9.]+' | sort -V | tail -1)" | sort -V | tail -1)"
-    done < <(find "$app_dir/usr" -type f -print0)
-
-    echo "Bundle floor: ${glibc_floor:-none} / ${glibcxx_floor:-none}"
-
-    # Ubuntu 22.04 is the oldest supported system.
-    local version_floor
-    local version_ceiling
-    for version_floor in "$glibc_floor" "$glibcxx_floor"; do
-        [[ -n "$version_floor" ]] || continue
-        case "$version_floor" in
-        GLIBC_*) version_ceiling="GLIBC_2.35" ;;
-        GLIBCXX_*) version_ceiling="GLIBCXX_3.4.30" ;;
-        esac
-        if [[ "$(printf '%s\n%s\n' "$version_floor" "$version_ceiling" | sort -V | tail -1)" != "$version_ceiling" ]]; then
-            echo "The bundle requires $version_floor, above the Ubuntu 22.04 baseline $version_ceiling" >&2
+        local symbol_versions
+        local file_glibc
+        local file_glibcxx
+        symbol_versions="$(objdump -T "$file" 2>/dev/null || true)"
+        file_glibc="$(grep -oE 'GLIBC_[0-9.]+' <<<"$symbol_versions" | sort -V | tail -1 || true)"
+        file_glibcxx="$(grep -oE 'GLIBCXX_[0-9.]+' <<<"$symbol_versions" | sort -V | tail -1 || true)"
+        if [[ -n "$file_glibc" && "$(printf '%s\n%s\n' "$file_glibc" "$glibc_ceiling" | sort -V | tail -1)" != "$glibc_ceiling" ]]; then
+            echo "Requires $file_glibc, above the supported $glibc_ceiling: $file" >&2
             failures=1
         fi
-    done
+        if [[ -n "$file_glibcxx" && "$(printf '%s\n%s\n' "$file_glibcxx" "$glibcxx_ceiling" | sort -V | tail -1)" != "$glibcxx_ceiling" ]]; then
+            echo "Requires $file_glibcxx, above the supported $glibcxx_ceiling: $file" >&2
+            failures=1
+        fi
+        glibc_floor="$(printf '%s\n%s\n' "$glibc_floor" "$file_glibc" | sort -V | tail -1)"
+        glibcxx_floor="$(printf '%s\n%s\n' "$glibcxx_floor" "$file_glibcxx" | sort -V | tail -1)"
+    done < <(find "$app_dir/usr" -type f -print0)
 
+    echo "Bundle floor: ${glibc_floor:-none} / ${glibcxx_floor:-none} (supported: $glibc_ceiling / $glibcxx_ceiling)"
     exit "$failures"
 )
 
