@@ -32,11 +32,23 @@ class ApiTranslator {
 
         [[nodiscard]] static ExitInfo translateV2ToV3(UserDbId userDbId, DriveId driveId, RemoteNodeId &remoteDirectoryId);
         [[nodiscard]] static ExitInfo translateV2ToV3(DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId);
-        static void translateV3ToV2(SyncPath &remotePath);
+        // Translates an absolute API v3 path into the API v2 tree. The API v3 only sends absolute paths, starting with
+        // the root separator:
+        // - "/Private" is the root of the user's private space in the v3 tree. It translates to the empty path, which
+        //   represents the v2 drive root;
+        // - "/Private/<path>" translates to "/<path>", keeping the root separator: the consumers strip it when they
+        //   need a path relative to the v2 drive root;
+        // - any other path is unchanged, as the v2 tree uses the same paths for the other roots ("/Common documents",
+        //   "/Shared").
+        static void translateV3ToV2(std::string &remotePath);
+#if defined(KD_WINDOWS)
+        static void translateV3ToV2(SyncName &remotePath);
+#endif
+        // Like the string overloads, the translated path keeps its leading separator, as expected for NodeInfo paths.
+        static void translateV3ToV2(QString &v3Path);
         [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
         [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId,
                                                       RemoteNodeInfoList &v3RemoteNodeInfoList);
-
         [[nodiscard]] static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId,
                                                                SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId);
         [[nodiscard]] static ExitInfo getSharedFolderSnapshotItem(UserDbId userDbId, DriveId driveId, RemoteSnapshotItem &item);
