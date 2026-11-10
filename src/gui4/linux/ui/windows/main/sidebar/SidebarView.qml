@@ -27,6 +27,7 @@ Rectangle {
 
     required property var appRouter
     required property var controller
+    required property var storageController
     // False while the selected synchronization is blocked: its pages are replaced by the blocking error screen.
     property bool navigationEnabled: true
     readonly property int currentTab: appRouter.currentMainTabIndex
@@ -74,6 +75,7 @@ Rectangle {
                 enabled: root.navigationEnabled && root.controller.hasCurrentSyncRoot
                 iconSource: "qrc:/assets/main/storage.svg"
                 label: qsTrId("tabTitleStorage")
+                notificationDot: root.storageController.storageWarning
                 selected: root.currentTab === root.tabStorage
                 width: parent.width
 

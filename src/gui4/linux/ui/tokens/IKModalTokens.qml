@@ -33,6 +33,8 @@ QtObject {
     readonly property real buttonHorizontalPadding: IKSpacing.s16
     readonly property real buttonSpinnerSize: 16
     readonly property real buttonExternalIconSpacing: IKSpacing.s8
+    readonly property real buttonIconSize: IKIconSizes.small
+    readonly property real buttonIconSpacing: 6
     readonly property real checkboxSize: 18
     readonly property real errorIconSize: 18
     readonly property real errorPadding: IKSpacing.s12
