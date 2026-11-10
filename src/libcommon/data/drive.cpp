@@ -59,8 +59,7 @@ void Drive::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, driveInfoColor, CommonUtility::str2CommString(color()));
     CommonUtility::writeValueToStruct(dstruct, driveInfoNotifications, notifications());
     CommonUtility::writeValueToStruct(dstruct, driveInfoAdmin, admin());
-    CommonUtility::writeValueToStruct(dstruct, driveInfoMaintenance,
-                                      maintenanceInfo().inMaintenance()); // TODO : send all maintenance info?
+    CommonUtility::writeValueToStruct(dstruct, driveInfoMaintenance, maintenanceInfo(), info2DynamicVar<MaintenanceInfo>);
     CommonUtility::writeValueToStruct(dstruct, driveInfoLocked, locked());
     CommonUtility::writeValueToStruct(dstruct, driveInfoUsedSize, usedSize());
     CommonUtility::writeValueToStruct(dstruct, driveInfoAccessDenied, accessDenied());

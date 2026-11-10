@@ -1080,6 +1080,19 @@ std::string toString(const TooManyDeletesUserChoice e) {
     }
 }
 
+std::string toString(const UpsellTarget e) {
+    switch (e) {
+        case UpsellTarget::None:
+            return "None";
+        case UpsellTarget::MykSuitePlus:
+            return "MykSuitePlus";
+        case UpsellTarget::kSuitePro:
+            return "LitekSuiteProSync";
+        default:
+            return noConversionStr;
+    }
+}
+
 void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
     const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
     const long thisIndex = indexInList(this->code(), exitCodeList);

@@ -26,6 +26,19 @@ static const auto packId = "id";
 static const auto packName = "name";
 static const auto packDisplayName = "displayName";
 static const auto packIsFree = "isFree";
+static const auto packUpsellTarget = "upsellTarget";
+
+static const std::map<uint64_t, UpsellTarget> packIdToUpsellTarget = {
+        {1, UpsellTarget::MykSuitePlus}, // Solo
+        {2, UpsellTarget::kSuitePro}, // Team
+        {3, UpsellTarget::kSuitePro}, // Pro
+        {6, UpsellTarget::MykSuitePlus}, // Free
+        {8, UpsellTarget::kSuitePro}, // kSuite standard
+        {16, UpsellTarget::MykSuitePlus}, // myKsuite
+        {22, UpsellTarget::MykSuitePlus}, // Solo special offer
+        {29, UpsellTarget::kSuitePro},
+
+};
 
 PackInfo::PackInfo(const uint64_t id, const std::string &name, const std::string &displayName, const bool isFree) :
     _id(id),
@@ -33,11 +46,18 @@ PackInfo::PackInfo(const uint64_t id, const std::string &name, const std::string
     _displayName(displayName),
     _isFree(isFree) {}
 
+UpsellTarget PackInfo::upsellTarget() const {
+    if (!isFree()) return UpsellTarget::None;
+    if (packIdToUpsellTarget.contains(_id)) return packIdToUpsellTarget.at(_id);
+    return UpsellTarget::MykSuitePlus; // Default upsell target for free packs that are not in the map.
+}
+
 void PackInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, packId, _id);
     CommonUtility::writeValueToStruct(dstruct, packName, CommonUtility::str2CommString(_name));
     CommonUtility::writeValueToStruct(dstruct, packDisplayName, CommonUtility::str2CommString(_displayName));
     CommonUtility::writeValueToStruct(dstruct, packIsFree, _isFree);
+    CommonUtility::writeValueToStruct(dstruct, packUpsellTarget, upsellTarget());
 }
 
 void PackInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
