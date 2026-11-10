@@ -30,7 +30,10 @@ namespace KDC {
 
 class ParametersStore;
 
-/** Process-wide updater state and release metadata. Installs the downloaded AppImage on request. */
+/**
+ * Process-wide updater state and release metadata. Starts the AppImage update on the user's request, then restarts on
+ * it; automatic updates are prepared by the server on its own.
+ */
 class UpdateStatusService final : public QObject {
         Q_OBJECT
 
@@ -53,8 +56,9 @@ class UpdateStatusService final : public QObject {
         [[nodiscard]] bool available() const;
         [[nodiscard]] bool downloading() const { return _state == UpdateState::Downloading; }
         [[nodiscard]] bool readyToInstall() const { return _state == UpdateState::Ready; }
+        [[nodiscard]] bool installable() const { return _state == UpdateState::Available; }
 
-        void startInstaller() const;
+        void installUpdate();
 
     signals:
         void changed();
@@ -62,6 +66,7 @@ class UpdateStatusService final : public QObject {
 
     private:
         void requestVersion();
+        void requestInstaller() const;
 
         StateRequest _stateRequest;
         VersionRequest _versionRequest;
@@ -72,6 +77,7 @@ class UpdateStatusService final : public QObject {
         uint64_t _versionGeneration{0};
         bool _versionPending{false};
         bool _forceVersionRefresh{false};
+        bool _restartWhenReady{false};
 };
 
 } // namespace KDC

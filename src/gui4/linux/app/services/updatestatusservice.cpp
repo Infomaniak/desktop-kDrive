@@ -49,17 +49,23 @@ bool UpdateStatusService::available() const {
     }
 }
 
-void UpdateStatusService::startInstaller() const {
-    if (!readyToInstall()) {
-        return;
+// User action: prepares the available update then restarts on it, or restarts on the update already installed.
+void UpdateStatusService::installUpdate() {
+    if (installable()) {
+        _restartWhenReady = true;
+        requestInstaller();
+    } else if (readyToInstall()) {
+        requestInstaller();
     }
+}
 
-    // On success the server replaces the AppImage, then asks this client to quit before relaunching.
-    qCInfo(lcUpdateStatusService) << "Requesting the update installation";
+// Prepares the available update, or restarts on the installed one: the server picks the step from its own state.
+void UpdateStatusService::requestInstaller() const {
+    qCInfo(lcUpdateStatusService) << "Requesting the update installer | state:" << _state;
     _installRequest([](const ExitInfo &result) {
         if (!result) {
             qCWarning(lcUpdateStatusService)
-                    << "Update installation request failed | code:" << result.code() << "/ cause:" << result.cause();
+                    << "Update installer request failed | code:" << result.code() << "/ cause:" << result.cause();
         }
     });
 }
@@ -96,6 +102,23 @@ void UpdateStatusService::setState(const UpdateState state) {
 
     if (available() && !_version && !_versionPending) {
         requestVersion();
+    }
+
+    switch (state) {
+        case UpdateState::Ready:
+            // The user asked for the update before it was installed: restart on it now.
+            if (std::exchange(_restartWhenReady, false)) {
+                requestInstaller();
+            }
+            break;
+        case UpdateState::Checking:
+        case UpdateState::Available:
+        case UpdateState::Downloading:
+            // A periodic check during the preparation keeps the user's request.
+            break;
+        default:
+            _restartWhenReady = false;
+            break;
     }
 }
 

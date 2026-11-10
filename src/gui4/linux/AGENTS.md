@@ -752,10 +752,8 @@
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
     - `ui/windows/updaterequired/`: update-required screen built on `IKBlockingState`, loaded by `Main.qml` above every
       other route, onboarding included (the session is hidden, not cancelled), while
-      `SyncErrorsProjection.updateRequired`; the header keeps only the kDrive logo and title. The Linux server has no
-      installer (`LinuxUpdater::startInstaller` is empty): "Download manually" calls
-      `GeneralSettingsController::openDownload`, whose `TODO` marks where to send `UPDATER_START_INSTALLER` once the
-      packaging rework brings one, and "Quit" calls `SystemTrayController::requestApplicationQuit`. Settings cannot be
+      `SyncErrorsProjection.updateRequired`; the header keeps only the kDrive logo and title. "Download manually" calls
+      `GeneralSettingsController::openDownload` and "Quit" calls `SystemTrayController::requestApplicationQuit`. Settings cannot be
       opened meanwhile: `AppClientLinux::openSettingsWindow` refuses, an open Settings window is closed, and the tray
       entry is disabled.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it

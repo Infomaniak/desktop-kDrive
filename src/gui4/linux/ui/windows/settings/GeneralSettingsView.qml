@@ -57,14 +57,18 @@ ScrollView {
                 IKModalButton {
                     readonly property bool manual: !root.controller.updateReadyToInstall
                                                    && !root.controller.updateDownloading
+                                                   && !root.controller.updateInstallable
 
                     visible: root.controller.updateAvailable
-                    // The update is already installed: the button restarts the application on the new version.
+                    // Ready: the update is installed, the button restarts the application on it. Installable: the
+                    // button downloads and installs the update, then restarts.
                     // TODO(translation): create buttonRestart in Loco.
                     text: root.controller.updateReadyToInstall ? qsTrId("buttonRestart")
                                                                : root.controller.updateDownloading
                                                                  ? qsTrId("buttonDownloadInProgress")
-                                                                 : qsTrId("buttonDownloadManually")
+                                                                 : root.controller.updateInstallable
+                                                                   ? qsTrId("buttonUpdate")
+                                                                   : qsTrId("buttonDownloadManually")
                     external: manual
                     actionEnabled: !root.controller.updateDownloading
                     implicitHeight: IKSettings.buttonHeight
@@ -73,6 +77,15 @@ ScrollView {
                 SettingsInfoButton {
                     id: releaseInfo
                     onClicked: root.releaseInformationRequested(releaseInfo)
+                }
+            }
+            SettingsRow {
+                title: qsTrId("automaticUpdatesSetting")
+                IKSwitch {
+                    text: qsTrId("automaticUpdatesSetting")
+                    enabled: root.controller.ready && !root.controller.saving
+                    value: root.controller.automaticUpdates
+                    onToggleRequested: value => root.controller.setAutomaticUpdates(value)
                 }
             }
             SettingsRow {

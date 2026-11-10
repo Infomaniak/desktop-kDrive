@@ -45,6 +45,8 @@ class GeneralSettingsController final : public QObject {
         Q_PROPERTY(bool updateAvailable READ updateAvailable NOTIFY changed)
         Q_PROPERTY(bool updateDownloading READ updateDownloading NOTIFY changed)
         Q_PROPERTY(bool updateReadyToInstall READ updateReadyToInstall NOTIFY changed)
+        Q_PROPERTY(bool updateInstallable READ updateInstallable NOTIFY changed)
+        Q_PROPERTY(bool automaticUpdates READ automaticUpdates NOTIFY changed)
         Q_PROPERTY(int32_t distributionChannel READ distributionChannel NOTIFY changed)
         Q_PROPERTY(QString betaProgramStatus READ betaProgramStatus NOTIFY changed)
         Q_PROPERTY(QVariantList distributionChannels READ distributionChannels NOTIFY changed)
@@ -73,6 +75,8 @@ class GeneralSettingsController final : public QObject {
         [[nodiscard]] bool updateAvailable() const;
         [[nodiscard]] bool updateDownloading() const;
         [[nodiscard]] bool updateReadyToInstall() const;
+        [[nodiscard]] bool updateInstallable() const;
+        [[nodiscard]] bool automaticUpdates() const;
         [[nodiscard]] int32_t distributionChannel() const;
         [[nodiscard]] QString betaProgramStatus() const;
         [[nodiscard]] QVariantList distributionChannels() const;
@@ -85,6 +89,7 @@ class GeneralSettingsController final : public QObject {
         Q_INVOKABLE void setMoveToTrash(bool enabled);
         Q_INVOKABLE void setLanguage(int32_t languageValue);
         Q_INVOKABLE void setDistributionChannel(int32_t channelValue);
+        Q_INVOKABLE void setAutomaticUpdates(bool enabled);
 
         Q_INVOKABLE void openDownload();
         Q_INVOKABLE void installUpdate() const;

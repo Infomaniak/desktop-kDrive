@@ -164,6 +164,15 @@ bool GeneralSettingsController::updateReadyToInstall() const {
     return _updateStatusService.readyToInstall();
 }
 
+bool GeneralSettingsController::updateInstallable() const {
+    return _updateStatusService.installable();
+}
+
+bool GeneralSettingsController::automaticUpdates() const {
+    const auto parameters = _parametersStore.parameters();
+    return parameters && parameters->automaticUpdates();
+}
+
 int32_t GeneralSettingsController::distributionChannel() const {
     const auto parameters = _parametersStore.parameters();
     const auto channel = parameters ? parameters->distributionChannel() : DistributionChannel::Prod;
@@ -258,6 +267,14 @@ void GeneralSettingsController::setNotificationsEnabled(const bool enabled) {
     });
 }
 
+void GeneralSettingsController::setAutomaticUpdates(const bool enabled) {
+    if (enabled == automaticUpdates()) {
+        return;
+    }
+
+    save([enabled](Parameters &parameters) { parameters.setAutomaticUpdates(enabled); });
+}
+
 void GeneralSettingsController::setMoveToTrash(const bool enabled) {
     if (enabled == moveToTrash()) {
         return;
@@ -320,7 +337,7 @@ void GeneralSettingsController::openDownload() {
 }
 
 void GeneralSettingsController::installUpdate() const {
-    _updateStatusService.startInstaller();
+    _updateStatusService.installUpdate();
 }
 
 void GeneralSettingsController::openTrashHelp() {

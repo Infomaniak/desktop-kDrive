@@ -108,12 +108,13 @@ IKModal {
         },
         IKModalButton {
             readonly property bool manual: !root.controller.updateReadyToInstall && !root.controller.updateDownloading
+                                           && !root.controller.updateInstallable
 
             visible: !root.about && root.controller.updateAvailable
-            // The update is already installed: the button restarts the application on the new version.
             // TODO(translation): create buttonRestart in Loco.
             text: root.controller.updateReadyToInstall ? qsTrId("buttonRestart")
                                                        : root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
+                                                       : root.controller.updateInstallable ? qsTrId("buttonUpdate")
                                                                                            : qsTrId("buttonDownloadManually")
             external: manual
             actionEnabled: !root.controller.updateDownloading

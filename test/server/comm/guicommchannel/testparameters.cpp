@@ -49,6 +49,7 @@ ServerParameters getExpectedParameters() {
     parameters.setDialogGeometry("drivePreferencesPanel", "blob4567");
     parameters.setMaxAllowedCpu(50);
     parameters.setProxyConfig(proxyConfig);
+    parameters.setAutomaticUpdates(false);
     return parameters;
 };
 
@@ -86,6 +87,7 @@ Poco::JSON::Object createParametersObject() {
     (void) parametersObj.set("distributionChannel", toInt(DistributionChannel::Prod));
     (void) parametersObj.set("sentryEnabled", true);
     (void) parametersObj.set("matomoEnabled", true);
+    (void) parametersObj.set("automaticUpdates", false);
 
     return parametersObj;
 };
@@ -165,6 +167,53 @@ void TestGuiCommChannel::testParametersUpdateJob() {
         const auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
         CPPUNIT_ASSERT(parametersUpdateJob);
         const auto res = getExpectedParameters();
+        CPPUNIT_ASSERT(res == parametersUpdateJob->_parameters);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+// Only the Linux client sends automaticUpdates: an update from another client must still succeed and keep the default.
+void TestGuiCommChannel::testParametersUpdateJobWithoutAutomaticUpdates() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
+    auto parametersObj = createParametersObject();
+    parametersObj.remove("automaticUpdates");
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("parametersInfo", parametersObj);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
+
+    // Job expected answer
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
+        const auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
+        CPPUNIT_ASSERT(parametersUpdateJob);
+        auto res = getExpectedParameters();
+        res.setAutomaticUpdates(true);
         CPPUNIT_ASSERT(res == parametersUpdateJob->_parameters);
     };
 
