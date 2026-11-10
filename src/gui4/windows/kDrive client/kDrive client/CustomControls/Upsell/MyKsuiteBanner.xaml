@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.Upsell.MyKsuiteBanner"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:kDrive="using:Infomaniak.kDrive"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Grid BorderThickness="1"
+          Padding="15,13,13,13"
+          HorizontalAlignment="Stretch"
+          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
+          Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+        <Grid.BorderBrush>
+            <LinearGradientBrush StartPoint="0,0"
+                                 EndPoint="1,1">
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.lightblue}"
+                              Offset="0.0" />
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.darkblue}"
+                              Offset="0.2" />
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.purple}"
+                              Offset="0.4" />
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.pink}"
+                              Offset="0.6" />
+                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.orange}"
+                              Offset="0.8" />
+            </LinearGradientBrush>
+        </Grid.BorderBrush>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <controls:SvgIcon Grid.Column="0"
+                          Grid.Row="0"
+                          HorizontalAlignment="Left"
+                          UriString="{ThemeResource Infomaniak.Custom.Icons.logo-myksuiteplus}"
+                          Height="24" />
+
+        <TextBlock Grid.Column="0"
+                   Grid.Row="1"
+                   Text="Plus d’espace, plus de fonctionnalités, avec my kSuite+" />
+
+        <Button Grid.Column="1"
+                Grid.Row="0"
+                Content="Faire évoluer" 
+                Style="{ThemeResource SubtleButtonStyle}"/>
+    </Grid>
+</UserControl>
