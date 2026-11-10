@@ -835,11 +835,11 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob>
 
 ExitInfo ExecutorWorker::propagateDateOnlyUpdate(SyncOpPtr syncOp) {
     // The operation resolves an Edit-Edit conflict by renaming the local file. Before executing the rename, the content
-    // equality is verified at execution time: this is the only moment where it can be checked without risking to act on
+    // equality is verified at execution time: this is the only moment where it can be checked without risking acting on
     // outdated information, since the files may have been modified since the conflict was detected. If the contents are
     // identical, the conflict is resolved without renaming the local file: only the last modification date of the remote
-    // replica is applied to the local file. The remote replica is never modified in this flow, since HTTP requests have a
-    // cost and a latency, and they impact other users.
+    // replica is applied to the local file. This flow never modifies the remote last modification date, since HTTP requests
+    // have a cost and a latency, and they impact other users.
     const SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
     const SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
 
@@ -967,7 +967,7 @@ ExitInfo ExecutorWorker::applyDateOnlyUpdate(SyncOpPtr syncOp, const SyncPath &a
     } else {
         const bool isSyncing = !_syncPal->isLocalItemInSyncWithDb(absoluteLocalFilePath);
         vfsStatus.isSyncing = isSyncing;
-        vfsStatus.progress = isSyncing ? vfsStatus.progress : 100;
+        vfsStatus.progress = isSyncing ? vfsStatus.progress : int16_t{100};
         if (ExitInfo exitInfoForceStatus = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus); !exitInfoForceStatus) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": "
                                                                      << exitInfoForceStatus);

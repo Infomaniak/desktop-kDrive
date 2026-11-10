@@ -489,14 +489,14 @@ void TestExecutorWorker::testPropagateDateOnlyUpdate() {
     const auto createLocalFile = [&localFilePath, &conflictedFilePath](const std::string &content, const SyncTime creationTime,
                                                                        const SyncTime modificationTime) {
         std::error_code ec;
-        std::filesystem::remove(conflictedFilePath, ec); // Remove the conflicted copy created by the previous case.
+        (void) std::filesystem::remove(conflictedFilePath, ec); // Remove the conflicted copy created by the previous case.
         std::ofstream ofs(localFilePath, std::ios_base::in | std::ios_base::trunc);
         ofs << content;
         ofs.close();
         CPPUNIT_ASSERT(IoHelper::setFileDates(localFilePath, creationTime, modificationTime, false) == IoError::Success);
     };
 
-    // Insert a fresh DB node before each case, so that the cases are independent from each other.
+    // Insert a fresh DB node before each case, so that the cases are independent of each other.
     DbNodeId dbNodeId = 0;
     const auto resetDbNode = [this, &filename, &dbNodeId]() {
         if (dbNodeId != 0) {
@@ -549,7 +549,7 @@ void TestExecutorWorker::testPropagateDateOnlyUpdate() {
         const auto op = createSyncOp(dbNodeId, static_cast<int64_t>(content.size()), testhelpers::defaultTime + 500);
 
         ExecutorWorker::_checkContentEqualityFn = [](const DriveDbId /*driveDbId*/, const SyncPath & /*absoluteLocalPath*/,
-                                                     const NodeId & /*remoteNodeId*/, int64_t /*remoteSize*/,
+                                                     const RemoteNodeId & /*remoteNodeId*/, const int64_t /*remoteSize*/,
                                                      bool &contentEquality) {
             contentEquality = true;
             return ExitCode::Ok;
@@ -567,15 +567,15 @@ void TestExecutorWorker::testPropagateDateOnlyUpdate() {
         // The local file has not been renamed, and the remote modification date has been applied to it.
         CPPUNIT_ASSERT(std::filesystem::exists(localFilePath));
         CPPUNIT_ASSERT(!std::filesystem::exists(conflictedFilePath));
-        CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime + 500), getFileModificationTime());
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 500, getFileModificationTime());
 
         // The modification date has been updated in DB on both replicas.
         std::optional<SyncTime> lastModified;
         bool found = false;
         CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Local, "lid", lastModified, found) && found);
-        CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime + 500), *lastModified);
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 500, *lastModified);
         CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Remote, "rid", lastModified, found) && found);
-        CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(testhelpers::defaultTime + 500), *lastModified);
+        CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime + 500, *lastModified);
         CPPUNIT_ASSERT(!_syncPal->restart());
     }
 
@@ -591,7 +591,7 @@ void TestExecutorWorker::testPropagateDateOnlyUpdate() {
         bool equalityChecked = false;
         ExecutorWorker::_checkContentEqualityFn =
                 [&equalityChecked](const DriveDbId /*driveDbId*/, const SyncPath & /*absoluteLocalPath*/,
-                                   const NodeId & /*remoteNodeId*/, int64_t /*remoteSize*/, bool &contentEquality) {
+                                   const NodeId & /*remoteNodeId*/, const int64_t /*remoteSize*/, bool &contentEquality) {
                     equalityChecked = true;
                     contentEquality = false;
                     return ExitCode::Ok;
@@ -629,7 +629,7 @@ void TestExecutorWorker::testPropagateDateOnlyUpdate() {
         bool equalityChecked = false;
         ExecutorWorker::_checkContentEqualityFn =
                 [&equalityChecked](const DriveDbId /*driveDbId*/, const SyncPath & /*absoluteLocalPath*/,
-                                   const NodeId & /*remoteNodeId*/, int64_t /*remoteSize*/, bool &contentEquality) {
+                                   const NodeId & /*remoteNodeId*/, const int64_t /*remoteSize*/, bool &contentEquality) {
                     equalityChecked = true;
                     contentEquality = true;
                     return ExitCode::Ok;
