@@ -91,6 +91,7 @@ QtObject {
         readonly property color orange800: "#A14B0B"
         readonly property color orangeDeep: "#FF8500"
         readonly property color orangePale: "#FFE8D8"
+        readonly property color mango: "#FF9802"
 
         // Brown
         readonly property color brown950: "#461E04"
@@ -223,14 +224,32 @@ QtObject {
     readonly property color errorsConflictMostRecentSurface: darkMode ? _p.green950 : _p.green100
     readonly property color errorsConflictMostRecentText: darkMode ? _p.green400 : _p.green800
     readonly property color errorsConflictCounterSurface: surfaceSecondary
+    readonly property color conflictsStrategySurface: surfaceSecondary
+    readonly property color conflictsStrategyHoverBorder: textTertiary
+    readonly property color conflictsStrategyIconSurface: accentPrimary
+    readonly property color conflictsStrategyIcon: actionOnPrimary
+    readonly property color conflictsRecommendedSurface: errorsConflictMostRecentSurface
+    readonly property color conflictsRecommendedText: errorsConflictMostRecentText
+    readonly property color conflictsRadioOff: surfaceTertiary
+    readonly property color conflictsRadioOn: accentPrimary
+    readonly property color conflictsRadioDot: actionOnPrimary
+    readonly property color conflictsListSurface: surfaceSecondary
+    readonly property color conflictsListDivider: surfaceTertiary
     readonly property color storageSurface: surfaceSecondary
     readonly property color storageDivider: darkMode ? _p.neutralBlue600 : _p.neutralBlack05
     readonly property color storageBarSync: darkMode ? _p.kDriveLight : _p.kDrive500
     readonly property color storageLegendSync: darkMode ? _p.kDriveLight : _p.infomaniak
     readonly property color storageBarOther: darkMode ? _p.violetLight : _p.violet500
     readonly property color storageLegendOther: darkMode ? _p.violetLight : _p.cloud500
+    readonly property color storageBarOtherSyncs: darkMode ? _p.orange400 : _p.mango
+    readonly property color storageLegendOtherSyncs: storageBarOtherSyncs
     readonly property color storageFree: darkMode ? _p.gray400 : _p.gray600
     readonly property color storageBarSeparator: darkMode ? _p.neutralBlue700 : _p.gray100
+    readonly property color storageActionSurface: surfaceSecondary
+    readonly property color storageActionIconTile: _p.kDrive500
+    readonly property color storageActionIcon: _p.white
+    readonly property color storageChipSurface: darkMode ? _p.neutralBlue600 : _p.white
+    readonly property color storageCartIcon: accentSecondary
     readonly property color blockingStateSurface: surfaceSecondary
     readonly property color blockingStateBorder: surfaceTertiary
     readonly property color blockingErrorDriveLabelSurface: darkMode ? _p.neutralBlue900 : _p.white
