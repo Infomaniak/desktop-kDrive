@@ -226,6 +226,16 @@ struct COMMON_EXPORT CommonUtility {
 #if defined(KD_LINUX)
         // Sets the working directory path and configures GIO_MODULE_DIR to prevent loading incompatible system GIO modules.
         static void initAppImageEnvironment();
+
+        /** Path of the running AppImage (`$APPIMAGE`), empty outside an AppImage. */
+        static SyncPath appImagePath();
+
+        /**
+         * Whether the running AppImage can be updated in place, the condition shared by the server updater and the
+         * client settings: the application runs from an AppImage whose folder is writable. Free disk space is checked by
+         * the updater only.
+         */
+        static bool isAppImageUpdatable();
 #endif
 
         static void handleSignals(void (*sigHandler)(int));
