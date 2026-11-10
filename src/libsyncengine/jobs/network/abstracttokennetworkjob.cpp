@@ -335,48 +335,84 @@ ExitInfo AbstractTokenNetworkJob::handleResponse(std::istream &is) {
 ExitInfo AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBody) {
     if (const auto exitInfo = AbstractNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
-    // Check for maintenance error
-    if (!jsonRes()) return {};
+    MaintenanceInfo maintenanceInfo;
+    AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(maintenanceInfo);
 
-    if (const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey); dataObj != nullptr) {
-        std::string maintenanceReason;
-        if (!JsonParserUtility::extractValue(dataObj, maintenanceReasonKey, maintenanceReason, false)) {
-            return {};
-        }
+    if (!maintenanceInfo.inMaintenance()) {
+        disableRetry();
+        return ExitCode::Ok;
+    }
 
-        if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::NotRenew) {
-            disableRetry();
-            return {ExitCode::BackError, ExitCause::DriveNotRenew};
-        }
-        if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::Technical) {
-            ExitInfo exitInfo = ExitCode::BackError;
-            const auto maintenanceTypesArray = JsonParserUtility::extractArrayObject(dataObj, maintenanceTypesKey);
-            if (!maintenanceTypesArray || maintenanceTypesArray->empty()) return exitInfo;
-
-            for (const auto &maintenanceInfoVar: *maintenanceTypesArray) {
-                const auto &maintenanceInfoObj = maintenanceInfoVar.extract<Poco::JSON::Object::Ptr>();
-                if (std::string val; JsonParserUtility::extractValue(maintenanceInfoObj, codeKey, val) && val == "asleep") {
-                    LOG_DEBUG(_logger, "Drive is asleep");
-                    exitInfo.setCause(ExitCause::DriveAsleep);
-                    disableRetry();
-                    return exitInfo;
-                }
-                if (std::string val; JsonParserUtility::extractValue(maintenanceInfoObj, codeKey, val) && val == "waking_up") {
-                    LOG_DEBUG(_logger, "Drive is waking up");
-                    exitInfo.setCause(ExitCause::DriveWakingUp);
-                    disableRetry();
-                    return exitInfo;
-                }
-            }
-
-            return exitInfo;
-        }
+    if (maintenanceInfo.asleep()) {
+        disableRetry();
+        return {ExitCode::BackError, ExitCause::DriveAsleep};
+    }
+    if (maintenanceInfo.wakingUp()) {
+        disableRetry();
+        return {ExitCode::BackError, ExitCause::DriveWakingUp};
+    }
+    if (maintenanceInfo.notRenew()) {
+        disableRetry();
+        return {ExitCode::BackError, ExitCause::DriveNotRenew};
     }
 
     return ExitCode::Ok;
 }
 
+ExitInfo AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(MaintenanceInfo &maintenanceInfo) {
+    if (!jsonRes()) return ExitCode::BackError;
+
+    const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
+    if (dataObj == nullptr) return ExitCode::BackError;
+
+    std::string maintenanceReason;
+    (void) JsonParserUtility::extractValue(dataObj, maintenanceReasonKey, maintenanceReason, false);
+    const auto reason = getNetworkErrorReason(maintenanceReason);
+
+    if (reason == NetworkErrorReason::UnknownReason) {
+        disableRetry();
+        maintenanceInfo.setInMaintenance(false);
+        return ExitCode::Ok;
+    }
+
+    maintenanceInfo.setInMaintenance(true);
+
+    int64_t maintenanceAt = 0;
+    (void) JsonParserUtility::extractValue(dataObj, maintenanceAtKey, maintenanceAt, false);
+    maintenanceInfo.setMaintenanceFrom(maintenanceAt);
+
+    if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::NotRenew) {
+        disableRetry();
+        maintenanceInfo.setNotRenew(true);
+        return ExitCode::Ok;
+    }
+
+    if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::Technical) {
+        const auto maintenanceTypesArray = JsonParserUtility::extractArrayObject(dataObj, maintenanceTypesKey);
+        if (!maintenanceTypesArray || maintenanceTypesArray->empty()) return ExitCode::Ok;
+
+        for (const auto &maintenanceInfoVar: *maintenanceTypesArray) {
+            const auto &maintenanceInfoObj = maintenanceInfoVar.extract<Poco::JSON::Object::Ptr>();
+            std::string code = "";
+            (void) JsonParserUtility::extractValue(maintenanceInfoObj, codeKey, code, false);
+            if (code == "asleep") {
+                LOG_DEBUG(_logger, "Drive is asleep");
+                maintenanceInfo.setAsleep(true);
+                disableRetry();
+            } else if (code == "waking_up") {
+                LOG_DEBUG(_logger, "Drive is waking up");
+                maintenanceInfo.setWakingUp(true);
+                disableRetry();
+            }
+        }
+
+        return ExitCode::Ok;
+    }
+}
+
+
 #ifndef NDEBUG
+
 namespace {
 std::string getAccessTokenFromEnv(const UserId &userId) {
     std::string str = CommonUtility::envVarValue("KDRIVE_DEBUG_API_TOKEN");
