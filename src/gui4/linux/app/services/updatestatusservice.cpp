@@ -65,6 +65,9 @@ void UpdateStatusService::startInstaller() const {
 }
 
 void UpdateStatusService::refresh() {
+    // An explicit refresh also fetches the version again, in case a state change was missed.
+    _forceVersionRefresh = true;
+
     const auto generation = ++_generation;
     _stateRequest([self = QPointer(this), generation](const ExitInfo &result, const UpdateState state) {
         if (!self || self->_generation != generation) {
@@ -76,22 +79,36 @@ void UpdateStatusService::refresh() {
 }
 
 void UpdateStatusService::setState(const UpdateState state) {
-    const auto generation = ++_generation;
+    ++_generation;
+    const bool wasAvailable = available();
     _state = state;
-    _version.reset();
+
+    // The server only changes the announced version during a new check, which always goes through Checking. Moving
+    // between available states (Available, Downloading, Ready, errors) therefore keeps the same version.
+    if (const bool forceRefresh = std::exchange(_forceVersionRefresh, false); !wasAvailable || !available() || forceRefresh) {
+        ++_versionGeneration;
+        _version.reset();
+        _versionPending = false;
+    }
 
     emit stateChanged(state);
     emit changed();
 
-    if (!available()) {
-        return;
+    if (available() && !_version && !_versionPending) {
+        requestVersion();
     }
+}
 
+void UpdateStatusService::requestVersion() {
+    const auto generation = _versionGeneration;
+    _versionPending = true;
     _versionRequest([self = QPointer(this), generation](const ExitInfo &result, const VersionInfo &version) {
-        if (!self || self->_generation != generation) {
+        if (!self || self->_versionGeneration != generation) {
             return;
         }
 
+        // A failed request leaves the version empty: the next available state asks again.
+        self->_versionPending = false;
         if (result && !version.tag.empty() && version.buildVersion != 0) {
             self->_version = version;
         }
