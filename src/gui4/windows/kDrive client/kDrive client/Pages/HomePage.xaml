@@ -304,7 +304,8 @@
                        Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}" />
         </StackPanel>
 
-        <controls:HomeErrorInfoBar Grid.Row="1"
+        <controls:HomeErrorInfoBar x:Name="HomeErrorInfoBar"
+                                   Grid.Row="1"
                                    Grid.ColumnSpan="2" />
 
         <InfoBar x:Name="V4OnboardingInfoBar"
@@ -370,15 +371,13 @@
                               Visibility="{x:Bind ViewModel.SelectedSync , Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
 
         <!-- Upsell InfoBar -->
-        <StackPanel Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Grid.Row="4">
-            <upsell:UpsellInfoBar Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}"
-                                  Grid.Column="0"
-                                  Grid.ColumnSpan="2"
-                                  Grid.Row="4"
-                                  HorizontalAlignment="Stretch"
-                                  Drive="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}" />
-        </StackPanel>
+
+        <upsell:UpsellInfoBar Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}"
+                              Grid.Column="0"
+                              Grid.ColumnSpan="2"
+                              Grid.Row="4"
+                              HorizontalAlignment="Stretch"
+                              Drive="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}"
+                              Visibility="{x:Bind GetUpsellInfoBarVisibility(V4OnboardingInfoBar.IsOpen, HomeErrorInfoBar.ControlViewModel.IsOpen), Mode=OneWay}" />
     </Grid>
 </Page>
