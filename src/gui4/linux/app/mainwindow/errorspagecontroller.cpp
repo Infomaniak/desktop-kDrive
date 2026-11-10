@@ -54,6 +54,7 @@ ErrorsPageController::ErrorsPageController(const SyncErrorsProjection &projectio
     _model(projection, selectionStore, syncService, syncErrorService),
     _explanation(projection, selectionStore, actionHandler),
     _conflictVersion(projection, selectionStore, syncErrorService, actionHandler),
+    _conflicts(projection, selectionStore, syncErrorService, _conflictVersion, activitiesNavigation),
     _errorCount(projection.currentErrorCount()) {
     (void) connect(&_projection, &SyncErrorsProjection::currentErrorsChanged, this, [this] {
         if (const auto errorCount = _projection.currentErrorCount(); errorCount != _errorCount) {
@@ -92,6 +93,12 @@ void ErrorsPageController::refresh() {
 }
 
 void ErrorsPageController::invokeAction(const QString &rowId) {
+    // It stands for several errors, not one.
+    if (_model.isConflictsRow(rowId)) {
+        qCInfo(lcErrorsPageController) << "Opening the version conflicts pages | count:" << _conflicts.count();
+        _activitiesNavigation.show(ActivitiesNavigation::Page::ConflictsQuick);
+        return;
+    }
     const auto *const classified = currentError(rowId);
     const auto context = _selectionStore.currentSyncContext();
     if (!classified || !context.has_value()) {

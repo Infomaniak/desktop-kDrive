@@ -232,8 +232,13 @@
   clipped card radius, 24 px horizontal page margins, and 32 px top margin.
 - Mask the complete Storage graph with one rounded shape instead of rounding individual segments: `Rectangle.clip` is
   rectangular in Qt Quick, and segment-level rounding breaks when the leading segment is zero or subpixel-sized.
-- Keep the synchronization and other-files Storage segments visible with a nominal 1% minimum, but let free space reach
-  a true zero width. Normalize the displayed widths inside the single rounded graph mask.
+- Keep measured Storage segments visible with a nominal 1% minimum, but let free space and empty segments reach a true
+  zero width; an unmeasured kDrive segment takes no width, the other-syncs row is hidden once they measure 0 bytes, and the other-files segment is the used space not yet attributed, so
+  measures take their share from it. Normalize the displayed widths inside the single rounded graph mask.
+- Order the Storage cards as disk, insufficient disk space (below `AppConstants::Storage::diskAlmostFullThresholdBytes`),
+  subscription (hidden while the quota is unknown), synchronization. An unreadable disk replaces only the disk card. The
+  "Optimize computer space" card of the Figma relies on LiteSync and is not shown on Linux. Only drive admins get the
+  subscription upgrade action.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
 - Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
   `NeutralBlue600` is `#1F242E`.
@@ -361,8 +366,8 @@
   category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
   presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
   `requestOpenFileExclusions()` opens Settings on Advanced > file exclusions, for the errors page.
-  `requestOpenUser`, `requestOpenDrive` and `requestOpenAdvancedSync` keep a typed pending target that the window takes
-  when it is created or on `targetPending()`, through one typed show signal per kind of target. The window shows that
+  `requestOpenUser`, `requestOpenDrive`, `requestOpenAdvancedSync` and `requestOpenSyncManagement` keep a typed pending
+  target that the window takes when it is created or on `targetPending()`, through one typed show signal per kind of target. The window shows that
   page above the Accounts root, animated when Accounts is already displayed, and focuses the user or advanced
   synchronization card. A page can then be created on the drive of the page it replaces before that one is destroyed,
   so `DriveManagementController` and `AdvancedSyncsController` count the pages open on their target and release it on
@@ -524,7 +529,17 @@
   `refresh()`). Every row action is revalidated against the current errors before reaching `SyncErrorActionHandler`. It
   copies a path or the technical details to the clipboard, and keeps a pending `reveal` request that the page consumes
   when it is shown, to bring the error of an activity row into view; a change of synchronization drops it. It owns the
-  explanation dialog state (`explanation`) and the version selection dialog state (`conflictVersion`).
+  explanation dialog state (`explanation`), the version selection dialog state (`conflictVersion`) and the conflicts
+  pages state (`conflicts`). "Manage" of the aggregated conflicts row opens the conflicts pages.
+- `app/mainwindow/conflictspagecontroller.*`: QML-facing state of the version conflicts pages (`ConflictsQuick`,
+  `ConflictsList`). The grouped choice sends `resolveConflictsQuick` for every conflict present at the click; a failure
+  keeps the page with an error. It owns the navigation rules of these pages: after a grouped choice, or once no conflict
+  is left (not while its own request is pending, whose response decides), back to the errors page when other errors
+  remain, to the activity list otherwise; back to the errors page when the selected synchronization changes. Coming from
+  the errors page resets the strategy to the most recent versions; leaving the list clears its search. The list opens
+  `conflictVersion` on one conflict, or on all in list order.
+- `app/mainwindow/conflictlistmodel.*`: the conflicts of the selected synchronization, sorted by relative path
+  regardless of case and filtered by `searchText` on that path; rows are updated in place.
 - `app/mainwindow/conflictversioncontroller.*`: QML-facing state of the "Choose the version to keep" dialog. It walks
   through a list of conflicts (one from an errors row), loads both versions of each in parallel, preselects the
   strictly more recent one, and sends every choice in one request after the last conflict; a failure keeps the dialog
@@ -571,13 +586,21 @@
   with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
 - `app/mainwindow/searchresultmodel.*`: search results, page after page. `appendPage` inserts rows without a reset and
   skips nodes already listed; node ids and paths stay internal.
-- `app/mainwindow/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-sync snapshot cache. It
-  starts cancellable local scans only while Storage is visible, keeps the last resolved presentation during refresh, and
-  refreshes once an active synchronization leaves `Starting`, `Running`, `PauseAsked`, or `StopAsked` for any non-active
-  status.
-- `app/mainwindow/storagescanner.*`: Linux local-volume scanner using `QStorageInfo` plus an explicit Qt directory
-  stack. It stays on the synchronization root device, skips links and special files, deduplicates hard links, and sums
-  allocated blocks so sparse files reflect their physical footprint.
+- `app/mainwindow/storage/storagecontroller.*`: QML-facing Storage lifecycle. While Storage is visible, one cancellable
+  scan publishes the volume, then the selected synchronization, then the other synchronizations stored on the same
+  device (any user or drive, advanced ones included), so the gauge fills progressively. It also exposes the drive quota
+  from the selected `SyncContext`, polls the volume free space every 60 s outside the page (no log per poll) for the
+  sidebar `storageWarning`, and asks Settings to open "Manage synchronization" through
+  `SettingsWindowController::requestOpenSyncManagement`. The server does not poll the quota: opening the page sends
+  `UTILITY_ACTIVATELOADINFO`, at most once per minute because it reloads every user and drive; Retry and the refresh
+  shortcut always send it.
+- `app/mainwindow/storage/storagemeasurecache.*`: process-local per-synchronization measure cache, without QObject. A
+  measure is kept for its root and reused until its synchronization has been active again; the cache follows the
+  observed statuses to know it.
+- `app/mainwindow/storage/storagescanner.*`: Linux local-volume reader (`QStorageInfo`), synchronization-root measure
+  using an explicit Qt directory stack, and the scan job (`scanSyncs`) run outside the GUI thread. A measure stays on
+  the given device, skips links and special files, deduplicates hard links, and sums allocated blocks so sparse files
+  reflect their physical footprint.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive`, the selected main tab, and
   the `ActivitiesNavigation` exposed as `activitiesNavigation`; `showErrors()` is the only shortcut that crosses both.
   `navigateToMainTab`, called only by the sidebar, resets the Activities sub-page: the Activities entry always leads to
@@ -691,7 +714,9 @@
   replies after re-detecting the remaining ones (up to 30 s), which come back through push signals, so the cache is
   never changed here. `fetchConflictInfo` reads one version of a conflict (`NODE_CONFLICT_INFO`): the local version is
   the conflict copy (`destinationPath`), the remote one the original path (`path`). `resolveConflicts` sends
-  `ERROR_RESOLVE_CONFLICTS`; the server may remove the resolved errors before it replies.
+  `ERROR_RESOLVE_CONFLICTS`; the server may remove the resolved errors before it replies. `resolveConflictsQuick` sends
+  `ERROR_RESOLVE_CONFLICTS_QUICK` (the server picks the most recent version itself) under the same pending action, so a
+  single resolution runs per synchronization; `OperationCanceled` (another user action running) is not reported.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`. `addDriveSync` is the only sender of `SYNC_ADD`:
   onboarding and Settings must never call `CommService::requestSyncAdd` directly, otherwise two windows can create two
@@ -725,20 +750,24 @@
       `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity history.
     - `ui/windows/main/errors/`: "Errors to fix" sub-page of Activities (`ErrorsPage`), titled `errorPageTitle` in the
       toolbar: header with the error count and Refresh, one card per error in sections (`ErrorRow`), empty state with
-      "View activities". The "Manage" button of the aggregated conflicts row stays hidden until the conflicts pages
-      land. "Choose a version" opens `ConflictVersionDialog`, two `ConflictVersionCard`s (online, local) with their
-      details, the "Most recent" badge and the eye button. Each card is one radio button (click or Space anywhere on it,
-      only the eye button keeps its own action); its "Select" surface is an indicator, not a control. The counter of the
-      header (`IKModal.headerAccessoryData`) shows only for several conflicts. "Understand the issue" opens
-      `ErrorExplanationDialog` (an `IKModal`), whose texts, reason boxes and links are chosen in QML from the
-      explanation kind; a link inside a sentence is an `ErrorLinkText`, focusable as a whole. The inotify watches row
-      and dialog show the current limit (`inotifywatchlimit.h`, re-read on each refresh); "Raise the limit" opens the
-      dialog, whose `sysctl` command to copy is always above that limit: the app never raises it itself. Variants: the
-      item chip (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the tooltip), the
-      information icon (first line of the description, advice in the tooltip), the copyable path, and the folded
-      technical details (two name and value pairs per row on wide cards, values elided on the left) with their copy
-      button (`ErrorCopyButton`, a check mark confirms the copy). The copyable field (`ErrorCopyablePath`, a path or a
-      command) is shared by the rows and the explanation dialog.
+      "View activities". "Manage" of the aggregated conflicts row opens the "Version conflicts" pages (titled
+      `conflictErrorTitle`): `ConflictsQuickPage`, three `ConflictStrategyCard`s forming a single tab stop (Up and Down
+      move the selection), then "Apply to N files" or the list; `ConflictsListPage`, an `IKSearchField` and one
+      `ConflictListRow` per conflict, in a list that is a single tab stop (Up and Down move its current row, kept in
+      sight; Enter or Space chooses its version). "Choose a version" opens `ConflictVersionDialog`, hosted once by
+      `ActivitiesView` since the errors page and the list live in the stack together, two `ConflictVersionCard`s
+      (online, local) with their details, the "Most recent" badge and the eye button. Each card is one radio button
+      (click or Space anywhere on it, only the eye button keeps its own action); its "Select" surface is an indicator,
+      not a control. The counter of the header (`IKModal.headerAccessoryData`) shows only for several conflicts.
+      "Understand the issue" opens `ErrorExplanationDialog` (an `IKModal`), whose texts, reason boxes and links are
+      chosen in QML from the explanation kind; a link inside a sentence is an `ErrorLinkText`, focusable as a whole. The
+      inotify watches row and dialog show the current limit (`inotifywatchlimit.h`, re-read on each refresh); "Raise the
+      limit" opens the dialog, whose `sysctl` command to copy is always above that limit: the app never raises it
+      itself. Variants: the item chip (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the
+      tooltip), the information icon (first line of the description, advice in the tooltip), the copyable path, and the
+      folded technical details (two name and value pairs per row on wide cards, values elided on the left) with their
+      copy button (`ErrorCopyButton`, a check mark confirms the copy). The copyable field (`ErrorCopyablePath`, a path
+      or a command) is shared by the rows and the explanation dialog.
     - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
       the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
       with Down on the last row. It consumes `SearchController`; it must not call IPC.
@@ -774,12 +803,16 @@
       inline textual action for rows and cards that must not carry a button surface of their own. `IKInformationBlock`
       is the main-window information block: optional icon tile, title, subtitle, primary action (with the external-link
       marker when it opens the browser) and optional dismiss button below it; `IKErrorBanner` is its synchronization
-      errors variant, so both banners share one geometry. `IKCheckBox` is the
-      shared tri-state indicator: it
-      renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
+      errors variant, so both banners share one geometry. `IKCheckBox` is the renders the state it is given and only 
+      reports clicks, so a model owning the selection stays authoritative.
       `IKBlockingState` is the shared card of full-page blocking states (update required, blocking synchronization
       errors): visual, title, description and a row of actions; the owner places it and supplies the visual and the
       actions. Its tokens live in `IKBlockingStateTokens`.
+      `IKSearchField` is the rounded search
+      field (magnifier, clear button); its owner keeps the query through `text`, `textEdited` and `cleared`.
+      `IKLinkButton` is the inline textual action for rows and cards that must not carry a button surface of their own.
+      `IKCheckBox` is the shared tri-state indicator: it
+
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,

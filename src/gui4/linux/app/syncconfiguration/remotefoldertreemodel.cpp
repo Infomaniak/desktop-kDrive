@@ -120,6 +120,12 @@ bool RemoteFolderTreeModel::hasChildren(const QModelIndex &parentIndex) const {
 }
 
 bool RemoteFolderTreeModel::canFetchMore(const QModelIndex &parentIndex) const {
+    // A view lists the root as soon as it gets the model, which may not be configured yet: the server refuses a listing
+    // without a user and a drive.
+    if (_userDbId == 0 || _driveId == 0) {
+        return false;
+    }
+
     const TreeNode *const node = nodeForIndex(parentIndex);
     return node && !node->accessDenied && (node != _root.get() || _initialPathsState == InitialPathsState::Ready) &&
            (node->childrenState == LoadState::NotLoaded || node->childrenState == LoadState::Failed);
