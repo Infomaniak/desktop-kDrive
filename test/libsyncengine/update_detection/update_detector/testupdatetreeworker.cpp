@@ -789,9 +789,7 @@ void TestUpdateTreeWorker::testStep4() {
 }
 
 void TestUpdateTreeWorker::createSyncPalWithItemSnapshots(bool deletedItemIsLink, bool createdItemIsLink) {
-    bool alreadyExists = false;
-    SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
-    (void) IoHelper::deleteItem(syncDbPath);
+    const SyncPath syncDbPath = _localTempDir.path() / MockDb::makeDbMockFileName();
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath,
                                          KDRIVE_VERSION_STRING, true);
     _syncPal->syncDb()->setAutoDelete(true);
