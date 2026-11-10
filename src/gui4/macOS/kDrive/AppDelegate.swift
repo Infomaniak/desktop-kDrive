@@ -61,15 +61,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         let testing = AppDelegate.isRunningTests
+        // DI eagerly creates services that log, so protect inherited pipes before resolving any services.
+        let outputConfiguration = Result {
+            if !testing { try InheritedOutputStreams().configure() }
+        }
         DriveTargetAssembly.setupDI(testing: testing)
 
         guard !testing else {
             return
         }
 
-        do {
-            try InheritedOutputStreams().configure()
-        } catch {
+        if case .failure(let error) = outputConfiguration {
             IKLogger.general.warning("Could not protect inherited output streams from broken pipes: \(error)")
         }
 

@@ -23,6 +23,77 @@ import Testing
 @MainActor
 @Suite(.timeLimit(.minutes(1)))
 struct XPCShutdownTests {
+    @Test(arguments: [true, false])
+    func quitBeforeInitialServerConnectionUsesShutdownOnlyTransport(serverReplies: Bool) async throws {
+        let server = ShutdownServer(replies: serverReplies)
+        let serverListener = NSXPCListener.anonymous()
+        let serverDelegate = ShutdownListenerDelegate(interface: XPCGuiProtocol.self, service: server)
+        serverListener.delegate = serverDelegate
+        serverListener.resume()
+        defer { serverListener.invalidate() }
+
+        let agent = ShutdownAgent(endpoint: serverListener.endpoint)
+        let agentListener = NSXPCListener.anonymous()
+        let agentDelegate = ShutdownListenerDelegate(interface: XPCLoginItemProtocol.self, service: agent)
+        agentListener.delegate = agentDelegate
+        agentListener.resume()
+        defer { agentListener.invalidate() }
+
+        let manager = XPCConnectionManager()
+        defer { manager.finishShutdown() }
+        manager.beginShutdown()
+        let connection = NSXPCConnection(listenerEndpoint: agentListener.endpoint)
+        connection.remoteObjectInterface = NSXPCInterface(with: XPCLoginItemProtocol.self)
+        manager.loginItemAgentConnection = connection
+        connection.resume()
+        #expect(manager.appConnection == nil)
+
+        let request = await RequestMessage<EmptyQuery>(num: .UTILITY_QUIT, body: EmptyQuery())
+        let fetcher = XPCQueryFetcher(xpcConnectionProvider: manager)
+        if serverReplies {
+            let reply = try await fetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+            #expect(reply.id == request.id)
+        } else {
+            await #expect(throws: NSXPCConnectionError.timedOut) {
+                try await fetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+            }
+        }
+        #expect(manager.appConnection != nil)
+        #expect(manager.guiConnectionState == .notConnected)
+        #expect(manager.loginAgentRetryTask == nil)
+        #expect(manager.serverRetryTask == nil)
+
+        // Even after the quit transport exists, ordinary work must remain disabled.
+        await #expect(throws: XPCConnectionManager.XPCError.shuttingDown) {
+            try await manager.sendQuery(Data())
+        }
+        withExtendedLifetime((serverDelegate, agentDelegate)) {}
+    }
+
+    @Test func quitWithUnresponsiveAgentTimesOutWithoutConnectingOrRetrying() async {
+        let agent = ShutdownAgent(endpoint: nil)
+        let listener = NSXPCListener.anonymous()
+        let delegate = ShutdownListenerDelegate(interface: XPCLoginItemProtocol.self, service: agent)
+        listener.delegate = delegate
+        listener.resume()
+        defer { listener.invalidate() }
+        let manager = XPCConnectionManager()
+        defer { manager.finishShutdown() }
+        manager.beginShutdown()
+        let connection = NSXPCConnection(listenerEndpoint: listener.endpoint)
+        connection.remoteObjectInterface = NSXPCInterface(with: XPCLoginItemProtocol.self)
+        manager.loginItemAgentConnection = connection
+        connection.resume()
+
+        await #expect(throws: NSXPCConnectionError.timedOut) {
+            try await manager.sendQuitQuery(Data())
+        }
+        #expect(manager.appConnection == nil)
+        #expect(manager.serverRetryTask == nil)
+        #expect(manager.loginAgentRetryTask == nil)
+        withExtendedLifetime(delegate) {}
+    }
+
     @Test func shutdownCancelsRetriesAndRejectsLateConnectionAttempts() async throws {
         let manager = XPCConnectionManager()
         defer { manager.finishShutdown() }
@@ -92,5 +163,59 @@ struct XPCShutdownTests {
         #expect(manager.loginItemAgentConnection == nil)
         #expect(manager.guiConnectionState == .notConnected)
         #expect(manager.lifecycleState == .stopped)
+    }
+}
+
+private final class ShutdownListenerDelegate: NSObject, NSXPCListenerDelegate {
+    let interface: Protocol
+    let service: AnyObject
+
+    init(interface: Protocol, service: AnyObject) {
+        self.interface = interface
+        self.service = service
+    }
+
+    func listener(_ listener: NSXPCListener, shouldAcceptNewConnection connection: NSXPCConnection) -> Bool {
+        connection.exportedInterface = NSXPCInterface(with: interface)
+        connection.exportedObject = service
+        connection.resume()
+        return true
+    }
+}
+
+private final class ShutdownAgent: NSObject, XPCLoginItemProtocol {
+    let endpoint: NSXPCListenerEndpoint?
+
+    init(endpoint: NSXPCListenerEndpoint?) {
+        self.endpoint = endpoint
+    }
+
+    func setServerExtEndpoint(_ endPoint: NSXPCListenerEndpoint!) {}
+    func serverExtEndpoint(_ callback: ((NSXPCListenerEndpoint?) -> Void)!) {}
+    func setServerGuiEndpoint(_ endPoint: NSXPCListenerEndpoint!) {}
+    func serverGuiEndpoint(_ callback: ((NSXPCListenerEndpoint?) -> Void)!) {
+        // A nil endpoint deliberately models an agent that never answers.
+        if let endpoint { callback(endpoint) }
+    }
+}
+
+private final class ShutdownServer: NSObject, XPCGuiProtocol {
+    let replies: Bool
+
+    init(replies: Bool) {
+        self.replies = replies
+    }
+
+    func processQuery(_ query: Data, callback: @escaping (Data) -> Void) {
+        do {
+            let request = try JSONDecoder().decode(RequestMock.self, from: query)
+            #expect(request.num == .UTILITY_QUIT)
+            guard replies else { return }
+            let reply: [String: Any] = ["code": 0, "cause": 0, "id": request.id, "params": [:]]
+            callback(try JSONSerialization.data(withJSONObject: reply))
+        } catch {
+            Issue.record(error)
+            callback(Data())
+        }
     }
 }

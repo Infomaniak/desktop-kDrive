@@ -162,6 +162,21 @@ import InfomaniakDI
             throw XPCError.noLoginItemAgentConnection
         }
 
+        initializeLoginItemAgentConnection()
+
+        do {
+            try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
+        } catch XPCError.serverGUIEndpointWasNil {
+            notifyLoginItemAgentConnectionState(.connecting)
+            scheduleRetryToConnectToServer()
+            throw XPCError.serverGUIEndpointWasNil
+        }
+
+        notifyLoginItemAgentConnectionState(.connected)
+    }
+
+    @MainActor
+    func initializeLoginItemAgentConnection() {
         IKLogger.xpc.log("[KD] Initialize connection with login item agent")
         let connection = NSXPCConnection(machServiceName: machServiceName, options: [])
 
@@ -189,16 +204,6 @@ import InfomaniakDI
 
         IKLogger.xpc.log("[KD] Resume connection with login item agent")
         connection.resume()
-
-        do {
-            try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
-        } catch XPCError.serverGUIEndpointWasNil {
-            notifyLoginItemAgentConnectionState(.connecting)
-            scheduleRetryToConnectToServer()
-            throw XPCError.serverGUIEndpointWasNil
-        }
-
-        notifyLoginItemAgentConnectionState(.connected)
     }
 
     @MainActor
@@ -240,16 +245,17 @@ import InfomaniakDI
     }
 
     @MainActor
-    func getServerEndpoint() async throws -> NSXPCListenerEndpoint {
-        guard lifecycleState == .running else { throw XPCError.shuttingDown }
+    func getServerEndpoint(shutdownDeadline: DispatchTime? = nil) async throws -> NSXPCListenerEndpoint {
+        guard lifecycleState == .running || (lifecycleState == .shuttingDown && shutdownDeadline != nil) else {
+            throw XPCError.shuttingDown
+        }
         guard let loginItemAgentConnection else {
             throw XPCError.noLoginItemAgentConnection
         }
 
         IKLogger.xpc.log("[KD] Get server gui endpoint from login item agent")
 
-        return try await withCheckedThrowingContinuation { continuation in
-            let continuation = XPCContinuation(continuation)
+        return try await XPCContinuation<NSXPCListenerEndpoint>.perform(deadline: shutdownDeadline) { continuation in
             do {
                 let loginItemProxy = try loginItemAgentConnection.proxy(errorHandler: { error in
                     IKLogger.xpc.error("[KD] Failed to get server gui endpoint: \(error)")
@@ -271,8 +277,10 @@ import InfomaniakDI
     }
 
     @MainActor
-    func connectToServer(endpoint: NSXPCListenerEndpoint) throws {
-        guard lifecycleState == .running else { throw XPCError.shuttingDown }
+    func connectToServer(endpoint: NSXPCListenerEndpoint, forShutdown: Bool = false) throws {
+        guard lifecycleState == .running || (lifecycleState == .shuttingDown && forShutdown) else {
+            throw XPCError.shuttingDown
+        }
         guard appConnection == nil else {
             IKLogger.xpc.log("[KD] Already connected to app")
             throw XPCError.noLoginItemAgentConnection
@@ -305,6 +313,9 @@ import InfomaniakDI
         }
 
         newConnection.resume()
+
+        // A quit-only transport must not trigger cache initialization or publish client readiness.
+        guard !forShutdown else { return }
 
         let connectionId = ObjectIdentifier(newConnection)
         Task {
