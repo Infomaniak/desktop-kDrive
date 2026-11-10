@@ -600,7 +600,7 @@ if(KDRIVE_DEPLOY_QT_RUNTIME)
     )
 
     # Qt has no catalogs for el, nb, and pt.
-    # qlottievectorimage needs Qt Quick Timeline, which is not installed: the Lottie animations are pre-generated QML.
+    # qlottievectorimage loads Lottie files at runtime: the animations are pre-generated QML, so the plugin is unused.
     qt_generate_deploy_script(
             TARGET ${APPLICATION_CLIENTV4_EXECUTABLE}
             NAME kdrive_linux_runtime
