@@ -423,37 +423,14 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
         }
 
         FSOpPtr op = deleteOp;
-        if (_side == ReplicaSide::Local) {
-            // Transform a Delete and a Create operations into one Edit operation.
-            // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
-            // replacing the original file. However, this behavior should be applied only on local side.
-            SyncPath normalizedPath;
-            if (!Utility::normalizedSyncPath(deleteOp->path(), normalizedPath)) {
-                normalizedPath = deleteOp->path();
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(deleteOp->path()));
-            }
-            if (auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
-                createFileOpSetIt != _createFileOperationSet.end()) {
-                FSOpPtr createOp = nullptr;
-                if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(),
-                                           createOp)) {
-                    continue;
-                }
-
-                bool canMerge = false;
-                if (const auto checkExitCode = checkIfDeleteAndCreateCanBeMerged(deleteOp, createOp, canMerge);
-                    checkExitCode != ExitCode::Ok) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::checkIfDeleteAndCreateCanBeMerged"
-                                                       << Utility::formatExitInfo(deleteOp->path(), checkExitCode));
-                    return checkExitCode;
-                }
-                if (canMerge) {
-                    // op is now the createOperation
-                    op = createOp;
-                    _createFileOperationSet.erase(normalizedPath);
-                }
-            }
+        bool skipOp = false;
+        if (const auto mergeExitCode = mergeWithCreateOperationIfApplicable(deleteOp, op, skipOp);
+            mergeExitCode != ExitCode::Ok) {
+            return mergeExitCode;
         }
+
+        if (skipOp) continue;
+
 
         const OperationType opType = op->operationType() == OperationType::Create ? OperationType::Edit : OperationType::Delete;
         if (auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId()); currentNodeIt != _updateTree->nodes().end()) {
@@ -533,6 +510,51 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 logUpdate(newNode, opType, parentNode);
             }
         }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode UpdateTreeWorker::mergeWithCreateOperationIfApplicable(const FSOpPtr &deleteOp, FSOpPtr &op, bool &skipOp) {
+    skipOp = false;
+
+    if (_side != ReplicaSide::Local) return ExitCode::Ok;
+
+    // Transform a Delete and a Create operations into one Edit operation.
+    // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
+    // replacing the original file. However, this behavior should be applied only on local side.
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(deleteOp->path(), normalizedPath)) {
+        normalizedPath = deleteOp->path();
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(deleteOp->path()));
+    }
+
+    const auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
+    if (createFileOpSetIt == _createFileOperationSet.end()) {
+        // There is no Create operation on an item reusing the same path as the deleted one.
+
+        return ExitCode::Ok;
+    }
+
+    FSOpPtr createOp = nullptr;
+    if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(), createOp)) {
+        // The Create operation is no longer present in the operation set: the Delete operation must be ignored.
+        skipOp = true;
+
+        return ExitCode::Ok;
+    }
+
+    bool canMerge = false;
+    if (const auto exitCode = checkIfDeleteAndCreateCanBeMerged(deleteOp, createOp, canMerge); exitCode != ExitCode::Ok) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::checkIfDeleteAndCreateCanBeMerged"
+                                           << Utility::formatExitInfo(deleteOp->path(), exitCode));
+        return exitCode;
+    }
+
+    if (canMerge) {
+        // The Delete operation is replaced by the Create one, transforming both operations into a single Edit operation.
+        op = createOp;
+        _createFileOperationSet.erase(normalizedPath);
     }
 
     return ExitCode::Ok;
