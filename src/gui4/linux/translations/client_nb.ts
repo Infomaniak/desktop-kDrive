@@ -1920,6 +1920,10 @@ Kontroller og gi nytt navn til filer som inneholder uvanlige tegn, og prøv dere
             <source>%1 version conflicts detected</source> 
             <translation>%1 versjonskonflikt(er) oppdaget</translation> 
         </message> 
+        <message id="manyDeleteDialogFilesHeader"> 
+            <source>%1 items deleted</source> 
+            <translation>%1 elementer slettet</translation> 
+        </message> 
         <message id="manyDeleteDialogHardLimitContent"> 
             <source>Synchronization is paused to prevent accidental deletion.
 What would you like to do?</source> 
@@ -1933,6 +1937,13 @@ Hva vil du gjøre?</translation>
         <message id="manyDeleteDialogHardLimitSecondary"> 
             <source>Delete online as well</source> 
             <translation>Slett også på nettet</translation> 
+        </message> 
+        <message numerus="yes" id="manyDeleteDialogOtherPlaceholder"> 
+            <source>and another element</source> 
+            <translation>
+                <numerusform>og et annet element</numerusform> 
+                <numerusform>og %1 andre elementer</numerusform> 
+            </translation>
         </message> 
         <message id="manyDeleteDialogSoftLimitContent"> 
             <source>These files can still be recovered from the kDrive Recycle Bin.</source> 
