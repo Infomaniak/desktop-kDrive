@@ -525,6 +525,13 @@ void AppServer::init() {
 #if defined(KD_MACOS)
         const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
         _updateManager.get()->setQuitCallback(quitCallback);
+#elif defined(KD_LINUX)
+        // The Linux client only quits on UTILITY_QUIT, so the server schedules its own quit once the client is told.
+        const std::function<void()> quitCallback = [this] {
+            sendQuit();
+            quitLater(delayedActionMs);
+        };
+        _updateManager.get()->setQuitCallback(quitCallback);
 #endif
 
         (void) connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged,
