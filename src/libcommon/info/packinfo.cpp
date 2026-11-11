@@ -28,17 +28,24 @@ static const auto packDisplayName = "displayName";
 static const auto packIsFree = "isFree";
 static const auto packUpsellTarget = "upsellTarget";
 
-static const std::map<uint64_t, UpsellTarget> packIdToUpsellTarget = {
-        {1, UpsellTarget::MykSuitePlus}, // Solo
-        {2, UpsellTarget::kSuitePro}, // Team
-        {3, UpsellTarget::kSuitePro}, // Pro
-        {6, UpsellTarget::MykSuitePlus}, // Free
-        {8, UpsellTarget::kSuitePro}, // kSuite standard
-        {16, UpsellTarget::MykSuitePlus}, // myKsuite
-        {22, UpsellTarget::MykSuitePlus}, // Solo special offer
-        {29, UpsellTarget::kSuitePro},
+constexpr UpsellTarget getUpsellTarget(uint64_t packId) {
+    switch (packId) {
+        case 1: // Solo
+        case 6: // Free
+        case 16: // myKsuite
+        case 22: // Solo special offer
+            return UpsellTarget::MykSuitePlus;
 
-};
+        case 2: // Team
+        case 3: // Pro
+        case 8: // kSuite standard
+        case 29:
+            return UpsellTarget::kSuitePro;
+
+        default:
+            return UpsellTarget::None;
+    }
+}
 
 PackInfo::PackInfo(const uint64_t id, const std::string &name, const std::string &displayName, const bool isFree) :
     _id(id),
@@ -48,8 +55,7 @@ PackInfo::PackInfo(const uint64_t id, const std::string &name, const std::string
 
 UpsellTarget PackInfo::upsellTarget() const {
     if (!isFree()) return UpsellTarget::None;
-    if (packIdToUpsellTarget.contains(_id)) return packIdToUpsellTarget.at(_id);
-    return UpsellTarget::MykSuitePlus; // Default upsell target for free packs that are not in the map.
+    return getUpsellTarget(_id);
 }
 
 void PackInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {

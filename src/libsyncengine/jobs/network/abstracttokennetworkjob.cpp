@@ -336,7 +336,8 @@ ExitInfo AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBod
     if (const auto exitInfo = AbstractNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
     MaintenanceInfo maintenanceInfo;
-    AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(maintenanceInfo);
+    if (const ExitInfo exitInfo = AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(maintenanceInfo); !exitInfo)
+        return exitInfo;
 
     if (!maintenanceInfo.inMaintenance()) {
         disableRetry();
