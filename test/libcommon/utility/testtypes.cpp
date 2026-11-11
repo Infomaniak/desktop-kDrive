@@ -224,7 +224,6 @@ void TestTypes::testToString() {
     testToStringIntValues<SyncFolderRuleType>();
     testToStringIntValues<ExitCode>();
     testToStringIntValues<ExitCause>();
-    testToStringIntValues<InconsistencyType>();
     testToStringIntValues<IoError>();
     testToStringIntValues<Language>();
     testToStringIntValues<LinkType>();
