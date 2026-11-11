@@ -83,7 +83,11 @@ public enum ObservableData {
                                                      accessDenied: false,
                                                      admin: true,
                                                      locked: false,
-                                                     maintenance: false,
+                                                     maintenance: DriveMaintenanceInfo(inMaintenance: false,
+                                                                                       notRenew: false,
+                                                                                       asleep: false,
+                                                                                       wakingUp: false,
+                                                                                       from: 0),
                                                      notifications: true)
 
     static let updatedDrive = Drive.some(driveDbId: expectedDriveDbId,
