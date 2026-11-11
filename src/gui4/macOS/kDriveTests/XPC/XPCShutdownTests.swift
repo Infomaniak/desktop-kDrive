@@ -212,7 +212,7 @@ private final class ShutdownServer: NSObject, XPCGuiProtocol {
             #expect(request.num == .UTILITY_QUIT)
             guard replies else { return }
             let reply: [String: Any] = ["code": 0, "cause": 0, "id": request.id, "params": [:]]
-            callback(try JSONSerialization.data(withJSONObject: reply))
+            try callback(JSONSerialization.data(withJSONObject: reply))
         } catch {
             Issue.record(error)
             callback(Data())
