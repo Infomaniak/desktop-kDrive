@@ -98,7 +98,7 @@ jobs:
 
 # Check Release Notes
   check-release-notes:
-    runs-on: [ self-hosted, Linux, X64 ]
+    runs-on: [ ubuntu-latest ]
     steps:
       - name: Checkout the PR
         if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
@@ -458,7 +458,7 @@ jobs:
 
   display-version:
     if: always()
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [ ubuntu-latest ]
     permissions:
       contents: read
     steps:
