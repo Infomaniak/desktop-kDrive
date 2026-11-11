@@ -121,8 +121,9 @@ void Parameters::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersVersionChannel, _distributionChannel);
     CommonUtility::readValueFromStruct(dstruct, parametersSentryEnabled, _sentryEnabled);
     CommonUtility::readValueFromStruct(dstruct, parametersMatomoEnabled, _matomoEnabled);
-    if (dstruct.contains(parametersAutomaticUpdates)) // Only sent by the Linux client
+    if (dstruct.contains(parametersAutomaticUpdates)) { // Only sent by the Linux client
         CommonUtility::readValueFromStruct(dstruct, parametersAutomaticUpdates, _automaticUpdates);
+    }
 };
 
 } // namespace KDC

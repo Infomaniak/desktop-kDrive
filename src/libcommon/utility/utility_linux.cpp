@@ -53,6 +53,20 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     return appSupportPath;
 }
 
+SyncPath CommonUtility::appImagePath() {
+    return SyncPath(envVarValue("APPIMAGE"));
+}
+
+// The new AppImage is renamed over the running one, which requires write access to its folder.
+bool CommonUtility::isAppImageUpdatable() {
+    const auto path = appImagePath();
+    if (path.empty()) {
+        return false;
+    }
+
+    return ::access(path.parent_path().c_str(), W_OK) == 0;
+}
+
 SyncPath CommonUtility::getAppDir() {
     return {};
 }
