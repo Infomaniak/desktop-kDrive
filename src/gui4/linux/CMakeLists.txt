@@ -6,7 +6,7 @@ project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
 find_package(Qt6 6.12 REQUIRED COMPONENTS
-        Core Concurrent Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
+        Core Concurrent DBus Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
 if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
@@ -155,6 +155,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/exclusiontemplateservice.cpp
         app/services/exclusiontemplateservice.h
         app/services/settingsservicebindings.cpp
+        app/services/notificationservice.cpp
+        app/services/notificationservice.h
         app/services/parametersservice.cpp
         app/services/parametersservice.h
         app/services/serviceactiontracker.cpp
@@ -171,6 +173,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/syncservice.h
         app/services/translationservice.cpp
         app/services/translationservice.h
+        app/services/updatenotifier.cpp
+        app/services/updatenotifier.h
         app/services/updatestatusservice.cpp
         app/services/updatestatusservice.h
         app/services/userservice.cpp
@@ -554,6 +558,7 @@ qt_add_resources(${APPLICATION_CLIENTV4_EXECUTABLE} "linux_gui_assets"
 target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::Core
         Qt6::Concurrent
+        Qt6::DBus
         Qt6::Gui
         Qt6::Network
         Qt6::Qml

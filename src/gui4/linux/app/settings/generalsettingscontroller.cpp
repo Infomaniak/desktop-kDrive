@@ -46,10 +46,6 @@ QString installedVersion() {
     return QString::fromLatin1(KDRIVE_VERSION_STRING);
 }
 
-QString installedRelease() {
-    return u"%1.%2.%3"_s.arg(KDRIVE_VERSION_MAJOR).arg(KDRIVE_VERSION_MINOR).arg(KDRIVE_VERSION_PATCH);
-}
-
 // Channels without their own choice in the beta program are shown as "Do not join".
 DistributionChannel displayedChannel(const DistributionChannel channel) {
     switch (channel) {
@@ -221,14 +217,8 @@ QVariantList GeneralSettingsController::distributionChannels() const {
 }
 
 QString GeneralSettingsController::releaseVersion() const {
-    const auto &version = _updateStatusService.version();
-    if (!version) {
-        return installedVersion();
-    }
-
-    // A new build of the installed release shares its tag: the build number tells them apart.
-    const auto tag = QString::fromStdString(version->tag);
-    return tag == installedRelease() ? u"%1.%2"_s.arg(tag).arg(version->buildVersion) : tag;
+    const auto announced = _updateStatusService.announcedRelease();
+    return announced.isEmpty() ? installedVersion() : announced;
 }
 
 QString GeneralSettingsController::releaseDetails() const {

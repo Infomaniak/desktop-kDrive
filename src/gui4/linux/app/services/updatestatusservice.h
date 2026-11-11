@@ -21,6 +21,7 @@
 #include "app/services/commservice.h"
 
 #include <QObject>
+#include <QString>
 
 #include <cstdint>
 #include <functional>
@@ -52,6 +53,8 @@ class UpdateStatusService final : public QObject {
         [[nodiscard]] UpdateState state() const { return _state; }
 
         [[nodiscard]] const std::optional<VersionInfo> &version() const { return _version; }
+        /** Label of the announced version, empty while unknown. A new build of the installed release shows its build. */
+        [[nodiscard]] QString announcedRelease() const;
 
         [[nodiscard]] bool available() const;
         [[nodiscard]] bool downloading() const { return _state == UpdateState::Downloading; }
