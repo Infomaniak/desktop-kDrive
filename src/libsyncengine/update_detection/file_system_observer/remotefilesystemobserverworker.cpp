@@ -874,7 +874,7 @@ ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &r
 
 namespace {
 bool shouldContainPath(const ActionCode actionCode) {
-    // The relative path "Private" from API v3 is translated into the empty relative path "" via `ActionInfo::setPath`. We do
+    // The absolute path "/Private" from API v3 is translated into the empty path "" via `ActionInfo::setPath`. We do
     // not record the `ActionInfo` of action acting on the "Private" root only.
     // However, we still want to process the `ActionInfo` if it is
     // - a trash action,
@@ -907,32 +907,48 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         ActionInfo actionInfo;
         if (const auto exitInfo = extractActionInfo(actionObj, actionInfo); !exitInfo) return exitInfo;
 
-        // Skip actions with an empty relative path that corresponds to the "Private" folder in API v3,
+        // Skip actions with an empty path that corresponds to the "Private" root folder in API v3,
         // except for specific action codes where the path is optional (e.g. trash / access-right removal).
         if (actionInfo.path().empty() && shouldContainPath(actionInfo.actionCode)) continue;
 
-        bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) {
-            if (isWarning) {
-                Error error(_syncPal->syncDbId(), "", actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type(),
-                            actionInfo.path(), ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
-                _syncPal->addError(error);
-            }
-            // Remove it from liveSnapshot
-            if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
-                                                                    << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
-                invalidateSnapshot();
-                return ExitCode::DataError;
-            }
-            continue;
-        }
+        bool excluded = false;
+        if (const auto exitInfo = handleExcludedItem(actionInfo, excluded); !exitInfo) return exitInfo;
+        if (excluded) continue;
 
 #if defined(KD_WINDOWS)
-        actionInfo.snapshotItem.setName(
-                Utility::fixNameWithBackslash(actionInfo.snapshotItem.name()));
+        actionInfo.snapshotItem.setName(Utility::fixNameWithBackslash(actionInfo.snapshotItem.name()));
 #endif
         actionInfoList.push_back(actionInfo);
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::handleExcludedItem(const ActionInfo &actionInfo, bool &excluded) {
+    excluded = false;
+
+    bool isWarning = false;
+    if (!ExclusionTemplateCache::instance()->isExcluded(actionInfo.snapshotItem.name(), isWarning)) return ExitCode::Ok;
+
+    excluded = true;
+
+    if (isWarning) {
+        // Error paths are relative to the sync root: strip the leading separator kept by the V3 to V2 translation.
+        SyncName path = actionInfo.path();
+        if (CommonUtility::startsWith(path, Str("/"))) {
+            (void) path.erase(0, 1);
+        }
+        Error error(_syncPal->syncDbId(), "", actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type(), path,
+                    ConflictType::None, InconsistencyType::None, CancelType::ExcludedByTemplate);
+        _syncPal->addError(error);
+    }
+
+    // Remove it from liveSnapshot
+    if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
+        LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+                                                            << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
+        invalidateSnapshot();
+        return ExitCode::DataError;
     }
 
     return ExitCode::Ok;
@@ -1388,9 +1404,9 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
 }
 
 void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &remotePath) {
-    SyncPath remotePath_{remotePath};
-    ApiTranslator::translateV3ToV2(remotePath_);
-    _path = remotePath_.native();
+    SyncName translatedRemotePath = remotePath;
+    ApiTranslator::translateV3ToV2(translatedRemotePath);
+    _path = translatedRemotePath;
 }
 
 RemoteNodeId RemoteFileSystemObserverWorker::rootFolderRemoteId() const {

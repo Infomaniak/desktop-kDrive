@@ -44,7 +44,8 @@ namespace Infomaniak.kDrive.ViewModels
 
             NotificationType = manyDeletesInfo.NotificationType;
             _filesPaths = Cap(manyDeletesInfo.FilesPaths.Distinct());
-            _totalFilesCount = manyDeletesInfo.FilesPaths.Count;
+            // The server caps the paths list; NbFiles is the real number of deletions.
+            _totalFilesCount = manyDeletesInfo.NbFiles;
             _truncatedFilesCount = Math.Max(0, _totalFilesCount - _filesPaths.Count);
         }
         public Sync? AssociatedSync { get; }

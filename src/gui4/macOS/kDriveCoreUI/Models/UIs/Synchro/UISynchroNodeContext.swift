@@ -46,7 +46,10 @@ public extension UISynchroNodeContext {
             account: UIAccount(account: synchroNodeContext.account),
             drive: UIDrive(drive: synchroNodeContext.drive),
             synchro: UISynchro(synchro: synchroNodeContext.synchro),
-            node: UISynchroNode(synchroNode: synchroNodeContext.node)
+            node: UISynchroNode(
+                synchroNode: synchroNodeContext.node,
+                localRootPath: synchroNodeContext.synchro.localPath
+            )
         )
     }
 }

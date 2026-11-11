@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   path-labels:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Apply path-based labels
         uses: actions/labeler@v6.0.1
@@ -19,7 +19,7 @@ jobs:
           configuration-path: .github/labeler.yml
 
   quick-fix-label:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Check total changed lines and add quick fix label
         uses: actions/github-script@v9.0.0

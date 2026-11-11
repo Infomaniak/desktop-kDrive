@@ -22,6 +22,13 @@ import Foundation
 import Testing
 
 struct UISynchroNodeTests {
+    /// Root of the sync folder used to resolve the sync folder relative paths carried by the server-side nodes.
+    private static let localRootPath = "/Users/dev/My kDrive Sync"
+
+    private func makeUISynchroNode(_ synchroNode: SynchroNode) -> UISynchroNode {
+        UISynchroNode(synchroNode: synchroNode, localRootPath: Self.localRootPath)
+    }
+
     private func makeNode(progress: Int) -> UISynchroNode {
         UISynchroNode(
             id: 1,
@@ -95,7 +102,7 @@ struct UISynchroNodeTests {
             newPath: "/folder/name.txt"
         )
 
-        #expect(UISynchroNode(synchroNode: node).instruction == .update)
+        #expect(makeUISynchroNode(node).instruction == .update)
     }
 
     @Test("Move within the same parent maps to renamed")
@@ -106,7 +113,7 @@ struct UISynchroNodeTests {
             newPath: "/folder/new-name.txt"
         )
 
-        #expect(UISynchroNode(synchroNode: node).instruction == .renamed)
+        #expect(makeUISynchroNode(node).instruction == .renamed)
     }
 
     @Test("Move to a different parent remains move")
@@ -117,6 +124,46 @@ struct UISynchroNodeTests {
             newPath: "/destination/file.txt"
         )
 
-        #expect(UISynchroNode(synchroNode: node).instruction == .move)
+        #expect(makeUISynchroNode(node).instruction == .move)
+    }
+
+    @Test("Relative server path resolves against the sync root, not the process working directory")
+    func relativePathResolvesAgainstSyncRoot() {
+        let node = makeSynchroNode(
+            instruction: .Get,
+            path: "gros_fichiers/check-release-notes/1_Set up job.txt",
+            newPath: ""
+        )
+
+        let uiNode = makeUISynchroNode(node)
+
+        #expect(uiNode.path.path == "\(Self.localRootPath)/gros_fichiers/check-release-notes/1_Set up job.txt")
+        #expect(uiNode.parentFolder.path == "\(Self.localRootPath)/gros_fichiers/check-release-notes")
+    }
+
+    @Test("Relative move destination resolves against the sync root")
+    func relativeMoveDestinationResolvesAgainstSyncRoot() {
+        let node = makeSynchroNode(
+            instruction: .Move,
+            path: "folder/old-name.txt",
+            newPath: "other-folder/new-name.txt"
+        )
+
+        let uiNode = makeUISynchroNode(node)
+
+        #expect(uiNode.path.path == "\(Self.localRootPath)/folder/old-name.txt")
+        #expect(uiNode.updatedPath?.path == "\(Self.localRootPath)/other-folder/new-name.txt")
+        #expect(uiNode.relevantPath.path == "\(Self.localRootPath)/other-folder/new-name.txt")
+    }
+
+    @Test("Root level item parent folder is the sync root")
+    func rootLevelItemParentFolderIsSyncRoot() {
+        let node = makeSynchroNode(
+            instruction: .Put,
+            path: "ABCD copie.txt",
+            newPath: ""
+        )
+
+        #expect(makeUISynchroNode(node).parentFolder.path == Self.localRootPath)
     }
 }

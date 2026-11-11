@@ -18,8 +18,9 @@
 
 import Foundation
 
-enum NSXPCConnectionError: Error {
+enum NSXPCConnectionError: Error, Equatable {
     case failedToCastProxy(_: String)
+    case timedOut
 }
 
 extension NSXPCConnection {
@@ -42,6 +43,29 @@ final class XPCContinuation<Value>: @unchecked Sendable {
 
     init(_ continuation: CheckedContinuation<Value, Error>) {
         self.continuation = continuation
+    }
+
+    @MainActor
+    static func perform(deadline: DispatchTime? = nil,
+                        _ operation: (XPCContinuation<Value>) -> Void) async throws -> Value {
+        var timeoutTask: Task<Void, Never>?
+        defer { timeoutTask?.cancel() }
+        return try await withCheckedThrowingContinuation { continuation in
+            let pending = XPCContinuation(continuation)
+            if let deadline {
+                timeoutTask = Task {
+                    do {
+                        let now = DispatchTime.now().uptimeNanoseconds
+                        let remaining = deadline.uptimeNanoseconds > now ? deadline.uptimeNanoseconds - now : 0
+                        try await Task.sleep(nanoseconds: remaining)
+                        pending.resume(throwing: NSXPCConnectionError.timedOut)
+                    } catch {
+                        // The reply arrived before the deadline.
+                    }
+                }
+            }
+            operation(pending)
+        }
     }
 
     func resume(returning value: Value) {

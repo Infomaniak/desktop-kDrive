@@ -35,6 +35,7 @@ clang-format -i <file>
 ## Universal Conventions
 - **Language:** C++20. `#pragma once` for header guards. All C++ code in `KDC` namespace.
 - **Style:** Google-based clang-format, 4-space indent, 130-char line limit. Enforced by `.githooks/pre-commit`.
+- **Formatting check before commit:** Check the formatting of touched files before every commit. C++ is covered by the clang-format pre-commit hook; macOS Swift code has no hook, so run `swiftformat` and `swiftlint lint` on touched files under `src/gui4/macOS/` first (config: `src/gui4/macOS/.swiftformat`). CI rejects unformatted Swift code.
 - **Includes:** Relative to `src/` root — e.g., `#include "libcommon/utility/types.h"`.
 - **Platform files:** Use suffixes `_mac.mm` / `_win.cpp` / `_linux.cpp` for platform-specific code.
 - **Platform macros:** use project-defined `KD_MACOS`, `KD_WINDOWS`, and `KD_LINUX` instead of standard macros such as `__APPLE__`, `_WIN32`, or `__linux__`.
@@ -65,7 +66,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 
 ### Local Norms
 - The macOS desktop CI runner's runnable Xcode 26 installation is `/Applications/Xcode_26.app`; select it with job-scoped `DEVELOPER_DIR`.
-- macOS server build and test workflows use the desktop CI stack on M2-3 and `.github/actions/setup_xcode` to verify Xcode 26. Keep the redesigned Swift UI workflow on the iOS runners with `Xcode-Latest.app`.
+- macOS server build workflows use the desktop CI stack on M2-3 and `.github/actions/setup_xcode` to verify Xcode 26. macOS unit test jobs only run prebuilt binaries: they run on GitHub-hosted `macos-latest` and need no Xcode setup. Keep the redesigned Swift UI workflow on the iOS runners with `Xcode-Latest.app`.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
 - Authenticate Qt in CI using `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`, with `--no-save-account`; keep INI authentication for local builds.
 - Keep ad hoc Conan recipe verification scripts local; do not include them in a PR unless explicitly requested.
