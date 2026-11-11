@@ -27,8 +27,10 @@
 #include "libcommon/utility/utility.h"
 #include "requests/parameterscache.h"
 
+#include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
+#include <QStandardPaths>
 
 #include <unistd.h>
 
@@ -43,12 +45,14 @@ namespace {
 constexpr auto installedFileName = "kDrive.AppImage";
 constexpr auto partialFileName = ".kDrive.AppImage.part";
 
-// Waits for the old server to exit (30 s at most), then starts the new AppImage on the Settings window, where the update
-// was requested. Arguments: $1 = PID, $2 = AppImage.
+// Waits for the old server to exit, then starts the new AppImage on the Settings window, where the update was requested.
+// The single-instance check of the new version would hand over to a server still running, so the script waits for the
+// complete shutdown (synchronizations included); 5 minutes is only a safeguard against a stuck process.
+// Arguments: $1 = PID, $2 = AppImage.
 constexpr auto relauncherScript = R"(pid="$1"
 target="$2"
 i=0
-while kill -0 "$pid" 2>/dev/null && [ "$i" -lt 150 ]; do
+while kill -0 "$pid" 2>/dev/null && [ "$i" -lt 1500 ]; do
     sleep 0.2
     i=$((i + 1))
 done
@@ -61,7 +65,7 @@ log4cplus::Logger logger() {
 } // namespace
 
 LinuxUpdater::LinuxUpdater() :
-    _appImagePath(CommonUtility::envVarValue("APPIMAGE")) {}
+    _appImagePath(CommonUtility::appImagePath()) {}
 
 void LinuxUpdater::onUpdateFound() {
     const auto version = versionInfo().fullVersion();
@@ -142,7 +146,8 @@ void LinuxUpdater::prepareAnnouncedUpdate(const std::string &version) {
         return;
     }
 
-    if (_downloadInProgress) {
+    // The user's request (GUI job thread) and an automatic preparation (main thread) can race: only one starts.
+    if (_downloadInProgress.exchange(true)) {
         LOG_INFO(logger(), "AppImage update already being prepared");
         return;
     }
@@ -185,7 +190,7 @@ bool LinuxUpdater::canUpdateInPlace() const {
     }
 
     const auto directoryPath = _appImagePath.parent_path();
-    if (::access(directoryPath.c_str(), W_OK) != 0) {
+    if (!CommonUtility::isAppImageUpdatable()) {
         LOGW_INFO(logger(),
                   L"AppImage directory is not writable, in-place update unavailable: " << Utility::formatSyncPath(directoryPath));
         return false;
@@ -405,18 +410,39 @@ bool LinuxUpdater::launchRelauncher(const SyncPath &targetPath) const {
         environment.remove(QString::fromLatin1(name));
     }
 
+    QStringList arguments{
+            QStringLiteral("/bin/sh"),           QStringLiteral("-c"),        QString::fromLatin1(relauncherScript),
+            QStringLiteral("kdrive-relauncher"), QString::number(::getpid()), QString::fromStdString(targetPath.string())};
+
+    // Started at login, kDrive runs in the systemd service generated from its autostart entry. Before systemd 250
+    // (Ubuntu 22.04), the end of the main process stops that service and kills the rest of its cgroup, relauncher
+    // included: a transient scope of the user manager takes the relauncher out of it.
+    const auto systemdRun = QStandardPaths::findExecutable(QStringLiteral("systemd-run"));
+    const auto userManagerSocket = environment.value(QStringLiteral("XDG_RUNTIME_DIR")) + QStringLiteral("/systemd/private");
+    if (!systemdRun.isEmpty() && QFileInfo::exists(userManagerSocket)) {
+        arguments = QStringList{systemdRun, QStringLiteral("--user"), QStringLiteral("--scope"), QStringLiteral("--quiet"),
+                                QStringLiteral("--collect")} +
+                    arguments;
+    } else {
+        LOG_INFO(logger(), "No systemd user manager, the AppImage relauncher stays in the current cgroup");
+    }
+
     QProcess process;
-    process.setProgram(QStringLiteral("/bin/sh"));
-    process.setArguments({QStringLiteral("-c"), QString::fromLatin1(relauncherScript), QStringLiteral("kdrive-relauncher"),
-                          QString::number(::getpid()), QString::fromStdString(targetPath.string())});
+    process.setProgram(arguments.takeFirst());
+    process.setArguments(arguments);
     process.setProcessEnvironment(environment);
     process.setWorkingDirectory(QString::fromStdString(targetPath.parent_path().string()));
+    // Inherited descriptors include the keepalive pipe of the old AppImage runtime: kept open by the new version, it would
+    // keep the old runtime and its mount alive until the next restart.
+    process.setUnixProcessParameters(QProcess::UnixProcessFlag::CloseFileDescriptors);
 
     if (qint64 pid = 0; !process.startDetached(&pid)) {
         LOG_WARN(logger(), "Failed to start the AppImage relauncher: " << process.errorString().toStdString());
         return false;
     } else {
-        LOGW_INFO(logger(), L"AppImage relauncher started (PID " << pid << L") for " << Utility::formatSyncPath(targetPath));
+        LOGW_INFO(logger(), L"AppImage relauncher started (PID "
+                                    << pid << L", " << CommonUtility::s2ws(process.program().toStdString()) << L") for "
+                                    << Utility::formatSyncPath(targetPath));
     }
 
     return true;
