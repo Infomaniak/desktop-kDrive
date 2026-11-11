@@ -271,7 +271,8 @@ enum class SyncFolderRuleType {
     None,
     BlackList,
     WhiteList,
-    WhiteListSubFolder
+    WhiteListSubFolder,
+    EnumEnd
 };
 
 
