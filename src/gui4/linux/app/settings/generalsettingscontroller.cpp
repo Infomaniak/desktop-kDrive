@@ -339,10 +339,14 @@ void GeneralSettingsController::openUrl(const QUrl &url) {
 }
 
 // Manual fallback when the AppImage cannot be replaced in place (not an AppImage, read-only folder, download error).
-// The download page only offers the Prod version: a version announced on another channel is downloaded directly.
+// The download page only offers the Prod version: a version announced on the Beta, Internal or Test channel is downloaded
+// directly. Next, a staged Prod release, and any unknown channel keep the download page.
 void GeneralSettingsController::openDownload() {
     const auto &version = _updateStatusService.version();
-    if (version && version->channel != DistributionChannel::Prod && !version->downloadUrl.empty()) {
+    const bool channelOutsideProd =
+            version && (version->channel == DistributionChannel::Beta || version->channel == DistributionChannel::Internal ||
+                        version->channel == DistributionChannel::Test);
+    if (channelOutsideProd && !version->downloadUrl.empty()) {
         openUrl(QUrl(QString::fromStdString(version->downloadUrl)));
         return;
     }
