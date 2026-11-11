@@ -141,7 +141,7 @@ static const char optionsC[] =
         "  -h --help            : show this help screen.\n"
         "  -v --version         : show the application version.\n"
         "  --settings           : show the Settings window (if the application is running).\n"
-        "  --home --synthesis   : show the Home window (if the application is running).\n";
+        "  --synthesis          : show the Synthesis window (if the application is running).\n";
 
 } // namespace
 
@@ -3813,7 +3813,7 @@ void AppServer::parseOptions(const QStringList &options) {
         } else if (option == QLatin1String("--settings")) {
             _settingsAsked = true;
             break;
-        } else if (option == QLatin1String("--home") || option == QLatin1String("--synthesis")) {
+        } else if (option == QLatin1String("--synthesis")) {
             _synthesisAsked = true;
             break;
         } else if (option == QLatin1String("--clearKeychainKeys")) {

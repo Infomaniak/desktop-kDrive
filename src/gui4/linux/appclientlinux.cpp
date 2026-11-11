@@ -280,15 +280,14 @@ void AppClientLinux::setupIpcConnection() {
     }
 }
 
-// The server forwards --settings or --synthesis when a window is requested at launch. --synthesis is the legacy name of
-// --home, kept because the server and the other clients still use it.
+// The server forwards --settings or --synthesis when a window is requested at launch.
 void AppClientLinux::handleLaunchArguments() {
     const QStringList arguments = QCoreApplication::arguments();
     if (arguments.contains(QStringLiteral("--settings"))) {
         qCInfo(lcAppClientLinux) << "--settings argument detected, Settings window opened after bootstrap";
         _settingsActivationPending = true;
-    } else if (arguments.contains(QStringLiteral("--home")) || arguments.contains(QStringLiteral("--synthesis"))) {
-        qCInfo(lcAppClientLinux) << "--home argument detected, opening the main window";
+    } else if (arguments.contains(QStringLiteral("--synthesis"))) {
+        qCInfo(lcAppClientLinux) << "--synthesis argument detected, opening the main window";
         openMainWindow();
     }
 }
