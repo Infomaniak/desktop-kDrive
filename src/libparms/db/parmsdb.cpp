@@ -120,6 +120,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     ",distributionChannel INTEGER"           \
     ",sentryEnabled INTEGER"                 \
     ",matomoEnabled INTEGER"                 \
+    ",automaticUpdates INTEGER"              \
     ");"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"
@@ -128,9 +129,9 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, "    \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "     \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "               \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled) "                                              \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, automaticUpdates) "                            \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, " \
-    "?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32);"
+    "?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32, ?33);"
 
 #define UPDATE_PARAMETERS_REQUEST_ID "update_parameters"
 #define UPDATE_PARAMETERS_REQUEST                                                                                               \
@@ -141,7 +142,8 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "bigFolderSizeLimit=?17, darkTheme=?18, showShortcuts=?19, updateFileAvailable=?20, updateTargetVersion=?21, "              \
     "updateTargetVersionString=?22, "                                                                                           \
     "autoUpdateAttempted=?23, seenVersion=?24, dialogGeometry=?25, extendedLog=?26, maxAllowedCpu=?27, "                        \
-    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30, sentryEnabled=?31, matomoEnabled=?32;"
+    "uploadSessionParallelJobs=?28, jobPoolCapacityFactor=?29, distributionChannel=?30, sentryEnabled=?31, matomoEnabled=?32, " \
+    "automaticUpdates=?33;"
 
 #define SELECT_PARAMETERS_REQUEST_ID "select_parameters"
 #define SELECT_PARAMETERS_REQUEST                                                                                          \
@@ -149,7 +151,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, " \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "  \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled "                                            \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, automaticUpdates "                          \
     "FROM parameters;"
 
 //
@@ -737,6 +739,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.distributionChannel())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.sentryEnabled()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.matomoEnabled()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.automaticUpdates()));
 
     if (!queryExec(INSERT_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_PARAMETERS_REQUEST_ID);
@@ -1381,7 +1384,7 @@ bool ParmsDb::upgradeParametersTables() {
         return false;
     }
 
-    for (const auto &name: {"sentryEnabled", "matomoEnabled", "notifyBeforeDelete"}) {
+    for (const auto &name: {"sentryEnabled", "matomoEnabled", "notifyBeforeDelete", "automaticUpdates"}) {
         if (!addIntegerColumnIfMissing(tableName, name, 1)) {
             return false;
         }
@@ -1571,6 +1574,7 @@ bool ParmsDb::updateParameters(const ServerParameters &parameters, bool &found) 
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.distributionChannel())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.sentryEnabled()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.matomoEnabled()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.automaticUpdates()));
 
     if (!queryExec(UPDATE_PARAMETERS_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_PARAMETERS_REQUEST_ID);
@@ -1696,6 +1700,9 @@ bool ParmsDb::selectParameters(ServerParameters &parameters, bool &found) {
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setMatomoEnabled(intResult);
+
+    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
+    parameters.setAutomaticUpdates(intResult);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
 

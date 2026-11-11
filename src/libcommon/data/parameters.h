@@ -82,6 +82,9 @@ class Parameters {
         bool matomoEnabled() const { return _matomoEnabled; }
         void setMatomoEnabled(const bool value) { _matomoEnabled = value; }
 
+        bool automaticUpdates() const { return _automaticUpdates; }
+        void setAutomaticUpdates(const bool value) { _automaticUpdates = value; }
+
         bool operator==(const Parameters &) const = default;
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
@@ -124,6 +127,7 @@ class Parameters {
         DistributionChannel _distributionChannel{DistributionChannel::Prod};
         bool _sentryEnabled{true};
         bool _matomoEnabled{true};
+        bool _automaticUpdates{true};
 };
 
 } // namespace KDC

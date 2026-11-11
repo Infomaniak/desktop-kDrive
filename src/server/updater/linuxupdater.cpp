@@ -25,6 +25,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/checksumverifier.h"
 #include "libcommon/utility/utility.h"
+#include "requests/parameterscache.h"
 
 #include <QProcess>
 #include <QProcessEnvironment>
@@ -86,24 +87,36 @@ void LinuxUpdater::onUpdateFound() {
         return;
     }
 
-    if (expectedChecksum(version).empty()) {
-        fetchChecksum(version);
+    if (!ParametersCache::instance()->parameters().automaticUpdates()) {
+        // The update stays Available until the user starts it from Settings.
         return;
     }
 
-    prepareUpdate(version);
+    prepareAnnouncedUpdate(version);
 }
 
-// The update is already installed on disk: restarting starts the new version.
+void LinuxUpdater::onAutomaticUpdatesEnabled() {
+    if (state() == UpdateState::Available) {
+        onUpdateFound();
+    }
+}
+
+/**
+ * Prepares the announced update when it is not installed yet (checksum, download, install on disk), restarts the
+ * application on it otherwise.
+ */
 void LinuxUpdater::startInstaller() {
+    const auto version = versionInfo().fullVersion();
     SyncPath installedPath;
     {
         const std::scoped_lock lock(_stateMutex);
-        installedPath = _installedPath;
+        if (_installedVersion == version) {
+            installedPath = _installedPath;
+        }
     }
+
     if (installedPath.empty()) {
-        LOG_WARN(logger(), "No installed AppImage update to restart on");
-        setState(UpdateState::UpdateError);
+        prepareAnnouncedUpdate(version);
         return;
     }
 
@@ -116,6 +129,31 @@ void LinuxUpdater::startInstaller() {
     if (_quitCallback) {
         _quitCallback();
     }
+}
+
+void LinuxUpdater::prepareAnnouncedUpdate(const std::string &version) {
+    if (state() != UpdateState::Available && state() != UpdateState::DownloadError && state() != UpdateState::UpdateError) {
+        LOG_INFO(logger(), "No AppImage update to prepare in state " << state());
+        return;
+    }
+
+    if (!canUpdateInPlace()) {
+        setState(UpdateState::ManualUpdateAvailable);
+        return;
+    }
+
+    if (_downloadInProgress) {
+        LOG_INFO(logger(), "AppImage update already being prepared");
+        return;
+    }
+
+    LOG_INFO(logger(), "Preparing the AppImage update to version " << version);
+    if (expectedChecksum(version).empty()) {
+        fetchChecksum(version);
+        return;
+    }
+
+    prepareUpdate(version);
 }
 
 bool LinuxUpdater::checkMinOsVersion(const std::string &minOsVersion) const {

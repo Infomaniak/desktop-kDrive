@@ -56,6 +56,8 @@ class AbstractUpdater {
          * On Linux : notify the user
          */
         virtual void onUpdateFound() = 0;
+        /** Called when the user enables automatic updates: an update already found can be prepared right away. */
+        virtual void onAutomaticUpdatesEnabled() { /* Redefined in child class if necessary */ }
         virtual void setQuitCallback(const std::function<void()> & /*quitCallback*/) { /* Redefined in child class if necessary */
         }
         [[nodiscard]] virtual bool isUpdateSessionInProgress() const { return false; }
