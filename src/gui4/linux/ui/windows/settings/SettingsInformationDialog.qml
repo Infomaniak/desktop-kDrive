@@ -26,6 +26,13 @@ IKModal {
     required property var controller
     property bool about: false
     property Item returnFocusItem: null
+    // A check can announce another version while the dialog is open: its notes replace the previous ones.
+    readonly property string announcedVersion: controller.releaseVersion
+    onAnnouncedVersionChanged: {
+        if (opened && !about) {
+            controller.loadReleaseNotes();
+        }
+    }
     title: about ? qsTrId("aboutKDrive") : "kDrive " + controller.releaseVersion
     escapeDismissible: true
     // Wider for the release notes, so that fewer of their items wrap.
