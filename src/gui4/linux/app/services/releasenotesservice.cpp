@@ -46,7 +46,8 @@ ReleaseNotesService::ReleaseNotesService(const ParametersStore &parametersStore,
     _parametersStore(parametersStore) {}
 
 void ReleaseNotesService::load(const QString &tag, const QString &languageCode) {
-    if (tag == _tag && languageCode == _languageCode) {
+    // Same notes: skip while they load or once loaded, so that a failed or blocked load is retried.
+    if (tag == _tag && languageCode == _languageCode && (_reply || !_sections.isEmpty())) {
         return;
     }
 
