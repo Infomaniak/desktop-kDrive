@@ -81,6 +81,7 @@ dlldata.c
 
 # macOS specific
 xcuserdata/
+src/gui4/macOS/Version.generated.xcconfig
 **/.DS_Store
 
 # Visual C++ cache files
