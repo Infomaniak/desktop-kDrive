@@ -433,12 +433,12 @@ function appimage_verify_bundle() (
     fi
 
     # Libraries the bundle may take from the host: glibc, the GCC runtime, libraries of priority "required" on
-    # Ubuntu, and graphics or display libraries that must match the host and come with any desktop.
+    # Ubuntu, and graphics, display or desktop session libraries that must match the host and come with any desktop.
     local -a host_libraries=(
         ld-linux-x86-64.so.2 ld-linux-aarch64.so.1 libc.so.6 libm.so.6 libdl.so.2 libpthread.so.0 libresolv.so.2
         libstdc++.so.6 libgcc_s.so.1 libgmp.so.10 libgpg-error.so.0 libcom_err.so.2 libuuid.so.1
         libGL.so.1 libEGL.so.1 libX11.so.6 libX11-xcb.so.1 libxcb.so.1 libwayland-client.so.0 libfontconfig.so.1
-        libfreetype.so.6
+        libfreetype.so.6 libglib-2.0.so.0 libSM.so.6 libICE.so.6
     )
     local allowed_libraries
     allowed_libraries="$(printf '%s\n' "${host_libraries[@]}"
