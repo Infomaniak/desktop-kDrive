@@ -97,6 +97,12 @@ open class TargetAssembly {
             Factory(type: XPCQueryFetcherProtocol.self) { _, _ in
                 XPCQueryFetcher()
             },
+            Factory(type: XPCConnectionLifecycle.self) { _, resolver in
+                try resolver.resolve(type: XPCConnectionProvider.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver) as! XPCConnectionLifecycle
+            },
             Factory(type: XPCSignalHandlerProtocol.self) { _, _ in
                 XPCSignalHandler()
             },

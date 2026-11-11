@@ -154,6 +154,12 @@ final class MainWindowController: NSWindowController {
     }
 
     private func guessBestRouteWhenXPCIsConnected() async -> WindowRoute {
+        // A cached UpdateRequired error must win over main window and onboarding, otherwise the
+        // blocking view is lost when the error was loaded from the cache before .connected
+        if await coherentCache.hasUpdateRequiredError() {
+            return .updateRequired
+        }
+
         let hasConnectedUser = await coherentCache.getFirstAvailableUser() != nil
 
         if hasConnectedUser {
