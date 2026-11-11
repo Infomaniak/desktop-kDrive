@@ -13,6 +13,9 @@ while (-Not (Test-Path $lupdatePath)) {
 # Path to src folder (relative to script)
 $srcPath = Join-Path $scriptRoot "..\..\src"
 
+# Sources scanned by lupdate: src without gui4, whose frontends own their catalogs (Loco for Linux v4).
+$srcPaths = Get-ChildItem -Path $srcPath -Directory | Where-Object { $_.Name -ne "gui4" } | ForEach-Object { $_.FullName }
+
 # Find all .ts files in the translations folder (relative to script)
 $translationsPath = Join-Path $scriptRoot ".."
 $tsFiles = Get-ChildItem -Path $translationsPath -Filter "*.ts" -Recurse
@@ -22,7 +25,7 @@ $updatedCount = 0
 
 # Run lupdate.exe for each .ts file
 foreach ($file in $tsFiles) {
-    & $lupdatePath $srcPath -ts $file.FullName -noobsolete
+    & $lupdatePath @srcPaths -ts $file.FullName -noobsolete
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Error while running lupdate.exe for $($file.FullName) ($LASTEXITCODE)"
