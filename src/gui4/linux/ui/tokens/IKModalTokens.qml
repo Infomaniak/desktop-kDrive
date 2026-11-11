@@ -38,6 +38,13 @@ QtObject {
     readonly property real checkboxSize: 18
     readonly property real errorIconSize: 18
     readonly property real errorPadding: IKSpacing.s12
+    // Card listing items inside a modal, such as the deleted items of a mass deletion warning.
+    readonly property real fileListMaxHeight: 200
+    readonly property real fileListRowHeight: 24
+    readonly property real fileListCaptionHeight: 36
+    readonly property real fileListPadding: IKSpacing.s12
+    readonly property real fileListIconSpacing: IKSpacing.s8
+    readonly property real fileListTooltipMaximumWidth: 400
     readonly property real borderWidth: 1
     readonly property real focusBorderWidth: 2
     readonly property real disabledOpacity: 0.55

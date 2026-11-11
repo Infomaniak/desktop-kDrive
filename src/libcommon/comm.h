@@ -75,6 +75,7 @@ inline constexpr char msgParamEstimatedRemainingTime[] = "estimatedRemainingTime
 inline constexpr char msgParamItemInfo[] = "itemInfo";
 inline constexpr char msgParamNotificationType[] = "notificationType";
 inline constexpr char msgParamNbFiles[] = "nbFiles";
+inline constexpr char msgParamFilesPaths[] = "filesPaths";
 inline constexpr char msgParamErrorInfo[] = "errorInfo";
 inline constexpr char msgParamErrorDbId[] = "errorDbId";
 inline constexpr char msgParamErrorInfoList[] = "errorInfoList";

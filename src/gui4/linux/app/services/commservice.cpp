@@ -203,7 +203,16 @@ void CommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
         CommonUtility::readValueFromStruct(params, msgParamNotificationType, notificationType);
         CommonUtility::readValueFromStruct(params, msgParamNbFiles, itemCount);
 
-        emit manyDeletesNotification(syncDbId, notificationType, itemCount);
+        std::vector<CommString> commDeletedPaths;
+        CommonUtility::readValuesFromStruct(params, msgParamFilesPaths, commDeletedPaths);
+
+        QStringList deletedPaths;
+        deletedPaths.reserve(static_cast<qsizetype>(commDeletedPaths.size()));
+        for (const auto &commDeletedPath: commDeletedPaths) {
+            deletedPaths.append(CommonUtility::commString2QStr(commDeletedPath));
+        }
+
+        emit manyDeletesNotification(syncDbId, notificationType, itemCount, deletedPaths);
     });
 }
 
