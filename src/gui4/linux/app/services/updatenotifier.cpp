@@ -41,6 +41,8 @@ UpdateNotifier::UpdateNotifier(const UpdateStatusService &updateStatusService, c
     _notificationService(notificationService) {
     // The version arrives after the state: both changes are observed through `changed`.
     (void) connect(&updateStatusService, &UpdateStatusService::changed, this, &UpdateNotifier::notifyIfNeeded);
+    // The parameters can arrive after the update state, and decide whether the notification is shown.
+    (void) connect(&parametersStore, &ParametersStore::parametersChanged, this, &UpdateNotifier::notifyIfNeeded);
 }
 
 void UpdateNotifier::notifyIfNeeded() {
