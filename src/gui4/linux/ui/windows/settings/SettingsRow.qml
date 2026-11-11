@@ -47,7 +47,7 @@ Item {
             Text {
                 Layout.fillWidth: true
                 text: root.title
-                color: IKColors.textPrimary
+                color: root.enabled ? IKColors.textPrimary : IKColors.actionDisabled
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
             }
