@@ -108,8 +108,6 @@ class SyncOperation {
         void setRelativeDestinationPath(const SyncPath &relativeDestinationPath) {
             _relativeDestinationPath = relativeDestinationPath;
         }
-        [[nodiscard]] const SyncPath &affectedFilePath() const { return _affectedFilePath; }
-        void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
 
     private:
         OperationType _type = OperationType::None;
@@ -129,7 +127,6 @@ class SyncOperation {
 
         SyncPath _relativeOriginPath;
         SyncPath _relativeDestinationPath;
-        SyncPath _affectedFilePath;
 
         UniqueId _id = -1;
 

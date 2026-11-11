@@ -264,8 +264,6 @@ void ExecutorWorker::initProgressManager() {
 
         initSyncFileItem(syncOp, syncItem);
 
-        syncOp->setAffectedFilePath(syncItem.newPath().value_or(syncItem.path()));
-
         if (!_syncPal->initProgress(syncItem)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::initProgress: id=" << syncOpId);
         }
@@ -313,16 +311,15 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
 }
 
 void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId) {
-    if (syncOp->omit()) {
-        return;
-    }
+    assert(syncOp);
+    assert(syncOp->affectedNode());
 
     if (syncOp->hasConflict() && status == SyncFileStatus::Success &&
         (syncOp->conflict().type() == ConflictType::CreateCreate || syncOp->conflict().type() == ConflictType::EditEdit)) {
         status = SyncFileStatus::Conflict;
     }
 
-    SyncPath relativeLocalFilePath = syncOp->affectedFilePath();
+    SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath();
     if (!_syncPal->setProgressComplete(relativeLocalFilePath, status, newRemoteNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgressComplete: " << Utility::formatSyncPath(relativeLocalFilePath));
     }
@@ -936,7 +933,6 @@ ExitInfo ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPa
             if (vfsStatus.isPlaceholder && !isSyncing) {
                 if (!vfsStatus.isHydrated) {
                     // Update metadata
-                    std::string error;
                     if (const auto exitInfo = _syncPal->vfs()->updateMetadata(
                                 absolutePath, syncOp->affectedNode()->createdAt().value_or(0),
                                 syncOp->affectedNode()->modificationTime().value_or(0), syncOp->affectedNode()->size(),
