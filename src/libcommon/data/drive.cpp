@@ -99,11 +99,9 @@ void Drive::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, driveInfoAdmin, admin);
     setAdmin(admin);
 
-    bool inMaintenance = false;
-    CommonUtility::readValueFromStruct(dstruct, driveInfoMaintenance, inMaintenance);
-    auto newMaintenanceInfo = maintenanceInfo();
-    newMaintenanceInfo.setInMaintenance(inMaintenance);
-    setMaintenanceInfo(newMaintenanceInfo);
+    MaintenanceInfo maintenanceInfo;
+    CommonUtility::readValueFromStruct(dstruct, driveInfoMaintenance, maintenanceInfo, dynamicVar2Struct<MaintenanceInfo>);
+    setMaintenanceInfo(maintenanceInfo);
 
     CommonUtility::readValueFromStruct(dstruct, driveInfoLocked, _locked);
     CommonUtility::readValueFromStruct(dstruct, driveInfoUsedSize, _usedSize);

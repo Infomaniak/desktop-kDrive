@@ -356,7 +356,7 @@ ExitInfo AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBod
         return {ExitCode::BackError, ExitCause::DriveNotRenew};
     }
 
-    return ExitCode::Ok;
+    return {ExitCode::BackError, ExitCause::DriveMaintenance};
 }
 
 ExitInfo AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(MaintenanceInfo &maintenanceInfo) {
@@ -365,21 +365,22 @@ ExitInfo AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(Maintena
     const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
     if (dataObj == nullptr) return ExitCode::BackError;
 
+    bool inMaintenance = false;
+    (void) JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance, false);
+    maintenanceInfo.setInMaintenance(inMaintenance);
+
     std::string maintenanceReason;
     (void) JsonParserUtility::extractValue(dataObj, maintenanceReasonKey, maintenanceReason, false);
     const auto reason = getNetworkErrorReason(maintenanceReason);
 
-    if (reason == NetworkErrorReason::UnknownReason) {
-        disableRetry();
-        maintenanceInfo.setInMaintenance(false);
-        return ExitCode::Ok;
-    }
-
-    maintenanceInfo.setInMaintenance(true);
-
     int64_t maintenanceAt = 0;
     (void) JsonParserUtility::extractValue(dataObj, maintenanceAtKey, maintenanceAt, false);
     maintenanceInfo.setMaintenanceFrom(maintenanceAt);
+
+    if (reason == NetworkErrorReason::UnknownReason) {
+        disableRetry();
+        return ExitCode::Ok;
+    }
 
     if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::NotRenew) {
         disableRetry();

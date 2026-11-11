@@ -19,6 +19,7 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.ComponentModel;
 
 namespace Infomaniak.kDrive.CustomControls.Upsell
@@ -47,13 +48,31 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
         public UpsellInfoBar()
         {
             InitializeComponent();
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (Drive is not null)
+            {
+                Drive.PropertyChanged -= OnDrivePropertyChanged;
+                Drive.PropertyChanged += OnDrivePropertyChanged;
+            }
+            Bindings.Update();
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            if (Drive is not null)
+                Drive.PropertyChanged -= OnDrivePropertyChanged;
         }
 
         private static void OnDriveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = d as UpsellInfoBar;
 
-            if (control is null)
+            if (control is null || !control.IsLoaded)
                 return;
 
             if (e.OldValue is Drive oldDrive)
