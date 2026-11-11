@@ -20,29 +20,23 @@
 
 script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 source "$script_directory_path/build-utils.sh"
+source "$script_directory_path/appimage.sh"
 
 program_name="$(basename "$0")"
 
 QT_BASE_DIR=""
+
+# Runs an appimage.sh step in a new shell. Called from a `||` list, Bash would otherwise ignore the `set -e`
+# of the step and of its subshell, and continue after a failed command.
+function run_appimage_step() {
+  bash -c 'source "$1" && shift && "$@"' run_appimage_step "$script_directory_path/appimage.sh" "$@"
+}
 
 function display_help {
   echo "$program_name [-h]" >&2
   echo "  Build the Linux release AppImage for desktop-kDrive." >&2
   echo "where:" >&2
   echo "-h  Show this help text." >&2
-}
-
-function get_arch() {
-    architecture=$1
-
-    if [[ "$architecture" == "amd64" ]]; then
-        echo "x86_64"
-    elif [[  "$architecture" == "arm64" ]]; then
-        echo "aarch64"
-    else
-        echo "Invalid architecture argument: '$architecture'" >&2
-        exit 1;
-    fi
 }
 
 function find_qt_from_conan() {
@@ -89,18 +83,17 @@ function build_client_via_cmake() {
   CMAKE_PARAMS=()
 
   if [ -n "$APPLICATION_SERVER_URL" ]; then
-  	CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
+    CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
   fi
 
   export KDRIVE_DEBUG=0
 
-  # Find Conan toolchain file
   conan_folder=/build/conan
   conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
   if [ ! -f "$conan_toolchain_file" ]; then
     echo "ERROR: Conan toolchain file not found: $conan_toolchain_file" >&2
-    exit 1
+    return 1
   fi
 
   # Ensure cmake is the one provided by Conan: Qt >= 6.12 requires CMake >= 3.25 to be
@@ -108,38 +101,29 @@ function build_client_via_cmake() {
   # shellcheck disable=SC1091
   source "$(dirname "$conan_toolchain_file")/conanbuild.sh"
 
-  architecture=$(get_host_arch)
-  qt_neon_activation="ON"
-
-  if [[ "$architecture" == "amd64" ]]; then
-    qt_neon_activation="OFF"
-  fi
-
   cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DQT_FEATURE_neon="$qt_neon_activation" \
+      -DQT_FEATURE_neon=OFF \
       -DCMAKE_MODULE_PATH="$QT_BASE_DIR/lib/cmake/" \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
       -DBUILD_UNIT_TESTS=0 \
+      -DBUILD_GUI=ON \
+      -DBUILD_GUI_LEGACY=OFF \
+      -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
+      -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
       "${CMAKE_PARAMS[@]}" \
-      /src
-  make "-j$(nproc)"
+      /src || return 1
+  make "-j$(nproc)" || return 1
 
-  objcopy --only-keep-debug ./bin/kDrive ../kDrive.dbg
-  objcopy --strip-debug ./bin/kDrive
-  objcopy --add-gnu-debuglink=../kDrive.dbg ./bin/kDrive
+  run_appimage_step appimage_extract_debug_symbols ./bin /build kDrive kdrive_qml || return 1
 
-  objcopy --only-keep-debug ./bin/kDrive_client ../kDrive_client.dbg
-  objcopy --strip-debug ./bin/kDrive_client
-  objcopy --add-gnu-debuglink=../kDrive_client.dbg ./bin/kDrive_client
+  bundle_sources_for_sentry /build/kDrive.dbg
+  bundle_sources_for_sentry /build/kdrive_qml.dbg
 
-  bundle_sources_for_sentry ../kDrive.dbg
-  bundle_sources_for_sentry ../kDrive_client.dbg
-
-  make DESTDIR=/app install
+  make DESTDIR=/app install || return 1
 }
 
 function bundle_sources_for_sentry() {
@@ -153,7 +137,8 @@ function bundle_sources_for_sentry() {
 
   echo "Bundling sources for $(basename "$debug_file")..."
   rm -f "$source_bundle"
-  sentry-cli debug-files bundle-sources "$debug_file"
+  # Repository-relative paths in the debug info are resolved from the current directory.
+  (cd /src && sentry-cli debug-files bundle-sources "$debug_file")
 
   if [ ! -f "$source_bundle" ]; then
     echo "ERROR: Source bundle '${source_bundle}' was not created for '${debug_file}'." >&2
@@ -161,157 +146,16 @@ function bundle_sources_for_sentry() {
   fi
 }
 
-function move_dependencies() {
-  arch="$(get_arch $1)"
-  conan_dependencies_folder=$2
-
-  cd /app
-
-  mkdir -p ./usr/plugins ./usr/lib
-  cp -P -r $QT_BASE_DIR/plugins/* ./usr/plugins/
-
-  cp -P -r $QT_BASE_DIR/libexec ./usr
-  cp -P -r $QT_BASE_DIR/resources ./usr || true # resources might not exist, ignore if not found
-  cp -P -r $QT_BASE_DIR/translations ./usr
-
-  mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ 2>/dev/null || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
-
-  cp -P "$conan_dependencies_folder"/* ./usr/lib
-
-  # Copy nss if it exists (optional)
-  if [ -d "/usr/lib/$arch-linux-gnu/nss" ]; then
-    cp -P -r "/usr/lib/$arch-linux-gnu/nss" ./usr/lib/ 2>/dev/null
-  fi
-
-  # Copy Qt Wayland libraries if they exist (optional for Wayland support)
-  for lib in libQt6WaylandClient.so libQt6WaylandEglClientHwIntegration.so; do
-    if ls $QT_BASE_DIR/lib/${lib}* 1> /dev/null 2>&1; then
-      cp -P $QT_BASE_DIR/lib/${lib}* ./usr/lib 2>/dev/null || true
-    fi
-  done
-
-  mkdir -p ./usr/qml
-
-  # Copy GIO modules from the build system
-  # These are loaded dynamically by GLib and must match the bundled GLib version
-  mkdir -p ./usr/lib/gio/modules
-  if [ -d "/usr/lib/$arch-linux-gnu/gio/modules" ]; then
-    echo "Copying GIO modules from /usr/lib/$arch-linux-gnu/gio/modules..."
-    cp -P /usr/lib/$arch-linux-gnu/gio/modules/*.so ./usr/lib/gio/modules/ 2>/dev/null || true
-  fi
-
-  rm -rf "./usr/lib/$arch-linux-gnu/"
-  rm -rf ./usr/lib/kDrive
-  rm -rf ./usr/lib/cmake
-  rm -rf ./usr/include
-  rm -rf ./usr/mkspecs
-
-  # Don't bundle kDrivecmd as we don't run it anyway
-  rm -rf ./usr/bin/kDrivecmd
-
-  # Move sync exclude to right location
-  cp /src/sync-exclude-linux.lst ./usr/bin/sync-exclude.lst
-  cp /src/sync-folder-rules-linux.csv ./usr/bin/sync-folder-rules.csv
-  rm -rf ./etc
-
-  cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
-}
-
-function clean_app_directory() {
-  arch="$(get_arch $1)"
-
-  echo "Cleaning unnecessary files from AppImage..."
-
-  cd /app
-
-  echo "  Removing Qt development tools..."
-  cd ./usr/libexec
-  find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -delete
-  cd /app
-
-  # Remove development plugins
-  echo "  Removing development plugins..."
-  rm -rf ./usr/plugins/designer
-  rm -rf ./usr/plugins/qmltooling
-  rm -rf ./usr/plugins/assetimporters
-  rm -rf ./usr/plugins/canbus
-  rm -rf ./usr/plugins/geometryloaders
-  rm -rf ./usr/plugins/opcua
-  rm -rf ./usr/plugins/renderers
-  rm -rf ./usr/plugins/renderplugins
-  rm -rf ./usr/plugins/sceneparsers
-  rm -rf ./usr/plugins/scxmldatamodel
-  rm -rf ./usr/plugins/sensors
-  rm -rf ./usr/plugins/virtualkeyboard
-  rm -rf ./usr/plugins/wayland-graphics-integration-server
-
-  # Remove unnecessary platform plugins (keep only xcb and wayland)
-  echo "  Removing unnecessary platform plugins..."
-  cd ./usr/plugins/platforms
-  find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) ! -name "libqxcb.so" ! -name "libqwayland*" -delete
-  cd /app
-
-  # Remove egldeviceintegrations (embedded systems)
-  rm -rf ./usr/plugins/egldeviceintegrations
-
-  # Remove the SQL drivers (no Qt SQL driver is used on Linux)
-  echo "  Removing SQL drivers..."
-  rm -rf ./usr/plugins/sqldrivers
-
-  # Clean translations - keep only de, es, fr, it, sv, pt, pl, nb, fi, da, el, en
-  echo "  Cleaning translations..."
-  cd ./usr/translations
-
-  # Remove all assistant, designer, linguist, qt_help translations (dev tools)
-  rm -f assistant_*.qm designer_*.qm linguist_*.qm qt_help_*.qm
-
-  # For other Qt translations, keep only supported languages
-  for prefix in qt qtbase qtconnectivity qtdeclarative qtlocation qtmultimedia qtserialport qtwebsockets; do
-    # Remove all except de, es, fr, it, sv, pt, pl, nb, fi, da, el, en
-    find . -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -name "${prefix}_*.qm" \
-      ! -name "*_de.qm" ! -name "*_es.qm" ! -name "*_fr.qm" ! -name "*_it.qm" ! -name "*_sv.qm" ! -name "*_pt.qm" ! -name "*_pl.qm" ! -name "*_nb.qm" ! -name "*_fi.qm" ! -name "*_da.qm" ! -name "*_el.qm" ! -name "*_en.qm" -delete
-  done
-
-  cd /app
-
-  # Remove unnecessary system libraries
-  echo "  Removing unnecessary system libraries..."
-  cd ./usr/lib
-
-  # Remove Kerberos/GSSAPI libs
-  rm -f libgssapi*.so.* libk5crypto.so.* libkeyutils.so.* libkrb5.so.* libkrb5support.so.*
-  rm -f libhcrypto.so.* libheimbase.so.* libheimntlm.so.* libhx509.so.* libroken.so.* libwind.so.* libasn1.so.*
-
-  # Remove LDAP libs
-  rm -f liblber*.so.* libldap*.so.* libsasl2.so.*
-
-  # Remove Avahi
-  rm -f libavahi-client.so.* libavahi-common.so.*
-
-  # Remove CUPS (printing) - uncomment if printing not needed
-  # rm -f libcups.so.*
-
-  # Remove old OpenSSL 1.1 (we have 3.x)
-  rm -f libcrypto.so.1.1 libssl.so.1.1
-
-  # Remove unused image format libs
-  rm -f libjbig.so.* librtmp.so.* libssh.so.*
-
-  cd /app
-
-  echo "  Cleanup completed!"
-}
-
 function build_app_image() {
-  architecture=$1
+  run_appimage_step appimage_prepare_appdir /app || return 1
+  run_appimage_step appimage_check_appdir /app || return 1
 
-  export LD_LIBRARY_PATH="/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-  # linuxdeploy bundles its own `strip` which can fail on newer ELF features.
-  # Skipping linuxdeploy stripping avoids build failures; our binaries are already handled earlier.
-  export NO_STRIP=1
-  # The Qt plugin deploys every SQL driver from the Qt installation, but no Qt SQL driver is used on Linux
-  export LINUXDEPLOY_EXCLUDED_LIBRARIES="libqsql*.so"
-  linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0 --
+  cd /build || return 1
+  run_appimage_step appimage_linuxdeploy_deploy /app || return 1
+  run_appimage_step appimage_strip_unneeded_symbols /app || return 1
+  run_appimage_step appimage_verify_bundle /app || return 1
+  run_appimage_step appimage_package /app || return 1
+
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }
 
@@ -320,53 +164,22 @@ function build_recovery_updater_image() {
   updater_bin="/app/usr/bin/kDriveRecoveryUpdater"
 
   if [ ! -f "$updater_bin" ]; then
-    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
-    return 0
+    echo "kDriveRecoveryUpdater not found at '$updater_bin'; the release requires its AppImage." >&2
+    return 1
   fi
 
   echo "Building recovery updater AppImage for ${architecture}..."
 
   updater_appdir="/tmp/updater-app"
-  rm -rf "$updater_appdir"
-  mkdir -p "$updater_appdir/usr/bin"
-  mkdir -p "$updater_appdir/usr/lib"
-  mkdir -p "$updater_appdir/usr/plugins/platforms"
-
-  cp "$updater_bin" "$updater_appdir/usr/bin/kDriveRecoveryUpdater"
-
-  # Copy Conan dependencies (Poco, xxhash, log4cplus, openssl, sentry, etc.)
-  cp -P "$conan_dependencies_folder"/* "$updater_appdir/usr/lib" 2>/dev/null || true
-
-  # Copy Qt platform plugins (required for GUI)
-  cp -P -r "$QT_BASE_DIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
-
-  # Create a minimal .desktop file (required by linuxdeploy/appimagetool)
-  cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
-[Desktop Entry]
-Type=Application
-Name=kDriveRecoveryUpdater
-Exec=kDriveRecoveryUpdater
-Icon=kDriveRecoveryUpdater
-Categories=Utility;
-EOF
-
-  # Use the recovery updater icon
   updater_icon="/src/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
-  if [ -f "$updater_icon" ]; then
-    cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
-  fi
+  run_appimage_step appimage_prepare_recovery_updater_appdir /app "$updater_appdir" "$updater_icon" || return 1
+  run_appimage_step appimage_check_recovery_updater_appdir "$updater_appdir" || return 1
 
-  export LD_LIBRARY_PATH="$updater_appdir/usr/lib:/app/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-  export NO_STRIP=1
-  linuxdeploy --appdir "$updater_appdir" \
-    -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
-    -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
-    -i "$updater_appdir/kDriveRecoveryUpdater.png" \
-    --plugin qt --output appimage -v0
-  if [ "$?" -ne 0 ]; then
-    echo "ERROR: linuxdeploy failed for recovery updater AppImage" >&2
-    return 1
-  fi
+  cd /build || return 1
+  run_appimage_step appimage_linuxdeploy_recovery_updater "$updater_appdir" || return 1
+  run_appimage_step appimage_strip_unneeded_symbols "$updater_appdir" || return 1
+  run_appimage_step appimage_verify_bundle "$updater_appdir" || return 1
+  run_appimage_step appimage_package "$updater_appdir" || return 1
 
   mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
   if [ "$?" -ne 0 ]; then
@@ -435,6 +248,17 @@ fi
 architecture="$(get_host_arch)"
 build_type="RelWithDebInfo"
 conan_dependencies_folder="/build/conan/dependencies"
+check_linux_v4_version /src || exit 1
+
+# The sentry recipe requires libc-ares-dev, which the build image does not provide.
+# TODO: Remove once the build image ships libc-ares-dev.
+if ! dpkg-query -W -f='${Status}' libc-ares-dev 2>/dev/null | grep -q "install ok installed"; then
+    echo "Installing libc-ares-dev..."
+    if ! { apt-get update -qq && apt-get install -y -qq libc-ares-dev; }; then
+        echo "Unable to install libc-ares-dev." >&2
+        exit 1
+    fi
+fi
 
 echo "Detecting Qt and building Conan dependencies for ${architecture}..."
 find_qt_from_conan "$build_type"
@@ -456,44 +280,29 @@ fi
 echo
 
 echo "Building desktop-kDrive application with type ${build_type} via CMake for architecture ${architecture}..."
-build_client_via_cmake "$build_type" "$conan_dependencies_folder"
-
-if [ ! "$?" -eq "0" ]; then
+build_client_via_cmake "$build_type" "$conan_dependencies_folder" || {
     printf "\nCMake build failed." >&2
     exit 1
-fi
-
-echo
-
-echo "Moving dependencies ..."
-move_dependencies "$architecture" "$conan_dependencies_folder"
-
-if [ ! "$?" -eq "0" ]; then
-    printf "\nMove of dependencies failed." >&2
-    exit 1
-fi
-
-# TODO enable the cleaning of the appimage folder once the build is stable.
-echo
-echo "Cleaning unnecessary files ..."
-clean_app_directory "$architecture"
-
-echo
-echo "Building AppImage ..."
-build_app_image "$architecture"
-
-if [ ! "$?" -eq "0" ]; then
-    printf "\nBuild of the AppImage failed." >&2
-    exit 1
-fi
+}
 
 echo
 echo "Building recovery updater AppImage ..."
-build_recovery_updater_image "$architecture"
-
-if [ ! "$?" -eq "0" ]; then
+build_recovery_updater_image "$architecture" || {
     printf "\nBuild of the recovery updater AppImage failed." >&2
     exit 1
-fi
+}
+
+rm -f /app/usr/bin/kDriveRecoveryUpdater
+run_appimage_step check_main_appdir_updater_separation /app || {
+    printf "\nRecovery updater separation check failed." >&2
+    exit 1
+}
+
+echo
+echo "Building AppImage ..."
+build_app_image || {
+    printf "\nBuild of the AppImage failed." >&2
+    exit 1
+}
 
 echo "Build of AppImage successfully completed for architecture ${architecture}."
