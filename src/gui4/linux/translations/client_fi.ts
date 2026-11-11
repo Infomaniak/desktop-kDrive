@@ -1920,6 +1920,10 @@ Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja y
             <source>%1 version conflicts detected</source> 
             <translation>%1 versioristiriitaa havaittu</translation> 
         </message> 
+        <message id="manyDeleteDialogFilesHeader"> 
+            <source>%1 items deleted</source> 
+            <translation>%1 poistettua kohdetta</translation> 
+        </message> 
         <message id="manyDeleteDialogHardLimitContent"> 
             <source>Synchronization is paused to prevent accidental deletion.
 What would you like to do?</source> 
@@ -1933,6 +1937,13 @@ Mitä haluat tehdä?</translation>
         <message id="manyDeleteDialogHardLimitSecondary"> 
             <source>Delete online as well</source> 
             <translation>Poista myös verkosta</translation> 
+        </message> 
+        <message numerus="yes" id="manyDeleteDialogOtherPlaceholder"> 
+            <source>and another element</source> 
+            <translation>
+                <numerusform>ja toinen osa</numerusform> 
+                <numerusform>ja %1 muut tekijät</numerusform> 
+            </translation>
         </message> 
         <message id="manyDeleteDialogSoftLimitContent"> 
             <source>These files can still be recovered from the kDrive Recycle Bin.</source> 

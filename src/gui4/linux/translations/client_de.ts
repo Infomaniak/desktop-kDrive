@@ -1920,6 +1920,10 @@ Bitte überprüfen und benennen Sie Dateien mit ungewöhnlichen Zeichen um und v
             <source>%1 version conflicts detected</source> 
             <translation>%1 Versionskonflikte erkannt</translation> 
         </message> 
+        <message id="manyDeleteDialogFilesHeader"> 
+            <source>%1 items deleted</source> 
+            <translation>%1 Elemente gelöscht</translation> 
+        </message> 
         <message id="manyDeleteDialogHardLimitContent"> 
             <source>Synchronization is paused to prevent accidental deletion.
 What would you like to do?</source> 
@@ -1933,6 +1937,13 @@ Was möchten Sie tun?</translation>
         <message id="manyDeleteDialogHardLimitSecondary"> 
             <source>Delete online as well</source> 
             <translation>Auch online löschen</translation> 
+        </message> 
+        <message numerus="yes" id="manyDeleteDialogOtherPlaceholder"> 
+            <source>and another element</source> 
+            <translation>
+                <numerusform>und ein weiteres Element</numerusform> 
+                <numerusform>und %1 weitere Elemente</numerusform> 
+            </translation>
         </message> 
         <message id="manyDeleteDialogSoftLimitContent"> 
             <source>These files can still be recovered from the kDrive Recycle Bin.</source> 
