@@ -65,6 +65,7 @@ struct StorageView: View {
     private static let isRunningInPreviews = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
 
     @InjectService private var storageDataProviding: StorageDataProviding
+    @InjectService private var cacheObservable: CoherentCacheObservable
 
     @State private var volumeName = KDriveLocalizable.storageDeviceNameMac
     @State private var volumeStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
@@ -84,6 +85,13 @@ struct StorageView: View {
 
     private var storagePublisher: AnyPublisher<IndexedStorageData, Never> {
         storageDataProviding.storageDataPublisher.removeDuplicates().eraseToAnyPublisher()
+    }
+
+    private var drivePublisher: AnyPublisher<Drive?, Never> {
+        guard let driveDbId = mainViewModel.currentDrive?.dbId else {
+            return Empty().eraseToAnyPublisher()
+        }
+        return cacheObservable.usersPublisher.drivePublisher(driveDbId: Int32(driveDbId))
     }
 
     private var volumeStorageData: StorageSectionView.StorageData {
@@ -149,6 +157,7 @@ struct StorageView: View {
             }
         }
         .onReceive(storagePublisher.receive(on: RunLoop.main), perform: handleUpdatedStorageData)
+        .onReceive(drivePublisher.receive(on: RunLoop.main), perform: handleUpdatedDrive)
         .onAppear {
             Task {
                 await getCachedStorageData()
@@ -156,6 +165,11 @@ struct StorageView: View {
         }
         .task(id: mainViewModel.currentSynchro?.dbId) {
             await fetchStorageData()
+        }
+        .task {
+            // Ask the server to reload the drive info from the API, the updated quota is then received through `drivePublisher`.
+            guard !Self.isRunningInPreviews else { return }
+            try? await UtilityJobs().activateLoadInfo()
         }
     }
 
@@ -179,26 +193,22 @@ struct StorageView: View {
             return
         }
         try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
+    }
 
+    private func handleUpdatedDrive(_ drive: Drive?) {
         // In previews, drive values are pinned by the preview initializer; skip the real ones.
-        guard !Self.isRunningInPreviews else {
+        guard !Self.isRunningInPreviews, let drive else {
             return
         }
 
-        if let currentDrive = mainViewModel.currentDrive {
-            @InjectService var coherentCache: CoherentCache
-            guard let drive = await coherentCache.getDrive(driveDbId: Int32(currentDrive.dbId)) else {
-                IKLogger.general.warning("[KD] Failed to get drive for driveDbId=\(currentDrive.dbId)")
-                return
-            }
+        var name = KDriveLocalizable.labelMySubscription
+        if isStandaloneDrivePack(drive.packInfo.name) {
+            name.append(" kDrive ")
+        }
+        name.append(drive.packInfo.displayName)
 
-            driveStorageInfo.name = KDriveLocalizable.labelMySubscription
-            if isStandaloneDrivePack(drive.packInfo.name) {
-                driveStorageInfo.name.append(" kDrive ")
-            }
-            driveStorageInfo.name.append(drive.packInfo.displayName)
-            driveStorageInfo.size = drive.size
-            driveStorageInfo.usedSize = drive.usedSize
+        withAnimation {
+            driveStorageInfo = DriveStorageInfo(name: name, size: drive.size, usedSize: drive.usedSize)
         }
     }
 
@@ -248,7 +258,6 @@ extension StorageView {
         ))
     }
 }
-#endif
 
 #Preview {
     StorageView(
@@ -257,3 +266,4 @@ extension StorageView {
         previewDriveUsedSize: 123_456_789_000
     )
 }
+#endif
