@@ -94,6 +94,7 @@ ScrollView {
             }
             SettingsRow {
                 title: qsTrId("releaseChannelBeta")
+                separator: false
                 Text {
                     text: root.controller.betaProgramStatus
                     color: IKColors.textSecondary
@@ -103,14 +104,6 @@ ScrollView {
                     id: betaProgramInfo
                     enabled: root.controller.ready
                     onClicked: root.betaProgramRequested(betaProgramInfo)
-                }
-            }
-            SettingsRow {
-                title: qsTrId("aboutKDrive")
-                separator: false
-                SettingsInfoButton {
-                    id: aboutInfo
-                    onClicked: root.aboutRequested(aboutInfo)
                 }
             }
         }
@@ -191,6 +184,17 @@ ScrollView {
                     external: true
                     implicitHeight: IKSettings.buttonHeight
                     onClicked: root.controller.openFeedback()
+                }
+            }
+        }
+        SettingsGroup {
+            width: parent.width - 2 * IKSettings.pageMargin
+            SettingsRow {
+                title: qsTrId("aboutKDrive")
+                separator: false
+                SettingsInfoButton {
+                    id: aboutInfo
+                    onClicked: root.aboutRequested(aboutInfo)
                 }
             }
         }
