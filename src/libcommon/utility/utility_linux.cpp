@@ -20,6 +20,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <mutex>
 #include <vector>
 #include <unistd.h>
 #include <sys/types.h>
@@ -53,8 +54,25 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     return appSupportPath;
 }
 
+namespace {
+std::mutex appImagePathMutex;
+SyncPath installedAppImagePath;
+} // namespace
+
 SyncPath CommonUtility::appImagePath() {
+    {
+        const std::scoped_lock lock(appImagePathMutex);
+        if (!installedAppImagePath.empty()) {
+            return installedAppImagePath;
+        }
+    }
+
     return SyncPath(envVarValue("APPIMAGE"));
+}
+
+void CommonUtility::setAppImagePath(const SyncPath &path) {
+    const std::scoped_lock lock(appImagePathMutex);
+    installedAppImagePath = path;
 }
 
 // The new AppImage is renamed over the running one, which requires write access to its folder.
