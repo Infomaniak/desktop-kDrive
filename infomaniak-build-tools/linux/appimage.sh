@@ -432,6 +432,18 @@ function appimage_verify_bundle() (
         glibcxx_ceiling="GLIBCXX_3.4.33"
     fi
 
+    # Libraries the bundle may take from the host: glibc, the GCC runtime, libraries of priority "required" on
+    # Ubuntu, and graphics or display libraries that must match the host and come with any desktop.
+    local -a host_libraries=(
+        ld-linux-x86-64.so.2 ld-linux-aarch64.so.1 libc.so.6 libm.so.6 libdl.so.2 libpthread.so.0 libresolv.so.2
+        libstdc++.so.6 libgcc_s.so.1 libgmp.so.10 libgpg-error.so.0 libcom_err.so.2 libuuid.so.1
+        libGL.so.1 libEGL.so.1 libX11.so.6 libX11-xcb.so.1 libxcb.so.1 libwayland-client.so.0 libfontconfig.so.1
+        libfreetype.so.6
+    )
+    local allowed_libraries
+    allowed_libraries="$(printf '%s\n' "${host_libraries[@]}"
+        find "$app_dir/usr" \( -type f -o -type l \) -name '*.so*' -printf '%f\n')"
+
     if compgen -G "$app_dir/usr/lib/libglib-2.0.so*" >/dev/null ||
         compgen -G "$app_dir/usr/lib/libgio-2.0.so*" >/dev/null ||
         compgen -G "$app_dir/usr/lib/libgobject-2.0.so*" >/dev/null ||
@@ -448,6 +460,15 @@ function appimage_verify_bundle() (
         fi
         if readelf -d "$file" | grep -q 'Shared library: \[libOpenGL\.so\.0\]'; then
             echo "Unsupported host dependency on libOpenGL.so.0: $file" >&2
+            failures=1
+        fi
+
+        local host_needed
+        host_needed="$(readelf -d "$file" | sed -n 's/.*Shared library: \[\(.*\)\]/\1/p' |
+            grep -vxF -f <(printf '%s\n' "$allowed_libraries") || true)"
+        if [[ -n "$host_needed" ]]; then
+            echo "Library neither bundled nor allowed from the host: $file" >&2
+            echo "$host_needed" >&2
             failures=1
         fi
 
