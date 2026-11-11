@@ -42,6 +42,7 @@ class NotificationService final : public QObject {
 
         explicit NotificationService(QObject *parent = nullptr);
 
+        /** Shows `summary` and `body` as plain text: the body is escaped when the server interprets markup. */
         void show(const QString &summary, const QString &body, Action action);
 
     signals:
@@ -56,6 +57,8 @@ class NotificationService final : public QObject {
         std::unordered_map<uint32_t, Action> _actionByNotification;
         std::unordered_map<Action, uint32_t> _notificationByAction;
         bool _serverUnavailableLogged{false};
+        // Until the server answers, assume it interprets the body as markup, as the common servers do.
+        bool _bodyMarkup{true};
 };
 
 } // namespace KDC

@@ -39,6 +39,7 @@ const auto notificationPath = u"/org/freedesktop/Notifications"_s;
 const auto notificationInterface = u"org.freedesktop.Notifications"_s;
 // Action invoked by a click on the notification body; servers do not show it as a button.
 const auto defaultActionKey = u"default"_s;
+const auto bodyMarkupCapability = u"body-markup"_s;
 // Named after the installed desktop entry, see src/gui4/linux/CMakeLists.txt.
 const auto applicationIconName = u"kdrive"_s;
 constexpr int32_t serverDefaultTimeout = -1;
@@ -51,6 +52,20 @@ NotificationService::NotificationService(QObject *const parent) :
                        SLOT(handleActionInvoked(uint, QString)));
     (void) bus.connect(notificationService, notificationPath, notificationInterface, u"NotificationClosed"_s, this,
                        SLOT(handleNotificationClosed(uint, uint)));
+
+    // The body carries file names: escape it only for a server that interprets it as markup.
+    const auto capabilities =
+            QDBusMessage::createMethodCall(notificationService, notificationPath, notificationInterface, u"GetCapabilities"_s);
+    auto *const watcher = new QDBusPendingCallWatcher(bus.asyncCall(capabilities), this);
+    (void) connect(watcher, &QDBusPendingCallWatcher::finished, this, [this](QDBusPendingCallWatcher *const finishedWatcher) {
+        finishedWatcher->deleteLater();
+        const QDBusPendingReply<QStringList> reply = *finishedWatcher;
+        if (reply.isError()) {
+            return;
+        }
+
+        _bodyMarkup = reply.value().contains(bodyMarkupCapability);
+    });
 }
 
 void NotificationService::show(const QString &summary, const QString &body, const Action action) {
@@ -61,8 +76,9 @@ void NotificationService::show(const QString &summary, const QString &body, cons
 
     auto message = QDBusMessage::createMethodCall(notificationService, notificationPath, notificationInterface, u"Notify"_s);
     const QVariantMap hints{{u"desktop-entry"_s, QGuiApplication::desktopFileName()}};
-    message << QGuiApplication::applicationDisplayName() << replacedId << applicationIconName << summary << body
-            << QStringList{defaultActionKey, QString()} << hints << serverDefaultTimeout;
+    message << QGuiApplication::applicationDisplayName() << replacedId << applicationIconName << summary
+            << (_bodyMarkup ? body.toHtmlEscaped() : body) << QStringList{defaultActionKey, QString()} << hints
+            << serverDefaultTimeout;
 
     auto *const watcher = new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(message), this);
     (void) connect(watcher, &QDBusPendingCallWatcher::finished, this,
