@@ -340,31 +340,23 @@ ExitInfo AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBod
         return exitInfo;
 
     if (!maintenanceInfo.inMaintenance()) {
-        disableRetry();
         return ExitCode::Ok;
     }
 
-    if (maintenanceInfo.asleep()) {
-        disableRetry();
-        return {ExitCode::BackError, ExitCause::DriveAsleep};
-    }
-    if (maintenanceInfo.wakingUp()) {
-        disableRetry();
-        return {ExitCode::BackError, ExitCause::DriveWakingUp};
-    }
-    if (maintenanceInfo.notRenew()) {
-        disableRetry();
-        return {ExitCode::BackError, ExitCause::DriveNotRenew};
-    }
+    disableRetry();
+
+    if (maintenanceInfo.asleep()) return {ExitCode::BackError, ExitCause::DriveAsleep};
+    if (maintenanceInfo.wakingUp()) return {ExitCode::BackError, ExitCause::DriveWakingUp};
+    if (maintenanceInfo.notRenew()) return {ExitCode::BackError, ExitCause::DriveNotRenew};
 
     return {ExitCode::BackError, ExitCause::DriveMaintenance};
 }
 
 ExitInfo AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(MaintenanceInfo &maintenanceInfo) {
-    if (!jsonRes()) return ExitCode::BackError;
+    if (!jsonRes()) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (dataObj == nullptr) return ExitCode::BackError;
+    if (dataObj == nullptr) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     bool inMaintenance = false;
     (void) JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance, false);
@@ -397,19 +389,18 @@ ExitInfo AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(Maintena
             const auto &maintenanceInfoObj = maintenanceInfoVar.extract<Poco::JSON::Object::Ptr>();
             std::string code = "";
             (void) JsonParserUtility::extractValue(maintenanceInfoObj, codeKey, code, false);
-            if (code == "asleep") {
+            if (code == asleepKey) {
                 LOG_DEBUG(_logger, "Drive is asleep");
                 maintenanceInfo.setAsleep(true);
                 disableRetry();
-            } else if (code == "waking_up") {
+            } else if (code == wakingUpKey) {
                 LOG_DEBUG(_logger, "Drive is waking up");
                 maintenanceInfo.setWakingUp(true);
                 disableRetry();
             }
         }
-
-        return ExitCode::Ok;
     }
+    return ExitCode::Ok;
 }
 
 

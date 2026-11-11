@@ -28,8 +28,8 @@ static const auto packDisplayName = "displayName";
 static const auto packIsFree = "isFree";
 static const auto packUpsellTarget = "upsellTarget";
 
-constexpr UpsellTarget getUpsellTarget(uint64_t packId) {
-    switch (packId) {
+constexpr UpsellTarget getUpsellTarget(const uint64_t packId_) {
+    switch (packId_) {
         case 1: // Solo
         case 6: // Free
         case 16: // myKsuite
