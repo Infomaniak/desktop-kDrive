@@ -59,19 +59,19 @@ class LinuxUpdater final : public AbstractUpdater {
 
     private:
         [[nodiscard]] bool canUpdateInPlace() const;
-        void prepareAnnouncedUpdate(const std::string &version);
-        void fetchChecksum(const std::string &version);
-        void checksumFetched(UniqueId jobId, const std::string &version);
-        void prepareUpdate(const std::string &version);
-        void fetchSize(const std::string &version);
-        void sizeFetched(UniqueId jobId, const std::string &version);
-        void downloadUpdate(const std::string &version);
-        void downloadFinished(UniqueId jobId, const std::string &version);
+        void prepareAnnouncedUpdate();
+        void fetchChecksum(const VersionInfo &info);
+        void checksumFetched(UniqueId jobId, const VersionInfo &info);
+        void prepareUpdate(const VersionInfo &info);
+        void fetchSize(const VersionInfo &info);
+        void sizeFetched(UniqueId jobId, const VersionInfo &info);
+        void downloadUpdate(const VersionInfo &info);
+        void downloadFinished(UniqueId jobId, const VersionInfo &info);
         void finishPreparation(UpdateState state);
-        void installUpdate(const std::string &version);
+        void installUpdate(const VersionInfo &info);
         static void updateDesktopEntries(const SyncPath &targetPath);
         [[nodiscard]] std::string expectedChecksum(const std::string &version) const;
-        [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const std::string &version);
+        [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const VersionInfo &info);
         [[nodiscard]] bool launchRelauncher(const SyncPath &targetPath) const;
 
         SyncPath _appImagePath;
