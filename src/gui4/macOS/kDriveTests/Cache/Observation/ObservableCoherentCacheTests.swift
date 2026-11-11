@@ -16,100 +16,55 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
-import Foundation
 @testable import kDriveCore
 import OrderedCollections
 import Testing
 
-extension ServerCoherentCache {
-    var receivedUserValues: AsyncStream<IndexedUsers> {
-        AsyncStream { continuation in
-            let cancellable = usersPublisher
-                .sink { value in continuation.yield(value) }
-
-            continuation.onTermination = { _ in cancellable.cancel() }
-        }
-    }
-
-    var receivedErrorValues: AsyncStream<IndexedErrors> {
-        AsyncStream { continuation in
-            let cancellable = serverErrorsPublisher
-                .sink { value in continuation.yield(value) }
-
-            continuation.onTermination = { _ in cancellable.cancel() }
-        }
-    }
-}
-
-@MainActor
 struct ObservableCoherentCacheTests {
     @Test(.timeLimit(.minutes(1)))
-    func observeUserChangesWithCombine() async throws {
-        // GIVEN
-        let user = ObservableData.expectedUser
-        let cache = ServerCoherentCache()
-        let receivedValues = await cache.receivedUserValues // Start to save the received values
-
-        var receivedUsers: IndexedUsers?
-        var cancellables = Set<AnyCancellable>()
-
-        // WHEN
-        let publisher = cache.usersPublisher
-        let subscription = publisher
-            .sink { indexedUsers in
-                receivedUsers = indexedUsers
-            }
-
-        subscription.store(in: &cancellables)
-
-        await cache.addUser(user)
-
-        // THEN
-        _ = await receivedValues.first(where: { _ in true })
-
-        #expect(receivedUsers != nil, "Should have received users update")
-        #expect(receivedUsers!.count == 1, "Should have received one user update")
-
-        if let receivedUser = receivedUsers?.values.first {
-            #expect(receivedUser.dbId == ObservableData.expectedUserDbId, "Received user ID should match expected")
-            #expect(receivedUser.name == "appleseed", "Received user name should match expected")
-        } else {
-            Issue.record("Expected to find values")
-        }
-    }
-
-    @Test(.timeLimit(.minutes(1)))
-    func observeServerErrorsChangesWithCombine() async throws {
+    func storesServerLevelErrorInServerErrors() async throws {
         // GIVEN
         let serverError = ObservableData.expectedServerError
         let cache = ServerCoherentCache()
-        let receivedValues = await cache.receivedErrorValues // Start to save the received values
-
-        var receivedServerErrors: IndexedErrors?
-        var cancellables = Set<AnyCancellable>()
 
         // WHEN
-        let publisher = cache.serverErrorsPublisher
-        let subscription = publisher
-            .sink { indexedErrors in
-                receivedServerErrors = indexedErrors
-            }
-
-        subscription.store(in: &cancellables)
-
         try await cache.addOrUpdateError(serverError)
 
         // THEN
-        _ = await receivedValues.first(where: { _ in true })
+        let storedError = await cache.serverErrors[ObservableData.expectedServerErrorDbId]
+        #expect(storedError != nil, "Server level error should be stored in serverErrors")
+    }
 
-        #expect(receivedServerErrors != nil, "Should have received errors")
-        #expect(receivedServerErrors!.count == 1, "Should have received one error")
+    @Test(.timeLimit(.minutes(1)))
+    func routesSyncPalUpdateRequiredErrorToServerErrors() async throws {
+        // GIVEN
+        let syncPalError = ObservableData.syncPalUpdateRequiredError
+        let cache = ServerCoherentCache()
 
-        if let receivedServerError = receivedServerErrors?.values.first {
-            #expect(receivedServerError.dbId == ObservableData.expectedServerErrorDbId, "Received error ID should match expected")
-        } else {
-            Issue.record("Expected to find values")
-        }
+        // WHEN
+        try await cache.addOrUpdateError(syncPalError)
+
+        // THEN
+        let storedError = await cache.serverErrors[ObservableData.syncPalUpdateRequiredErrorDbId]
+        #expect(storedError != nil, "SyncPal level UpdateRequired error should be routed to serverErrors")
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func reportsUpdateRequiredErrorAfterStartupPreload() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        #expect(await !cache.hasUpdateRequiredError(), "A fresh cache must not report an UpdateRequired error")
+
+        // WHEN the startup preload refreshes the cache with errors persisted by the server
+        try await cache.updateErrors([ObservableData.syncPalUpdateRequiredError, ObservableData.expectedServerError])
+
+        // THEN
+        #expect(await cache.hasUpdateRequiredError(), "Post-preload navigation must see the cached UpdateRequired error")
+
+        // WHEN a later refresh no longer contains the UpdateRequired error
+        try await cache.updateErrors([ObservableData.expectedServerError])
+
+        // THEN
+        #expect(await !cache.hasUpdateRequiredError(), "Resolving the UpdateRequired error must unblock the UI")
     }
 }
