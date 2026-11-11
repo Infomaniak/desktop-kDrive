@@ -382,18 +382,6 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId, const std::string &ver
         return;
     }
 
-    std::error_code ec;
-    std::filesystem::permissions(partPath,
-                                 std::filesystem::perms::owner_all | std::filesystem::perms::group_read |
-                                         std::filesystem::perms::group_exec | std::filesystem::perms::others_read |
-                                         std::filesystem::perms::others_exec,
-                                 std::filesystem::perm_options::replace, ec);
-    if (ec) {
-        LOGW_WARN(logger(), L"Failed to make the AppImage executable: " << Utility::formatStdError(partPath, ec));
-        failDownload();
-        return;
-    }
-
     LOGW_INFO(logger(), L"AppImage downloaded at " << Utility::formatSyncPath(partPath));
     installUpdate(version);
 }
@@ -410,8 +398,23 @@ void LinuxUpdater::finishPreparation(const UpdateState state) {
  */
 void LinuxUpdater::installUpdate(const std::string &version) {
     const auto partPath = partialDownloadPath(_appImagePath);
-    const auto targetPath = installTargetPath(_appImagePath);
+
+    // Set here rather than after the download, so that a download recovered from a previous session is executable too.
     std::error_code ec;
+    std::filesystem::permissions(partPath,
+                                 std::filesystem::perms::owner_all | std::filesystem::perms::group_read |
+                                         std::filesystem::perms::group_exec | std::filesystem::perms::others_read |
+                                         std::filesystem::perms::others_exec,
+                                 std::filesystem::perm_options::replace, ec);
+    if (ec) {
+        LOGW_WARN(logger(), L"Failed to make the AppImage executable: " << Utility::formatStdError(partPath, ec));
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(partPath, ioError);
+        finishPreparation(UpdateState::UpdateError);
+        return;
+    }
+
+    const auto targetPath = installTargetPath(_appImagePath);
     std::filesystem::rename(partPath, targetPath, ec);
     if (ec) {
         LOGW_WARN(logger(), L"Failed to install the new AppImage: " << Utility::formatStdError(targetPath, ec));
