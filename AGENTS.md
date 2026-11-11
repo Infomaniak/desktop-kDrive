@@ -35,6 +35,7 @@ clang-format -i <file>
 ## Universal Conventions
 - **Language:** C++20. `#pragma once` for header guards. All C++ code in `KDC` namespace.
 - **Style:** Google-based clang-format, 4-space indent, 130-char line limit. Enforced by `.githooks/pre-commit`.
+- **Formatting check before commit:** Check the formatting of touched files before every commit. C++ is covered by the clang-format pre-commit hook; macOS Swift code has no hook, so run `swiftformat` and `swiftlint lint` on touched files under `src/gui4/macOS/` first (config: `src/gui4/macOS/.swiftformat`). CI rejects unformatted Swift code.
 - **Includes:** Relative to `src/` root — e.g., `#include "libcommon/utility/types.h"`.
 - **Platform files:** Use suffixes `_mac.mm` / `_win.cpp` / `_linux.cpp` for platform-specific code.
 - **Platform macros:** use project-defined `KD_MACOS`, `KD_WINDOWS`, and `KD_LINUX` instead of standard macros such as `__APPLE__`, `_WIN32`, or `__linux__`.

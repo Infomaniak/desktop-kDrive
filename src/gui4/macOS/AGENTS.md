@@ -216,6 +216,12 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 # Lint
 cd src/gui4/macOS && swiftlint lint
 
+# Format check (CI runs swiftformat --lint on the whole folder; apply fixes with swiftformat .)
+cd src/gui4/macOS && swiftformat --lint .
+```
+
+Check formatting before each commit, not only before a PR: CI fails on any file that does not pass `swiftformat --lint`.
+
 # Build + test
 xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDrive -destination 'platform=macOS'
 ```
