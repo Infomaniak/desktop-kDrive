@@ -25,10 +25,12 @@ namespace KDC {
 class TestLinuxUpdater final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLinuxUpdater);
         CPPUNIT_TEST(testInstallTargetPath);
+        CPPUNIT_TEST(testHasEnoughSpace);
         CPPUNIT_TEST_SUITE_END();
 
     private:
         void testInstallTargetPath();
+        void testHasEnoughSpace();
 };
 
 } // namespace KDC
