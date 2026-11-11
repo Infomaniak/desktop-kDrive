@@ -25,12 +25,10 @@ namespace KDC {
 
 class CreateDirJob : public AbstractTokenNetworkJob {
     public:
-        CreateDirJob(DriveDbId driveDbId, const SyncPath &filepath, const NodeId &parentId,
-                     const SyncName &name, const std::string &color = "");
-        CreateDirJob(DriveDbId driveDbId, const NodeId &parentId, const SyncName &name);
-        CreateDirJob(UserDbId userDbId, DriveId driveId, const NodeId &parentId,
-                     const SyncName &name);
-
+        CreateDirJob(DriveDbId driveDbId, SyncPath filepath, RemoteNodeId parentId, SyncName name,
+                     const std::string color = "");
+        CreateDirJob(DriveDbId driveDbId, RemoteNodeId parentId, SyncName name);
+        CreateDirJob(UserDbId userDbId, DriveId driveId, RemoteNodeId parentId, SyncName name);
         [[nodiscard]] inline const NodeId &parentDirId() const { return _parentDirId; }
 
         [[nodiscard]] inline const NodeId &nodeId() const { return _nodeId; }
@@ -44,11 +42,11 @@ class CreateDirJob : public AbstractTokenNetworkJob {
         ExitInfo setData() override;
 
         SyncPath _filePath;
-        NodeId _parentDirId;
+        RemoteNodeId _parentDirId;
         SyncName _name;
         std::string _color;
 
-        NodeId _nodeId;
+        RemoteNodeId _nodeId;
         SyncTime _modtime = 0;
 };
 

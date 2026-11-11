@@ -164,7 +164,7 @@ Conan version 2.x.x
     os=Linux
    ```
 
-3. **Linux only**: The Sentry Conan recipe validates that the required system packages are already installed in order to avoid building `c-ares` and `libcurl` from source (which would require `m4`, a package that fails to compile with GCC 14+ on recent toolchains).
+3. **Linux only**: The Sentry Conan recipe validates that the required system packages are already installed in order to avoid building `c-ares` and `libcurl` from source.
 
     On Debian/Ubuntu-based systems, the recipe checks for:
     - `libc-ares-dev` (c-ares development library)
@@ -173,6 +173,18 @@ Conan version 2.x.x
     Install them manually before running `conan install`:
     ```bash
     sudo apt update && sudo apt install -y libc-ares-dev libcurl4-openssl-dev
+    ```
+    If these packages are missing, the Conan recipe fails with an explicit error and asks you to install them manually.
+
+4. **Linux only**: The keychain Conan recipe validates that the `glib` and `libsecret` development packages are already installed. With the custom recipe, they are no longer provided by Conan, and upstream finds them through `pkg-config` at configure time.
+
+    On Debian/Ubuntu-based systems, the recipe checks for:
+    - `libglib2.0-dev` (glib development library)
+    - `libsecret-1-dev` (libsecret development library)
+
+    Install them manually before running `conan install`:
+    ```bash
+    sudo apt update && sudo apt install -y libglib2.0-dev libsecret-1-dev
     ```
     If these packages are missing, the Conan recipe fails with an explicit error and asks you to install them manually.
 
@@ -210,7 +222,7 @@ This profile must not contain a `tools.cmake.cmaketoolchain:user_toolchain` entr
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>]
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **SQLite**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **zlib**, **SQLite**, **Sentry**, **Poco** and **keychain** are managed via this Conan-based workflow. Note that **keychain** links the system `glib` and `libsecret` packages instead of Conan-provided ones (see the Linux-only note above). Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug

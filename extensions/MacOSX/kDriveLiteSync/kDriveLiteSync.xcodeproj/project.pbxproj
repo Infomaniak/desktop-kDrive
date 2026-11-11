@@ -388,7 +388,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.LiteSyncExt;
 				PRODUCT_NAME = "$(inherited)";
@@ -417,7 +417,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.LiteSyncExt;
 				PRODUCT_NAME = "$(inherited)";
@@ -446,6 +446,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -473,6 +474,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient;
 				PRODUCT_NAME = "$(TARGET_NAME)";

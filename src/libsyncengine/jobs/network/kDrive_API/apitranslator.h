@@ -19,6 +19,9 @@
 #pragma once
 
 #include "libcommon/info/nodeinfo.h"
+#include "libsyncengine/update_detection/file_system_observer/snapshot/snapshotitem.h"
+
+#include <map>
 
 namespace KDC {
 
@@ -27,34 +30,52 @@ class ApiTranslator {
         ApiTranslator() = default;
         ~ApiTranslator() = default;
 
-        static ExitInfo translateV2ToV3(DriveDbId driveDbId, NodeId &remoteDirectoryId);
-        static void translateV3ToV2(SyncPath &remotePath);
-        static ExitInfo translateV3ToV2(DriveDbId driveDbId, NodeId &remoteNodeId);
-        static ExitInfo translateV3ToV2(DriveDbId driveDbId, RemoteNodeInfoList &v3RemoteNodeInfoList);
+        [[nodiscard]] static ExitInfo translateV2ToV3(UserDbId userDbId, DriveId driveId, RemoteNodeId &remoteDirectoryId);
+        [[nodiscard]] static ExitInfo translateV2ToV3(DriveDbId driveDbId, RemoteNodeId &remoteDirectoryId);
+        // Translates an absolute API v3 path into the API v2 tree. The API v3 only sends absolute paths, starting with
+        // the root separator:
+        // - "/Private" is the root of the user's private space in the v3 tree. It translates to the empty path, which
+        //   represents the v2 drive root;
+        // - "/Private/<path>" translates to "/<path>", keeping the root separator: the consumers strip it when they
+        //   need a path relative to the v2 drive root;
+        // - any other path is unchanged, as the v2 tree uses the same paths for the other roots ("/Common documents",
+        //   "/Shared").
+        static void translateV3ToV2(std::string &remotePath);
+#if defined(KD_WINDOWS)
+        static void translateV3ToV2(SyncName &remotePath);
+#endif
+        // Like the string overloads, the translated path keeps its leading separator, as expected for NodeInfo paths.
+        static void translateV3ToV2(QString &v3Path);
+        [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId, NodeId &remoteNodeId);
+        [[nodiscard]] static ExitInfo translateV3ToV2(UserDbId userDbId, DriveId driveId,
+                                                      RemoteNodeInfoList &v3RemoteNodeInfoList);
+        [[nodiscard]] static ExitInfo getSpecialFolderRemoteId(UserDbId userDbId, DriveId driveId,
+                                                               SpecialRemoteFolder specialFolder, RemoteNodeId &folderRemoteId);
+        [[nodiscard]] static ExitInfo getSharedFolderSnapshotItem(UserDbId userDbId, DriveId driveId, RemoteSnapshotItem &item);
+        [[nodiscard]] static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
+        [[nodiscard]] static RemoteNodeId v2RootFolderRemoteId();
 
-        enum class SpecialFolder {
-            CommonDocuments = 0,
-            Private = 1,
-            Shared = 2
+        static void clearSharedCache(const UserDbId userDbId, const DriveId driveId) {
+            const CacheKey key{userDbId, driveId};
+            const std::scoped_lock lock(_mutex);
+            (void) _specialFolderRemoteIdsCache[SpecialRemoteFolder::Shared].erase(key);
+            (void) _sharedFolderSnapshotItemCacheMap.erase(key);
         };
-        static ExitInfo getSpecialFolderRemoteId(DriveDbId driveDbId, SpecialFolder specialFolder, RemoteNodeId &folderRemoteId);
 
-        static ExitInfo getDriveDbId(DriveId driveId, DriveDbId &driveDbId);
-
-        static RemoteNodeId v2RootFolderRemoteId();
-
-        using SpecialFolderNames = std::unordered_map<SpecialFolder, std::string>;
         static const SpecialFolderNames v3SpecialFolderNames;
 
     private:
-        static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
-        static ExitInfo updateCache(DriveDbId driveDbId);
+        [[nodiscard]] static bool getDriveDbIds(DriveDbIdMap &driveIdMap);
+        [[nodiscard]] static ExitInfo updateCache(UserDbId userDbId, DriveId driveId);
 
-        using RemoteNodeIdCacheMap = std::unordered_map<DriveDbId, RemoteNodeId>;
-        using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialFolder, RemoteNodeIdCacheMap>;
+        using CacheKey = std::pair<UserDbId, DriveId>;
+        using RemoteNodeIdCacheMap = std::map<CacheKey, RemoteNodeId>;
+        using RemoteSpecialFoldersCacheMap = std::unordered_map<SpecialRemoteFolder, RemoteNodeIdCacheMap>;
         static RemoteSpecialFoldersCacheMap _specialFolderRemoteIdsCache;
+        using SharedFolderSnapshotItemCacheMap = std::map<CacheKey, RemoteSnapshotItem>;
+        static SharedFolderSnapshotItemCacheMap _sharedFolderSnapshotItemCacheMap;
 
-        static RemoteNodeId getValue(DriveDbId driveDbId, const RemoteNodeIdCacheMap &cache);
+        [[nodiscard]] static RemoteNodeId getValue(const CacheKey &key, const RemoteNodeIdCacheMap &cache);
 
         static std::mutex _mutex;
 };

@@ -32,6 +32,8 @@ namespace KDC {
 /// machines.  This helper extracts the native trust store (macOS keychain /
 /// Windows certificate store / Linux ca-certificates) and feeds it into the
 /// SSL_CTX so that peer verification actually works.
+///
+/// Only roots are loaded: every client SSL_CTX must also call CertificateBlocklist::install.
 struct COMMONSERVER_EXPORT TrustStoreHelper {
         /// Load platform-native root CAs into the given SSL_CTX.
         /// Returns true on success, false on error.

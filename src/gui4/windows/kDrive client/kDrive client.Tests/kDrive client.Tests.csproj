@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Compile Include="..\kDrive client\Logger\Monitoring\MonitoringEventThrottle.cs" Link="Logger\Monitoring\MonitoringEventThrottle.cs" />
+    <Compile Include="..\kDrive client\Logger\Analytics\UserAgentBuilder.cs" Link="Logger\Analytics\UserAgentBuilder.cs" />
     <Compile Include="..\kDrive client\ServerCommunication\Interfaces\IKeychainStore.cs" Link="ServerCommunication\Interfaces\IKeychainStore.cs" />
     <Compile Include="..\kDrive client\ServerCommunication\Services\SecureSocketConnection.cs" Link="ServerCommunication\Services\SecureSocketConnection.cs" />
     <Compile Include="..\kDrive client\ServerCommunication\Interfaces\IServerCommClient.cs" Link="ServerCommunication\Interfaces\IServerCommClient.cs" />

@@ -29,15 +29,15 @@ class DirectDownloadJob final : public AbstractNetworkJob {
          * @brief Constructor used to retrieve only the headers.
          * @param url The URL of the file to be downloaded.
          */
-        DirectDownloadJob(const std::string &url);
+        explicit DirectDownloadJob(std::string url);
         /**
          * @brief Constructor used to actually download the target file.
-         * @param destinationFile The local destination where the file will be downloaded.
+         * @param destinationFilePath The local destination where the file will be downloaded.
          * @param url The URL of the file to be downloaded.
          */
-        DirectDownloadJob(const SyncPath &destinationFile, const std::string &url);
+        DirectDownloadJob(SyncPath destinationFilePath, std::string url);
 
-        [[nodiscard]] const SyncPath &getDestinationFile() const { return _destinationFile; }
+        [[nodiscard]] const SyncPath &getDestinationFilePath() const { return _destinationFilePath; }
 
     protected:
         std::string getUrl() override { return _url; }
@@ -48,7 +48,7 @@ class DirectDownloadJob final : public AbstractNetworkJob {
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
         ExitInfo readFromStream(std::istream &is, std::ofstream &output);
 
-        const SyncPath _destinationFile;
+        const SyncPath _destinationFilePath;
         const std::string _url;
 };
 

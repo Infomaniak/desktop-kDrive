@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
-find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
+find_package(Poco 1.15.2 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
 
@@ -112,14 +112,11 @@ if(WIN32)
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/libzip/include"
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
+        "C:/Program Files (x86)/libzip/include")
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include"
-        ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
+        ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 # Link
@@ -128,7 +125,6 @@ target_link_libraries(${libcommon_NAME}
     Poco::Foundation Poco::JSON Poco::Util
     log4cplus::log4cplus
     sentry::sentry
-    keychain
     libzip::zip)
 
 if(UNIX)

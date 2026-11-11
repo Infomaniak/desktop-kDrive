@@ -6,9 +6,10 @@ endif()
 
 find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.53.0 REQUIRED)
-find_package(Poco 1.13.3 REQUIRED Foundation Net Crypto JSON Util)
-find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+find_package(Poco 1.15.2 REQUIRED Foundation Net Crypto JSON Util)
+find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
 find_package(xxHash 0.8.2 REQUIRED)
+find_package(keychain REQUIRED)
 
 if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     # Use fallback library types for imported dependencies
@@ -27,6 +28,7 @@ set(libcommonserver_SRCS
     utility/checksumverifier.h utility/checksumverifier.cpp
     utility/selfsignedcert.h utility/selfsignedcert.cpp
     utility/truststorehelper.h
+    utility/certificateblocklist.h utility/certificateblocklist.cpp
     utility/stateholder.h
     utility/jsonparserutility.h
     utility/kdexception.h utility/kdexception.cpp
@@ -134,7 +136,6 @@ else()
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/utf8proc)
 endif()
 
@@ -144,7 +145,8 @@ target_link_libraries(${libcommonserver_NAME}
     SQLite::SQLite3
     Poco::Foundation Poco::Net Poco::Crypto Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
-    xxHash::xxhash)
+    xxHash::xxhash
+    keychain::keychain)
 
 if(WIN32)
     target_link_libraries(${libcommonserver_NAME}

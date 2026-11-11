@@ -25,11 +25,11 @@ import kDriveResources
 
 extension SidebarItem {
     static let general = SidebarItem(icon: KDriveResources.settings.image, title: KDriveLocalizable.sidebarItemGeneral)
-    static let accounts = SidebarItem(icon: KDriveResources.persons.image, title: KDriveLocalizable.sidebarItemAccounts)
+    static let accounts = SidebarItem(icon: KDriveResources.userSync.image, title: KDriveLocalizable.sidebarItemAccounts)
     static let advanced = SidebarItem(icon: KDriveResources.hammerWrench.image, title: KDriveLocalizable.sidebarItemAdvanced)
 }
 
-class PreferencesSidebarViewController: NSViewController {
+class PreferencesSidebarViewController: BaseViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
     weak var delegate: NavigableSidebarViewControllerDelegate?

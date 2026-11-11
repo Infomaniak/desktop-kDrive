@@ -47,7 +47,7 @@ void ExclusionTemplateCache::reset() {
 
 ExclusionTemplateCache::ExclusionTemplateCache() {
     // Load exclusion templates
-    if (!ParmsDb::instance()->selectDefaultExclusionTemplates(_defExclusionTemplates)) {
+    if (!ParmsDb::instance()->selectDefaultExclusionTemplates(_defaultExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionTemplates");
         throw std::runtime_error("Failed to create ExclusionTemplateCache instance!");
     }
@@ -62,7 +62,7 @@ ExclusionTemplateCache::ExclusionTemplateCache() {
 void ExclusionTemplateCache::populateExclusionTemplates() {
     _exclusionTemplates.clear();
 
-    for (const auto &exclusionTemplate: _defExclusionTemplates) {
+    for (const auto &exclusionTemplate: _defaultExclusionTemplates) {
         _exclusionTemplates.push_back(exclusionTemplate);
     }
 
@@ -123,7 +123,8 @@ void ExclusionTemplateCache::updateRegexPatterns() {
     }
 }
 
-void ExclusionTemplateCache::addRegexForAllNormalizationForms(std::string regexPattern, ExclusionTemplate exclusionTemplate) {
+void ExclusionTemplateCache::addRegexForAllNormalizationForms(const std::string &regexPattern,
+                                                              ExclusionTemplate exclusionTemplate) {
     // If the NFC and NFD forms of the template are different, both should be excluded.
     SyncName nfcRegexPattern;
     SyncName nfdRegexPattern;
@@ -177,15 +178,16 @@ void ExclusionTemplateCache::escapeRegexSpecialChar(std::string &in) {
     in = out;
 }
 
-ExitCode ExclusionTemplateCache::update(const bool def, const std::vector<ExclusionTemplate> &exclusionTemplates) {
-    if (def) {
-        _defExclusionTemplates = exclusionTemplates;
+ExitCode ExclusionTemplateCache::update(const bool selectDefault, const std::vector<ExclusionTemplate> &exclusionTemplates) {
+    if (selectDefault) {
+        _defaultExclusionTemplates = exclusionTemplates;
     } else {
         _userExclusionTemplates = exclusionTemplates;
     }
 
     // Update exclusion templates
-    if (!ParmsDb::instance()->updateAllExclusionTemplates(def, def ? _defExclusionTemplates : _userExclusionTemplates)) {
+    if (!ParmsDb::instance()->updateAllExclusionTemplates(selectDefault,
+                                                          selectDefault ? _defaultExclusionTemplates : _userExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAllExclusionTemplates");
         return ExitCode::DbError;
     }

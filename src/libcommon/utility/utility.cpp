@@ -33,6 +33,7 @@
 #include <signal.h>
 
 #include <QDir>
+#include <QFileInfo>
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QMimeDatabase>
@@ -47,6 +48,7 @@
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
 #include <Poco/StreamCopier.h>
+#include <Poco/Dynamic/Struct.h>
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
 #include <sys/statvfs.h>
@@ -758,16 +760,29 @@ Language CommonUtility::strToLanguage(const QString &lang) {
 }
 
 QString applicationTrPath() {
+    const auto hasClientQmFiles = [](const QString &path) {
+        const QDir dir(path);
+        return dir.exists() && !dir.entryList(QStringList() << "client_*.qm", QDir::Files).isEmpty();
+    };
+
 #if defined(KD_MACOS)
-    QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
-#else
-    QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
-#endif
-    if (QDir(devTrPath).exists()) {
+    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
+    if (const QString gui4DevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/");
+        hasClientQmFiles(gui4DevTrPath)) {
         // might miss Qt etc.
         qWarning() << "Running from build location! Translations may be incomplete!";
-        return devTrPath;
+        return gui4DevTrPath;
     }
+#else
+    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
+#endif
+
+    if (hasClientQmFiles(legacyDevTrPath)) {
+        // might miss Qt etc.
+        qWarning() << "Running from build location! Translations may be incomplete!";
+        return legacyDevTrPath;
+    }
+
 #if defined(KD_WINDOWS)
     return QCoreApplication::applicationDirPath() + QLatin1String("/i18n/");
 #elif defined(KD_MACOS)
@@ -779,8 +794,7 @@ QString applicationTrPath() {
 #endif
 
 #else
-    return QCoreApplication::applicationDirPath() +
-           QString::fromLatin1("/../" SHAREDIR "/" APPLICATION_CLIENT_EXECUTABLE "/i18n/");
+    return CommonUtility::applicationDirPath() + QString::fromLatin1("/../" SHAREDIR "/" APPLICATION_CLIENT_EXECUTABLE "/i18n/");
 #endif
 }
 
@@ -917,6 +931,17 @@ SyncPath CommonUtility::getAppSupportDir() {
 
 SyncPath CommonUtility::getAppWorkingDir() {
     return _workingDirPath;
+}
+
+QString CommonUtility::applicationDirPath() {
+#if defined(KD_LINUX)
+    // Since Qt 6.12, QCoreApplication::applicationDirPath() follows AT_EXECFN, which keeps the symlink the app was
+    // started through (e.g. the AppImage AppRun): resolve it to get the directory of the actual binary.
+    if (const QString dirPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath(); !dirPath.isEmpty()) {
+        return dirPath;
+    }
+#endif
+    return QCoreApplication::applicationDirPath();
 }
 
 QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, const NodeType type) {

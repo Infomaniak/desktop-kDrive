@@ -33,8 +33,7 @@ typealias RawLSSharedFileListInsertItemURL = @convention(c) (
 
 enum FinderSidebarFavorites {
     static func add(_ url: URL) -> Bool {
-        let favoriteItems = kLSSharedFileListFavoriteItems.takeUnretainedValue()
-        guard let favorites = LSSharedFileListCreate(nil, favoriteItems, nil)?.takeRetainedValue(),
+        guard let favorites = KDCreateFinderSidebarFavorites(),
               let process = dlopen(nil, RTLD_LAZY) else {
             return false
         }
@@ -57,7 +56,7 @@ enum FinderSidebarFavorites {
 
     static func insert(list: OpaquePointer, url: OpaquePointer, using insertItem: RawLSSharedFileListInsertItemURL) -> Bool {
         // This is the sentinel pointer 0x2, not a retainable Core Foundation object.
-        let lastItem = OpaquePointer(kLSSharedFileListItemLast.toOpaque())
+        let lastItem = OpaquePointer(KDFinderSidebarLastItem())
         guard let insertedItem = insertItem(list, lastItem, nil, nil, url, nil, nil) else {
             return false
         }

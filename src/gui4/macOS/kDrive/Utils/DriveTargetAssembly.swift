@@ -25,7 +25,8 @@ import kDriveCoreUI
 final class DriveTargetAssembly: TargetAssembly {
     static let loginConfig = InfomaniakLogin.Config(
         clientId: "5EA39279-FF64-4BB8-A872-4A40B5786317",
-        redirectURI: "kdrive://auth-desktop"
+        redirectURI: "kdrive://auth-desktop",
+        accessType: nil
     )
 
     static let loginFormConfig = InfomaniakLogin.LoginFormConfig(

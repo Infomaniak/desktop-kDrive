@@ -27,6 +27,51 @@ extension SharedDITests {
     @MainActor
     @Suite(.timeLimit(.minutes(1)))
     struct PreferencesRepositoryTests {
+        @Test("Updating another preference preserves the configured language", arguments: [
+            KDC.Language.Default, .English, .French, .German, .Spanish, .Italian,
+            .Dutch, .Swedish, .Portuguese, .Polish, .Norwegian, .Finnish, .Danish, .Greek
+        ])
+        func updatingPreferencePreservesLanguage(_ language: KDC.Language) async throws {
+            let bundle = Bundle(for: TestBundleMarker.self)
+            let url = try #require(bundle.url(forResource: "PARAMETERS_INFO", withExtension: "json"))
+            var json = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+            var body = try #require(json["params"] as? [String: Any])
+            var settings = try #require(body["parametersInfo"] as? [String: Any])
+            settings["language"] = language.rawValue
+            body["parametersInfo"] = settings
+            json["params"] = body
+            let response = try JSONDecoder().decode(
+                CallbackMessage<ParametersInfoResponse>.self,
+                from: JSONSerialization.data(withJSONObject: json)
+            )
+            let initialSettings = response.body.parametersInfo
+            let cache = MockSettingsCache(settings: initialSettings)
+
+            let resolver = SimpleResolver.sharedResolver
+            let identifier = resolver.buildIdentifier(type: SettingsCaching.self)
+            let previousFactory = resolver.factories[identifier]
+            let previousService = resolver.store[identifier]
+            defer {
+                resolver.factories[identifier] = previousFactory
+                resolver.store[identifier] = previousService
+            }
+            resolver.store.removeValue(forKey: identifier)
+            resolver.store(factory: Factory(type: SettingsCaching.self) { _, _ in cache })
+
+            let repository = PreferencesRepository()
+            try await repository.refreshData()
+            let originalLanguage = repository.parametersInfo.language
+            try await repository.update(\.launchOnStartup, value: !initialSettings.autoStart)
+
+            let updates = await cache.updates
+            #expect(updates.count == 1)
+            let savedSettings = try #require(updates.first)
+            #expect(savedSettings.language == language)
+            #expect(savedSettings.autoStart == !initialSettings.autoStart)
+            #expect(repository.parametersInfo.language == originalLanguage)
+            #expect(repository.parametersInfo.launchOnStartup == !initialSettings.autoStart)
+        }
+
         @Test("Extended logging saves Debug verbosity in the same update", arguments: UILogLevel.allCases)
         func enablingExtendedLogging(logLevel: UILogLevel) async throws {
             let bundle = Bundle(for: TestBundleMarker.self)

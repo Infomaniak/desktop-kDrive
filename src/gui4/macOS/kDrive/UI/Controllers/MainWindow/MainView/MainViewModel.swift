@@ -119,7 +119,7 @@ final class MainViewModel: ObservableObject {
 
     func dismissOnboarding() {
         Task {
-            try? await UtilityJobs().setAppState(key: KDC.AppStateKey.ShowV4Onboarding, value: "0")
+            try? await UtilityJobs().setAppState(key: KDC.AppStateKey.ShowV4Onboarding, value: false)
             loadShowOnboarding()
         }
     }

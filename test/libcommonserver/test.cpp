@@ -19,11 +19,13 @@
 #include "testincludes.h"
 
 #include "utility/testutility.h"
+#include "utility/testcertificateblocklist.h"
 #include "db/testdb.h"
 #include "data/testserverparameters.h"
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestCertificateBlocklist);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerParameters);
 } // namespace KDC

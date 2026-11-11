@@ -4,7 +4,7 @@ else()
     project(testcommonserver LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testcommonserver_NAME ${APPLICATION_NAME}_test_common_server)
@@ -17,6 +17,7 @@ set(testcommonserver_SRCS
         test.cpp
         # Utility
         utility/testutility.h utility/testutility.cpp
+        utility/testcertificateblocklist.h utility/testcertificateblocklist.cpp
         # db
         db/testdb.h db/testdb.cpp
         # data
@@ -33,8 +34,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testcommonserver_NAME} ${testcommonserver_SRCS})

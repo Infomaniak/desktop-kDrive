@@ -49,6 +49,7 @@ class FolderWatcher_linux : public FolderWatcher {
         virtual AddWatchOutcome inotifyAddWatch(const SyncPath &path);
 
         ExitInfo changeDetected(const SyncPath &path, OperationType opType) const;
+        ExitInfo processEvent(const inotify_event &event);
 
         std::unordered_map<int, SyncPath> _watchToPath;
         std::map<std::string, int> _pathToWatch;

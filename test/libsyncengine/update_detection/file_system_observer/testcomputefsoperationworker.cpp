@@ -101,7 +101,6 @@ void TestComputeFSOperationWorker::setUp() {
 
     _syncPal->setComputeFSOperationsWorker(
             std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
-    _syncPal->computeFSOperationsWorker()->setTesting(true);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 }
 
@@ -215,7 +214,6 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         // Mock checkIfOkToDelete to simulate the Access Denied
         _syncPal->setComputeFSOperationsWorker(
                 std::make_shared<MockComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
-        _syncPal->computeFSOperationsWorker()->setTesting(true);
 
         _syncPal->copySnapshots();
         _syncPal->computeFSOperationsWorker()->execute();

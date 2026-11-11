@@ -138,6 +138,10 @@ public struct UtilityJobs: Sendable {
         )
     }
 
+    public func setAppState(key: KDC.AppStateKey, value: Bool) async throws {
+        try await setAppState(key: key, value: value ? "1" : "0")
+    }
+
     public func getAppState(key: KDC.AppStateKey) async throws -> String {
         let query = UtilityGetAppStateQuery(key: key)
         let request = await RequestMessage<UtilityGetAppStateQuery>(

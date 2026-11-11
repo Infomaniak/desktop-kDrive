@@ -4,7 +4,7 @@ else()
     project(testcommon LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testcommon_NAME ${APPLICATION_NAME}_test_common)
@@ -35,7 +35,7 @@ set(testcommon_SRCS
         io/testsetlastmodifiedtime.cpp)
 
 if(APPLE)
-    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testreadalias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testreadalias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp io/testcheckforcorruptedalias.cpp)
 elseif (WIN32)
     list(APPEND testcommon_SRCS ../test_utility/testhelpers_win.cpp io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
 else ()
@@ -44,8 +44,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-else()
-    include_directories("/usr/local/include")
 endif()
 
 add_executable(${testcommon_NAME} ${testcommon_SRCS})

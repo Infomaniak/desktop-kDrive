@@ -24,6 +24,7 @@
 #include "db/syncdb.h"
 #include "libcommon/utility/types.h"
 
+#include <atomic>
 #include <list>
 
 namespace KDC {
@@ -37,8 +38,8 @@ class FileSystemObserverWorker : public ISyncWorker {
         void invalidateSnapshot();
         void resetInvalidateCounter() { _invalidateCounter = 0; }
         virtual void forceUpdate();
-        [[nodiscard]] virtual bool updating() const { return _updating; }
-        [[nodiscard]] bool initializing() const { return _initializing; }
+        [[nodiscard]] bool updating() const;
+        [[nodiscard]] bool initializing() const;
 
         [[nodiscard]] const LiveSnapshot &liveSnapshot() const { return _liveSnapshot; }
         bool forceUpdateLastChangeRevision(const NodeId &itemId) { return _liveSnapshot.forceUpdateLastChangeRevision(itemId); }
@@ -49,16 +50,19 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         std::list<std::pair<SyncPath, OperationType>> _pendingFileEvents;
 
-        bool _updating{false};
-        bool _initializing{true};
+        std::atomic<bool> _updating{false};
+        std::atomic<bool> _initializing{true};
         std::mutex _mutex;
 
         virtual ExitInfo generateInitialSnapshot() = 0;
-        virtual ExitInfo processEvents() { return ExitCode::Ok; }
+        virtual ExitInfo processEvents(const NodeId &) { return ExitCode::Ok; }
 
         [[nodiscard]] virtual bool isFolderWatcherReliable() const { return true; }
 
         void init() override;
+
+        void setUpdateFlagValue(bool isUpdating);
+        void setInitFlagValue(bool isInitializing);
 
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;

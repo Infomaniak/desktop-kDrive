@@ -71,7 +71,7 @@ struct CoherentCacheErrorTests {
 
         // WHEN
         try await cache.addOrUpdateError(CacheData.expectedAsleepError)
-        try await cache.addOrUpdateError(CacheData.expectedLoginError)
+        try await cache.addOrUpdateError(CacheData.expectedDriveAccessError)
 
         // THEN
         guard let fetchedSynchro = await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) else {
@@ -102,7 +102,7 @@ struct CoherentCacheErrorTests {
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
 
         try await cache.addOrUpdateError(CacheData.expectedAsleepError)
-        try await cache.addOrUpdateError(CacheData.expectedLoginError)
+        try await cache.addOrUpdateError(CacheData.expectedDriveAccessError)
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)?.errors.count == 2)
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)?.latestError == .asleep)
 
@@ -116,11 +116,90 @@ struct CoherentCacheErrorTests {
         }
 
         #expect(fetchedSynchro.dbId == CacheData.expectedSynchroDbId)
-        #expect(fetchedSynchro.latestError == .loggingError,
+        #expect(fetchedSynchro.latestError == .accessDenied,
                 "Expecting the remaining error to be set as the latest on resolution")
-        #expect(fetchedSynchro.errors.values.first == CacheData.expectedLoginError)
+        #expect(fetchedSynchro.errors.values.first == CacheData.expectedDriveAccessError)
         #expect(fetchedSynchro.errors.count == 1)
         #expect(await cache.serverErrors.count == 0)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func loginErrorPreemptsDriveAccessErrorInSynchro() async throws {
+        // GIVEN
+        let cache = try await makeCacheWithSynchro()
+
+        // WHEN: a revoked token is first reported as a drive access error, then as an invalid token
+        try await cache.addOrUpdateError(CacheData.expectedDriveAccessError)
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)?.latestError == .accessDenied)
+        try await cache.addOrUpdateError(CacheData.expectedLoginError)
+
+        // THEN
+        let fetchedSynchro = try #require(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId))
+        #expect(fetchedSynchro.latestError == .loggingError)
+        #expect(fetchedSynchro.errors.count == 2)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func loginErrorPreemptsDriveAccessErrorInUpdateErrors() async throws {
+        // GIVEN
+        let cache = try await makeCacheWithSynchro()
+
+        // WHEN
+        try await cache.updateErrors([CacheData.expectedDriveAccessError, CacheData.expectedLoginError])
+
+        // THEN
+        let fetchedSynchro = try #require(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId))
+        #expect(fetchedSynchro.latestError == .loggingError)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func loginErrorPreemptsOlderErrorsOnResolution() async throws {
+        // GIVEN
+        let cache = try await makeCacheWithSynchro()
+        try await cache.addOrUpdateError(CacheData.expectedAsleepError)
+        try await cache.addOrUpdateError(CacheData.expectedDriveAccessError)
+        try await cache.addOrUpdateError(CacheData.expectedLoginError)
+
+        // WHEN
+        try await cache.removeError(CacheData.expectedAsleepErrorDbId)
+
+        // THEN
+        let fetchedSynchro = try #require(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId))
+        #expect(fetchedSynchro.latestError == .loggingError,
+                "Expecting the login error to win over the older remaining drive access error")
+        #expect(fetchedSynchro.errors.count == 2)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func disconnectedUserBlocksSynchroWithLoginErrorWithoutSynchroError() async throws {
+        // GIVEN: the token is found invalid outside of any synchro, so only the user is reported as disconnected
+        let cache = try await makeCacheWithSynchro()
+        var disconnectedUser = CacheData.expectedUser
+        disconnectedUser.isConnected = false
+
+        // WHEN
+        await cache.updateUser(disconnectedUser, updateOptions: .updateSignal)
+
+        // THEN
+        let synchroContext = try #require(await cache.getSynchroContext(CacheData.expectedSynchroDbId))
+        #expect(synchroContext.synchro.latestError == nil)
+        #expect(synchroContext.blockingError == .loggingError)
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func disconnectedUserLoginErrorPreemptsSynchroError() async throws {
+        // GIVEN
+        let cache = try await makeCacheWithSynchro()
+        try await cache.addOrUpdateError(CacheData.expectedDriveAccessError)
+        #expect(await cache.getSynchroContext(CacheData.expectedSynchroDbId)?.blockingError == .accessDenied)
+
+        // WHEN
+        var disconnectedUser = CacheData.expectedUser
+        disconnectedUser.isConnected = false
+        await cache.updateUser(disconnectedUser, updateOptions: .updateSignal)
+
+        // THEN
+        #expect(await cache.getSynchroContext(CacheData.expectedSynchroDbId)?.blockingError == .loggingError)
     }
 
     @Test(.timeLimit(.minutes(1)))
@@ -366,5 +445,16 @@ struct CoherentCacheErrorTests {
                 "InvalidToken with Unknown cause should map to loggingError for reconnection")
         #expect(fetchedSynchro.errors.values.first == CacheData.expectedInvalidTokenUnknownError)
         #expect(await cache.serverErrors.count == 0)
+    }
+
+    // MARK: Helpers
+
+    private func makeCacheWithSynchro() async throws -> ServerCoherentCache {
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+        return cache
     }
 }

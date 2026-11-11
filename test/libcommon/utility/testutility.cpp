@@ -25,7 +25,11 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "utility/utility_base.h"
 
+#include <QCoreApplication>
+#include <QFileInfo>
 #include <QLocale>
+#include <QProcess>
+#include <QScopeGuard>
 #include <chrono>
 #include <source_location>
 #include <iostream>
@@ -445,9 +449,9 @@ void TestUtility::testGenerateRandomNumber() {
 
     // Check that a second draw does not produce the same sequence
     bool allValuesAreTheSame = true;
-    for (auto i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; i++) {
         const auto val = CommonUtility::generateRandomNumber(1, 100);
-        if (val != sequence[static_cast<size_t>(i)]) {
+        if (val != sequence[i]) {
             allValuesAreTheSame = false;
             break;
         }
@@ -1550,5 +1554,35 @@ void TestUtility::testGetSyncTime() {
         CPPUNIT_ASSERT(withNegativeOffset <= after - expectedOffset);
     }
 }
+
+#if defined(KD_LINUX)
+void TestUtility::testApplicationDirPath() {
+    // Start this test binary through a symlink, as the AppImage AppRun does, and let it print the application directory.
+    const LocalTemporaryDirectory tmpDir("testApplicationDirPath");
+    const SyncPath linkPath = tmpDir.path() / "kDrive_test_common_link";
+    std::filesystem::create_symlink(std::filesystem::read_symlink("/proc/self/exe"), linkPath);
+    const auto deferRemoveLink = qScopeGuard([&linkPath] {
+        std::error_code ec;
+        std::filesystem::remove(linkPath, ec);
+    });
+
+    QProcess process;
+    process.start(Path2QStr(linkPath), {QString::fromLatin1(printApplicationDirPathOption)});
+    CPPUNIT_ASSERT(process.waitForFinished());
+    CPPUNIT_ASSERT_EQUAL(0, process.exitCode());
+
+    const QString applicationDirPath = QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+    CPPUNIT_ASSERT_EQUAL(QFileInfo("/proc/self/exe").canonicalPath().toStdString(), applicationDirPath.toStdString());
+}
+
+int32_t TestUtility::printApplicationDirPath() {
+    int32_t argc = 1;
+    char argv0[] = "kDrive_test_common";
+    char *argv[] = {argv0, nullptr};
+    const QCoreApplication app(argc, argv);
+    std::cout << CommonUtility::applicationDirPath().toStdString() << std::endl;
+    return 0;
+}
+#endif
 
 } // namespace KDC

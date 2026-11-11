@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: pl, Polish
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
+  Exported by: Clément Kunz
+  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Wszystkie aktywności</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Tylko moja aktywność</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve"> 
+    <value>Aktywności tego komputera</value> 
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Zaimportowany</value> 
@@ -134,7 +134,7 @@
     <value>Zmieniono nazwę</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Przemianowany na %@</value> 
+    <value>Zmieniono nazwę %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Zmodyfikowany</value> 
@@ -177,7 +177,7 @@ Dostęp do zaawansowanych synchronizacji można uzyskać za pomocą selektora dy
     <value>Stosowanie zmiany…</value> 
   </data> 
   <data name="autoCleanupLogsDescription" xml:space="preserve"> 
-    <value>Usuwa dzienniki starsze niż 7 dni, aby zaoszczędzić miejsce na dysku.</value> 
+    <value>Usuwa dzienniki starsze niż 31 dni, aby zaoszczędzić miejsce na dysku.</value> 
   </data> 
   <data name="autoCleanupLogsSetting" xml:space="preserve"> 
     <value>Automatyczne czyszczenie</value> 
@@ -730,11 +730,11 @@ Twoje zmiany zostaną zsynchronizowane później.</value>
     <value>Plik odzyskany</value> 
   </data> 
   <data name="errFileTooBigAdminDescription" xml:space="preserve"> 
-    <value>Ten plik przekracza maksymalny dozwolony rozmiar (50 GB).
+    <value>Ten plik przekracza maksymalny dozwolony rozmiar (1 TB).
 Skontaktuj się ze wsparciem, aby odblokować limit.</value> 
   </data> 
   <data name="errFileTooBigDescription" xml:space="preserve"> 
-    <value>Ten plik przekracza maksymalny dozwolony rozmiar (50 GB).
+    <value>Ten plik przekracza maksymalny dozwolony rozmiar (1 TB).
 Skontaktuj się z administratorem, aby zwiększyć limit rozmiaru pliku.</value> 
   </data> 
   <data name="errFileTooBigTitle" xml:space="preserve"> 
@@ -744,7 +744,7 @@ Skontaktuj się z administratorem, aby zwiększyć limit rozmiaru pliku.</value>
     <value>Dostęp zabroniony</value> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
-    <value>Nazwa tego %@ zawiera jeden lub więcej znaków nieobsługiwanych przez aplikację kDrive dla systemu Windows. Zmień nazwę %@ w kDrive online.</value> 
+    <value>Nazwa tego %@ zawiera jeden lub więcej znaków, które nie są obsługiwane przez aplikację kDrive. Zmień nazwę %@ w kDrive online.</value> 
   </data> 
   <data name="errForbiddenCharOnlySpacesDescription" xml:space="preserve"> 
     <value>Ta nazwa zawiera tylko spacje i nie może być używana. Zmień nazwę %@ w kDrive online.</value> 
@@ -761,6 +761,9 @@ Poproś właściciela lub administratora o dostęp.</value>
   </data> 
   <data name="errGenericForbiddenTitle" xml:space="preserve"> 
     <value>Dostęp zabroniony</value> 
+  </data> 
+  <data name="errHardlinkAction" xml:space="preserve"> 
+    <value>Konwertuj na zwykły plik</value> 
   </data> 
   <data name="errHardlinkDescription" xml:space="preserve"> 
     <value>Ten plik jest twardym dowiązaniem (hard link), które nie może być synchronizowane.</value> 
@@ -1101,6 +1104,9 @@ Przydatne, gdy wiesz, że ważna praca jest online w kDrive.</value>
   </data> 
   <data name="labelMostRecent" xml:space="preserve"> 
     <value>Najnowsza</value> 
+  </data> 
+  <data name="labelMySubscription" xml:space="preserve"> 
+    <value>Moja subskrypcja</value> 
   </data> 
   <data name="labelName" xml:space="preserve"> 
     <value>Nazwa</value> 
@@ -1546,7 +1552,7 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
     <value>Ustawienia</value> 
   </data> 
   <data name="sidebarItemAccounts" xml:space="preserve"> 
-    <value>Konta i synchronizacje</value> 
+    <value>Synchronizacje</value> 
   </data> 
   <data name="sidebarItemAdvanced" xml:space="preserve"> 
     <value>Zaawansowane</value> 
@@ -1571,6 +1577,12 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
   <data name="storageComputerUsedByOther" xml:space="preserve"> 
     <value>Inne pliki na komputerze</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
+  </data> 
+  <data name="storageOnlineFree" xml:space="preserve"> 
+    <value>Wolne miejsce w ramach Twojej subskrypcji</value> 
+  </data> 
+  <data name="storageOnlineUsed" xml:space="preserve"> 
+    <value>Pliki kDrive przechowywane w chmurze</value> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synchronizacja</value> 
@@ -1615,6 +1627,18 @@ Do ich dostępu wymagane jest połączenie z Internetem.</value>
   </data> 
   <data name="syncShortStatusRunning" xml:space="preserve"> 
     <value>Synchronizacja jest w toku</value> 
+  </data> 
+  <data name="syncStatusAnalysing" xml:space="preserve"> 
+    <value>Wyszukiwanie zmian</value> 
+  </data> 
+  <data name="syncStatusExploring" xml:space="preserve"> 
+    <value>Przygotowanie plików</value> 
+  </data> 
+  <data name="syncStatusPropagating" xml:space="preserve"> 
+    <value>%@ element zsynchronizowany z %@</value> 
+  </data> 
+  <data name="syncStatusPropagating-plural" xml:space="preserve"> 
+    <value>%@ elementów zsynchronizowanych z %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Zsynchronizowano</value> 

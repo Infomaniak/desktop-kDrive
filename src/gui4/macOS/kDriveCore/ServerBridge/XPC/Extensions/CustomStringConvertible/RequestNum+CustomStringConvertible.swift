@@ -19,7 +19,7 @@
 import CppInterop
 import Foundation
 
-extension RequestNum: CustomStringConvertible {
+extension RequestNum: @retroactive CustomStringConvertible {
     public var description: String {
         switch self {
         case .Unknown:

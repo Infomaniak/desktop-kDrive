@@ -1352,14 +1352,8 @@ FileData FileData::get(const SyncPath &path) {
     data.relativePath = CommonUtility::relativePath(sync.localPath(), tmpPath).native();
 
     ItemType itemType;
-    if (!IoHelper::getItemType(tmpPath, itemType)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in Utility::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
-        return {};
-    }
-
-    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist anymore - " << Utility::formatSyncPath(tmpPath));
+    if (auto result = IoHelper::getItemTypeAndProcessIoError(tmpPath, itemType);
+        !result || itemType.ioError != IoError::Success) {
         return {};
     }
 

@@ -49,6 +49,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testInternalPause2);
         CPPUNIT_TEST(testInternalPause3);
         CPPUNIT_TEST(testHandleBackError);
+        CPPUNIT_TEST(testShouldBePausedWithNetworkError);
         CPPUNIT_TEST(testEnsureBlackListIsPropagated);
         CPPUNIT_TEST(testEnsureBlackListIsPropagatedIgnoresMissingNode);
         CPPUNIT_TEST(testEnsureBlackListIsPropagatedIgnoreTmpBlacklistedNode);
@@ -68,7 +69,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         SyncPath _localPath;
         SyncPath _remotePath;
 
-        void setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration);
+        void setUpTestInternalPause();
 
         /* This test ensure that a RFSO network error while the synchronization is idle lead to a pause state immediately and
          * that the synchronization is automatically restarted when the network is back.
@@ -89,6 +90,13 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
          * maxDelay), and that the counter resets when the sync reaches the Idle step.
          */
         void testHandleBackError();
+
+        /* This test verifies that a RFSO worker exiting with NetworkError leads to a pause without increasing the pause duration
+         * nor the consecutive back errors counter, no matter how many times the error repeats (e.g. each night when the computer
+         * wakes up with an incomplete listing reply). Any other RFSO error still triggers the exponential backoff.
+         */
+        void testShouldBePausedWithNetworkError();
+
         void testEnsureBlackListIsPropagated();
         void testEnsureBlackListIsPropagatedIgnoresMissingNode();
         void testEnsureBlackListIsPropagatedIgnoreTmpBlacklistedNode();
@@ -118,12 +126,12 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                 using RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker;
                 void setNetworkAvailability(bool networkAvailable) { _networkAvailable = networkAvailable; }
                 void simulateFSEvent() { _liveSnapshot.startUpdate(); }
-                void setLongPollDuration(std::chrono::steady_clock::duration duration) { _longPollDuration = duration; }
 
             private:
                 bool _networkAvailable{true};
-                std::chrono::steady_clock::duration _longPollDuration = std::chrono::seconds(50);
-                ExitInfo sendLongPoll(bool &changes) override;
+                ExitInfo updateLongPollJob(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob) override;
+                ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &, ForcedUpdate, const std::shared_ptr<LongPollJob> &,
+                                                    bool &hasChanges) override;
                 ExitInfo generateInitialSnapshot() override;
         };
 

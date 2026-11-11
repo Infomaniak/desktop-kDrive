@@ -23,4 +23,10 @@ public struct SynchroContext: Sendable, Equatable {
     public let drive: Drive
     public let account: Account
     public let user: User
+
+    /// A disconnected user (revoked or invalid token) must log in again before any of their synchros can run, whatever
+    /// the errors reported for the synchro so far.
+    public var blockingError: BlockingSynchroError? {
+        user.isConnected ? synchro.latestError : .loggingError
+    }
 }

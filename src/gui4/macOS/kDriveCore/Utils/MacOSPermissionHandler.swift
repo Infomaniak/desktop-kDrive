@@ -35,12 +35,15 @@ public protocol MacOSPermissionHandling: Sendable {
 }
 
 public final class MacOSPermissionHandler: MacOSPermissionHandling {
-    @LazyInjectService private var permissionsProvider: MacOSPermissionsProviding
-
-    private let injectedPermissionsProvider: MacOSPermissionsProviding?
+    private let permissionsProvider: MacOSPermissionsProviding
 
     init(permissionsProvider: MacOSPermissionsProviding? = nil) {
-        injectedPermissionsProvider = permissionsProvider
+        if let permissionsProvider {
+            self.permissionsProvider = permissionsProvider
+        } else {
+            @InjectService var provider: MacOSPermissionsProviding
+            self.permissionsProvider = provider
+        }
     }
 
     public func isAuthorized(for permission: MacOSPermission) async -> Bool {
@@ -53,7 +56,6 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
     }
 
     private func authorizationChecker(for permission: MacOSPermission) -> AuthorizationChecker {
-        let permissionsProvider = injectedPermissionsProvider ?? permissionsProvider
         switch permission {
         case .endpointSecurityExtension:
             return EndpointSecurityExtensionChecker(permissionsProvider: permissionsProvider)

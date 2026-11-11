@@ -36,6 +36,7 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCheckIfExistsOnServer);
         CPPUNIT_TEST(testBlacklist);
         CPPUNIT_TEST(testWipeVirtualFiles);
+        CPPUNIT_TEST(testHandleAccessUnknownErrorItem);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -61,6 +62,7 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         void testCheckIfExistsOnServer();
         void testBlacklist();
         void testWipeVirtualFiles();
+        void testHandleAccessUnknownErrorItem();
 
         void testAll();
         void testConflictQueue();
