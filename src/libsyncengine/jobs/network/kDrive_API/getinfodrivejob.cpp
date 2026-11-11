@@ -83,7 +83,9 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
 
     // Non DB attributes
     MaintenanceInfo maintenanceInfo;
-    AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(_maintenanceInfo);
+    if (const auto exitInfo = AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(_maintenanceInfo); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to read maintenance info");
+    }
 
     if (!JsonParserUtility::extractValue(dataObj, isLockedKey, _isLocked))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
