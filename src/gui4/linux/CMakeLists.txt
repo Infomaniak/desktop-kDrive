@@ -322,6 +322,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/features/syncconfiguration/SyncConfigurationSummaryPage.qml
         ui/dialogs/GlobalModalHost.qml
         ui/dialogs/ManyDeletesDialog.qml
+        ui/dialogs/ManyDeletesFileList.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
         ui/windows/main/SyncProgressText.qml

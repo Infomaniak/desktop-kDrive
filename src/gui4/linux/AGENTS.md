@@ -323,6 +323,9 @@
 - `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
   same-sync severity escalation, hard-warning acknowledgement, soft-warning opt-out (`AppStateKey::NotifyBeforeDelete`,
   read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
+  Both warnings list the deleted paths the server sends (at most 500, relative to the root) in natural order. Each
+  shown path starts with the synchronization folder, since the warning can come from any synchronization; the tooltip
+  gives the `~` form and the icon follows the extension only. The count of items left out closes the list.
 - `app/errors/*`: pure sync error domain, without QObject, IPC or cache access. `classifySyncError` maps a raw `Error` to
   a `SyncErrorKind` through an ordered matcher table aligned with the macOS and Windows definitions (first match
   wins), plus the Linux-only `NotEnoughINotifyWatches`; LiteSync and VFS kinds are absent and fall back to `Unknown`,

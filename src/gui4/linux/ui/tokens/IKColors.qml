@@ -261,6 +261,8 @@ QtObject {
     readonly property color modalScrim: _p.neutralBlack35
     readonly property color modalSecondaryActionHover: surfaceTertiary
     readonly property color modalHardWarningIcon: actionDestructive
+    readonly property color modalListSurface: surfacePrimary
+    readonly property color modalListBorder: surfaceTertiary
     readonly property color syncConfigurationCardSurface: surfaceSecondary
     readonly property color syncConfigurationFieldSurface: modalSurface
     readonly property color syncConfigurationFieldBorder: surfaceTertiary
