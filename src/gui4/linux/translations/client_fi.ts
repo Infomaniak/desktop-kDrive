@@ -209,6 +209,10 @@ Voit käyttää kehittyneitä synkronointejasi kotisivun asemavalikosta.</transl
             <source>Automatic updates</source> 
             <translation>Automaattiset päivitykset</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Käytettävissä vain, kun kDrive suoritetaan AppImagesta, joka on kansiossa, johon on kirjoitusoikeus.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Saatavilla offline-tilassa</translation> 
@@ -509,6 +513,10 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
         <message id="buttonRenameItem"> 
             <source>Rename %1</source> 
             <translation>Nimeä %1 uudelleen</translation> 
+        </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Käynnistä uudelleen</translation> 
         </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
@@ -2688,6 +2696,10 @@ Synkronointi jatkuu automaattisesti lopuksi.</translation>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Päivitys saatavilla</translation> 
+        </message> 
+        <message id="updateInstalled"> 
+            <source>kDrive %1 installed. Restart the application to use it.</source> 
+            <translation>kDrive %1 on asennettu. Käynnistä sovellus uudelleen ottaaksesi sen käyttöön.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.
