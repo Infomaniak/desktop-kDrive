@@ -354,7 +354,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-amd"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-amd" -test  # Temporary: upload the AppImage updater POC build under Test/
 
       - name: Download sentry-cli and login
         run: |
@@ -399,7 +399,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-arm"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_linux }}" -os "linux-arm" -test  # Temporary: upload the AppImage updater POC build under Test/
 
       - name: Download sentry-cli and login
         run: |
