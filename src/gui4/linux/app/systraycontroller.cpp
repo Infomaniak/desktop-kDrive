@@ -250,6 +250,8 @@ void SystemTrayController::setProductStateInitialized(const bool initialized) {
 void SystemTrayController::handleUpdateStateChanged(const UpdateState state) {
     switch (state) {
         case UpdateState::ManualUpdateAvailable:
+        // Without automatic updates, an update stays available until the user installs it.
+        case UpdateState::Available:
         case UpdateState::Ready:
         case UpdateState::DownloadError:
         case UpdateState::UpdateError:
@@ -259,7 +261,6 @@ void SystemTrayController::handleUpdateStateChanged(const UpdateState state) {
         case UpdateState::NoUpdate:
             setNotificationActive(false);
             return;
-        case UpdateState::Available:
         case UpdateState::Downloading:
         case UpdateState::Checking:
         case UpdateState::CheckError:
