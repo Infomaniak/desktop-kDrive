@@ -586,7 +586,6 @@ if (QT_FEATURE_xcb)
 endif ()
 
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/app # QML type registration includes exported headers by file name.
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src # libcommon header files
 )

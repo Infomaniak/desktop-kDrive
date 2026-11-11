@@ -25,6 +25,7 @@
 #endif
 #include "app/navigation/mainwindowactivationdecision.h"
 #include "app/onboarding/onboardingsyncconfigurationcontroller.h"
+#include "app/svginfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/logger.h"
 
@@ -125,6 +126,9 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                             "BlockingErrors", QStringLiteral("BlockingErrors only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(SyncErrors::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "SyncErrors",
                                             QStringLiteral("SyncErrors only exposes enums."));
+    // Owned by the QML engine.
+    (void) qmlRegisterSingletonType<SvgInfo>(AppConstants::Qml::moduleUri, 1, 0, "SvgInfo",
+                                             [](QQmlEngine *, QJSEngine *) -> QObject * { return new SvgInfo(); });
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {

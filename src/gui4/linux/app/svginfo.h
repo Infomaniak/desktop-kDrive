@@ -22,15 +22,12 @@
 #include <QObject>
 #include <QSize>
 #include <QUrl>
-#include <QtQml/qqmlregistration.h>
 
 namespace KDC {
 
 /** Caches intrinsic icon dimensions for QML layout independently of the rasterized image size. */
 class SvgInfo final : public QObject {
         Q_OBJECT
-        QML_ELEMENT
-        QML_SINGLETON
 
     public:
         explicit SvgInfo(QObject *parent = nullptr);
