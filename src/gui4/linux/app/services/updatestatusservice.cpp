@@ -18,20 +18,64 @@
 
 #include "updatestatusservice.h"
 
+#include <QLoggingCategory>
 #include <QPointer>
 
 #include <utility>
 
 namespace KDC {
 
-UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, QObject *const parent) :
+namespace {
+Q_LOGGING_CATEGORY(lcUpdateStatusService, "gui.v4.updatestatusservice", QtInfoMsg)
+} // namespace
+
+UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, InstallRequest installRequest,
+                                         QObject *const parent) :
     QObject(parent),
     _stateRequest(std::move(stateRequest)),
-    _versionRequest(std::move(versionRequest)) {}
+    _versionRequest(std::move(versionRequest)),
+    _installRequest(std::move(installRequest)) {}
 
 bool UpdateStatusService::available() const {
-    // The Linux updater on the server side currently returns only ManualUpdateAvailable.
-    return _state == UpdateState::ManualUpdateAvailable || _state == UpdateState::Available || _state == UpdateState::Ready;
+    // Download and installation errors keep the update available: the user can still download it manually.
+    switch (_state) {
+        case UpdateState::ManualUpdateAvailable:
+        case UpdateState::Available:
+        case UpdateState::Downloading:
+        case UpdateState::Ready:
+        case UpdateState::DownloadError:
+        case UpdateState::UpdateError:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// User action: prepares the available update then restarts on it, or restarts on the update already installed.
+void UpdateStatusService::installUpdate() {
+    if (installable()) {
+        _restartWhenReady = true;
+        requestInstaller();
+    } else if (readyToInstall()) {
+        requestInstaller();
+    }
+}
+
+// Prepares the available update, or restarts on the installed one: the server picks the step from its own state.
+void UpdateStatusService::requestInstaller() {
+    qCInfo(lcUpdateStatusService) << "Requesting the update installer | state:" << _state;
+    _installRequest([self = QPointer(this)](const ExitInfo &result) {
+        if (result) {
+            return;
+        }
+
+        qCWarning(lcUpdateStatusService) << "Update installer request failed | code:" << result.code()
+                                         << "/ cause:" << result.cause();
+        // A later automatic preparation must not restart the application without the user's request.
+        if (self) {
+            self->_restartWhenReady = false;
+        }
+    });
 }
 
 void UpdateStatusService::refresh() {
@@ -66,6 +110,23 @@ void UpdateStatusService::setState(const UpdateState state) {
 
     if (available() && !_version && !_versionPending) {
         requestVersion();
+    }
+
+    switch (state) {
+        case UpdateState::Ready:
+            // The user asked for the update before it was installed: restart on it now.
+            if (std::exchange(_restartWhenReady, false)) {
+                requestInstaller();
+            }
+            break;
+        case UpdateState::Checking:
+        case UpdateState::Available:
+        case UpdateState::Downloading:
+            // A periodic check during the preparation keeps the user's request.
+            break;
+        default:
+            _restartWhenReady = false;
+            break;
     }
 }
 

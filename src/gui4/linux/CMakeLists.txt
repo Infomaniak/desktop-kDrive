@@ -161,6 +161,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/serviceactiontracker.h
         app/services/serviceeventbus.cpp
         app/services/serviceeventbus.h
+        app/services/releasenotesservice.cpp
+        app/services/releasenotesservice.h
         app/services/sentryservice.cpp
         app/services/sentryservice.h
         app/services/syncerrorservice.cpp
@@ -279,6 +281,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/settings/ExcludedFoldersView.qml
         ui/windows/settings/SyncSelectionRow.qml
         ui/windows/settings/SendDebugLogsDialog.qml
+        ui/windows/settings/BetaProgramDialog.qml
         ui/windows/settings/TrackingConsentView.qml
         ui/chrome/IKShadowedWindow.qml
         ui/chrome/IKWindowControlButton.qml

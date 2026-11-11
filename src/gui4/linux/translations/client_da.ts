@@ -209,6 +209,10 @@ Du kan få adgang til dine avancerede synkroniseringer fra drevvælgeren på sta
             <source>Automatic updates</source> 
             <translation>Automatiske opdateringer</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Kun tilgængelig, når kDrive kører fra en AppImage i en mappe med skriveadgang.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Tilgængelig offline</translation> 
@@ -509,6 +513,10 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</translation>
         <message id="buttonRenameItem"> 
             <source>Rename %1</source> 
             <translation>Omdøb %1</translation> 
+        </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Genstart</translation> 
         </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
@@ -2688,6 +2696,10 @@ Din synkronisering genoptages automatisk til sidst.</translation>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Opdatering tilgængelig</translation> 
+        </message> 
+        <message id="updateInstalled"> 
+            <source>kDrive %1 installed. Restart the application to use it.</source> 
+            <translation>kDrive %1 er installeret. Genstart programmet for at bruge det.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.

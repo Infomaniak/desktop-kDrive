@@ -38,6 +38,9 @@ IKModal {
     }
     function showFrom(item) {
         returnFocusItem = item;
+        if (!about) {
+            controller.loadReleaseNotes();
+        }
         open();
     }
     bodyData: ScrollView {
@@ -73,6 +76,45 @@ IKModal {
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
             }
+            // Release notes of the announced version, hidden when they cannot be loaded.
+            Column {
+                id: releaseNotesColumn
+                width: parent.width
+                visible: !root.about && root.controller.releaseNotes.length > 0
+                spacing: IKSpacing.s12
+                Repeater {
+                    model: root.controller.releaseNotes
+                    Column {
+                        id: releaseNotesSection
+                        required property var modelData
+                        // Repeater delegates lose their parent while being destroyed: bind to ids, not to parent.
+                        width: releaseNotesColumn.width
+                        spacing: IKSpacing.s4
+                        Text {
+                            width: releaseNotesSection.width
+                            visible: text.length > 0
+                            text: releaseNotesSection.modelData.title
+                            textFormat: Text.PlainText
+                            color: IKColors.textPrimary
+                            font.pixelSize: IKFonts.bodySize
+                            font.weight: IKFonts.emphasized
+                            wrapMode: Text.WordWrap
+                        }
+                        Repeater {
+                            model: releaseNotesSection.modelData.items
+                            Text {
+                                required property string modelData
+                                width: releaseNotesSection.width
+                                text: "• " + modelData
+                                textFormat: Text.PlainText
+                                color: IKColors.textSecondary
+                                font.pixelSize: IKFonts.bodySize
+                                wrapMode: Text.WordWrap
+                            }
+                        }
+                    }
+                }
+            }
             Text {
                 width: parent.width
                 visible: text.length > 0
@@ -107,10 +149,17 @@ IKModal {
             onClicked: root.close()
         },
         IKModalButton {
+            readonly property bool manual: !root.controller.updateReadyToInstall && !root.controller.updateDownloading
+                                           && !root.controller.updateInstallable
+
             visible: !root.about && root.controller.updateAvailable
-            text: qsTrId("buttonDownloadManually")
-            external: true
-            onClicked: root.controller.openDownload()
+            text: root.controller.updateReadyToInstall ? qsTrId("buttonRestart")
+                                                       : root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
+                                                       : root.controller.updateInstallable ? qsTrId("buttonUpdate")
+                                                                                           : qsTrId("buttonDownloadManually")
+            external: manual
+            actionEnabled: !root.controller.updateDownloading
+            onClicked: manual ? root.controller.openDownload() : root.controller.installUpdate()
         }
     ]
 }
