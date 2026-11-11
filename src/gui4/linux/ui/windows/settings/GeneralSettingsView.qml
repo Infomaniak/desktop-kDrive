@@ -80,12 +80,13 @@ ScrollView {
             }
             SettingsRow {
                 title: qsTrId("automaticUpdatesSetting")
-                // Shown disabled outside an updatable AppImage, with the reason below the title.
+                // Disabled outside an updatable AppImage, with the reason below the title.
+                enabled: root.controller.automaticUpdatesAvailable
                 description: root.controller.automaticUpdatesAvailable ? ""
                                                                         : qsTrId("automaticUpdatesUnavailableDescription")
                 IKSwitch {
                     text: qsTrId("automaticUpdatesSetting")
-                    enabled: root.controller.automaticUpdatesAvailable && root.controller.ready && !root.controller.saving
+                    enabled: root.controller.ready && !root.controller.saving
                     // Off when unavailable: the stored parameter has no effect outside an updatable AppImage.
                     value: root.controller.automaticUpdatesAvailable && root.controller.automaticUpdates
                     onToggleRequested: value => root.controller.setAutomaticUpdates(value)
