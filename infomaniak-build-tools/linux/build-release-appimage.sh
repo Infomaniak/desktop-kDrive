@@ -26,6 +26,12 @@ program_name="$(basename "$0")"
 
 QT_BASE_DIR=""
 
+# Runs an appimage.sh step in a new shell. Called from a `||` list, Bash would otherwise ignore the `set -e`
+# of the step and of its subshell, and continue after a failed command.
+function run_appimage_step() {
+  bash -c 'source "$1" && shift && "$@"' run_appimage_step "$script_directory_path/appimage.sh" "$@"
+}
+
 function display_help {
   echo "$program_name [-h]" >&2
   echo "  Build the Linux release AppImage for desktop-kDrive." >&2
@@ -112,7 +118,7 @@ function build_client_via_cmake() {
       /src || return 1
   make "-j$(nproc)" || return 1
 
-  appimage_extract_debug_symbols ./bin /build kDrive kdrive_qml || return 1
+  run_appimage_step appimage_extract_debug_symbols ./bin /build kDrive kdrive_qml || return 1
 
   bundle_sources_for_sentry /build/kDrive.dbg
   bundle_sources_for_sentry /build/kdrive_qml.dbg
@@ -141,14 +147,14 @@ function bundle_sources_for_sentry() {
 }
 
 function build_app_image() {
-  appimage_prepare_appdir /app || return 1
-  appimage_check_appdir /app || return 1
+  run_appimage_step appimage_prepare_appdir /app || return 1
+  run_appimage_step appimage_check_appdir /app || return 1
 
   cd /build || return 1
-  appimage_linuxdeploy_deploy /app || return 1
-  appimage_strip_unneeded_symbols /app || return 1
-  appimage_verify_bundle /app || return 1
-  appimage_package /app || return 1
+  run_appimage_step appimage_linuxdeploy_deploy /app || return 1
+  run_appimage_step appimage_strip_unneeded_symbols /app || return 1
+  run_appimage_step appimage_verify_bundle /app || return 1
+  run_appimage_step appimage_package /app || return 1
 
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }
@@ -166,14 +172,14 @@ function build_recovery_updater_image() {
 
   updater_appdir="/tmp/updater-app"
   updater_icon="/src/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
-  appimage_prepare_recovery_updater_appdir /app "$updater_appdir" "$updater_icon" || return 1
-  appimage_check_recovery_updater_appdir "$updater_appdir" || return 1
+  run_appimage_step appimage_prepare_recovery_updater_appdir /app "$updater_appdir" "$updater_icon" || return 1
+  run_appimage_step appimage_check_recovery_updater_appdir "$updater_appdir" || return 1
 
   cd /build || return 1
-  appimage_linuxdeploy_recovery_updater "$updater_appdir" || return 1
-  appimage_strip_unneeded_symbols "$updater_appdir" || return 1
-  appimage_verify_bundle "$updater_appdir" || return 1
-  appimage_package "$updater_appdir" || return 1
+  run_appimage_step appimage_linuxdeploy_recovery_updater "$updater_appdir" || return 1
+  run_appimage_step appimage_strip_unneeded_symbols "$updater_appdir" || return 1
+  run_appimage_step appimage_verify_bundle "$updater_appdir" || return 1
+  run_appimage_step appimage_package "$updater_appdir" || return 1
 
   mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
   if [ "$?" -ne 0 ]; then
@@ -287,7 +293,7 @@ build_recovery_updater_image "$architecture" || {
 }
 
 rm -f /app/usr/bin/kDriveRecoveryUpdater
-check_main_appdir_updater_separation /app || {
+run_appimage_step check_main_appdir_updater_separation /app || {
     printf "\nRecovery updater separation check failed." >&2
     exit 1
 }
