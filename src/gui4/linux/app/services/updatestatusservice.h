@@ -30,16 +30,21 @@ namespace KDC {
 
 class ParametersStore;
 
-/** Process-wide read-only updater state. Linux exposes detection and release metadata, never installation. */
+/**
+ * Process-wide updater state and release metadata. Starts the AppImage update on the user's request, then restarts on
+ * it; automatic updates are prepared by the server on its own.
+ */
 class UpdateStatusService final : public QObject {
         Q_OBJECT
 
     public:
         using StateRequest = std::function<void(const CommService::UpdateStateCallback &)>;
         using VersionRequest = std::function<void(const CommService::VersionInfoCallback &)>;
+        using InstallRequest = std::function<void(const CommService::VoidCallback &)>;
 
         UpdateStatusService(const CommService &commService, const ParametersStore &parametersStore, QObject *parent = nullptr);
-        UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, QObject *parent = nullptr);
+        UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, InstallRequest installRequest,
+                            QObject *parent = nullptr);
 
         void refresh();
         void setState(UpdateState state);
@@ -49,6 +54,11 @@ class UpdateStatusService final : public QObject {
         [[nodiscard]] const std::optional<VersionInfo> &version() const { return _version; }
 
         [[nodiscard]] bool available() const;
+        [[nodiscard]] bool downloading() const { return _state == UpdateState::Downloading; }
+        [[nodiscard]] bool readyToInstall() const { return _state == UpdateState::Ready; }
+        [[nodiscard]] bool installable() const { return _state == UpdateState::Available; }
+
+        void installUpdate();
 
     signals:
         void changed();
@@ -56,15 +66,18 @@ class UpdateStatusService final : public QObject {
 
     private:
         void requestVersion();
+        void requestInstaller();
 
         StateRequest _stateRequest;
         VersionRequest _versionRequest;
+        InstallRequest _installRequest;
         UpdateState _state{UpdateState::Unknown};
         std::optional<VersionInfo> _version;
         uint64_t _generation{0};
         uint64_t _versionGeneration{0};
         bool _versionPending{false};
         bool _forceVersionRefresh{false};
+        bool _restartWhenReady{false};
 };
 
 } // namespace KDC

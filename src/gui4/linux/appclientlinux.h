@@ -180,8 +180,8 @@ class AppClientLinux : public QApplication {
         SearchController _searchController{_serverCommService, _mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
-        GeneralSettingsController _generalSettingsController{_parametersStore, _parametersService, _translationService,
-                                                             _updateStatusService, this};
+        GeneralSettingsController _generalSettingsController{_parametersStore,     _parametersService, _translationService,
+                                                             _updateStatusService, _appCache,          this};
         AdvancedSettingsController _advancedSettingsController{_parametersStore,   _parametersService,  _sentryService,
                                                                _serverCommService, _translationService, this};
         FileExclusionController _fileExclusionController{_exclusionTemplateService, this};

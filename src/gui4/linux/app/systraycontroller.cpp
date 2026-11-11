@@ -250,6 +250,9 @@ void SystemTrayController::setProductStateInitialized(const bool initialized) {
 void SystemTrayController::handleUpdateStateChanged(const UpdateState state) {
     switch (state) {
         case UpdateState::ManualUpdateAvailable:
+        case UpdateState::Ready:
+        case UpdateState::DownloadError:
+        case UpdateState::UpdateError:
             setNotificationActive(true);
             return;
         case UpdateState::UpToDate:
@@ -257,17 +260,11 @@ void SystemTrayController::handleUpdateStateChanged(const UpdateState state) {
             setNotificationActive(false);
             return;
         case UpdateState::Available:
+        case UpdateState::Downloading:
         case UpdateState::Checking:
         case UpdateState::CheckError:
         case UpdateState::Unknown:
             qCDebug(lcSystemTrayController) << "Updater state preserves system tray notification | state:" << state;
-            return;
-        case UpdateState::Downloading:
-        case UpdateState::Ready:
-        case UpdateState::DownloadError:
-        case UpdateState::UpdateError:
-            qCWarning(lcSystemTrayController)
-                    << "Unexpected updater state on Linux, preserving system tray notification | state:" << state;
             return;
         case UpdateState::EnumEnd:
             qCWarning(lcSystemTrayController) << "Invalid updater state received";
