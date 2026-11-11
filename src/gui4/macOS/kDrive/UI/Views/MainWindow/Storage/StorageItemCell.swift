@@ -21,6 +21,7 @@ import SwiftUI
 
 struct StorageItemCell: View {
     let item: StorageItem
+    let byteCountFormatStyle: ByteCountFormatStyle.Style
 
     var body: some View {
         HStack {
@@ -34,7 +35,7 @@ struct StorageItemCell: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 if let usedBytes = item.usedBytes {
-                    Text(usedBytes, format: StorageView.sizeFormatter)
+                    Text(usedBytes, format: ByteCountFormatStyle.byteCount(style: byteCountFormatStyle))
                         .foregroundStyle(.secondary)
                 } else {
                     Text("-0 GB-")
@@ -47,9 +48,9 @@ struct StorageItemCell: View {
 }
 
 #Preview("Real value") {
-    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: 12_000_000_000))
+    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: 12_000_000_000), byteCountFormatStyle: .file)
 }
 
 #Preview("Loading") {
-    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: nil))
+    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: nil), byteCountFormatStyle: .file)
 }

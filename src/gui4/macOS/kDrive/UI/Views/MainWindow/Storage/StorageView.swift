@@ -60,8 +60,6 @@ enum DriveStorageItems {
 }
 
 struct StorageView: View {
-    static let sizeFormatter = ByteCountFormatStyle.byteCount(style: .file)
-
     private static let isRunningInPreviews = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
 
     @InjectService private var storageDataProviding: StorageDataProviding
@@ -112,8 +110,17 @@ struct StorageView: View {
         }
 
         return [
-            .usedSpace: StorageItem(title: KDriveLocalizable.storageOnlineUsed, color: .blue, usedBytes: driveStorageInfo.usedSize),
-            .freeSpace: StorageItem(title: KDriveLocalizable.storageOnlineFree, color: .gray, usedBytes: freeSpace, isDefault: true)
+            .usedSpace: StorageItem(
+                title: KDriveLocalizable.storageOnlineUsed,
+                color: .blue,
+                usedBytes: driveStorageInfo.usedSize
+            ),
+            .freeSpace: StorageItem(
+                title: KDriveLocalizable.storageOnlineFree,
+                color: .gray,
+                usedBytes: freeSpace,
+                isDefault: true
+            )
         ]
     }
 
@@ -141,7 +148,12 @@ struct StorageView: View {
                 )
             } else {
                 Form {
-                    StorageSectionView(title: volumeName, storageData: volumeStorageData, items: Array(volumeStorageItems.values))
+                    StorageSectionView(
+                        title: volumeName,
+                        storageData: volumeStorageData,
+                        items: Array(volumeStorageItems.values),
+                        byteCountFormatStyle: .file
+                    )
 
                     Section {
                         InformationBlockContentView(
@@ -151,7 +163,12 @@ struct StorageView: View {
                         )
                     }
 
-                    StorageSectionView(title: driveStorageInfo.name, storageData: driveStorageData, items: Array(driveStorageItems.values))
+                    StorageSectionView(
+                        title: driveStorageInfo.name,
+                        storageData: driveStorageData,
+                        items: Array(driveStorageItems.values),
+                        byteCountFormatStyle: .memory
+                    )
                 }
                 .groupedFormatStyle()
             }
