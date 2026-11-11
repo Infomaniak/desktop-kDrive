@@ -220,6 +220,7 @@ class CommService : public QObject {
         // --- Updater ---
         void requestUpdaterState(const UpdateStateCallback &callback) const;
         void requestUpdaterVersionInfo(DistributionChannel channel, const VersionInfoCallback &callback) const;
+        void requestUpdaterStartInstaller(const VoidCallback &callback) const;
 
         // --- Utility ---
         void requestCheckCommStatus(const VoidCallback &callback) const;

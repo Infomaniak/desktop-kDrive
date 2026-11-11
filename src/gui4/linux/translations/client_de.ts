@@ -209,6 +209,10 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerksauswahl a
             <source>Automatic updates</source> 
             <translation>Automatische Aktualisierungen</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Nur verfügbar, wenn kDrive aus einem AppImage in einem beschreibbaren Ordner gestartet wird.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Offline verfügbar</translation> 
@@ -509,6 +513,10 @@ Sie können sie jederzeit öffnen, auch ohne Internetverbindung.</translation>
         <message id="buttonRenameItem"> 
             <source>Rename %1</source> 
             <translation>%1 umbenennen</translation> 
+        </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Neu starten</translation> 
         </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
@@ -2687,6 +2695,10 @@ Ihre Synchronisierung wird am Ende automatisch fortgesetzt.</translation>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Update verfügbar</translation> 
+        </message> 
+        <message id="updateInstalled"> 
+            <source>kDrive %1 installed. Restart the application to use it.</source> 
+            <translation>kDrive %1 wurde installiert. Starten Sie die Anwendung neu, um diese Version zu verwenden.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.

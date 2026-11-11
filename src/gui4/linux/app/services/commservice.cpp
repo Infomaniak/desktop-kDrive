@@ -846,6 +846,11 @@ void CommService::requestUpdaterVersionInfo(const DistributionChannel channel, c
                            });
 }
 
+void CommService::requestUpdaterStartInstaller(const VoidCallback &callback) const {
+    _ipcClient.sendRequest(RequestNum::UPDATER_START_INSTALLER, {},
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
+}
+
 // -- Utility ------------------------------------------------------------
 
 void CommService::requestCheckCommStatus(const VoidCallback &callback) const {
