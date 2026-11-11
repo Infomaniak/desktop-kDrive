@@ -356,7 +356,9 @@ ExitInfo AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(Maintena
     if (!jsonRes()) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (dataObj == nullptr) return {ExitCode::BackError, ExitCause::MissingReplyData};
+    // If dataObj is nullptr (not present or not an object), we consider that the maintenance info is not present in the response
+    // and therefore we return ExitCode::Ok to indicate that there is no maintenance.
+    if (dataObj == nullptr) return ExitCode::Ok;
 
     bool inMaintenance = false;
     (void) JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance, false);
