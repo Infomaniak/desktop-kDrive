@@ -223,11 +223,12 @@ namespace Infomaniak.kDrive.ViewModels
                     return false;
                 }
 
-                if (!await Launcher.LaunchUriAsync(App.Constants.Drive.itemUri(Sync.Drive.DriveId, RemoteNodeId)))
+                var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+                if (!await uriStore.OpenInBrowserAsync(uriStore.WebAppItemUrl(Sync.Drive.DriveId, RemoteNodeId)))
                 {
-                    Logger.LogError($"Failed to launch URI for node with RemoteNodeId: {RemoteNodeId}",
-                        "Error: Failed to launch node URI");
+                    Logger.LogWarning("Failed to open WebAppItemUrl in browser");
                     return false;
+
                 }
             }
             catch (Exception ex)

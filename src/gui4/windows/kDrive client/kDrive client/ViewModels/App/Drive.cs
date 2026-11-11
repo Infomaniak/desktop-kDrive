@@ -223,25 +223,13 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _displayRemoteSpaceWarning, value);
         }
 
-        public Uri GetWebUri()
-        {
-            return App.Constants.Drive.kSuiteHomeUrl(DriveId);
-        }
+        public Uri GetWebUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppHomeUrl(DriveId);
 
-        public Uri GetWebTrashUri()
-        {
-            return App.Constants.Drive.TrashUrl(DriveId);
-        }
+        public Uri GetWebTrashUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppTrashUrl(DriveId);
 
-        public Uri GetWebFavoritesUri()
-        {
-            return App.Constants.Drive.FavoriteUrl(DriveId);
-        }
+        public Uri GetWebFavoritesUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppFavoritesUrl(DriveId);
 
-        public Uri GetWebSharedUri()
-        {
-            return App.Constants.Drive.SharedUrl(DriveId);
-        }
+        public Uri GetWebSharedUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppSharedUrl(DriveId);
 
         public Account Account
         {
