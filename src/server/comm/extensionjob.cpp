@@ -886,11 +886,10 @@ ExitInfo ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &
 
     if (!fileData.isValid()) return ExitCode::LogicError;
 
-    SyncPalMap::const_iterator syncPalMapIt;
     std::shared_ptr<SyncPal> syncPal;
     {
         const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
-        syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+        const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
         if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
         syncPal = syncPalMapIt->second;
     }

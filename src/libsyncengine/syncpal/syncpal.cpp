@@ -1152,13 +1152,14 @@ ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) cons
 }
 
 ExitInfo SyncPal::checkIfExistsOnServer(const NodeId &localNodeId, bool &exists) const {
-    NodeId remoteNodeId;
+    exists = false;
 
     if (!syncDb()) {
         LOG_WARN(_logger, "SyncDb is not available in checkIfExistsOnServer");
         return ExitCode::DataError;
     }
 
+    NodeId remoteNodeId;
     if (!syncDb()->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, exists)) {
         LOG_WARN(_logger, "Error in SyncDb::correspondingNodeId");
         return ExitCode::DbError;
@@ -1180,6 +1181,8 @@ ExitInfo SyncPal::checkIfExistsOnServer(const NodeId &localNodeId, bool &exists)
         LOG_WARN(_logger, "Error in GetFileInfoJob constructor for nodeId=" << remoteNodeId << ": " << e.what());
         return ExitCode::DataError;
     }
+
+    job->runSynchronously();
 
     if (job->exitInfo() && job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
         exists = true;
