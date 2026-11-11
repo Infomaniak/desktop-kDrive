@@ -21,7 +21,9 @@
 #include "abstractupdater.h"
 
 #include <atomic>
+#include <cstdint>
 #include <functional>
+#include <ios>
 #include <mutex>
 #include <string>
 
@@ -49,12 +51,20 @@ class LinuxUpdater final : public AbstractUpdater {
          */
         [[nodiscard]] static SyncPath partialDownloadPath(const SyncPath &appImagePath);
 
+        /**
+         * @brief Whether `availableSpace` bytes can hold the new AppImage. An unknown size (negative) does not block the
+         * download.
+         */
+        [[nodiscard]] static bool hasEnoughSpace(std::streamsize expectedSize, std::uintmax_t availableSpace);
+
     private:
         [[nodiscard]] bool canUpdateInPlace() const;
         void prepareAnnouncedUpdate(const std::string &version);
         void fetchChecksum(const std::string &version);
         void checksumFetched(UniqueId jobId, const std::string &version);
         void prepareUpdate(const std::string &version);
+        void fetchSize(const std::string &version);
+        void sizeFetched(UniqueId jobId, const std::string &version);
         void downloadUpdate(const std::string &version);
         void downloadFinished(UniqueId jobId, const std::string &version);
         void finishPreparation(UpdateState state);
@@ -70,6 +80,8 @@ class LinuxUpdater final : public AbstractUpdater {
         mutable std::mutex _stateMutex;
         std::string _checksumVersion; // Version the cached checksum belongs to.
         std::string _expectedChecksum;
+        std::string _sizeVersion; // Version the cached size belongs to.
+        std::streamsize _expectedSize{-1}; // Negative when the server did not announce it.
         std::string _installedVersion; // Version installed on disk, active once the application restarts.
         SyncPath _installedPath;
 
