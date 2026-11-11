@@ -24,6 +24,7 @@
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/checksumverifier.h"
+#include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "requests/parameterscache.h"
 
@@ -358,12 +359,14 @@ void LinuxUpdater::installUpdate(const std::string &version) {
                                                       << L". Update is active once the application restarts.");
 
     if (targetPath != _appImagePath) {
-        // Launchers pointing to the old name (symlinks, user desktop entries) break; ours are rewritten at the next start.
+        // Launchers pointing to the old name (symlinks, user desktop entries) break. Ours are rewritten right away: the
+        // application may never be restarted before the next login.
         if (std::filesystem::remove(_appImagePath, ec)) {
             LOGW_INFO(logger(), L"Previous AppImage removed: " << Utility::formatSyncPath(_appImagePath));
         } else if (ec) {
             LOGW_WARN(logger(), L"Failed to remove the previous AppImage: " << Utility::formatStdError(_appImagePath, ec));
         }
+        updateDesktopEntries(targetPath);
     }
 
     {
@@ -372,6 +375,20 @@ void LinuxUpdater::installUpdate(const std::string &version) {
         _installedPath = targetPath;
     }
     finishPreparation(UpdateState::Ready);
+}
+
+// Points the autostart entry (when enabled) and the login URL scheme to the installed AppImage.
+void LinuxUpdater::updateDesktopEntries(const SyncPath &targetPath) {
+    if (ParametersCache::instance()->parameters().autoStart()) {
+        const auto &appName = Theme::instance()->appName();
+        if (!Utility::setLaunchOnStartup(appName, appName, targetPath)) {
+            LOG_WARN(logger(), "Failed to point the autostart entry to the new AppImage");
+        }
+    }
+
+    if (!Utility::registerLoginRedirection(targetPath)) {
+        LOG_WARN(logger(), "Failed to point the login URL scheme to the new AppImage");
+    }
 }
 
 std::string LinuxUpdater::expectedChecksum(const std::string &version) const {
