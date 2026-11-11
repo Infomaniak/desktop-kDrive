@@ -55,11 +55,16 @@ class UpdateStatusService final : public QObject {
         void stateChanged(KDC::UpdateState state);
 
     private:
+        void requestVersion();
+
         StateRequest _stateRequest;
         VersionRequest _versionRequest;
         UpdateState _state{UpdateState::Unknown};
         std::optional<VersionInfo> _version;
         uint64_t _generation{0};
+        uint64_t _versionGeneration{0};
+        bool _versionPending{false};
+        bool _forceVersionRefresh{false};
 };
 
 } // namespace KDC
