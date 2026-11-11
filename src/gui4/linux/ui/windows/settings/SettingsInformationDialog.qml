@@ -77,6 +77,8 @@ IKModal {
             Text {
                 width: parent.width
                 text: root.about ? root.controller.installedDetails : root.controller.releaseDetails
+                // Escaped by the controller, which sets the version and build in bold.
+                textFormat: Text.StyledText
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
