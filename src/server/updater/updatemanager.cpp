@@ -85,8 +85,11 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::ManualUpdateAvailable: {
+#if !defined(KD_LINUX)
+            // The Linux client notifies updates itself, with an action that opens its Settings.
             emit updateAnnouncement(tr("New update available."),
                                     tr("Version %1 is available for download.").arg(_updater->versionInfo().tag.c_str()));
+#endif
             break;
         }
         case UpdateState::Available: {
@@ -96,7 +99,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
         }
         case UpdateState::Ready: {
             if (AbstractUpdater::isVersionSkipped(_updater->versionInfo().fullVersion())) break;
-                // The new version is ready to be installed
+            // The new version is ready to be installed
 #if defined(KD_WINDOWS)
             emit showUpdateDialog();
 #endif

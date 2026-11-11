@@ -219,6 +219,12 @@ void AppClientLinux::setupSignalConnections() {
                    &SystemTrayController::handleUpdateStateChanged);
     (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openSettingsWindow);
     (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
+    // The server notifies synchronization activity, already filtered by the notification settings.
+    (void) connect(&_serverCommService, &CommService::showNotification, this,
+                   [this](const QString &title, const QString &message) {
+                       _notificationService.show(title, message, NotificationService::Action::OpenActivities);
+                   });
+    (void) connect(&_notificationService, &NotificationService::actionRequested, this, &AppClientLinux::handleNotificationAction);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
     (void) connect(&_manyDeletesController, &ManyDeletesController::presentationRequested, this,
                    &AppClientLinux::handleManyDeletesPresentationRequested);
@@ -504,6 +510,22 @@ void AppClientLinux::openMainWindow() {
     qCInfo(lcAppClientLinux) << "Main window opened" << "| size of configured drives:" << _appCache.driveContexts().size()
                              << "| size of configured syncs:" << _appCache.syncContexts().size()
                              << "| current sync DB ID:" << _mainSelectionStore.currentSyncDbId();
+}
+
+// A synchronization activity notification opens the activity list; an update notification opens Settings on its button.
+void AppClientLinux::handleNotificationAction(const NotificationService::Action action) {
+    switch (action) {
+        case NotificationService::Action::OpenActivities:
+            openMainWindow();
+            if (_bootstrapCompleted && hasConfiguredSyncs()) {
+                _appRouter.activitiesNavigation()->reset();
+                _appRouter.showActivities();
+            }
+            return;
+        case NotificationService::Action::OpenUpdate:
+            _settingsWindowController.requestOpenUpdate();
+            return;
+    }
 }
 
 void AppClientLinux::openOnboardingFromHome() {
