@@ -180,9 +180,13 @@ SyncPath LinuxUpdater::partialDownloadPath(const SyncPath &appImagePath) {
     return appImagePath.parent_path() / partialFileName;
 }
 
+bool LinuxUpdater::hasEnoughSpace(const std::streamsize expectedSize, const std::uintmax_t availableSpace) {
+    return expectedSize < 0 || availableSpace >= static_cast<std::uintmax_t>(expectedSize);
+}
+
 /**
- * Checks that the running AppImage can be replaced: launched from an AppImage, in a writable directory with enough
- * free space for the new file.
+ * Checks that the running AppImage can be replaced: launched from an AppImage, in a writable directory. The free space is
+ * checked against the actual size of the new AppImage, before its download.
  */
 bool LinuxUpdater::canUpdateInPlace() const {
     if (_appImagePath.empty()) {
@@ -190,22 +194,9 @@ bool LinuxUpdater::canUpdateInPlace() const {
         return false;
     }
 
-    const auto directoryPath = _appImagePath.parent_path();
     if (!CommonUtility::isAppImageUpdatable()) {
-        LOGW_INFO(logger(),
-                  L"AppImage directory is not writable, in-place update unavailable: " << Utility::formatSyncPath(directoryPath));
-        return false;
-    }
-
-    // The new AppImage is assumed to be at most 20% larger than the running one.
-    std::error_code ec;
-    const auto currentSize = std::filesystem::file_size(_appImagePath, ec);
-    constexpr std::uintmax_t defaultRequiredSize = 300 * 1024 * 1024;
-    const auto requiredSize = ec ? defaultRequiredSize : currentSize + currentSize / 5;
-    const auto spaceInfo = std::filesystem::space(directoryPath, ec);
-    if (!ec && spaceInfo.available < requiredSize) {
-        LOGW_INFO(logger(), L"Not enough free space for the new AppImage in " << Utility::formatSyncPath(directoryPath) << L": "
-                                                                              << spaceInfo.available << L" < " << requiredSize);
+        LOGW_INFO(logger(), L"AppImage directory is not writable, in-place update unavailable: "
+                                    << Utility::formatSyncPath(_appImagePath.parent_path()));
         return false;
     }
 
@@ -276,6 +267,53 @@ void LinuxUpdater::prepareUpdate(const std::string &version) {
         LOGW_INFO(logger(), L"Discarding outdated or incomplete AppImage download at " << Utility::formatSyncPath(partPath));
     }
 
+    bool sizeKnown = false;
+    {
+        const std::scoped_lock lock(_stateMutex);
+        sizeKnown = _sizeVersion == version;
+    }
+    if (!sizeKnown) {
+        fetchSize(version);
+        return;
+    }
+
+    downloadUpdate(version);
+}
+
+// Asks the size of the new AppImage with a HEAD request, to check the free space before the download.
+void LinuxUpdater::fetchSize(const std::string &version) {
+    setState(UpdateState::Downloading);
+
+    const auto job = std::make_shared<DirectDownloadJob>(versionInfo().downloadUrl);
+    const std::function<void(UniqueId)> callback = [this, version](const UniqueId jobId) { sizeFetched(jobId, version); };
+    job->setAdditionalCallback(callback);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+}
+
+void LinuxUpdater::sizeFetched(const UniqueId jobId, const std::string &version) {
+    const auto job = std::dynamic_pointer_cast<DirectDownloadJob>(SyncJobManagerSingleton::instance()->getJob(jobId));
+    if (!job) {
+        LOG_ERROR(logger(), "Could not cast job pointer.");
+        finishPreparation(UpdateState::DownloadError);
+        assert(false);
+        return;
+    }
+
+    // An unknown size does not block the update: a full disk then fails the download itself.
+    std::streamsize size = -1;
+    if (!job->hasErrorApi() && job->exitInfo() && !job->isAborted()) {
+        size = job->httpResponse().getContentLength();
+    }
+    if (size < 0) {
+        LOG_INFO(logger(), "AppImage size unknown, downloading without a free space check");
+    }
+
+    {
+        const std::scoped_lock lock(_stateMutex);
+        _sizeVersion = version;
+        _expectedSize = size;
+    }
+
     downloadUpdate(version);
 }
 
@@ -283,6 +321,24 @@ void LinuxUpdater::downloadUpdate(const std::string &version) {
     const auto partPath = partialDownloadPath(_appImagePath);
     auto ioError = IoError::Success;
     (void) IoHelper::deleteItem(partPath, ioError);
+
+    std::streamsize expectedSize = -1;
+    {
+        const std::scoped_lock lock(_stateMutex);
+        if (_sizeVersion == version) {
+            expectedSize = _expectedSize;
+        }
+    }
+    const auto directoryPath = partPath.parent_path();
+    std::error_code ec;
+    const auto spaceInfo = std::filesystem::space(directoryPath, ec);
+    if (!ec && !hasEnoughSpace(expectedSize, spaceInfo.available)) {
+        LOGW_INFO(logger(), L"Not enough free space for the new AppImage in " << Utility::formatSyncPath(directoryPath) << L": "
+                                                                              << spaceInfo.available << L" < " << expectedSize);
+        finishPreparation(UpdateState::ManualUpdateAvailable);
+        return;
+    }
+
     _downloadInProgress = true;
     const auto job = std::make_shared<DirectDownloadJob>(partPath, versionInfo().downloadUrl);
     const std::function<void(UniqueId)> callback = [this, version](const UniqueId jobId) { downloadFinished(jobId, version); };
@@ -300,14 +356,21 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId, const std::string &ver
         return;
     }
 
+    // A failed download is removed: it can be large, and the disk may already be nearly full.
+    const auto partPath = partialDownloadPath(_appImagePath);
+    const auto failDownload = [this, &partPath] {
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(partPath, ioError);
+        finishPreparation(UpdateState::DownloadError);
+    };
+
     if (downloadJob->hasErrorApi() || !downloadJob->exitInfo() || downloadJob->isAborted()) {
         LOGW_WARN(logger(),
                   L"Unable to download the AppImage to " << Utility::formatSyncPath(downloadJob->getDestinationFilePath()));
-        finishPreparation(UpdateState::DownloadError);
+        failDownload();
         return;
     }
 
-    const auto partPath = partialDownloadPath(_appImagePath);
     if (!verifyChecksum(partPath, version)) {
         // The sidecar itself may be wrong: fetch it again at the next attempt.
         {
@@ -315,7 +378,7 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId, const std::string &ver
             _checksumVersion.clear();
             _expectedChecksum.clear();
         }
-        finishPreparation(UpdateState::DownloadError);
+        failDownload();
         return;
     }
 
@@ -327,7 +390,7 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId, const std::string &ver
                                  std::filesystem::perm_options::replace, ec);
     if (ec) {
         LOGW_WARN(logger(), L"Failed to make the AppImage executable: " << Utility::formatStdError(partPath, ec));
-        finishPreparation(UpdateState::DownloadError);
+        failDownload();
         return;
     }
 

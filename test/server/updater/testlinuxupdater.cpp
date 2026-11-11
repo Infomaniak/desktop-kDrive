@@ -41,4 +41,16 @@ void TestLinuxUpdater::testInstallTargetPath() {
     }
 }
 
+void TestLinuxUpdater::testHasEnoughSpace() {
+    constexpr std::streamsize appImageSize = 65 * 1000 * 1000;
+
+    CPPUNIT_ASSERT(LinuxUpdater::hasEnoughSpace(appImageSize, appImageSize));
+    CPPUNIT_ASSERT(LinuxUpdater::hasEnoughSpace(appImageSize, 10 * appImageSize));
+    CPPUNIT_ASSERT(!LinuxUpdater::hasEnoughSpace(appImageSize, appImageSize - 1));
+    CPPUNIT_ASSERT(!LinuxUpdater::hasEnoughSpace(appImageSize, 0));
+
+    // A size the server did not announce does not block the download.
+    CPPUNIT_ASSERT(LinuxUpdater::hasEnoughSpace(-1, 0));
+}
+
 } // namespace KDC
