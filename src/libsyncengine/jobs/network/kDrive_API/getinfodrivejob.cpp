@@ -82,7 +82,6 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     // Non DB attributes
-    MaintenanceInfo maintenanceInfo;
     if (const auto exitInfo = AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(_maintenanceInfo); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to read maintenance info");
     }
