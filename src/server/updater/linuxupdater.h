@@ -59,6 +59,7 @@ class LinuxUpdater final : public AbstractUpdater {
         void downloadFinished(UniqueId jobId, const std::string &version);
         void finishPreparation(UpdateState state);
         void installUpdate(const std::string &version);
+        static void updateDesktopEntries(const SyncPath &targetPath);
         [[nodiscard]] std::string expectedChecksum(const std::string &version) const;
         [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const std::string &version);
         [[nodiscard]] bool launchRelauncher(const SyncPath &targetPath) const;
