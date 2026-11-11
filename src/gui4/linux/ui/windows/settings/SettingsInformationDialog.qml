@@ -28,7 +28,8 @@ IKModal {
     property Item returnFocusItem: null
     title: about ? qsTrId("aboutKDrive") : "kDrive " + controller.releaseVersion
     escapeDismissible: true
-    preferredWidth: IKSettings.informationDialogWidth
+    // Wider for the release notes, so that fewer of their items wrap.
+    preferredWidth: about ? IKSettings.informationDialogWidth : IKSettings.releaseNotesDialogWidth
     initialFocusItem: closeButton
     onDismissRequested: close()
     onClosed: {
@@ -46,7 +47,11 @@ IKModal {
     bodyData: ScrollView {
         id: bodyScroll
         width: parent.width
-        implicitHeight: Math.min(bodyColumn.implicitHeight, Math.max(IKSettings.logoSize, (root.parent ? root.parent.height : IKSettings.windowHeight) - IKSettings.dialogChromeHeight))
+        // The overlay spans the transparent shadow margin: keep the dialog inside the visible window surface.
+        readonly property real visibleHeight: (root.parent ? root.parent.height : IKSettings.windowHeight) - 2 * root.scrimInset
+        implicitHeight: Math.min(bodyColumn.implicitHeight,
+                                 Math.max(IKSettings.logoSize,
+                                          visibleHeight - 2 * IKModalTokens.screenMargin - IKSettings.dialogChromeHeight))
         contentWidth: availableWidth
         clip: true
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
