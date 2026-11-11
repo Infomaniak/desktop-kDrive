@@ -186,7 +186,7 @@ void ExecutorWorker::execute() {
 
         // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
         if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
-            if (!bypassProgressComplete) setProgressComplete(syncOp->affectedFilePath(), syncOp, SyncFileStatus::Error);
+            if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
             continue;
         }
 
@@ -199,7 +199,7 @@ void ExecutorWorker::execute() {
             }
 
             // If the error is handled, continue the execution
-            if (!bypassProgressComplete) setProgressComplete(syncOp->affectedFilePath(), syncOp, SyncFileStatus::Error);
+            if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
             continue;
         }
 
@@ -212,12 +212,11 @@ void ExecutorWorker::execute() {
         } else {
             if (!bypassProgressComplete) {
                 if (ignored) {
-                    setProgressComplete(syncOp->affectedFilePath(), syncOp, SyncFileStatus::Ignored);
+                    setProgressComplete(syncOp, SyncFileStatus::Ignored);
                 } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
-                    setProgressComplete(syncOp->affectedFilePath(), syncOp, SyncFileStatus::Inconsistency);
+                    setProgressComplete(syncOp, SyncFileStatus::Inconsistency);
                 } else {
-                    setProgressComplete(syncOp->affectedFilePath(), syncOp,
-                                        hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
+                    setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
                 }
             }
         }
@@ -313,16 +312,13 @@ void ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     }
 }
 
-void ExecutorWorker::setProgressComplete(const SyncPath &relativePath, const SyncOpPtr syncOp, SyncFileStatus status,
-                                         const NodeId &newRemoteNodeId) {
-    assert(syncOp->affectedNode());
-    SyncPath relativeLocalFilePath = relativePath.empty() ? syncOp->affectedNode()->getPath() : relativePath;
-
+void ExecutorWorker::setProgressComplete(const SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId) {
     if (syncOp->hasConflict() && status == SyncFileStatus::Success &&
         (syncOp->conflict().type() == ConflictType::CreateCreate || syncOp->conflict().type() == ConflictType::EditEdit)) {
         status = SyncFileStatus::Conflict;
     }
 
+    SyncPath relativeLocalFilePath = syncOp->affectedFilePath();
     if (!_syncPal->setProgressComplete(relativeLocalFilePath, status, newRemoteNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgressComplete: " << Utility::formatSyncPath(relativeLocalFilePath));
     }
@@ -1383,18 +1379,18 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
             exitInfo = handleFinishedJob(job, syncOp, relativeLocalPath, ignored, bypassProgressComplete);
             if (exitInfo) {
                 if (!ignored && exitInfo.cause() == ExitCause::OperationCanceled) {
-                    setProgressComplete(job->affectedFilePath(), syncOp, SyncFileStatus::Error);
+                    setProgressComplete(syncOp, SyncFileStatus::Error);
                     exitInfo = ExitCode::Ok;
                 } else {
                     if (ignored) {
-                        setProgressComplete(job->affectedFilePath(), syncOp, SyncFileStatus::Ignored);
+                        setProgressComplete(syncOp, SyncFileStatus::Ignored);
                     } else if (syncOp->type() == OperationType::Create && syncOp->targetSide() == ReplicaSide::Remote) {
                         std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
                         NodeId newRemoteNodeId;
                         if (uploadJob) newRemoteNodeId = uploadJob->nodeId();
-                        setProgressComplete(job->affectedFilePath(), syncOp, SyncFileStatus::Success, newRemoteNodeId);
+                        setProgressComplete(syncOp, SyncFileStatus::Success, newRemoteNodeId);
                     } else {
-                        setProgressComplete(job->affectedFilePath(), syncOp, SyncFileStatus::Success);
+                        setProgressComplete(syncOp, SyncFileStatus::Success);
                     }
                 }
             } else {
