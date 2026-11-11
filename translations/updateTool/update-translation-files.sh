@@ -87,8 +87,11 @@ echo
 
 translation_files=`find "$translations_directory" -name "*\.ts" -type f`
 
+# Sources scanned by lupdate: src without gui4, whose frontends own their catalogs (Loco for Linux v4).
+source_paths=$(find "$sources_directory" -mindepth 1 -maxdepth 1 -type d ! -name gui4)
+
 for file in "$translation_files"; do
-    lupdate "$sources_directory" -ts $file -noobsolete
+    lupdate $source_paths -ts $file -noobsolete
 done
 
 echo
