@@ -32,6 +32,9 @@ namespace KDC {
 static const SyncPath defaultInvalidPath = ":\0/:\0"; // Invalid path for increased safety
 static const NodeId defaultInvalidNodeId = "-1"; // Invalid node id for increased safety
 
+class Node;
+using NodeByIdMap = std::unordered_map<NodeId, std::shared_ptr<Node>, StringHashFunction, std::equal_to<>>;
+
 class Node : public std::enable_shared_from_this<Node> {
     public:
         class MoveOriginInfos {
@@ -211,7 +214,7 @@ class Node : public std::enable_shared_from_this<Node> {
         std::optional<SyncTime> _lastModified = std::nullopt;
         int64_t _size = 0;
         NodeStatus _status = NodeStatus::Unprocessed; // node was already processed during reconciliation
-        std::unordered_map<NodeId, std::shared_ptr<Node>, StringHashFunction, std::equal_to<>> _childrenById;
+        NodeByIdMap _childrenById;
         std::shared_ptr<Node> _parentNode;
         // For moved items
         MoveOriginInfos _moveOriginInfos;

@@ -1331,46 +1331,52 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         }
 
         // If node is temporary and merged with a permanent node, its children will be moved to the permanent node, so we need to
-        // copy them before merging
-        const auto children = node->children();
-
-        auto queueChildren = [&nodeQueue, &children]() {
+        // copy them before merging.
+        auto queueChildren = [&nodeQueue](const NodeByIdMap &children) {
             for (const auto &[_, child]: children) {
                 nodeQueue.push(child);
             }
         };
 
-        std::shared_ptr<Node> mergedNode = nullptr;
+        // Get the children of the node before possibly merging it.
+        const auto children = node->children();
+
         if (node->isTmp()) {
-            // Merge the node with a permanent one if possible
-            if (const auto exitCode = tryToMergeTmpNode(node, mergedNode); exitCode != ExitCode::Ok) {
+            // Merge the node with a permanent one if possible.
+            std::shared_ptr<Node> permanentNode = nullptr;
+            if (const auto exitCode = tryToMergeTmpNode(node, permanentNode); exitCode != ExitCode::Ok) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::tryToMergeTmpNode for node "
                                                    << Utility::formatSyncName(node->name()));
                 return exitCode;
             }
 
-            if (mergedNode) {
-                assert(node.use_count() == 1);
-                if (visitedNodes.contains(mergedNode)) {
-                    // If the merged node has already been visited, we need to queue its new children
-                    queueChildren();
+            if (permanentNode) {
+                assert(node.use_count() == 1); // The node does not exist anymore in the tree.
+                if (visitedNodes.contains(permanentNode)) {
+                    // If the permanent node has already been visited, we need to queue the new children.
+                    queueChildren(children);
                 }
                 continue;
             }
         }
 
-        queueChildren();
-        (void) visitedNodes.insert(node);
-
-        // update myself
-        // if it's a Create we don't have node's database data
+        // Update the node with DB data if it exists in the database. For a Create operation there is no data in DB.
+        bool childrenMerged = false;
         if (!node->hasChangeEvent(OperationType::Create)) {
-            // if node is temporary node
             if (node->isTmp()) {
-                if (const auto exitCode = updateTmpNode(node); exitCode != ExitCode::Ok) {
+                std::shared_ptr<Node> mergedNode = nullptr;
+                if (const auto exitCode = updateTmpNode(node, mergedNode); exitCode != ExitCode::Ok) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateTmpNode for node "
                                                        << Utility::formatSyncName(node->name()));
                     return exitCode;
+                }
+
+                if (mergedNode) {
+                    if (visitedNodes.contains(mergedNode)) {
+                        // If the merged node has already been visited, we need to queue the new children
+                        queueChildren(children);
+                        childrenMerged = true;
+                    }
                 }
             }
 
@@ -1417,6 +1423,12 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 node->setSize(dbNode.size());
             }
         }
+
+        if (!childrenMerged) {
+            queueChildren(node->children());
+        }
+
+        (void) visitedNodes.insert(node);
     }
 
     return ExitCode::Ok;
@@ -1440,11 +1452,11 @@ ExitCode UpdateTreeWorker::mergeNodeToParentChildren(std::shared_ptr<Node> paren
     return ExitCode::Ok;
 }
 
-ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &mergedNode) {
+ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &permanentNode) {
     assert(tmpNode);
     assert(tmpNode->parentNode());
 
-    mergedNode = nullptr;
+    permanentNode = nullptr;
 
     for (const auto &[_, brotherNode]: tmpNode->parentNode()->children()) {
         if (brotherNode == tmpNode || brotherNode->isTmp() || brotherNode->hasChangeEvent(OperationType::Delete)) continue;
@@ -1467,7 +1479,7 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
             }
 
             tmpNode->detach();
-            mergedNode = brotherNode;
+            permanentNode = brotherNode;
             break;
         }
     }
@@ -1475,7 +1487,11 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
     return ExitCode::Ok;
 }
 
-ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
+ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &mergedNode) {
+    assert(tmpNode);
+
+    mergedNode = nullptr;
+
     SyncPath dbPath;
     // If it's a move, we need the previous path to be able to retrieve database data from path
     if (const auto exitCode = getOriginPath(tmpNode, dbPath); exitCode != ExitCode::Ok) {
@@ -1537,6 +1553,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
             }
 
             prevNode->detach();
+            mergedNode = prevNode;
         }
     }
 

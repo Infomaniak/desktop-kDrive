@@ -186,8 +186,7 @@ void ExecutorWorker::execute() {
 
         // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
         if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
-            if (!bypassProgressComplete)
-                setProgressComplete(job ? job->affectedFilePath() : SyncPath{}, syncOp, SyncFileStatus::Error);
+            if (!bypassProgressComplete) setProgressComplete(syncOp->affectedFilePath(), syncOp, SyncFileStatus::Error);
             continue;
         }
 
@@ -200,8 +199,7 @@ void ExecutorWorker::execute() {
             }
 
             // If the error is handled, continue the execution
-            if (!bypassProgressComplete)
-                setProgressComplete(job ? job->affectedFilePath() : SyncPath{}, syncOp, SyncFileStatus::Error);
+            if (!bypassProgressComplete) setProgressComplete(syncOp->affectedFilePath(), syncOp, SyncFileStatus::Error);
             continue;
         }
 
@@ -214,11 +212,12 @@ void ExecutorWorker::execute() {
         } else {
             if (!bypassProgressComplete) {
                 if (ignored) {
-                    setProgressComplete(SyncPath{}, syncOp, SyncFileStatus::Ignored);
+                    setProgressComplete(syncOp->affectedFilePath(), syncOp, SyncFileStatus::Ignored);
                 } else if (syncOp->affectedNode() && syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
-                    setProgressComplete(SyncPath{}, syncOp, SyncFileStatus::Inconsistency);
+                    setProgressComplete(syncOp->affectedFilePath(), syncOp, SyncFileStatus::Inconsistency);
                 } else {
-                    setProgressComplete(SyncPath{}, syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
+                    setProgressComplete(syncOp->affectedFilePath(), syncOp,
+                                        hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
                 }
             }
         }
@@ -1465,6 +1464,8 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
     ignored = false;
     bypassProgressComplete = false;
 
+    syncOp->setAffectedFilePath(relativeLocalPath);
+
     NodeId localNodeId;
     NodeId remoteNodeId;
     getNodeIdsFromOp(syncOp, localNodeId, remoteNodeId);
@@ -2353,6 +2354,11 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(const SyncOpPtr syncOp, cons
                   ConflictType::None, InconsistencyType::None, CancelType::None, "", opsExitInfo.code(), opsExitInfo.cause());
     _syncPal->addError(error);
 
+    if (auto exitInfo = removeDependentOps(syncOp); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::removeDependentOps");
+        return exitInfo;
+    }
+
     // Clear update tree
     if (!deleteOpNodes(syncOp)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
@@ -2360,7 +2366,8 @@ ExitInfo ExecutorWorker::handleOpsAlreadyExistError(const SyncOpPtr syncOp, cons
     }
 
     _syncPal->setRestart(true);
-    return removeDependentOps(syncOp);
+
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::removeDependentOps(const SyncOpPtr syncOp) {
