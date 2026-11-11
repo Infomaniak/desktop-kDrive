@@ -947,6 +947,11 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &newPar
     // Propagate distribution channel change
     setDistributionChannel(updatedParameters.distributionChannel());
 
+    // Propagate automatic updates activation
+    if (!previousParameters.automaticUpdates() && updatedParameters.automaticUpdates() && !_noUpdate && _updateManager) {
+        _updateManager->onAutomaticUpdatesEnabled();
+    }
+
     return exitCode;
 }
 
