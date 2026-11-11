@@ -1431,18 +1431,16 @@ ExitInfo ExecutorWorker::handleManagedBackError(const ExitInfo &jobExitInfo, con
 
     Error error;
     if (invalidName) {
-        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
-                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::ForbiddenChar);
+        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(), syncOp->affectedFilePath(),
+                      ConflictType::None, InconsistencyType::ForbiddenChar);
     }
 
     if (jobExitInfo.cause() == ExitCause::InvalidLinkTarget) {
-        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
-                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None,
-                      CancelType::InvalidLinkTarget);
+        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(), syncOp->affectedFilePath(),
+                      ConflictType::None, InconsistencyType::None, CancelType::InvalidLinkTarget);
     } else if (jobExitInfo.cause() != ExitCause::NotFound) {
-        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
-                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None, "",
-                      jobExitInfo.code(), jobExitInfo.cause());
+        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(), syncOp->affectedFilePath(),
+                      ConflictType::None, InconsistencyType::None, CancelType::None, "", jobExitInfo.code(), jobExitInfo.cause());
     }
     _syncPal->addError(error);
 
