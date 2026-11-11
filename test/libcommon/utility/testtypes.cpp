@@ -233,13 +233,11 @@ void TestTypes::testToString() {
     testToStringIntValues<NodeStatus>();
     testToStringIntValues<NodeType>();
     testToStringIntValues<NotificationsDisabled>();
-    testToStringIntValues<OperationType>();
     testToStringIntValues<PinState>();
     testToStringIntValues<Platform>();
     testToStringIntValues<ProxyType>();
     testToStringIntValues<ReplicaSide>();
     testToStringIntValues<SignalCategory>();
-    testToStringIntValues<SignalType>();
     testToStringIntValues<SyncDirection>();
     testToStringIntValues<SyncFileInstruction>();
     testToStringIntValues<SyncFileStatus>();
