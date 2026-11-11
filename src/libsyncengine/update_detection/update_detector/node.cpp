@@ -98,7 +98,7 @@ bool Node::moveTo(std::shared_ptr<Node> parentNode) {
             return false;
         }
 
-        if (!isParentValid(parentNode)) {
+        if (parentNode.get() == this || !isParentValid(parentNode)) {
             LOGW_WARN(Log::instance()->getLogger(), L"The parent is the node or one of its descendants: "
                                                             << Node::formatNodeWithParent(shared_from_this(), parentNode));
             assert(false);

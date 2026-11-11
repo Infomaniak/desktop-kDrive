@@ -1371,12 +1371,10 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                     return exitCode;
                 }
 
-                if (mergedNode) {
-                    if (visitedNodes.contains(mergedNode)) {
-                        // If the merged node has already been visited, we need to queue the new children
-                        queueChildren(children);
-                        childrenMerged = true;
-                    }
+                if (mergedNode && visitedNodes.contains(mergedNode)) {
+                    // If the merged node has already been visited, we need to queue the new children
+                    queueChildren(children);
+                    childrenMerged = true;
                 }
             }
 

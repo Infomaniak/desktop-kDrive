@@ -264,6 +264,9 @@ void ExecutorWorker::initProgressManager() {
         }
 
         initSyncFileItem(syncOp, syncItem);
+
+        syncOp->setAffectedFilePath(syncItem.newPath().value_or(syncItem.path()));
+
         if (!_syncPal->initProgress(syncItem)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::initProgress: id=" << syncOpId);
         }
@@ -1463,8 +1466,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
                                            bool &ignored, bool &bypassProgressComplete) {
     ignored = false;
     bypassProgressComplete = false;
-
-    syncOp->setAffectedFilePath(relativeLocalPath);
 
     NodeId localNodeId;
     NodeId remoteNodeId;
