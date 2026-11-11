@@ -227,8 +227,13 @@ struct COMMON_EXPORT CommonUtility {
         // Sets the working directory path and configures GIO_MODULE_DIR to prevent loading incompatible system GIO modules.
         static void initAppImageEnvironment();
 
-        /** Path of the running AppImage (`$APPIMAGE`), empty outside an AppImage. */
+        /**
+         * Path of the AppImage to launch: the one set by `setAppImagePath()` once an update replaced the running file,
+         * `$APPIMAGE` otherwise. Empty outside an AppImage.
+         */
         static SyncPath appImagePath();
+        /** Records the AppImage that replaced the running one, which `$APPIMAGE` still names until the next start. */
+        static void setAppImagePath(const SyncPath &path);
 
         /**
          * Whether the running AppImage can be updated in place, the condition shared by the server updater and the

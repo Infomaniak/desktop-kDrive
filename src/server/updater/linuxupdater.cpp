@@ -432,6 +432,8 @@ void LinuxUpdater::installUpdate(const std::string &version) {
         } else if (ec) {
             LOGW_WARN(logger(), L"Failed to remove the previous AppImage: " << Utility::formatStdError(_appImagePath, ec));
         }
+        // `$APPIMAGE` still names the removed file: later writes of the autostart entry use the installed one.
+        CommonUtility::setAppImagePath(targetPath);
         updateDesktopEntries(targetPath);
     }
 
