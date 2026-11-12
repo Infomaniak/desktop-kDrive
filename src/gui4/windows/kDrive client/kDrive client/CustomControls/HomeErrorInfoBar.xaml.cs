@@ -79,6 +79,7 @@ namespace Infomaniak.kDrive.CustomControls
     public class HomeErrorInfoBarViewModel : UISafeObservableObject, IDisposable
     {
         private bool _showDriveFullError = false;
+        private bool _isOpen = false;
         private bool _showTmpDirAccessError = false;
         private IDisposable? _appErrorsSubscriptions;
         private IDisposable? _selectedSyncErrorsSubscriptions;
@@ -134,6 +135,11 @@ namespace Infomaniak.kDrive.CustomControls
                 Refresh();
         }
 
+        public bool IsOpen
+        {
+            get => _isOpen;
+            set => SetPropertyInUIThread(ref _isOpen, value);
+        }
         public bool ShowDriveFullError
         {
             get => _showDriveFullError;
@@ -195,6 +201,7 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 HideAll();
             }
+            IsOpen = ShowDriveFullError || ShowTmpDirAccessError;
         }
 
         private bool HasTmpDirAccessError()

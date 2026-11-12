@@ -37,6 +37,7 @@ class PackInfo {
         void setDisplayName(const std::string_view displayName) { _displayName = displayName; }
         [[nodiscard]] bool isFree() const { return _isFree; }
         void setIsFree(const bool isFree) { _isFree = isFree; }
+        [[nodiscard]] UpsellTarget upsellTarget() const;
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);

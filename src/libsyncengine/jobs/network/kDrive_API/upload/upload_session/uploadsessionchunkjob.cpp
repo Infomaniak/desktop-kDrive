@@ -18,6 +18,7 @@
 
 #include "uploadsessionchunkjob.h"
 #include "libcommonserver/utility/utility.h"
+#include "utility/urlhelper.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -56,6 +57,7 @@ std::string UploadSessionChunkJob::getSpecificUrl() {
 }
 
 std::string UploadSessionChunkJob::getUrl() {
+    if (_sessionInfo.url.empty()) return UrlHelper::kDriveApiUrl(_apiVersion) + getSpecificUrl();
     return _sessionInfo.url + "/" + std::to_string(_apiVersion) + getSpecificUrl();
 }
 

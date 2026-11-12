@@ -1797,10 +1797,7 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
         return exception2ExitCode(e);
     }
 
-    const auto exitInfo = job->runSynchronously();
-    const bool knownMaintenanceMode = exitInfo.cause() == ExitCause::DriveNotRenew ||
-                                      exitInfo.cause() == ExitCause::DriveAsleep || exitInfo.cause() == ExitCause::DriveWakingUp;
-    if (!exitInfo && !knownMaintenanceMode) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
         return exitInfo;
     }
@@ -1814,7 +1811,7 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
     }
     if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
-        return exitInfo;
+        return ExitCode::BackError;
     }
 
     if (drive.name() != job->name()) {
@@ -1843,11 +1840,18 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
     }
 
     // Non DB attributes
-    drive.setLocked(job->isLocked());
-    drive.setAccessDenied(false);
-    drive.setMaintenanceInfo(MaintenanceInfo(job->isInMaintenance(), job->exitInfo().cause() == ExitCause::DriveNotRenew,
-                                             job->exitInfo().cause() == ExitCause::DriveAsleep,
-                                             job->exitInfo().cause() == ExitCause::DriveWakingUp, job->maintenanceFrom()));
+    if (drive.locked() != job->isLocked()) {
+        drive.setLocked(job->isLocked());
+    }
+
+    if (drive.accessDenied()) {
+        drive.setAccessDenied(false);
+    }
+
+    if (drive.maintenanceInfo() != job->maintenanceInfo()) {
+        drive.setMaintenanceInfo(job->maintenanceInfo());
+        updated = true;
+    }
 
     if (drive.usedSize() != job->usedSize()) {
         drive.setUsedSize(job->usedSize());

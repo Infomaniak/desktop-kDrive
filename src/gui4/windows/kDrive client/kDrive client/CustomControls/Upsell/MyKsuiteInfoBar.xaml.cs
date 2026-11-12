@@ -15,16 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using Microsoft.UI.Xaml;
+using Infomaniak.kDrive.Analytics;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
+using System;
 
-namespace Infomaniak.kDrive.CustomControls
+namespace Infomaniak.kDrive.CustomControls.Upsell
 {
-    public sealed partial class KSuiteUpgradeBar : UserControl
+    public sealed partial class MyKsuiteInfoBar : UserControl
     {
-        public KSuiteUpgradeBar()
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
+        public MyKsuiteInfoBar()
         {
             InitializeComponent();
+        }
+
+        private async void Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            _analyticsService.TrackClick(Analytics.Keys.Category.Upsell, Analytics.Keys.EventName.myKsuitePlus);
+            await Localizer.Instance.TryLaunchUriAsync("mykSuiteUpsellLink");
         }
     }
 }

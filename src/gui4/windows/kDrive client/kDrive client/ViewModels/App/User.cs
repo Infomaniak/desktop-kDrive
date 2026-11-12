@@ -111,7 +111,12 @@ namespace Infomaniak.kDrive.ViewModels
         public bool IsConnected
         {
             get => _isConnected;
-            set => SetPropertyInUIThread(ref _isConnected, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _isConnected, value))
+                    foreach (var drive in Drives)
+                        drive.RefreshSyncsErrorState();
+            }
         }
 
         public bool IsStaff

@@ -566,7 +566,13 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) driveInfoObj1.set("dbId", 1);
     (void) driveInfoObj1.set("id", 1111);
     (void) driveInfoObj1.set("locked", false);
-    (void) driveInfoObj1.set("maintenance", false);
+    Poco::JSON::Object maintenanceObj1;
+    (void) maintenanceObj1.set("asleep", false);
+    (void) maintenanceObj1.set("from", 0);
+    (void) maintenanceObj1.set("inMaintenance", false);
+    (void) maintenanceObj1.set("notRenew", false);
+    (void) maintenanceObj1.set("wakingUp", false);
+    (void) driveInfoObj1.set("maintenance", maintenanceObj1);
     (void) driveInfoObj1.set("name", toBase64(Str("drive1111")));
     (void) driveInfoObj1.set("notifications", true);
     (void) driveInfoObj1.set("size", 1000000000);
@@ -576,6 +582,7 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) packInfoObj1.set("name", toBase64(Str("pack_free")));
     (void) packInfoObj1.set("displayName", toBase64(Str("PackFree")));
     (void) packInfoObj1.set("isFree", true);
+    (void) packInfoObj1.set("upsellTarget", toInt(UpsellTarget::MykSuitePlus));
     (void) driveInfoObj1.set("packInfo", packInfoObj1);
 
     Poco::JSON::Object driveInfoObj2;
@@ -586,7 +593,13 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) driveInfoObj2.set("dbId", 2);
     (void) driveInfoObj2.set("id", 2222);
     (void) driveInfoObj2.set("locked", true);
-    (void) driveInfoObj2.set("maintenance", true);
+    Poco::JSON::Object maintenanceObj2;
+    (void) maintenanceObj2.set("asleep", false);
+    (void) maintenanceObj2.set("from", 0);
+    (void) maintenanceObj2.set("inMaintenance", true);
+    (void) maintenanceObj2.set("notRenew", false);
+    (void) maintenanceObj2.set("wakingUp", false);
+    (void) driveInfoObj2.set("maintenance", maintenanceObj2);
     (void) driveInfoObj2.set("name", toBase64(Str("drive2222")));
     (void) driveInfoObj2.set("notifications", false);
     (void) driveInfoObj2.set("size", 2000000000);
@@ -596,6 +609,7 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) packInfoObj2.set("name", toBase64(Str("pack_pro")));
     (void) packInfoObj2.set("displayName", toBase64(Str("PackPro")));
     (void) packInfoObj2.set("isFree", false);
+    (void) packInfoObj2.set("upsellTarget", toInt(UpsellTarget::None));
     (void) driveInfoObj2.set("packInfo", packInfoObj2);
 
     Poco::JSON::Array driveInfoObjList;
