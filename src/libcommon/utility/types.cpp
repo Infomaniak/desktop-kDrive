@@ -1086,8 +1086,8 @@ std::string toString(const UpsellTarget e) {
             return "None";
         case UpsellTarget::MykSuiteToMykSuitePlus:
             return "MykSuiteToMykSuitePlus";
-        case UpsellTarget::StandAloneSoloToMykSuitePlus:
-            return "StandAloneSoloToMykSuitePlus";
+        case UpsellTarget::StandAloneToMykSuitePlus:
+            return "StandAloneToMykSuitePlus";
         case UpsellTarget::kSuiteTokSuitePro:
             return "kSuiteTokSuitePro";
         case UpsellTarget::StandAloneTokSuitePro:
