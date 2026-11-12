@@ -35,6 +35,9 @@ class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
     protected:
         SessionInfo _sessionInfo;
         SyncPath _absoluteFilePath;
+
+    private:
+        void setApiVersion(UploadSessionType uploadType);
 };
 
 } // namespace KDC
