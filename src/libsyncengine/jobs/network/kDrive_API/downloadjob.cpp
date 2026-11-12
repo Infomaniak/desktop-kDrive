@@ -560,7 +560,7 @@ ExitInfo DownloadJob::moveTmpFile() {
 #else
             return {ExitCode::SystemError, ExitCause::FileAccessError};
 #endif
-            } else if (ioError == IoError::MoveThroughSymlink) {
+            } else if (ioError == IoError::PathContainsSymlink) {
                 return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
             } else {
                 bool exists = false;

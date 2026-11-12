@@ -160,7 +160,7 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
     auto traversesLink = false;
     SyncPath linkPath;
     if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, traversesLink, linkPath);
-        ioError != IoError::Success) {
+        ioError != IoError::Success && !traversesLink) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
         localProperties.isAvailableLocally = false;
         localProperties.isHydrated = false;

@@ -94,7 +94,8 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
 }
 
 bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+    ioError = IoHelper::checkIfPathTraversesLink(aliasPath);
+    if (ioError != IoError::Success) return false;
 
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
@@ -187,7 +188,8 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
 }
 
 bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+    ioError = IoHelper::checkIfPathTraversesLink(aliasPath);
+    if (ioError != IoError::Success) return false;
 
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);

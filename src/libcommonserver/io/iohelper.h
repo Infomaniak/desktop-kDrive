@@ -213,6 +213,7 @@ struct IoHelper {
           whether a followed link is found; use traversesLink to know whether one was found.
          */
         static IoError checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept;
+        static IoError checkIfPathTraversesLink(const SyncPath &path) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!

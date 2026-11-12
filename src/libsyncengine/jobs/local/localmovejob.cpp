@@ -86,7 +86,7 @@ ExitInfo LocalMoveJob::runJob() {
 
     if (const auto ioError = IoHelper::moveItem(_source, _dest); ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::moveItem: " << Utility::formatIoError(_source, ioError));
-        if (ioError == IoError::MoveThroughSymlink) {
+        if (ioError == IoError::PathContainsSymlink) {
             return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
         }
         // We consider this as a permission denied error
