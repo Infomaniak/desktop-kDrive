@@ -94,6 +94,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/syncerroractionhandler.h
         app/mainwindow/syncerrorexplanationcontroller.cpp
         app/mainwindow/syncerrorexplanationcontroller.h
+        app/mainwindow/syncprogressstate.cpp
+        app/mainwindow/syncprogressstate.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/activitiesnavigation.cpp
@@ -313,6 +315,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
+        ui/windows/main/SyncProgressText.qml
         ui/windows/main/storage/StorageActionCard.qml
         ui/windows/main/storage/StorageErrorState.qml
         ui/windows/main/storage/StorageLegendEntry.qml

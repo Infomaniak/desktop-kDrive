@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/mainwindow/syncprogressstate.h"
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 
@@ -59,6 +60,7 @@ class HomeController final : public QObject {
         Q_PROPERTY(bool hasCurrentDrive READ hasCurrentDrive NOTIFY homeChanged)
         Q_PROPERTY(bool hasConnectedUser READ hasConnectedUser NOTIFY homeChanged)
         Q_PROPERTY(bool showV4Onboarding READ showV4Onboarding NOTIFY v4OnboardingChanged)
+        Q_PROPERTY(SyncProgressState *syncProgress READ syncProgress CONSTANT)
 
     public:
         enum class HomeStatus : uint8_t {
@@ -91,7 +93,7 @@ class HomeController final : public QObject {
         explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
                                 const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
                                 NetworkStatusObserver &networkStatusObserver, CommService &commService,
-                                QObject *parent = nullptr);
+                                SyncProgressState &syncProgress, QObject *parent = nullptr);
 
         [[nodiscard]] HomeStatus status() const;
         [[nodiscard]] PrimaryAction primaryAction() const;
@@ -105,6 +107,7 @@ class HomeController final : public QObject {
         [[nodiscard]] int32_t errorCount() const;
         [[nodiscard]] bool hasCurrentDrive() const;
         [[nodiscard]] bool hasConnectedUser() const;
+        [[nodiscard]] SyncProgressState *syncProgress() { return &_syncProgress; }
 
         /** Whether the "new kDrive app" banner is shown: the server sets it once, when the app comes from a version before 4. */
         [[nodiscard]] bool showV4Onboarding() const;
@@ -144,6 +147,7 @@ class HomeController final : public QObject {
         AppRouter &_appRouter;
         NetworkStatusObserver &_networkStatusObserver;
         CommService &_commService;
+        SyncProgressState &_syncProgress;
         bool _showV4Onboarding{false};
 };
 

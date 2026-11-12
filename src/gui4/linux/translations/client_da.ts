@@ -2480,6 +2480,22 @@ En internetforbindelse er nødvendig for at få adgang til dem.</translation>
             <source>Sync is running</source> 
             <translation>Synkronisering kører</translation> 
         </message> 
+        <message id="syncStatusAnalysing"> 
+            <source>Searching for changes…</source> 
+            <translation>Søgning efter ændringer…</translation> 
+        </message> 
+        <message id="syncStatusExploring"> 
+            <source>Scanning files to synchronize…</source> 
+            <translation>Gennemgår filer, der skal synkroniseres…</translation> 
+        </message> 
+        <message id="syncStatusPropagating"> 
+            <source>%1 item synchronized out of %2…</source> 
+            <translation>%1 ud af %2 elementer synkroniseret…</translation> 
+        </message> 
+        <message id="syncStatusPropagating-plural"> 
+            <source>%1 items synchronized out of %2…</source> 
+            <translation>%1 ud af %2 elementer synkroniseret…</translation> 
+        </message> 
         <message id="syncSuccessTooltip"> 
             <source>Synced</source> 
             <translation>Synkroniseret</translation> 
@@ -2503,10 +2519,6 @@ En internetforbindelse er nødvendig for at få adgang til dem.</translation>
         <message id="synchroPaused"> 
             <source>synchronization is paused</source> 
             <translation>synkroniseringen er sat på pause</translation> 
-        </message> 
-        <message id="synchroStatusInProgressDescription"> 
-            <source>Your recent files are being updated.</source> 
-            <translation>Dine seneste filer opdateres.</translation> 
         </message> 
         <message id="synchroStatusInProgressTitle"> 
             <source>Sync in progress</source> 
