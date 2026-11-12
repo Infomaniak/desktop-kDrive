@@ -190,7 +190,7 @@ bool SelfSignedCert::generate(Pem &pem, bool isClientCert) {
              "Generating self-signed " << (isClientCert ? "client" : "server") << " certificate/key pair for local TLS IPC");
     try {
         // Generation of an asymmetric key pair.
-        UniqueEvpPkey pkey(EVP_PKEY_Q_keygen(nullptr, nullptr, "RSA", (size_t) 2048));
+        UniqueEvpPkey pkey(EVP_PKEY_Q_keygen(nullptr, nullptr, "RSA", 2048));
         if (!pkey) {
             LOG_ERROR(Log::instance()->getLogger(), "EVP_PKEY_Q_keygen failed: " << sslError());
             return false;
@@ -223,7 +223,7 @@ bool SelfSignedCert::generate(Pem &pem, bool isClientCert) {
 
         // Export the pkey to a PEM BIO buffer
         using UniqueBio = std::unique_ptr<BIO, decltype(&BIO_free)>;
-        UniqueBio bio(BIO_new(BIO_s_mem()), BIO_free);
+        UniqueBio bio(BIO_new(BIO_s_mem()), &BIO_free);
         if (!bio || PEM_write_bio_PrivateKey(bio.get(), pkey.get(), nullptr, nullptr, 0, nullptr, nullptr) != 1) {
             LOG_ERROR(Log::instance()->getLogger(), "Private key export failed: " << sslError());
             return false;
@@ -236,7 +236,7 @@ bool SelfSignedCert::generate(Pem &pem, bool isClientCert) {
             LOG_ERROR(Log::instance()->getLogger(), "Private key export returned no data: " << sslError());
             return false;
         }
-        pem.key.assign(data, static_cast<size_t>(len));
+        (void) pem.key.assign(data, static_cast<size_t>(len));
 
         // Clear memory
         OPENSSL_cleanse(data, static_cast<size_t>(len));

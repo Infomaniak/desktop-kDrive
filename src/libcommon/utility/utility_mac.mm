@@ -185,6 +185,8 @@ ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
 
 bool CommonUtility::readPasswordFromKeychain(const std::string &serviceName, const std::string &keychainKey,
                                              std::string &password) {
+    password.clear();
+
     CFStringRef service = CFStringCreateWithCString(nullptr, serviceName.c_str(), kCFStringEncodingUTF8);
     CFStringRef account = CFStringCreateWithCString(nullptr, keychainKey.c_str(), kCFStringEncodingUTF8);
 

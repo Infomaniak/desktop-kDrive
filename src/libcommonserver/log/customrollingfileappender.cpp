@@ -163,7 +163,7 @@ static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex
         (void) log4cplus::file_remove(target);
 #endif
 
-        long ret = log4cplus::file_rename(source, target);
+        const auto ret = log4cplus::file_rename(source, target);
         log4cplus::loglog_renaming_result(*loglog, source, target, ret);
     }
 }
