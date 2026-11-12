@@ -83,7 +83,11 @@ public enum ObservableData {
                                                      accessDenied: false,
                                                      admin: true,
                                                      locked: false,
-                                                     maintenance: false,
+                                                     maintenance: DriveMaintenanceInfo(inMaintenance: false,
+                                                                                       notRenew: false,
+                                                                                       asleep: false,
+                                                                                       wakingUp: false,
+                                                                                       from: 0),
                                                      notifications: true)
 
     static let updatedDrive = Drive.some(driveDbId: expectedDriveDbId,
@@ -207,6 +211,25 @@ public enum ObservableData {
                                                inconsistencyType: KDC.InconsistencyType.None,
                                                destinationPath: "",
                                                autoResolved: false)
+
+    static let syncPalUpdateRequiredErrorDbId = expectedServerErrorDbId + 1
+    static let syncPalUpdateRequiredError = ErrorInfo(dbId: syncPalUpdateRequiredErrorDbId,
+                                                      synchroDbId: expectedSynchroDbId,
+                                                      time: Date().timeIntervalSince1970,
+                                                      level: KDC.ErrorLevel.SyncPal,
+                                                      functionName: "abstractnetworkjob.cpp",
+                                                      workerName: "RFSO",
+                                                      exitCode: KDC.ExitCode.UpdateRequired,
+                                                      exitCause: KDC.ExitCause.Unknown,
+                                                      localNodeId: "",
+                                                      remoteNodeId: "",
+                                                      nodeType: KDC.NodeType.Unknown,
+                                                      path: "",
+                                                      conflictType: KDC.ConflictType.None,
+                                                      cancelType: KDC.CancelType.None,
+                                                      inconsistencyType: KDC.InconsistencyType.None,
+                                                      destinationPath: "",
+                                                      autoResolved: false)
 
     static let expectedNodeLocalId = "node-123"
     static let expectedNodePath = "/Documents/test.txt"

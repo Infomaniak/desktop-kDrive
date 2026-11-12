@@ -25,6 +25,9 @@
     <Color x:Key="Infomaniak.DS.kSuite.Gradient.pink">#F34BBB</Color>
     <Color x:Key="Infomaniak.DS.kSuite.Gradient.orange">#FD8C3D</Color>
 
+    <!-- kSuite pro background -->
+    <Color x:Key="Infomaniak.DS.kSuite.Pro.Background">#222633</Color>
+
     <!--  status colors  -->
     <Color x:Key="Infomaniak.DS.colors.status.medium.success">#3EBF4D</Color>
     <Color x:Key="Infomaniak.DS.colors.status.medium.warning">#FF9D0A</Color>

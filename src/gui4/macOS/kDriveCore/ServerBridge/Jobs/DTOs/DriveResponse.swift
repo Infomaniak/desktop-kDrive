@@ -19,6 +19,14 @@
 import Foundation
 import OrderedCollections
 
+struct DriveMaintenanceInfo: Codable, Sendable {
+    let inMaintenance: Bool
+    let notRenew: Bool
+    let asleep: Bool
+    let wakingUp: Bool
+    let from: Int64
+}
+
 struct DriveListQuery: Codable, Sendable {
     let userDbId: Int32
 }
@@ -50,7 +58,7 @@ public struct DriveResponse: Codable, Sendable {
     let accessDenied: Bool
     let admin: Bool
     let locked: Bool
-    let maintenance: Bool
+    let maintenance: DriveMaintenanceInfo
     let notifications: Bool
 
     enum CodingKeys: String, CodingKey {
@@ -79,7 +87,7 @@ extension DriveResponse {
               accessDenied: accessDenied,
               admin: admin,
               locked: locked,
-              maintenance: maintenance,
+              maintenance: maintenance.inMaintenance,
               notifications: notifications,
               synchros: synchros)
     }

@@ -31,7 +31,8 @@
         LogginErrorPage,
         MaintenanceErrorPage,
         NotRenewErrorPage,
-        UpdateDialog
+        UpdateDialog,
+        Upsell
     }
 
     public enum EventName
@@ -160,6 +161,8 @@
         ManageTmpDirError,
         OpenRenewWeb,
         Displayed,
-        Ignore
+        Ignore,
+        myKsuitePlus,
+        kSuitePro
     }
 }

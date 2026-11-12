@@ -385,8 +385,19 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - Errors
 
+    private func isServerError(_ error: ErrorInfo) -> Bool {
+        // Treat any UpdateRequired error as a Server level error
+        return error.level == .Server || error.exitCode == .UpdateRequired
+    }
+
+    /// Returns true when a persisted UpdateRequired error is outstanding, used by the UI to restore
+    /// the blocking UpdateRequired view when navigating after the startup cache preload
+    public func hasUpdateRequiredError() -> Bool {
+        serverErrors.values.contains { $0.exitCode == .UpdateRequired }
+    }
+
     public func addOrUpdateError(_ error: ErrorInfo) async throws {
-        if error.level == .Server {
+        if isServerError(error) {
             try await addOrUpdateServerError(error)
             return
         }
@@ -402,7 +413,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     private func addOrUpdateServerError(_ error: ErrorInfo) async throws {
-        guard error.level == .Server else {
+        guard isServerError(error) else {
             throw logged(.notAServerError)
         }
 
@@ -415,7 +426,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         var skippedMissingSync = 0
 
         for error in errors {
-            if error.level == .Server {
+            if isServerError(error) {
                 try await addOrUpdateServerError(error)
             } else {
                 guard var synchro = getSynchro(synchroDbId: error.synchroDbId) else {

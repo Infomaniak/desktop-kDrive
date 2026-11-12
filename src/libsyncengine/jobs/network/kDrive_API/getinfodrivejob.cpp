@@ -51,7 +51,10 @@ ExitInfo GetInfoDriveJob::handleError(const std::string &replyBody, const Poco::
 }
 
 ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
+    if (const auto exitInfo = AbstractNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
+
+    // Check for maintenance error
+    if (!jsonRes()) return {ExitCode::BackError};
 
     Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
     if (!dataObj || dataObj->size() == 0) {
@@ -79,11 +82,9 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     // Non DB attributes
-    if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, _isInMaintenance))
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-
-    if (_isInMaintenance) // Not mandatory
-        (void) JsonParserUtility::extractValue(dataObj, maintenanceAtKey, _maintenanceFrom, false);
+    if (const auto exitInfo = AbstractTokenNetworkJob::extractMaintenaneInfoFromJsonResponse(_maintenanceInfo); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to read maintenance info");
+    }
 
     if (!JsonParserUtility::extractValue(dataObj, isLockedKey, _isLocked))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
