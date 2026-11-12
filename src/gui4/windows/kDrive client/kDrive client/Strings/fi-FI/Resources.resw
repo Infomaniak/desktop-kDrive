@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: fi, Finnish
   Tagged: windows
-  Exported by: Clément Kunz
-  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
+  Exported by: Herve Eruam
+  Exported at: Tue, 10 Nov 2026 10:09:15 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -455,6 +455,13 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</value>
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Päivitä</value> 
+  </data> 
+  <data name="buttonUpgradeSubscription" xml:space="preserve"> 
+    <value>Päivitä tilaukseni</value> 
+    <comment>Storage page, subscription card: link shown when the kDrive subscription storage is full, and tooltip and accessible name of the cart icon button otherwise. Opens the Infomaniak shop for the drive, admins only.</comment> 
+  </data> 
+  <data name="buttonUpgradeSubscriptionShort" xml:space="preserve"> 
+    <value>Kehittää</value> 
   </data> 
   <data name="buttonValidate" xml:space="preserve"> 
     <value>Vahvista</value> 
@@ -976,6 +983,12 @@ Se avautuu kDrive-verkkopalvelussa.</value>
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
   </data> 
+  <data name="kSuiteProUpsellLink" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/ksuite/ksuite-pro</value> 
+  </data> 
+  <data name="ksuiteProBannerDescription" xml:space="preserve"> 
+    <value>Luo ja tee yhteistyötä ilman rajoituksia</value> 
+  </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Käyttöoikeuksia muutettu</value> 
   </data> 
@@ -1349,6 +1362,9 @@ Näiden tietojen analysointi antaa tiimillemme mahdollisuuden jatkuvasti paranta
   <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
     <value>Joitakin kohteita ei ehkä voi siirtää.</value> 
   </data> 
+  <data name="myKsuiteUpsellLink" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/ksuite/myksuite</value> 
+  </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
     <value>Enemmän tallennustilaa, enemmän ominaisuuksia my kSuite+:n avulla</value> 
   </data> 
@@ -1578,11 +1594,23 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
     <value>Muut tietokoneella olevat tiedostot</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageComputerUsedByOtherSyncs" xml:space="preserve"> 
+    <value>kDrive-tiedostot muista synkronoinneista</value> 
+    <comment>Storage page, local disk card: legend row for the space used on the same disk by the other kDrive synchronizations of the computer.</comment> 
+  </data> 
+  <data name="storageDiskAlmostFullDescription" xml:space="preserve"> 
+    <value>Levysi on lähes täynnä. Poista tai siirrä henkilökohtaisia tiedostoja tältä levyltä, jotta voit jatkaa tietojesi synkronointia.</value> 
+    <comment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</comment> 
+  </data> 
   <data name="storageOnlineFree" xml:space="preserve"> 
     <value>Tilauksesi vapaa tallennustila</value> 
   </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Verkossa tallennetut kDrive-tiedostot</value> 
+  </data> 
+  <data name="storageSyncBlockDescription" xml:space="preserve"> 
+    <value>Hallitse synkronoituja kansioita vapauttaaksesi tilaa tietokoneeltasi.</value> 
+    <comment>Storage page: description of the Sync card (storageSyncBlockTitle), next to the titleManageSynchronization link. Computer variant of storageSyncBlockMacDescription.</comment> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Synkronointi</value> 
@@ -1629,16 +1657,16 @@ Internet-yhteys vaaditaan niiden käyttämiseen.</value>
     <value>Synkronointi on käynnissä</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Muutosten haku</value> 
+    <value>Muutosten haku…</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Tiedostojen valmistelu</value> 
+    <value>Käydään läpi synkronoitavia tiedostoja…</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@-elementti on synkronoitu %@:n kanssa</value> 
+    <value>%@/%@ kohdetta synkronoitu…</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ synkronoitua kohdetta %@:sta</value> 
+    <value>%@/%@ kohdetta synkronoitu…</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkronoitu</value> 

@@ -78,7 +78,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
         ExitInfo handleJsonResponse(
                 const std::string &replyBody) override; // TODO : this method should be private and called for every job.
-
+        ExitInfo extractMaintenaneInfoFromJsonResponse(MaintenanceInfo &maintenanceInfo);
         [[nodiscard]] UserId userId() const { return _userId; }
         [[nodiscard]] ApiType getApiType() const { return _apiType; }
 

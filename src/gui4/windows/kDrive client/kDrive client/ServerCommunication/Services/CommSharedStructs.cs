@@ -122,27 +122,36 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public class DriveInfo
     {
-        private System.Drawing.Color? _color;
         public DbId? DbId { get; set; }
         public DbId? AccountDbId { get; set; }
         public DriveId? Id { get; set; }
         public string? Name { get; set; }
         public bool? IsFree { get; set; }
-        public System.Drawing.Color? Color
-        {
-            get => _color;
-            set
-            {
-                _color = value;
-                Logger.LogInfo($"DriveInfo color for {Name} is {_color}");
-            }
-        }
-
+        public System.Drawing.Color? Color { get; set; }
         public bool? Admin { get; set; }
-
         public System.Int64 Size { get; set; }
         public System.Int64 UsedSize { get; set; }
+        public MaintenanceInfo? Maintenance { get; set; }
+        public PackInfo? PackInfo { get; set; }
     }
+
+    public class MaintenanceInfo
+    {
+        public bool? Asleep { get; set; }
+        public bool? InMaintenance { get; set; }
+        public bool? NotRenew { get; set; }
+        public bool? WakingUp { get; set; }
+    }
+    public class PackInfo
+    {
+        public string? DisplayName { get; set; }
+        public string? Name { get; set; }
+
+        public UInt64? Id { get; set; }
+        public bool? IsFree { get; set; }
+        public UpsellTarget? UpsellTarget { get; set; }
+    }
+
     public static partial class ConversionHelper
     {
         public static void CopyToDrive(DriveInfo source, Drive target)
@@ -152,9 +161,26 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
             CopyProperty(source, target, nameof(source.Color), nameof(target.Color));
             CopyProperty(source, target, nameof(source.Admin), nameof(target.IsAdmin));
-            CopyProperty(source, target, nameof(source.IsFree), nameof(target.IsFreeOffer));
             CopyProperty(source, target, nameof(source.Size), nameof(target.Size));
             CopyProperty(source, target, nameof(source.UsedSize), nameof(target.UsedSize));
+
+            // MaintenanceInfo
+            if (source.Maintenance is not null)
+            {
+                CopyProperty(source.Maintenance, target, nameof(source.Maintenance.Asleep), nameof(target.IsAsleep));
+                CopyProperty(source.Maintenance, target, nameof(source.Maintenance.InMaintenance), nameof(target.IsInMaintenance));
+                CopyProperty(source.Maintenance, target, nameof(source.Maintenance.NotRenew), nameof(target.IsNotRenew));
+                CopyProperty(source.Maintenance, target, nameof(source.Maintenance.WakingUp), nameof(target.IsWakingUp));
+            }
+            // PackInfo
+            if (source.PackInfo is not null)
+            {
+                CopyProperty(source.PackInfo, target, nameof(source.PackInfo.DisplayName), nameof(target.PackDisplayName));
+                CopyProperty(source.PackInfo, target, nameof(source.PackInfo.Name), nameof(target.PackName));
+                CopyProperty(source.PackInfo, target, nameof(source.PackInfo.Id), nameof(target.PackId));
+                CopyProperty(source.PackInfo, target, nameof(source.PackInfo.IsFree), nameof(target.PackIsFree));
+                CopyProperty(source.PackInfo, target, nameof(source.PackInfo.UpsellTarget), nameof(target.PackUpsellTarget));
+            }
         }
     }
 

@@ -420,5 +420,11 @@ namespace Infomaniak.kDrive.Types
         Revert,
         EnumEnd
     };
+    public enum UpsellTarget
+    {
+        None,
+        myKsuitePlus,
+        KSuitePro
+    };
 
 }

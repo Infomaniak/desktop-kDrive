@@ -37,15 +37,22 @@ namespace Infomaniak.kDrive.ViewModels
         private DriveId _driveId = -1;
         private string _name = "";
         private Color _color = Color.Blue;
-        private bool _isFreeOffer = true; // Indicates if the drive is a free offer
         private readonly ObservableCollection<Sync> _syncs = [];
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
         private bool _isAdmin = false; // Indicates if the user is admin of this drive
         private System.Int64 _size = 0;
         private System.Int64 _usedSize = 0;
-
         private Account _account;
+        private bool _packIsFree = false;
+        private string _packName = "";
+        private string _packDisplayName = "";
+        private UInt64 _packId = 0;
+        private UpsellTarget _packUpsellTarget = UpsellTarget.None;
+        private bool _isAsleep = false;
+        private bool _isNotRenew = false;
+        private bool _isWakingUp = false;
+        private bool _isInMaintenance = false;
 
         // Drive UI properties
         private bool _displayRemoteSpaceWarning = false;
@@ -122,13 +129,6 @@ namespace Infomaniak.kDrive.ViewModels
             get => _isAdmin;
             set => SetPropertyInUIThread(ref _isAdmin, value);
         }
-
-        public bool IsFreeOffer
-        {
-            get => _isFreeOffer;
-            set => SetPropertyInUIThread(ref _isFreeOffer, value);
-        }
-
         public System.Int64 Size
         {
             get => _size;
@@ -139,6 +139,56 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _usedSize;
             set => SetPropertyInUIThread(ref _usedSize, value);
+        }
+
+        public bool PackIsFree
+        {
+            get => _packIsFree;
+            set => SetPropertyInUIThread(ref _packIsFree, value);
+        }
+        public string PackName
+        {
+            get => _packName;
+            set => SetPropertyInUIThread(ref _packName, value);
+        }
+        public string PackDisplayName
+        {
+            get => _packDisplayName;
+            set => SetPropertyInUIThread(ref _packDisplayName, value);
+        }
+        public UInt64 PackId
+        {
+            get => _packId;
+            set => SetPropertyInUIThread(ref _packId, value);
+        }
+        public UpsellTarget PackUpsellTarget
+        {
+            get => _packUpsellTarget;
+            set => SetPropertyInUIThread(ref _packUpsellTarget, value);
+        }
+
+        public bool IsAsleep
+        {
+            get => _isAsleep;
+            set { if (SetPropertyInUIThread(ref _isAsleep, value)) RefreshSyncsErrorState(); }
+        }
+
+        public bool IsNotRenew
+        {
+            get => _isNotRenew;
+            set { if (SetPropertyInUIThread(ref _isNotRenew, value)) RefreshSyncsErrorState(); }
+        }
+
+        public bool IsWakingUp
+        {
+            get => _isWakingUp;
+            set { if (SetPropertyInUIThread(ref _isWakingUp, value)) RefreshSyncsErrorState(); }
+        }
+
+        public bool IsInMaintenance
+        {
+            get => _isInMaintenance;
+            set { if (SetPropertyInUIThread(ref _isInMaintenance, value)) RefreshSyncsErrorState(); }
         }
 
         public ObservableCollection<Sync> Syncs
@@ -197,6 +247,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _account;
             set => SetPropertyInUIThread(ref _account, value);
+        }
+
+        public void RefreshSyncsErrorState()
+        {
+            foreach (var sync in _syncs)
+                _ = sync.RefreshErrorState();
         }
 
         public async Task<bool> RemoveSync(Sync sync, CancellationToken cancellationToken)
