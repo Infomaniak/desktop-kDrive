@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive
     {
         // ----------------------------------- Storage URLs -----------------------------------
         private static readonly Uri _downloadUrl = new("https://download.storage.infomaniak.com/drive/desktopclient");
-        public Uri ReleaseNoteUrl(string versionTag) => new($"{_downloadUrl}/kDrive-{versionTag}-win-{BestLanguageCodeFor(LangueCodeContext.Storage)}.html");
+        public Uri ReleaseNoteUrl(string versionTag) => new(_downloadUrl, $"kDrive-{versionTag}-win-{BestLanguageCodeFor(LangueCodeContext.Storage)}.html");
 
 
         // ----------------------------------- Login URLs -----------------------------------
@@ -80,23 +80,23 @@ namespace Infomaniak.kDrive
             _ => _shopDomainUri
         };
 
-        private Uri StandAloneDriveToKSuiteMigrationUrl(DriveId driveId) => new($"{_shopDomainUri}/order/ksuite?migration=drive&drive_id={driveId}&lang={BestLanguageCodeFor(LangueCodeContext.InfomaniakSite)}");
-        private Uri KSuiteUpsellUrl(KSuiteId kSuiteId) => new($"{_shopDomainUri}/order2/ksuite/{kSuiteId}");
-        private Uri MyKSuiteUpsellUrl() => new($"{_shopDomainUri}/order/myksuite");
+        private Uri StandAloneDriveToKSuiteMigrationUrl(DriveId driveId) => new(_shopDomainUri, $"order/ksuite?migration=drive&drive_id={driveId}&lang={BestLanguageCodeFor(LangueCodeContext.InfomaniakSite)}");
+        private Uri KSuiteUpsellUrl(KSuiteId kSuiteId) => new(_shopDomainUri, $"order2/ksuite/{kSuiteId}");
+        private Uri MyKSuiteUpsellUrl() => new(_shopDomainUri, $"order/myksuite");
 
         // ----------------------------------- Github URLs -----------------------------------
         private static readonly Uri _githubRepoUrl = new("https://github.com/Infomaniak/desktop-kDrive");
         public Uri GithubRepoUrl() => _githubRepoUrl;
-        public Uri GithubLicenseUrl() => new($"{_githubRepoUrl}?tab=GPL-3.0-1-ov-file");
+        public Uri GithubLicenseUrl() => new(_githubRepoUrl, "?tab=GPL-3.0-1-ov-file");
 
 
         // ----------------------------------- WebApp URLs -----------------------------------
         private static readonly Uri _kDriveWebAppUrl = new("https://ksuite.infomaniak.com/kdrive/app/drive");
-        public Uri WebAppHomeUrl(DriveId driveId) => new($"{_kDriveWebAppUrl}/{driveId}");
-        public Uri WebAppTrashUrl(DriveId driveId) => new($"{_kDriveWebAppUrl}/{driveId}/trash");
-        public Uri WebAppFavoritesUrl(DriveId driveId) => new($"{_kDriveWebAppUrl}/{driveId}/favorites");
-        public Uri WebAppSharedUrl(DriveId driveId) => new($"{_kDriveWebAppUrl}/{driveId}/shared-with-me");
-        public Uri WebAppItemUrl(DriveId driveId, NodeId nodeId) => new($"{_kDriveWebAppUrl}/{driveId}/redirect/{nodeId}");
+        public Uri WebAppHomeUrl(DriveId driveId) => new(_kDriveWebAppUrl, $"{driveId}");
+        public Uri WebAppTrashUrl(DriveId driveId) => new(_kDriveWebAppUrl, $"{driveId}/trash");
+        public Uri WebAppFavoritesUrl(DriveId driveId) => new(_kDriveWebAppUrl, $"{driveId}/favorites");
+        public Uri WebAppSharedUrl(DriveId driveId) => new(_kDriveWebAppUrl, $"{driveId}/shared-with-me");
+        public Uri WebAppItemUrl(DriveId driveId, NodeId nodeId) => new(_kDriveWebAppUrl, $"{driveId}/redirect/{nodeId}");
 
 
         // ----------------------------------- Helpers -----------------------------------

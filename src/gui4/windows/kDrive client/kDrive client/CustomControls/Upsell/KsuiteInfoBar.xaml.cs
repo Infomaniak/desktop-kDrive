@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
            DependencyProperty.Register(
                nameof(Drive),
                typeof(Drive),
-               typeof(UpsellInfoBar),
+               typeof(KsuiteInfoBar),
                new PropertyMetadata(null));
 
         public Drive? Drive

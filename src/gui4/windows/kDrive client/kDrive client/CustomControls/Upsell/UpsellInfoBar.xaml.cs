@@ -39,11 +39,14 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
             set => SetValue(DriveProperty, value);
         }
 
+        private bool CanShowUpsell =>
+           (Drive?.IsAdmin ?? false) && (Drive?.PackIsFree ?? false);
+
         private bool MyKsuiteInfoBarLoad =>
-           (Drive?.IsAdmin ?? false) && (Drive?.PackUpsellTarget == UpsellTarget.MykSuiteToMykSuitePlus || Drive?.PackUpsellTarget == UpsellTarget.StandAloneToMykSuitePlus);
+           CanShowUpsell && (Drive?.PackUpsellTarget == UpsellTarget.MykSuiteToMykSuitePlus || Drive?.PackUpsellTarget == UpsellTarget.StandAloneToMykSuitePlus);
 
         private bool KsuiteInfoBarLoad =>
-           (Drive?.IsAdmin ?? false) && (Drive?.PackUpsellTarget == UpsellTarget.kSuiteUpgrade || Drive?.PackUpsellTarget == UpsellTarget.StandAloneTokSuitePro);
+           CanShowUpsell && (Drive?.PackUpsellTarget == UpsellTarget.kSuiteUpgrade || Drive?.PackUpsellTarget == UpsellTarget.StandAloneTokSuitePro);
 
         public UpsellInfoBar()
         {
