@@ -228,7 +228,7 @@ ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeO
     }
 }
 
-bool IoHelper::isExpectedError(IoError ioError) noexcept {
+bool IoHelper::isExpectedError(const IoError ioError) noexcept {
     return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
 }
 //! Set the target type of link item.
@@ -888,7 +888,18 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
 }
 
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError) noexcept {
-    ioError = IoHelper::checkIfPathTraversesLink(path);
+    // Some ancestors of `path` may not exist yet (e.g. recursive creation). Only the deepest existing ancestor and its own
+    // ancestors can be links, so the check is done on the first missing component of `path` (or on `path` itself).
+    SyncPath firstMissingPath = path;
+    for (SyncPath ancestorPath = path.parent_path(); !ancestorPath.empty() && ancestorPath != ancestorPath.parent_path();
+         ancestorPath = ancestorPath.parent_path()) {
+        bool exists = false;
+        if (!checkIfPathExists(ancestorPath, exists, ioError, PathCheckOption::Insensitive)) return false;
+        if (exists) break;
+        firstMissingPath = ancestorPath;
+    }
+
+    ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath);
     if (ioError != IoError::Success) return false;
 
     std::error_code ec;

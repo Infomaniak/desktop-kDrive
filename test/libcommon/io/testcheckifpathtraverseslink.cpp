@@ -204,6 +204,12 @@ void TestIo::testFilesystemAlterationsThroughLink() {
             expectOutsideDirUnchanged();
         }
 
+        // createDirectory, recursive, with missing intermediate directories below the link
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(parentPath / "missing_1" / "missing_2" / "new_dir", true, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+        expectOutsideDirUnchanged();
+
         // copyFileOrDirectory
         for (const auto &sourcePath: {sourceFilePath, sourceDirPath}) {
             ioError = IoError::Unknown;
@@ -236,6 +242,23 @@ void TestIo::testFilesystemAlterationsThroughLink() {
         CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
         expectOutsideDirUnchanged();
 #endif
+    }
+
+    // A dangling link, whose target is a missing directory outside the sync folder, is detected as well when creating a
+    // directory with missing intermediate directories below it: the dangling link itself exists, so it is checked.
+    {
+        const auto missingTargetPath = outsideDirPath / "missing_target";
+        const auto danglingLinkPath = syncDirPath / "dangling_link";
+        std::filesystem::create_directory_symlink(missingTargetPath, danglingLinkPath, ec);
+        CPPUNIT_ASSERT_EQUAL(0, ec.value());
+
+        for (const bool recursive: {false, true}) {
+            ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(!IoHelper::createDirectory(danglingLinkPath / "missing" / "new_dir", recursive, ioError));
+            CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+            CPPUNIT_ASSERT(!std::filesystem::exists(missingTargetPath, ec));
+            expectOutsideDirUnchanged();
+        }
     }
 
     // Sanity check: the same operations succeed when the path does not traverse any link.
