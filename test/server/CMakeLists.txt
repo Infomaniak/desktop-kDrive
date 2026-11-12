@@ -22,6 +22,7 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
+    ${server_srcs_path}/fileopeninghandler.h ${server_srcs_path}/fileopeninghandler.cpp
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
     ${server_srcs_path}/comm/securecontextsingleton.h ${server_srcs_path}/comm/securecontextsingleton.cpp
@@ -60,6 +61,8 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.h ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.h ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     ${server_srcs_path}/comm/guijobs/syncacknowledgemanydeletesjob.h ${server_srcs_path}/comm/guijobs/syncacknowledgemanydeletesjob.cpp
+    ${server_srcs_path}/comm/guijobs/fileopeningcanceljob.h ${server_srcs_path}/comm/guijobs/fileopeningcanceljob.cpp
+    ${server_srcs_path}/comm/guijobs/signalfileopeningstatusjob.h ${server_srcs_path}/comm/guijobs/signalfileopeningstatusjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
@@ -209,6 +212,7 @@ set(testserver_SRCS
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
+    fileopeninghandler/testfileopeninghandler.h fileopeninghandler/testfileopeninghandler.cpp
 
     comm/testsocketcomm.h comm/testsocketcomm.cpp
     comm/testcommhelpers.h comm/testcommhelpers.cpp

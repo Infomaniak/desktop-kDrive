@@ -21,6 +21,8 @@
 #include "config.h"
 #include "io/cachedirectory.h"
 #include "jobs/local/genericlocaldeletejob.h"
+#include "jobs/local/hydrateplaceholderjob.h"
+#include "jobs/local/openfilejob.h"
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
@@ -45,7 +47,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath) {};
+            SyncLocalDeleteJob(syncPal, absolutePath){};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -319,7 +321,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){
 
                 };
             void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }
@@ -398,7 +400,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {};
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
 
         protected:
             bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
@@ -492,6 +494,116 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
 #endif
+}
+
+void KDC::TestLocalJobs::testHydratePlaceHolderJob() {
+    // The temporary directory is created inside the sync root, so that the items are addressed relatively to it.
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testHydratePlaceHolderJob", _localTempDir.path());
+
+    // A symlink is never hydrated.
+    {
+        const SyncPath targetPath = temporaryDirectory.path() / "tmp_target_file.txt";
+        { std::ofstream ofs(targetPath); }
+        const SyncPath linkPath = temporaryDirectory.path() / "tmp_link.txt";
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, linkPath, false, ioError));
+
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), linkPath);
+        HydratePlaceHolderJob hydrateJob(_syncPal, linkPath, relativePath);
+        hydrateJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), hydrateJob.exitInfo());
+        // The job succeeded without enqueueing any download: the observer will never be invoked.
+        CPPUNIT_ASSERT(!hydrateJob.downloadQueued());
+    }
+
+    // A placeholder cannot be hydrated when the sync is not running.
+    {
+        const SyncPath filePath = temporaryDirectory.path() / "tmp_file.txt";
+        { std::ofstream ofs(filePath); }
+
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
+        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
+        hydrateJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SyncPaused), hydrateJob.exitInfo());
+    }
+
+    // A missing item is reported as such.
+    {
+        const SyncPath filePath = temporaryDirectory.path() / "missing_file.txt";
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
+
+        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
+        hydrateJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), hydrateJob.exitInfo());
+    }
+
+    // A canceled job does not hydrate the item: no pin state is set and no download is enqueued.
+    {
+        const SyncPath filePath = temporaryDirectory.path() / "canceled_file.txt";
+        { std::ofstream ofs(filePath); }
+
+        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
+        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
+        hydrateJob.abort();
+        hydrateJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::OperationCanceled, ExitCause::OperationCanceled), hydrateJob.exitInfo());
+        CPPUNIT_ASSERT(!hydrateJob.downloadQueued());
+    }
+}
+
+void KDC::TestLocalJobs::testOpenFileJob() {
+    // URL parsing.
+    {
+        OpenFileJob::Request request;
+        CPPUNIT_ASSERT(OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456", request));
+        CPPUNIT_ASSERT_EQUAL(UserId{99}, request.user.userId());
+        CPPUNIT_ASSERT_EQUAL(DriveId{1234}, request.driveId);
+        CPPUNIT_ASSERT_EQUAL(std::string{"456"}, request.remoteNodeId);
+    }
+    {
+        // The scheme and the host are case-insensitive.
+        OpenFileJob::Request request;
+        CPPUNIT_ASSERT(OpenFileJob::parseDeeplinkUrl("KDRIVE://OPEN/user/99/drive/1234/file/456", request));
+        CPPUNIT_ASSERT_EQUAL(UserId{99}, request.user.userId());
+    }
+    {
+        // Invalid URLs.
+        OpenFileJob::Request request;
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://auth-desktop?code=1&state=2", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("https://open/user/99/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://open/user/-1/drive/1234/file/456", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/456/789", request));
+        CPPUNIT_ASSERT(!OpenFileJob::parseDeeplinkUrl("kdrive://open/user/99/drive/1234/file/", request));
+    }
+
+    // An invalid URL makes the job fail immediately, without accessing any database or the network.
+    {
+        OpenFileJob job(
+                "not a url", [](const SyncDbId) { return nullptr; }, [](const SyncDbId) { return nullptr; });
+        job.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::LogicError, ExitCause::InvalidArgument), job.exitInfo());
+        CPPUNIT_ASSERT(job.outcome() == OpenFileJob::Outcome::Failed);
+    }
+
+    // Wait-for-sync notification cadence: first notification after 5 seconds of waiting, then every 2 minutes.
+    {
+        const auto waitStart = std::chrono::steady_clock::now();
+        const auto neverNotified = std::chrono::steady_clock::time_point{};
+
+        CPPUNIT_ASSERT(!OpenFileJob::isWaitNotificationDue(waitStart + std::chrono::seconds(4), waitStart, neverNotified));
+        CPPUNIT_ASSERT(OpenFileJob::isWaitNotificationDue(waitStart + std::chrono::seconds(5), waitStart, neverNotified));
+
+        const auto firstNotify = waitStart + std::chrono::seconds(5);
+        CPPUNIT_ASSERT(!OpenFileJob::isWaitNotificationDue(firstNotify + std::chrono::seconds(119), waitStart, firstNotify));
+        CPPUNIT_ASSERT(OpenFileJob::isWaitNotificationDue(firstNotify + std::chrono::minutes(2), waitStart, firstNotify));
+    }
 }
 
 } // namespace KDC

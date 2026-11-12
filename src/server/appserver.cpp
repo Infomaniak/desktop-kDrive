@@ -45,6 +45,7 @@
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
 #include "server/comm/guijobs/signaluserremovedjob.h"
+#include "server/comm/guijobs/signalfileopeningstatusjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
 #include "server/comm/guijobs/signaldriveupdatedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
@@ -140,7 +141,9 @@ static const char optionsC[] =
         "  -h --help            : show this help screen.\n"
         "  -v --version         : show the application version.\n"
         "  --settings           : show the Settings window (if the application is running).\n"
-        "  --synthesis          : show the Synthesis window (if the application is running).\n";
+        "  --synthesis          : show the Synthesis window (if the application is running).\n"
+        "  kdrive://open/user/<user id>/drive/<drive id>/file/<file id> : open an item of your kDrive\n"
+        "                                                                 (downloading or synchronizing it first if needed).\n";
 
 } // namespace
 
@@ -148,6 +151,7 @@ static const QString showSynthesisMsg("showSynthesis");
 static const QString showSettingsMsg("showSettings");
 static const QString restartClientMsg("restartClient");
 static const QString authorizationCodeMsg("redirectLogin");
+static const QString openFileMsg("openFile");
 static const QString separatorMsg("$$$");
 static constexpr std::int32_t singleApplicationMessageTimeoutMs = 5000;
 
@@ -180,8 +184,9 @@ AppServer::AppServer(int &argc, char **argv) :
     _arguments = arguments();
     _theme = Theme::instance();
     installEventFilter(&_eventFilter);
-    (void) connect(&_eventFilter, &AuthorizationCodeEventFilter::authorizationCodeReceived, this,
+    (void) connect(&_eventFilter, &UrlSchemeEventFilter::authorizationCodeReceived, this,
                    &AppServer::onAuthorizationCodeReceived);
+    (void) connect(&_eventFilter, &UrlSchemeEventFilter::openFileUrlReceived, this, &AppServer::onOpenFileDeeplinkReceived);
 }
 
 AppServer::~AppServer() {
@@ -212,6 +217,12 @@ void AppServer::init() {
             }
 #endif
         }
+        return;
+    }
+
+    // A file opening deeplink received while a server instance is already running starts a short-lived helper process,
+    // which must not initialize logging for the same reason.
+    if (!_openFileUrlStr.isEmpty() && isRunning()) {
         return;
     }
 
@@ -588,6 +599,11 @@ void AppServer::init() {
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+
+    // Process a file opening URL received at startup, once the syncs have been started.
+    if (!_openFileUrlStr.isEmpty()) {
+        QTimer::singleShot(delayedActionMs, this, [this]() { onOpenFileDeeplinkReceived(_openFileUrlStr); });
+    }
 }
 
 void AppServer::cleanup() {
@@ -2515,6 +2531,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << toInt(exitInfo.code());
             break;
         }
+        case RequestNum::FILE_OPENING_CANCEL: {
+            qint64 jobId = 0;
+            QDataStream paramsStream(params);
+            paramsStream >> jobId;
+
+            const auto exitInfo = cancelFileOpeningJob(static_cast<UniqueId>(jobId));
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in cancelFileOpeningJob for jobId=" << jobId);
+            }
+
+            resultStream << toInt(exitInfo.code());
+            break;
+        }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
             if (_noUpdate) {
                 assert(false);
@@ -2798,6 +2827,8 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
         const QString code = query.queryItemValue("code");
         const QString state = query.queryItemValue("state");
         onAuthorizationCodeReceived(code, state);
+    } else if (message.startsWith(openFileMsg)) {
+        onOpenFileDeeplinkReceived(message.split(separatorMsg).back());
     } else if (message == showSynthesisMsg) {
         showSynthesis();
     } else if (message == showSettingsMsg) {
@@ -2825,6 +2856,17 @@ void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
     sendShowNotification(title, message);
 }
 
+void AppServer::onOpenFileDeeplinkReceived(const QString &urlStr) {
+    LOG_INFO(_logger, "File opening deeplink received: '" << urlStr.toStdString() << "'");
+
+    auto *handler = new FileOpeningHandler(this, urlStr.toStdString(), this);
+    (void) connect(handler, &FileOpeningHandler::finished, this, [this, handler] {
+        unregisterFileOpeningJob(handler->jobId());
+        handler->deleteLater();
+    });
+    handler->queueOpenFileJob();
+}
+
 void AppServer::onAuthorizationCodeReceived(const QString &code, const QString &state) {
     int id = 0;
 
@@ -2850,6 +2892,54 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
         _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowNotificationJob>(CommonUtility::qStr2CommString(title),
                                                                                        CommonUtility::qStr2CommString(message)));
     }
+}
+
+void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPhase phase, const int8_t percent,
+                                      const CommString &itemName) const {
+    // Inform the client interface of the state of the file opening request, so that a pop-up window can be displayed,
+    // updated, or closed.
+    if (useOldCommServer()) {
+        int id = 0;
+
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << static_cast<qint64>(jobId);
+        paramsStream << phase;
+        paramsStream << static_cast<qint8>(percent);
+        paramsStream << CommonUtility::commString2QStr(itemName);
+        (void) OldCommServer::instance()->sendSignal(SignalNum::FILE_OPENING_STATUS, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, phase, percent, itemName));
+    }
+}
+
+ExitInfo AppServer::cancelFileOpeningJob(const UniqueId jobId) {
+    // Keep the mutex locked during the call: this prevents the handler from being unregistered and destroyed while it
+    // is being canceled. `cancel()` never takes this mutex back, and it may only acquire the engine mutexes, which are
+    // never held while taking this one.
+    const std::scoped_lock lock(_fileOpeningJobsMutex);
+    if (const auto it = _fileOpeningJobs.find(jobId); it != _fileOpeningJobs.end()) {
+        return it->second->cancel();
+    }
+
+    LOGW_WARN(_logger, L"Cannot cancel the file opening job: unknown job id " << jobId);
+    return {ExitCode::DataError, ExitCause::NotFound};
+}
+
+void AppServer::registerFileOpeningJob(const UniqueId jobId, FileOpeningHandler *const handler) {
+    const std::scoped_lock lock(_fileOpeningJobsMutex);
+    _fileOpeningJobs[jobId] = handler;
+}
+
+void AppServer::unregisterFileOpeningJob(const UniqueId jobId) {
+    const std::scoped_lock lock(_fileOpeningJobsMutex);
+    (void) _fileOpeningJobs.erase(jobId);
+}
+
+Count AppServer::fileOpeningJobCount() const {
+    const std::scoped_lock lock(_fileOpeningJobsMutex);
+    return static_cast<Count>(_fileOpeningJobs.size());
 }
 
 void AppServer::sendErrorAdded(const Error &error) const {
@@ -3004,11 +3094,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3796,6 +3886,9 @@ void AppServer::parseOptions(const QStringList &options) {
                 _authorizationCodeStr = option;
                 break;
             }
+        } else if (FileOpeningHandler::isFileOpeningDeeplink(option.toStdString())) {
+            _openFileUrlStr = option;
+            break;
         } else if (option == QLatin1String("--help") || option == QLatin1String("-h")) {
             _helpAsked = true;
             break;
@@ -3897,6 +3990,17 @@ void AppServer::sendAuthorizationCode(qint64 pid) {
     if (!sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr, singleApplicationMessageTimeoutMs, pid)) {
         if (Log::isSet()) {
             LOG_WARN(Log::instance()->getLogger(), "Failed to forward login authorization callback to the running server");
+        }
+    }
+}
+
+void AppServer::sendOpenFileUrlMsg(qint64 pid) {
+    if (Log::isSet()) {
+        LOG_INFO(Log::instance()->getLogger(), "Forwarding file opening request to the running server");
+    }
+    if (!sendMessage(openFileMsg + separatorMsg + _openFileUrlStr, singleApplicationMessageTimeoutMs, pid)) {
+        if (Log::isSet()) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to forward file opening request to the running server");
         }
     }
 }

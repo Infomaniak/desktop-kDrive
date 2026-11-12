@@ -69,6 +69,15 @@ open class TargetAssembly {
                                      factoryParameters: nil,
                                      resolver: resolver)
             },
+            Factory(type: FileOpeningStatusCache.self) { _, _ in
+                FileOpeningStatusStateCache()
+            },
+            Factory(type: FileOpeningStatusCacheObservable.self) { _, resolver in
+                try resolver.resolve(type: FileOpeningStatusCache.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: LogUploadStatusCaching.self) { _, _ in
                 LogUploadStatusCache()
             },

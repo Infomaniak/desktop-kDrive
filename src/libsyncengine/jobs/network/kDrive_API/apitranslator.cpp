@@ -18,6 +18,7 @@
 
 #include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
+#include "jobs/network/kDrive_API/getfilessharedwithmejob.h"
 #include "jobs/network/jobexceptions.h"
 
 namespace KDC {
@@ -321,6 +322,29 @@ ExitInfo ApiTranslator::translateV3ToV2(const UserDbId userDbId, const DriveId d
         translateV3ToV2(translatedPath);
         nodeInfo.setPath(translatedPath);
     }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ApiJobUtility::checkIfSharedFolderIsEmpty(const UserDbId userDbId, const DriveId driveId, bool &empty,
+                                                   SyncTime &sleepDuration) {
+    empty = false;
+    sleepDuration = 0;
+
+    constexpr auto maxItemsToCheck = 5; // This is the minimum number allowed by the API. We only need to check the existence
+    // of a single item to determine if the 'Shared' folder is empty or not.
+    // The content of the 'Shared' folder is queried with an empty cursor: the listing cursor of the 'Shared' folder is not
+    // persisted.
+    auto job = std::make_shared<GetFilesSharedWithMeJob>(userDbId, driveId, Cursor{}, maxItemsToCheck);
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Error in GetFilesSharedWithMeJob::runSynchronously: " << exitInfo);
+        sleepDuration = job->sleepDuration();
+
+        return exitInfo;
+    }
+
+    empty = job->sharedIsEmpty();
+    sleepDuration = job->sleepDuration();
 
     return ExitCode::Ok;
 }

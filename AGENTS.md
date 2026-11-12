@@ -40,6 +40,7 @@ clang-format -i <file>
 - **Platform files:** Use suffixes `_mac.mm` / `_win.cpp` / `_linux.cpp` for platform-specific code.
 - **Platform macros:** use project-defined `KD_MACOS`, `KD_WINDOWS`, and `KD_LINUX` instead of standard macros such as `__APPLE__`, `_WIN32`, or `__linux__`.
 - **Logging:** `LOG_INFO`, `LOG_DEBUG`, `LOG_WARN`, `LOG_ERROR` from log4cplus. Never `std::cout`.
+- **SonarCloud (new code):** use fixed-width integer types (`int8_t` / `int32_t` / `int64_t`) instead of built-in `int`; catch the most specific exception type (e.g. `Poco::Exception` when parsing IPC parameters, plus `CommonUtility::InvalidEnumerationValue` for enum parameters) instead of `std::exception`; mark intentionally discarded return values with `(void)`.
 - **Commits:** Conventional commits format (`feat(scope):`, `fix(scope):`, `refactor(scope):`), validated by `.githooks/commit-msg`.
 - **Branch naming:** No enforced convention currently.
 

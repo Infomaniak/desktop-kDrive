@@ -915,6 +915,12 @@ Sync will resume automatically once the connection is restored.</value>
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>File already exists</value> 
   </data> 
+  <data name="fileOpeningHydratingMessage" xml:space="preserve"> 
+    <value>Downloading the item…</value> 
+  </data> 
+  <data name="fileOpeningWaitingSyncMessage" xml:space="preserve"> 
+    <value>This item is not synchronized yet. Synchronizing it may take some time.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>File sync mode</value> 
   </data> 

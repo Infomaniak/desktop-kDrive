@@ -1,0 +1,193 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "jobs/syncjob.h"
+#include "libcommon/data/user.h"
+#include "libcommon/utility/cstypes.h"
+#include "libcommon/utility/types.h"
+#include "syncpal/syncpal.h"
+
+#include <chrono>
+#include <functional>
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+
+namespace KDC {
+
+class HydratePlaceHolderJob;
+
+//! Asynchronous job performing the whole "open the item indicated by a kDrive deeplink" flow.
+/*!
+ * The job first resolves the item indicated by the URL against the syncs configured for the drive. While the item has
+ * not been synchronized yet, the job checks every 2 seconds whether it still exists on the remote side, and keeps
+ * resolving it during 10 minutes before giving up with a timeout error.
+ *
+ * Once the item has been resolved, it is made available locally:
+ * - if it is not a dehydrated placeholder, it can be opened right away;
+ * - otherwise, the job enqueues a HydratePlaceHolderJob and waits for the download to complete, during 1 hour at
+ *   most, before giving up with a timeout error.
+ *
+ * While the item is being synchronized, and while it is being hydrated, the job reports its state through
+ * `feedbackCallback` (see setFeedbackCallback) so that the user can be informed of the progress and cancel the
+ * request (see cancel()).
+ *
+ * The job must be provided with two callbacks giving access to the state of the running syncs, as this state is owned
+ * by the application layer:
+ * - `getSyncPal` returns the SyncPal of a sync whose engine is running, nullptr when the engine is not running;
+ * - `getVfs` returns the VFS instance of a sync, nullptr when the sync has no VFS.
+ *
+ * The last step of the flow, i.e. actually opening the item and providing feedback to the user, is left to the caller
+ * as it requires GUI capabilities that a job must not have: when the job completes, inspect outcome() and localPath().
+ */
+class OpenFileJob : public SyncJob {
+    public:
+        //! Returns the SyncPal of a sync whose engine is running, nullptr when the engine is not running.
+        using GetSyncPalCallback = std::function<std::shared_ptr<SyncPal>(SyncDbId)>;
+        //! Returns the VFS instance of a sync, nullptr when the sync has no VFS.
+        using GetVfsCallback = std::function<std::shared_ptr<Vfs>(SyncDbId)>;
+
+        //! Outcome of the job, allowing the caller to provide the appropriate user feedback.
+        enum class Outcome {
+            Failed, //!< An error occurred: the item could not be opened (see exitInfo() for details).
+            NotFound, //!< The item does not exist on the remote side anymore.
+            ResolveTimedOut, //!< The item was not synchronized before the deadline.
+            HydrationTimedOut, //!< The hydration did not complete before the deadline.
+            ReadyToOpen, //!< The item is available locally: the caller can open it.
+            Canceled, //!< The user canceled the request from the client interface.
+        };
+
+        struct Request {
+                User user;
+                DriveId driveId{0};
+                RemoteNodeId remoteNodeId;
+        };
+
+        //! \param url is a "kdrive://open/user/<user id>/drive/<drive id>/file/<node id>" URL.
+        OpenFileJob(std::string url, GetSyncPalCallback getSyncPal, GetVfsCallback getVfs);
+
+        //! Returns true if `urlStr` is a syntactically valid file opening URI, i.e. "kdrive://open/...", without
+        //! checking its path segments.
+        static bool isFileOpeningUri(const std::string &urlStr);
+
+        //! Returns true if `urlStr` is a file opening URL, i.e. "kdrive://open/...", and extracts the user id, the
+        //! drive id, and the node id from it.
+        static bool parseDeeplinkUrl(const std::string &urlStr, Request &request);
+
+        [[nodiscard]] Outcome outcome() const { return _outcome; }
+        //! Absolute path of the resolved item. Only meaningful when outcome() is Outcome::ReadyToOpen.
+        [[nodiscard]] const SyncPath &localPath() const { return _localPath; }
+        //! Id of the sync through which the item has been resolved. Only meaningful when outcome() is
+        //! Outcome::ReadyToOpen.
+        [[nodiscard]] SyncDbId syncDbId() const { return _syncDbId; }
+
+        //! Callback through which the job reports its progress to the user interface: FileOpeningPhase::WaitingSync
+        //! while the item is being synchronized (percent is -1), FileOpeningPhase::Hydrating while it is being
+        //! downloaded (percent is 0-100). `itemName` is the name of the item being opened, empty while the item has not
+        //! been resolved (i.e. during the WaitingSync phase). Invoked on a job manager worker thread.
+        using FeedbackCallback = std::function<void(FileOpeningPhase, int8_t, const CommString &itemName)>;
+        void setFeedbackCallback(FeedbackCallback callback) { _feedbackCallback = std::move(callback); }
+
+        //! Aborts the job and cancels the hydration of the item, if it is in progress: the direct download is aborted
+        //! and the pin state set before starting it is reverted.
+        void cancel();
+
+        //! Returns true when the user interface must be informed that the item is being synchronized: the first
+        //! notification is due after 5 seconds of waiting, the following ones every 2 minutes. A default-constructed
+        //! `lastNotify` means that no notification has been sent yet.
+        [[nodiscard]] static bool isWaitNotificationDue(std::chrono::steady_clock::time_point now,
+                                                        std::chrono::steady_clock::time_point waitStart,
+                                                        std::chrono::steady_clock::time_point lastNotify);
+
+    protected:
+        ExitInfo canRun() override;
+
+    private:
+        ExitInfo runJob() override;
+
+        //! Resolves the item indicated by the URL, retrying every 2 seconds while it is being synchronized.
+        ExitInfo resolveItem();
+        //! Tries to resolve the remote node id into one of the syncs of the drive. Returns an error on DB or API access
+        //! error, and sets `found` with false if no admissible sync has been found.
+        ExitInfo resolveDeeplink(bool &found);
+        //! Sorts `syncs` by examining the syncs whose engine is running first, and makes the examination order
+        //! deterministic.
+        void sortSyncsByRunningState(std::vector<Sync> &syncs) const;
+        //! Returns the live SyncDb of a sync whose engine is running, nullptr otherwise.
+        std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;
+        //! Returns the SyncDb of `sync` read directly from its DB file when the engine of the sync is not running,
+        //! caching it in `_tempSyncDbMap` for the subsequent items of the same sync. Returns nullptr when the DB
+        //! file cannot be opened or prepared.
+        std::shared_ptr<SyncDb> getOrOpenSyncDb(const Sync &sync);
+        //! Looks for the best admissible sync containing the requested item. Sets `found` with false if none has been
+        //! found.
+        ExitInfo getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath, bool &found);
+        //! Checks whether the item exists on the remote side.
+        ExitInfo checkRemoteItemExistence(bool &exists) const;
+        //! Opens the resolved item if it is available locally, or hydrates it first if it is a dehydrated placeholder.
+        ExitInfo openResolvedLocalItem();
+        //! Enqueues the hydration of the dehydrated placeholder and waits for the download to complete.
+        ExitInfo hydrateResolvedPlaceholder();
+        //! Marks the job as ready to open the item and returns `ExitCode::Ok`.
+        ExitInfo readyToOpen();
+        //! Reports the job state to the user interface through the feedback callback, when set. The name of the item
+        //! being opened is included, empty while the item has not been resolved.
+        void notifyFeedback(FileOpeningPhase phase, int8_t percent) const;
+        //! Reports the download progress to the user interface through the feedback callback, throttled.
+        void notifyProgressIfChanged(int8_t percent);
+
+        const std::string _url;
+        const GetSyncPalCallback _getSyncPal;
+        const GetVfsCallback _getVfs;
+
+        Request _request;
+        std::unordered_set<DriveDbId> _driveDbIds;
+        DriveDbId _driveDbId{0};
+        SyncDbId _syncDbId{0};
+        SyncPath _relativePath; // Relative to the local folder of the sync.
+        SyncPath _localPath; // Absolute path of the item on the local file system.
+
+        // Read-only instances of the SyncDb of the syncs whose engine is not running, cached to avoid reopening them
+        // on every resolution attempt.
+        std::unordered_map<SyncDbId, std::shared_ptr<SyncDb>> _tempSyncDbMap;
+
+        Outcome _outcome{Outcome::Failed};
+
+        //! Guards publication of and access to `_hydration` and `_hydrationJob`: both are published by the thread
+        //! running the job, and loaded by cancel() on the thread processing the cancellation. The internals of the
+        //! pointed-to state have their own finer-grained mutex (see HydrationCompletion in the .cpp file).
+        std::mutex _hydrationMutex;
+
+        //! Completion state of the hydration, shared with the observers invoked by the download job. Published under
+        //! `_hydrationMutex` when the hydration of the item starts. Its type is defined in the .cpp file.
+        struct HydrationCompletion; // Defined in the .cpp file.
+        std::shared_ptr<HydrationCompletion> _hydration;
+
+        //! The hydration job enqueued by this job, retained so that cancel() can abort it while it is queued or
+        //! running. Published under `_hydrationMutex` together with `_hydration`.
+        std::shared_ptr<HydratePlaceHolderJob> _hydrationJob;
+
+        FeedbackCallback _feedbackCallback;
+        int8_t _lastNotifiedProgress{-1}; // Only accessed on the thread running the job.
+        std::chrono::steady_clock::time_point _lastProgressNotify; // Idem.
+};
+
+} // namespace KDC

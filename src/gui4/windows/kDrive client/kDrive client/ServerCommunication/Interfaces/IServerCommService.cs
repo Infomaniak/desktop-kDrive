@@ -173,6 +173,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Acknowledges the "too many deletes" notification for a sync, telling the server whether to continue or revert.
         Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken);
 
+        // Cancels the file opening request identified by `jobId`, upon user decision in the pop-up window.
+        Task<bool> CancelFileOpening(ulong jobId, CancellationToken cancellationToken);
+
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
         Task HandleUserRemovedAsync(object? sender, SignalEventArgs args);
