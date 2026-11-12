@@ -17,6 +17,7 @@
  */
 
 #include "testio.h"
+#include "test_utility/testhelpers.h"
 
 #include <filesystem>
 
@@ -61,7 +62,7 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         auto traversesLink = false;
         SyncPath traversedLinkPath;
-        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink,
                              IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT_EQUAL(symlinkPath, traversedLinkPath);
@@ -83,7 +84,7 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         auto traversesLink = false;
         SyncPath traversedLinkPath;
-        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink,
                              IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT_EQUAL(symlinkPath, traversedLinkPath);
@@ -154,12 +155,98 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         auto traversesLink = false;
         SyncPath traversedLinkPath;
-        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink,
                              IoHelper::checkIfPathTraversesLink(junctionPath / "item.txt", traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT_EQUAL(junctionPath, traversedLinkPath);
     }
 #endif
+}
+
+// Every IoHelper method altering the filesystem must refuse to operate on a path that traverses a followed link, so that the
+// synchronization can never alter an item located outside the sync folder through a link located inside it.
+void TestIo::testFilesystemAlterationsThroughLink() {
+    const LocalTemporaryDirectory temporaryDirectory;
+    const auto syncDirPath = temporaryDirectory.path() / "sync_dir";
+    const auto outsideDirPath = temporaryDirectory.path() / "outside_sync_dir";
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::create_directories(syncDirPath, ec) && ec.value() == 0);
+    CPPUNIT_ASSERT(std::filesystem::create_directories(outsideDirPath / "sub_dir", ec) && ec.value() == 0);
+
+    const auto sourceFilePath = syncDirPath / "file.txt";
+    testhelpers::generateTestFile(sourceFilePath, 10);
+    const auto sourceDirPath = syncDirPath / "dir";
+    CPPUNIT_ASSERT(std::filesystem::create_directories(sourceDirPath, ec) && ec.value() == 0);
+
+    // `linkPath` is located inside the sync folder and points outside of it.
+    const auto linkPath = syncDirPath / "link";
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(outsideDirPath, linkPath, true, ioError));
+
+    const auto expectOutsideDirUnchanged = [&outsideDirPath]() {
+        std::error_code ec;
+        auto count = 0;
+        for (auto it = std::filesystem::recursive_directory_iterator(outsideDirPath, ec);
+             it != std::filesystem::recursive_directory_iterator(); ++it) {
+            ++count;
+        }
+        CPPUNIT_ASSERT_EQUAL(0, ec.value());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("Only `sub_dir` is expected in the outside directory", 1, count);
+    };
+
+    // The link is either the direct parent or a deeper ancestor of the altered path.
+    for (const auto &parentPath: {linkPath, linkPath / "sub_dir"}) {
+        // createDirectory
+        for (const bool recursive: {false, true}) {
+            ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(!IoHelper::createDirectory(parentPath / "new_dir", recursive, ioError));
+            CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+            expectOutsideDirUnchanged();
+        }
+
+        // copyFileOrDirectory
+        for (const auto &sourcePath: {sourceFilePath, sourceDirPath}) {
+            ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourcePath, parentPath / "copy", ioError));
+            CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+            expectOutsideDirUnchanged();
+        }
+
+        // createSymlink
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createSymlink(sourceFilePath, parentPath / "new_link", false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+        expectOutsideDirUnchanged();
+
+        // renameItem / moveItem
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, IoHelper::renameItem(sourceFilePath, parentPath / "moved.txt"));
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, IoHelper::moveItem(sourceFilePath, parentPath / "moved.txt"));
+        CPPUNIT_ASSERT(std::filesystem::exists(sourceFilePath, ec) && ec.value() == 0);
+        expectOutsideDirUnchanged();
+
+#if defined(KD_MACOS)
+        // createAliasFromPath / createAlias
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(sourceFilePath, parentPath / "new_alias", ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+        expectOutsideDirUnchanged();
+
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createAlias("dummy alias data", parentPath / "new_alias", ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+        expectOutsideDirUnchanged();
+#endif
+    }
+
+    // Sanity check: the same operations succeed when the path does not traverse any link.
+    ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::createDirectory(syncDirPath / "new_dir", false, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::copyFileOrDirectory(sourceFilePath, syncDirPath / "copy.txt", ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(IoHelper::createSymlink(sourceFilePath, syncDirPath / "new_link", false, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::renameItem(sourceFilePath, syncDirPath / "moved.txt"));
 }
 
 } // namespace KDC

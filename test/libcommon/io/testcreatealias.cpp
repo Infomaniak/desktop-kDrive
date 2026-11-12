@@ -157,7 +157,8 @@ void TestIo::testCreateAlias() {
 
         IoError aliasError = IoError::Success;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, aliasError);
+        // The error is raised while checking that no ancestor of the alias path is a link.
+        CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
