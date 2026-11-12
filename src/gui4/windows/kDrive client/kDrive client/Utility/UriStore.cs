@@ -74,8 +74,8 @@ namespace Infomaniak.kDrive
         public Uri DriveUpsellUrl(Drive drive) => drive.PackUpsellTarget switch
         {
             UpsellTarget.StandAloneToMykSuitePlus => StandAloneDriveToKSuiteMigrationUrl(drive.DriveId),
-            UpsellTarget.StandAloneTokSuitePro => StandAloneDriveToKSuiteMigrationUrl(drive.DriveId), // Currently not used, upsell are only for free offers and stand alone free offer are always solo, therefore redirected to the myKSuitePlus upsell page. This may change in the future if we have a stand alone free offer for kSuitePro.
-            UpsellTarget.kSuiteTokSuitePro => KSuiteUpsellUrl(drive.KSuiteId),
+            UpsellTarget.StandAloneTokSuitePro => StandAloneDriveToKSuiteMigrationUrl(drive.DriveId),
+            UpsellTarget.kSuiteUpgrade => KSuiteUpsellUrl(drive.KSuiteId),
             UpsellTarget.MykSuiteToMykSuitePlus => MyKSuiteUpsellUrl(),
             _ => _shopDomainUri
         };

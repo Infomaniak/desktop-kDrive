@@ -422,11 +422,11 @@ namespace Infomaniak.kDrive.Types
     };
     public enum UpsellTarget
     {
-        None,
+        Unknown,
         StandAloneToMykSuitePlus,
         StandAloneTokSuitePro,
         MykSuiteToMykSuitePlus,
-        kSuiteTokSuitePro
+        kSuiteUpgrade
     };
 
 }

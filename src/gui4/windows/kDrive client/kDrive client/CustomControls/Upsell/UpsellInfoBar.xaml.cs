@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
            (Drive?.IsAdmin ?? false) && (Drive?.PackUpsellTarget == UpsellTarget.MykSuiteToMykSuitePlus || Drive?.PackUpsellTarget == UpsellTarget.StandAloneToMykSuitePlus);
 
         private bool KsuiteInfoBarLoad =>
-           (Drive?.IsAdmin ?? false) && (Drive?.PackUpsellTarget == UpsellTarget.kSuiteTokSuitePro || Drive?.PackUpsellTarget == UpsellTarget.StandAloneTokSuitePro);
+           (Drive?.IsAdmin ?? false) && (Drive?.PackUpsellTarget == UpsellTarget.kSuiteUpgrade || Drive?.PackUpsellTarget == UpsellTarget.StandAloneTokSuitePro);
 
         public UpsellInfoBar()
         {

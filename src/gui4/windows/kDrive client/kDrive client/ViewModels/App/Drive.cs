@@ -49,7 +49,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _packDisplayName = "";
         private UInt64 _packId = 0;
         private KSuiteId _kSuiteId = 0; // Not mandatory, only set if the pack is a kSuite pack. This is used to open the kSuite upsell page in the browser.
-        private UpsellTarget _packUpsellTarget = UpsellTarget.None;
+        private UpsellTarget _packUpsellTarget = UpsellTarget.Unknown;
         private bool _isAsleep = false;
         private bool _isNotRenew = false;
         private bool _isWakingUp = false;

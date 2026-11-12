@@ -36,15 +36,20 @@ constexpr UpsellTarget getUpsellTarget(const uint64_t packId_) {
         case 22: // Solo special offer
             return UpsellTarget::StandAloneToMykSuitePlus;
         case 8: // kSuite standard
+        case 11: // kSuite pro
+        case 14: // kSuite enterprise
         case 29: // kSuite essential
-            return UpsellTarget::kSuiteTokSuitePro;
+        case 23: // kSuite special offer 1
+        case 26: // kSuite special offer 2
+            return UpsellTarget::kSuiteUpgrade;
         case 16: // myKsuite
+        case 19: // myKsuite+
             return UpsellTarget::MykSuiteToMykSuitePlus;
         case 2: // Team
         case 3: // Pro
             return UpsellTarget::StandAloneTokSuitePro;
         default:
-            return UpsellTarget::None;
+            return UpsellTarget::Unknown;
     }
 }
 
