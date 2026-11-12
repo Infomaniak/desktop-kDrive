@@ -30,7 +30,7 @@ struct DriveMaintenanceParsingTest {
                 "dbId": 1,
                 "id": 2,
                 "accountDbId": 3,
-                "color": "I2ZmZmZm",
+                "color": "I2ZmZmZmZg==",
                 "name": "ZHJpdmU=",
                 "accessDenied": false,
                 "admin": true,
@@ -59,7 +59,7 @@ struct DriveMaintenanceParsingTest {
                 "id": 2,
                 "accountDbId": 3,
                 "name": "ZHJpdmU=",
-                "color": "I2ZmZmZm",
+                "color": "I2ZmZmZmZg==",
                 "notifications": true,
                 "admin": true,
                 "maintenance": {

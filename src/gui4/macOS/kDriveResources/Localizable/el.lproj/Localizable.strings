@@ -1157,6 +1157,8 @@
 /* loco:6a6c9c3be4819f7c890366e2 */
 "manyDeleteDialogHardLimitSecondary" = "Διαγραφή και από το διαδίκτυο";
 
+"manyDeleteDialogOtherPlaceholder" = "και %@ άλλα στοιχεία";
+
 /* loco:6a6c9cb7e46a51ff3e04e779 */
 "manyDeleteDialogSoftLimitContent" = "Αυτά τα αρχεία παραμένουν διαθέσιμα για ανάκτηση στον κάδο απορριμμάτων του kDrive.";
 

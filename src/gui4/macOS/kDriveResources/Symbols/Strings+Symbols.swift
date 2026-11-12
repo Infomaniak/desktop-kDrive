@@ -865,6 +865,9 @@ public enum KDriveLocalizable {
   public static let manyDeleteDialogHardLimitPrimary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitPrimary", fallback: "Restore the files")
   /// loco:6a6c9c3be4819f7c890366e2
   public static let manyDeleteDialogHardLimitSecondary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitSecondary", fallback: "Delete online as well")
+  public static func manyDeleteDialogOtherPlaceholder(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "manyDeleteDialogOtherPlaceholder", String(describing: p1), fallback: "and %@ other items")
+  }
   /// loco:6a6c9cb7e46a51ff3e04e779
   public static let manyDeleteDialogSoftLimitContent = KDriveLocalizable.tr("Localizable", "manyDeleteDialogSoftLimitContent", fallback: "These files can still be recovered from the kDrive Recycle Bin.")
   /// loco:6a6c9cde3113a18766030f05

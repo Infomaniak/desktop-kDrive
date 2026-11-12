@@ -1157,6 +1157,8 @@
 /* loco:6a6c9c3be4819f7c890366e2 */
 "manyDeleteDialogHardLimitSecondary" = "Supprimer aussi en ligne";
 
+"manyDeleteDialogOtherPlaceholder" = "et %@ autres éléments";
+
 /* loco:6a6c9cb7e46a51ff3e04e779 */
 "manyDeleteDialogSoftLimitContent" = "Ces fichiers restent récupérables dans la corbeille de kDrive.";
 

@@ -1157,6 +1157,8 @@
 /* loco:6a6c9c3be4819f7c890366e2 */
 "manyDeleteDialogHardLimitSecondary" = "Delete online as well";
 
+"manyDeleteDialogOtherPlaceholder" = "and %@ other items";
+
 /* loco:6a6c9cb7e46a51ff3e04e779 */
 "manyDeleteDialogSoftLimitContent" = "These files can still be recovered from the kDrive Recycle Bin.";
 

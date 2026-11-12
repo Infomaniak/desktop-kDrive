@@ -481,6 +481,13 @@ void TestRemoteFileSystemObserverWorker::testExtractActionInfo() {
     // Since it is not a move action, the name should be extracted from the path field.
     CPPUNIT_ASSERT_EQUAL(std::string("test_file.txt"), SyncName2Str(actionInfo.snapshotItem.name()));
 
+    // Regression test: the private folder name is stripped from a private path while the separators are preserved, so
+    // that the name extracted from the translated path stays valid (e.g. on Windows, where a corrupted translation
+    // used to leak backslashes into the extracted name).
+    (void) actionObject->set(pathKey, "/Private/folder/test_file.txt");
+    CPPUNIT_ASSERT(rfso->extractActionInfo(actionObject, actionInfo));
+    CPPUNIT_ASSERT_EQUAL(std::string("test_file.txt"), SyncName2Str(actionInfo.snapshotItem.name()));
+    CPPUNIT_ASSERT_EQUAL(std::string("/folder/test_file.txt"), SyncName2Str(actionInfo.path()));
 
     // Check that the function returns an appropriate error if a mandatory key is missing.
     actionObject->remove(actionKey);

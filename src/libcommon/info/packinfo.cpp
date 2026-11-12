@@ -55,7 +55,6 @@ PackInfo::PackInfo(const uint64_t id, const std::string &name, const std::string
     _isFree(isFree) {}
 
 UpsellTarget PackInfo::upsellTarget() const {
- //   if (!isFree()) return UpsellTarget::None;
     return getUpsellTarget(_id);
 }
 

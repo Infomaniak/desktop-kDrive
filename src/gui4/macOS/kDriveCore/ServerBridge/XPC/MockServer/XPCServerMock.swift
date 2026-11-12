@@ -32,14 +32,15 @@ public struct ReplyMock: Codable, Sendable {
     public let num: RequestNum
 }
 
-public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvider {
-    public var guiConnectionState: XPCConnectionState = .notConnected
+public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider, XPCConnectionLifecycle {
+    @MainActor public var guiConnectionState: XPCConnectionState = .notConnected
 
-    public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+    @MainActor public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> = Just(.connected)
+        .eraseToAnyPublisher()
 
-    public var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState = .connected
+    @MainActor public var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState = .connected
 
-    public var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> =
+    @MainActor public var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> =
         Just(.connected).eraseToAnyPublisher()
 
     @InjectService var signalHandler: XPCSignalHandlerProtocol
@@ -59,6 +60,9 @@ public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvide
     }
 
     public func reconnectToLoginAgent() async {}
+
+    @MainActor public func beginShutdown() {}
+    @MainActor public func finishShutdown() {}
 
     public init() {}
 

@@ -43,12 +43,12 @@ class SearchJob : public AbstractTokenNetworkJob {
         ExitInfo handleResponse(std::istream &is) override;
 
         struct LocalProperties {
-                SyncPath path;
+                SyncName path;
                 bool isAvailableLocally{false};
                 bool isHydrated{false};
         };
 
-        ExitInfo getLocalProperties(const SyncPath &itemPath, LocalProperties &locaProperties) const;
+        ExitInfo getLocalProperties(const SyncName &itemPath, LocalProperties &locaProperties) const;
 
         std::string _searchString;
         Cursor _cursorInput;
