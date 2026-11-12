@@ -169,7 +169,7 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
         case IoError::TooManySymbolicLinkLevels:
             return "Too many symbolic link levels";
         case IoError::PathContainsSymlink:
-            return "Move through symlink";
+            return "Path contains a symbolic link";
         case IoError::Unknown:
         default:
             return "Unknown error";
