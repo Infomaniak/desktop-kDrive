@@ -28,6 +28,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/fileformat.h
         app/fileiconresolver.cpp
         app/fileiconresolver.h
+        app/svginfo.cpp
+        app/svginfo.h
         app/cache/activitystore.cpp
         app/cache/activitystore.h
         app/cache/appcache.cpp
@@ -573,6 +575,7 @@ if (QT_FEATURE_xcb)
 endif ()
 
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/app # QML type registration includes exported headers by file name.
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src # libcommon header files
 )
