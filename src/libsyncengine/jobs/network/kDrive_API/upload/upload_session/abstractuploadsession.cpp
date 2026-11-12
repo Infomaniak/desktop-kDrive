@@ -233,7 +233,7 @@ ExitInfo AbstractUploadSession::startSession() {
         return ExitCode::DataError;
     }
 
-    // The v2 log upload session may not provide an upload URL: chunks then go to the API URL.
+    // The v2 log upload session returns no upload URL: chunks go to the API URL.
     const bool uploadUrlMandatory = _uploadSessionType != UploadSessionType::Log;
     if (!JsonParserUtility::extractValue(dataObj, uploadUrlKey, _sessionInfo.url, uploadUrlMandatory)) {
         LOG_WARN(_logger, "Failed to extract upload session url");
