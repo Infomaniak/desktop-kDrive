@@ -89,7 +89,7 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
 
         private void OnDrivePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Drive.PackUpsellTarget))
+            if (e.PropertyName == nameof(Drive.PackUpsellTarget) || e.PropertyName == nameof(Drive.PackIsFree) || e.PropertyName == nameof(Drive.IsAdmin))
                 Bindings.Update();
         }
     }
