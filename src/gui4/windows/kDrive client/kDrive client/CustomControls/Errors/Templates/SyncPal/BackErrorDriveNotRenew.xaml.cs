@@ -60,9 +60,9 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             if (Error.Sync.Drive.IsAdmin)
             {
                 var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
-                if (!await uriStore.OpenInBrowserAsync(uriStore.RenewStandAloneDriveUrl(Error.Sync.Drive.DriveId)))
+                if (!await uriStore.OpenInBrowserAsync(uriStore.RenewDriveUrl(Error.Sync.Drive)))
                 {
-                    Logger.LogWarning("Failed to open RenewStandAloneDriveUrl repository URL in browser");
+                    Logger.LogWarning("Failed to open RenewDriveUrl repository URL in browser");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
             }

@@ -67,9 +67,9 @@ namespace Infomaniak.kDrive.CustomControls
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenStorage);
 
             var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
-            if (!await uriStore.OpenInBrowserAsync(uriStore.StandAloneDriveUpsellUrl(AppViewModel.SelectedSync.Drive.DriveId)))
+            if (!await uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(AppViewModel.SelectedSync.Drive)))
             {
-                Logger.LogWarning("Failed to open StandAloneDriveUpsellUrl in browser");
+                Logger.LogWarning("Failed to open DriveUpsellUrl in browser");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
 

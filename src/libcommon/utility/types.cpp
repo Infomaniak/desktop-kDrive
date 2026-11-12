@@ -1084,10 +1084,14 @@ std::string toString(const UpsellTarget e) {
     switch (e) {
         case UpsellTarget::None:
             return "None";
-        case UpsellTarget::MykSuitePlus:
-            return "MykSuitePlus";
-        case UpsellTarget::kSuitePro:
-            return "LitekSuiteProSync";
+        case UpsellTarget::MykSuiteToMykSuitePlus:
+            return "MykSuiteToMykSuitePlus";
+        case UpsellTarget::StandAloneSoloToMykSuitePlus:
+            return "StandAloneSoloToMykSuitePlus";
+        case UpsellTarget::kSuiteTokSuitePro:
+            return "kSuiteTokSuitePro";
+        case UpsellTarget::StandAloneTokSuitePro:
+            return "StandAloneTokSuitePro";
         default:
             return noConversionStr;
     }

@@ -26,8 +26,10 @@
 
     <Grid>
         <upsell:MyKsuiteInfoBar x:Name="MyKsuiteInfoBar"
-                                x:Load="{x:Bind MyKsuiteInfoBarLoad}"/>
+                                x:Load="{x:Bind MyKsuiteInfoBarLoad}"
+                                Drive="{x:Bind Drive, Mode=OneWay}" />
         <upsell:KsuiteInfoBar x:Name="KsuiteInfoBar"
-                                x:Load="{x:Bind KsuiteInfoBarLoad}"/>
+                              x:Load="{x:Bind KsuiteInfoBarLoad}"
+                              Drive="{x:Bind Drive, Mode=OneWay}" />
     </Grid>
 </UserControl>

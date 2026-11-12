@@ -74,10 +74,18 @@ namespace Infomaniak.kDrive.Pages
             {
                 Logger.LogInfo("Renew drive button clicked - Opening drive renewal page");
                 _analyticsService.TrackClick(Analytics.Keys.Category.NotRenewErrorPage, Analytics.Keys.EventName.OpenRenewWeb);
+
                 var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
-                if (!await uriStore.OpenInBrowserAsync(uriStore.RenewStandAloneDriveUrl(ViewModel.SelectedSync?.Drive.DriveId)))
+                if (ViewModel.SelectedSync is null)
                 {
-                    Logger.LogWarning("Failed to open RenewStandAloneDriveUrl repository URL in browser");
+                    Logger.LogError("SelectedSync is null in NotRenewErrorPage, cannot open renew link");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+                if (!await uriStore.OpenInBrowserAsync(uriStore.RenewDriveUrl(ViewModel.SelectedSync.Drive)))
+                {
+                    Logger.LogWarning("Failed to open RenewDriveUrl repository URL in browser");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
             }

@@ -48,6 +48,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _packName = "";
         private string _packDisplayName = "";
         private UInt64 _packId = 0;
+        private Int64 _kSuiteId = 0; // Not mandatory, only set if the pack is a kSuite pack. This is used to open the kSuite upsell page in the browser.
         private UpsellTarget _packUpsellTarget = UpsellTarget.None;
         private bool _isAsleep = false;
         private bool _isNotRenew = false;
@@ -160,6 +161,11 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _packId;
             set => SetPropertyInUIThread(ref _packId, value);
+        }
+        public KSuiteId KSuiteId
+        {
+            get => _kSuiteId;
+            set => SetPropertyInUIThread(ref _kSuiteId, value);
         }
         public UpsellTarget PackUpsellTarget
         {

@@ -388,8 +388,10 @@ enum class TooManyDeletesUserChoice {
 
 enum class UpsellTarget {
     None = 0,
-    MykSuitePlus,
-    kSuitePro,
+    StandAloneToMykSuitePlus,
+    StandAloneTokSuitePro,
+    MykSuiteToMykSuitePlus,
+    kSuiteTokSuitePro,
     EnumEnd
 };
 

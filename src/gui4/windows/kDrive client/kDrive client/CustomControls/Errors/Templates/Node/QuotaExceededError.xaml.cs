@@ -53,9 +53,9 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageQuotaExceeded);
 
             var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
-            if (!await uriStore.OpenInBrowserAsync(uriStore.StandAloneDriveUpsellUrl(Error.Sync.Drive.DriveId)))
+            if (!await uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(Error.Sync.Drive)))
             {
-                Logger.LogWarning("Failed to open StandAloneDriveUpsellUrl in browser");
+                Logger.LogWarning("Failed to open DriveUpsellUrl in browser");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
