@@ -1384,13 +1384,10 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->updateTmpNode(newNode->parentNode(), mergedNode));
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
-    (void) newNode->setId(std::nullopt);
-    CPPUNIT_ASSERT_THROW(_localUpdateTreeWorker->checkTreeIntegrity(), UpdateTreeWorker::IntegrityError);
+    CPPUNIT_ASSERT(!newNode->setId(std::nullopt));
+    CPPUNIT_ASSERT(!newNode->setId(NodeId{}));
 
-    (void) newNode->setId(NodeId{});
-    CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity());
-
-    (void) newNode->setId(NodeId{"123"});
+    CPPUNIT_ASSERT(newNode->setId(NodeId{"123"}));
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setChangeEvents(OperationType::Create);
@@ -1405,7 +1402,7 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     newNode->setChangeEvents(OperationType::Edit | OperationType::Move);
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
-    (void) newNode->parentNode()->setId(NodeId{"tmp_123"});
+    CPPUNIT_ASSERT(newNode->parentNode()->setId(NodeId{"tmp_123"}));
 
     CPPUNIT_ASSERT_THROW(_localUpdateTreeWorker->checkTreeIntegrity(), UpdateTreeWorker::IntegrityError);
 }

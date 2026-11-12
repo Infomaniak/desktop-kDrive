@@ -214,7 +214,15 @@ bool Node::setId(const std::optional<NodeId> &nodeId) {
         return true;
     }
 
-    if (nodeId && _parentNode->_childrenById.contains(*nodeId)) {
+    if (!nodeId || nodeId->empty()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"A node that has a parent cannot have an empty ID: "
+                                                        << Node::formatNodeWithParent(shared_from_this(), _parentNode));
+        sentry::Handler::captureMessage(sentry::Level::Error, "Node::setId", "A node that has a parent cannot have an empty ID");
+        // assert(false);
+        return false;
+    }
+
+    if (_parentNode->_childrenById.contains(*nodeId)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Parent already has the node with ID: "
                                                         << CommonUtility::s2ws(*nodeId) << L" as a child: "
                                                         << Node::formatNodeWithParent(shared_from_this(), _parentNode));
@@ -234,18 +242,10 @@ bool Node::setId(const std::optional<NodeId> &nodeId) {
         }
     }
 
-    if (nodeId) {
-        const auto [_, inserted] = _parentNode->_childrenById.try_emplace(*nodeId, shared_from_this());
-        if (!inserted) {
-            LOGW_WARN(Log::instance()->getLogger(), L"The list of children of the parent node couldn't be updated: "
-                                                            << Node::formatNodeWithParent(shared_from_this(), _parentNode));
-            assert(false);
-            return false;
-        }
-    } else {
-        LOGW_WARN(Log::instance()->getLogger(), L"A node that has a parent cannot have an empty ID: "
+    const auto [_, inserted] = _parentNode->_childrenById.try_emplace(*nodeId, shared_from_this());
+    if (!inserted) {
+        LOGW_WARN(Log::instance()->getLogger(), L"The list of children of the parent node couldn't be updated: "
                                                         << Node::formatNodeWithParent(shared_from_this(), _parentNode));
-        sentry::Handler::captureMessage(sentry::Level::Error, "Node::setId", "A node that has a parent cannot have an empty ID");
         assert(false);
         return false;
     }
