@@ -118,7 +118,7 @@ podman run --rm -it \
 	--env QT_ACCOUNT_PASSWORD \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
 	--platform "linux/${architecture}" \
-	ghcr.io/infomaniak/kdrive-desktop-linux:latest /bin/bash -c "conan remove 'qt/*' -c; /src/infomaniak-build-tools/linux/build-release-appimage.sh"
+	ghcr.io/infomaniak/kdrive-desktop-linux:latest /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh"
 podman machine stop build_kdrive
 
 version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')
