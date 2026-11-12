@@ -141,7 +141,7 @@ static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex
     // Delete the oldest file
     log4cplus::tostringstream buffer;
     buffer << filename << LOG4CPLUS_TEXT(".") << maxBackupIndex << LOG4CPLUS_TEXT(".gz");
-    long ret = log4cplus::file_remove(buffer.str());
+    (void) log4cplus::file_remove(buffer.str());
 
     log4cplus::tostringstream source_oss;
     log4cplus::tostringstream target_oss;
@@ -160,10 +160,10 @@ static void rolloverFiles(const log4cplus::tstring &filename, int maxBackupIndex
 #if defined(KD_WINDOWS)
         // Try to remove the target first. It seems it is not
         // possible to rename over existing file.
-        ret = log4cplus::file_remove(target);
+        (void) log4cplus::file_remove(target);
 #endif
 
-        ret = log4cplus::file_rename(source, target);
+        long ret = log4cplus::file_rename(source, target);
         log4cplus::loglog_renaming_result(*loglog, source, target, ret);
     }
 }
