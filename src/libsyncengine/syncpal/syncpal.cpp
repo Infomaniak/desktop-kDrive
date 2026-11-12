@@ -46,6 +46,7 @@
 #include "propagation/executor/executorworker.h"
 #include "requests/syncnodecache.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
@@ -1148,6 +1149,60 @@ ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) cons
     if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(normalizedPath, nodeId); !exitInfo) return exitInfo;
     canShare = liveSnapshot(ReplicaSide::Remote).canShare(nodeId);
     return ExitCode::Ok;
+}
+
+ExitInfo SyncPal::checkIfExistsOnServer(const NodeId &localNodeId, bool &exists) const {
+    exists = false;
+
+    if (!syncDb()) {
+        LOG_WARN(_logger, "SyncDb is not available in checkIfExistsOnServer");
+        return ExitCode::DataError;
+    }
+
+    NodeId remoteNodeId;
+    if (!syncDb()->correspondingNodeId(ReplicaSide::Local, localNodeId, remoteNodeId, exists)) {
+        LOG_WARN(_logger, "Error in SyncDb::correspondingNodeId");
+        return ExitCode::DbError;
+    }
+
+    if (!exists) return ExitCode::Ok;
+
+    if (isRunning() && _remoteFSObserverWorker && liveSnapshot(ReplicaSide::Remote).isValid()) {
+        exists = liveSnapshot(ReplicaSide::Remote).exists(remoteNodeId);
+        return ExitCode::Ok;
+    }
+
+    // If the sync is not running, we call the server to check if the node exists.
+    // This is a costly operation, but it is necessary to ensure that we have the correct information.
+    std::unique_ptr<GetFileInfoJob> job;
+    try {
+        job = std::make_unique<GetFileInfoJob>(driveDbId(), remoteNodeId);
+    } catch (const JobException &e) {
+        LOG_WARN(_logger, "Error in GetFileInfoJob constructor for nodeId=" << remoteNodeId << ": " << e.what());
+        return ExitCode::DataError;
+    }
+
+    job->runSynchronously();
+
+    if (job->exitInfo() && job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
+        exists = true;
+        return ExitCode::Ok;
+    }
+
+    if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
+        exists = false;
+        LOG_DEBUG(_logger, "Access forbidden for remote node ID: " << remoteNodeId << " ");
+        return {ExitCode::BackError, ExitCause::FileAccessError};
+    }
+
+    if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+        exists = false;
+        LOGW_DEBUG(_logger, L"Item not found on server for remote node ID: " << CommonUtility::s2ws(remoteNodeId));
+        return ExitCode::Ok;
+    }
+
+    LOG_ERROR(_logger, "Error in GetFileInfoJob for remote node ID: " << remoteNodeId << ": " << job->exitInfo());
+    return job->exitInfo();
 }
 
 ExitCode SyncPal::syncIdSet(SyncNodeType type, NodeSet &nodeIdSet) {
