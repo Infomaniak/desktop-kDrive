@@ -32,6 +32,8 @@ CommString beautifulString(const Poco::JSON::Object &obj);
 CommString stringifyQueryObj(const Poco::JSON::Object &obj);
 CommString stringifyAnswerObj(const Poco::JSON::Object &obj);
 CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj);
+// Compact JSON with Poco's key order. The macOS channel sorts keys case-insensitively (`NSJSONWritingSortedKeys`).
+CommString normalizedJson(const CommString &json);
 
 struct SimpleAnswers {
         Poco::JSON::Object answer;
