@@ -204,6 +204,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitInfo checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
         ExitInfo checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
 
+        ExitInfo checkIfExistsOnServer(const NodeId &localNodeId, bool &exists) const;
+
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
         ExitCode syncIdSet(SyncNodeType type, NodeSet &nodeIdSet);
         ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);

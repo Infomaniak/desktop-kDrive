@@ -28,7 +28,7 @@ namespace KDC {
 
 SignalSyncNotifyManyDeletesJob::SignalSyncNotifyManyDeletesJob(const SyncDbId syncDbId,
                                                                const TooManyDeletesNotificationType notificationType,
-                                                               uint64_t nbFiles, std::vector<SyncPath> filesPaths) :
+                                                               const uint64_t nbFiles, std::vector<SyncPath> filesPaths) :
     _syncDbId(syncDbId),
     _notificationType(notificationType),
     _nbFiles(nbFiles),

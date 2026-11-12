@@ -4,6 +4,10 @@
   "params": {
     "syncDbId": 1,
     "notificationType": 2,
-    "nbFiles": 12345
+    "nbFiles": 12345,
+    "filesPaths": [
+      "L1VzZXJzL3Rlc3Qva0RyaXZlL0RvY3VtZW50cy9yZXBvcnQucGRm",
+      "L1VzZXJzL3Rlc3Qva0RyaXZlL1Bob3Rvcy/DqXTDqS5qcGc="
+    ]
   }
 }

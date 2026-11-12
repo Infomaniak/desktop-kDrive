@@ -59,8 +59,7 @@ void Drive::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, driveInfoColor, CommonUtility::str2CommString(color()));
     CommonUtility::writeValueToStruct(dstruct, driveInfoNotifications, notifications());
     CommonUtility::writeValueToStruct(dstruct, driveInfoAdmin, admin());
-    CommonUtility::writeValueToStruct(dstruct, driveInfoMaintenance,
-                                      maintenanceInfo().inMaintenance()); // TODO : send all maintenance info?
+    CommonUtility::writeValueToStruct(dstruct, driveInfoMaintenance, maintenanceInfo(), info2DynamicVar<MaintenanceInfo>);
     CommonUtility::writeValueToStruct(dstruct, driveInfoLocked, locked());
     CommonUtility::writeValueToStruct(dstruct, driveInfoUsedSize, usedSize());
     CommonUtility::writeValueToStruct(dstruct, driveInfoAccessDenied, accessDenied());
@@ -100,11 +99,9 @@ void Drive::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, driveInfoAdmin, admin);
     setAdmin(admin);
 
-    bool inMaintenance = false;
-    CommonUtility::readValueFromStruct(dstruct, driveInfoMaintenance, inMaintenance);
-    auto newMaintenanceInfo = maintenanceInfo();
-    newMaintenanceInfo.setInMaintenance(inMaintenance);
-    setMaintenanceInfo(newMaintenanceInfo);
+    MaintenanceInfo maintenanceInfo;
+    CommonUtility::readValueFromStruct(dstruct, driveInfoMaintenance, maintenanceInfo, dynamicVar2Struct<MaintenanceInfo>);
+    setMaintenanceInfo(maintenanceInfo);
 
     CommonUtility::readValueFromStruct(dstruct, driveInfoLocked, _locked);
     CommonUtility::readValueFromStruct(dstruct, driveInfoUsedSize, _usedSize);

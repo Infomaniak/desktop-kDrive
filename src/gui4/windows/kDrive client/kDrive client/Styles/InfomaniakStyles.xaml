@@ -41,20 +41,6 @@
     <FontWeight x:Key="Infomaniak.Style.FontWeight.Bold">Bold</FontWeight>
     <FontWeight x:Key="Infomaniak.Style.FontWeight.ExtraBold">ExtraBold</FontWeight>
 
-    <!-- Colors -->
-    <!-- Brand Colors -->
-    <Color x:Key="Infomaniak.Style.Color.Brand.Default">#0098FF</Color>
-    <SolidColorBrush x:Key="Infomaniak.Style.Color.Brand.DefaultBrush"
-                     Color="{StaticResource Infomaniak.Style.Color.Brand.Default}" />
-    <Color x:Key="Infomaniak.Style.Color.Brand.Dark">#006AB2</Color>
-    <Color x:Key="Infomaniak.Style.Color.Brand.Light">#4CB7FF</Color>
-    <!-- Product Colors -->
-    <Color x:Key="Infomaniak.Style.Color.Product.Default">#5C89F7</Color>
-    <SolidColorBrush x:Key="Infomaniak.Style.Color.Product.DefaultBrush"
-                     Color="{StaticResource Infomaniak.Style.Color.Product.Default}" />
-    <Color x:Key="Infomaniak.Style.Color.Product.Dark">#345AC1</Color>
-    <Color x:Key="Infomaniak.Style.Color.Product.Light">#84A9F9</Color>
-
     <!-- Spacing -->
     <x:Double x:Key="Infomaniak.Style.Spacing.XXS">4</x:Double>
     <x:Double x:Key="Infomaniak.Style.Spacing.XS">8</x:Double>

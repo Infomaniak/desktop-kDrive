@@ -118,7 +118,11 @@ extension SharedDITests.CoherentCacheDriveTests {
                                                   color: CacheData.updatedDriveColor,
                                                   notifications: true,
                                                   admin: true,
-                                                  maintenance: false,
+                                                  maintenance: DriveMaintenanceInfo(inMaintenance: false,
+                                                                                    notRenew: false,
+                                                                                    asleep: false,
+                                                                                    wakingUp: false,
+                                                                                    from: 0),
                                                   locked: false,
                                                   accessDenied: false)
 

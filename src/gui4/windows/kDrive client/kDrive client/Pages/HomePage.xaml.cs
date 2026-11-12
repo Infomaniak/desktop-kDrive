@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -211,6 +212,11 @@ namespace Infomaniak.kDrive.Pages
         {
             if (sender is AnimatedVisualPlayer player)
                 await player.PlayAsync(0.0, 1.0, false);
+        }
+
+        private Visibility GetUpsellInfoBarVisibility(bool V4OnboardingInfoBarIsOpen, bool HomeErrorInfoBarIsOpen)
+        {
+            return (!V4OnboardingInfoBarIsOpen && !HomeErrorInfoBarIsOpen) ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

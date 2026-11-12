@@ -136,6 +136,9 @@ static const std::string dirKey = "dir";
 static const std::string fileKey = "file";
 static const std::string urlKey = "url";
 
+static const std::string asleepKey = "asleep";
+static const std::string wakingUpKey = "waking_up";
+
 /// Action type
 enum class ActionCode {
     ActionCodeCreate,

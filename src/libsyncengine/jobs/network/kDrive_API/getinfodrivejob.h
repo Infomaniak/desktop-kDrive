@@ -34,11 +34,10 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         [[nodiscard]] bool isAdmin() const { return _isAdmin; }
         [[nodiscard]] AccountDbId accountId() const { return _accountId; }
         [[nodiscard]] const std::string &colorHex() const { return _colorHex; }
-        [[nodiscard]] bool isInMaintenance() const { return _isInMaintenance; }
-        [[nodiscard]] int64_t maintenanceFrom() const { return _maintenanceFrom; }
         [[nodiscard]] bool isLocked() const { return _isLocked; }
         [[nodiscard]] int64_t usedSize() const { return _usedSize; }
         [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
+        [[nodiscard]] const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
 
     protected:
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
@@ -53,10 +52,9 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         bool _isAdmin{false};
         AccountId _accountId{0};
         std::string _colorHex;
-        bool _isInMaintenance{false};
-        int64_t _maintenanceFrom{0};
         bool _isLocked{false};
         int64_t _usedSize{0};
+        MaintenanceInfo _maintenanceInfo;
         PackInfo _packInfo;
 };
 
