@@ -1874,7 +1874,7 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
 
         if (!node->moveTo(newCorrespondingParentNode)) {
             LOGW_SYNCPAL_WARN(_logger,
-                              L"Error in Node::setParentNode: " << Node::formatNodeWithParent(node, newCorrespondingParentNode));
+                              L"Error in Node::moveTo: " << Node::formatNodeWithParent(node, newCorrespondingParentNode));
             return ExitCode::DataError;
         }
 

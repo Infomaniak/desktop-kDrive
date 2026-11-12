@@ -81,64 +81,64 @@ void Node::setName(const SyncName &name) {
 bool Node::moveTo(std::shared_ptr<Node> parentNode) {
     if (_parentNode == parentNode) return true;
 
-    if (parentNode) {
-        if (!_id) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"A node without ID cannot have a parent: " << Node::formatNode(shared_from_this()));
-            assert(false);
-            sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node without ID");
-            return false;
-        } else if (const auto it = parentNode->children().find(*_id);
-                   it != parentNode->children().end() && it->second.get() != this) {
-            LOGW_WARN(Log::instance()->getLogger(), L"The parent already has a child with the same node ID: "
-                                                            << Node::formatNodeWithParent(shared_from_this(), parentNode));
+    if (!parentNode) {
+        detach();
+        return true;
+    }
 
-            assert(false);
-            sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node is a child");
-            return false;
-        }
+    if (!_id) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"A node without ID cannot have a parent: " << Node::formatNode(shared_from_this()));
+        assert(false);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node without ID");
+        return false;
+    } else if (const auto it = parentNode->children().find(*_id);
+               it != parentNode->children().end() && it->second.get() != this) {
+        LOGW_WARN(Log::instance()->getLogger(), L"The parent already has a child with the same node ID: "
+                                                        << Node::formatNodeWithParent(shared_from_this(), parentNode));
 
-        if (parentNode.get() == this || !isParentValid(parentNode)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"The parent is the node or one of its descendants: "
-                                                            << Node::formatNodeWithParent(shared_from_this(), parentNode));
-            assert(false);
-            sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Parent is a descendant");
-            return false;
-        }
+        assert(false);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Node is a child");
+        return false;
+    }
+
+    if (parentNode.get() == this || !isParentValid(parentNode)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"The parent is the node or one of its descendants: "
+                                                        << Node::formatNodeWithParent(shared_from_this(), parentNode));
+        assert(false);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Node::moveTo", "Parent is a descendant");
+        return false;
     }
 
     detach();
 
-    if (parentNode) {
-        // Set the new parent.
-        _parentNode = parentNode;
+    // Set the new parent.
+    _parentNode = parentNode;
 
-        // Add the node to the list of children of the new parent.
-        _parentNode->_childrenById[*_id] = shared_from_this();
-    }
+    // Add the node to the list of children of the new parent.
+    _parentNode->_childrenById[*_id] = shared_from_this();
 
     return true;
 }
 
 void Node::detach() {
-    if (_parentNode) {
-        // Remove the node from the list of children of the parent node.
-        if (_id) {
-            if (auto it = _parentNode->_childrenById.find(*_id);
-                it != _parentNode->_childrenById.end() && it->second.get() == this) {
-                (void) _parentNode->_childrenById.erase(it);
-            } else {
-                // This should not happen, the ID is not found or corresponds to another node.
-                LOG_IF_FAIL(Log::instance()->getLogger(), false);
-            }
+    if (!_parentNode) return;
+
+    // Remove the node from the list of children of the parent node.
+    if (_id) {
+        if (auto it = _parentNode->_childrenById.find(*_id); it != _parentNode->_childrenById.end() && it->second.get() == this) {
+            (void) _parentNode->_childrenById.erase(it);
         } else {
-            // This should not happen, as a node without an ID should not have a parent.
+            // This should not happen, the ID is not found or corresponds to another node.
             LOG_IF_FAIL(Log::instance()->getLogger(), false);
         }
-
-        // Unset the parent node.
-        _parentNode.reset();
+    } else {
+        // This should not happen, as a node without an ID should not have a parent.
+        LOG_IF_FAIL(Log::instance()->getLogger(), false);
     }
+
+    // Unset the parent node.
+    _parentNode.reset();
 }
 
 std::shared_ptr<Node> Node::getChildExcept(const SyncName &normalizedName, const OperationType except) {
@@ -209,37 +209,47 @@ std::shared_ptr<Node> Node::findChildById(const NodeId &nodeId) {
 bool Node::setId(const std::optional<NodeId> &nodeId) {
     if (_id == nodeId) return true;
 
-    if (_parentNode) {
-        if (nodeId && _parentNode->_childrenById.contains(*nodeId)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Parent already has the node with ID: "
-                                                            << CommonUtility::s2ws(*nodeId) << L" as a child: "
+    if (!_parentNode) {
+        _id = nodeId;
+        return true;
+    }
+
+    if (nodeId && _parentNode->_childrenById.contains(*nodeId)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Parent already has the node with ID: "
+                                                        << CommonUtility::s2ws(*nodeId) << L" as a child: "
+                                                        << Node::formatNodeWithParent(shared_from_this(), _parentNode));
+        assert(false);
+        return false;
+    }
+
+    // Update the list of children of the parent node.
+    if (_id) {
+        const auto count = _parentNode->_childrenById.erase(*_id);
+        if (count == 0) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Parent does not have the node with ID: "
+                                                            << CommonUtility::s2ws(*_id) << L" as a child: "
                                                             << Node::formatNodeWithParent(shared_from_this(), _parentNode));
             assert(false);
             return false;
         }
-
-        // Update the list of children of the parent node.
-        if (_id) {
-            const auto count = _parentNode->_childrenById.erase(*_id);
-            if (count == 0) {
-                LOGW_WARN(Log::instance()->getLogger(), L"Parent does not have the node with ID: "
-                                                                << CommonUtility::s2ws(*_id) << L" as a child: "
-                                                                << Node::formatNodeWithParent(shared_from_this(), _parentNode));
-                assert(false);
-                return false;
-            }
-        }
-
-        if (nodeId) {
-            const auto [_, inserted] = _parentNode->_childrenById.try_emplace(*nodeId, shared_from_this());
-            if (!inserted) {
-                LOGW_WARN(Log::instance()->getLogger(), L"The list of children of the parent node couldn't be updated: "
-                                                                << Node::formatNodeWithParent(shared_from_this(), _parentNode));
-                assert(false);
-                return false;
-            }
-        }
     }
+
+    if (nodeId) {
+        const auto [_, inserted] = _parentNode->_childrenById.try_emplace(*nodeId, shared_from_this());
+        if (!inserted) {
+            LOGW_WARN(Log::instance()->getLogger(), L"The list of children of the parent node couldn't be updated: "
+                                                            << Node::formatNodeWithParent(shared_from_this(), _parentNode));
+            assert(false);
+            return false;
+        }
+    } else {
+        LOGW_WARN(Log::instance()->getLogger(), L"A node that has a parent cannot have an empty ID: "
+                                                        << Node::formatNodeWithParent(shared_from_this(), _parentNode));
+        sentry::Handler::captureMessage(sentry::Level::Error, "Node::setId", "A node that has a parent cannot have an empty ID");
+        assert(false);
+        return false;
+    }
+
     _id = nodeId;
     return true;
 }
