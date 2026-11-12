@@ -967,6 +967,21 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
         }
     }
 
+    bool traversesLink = false;
+    SyncPath linkPath;
+    ioError = IoHelper::checkIfPathTraversesLink(destinationPath, traversesLink, linkPath);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(destinationPath, ioError));
+        return false;
+    }
+    if (traversesLink) {
+        LOGW_WARN(logger(), L"Copy from " << Utility::formatSyncPath(sourcePath) << L" to "
+                                          << Utility::formatSyncPath(destinationPath)
+                                          << L" is forbidden: the path traverses the link " << Utility::formatSyncPath(linkPath));
+        ioError = IoError::MoveThroughSymlink;
+        return false;
+    }
+
     // Copy the source path to the destination path
     // - Overwrite if the destination path already exists
     // - Copy recursively if it is a directory
