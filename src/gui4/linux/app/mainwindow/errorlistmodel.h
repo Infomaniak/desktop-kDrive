@@ -71,6 +71,7 @@ class ErrorListModel final : public QAbstractListModel {
             ActionLabelArgCountRole,
             ActionExternalRole,
             ActionPendingRole,
+            KindIdRole,
         };
         Q_ENUM(Role)
 
@@ -93,6 +94,8 @@ class ErrorListModel final : public QAbstractListModel {
     private:
         struct Row {
                 QString rowId;
+                // Error kind in the user action log, such as `notEnoughDiskSpace`; `conflicts` for the aggregated row.
+                QString kindId;
                 SyncErrorCategory section{SyncErrorCategory::SystemAndPermissions};
                 ErrorDbId errorDbId{0};
                 QString titleId;

@@ -20,6 +20,7 @@
 
 #include "app/cache/appcache.h"
 #include "app/cache/syncerrorsprojection.h"
+#include "app/useractions/useractionlog.h"
 #include "libcommon/utility/cstypes.h"
 
 #include <QAction>
@@ -44,6 +45,23 @@ Q_LOGGING_CATEGORY(lcSystemTrayController, "gui.v4.systray", QtInfoMsg)
 namespace {
 constexpr uint8_t trayAvailabilityRetryLimit = 60;
 constexpr int32_t trayAvailabilityRetryIntervalMs = 1000;
+
+// QSystemTrayIcon::ActivationReason has no meta-enum to read its names from.
+QString activationReasonName(const QSystemTrayIcon::ActivationReason reason) {
+    switch (reason) {
+        case QSystemTrayIcon::Unknown:
+            return u"unknown"_s;
+        case QSystemTrayIcon::Context:
+            return u"context"_s;
+        case QSystemTrayIcon::DoubleClick:
+            return u"doubleClick"_s;
+        case QSystemTrayIcon::Trigger:
+            return u"trigger"_s;
+        case QSystemTrayIcon::MiddleClick:
+            return u"middleClick"_s;
+    }
+    return u"unknown"_s;
+}
 
 #ifdef QT_DEBUG
 bool forceNoTrayRequested() {
@@ -156,8 +174,9 @@ bool isSyncStatus(const SyncStatus status) {
 
 } // namespace
 
-SystemTrayController::SystemTrayController(QObject *const parent) :
-    QObject(parent) {
+SystemTrayController::SystemTrayController(UserActionLog &userActionLog, QObject *const parent) :
+    QObject(parent),
+    _userActionLog(userActionLog) {
     _trayAvailabilityRetryTimer.setSingleShot(true);
     _trayAvailabilityRetryTimer.setInterval(trayAvailabilityRetryIntervalMs);
     (void) connect(&_trayAvailabilityRetryTimer, &QTimer::timeout, this, &SystemTrayController::attemptTrayActivation);
@@ -193,9 +212,18 @@ void SystemTrayController::initialize() {
     _quitAction = _trayMenu.addAction(qtTrId("statusBarQuitApp"));
     _trayIcon.setContextMenu(&_trayMenu);
 
-    (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::openMainWindowRequested);
-    (void) connect(_settingsAction, &QAction::triggered, this, &SystemTrayController::showSettingsWindow);
-    (void) connect(_quitAction, &QAction::triggered, this, &SystemTrayController::requestApplicationQuit);
+    (void) connect(_openAction, &QAction::triggered, this, [this] {
+        _userActionLog.recordAction(u"tray.menu.open"_s);
+        emit openMainWindowRequested();
+    });
+    (void) connect(_settingsAction, &QAction::triggered, this, [this] {
+        _userActionLog.recordAction(u"tray.menu.settings"_s);
+        showSettingsWindow();
+    });
+    (void) connect(_quitAction, &QAction::triggered, this, [this] {
+        _userActionLog.recordAction(u"tray.menu.quit"_s);
+        requestApplicationQuit();
+    });
     (void) connect(&_trayIcon, &QSystemTrayIcon::activated, this, &SystemTrayController::onTrayActivated);
 
     if (_isTrayAvailable) {
@@ -510,6 +538,7 @@ void SystemTrayController::refreshIconState() {
 }
 
 void SystemTrayController::onTrayActivated(const QSystemTrayIcon::ActivationReason reason) {
+    _userActionLog.recordAction(u"tray.icon"_s, {{u"reason"_s, activationReasonName(reason)}});
     qCInfo(lcSystemTrayController) << "System tray activated | reason:" << reason;
 
     if (!_isTrayModeActive) {
