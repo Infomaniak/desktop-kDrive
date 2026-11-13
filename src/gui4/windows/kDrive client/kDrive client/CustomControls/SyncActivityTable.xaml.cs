@@ -212,7 +212,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
             if (!await uriStore.OpenInBrowserAsync(uriStore.WebAppItemUrl(activity.Sync.Drive.DriveId, activity.RemoteNodeId)))
-                {
+            {
                 Logger.LogWarning("Failed to open WebAppItemUrl in browser");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
