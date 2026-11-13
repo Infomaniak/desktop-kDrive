@@ -565,42 +565,65 @@ bool LocalFileSystemObserverWorker::checkAndClearUpdateDelay(ExitInfo &exitInfo)
 }
 
 ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
-    ExitInfo mainExitInfo = ExitCode::Ok;
-
     LOG_SYNCPAL_INFO(_logger, "Starting local snapshot generation");
     const TimerUtility timer;
     auto perfMonitor = sentry::pTraces::scoped::LFSOGenerateInitialSnapshot(syncDbId());
 
-    _liveSnapshot.init();
+    {
+        const std::scoped_lock lock(_mutex);
+        _liveSnapshot.init();
+        _restartOngoingSnapshotGeneration.store(false);
+    }
     setUpdateFlagValue(true);
 
-    if (const auto exitInfo = exploreDir(_rootFolder); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
-        _liveSnapshot.setValid(true);
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
-                                                                  << _liveSnapshot.nbItems() << " items");
-        perfMonitor.stop();
-    } else if (stopAsked()) {
-        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed<DoubleSeconds>().count() << "s");
-    } else {
-        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed<DoubleSeconds>().count()
-                                                                             << "s: " << exitInfo);
-        mainExitInfo = exitInfo;
+    {
+        const std::scoped_lock lock(_recursiveMutex);
+        _pendingFileEvents.clear();
     }
 
+    const auto exitInfo = exploreDir(_rootFolder);
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed<DoubleSeconds>().count()
+                                                                             << "s: " << exitInfo);
+        setUpdateFlagValue(false);
+        return exitInfo;
+    }
+
+    if (stopAsked()) {
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed<DoubleSeconds>().count() << "s");
+        setUpdateFlagValue(false);
+        return ExitCode::Ok;
+    }
+
+    if (!publishSnapshotIfNotRestarted()) {
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation discarded after: " << timer.elapsed<DoubleSeconds>().count() << "s");
+        setUpdateFlagValue(false);
+        return ExitCode::Ok;
+    }
+
+    LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
+                                                              << _liveSnapshot.nbItems() << " items");
+
+    perfMonitor.stop();
+
+    return processPendingFileEvents();
+}
+
+ExitInfo LocalFileSystemObserverWorker::processPendingFileEvents() {
     const std::scoped_lock lock(_recursiveMutex);
+    ExitInfo exitInfo = ExitCode::Ok;
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
-        if (const auto exitInfo = processDetectedChanges(_pendingFileEvents); !exitInfo) {
+        exitInfo = processDetectedChanges(_pendingFileEvents);
+        if (!exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
-            mainExitInfo.merge(exitInfo, {ExitCode::SystemError, ExitCode::DataError});
         }
         _pendingFileEvents.clear();
         LOG_SYNCPAL_DEBUG(_logger, "Pending file events processed");
     }
 
     setUpdateFlagValue(false);
-
-    return mainExitInfo;
+    return exitInfo;
 }
 
 bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absolutePath) {
@@ -763,7 +786,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(entry.path()) << L" found");
         }
 
-        if (stopAsked()) {
+        if (stopAsked() || _restartOngoingSnapshotGeneration.load()) {
             return ExitCode::Ok;
         }
 

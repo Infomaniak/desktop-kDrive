@@ -36,18 +36,6 @@ void FolderWatcher_win::changesLost() {
     _parent->invalidateSnapshot();
 }
 
-ExitInfo FolderWatcher_win::changeDetected(const SyncPath &path, OperationType opType) {
-    std::list<std::pair<SyncPath, OperationType>> list;
-    list.push_back({path, opType});
-    if (const auto exitInfo = _parent->changesDetected(list); exitInfo.code() != ExitCode::Ok) {
-        LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
-        _parent->invalidateSnapshot();
-        return exitInfo;
-    }
-
-    return ExitCode::Ok;
-}
-
 void FolderWatcher_win::startWatching() {
     _resultEventHandle = CreateEvent(nullptr, true, false, nullptr);
     _stopEventHandle = CreateEvent(nullptr, true, false, nullptr);
@@ -58,8 +46,9 @@ void FolderWatcher_win::startWatching() {
 
         if (!_stop) {
             changesLost();
-            // TODO: Is it necessary to wait?
-            Utility::msleep(100);
+            Utility::msleep(100); // This is to avoid a busy loop in case of a persistent error (e.g. the folder is deleted) and
+                                  // the lfso is not stopped yet. The sleep time is arbitrary, but it should be short enough to
+                                  // not delay the next scan too much.
         }
     }
 
@@ -136,59 +125,8 @@ void FolderWatcher_win::watchChanges() {
             break;
         }
 
-        const FILE_NOTIFY_INFORMATION *notifInfo = reinterpret_cast<const FILE_NOTIFY_INFORMATION *>(&fileNotifyBuffer);
-        while (!_stop) {
-            if (!notifInfo) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Bad notifInfo");
-                break;
-            }
-
-            std::wstring wPathName(notifInfo->FileName,
-                                   notifInfo->FileName + (notifInfo->FileNameLength / sizeof(notifInfo->FileName)));
-            SyncPath filepath = (_folder / wPathName).lexically_normal();
-
-            bool converted = false;
-            OperationType opType = operationFromAction(notifInfo->Action);
-
-            // Unless the file was removed or renamed, get its full long name
-            SyncPath longfilepath = filepath;
-            if (opType != OperationType::Delete && notifInfo->Action != FILE_ACTION_RENAMED_OLD_NAME) {
-                bool notFound = false;
-                if (!KDC::Utility::longPath(filepath, longfilepath, notFound)) {
-                    if (notFound) {
-                        // Item doesn't exist anymore
-                        LOGW_DEBUG(_logger, L"Convert operation " << opType << L" detected on item "
-                                                                  << Utility::formatSyncPath(longfilepath)
-                                                                  << L" to Delete (item doesn't exist)");
-                        opType = OperationType::Delete;
-                        converted = true;
-                    } else {
-                        // Keep original name
-                        LOGW_WARN(KDC::Log::instance()->getLogger(),
-                                  L"Error in Utility::longpath for " << Utility::formatSyncPath(longfilepath));
-                    }
-                }
-            }
-
-            if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_DEBUG(_logger, L"Operation " << opType << (converted ? L"(converted) " : L"") << L" detected on item with "
-                                                  << Utility::formatSyncPath(longfilepath));
-            }
-
-            if (opType == OperationType::MoveOut) opType = OperationType::Move; // "MoveOut" is considered as Move from now on
-
-            if (const auto exitInfo = changeDetected(longfilepath, opType); exitInfo.code() != ExitCode::Ok) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_win::changeDetected for "
-                                                                     << Utility::formatSyncPath(longfilepath) << L" "
-                                                                     << exitInfo);
-            }
-
-            if (notifInfo->NextEntryOffset == 0) {
-                break;
-            }
-
-            notifInfo = reinterpret_cast<const FILE_NOTIFY_INFORMATION *>(reinterpret_cast<const char *>(notifInfo) +
-                                                                          notifInfo->NextEntryOffset);
+        if (const auto exitInfo = processNotifyBuffer(&fileNotifyBuffer, dwBytesReturned); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in FolderWatcher_win::processNotifyBuffer: " << exitInfo);
         }
     }
 
@@ -196,6 +134,73 @@ void FolderWatcher_win::watchChanges() {
     (void) closeHandle();
 
     LOG_DEBUG(_logger, "Watching changes stopped");
+}
+
+ExitInfo FolderWatcher_win::processNotifyBuffer(const void *buffer, DWORD bytesReturned) {
+    if (bytesReturned == 0) {
+        // With overlapped I/O, a notification buffer overflow is reported as a successful completion with no data.
+        LOG_WARN(_logger,
+                 "ReadDirectoryChangesW notification buffer overflow, changes were lost. Invalidating the local snapshot.");
+        changesLost();
+        sentry::Handler::captureMessage(sentry::Level::Warning, "FolderWatcher_win::processNotifyBuffer",
+                                        "ReadDirectoryChangesW notification buffer overflow, changes were lost.");
+        return ExitCode::Ok;
+    }
+
+    std::list<std::pair<SyncPath, OperationType>> changes;
+    const auto *notifInfo = static_cast<const FILE_NOTIFY_INFORMATION *>(buffer);
+    while (!_stop) {
+        std::wstring wPathName(notifInfo->FileName, notifInfo->FileName + (notifInfo->FileNameLength / sizeof(WCHAR)));
+        SyncPath filepath = (_folder / wPathName).lexically_normal();
+
+        bool converted = false;
+        OperationType opType = operationFromAction(notifInfo->Action);
+
+        // Unless the file was removed or renamed, get its full long name
+        SyncPath longfilepath = filepath;
+        if (opType != OperationType::Delete && notifInfo->Action != FILE_ACTION_RENAMED_OLD_NAME) {
+            bool notFound = false;
+            if (!KDC::Utility::longPath(filepath, longfilepath, notFound)) {
+                if (notFound) {
+                    // Item doesn't exist anymore
+                    LOGW_DEBUG(_logger, L"Convert operation " << opType << L" detected on item "
+                                                              << Utility::formatSyncPath(longfilepath)
+                                                              << L" to Delete (item doesn't exist)");
+                    opType = OperationType::Delete;
+                    converted = true;
+                } else {
+                    // Keep original name
+                    LOGW_WARN(_logger, L"Error in Utility::longpath for " << Utility::formatSyncPath(longfilepath));
+                }
+            }
+        }
+
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_DEBUG(_logger, L"Operation " << opType << (converted ? L"(converted) " : L"") << L" detected on item with "
+                                              << Utility::formatSyncPath(longfilepath));
+        }
+
+        if (opType == OperationType::MoveOut) opType = OperationType::Move; // "MoveOut" is considered as Move from now on
+
+        (void) changes.emplace_back(longfilepath, opType);
+
+        if (notifInfo->NextEntryOffset == 0) {
+            break;
+        }
+
+        notifInfo = reinterpret_cast<const FILE_NOTIFY_INFORMATION *>(reinterpret_cast<const char *>(notifInfo) +
+                                                                      notifInfo->NextEntryOffset);
+    }
+
+    if (changes.empty()) return ExitCode::Ok;
+
+    if (const auto exitInfo = _parent->changesDetected(changes); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
+        changesLost();
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
 }
 
 void FolderWatcher_win::closeHandle() {

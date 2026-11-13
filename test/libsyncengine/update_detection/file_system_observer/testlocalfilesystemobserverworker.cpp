@@ -777,6 +777,42 @@ void TestLocalFileSystemObserverWorker::populatePendingFiles(const Count fileCou
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(fileCount), localFSO->_pendingFileEvents.size());
 }
 
+void TestLocalFileSystemObserverWorker::testSnapshotPublicationRejectedAfterInvalidation() {
+    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
+    CPPUNIT_ASSERT(localFSO);
+
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
+
+    localFSO->invalidateSnapshot();
+    CPPUNIT_ASSERT(!localFSO->publishSnapshotIfNotRestarted());
+    CPPUNIT_ASSERT(!localFSO->_liveSnapshot.isValid());
+}
+
+void TestLocalFileSystemObserverWorker::testPendingFileEventErrorIsPropagated() {
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
+
+    class FailingLocalFileSystemObserverWorker final : public LocalFileSystemObserverWorker {
+        public:
+            using LocalFileSystemObserverWorker::LocalFileSystemObserverWorker;
+
+            ExitInfo processDetectedChanges(const std::list<std::pair<SyncPath, OperationType>> &) override {
+                return ExitCode::SystemError;
+            }
+    };
+
+    auto localFSO =
+            std::make_shared<FailingLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
+    localFSO->_liveSnapshot.setValid(true);
+    localFSO->_pendingFileEvents.emplace_back(_rootFolderPath / "pending-event.txt", OperationType::Create);
+
+    const auto exitInfo = localFSO->processPendingFileEvents();
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError), exitInfo);
+    CPPUNIT_ASSERT(localFSO->_pendingFileEvents.empty());
+}
+
 void TestLocalFileSystemObserverWorker::testLocalChangesDetectedDoesNotAppendPendingEventsToItself() {
     // Regression test for the fix that splits changesDetected() using processDetectedChanges().
     // Before the fix, generateInitialSnapshot() called changesDetected(_pendingFileEvents), which — when the

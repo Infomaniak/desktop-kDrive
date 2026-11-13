@@ -49,6 +49,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         LiveSnapshot _liveSnapshot;
 
         std::list<std::pair<SyncPath, OperationType>> _pendingFileEvents;
+        std::atomic<bool> _restartOngoingSnapshotGeneration{false}; 
 
         std::atomic<bool> _updating{false};
         std::atomic<bool> _initializing{true};
@@ -63,12 +64,12 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         void setUpdateFlagValue(bool isUpdating);
         void setInitFlagValue(bool isInitializing);
+        bool publishSnapshotIfNotRestarted();
 
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;
 
         int _invalidateCounter{false}; // A counter used to invalidate the snapshot only after a few attempt.
-
         friend class TestLocalFileSystemObserverWorker;
         friend class TestRemoteFileSystemObserverWorker;
 

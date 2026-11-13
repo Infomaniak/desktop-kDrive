@@ -79,6 +79,8 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         CPPUNIT_TEST(testInvalidateCounter);
         CPPUNIT_TEST(testInvalidateSnapshot);
         CPPUNIT_TEST(testSlowWritingExtensionDelay);
+        CPPUNIT_TEST(testSnapshotPublicationRejectedAfterInvalidation);
+        CPPUNIT_TEST(testPendingFileEventErrorIsPropagated);
         CPPUNIT_TEST(testLocalChangesDetectedDoesNotAppendPendingEventsToItself);
         CPPUNIT_TEST(testGenerateInitialSnapshotWithInvalidSnapshotAndPendingEvents);
         CPPUNIT_TEST_SUITE_END();
@@ -110,6 +112,8 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         void testInvalidateCounter();
         void testInvalidateSnapshot();
         void testSlowWritingExtensionDelay();
+        void testSnapshotPublicationRejectedAfterInvalidation();
+        void testPendingFileEventErrorIsPropagated();
         void testLocalChangesDetectedDoesNotAppendPendingEventsToItself();
         void testGenerateInitialSnapshotWithInvalidSnapshotAndPendingEvents();
         void testSyncDirChange();
