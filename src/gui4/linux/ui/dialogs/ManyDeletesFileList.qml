@@ -63,12 +63,19 @@ Rectangle {
         ListView {
             id: itemList
 
+            Accessible.name: qsTrId("manyDeleteDialogFilesHeader").arg(root.itemCount)
+            Accessible.role: Accessible.List
             acceptedButtons: Qt.NoButton
+            // A single tab stop: Up and Down move the current row, which the view keeps in sight, so keyboard users can
+            // read every path before choosing an action.
+            activeFocusOnTab: true
             boundsBehavior: Flickable.StopAtBounds
             clip: true
+            currentIndex: -1
             // Inline footer: the count of the items left out only shows once the list is scrolled to its end.
             footer: root.hiddenCount > 0 ? hiddenItemsFooter : null
             height: Math.min(contentHeight, IKModalTokens.fileListMaxHeight)
+            keyNavigationEnabled: true
             model: root.items
             width: parent.width
 
@@ -78,13 +85,26 @@ Rectangle {
             delegate: Item {
                 id: itemRow
 
+                readonly property bool keyboardCurrent: ListView.isCurrentItem && itemList.activeFocus
                 required property var modelData
 
+                Accessible.description: itemRow.modelData.displayPath
+                Accessible.name: itemRow.modelData.shortPath
+                Accessible.role: Accessible.ListItem
+                Accessible.selected: itemRow.keyboardCurrent
                 height: IKModalTokens.fileListRowHeight
                 width: itemList.width
 
                 HoverHandler {
                     id: itemHover
+                }
+                Rectangle {
+                    anchors.fill: parent
+                    border.color: IKColors.accentPrimary
+                    border.width: IKModalTokens.focusBorderWidth
+                    color: "transparent"
+                    radius: IKRadius.r4
+                    visible: itemRow.keyboardCurrent
                 }
                 ActivityFileIcon {
                     id: itemIcon
@@ -112,6 +132,23 @@ Rectangle {
                     maximumTextWidth: IKModalTokens.fileListTooltipMaximumWidth
                     showRequested: itemHover.hovered
                     text: itemRow.modelData.displayPath
+                }
+            }
+
+            onActiveFocusChanged: {
+                if (activeFocus && currentIndex < 0 && count > 0) {
+                    currentIndex = 0;
+                }
+            }
+            onCurrentIndexChanged: {
+                if (currentIndex < 0) {
+                    return;
+                }
+                // The last row also brings the count of the items left out into view.
+                if (currentIndex === count - 1) {
+                    positionViewAtEnd();
+                } else {
+                    positionViewAtIndex(currentIndex, ListView.Contain);
                 }
             }
         }
