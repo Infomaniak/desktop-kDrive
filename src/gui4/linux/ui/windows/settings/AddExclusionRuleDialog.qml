@@ -41,18 +41,23 @@ IKModal {
         open();
     }
 
-    // Enter in the pattern field: logged only when the rule is submitted, never with its pattern.
+    function isSubmittable() {
+        return canSubmit && !controller.saving;
+    }
+
+    // Enter in the pattern field: logged only when the rule is submitted, never with its pattern, and before the
+    // submission like the Add button.
     function submitFromKeyboard() {
-        if (!root.submit()) {
+        if (!root.isSubmittable()) {
             return false;
         }
 
         UserActionLog.action(root.dialogId + ".submit", { source: "keyboard" });
-        return true;
+        return root.submit();
     }
 
     function submit() {
-        if (!canSubmit || controller.saving) {
+        if (!root.isSubmittable()) {
             return false;
         }
 

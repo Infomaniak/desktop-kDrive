@@ -19,6 +19,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Window
 import kDrive.UI
 
 // Replaces the whole main window content while the server requires a newer version. Without an installer on Linux, the
@@ -28,11 +29,21 @@ Item {
 
     // Prefix of the user action log ids of this file (see UserActionLog).
     readonly property string actionIdPrefix: "updateRequired"
+    // The view can be created while the window is in the tray and is kept when it is shown again: it is logged each time
+    // it becomes visible, not when it is created.
+    readonly property bool shown: root.visible && root.Window.window !== null && root.Window.window.visible
 
     signal downloadRequested
     signal quitRequested
 
-    Component.onCompleted: UserActionLog.screen("updateRequired")
+    function logScreenIfShown() {
+        if (root.shown) {
+            UserActionLog.screen(root.actionIdPrefix);
+        }
+    }
+
+    onShownChanged: root.logScreenIfShown()
+    Component.onCompleted: root.logScreenIfShown()
 
     IKBlockingState {
         anchors.fill: parent
