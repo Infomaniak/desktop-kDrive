@@ -251,7 +251,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     ParametersCache::instance()->parameters().setMoveToTrash(false);
 
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testDeleteFilesWithDuplicateNames");
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testDeleteFilesWithDuplicateNames", _syncPal->localPath());
     const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
 
     // Create two files with the same name but distinct encodings.
