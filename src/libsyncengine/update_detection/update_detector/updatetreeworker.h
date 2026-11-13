@@ -114,8 +114,8 @@ class UpdateTreeWorker : public ISyncWorker {
         ExitCode getNewPathAfterMove(const SyncPath &path, SyncPath &newPath);
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
         [[nodiscard]] ExitCode mergeNodeToParentChildren(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node);
-        ExitCode tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, bool &merged);
-        ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode);
+        ExitCode tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &permanentNode);
+        ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &mergedNode);
         ExitCode getOriginPath(const std::shared_ptr<Node> node, SyncPath &path);
 
         // Log update information if extended logging is on.

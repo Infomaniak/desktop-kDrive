@@ -1379,7 +1379,8 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity()); // Not OK because "newNode" has been correctly added but its
                                                                    // parent ("Dir 5") is still a temporary node.
 
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->updateTmpNode(newNode->parentNode()));
+    std::shared_ptr<Node> mergedNode = nullptr;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->updateTmpNode(newNode->parentNode(), mergedNode));
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setId(std::nullopt);
