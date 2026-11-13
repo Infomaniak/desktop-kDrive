@@ -29,6 +29,8 @@
 
 #include "test_utility/testhelpers.h"
 
+#include <algorithm>
+
 namespace KDC {
 
 void TestAppServer::setUp() {
@@ -314,12 +316,17 @@ void TestAppServer::testResolveErrorsForNode() {
                     CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errAccess));
 
-    // Resolvable: TmpBlacklisted
+    // Auto-resolved: TmpBlacklisted
     Error errTmp(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
                  CancelType::TmpBlacklisted);
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errTmp));
 
-    // Resolvable: ForbiddenChar
+    // Auto-resolved: canceled edit
+    Error errCanceled(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
+                      CancelType::Edit);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errCanceled));
+
+    // Auto-resolved: ForbiddenChar
     Error errChar(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::ForbiddenChar);
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errChar));
 
@@ -334,14 +341,22 @@ void TestAppServer::testResolveErrorsForNode() {
     item.setPath(path);
     _appPtr->resolveItemErrors(syncDbId, item);
 
-    // Only the conflict error must remain
+    // Auto-resolved errors and the conflict must remain, but the access error must be removed.
     std::vector<Error> errorList;
     bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(syncDbId, localId, remoteId, std::nullopt, std::nullopt, errorList,
                                                               found));
     CPPUNIT_ASSERT(found);
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
-    CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, errorList[0].conflictType());
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(4), errorList.size());
+    const auto containsError = [&errorList](const Error &error) {
+        return std::any_of(errorList.begin(), errorList.end(),
+                           [&error](const Error &entry) { return entry.dbId() == error.dbId(); });
+    };
+    CPPUNIT_ASSERT(!containsError(errAccess));
+    CPPUNIT_ASSERT(containsError(errTmp));
+    CPPUNIT_ASSERT(containsError(errCanceled));
+    CPPUNIT_ASSERT(containsError(errChar));
+    CPPUNIT_ASSERT(containsError(errConflict));
 }
 
 void TestAppServer::testManageInvalidTokenErrorForUser() {
