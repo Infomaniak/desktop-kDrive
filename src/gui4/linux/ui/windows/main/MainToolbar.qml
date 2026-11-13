@@ -30,6 +30,9 @@ Rectangle {
 
     required property var appRouter
     required property var controller
+    required property var syncControl
+    // Selected synchronization of the sidebar selector, shown in the Pause/Resume menu header.
+    required property var sidebarController
     property bool searchAvailable: false
     property string searchShortcutText: ""
     property string settingsShortcutText: ""
@@ -39,11 +42,23 @@ Rectangle {
     readonly property int tabStorage: AppRouter.Storage
     readonly property var activitiesNavigation: root.appRouter.activitiesNavigation
     readonly property bool canGoBack: root.currentTab === root.tabActivities && root.activitiesNavigation.canGoBack
+    readonly property bool syncShowsResume: root.syncControl.selectedState === SyncControl.Resume
+    readonly property url syncControlIcon: root.syncShowsResume ? "qrc:/assets/main/home/play.svg"
+                                                                : "qrc:/assets/main/home/pause.svg"
 
     color: "transparent"
 
     function tooltipWithShortcut(label, shortcutText) {
         return shortcutText.length > 0 ? label + " (" + shortcutText + ")" : label;
+    }
+
+    // Opens the menu below the toolbar group, centered on the Pause/Resume button and its chevron, kept inside the toolbar.
+    function openSyncControlMenu() {
+        const buttonCenter = syncControlButtons.mapToItem(root, syncControlButtons.width / 2, 0);
+        const groupBottom = actionGroup.mapToItem(root, 0, actionGroup.height);
+        syncControlMenu.x = Math.max(0, Math.min(root.width - syncControlMenu.width, buttonCenter.x - syncControlMenu.width / 2));
+        syncControlMenu.y = groupBottom.y + IKMainWindow.syncControlMenuOffset;
+        syncControlMenu.open();
     }
 
     HeaderIconButton {
@@ -103,7 +118,10 @@ Rectangle {
         }
 
         Rectangle {
-            width: IKMainWindow.toolbarActionGroupWidth
+            id: actionGroup
+
+            width: root.syncControl.multipleSyncs ? IKMainWindow.toolbarActionGroupMenuWidth
+                                                  : IKMainWindow.toolbarActionGroupWidth
             height: IKMainWindow.toolbarActionGroupHeight
             radius: height / 2
             color: IKColors.toolbarControlSurface
@@ -114,14 +132,40 @@ Rectangle {
                 anchors.centerIn: parent
                 spacing: IKMainWindow.toolbarActionGroupSpacing
 
-                GroupedIconButton {
-                    enabled: root.controller.syncControlState === HomeController.Pause
-                             || root.controller.syncControlState === HomeController.Resume
-                    iconSource: root.controller.syncControlState === HomeController.Resume
-                                ? "qrc:/assets/main/home/play.svg" : "qrc:/assets/main/home/pause.svg"
-                    text: root.controller.syncControlState === HomeController.Resume
-                          ? qsTrId("buttonRestartSync") : qsTrId("buttonPause")
-                    onClicked: root.controller.toggleSync()
+                // The button pauses or resumes the selected synchronization. With several synchronizations, its chevron
+                // opens the menu that also acts on every synchronization.
+                Row {
+                    id: syncControlButtons
+
+                    GroupedIconButton {
+                        enabled: root.syncControl.selectedState === SyncControl.Pause || root.syncShowsResume
+                        iconSource: root.syncControlIcon
+                        text: root.syncShowsResume ? qsTrId("buttonRestartSync") : qsTrId("buttonPause")
+                        onClicked: root.syncControl.toggleSelected()
+                    }
+
+                    SyncMenuChevronButton {
+                        id: syncMenuButton
+
+                        visible: root.syncControl.multipleSyncs
+                        enabled: root.syncControl.available
+                        menuOpened: syncControlMenu.opened
+                        text: qsTrId("buttonShowOption")
+                        onClicked: root.openSyncControlMenu()
+                    }
+                }
+
+                Item {
+                    visible: root.syncControl.multipleSyncs
+                    width: IKMainWindow.toolbarActionGroupSeparatorSlotWidth
+                    height: IKMainWindow.toolbarActionGroupButtonSize
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 1
+                        height: IKMainWindow.toolbarActionGroupSeparatorHeight
+                        color: IKColors.toolbarActionGroupSeparator
+                    }
                 }
 
                 GroupedIconButton {
@@ -141,6 +185,14 @@ Rectangle {
             tooltipText: root.tooltipWithShortcut(text, root.searchShortcutText)
             onClicked: root.searchRequested()
         }
+    }
+
+    SyncControlMenu {
+        id: syncControlMenu
+
+        syncControl: root.syncControl
+        sidebarController: root.sidebarController
+        returnFocusItem: syncMenuButton
     }
 
     component HeaderIconButton: ToolButton {
@@ -208,6 +260,44 @@ Rectangle {
         IKToolTip {
             targetButton: groupedButton
             text: groupedButton.tooltipText
+        }
+    }
+
+    // Chevron that opens the menu of a grouped button, with its own hover surface.
+    component SyncMenuChevronButton: ToolButton {
+        id: chevronButton
+
+        property bool menuOpened: false
+
+        width: IKMainWindow.toolbarSyncMenuChevronButtonWidth
+        height: IKMainWindow.toolbarActionGroupButtonSize
+        focusPolicy: Qt.StrongFocus
+        hoverEnabled: true
+        display: AbstractButton.IconOnly
+        Accessible.role: Accessible.ButtonMenu
+
+        contentItem: Item {
+            IKTintedIcon {
+                anchors.centerIn: parent
+                width: IKMainWindow.toolbarSyncMenuChevronSize
+                height: IKMainWindow.toolbarSyncMenuChevronSize
+                source: "qrc:/assets/main/chevron-down.svg"
+                color: chevronButton.enabled ? IKColors.textSecondary : IKColors.actionDisabled
+            }
+        }
+
+        background: Rectangle {
+            radius: Math.min(width, height) / 2
+            color: chevronButton.hovered || chevronButton.down || chevronButton.menuOpened ? IKColors.toolbarControlHover
+                                                                                           : "transparent"
+            border.width: chevronButton.visualFocus ? 2 : 0
+            border.color: IKColors.accentPrimary
+        }
+
+        IKToolTip {
+            targetButton: chevronButton
+            showRequested: !chevronButton.menuOpened && (chevronButton.hovered || chevronButton.visualFocus)
+            text: chevronButton.text
         }
     }
 }

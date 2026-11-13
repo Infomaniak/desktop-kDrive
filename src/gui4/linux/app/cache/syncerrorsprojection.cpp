@@ -91,6 +91,9 @@ SyncErrorsProjection::SyncErrorsProjection(const AppCache &cache, const MainSele
 
     (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &SyncErrorsProjection::scheduleRefresh);
     (void) connect(&_cache, &AppCache::serverErrorsChanged, this, &SyncErrorsProjection::scheduleRefresh);
+    // The blocked synchronizations also follow the connection state of every user and the configured synchronizations.
+    (void) connect(&_cache, &AppCache::usersChanged, this, &SyncErrorsProjection::scheduleRefresh);
+    (void) connect(&_cache, &AppCache::syncsChanged, this, &SyncErrorsProjection::scheduleRefresh);
     // A selection change is applied at once, or the newly selected synchronization would show the previous one's errors
     // (blocking screen included) for up to refreshInterval. A pending coalesced refresh still runs afterwards.
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, &SyncErrorsProjection::refresh);
@@ -123,6 +126,7 @@ void SyncErrorsProjection::refresh() {
 
     refreshClassifications(syncErrors);
     refreshCurrentErrors();
+    refreshBlockedSyncs();
     refreshTrayRelevance();
     refreshUpdateRequired(syncErrors);
 }
@@ -182,6 +186,23 @@ void SyncErrorsProjection::refreshCurrentErrors() {
                                        << "/ to:" << blockingErrorName(blockingError).c_str();
         _currentBlockingError = blockingError;
         emit currentBlockingErrorChanged();
+    }
+}
+
+// Collects the synchronizations that have a blocking error, selected or not, for the actions on every synchronization.
+void SyncErrorsProjection::refreshBlockedSyncs() {
+    std::unordered_set<SyncDbId> blockedSyncDbIds;
+    for (const auto &context: _cache.syncContexts()) {
+        const SyncDbId syncDbId = context.syncInfo.dbId();
+        if (resolveBlockingError(_cache.errorsForSync(syncDbId), context.userDisplayInfo.connected()).has_value()) {
+            (void) blockedSyncDbIds.insert(syncDbId);
+        }
+    }
+
+    if (blockedSyncDbIds != _blockedSyncDbIds) {
+        qCInfo(lcSyncErrorsProjection) << "Blocked syncs changed | count:" << blockedSyncDbIds.size();
+        _blockedSyncDbIds = std::move(blockedSyncDbIds);
+        emit blockedSyncsChanged();
     }
 }
 

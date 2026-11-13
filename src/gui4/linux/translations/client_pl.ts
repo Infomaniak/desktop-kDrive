@@ -1958,6 +1958,22 @@ Analyzing this data allows our team to continuously improve the application’s 
 
 Analiza tych danych pozwala naszemu zespołowi na ciągłe ulepszanie interfejsu aplikacji.</translation> 
         </message> 
+        <message id="menuSyncPause"> 
+            <source>Pause</source> 
+            <translation>Wstrzymaj</translation> 
+        </message> 
+        <message id="menuSyncPauseAll"> 
+            <source>Pause all</source> 
+            <translation>Wstrzymaj wszystkie</translation> 
+        </message> 
+        <message id="menuSyncResume"> 
+            <source>Resume</source> 
+            <translation>Wznów</translation> 
+        </message> 
+        <message id="menuSyncResumeAll"> 
+            <source>Resume all</source> 
+            <translation>Wznów wszystkie</translation> 
+        </message> 
         <message id="moveCancelErrorTitle"> 
             <source>Move canceled</source> 
             <translation>Przenoszenie anulowane</translation> 

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/mainwindow/synccontrolstate.h"
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 
@@ -48,7 +49,6 @@ class HomeController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(HomeStatus status READ status NOTIFY homeChanged)
         Q_PROPERTY(PrimaryAction primaryAction READ primaryAction NOTIFY homeChanged)
-        Q_PROPERTY(SyncControlState syncControlState READ syncControlState NOTIFY homeChanged)
         Q_PROPERTY(QString firstName READ firstName NOTIFY homeChanged)
         Q_PROPERTY(QString userName READ userName NOTIFY homeChanged)
         Q_PROPERTY(QString driveName READ driveName NOTIFY homeChanged)
@@ -80,14 +80,6 @@ class HomeController final : public QObject {
         };
         Q_ENUM(PrimaryAction)
 
-        enum class SyncControlState : uint8_t {
-            Disabled = 0,
-            Pending,
-            Pause,
-            Resume,
-        };
-        Q_ENUM(SyncControlState)
-
         explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
                                 const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
                                 NetworkStatusObserver &networkStatusObserver, CommService &commService,
@@ -95,7 +87,6 @@ class HomeController final : public QObject {
 
         [[nodiscard]] HomeStatus status() const;
         [[nodiscard]] PrimaryAction primaryAction() const;
-        [[nodiscard]] SyncControlState syncControlState() const;
         [[nodiscard]] QString firstName() const;
         [[nodiscard]] QString userName() const;
         [[nodiscard]] QString driveName() const;
@@ -113,7 +104,6 @@ class HomeController final : public QObject {
         void loadV4Onboarding();
 
         Q_INVOKABLE void triggerPrimaryAction();
-        Q_INVOKABLE void toggleSync();
         Q_INVOKABLE static void openSupport();
         Q_INVOKABLE void openDriveDestination(int32_t destination) const;
         Q_INVOKABLE void showErrors() const;
@@ -133,6 +123,7 @@ class HomeController final : public QObject {
         void advancedSyncSettingsRequested(DriveDbId driveDbId, SyncDbId syncDbId);
 
     private:
+        [[nodiscard]] SyncControlState syncControlState() const;
         [[nodiscard]] std::optional<SyncStatus> currentRuntimeStatus() const;
         [[nodiscard]] qint64 currentSyncDbId() const;
         [[nodiscard]] bool syncActionPending() const;

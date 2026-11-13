@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/mainwindow/homecontroller.h"
+#include "app/mainwindow/synccontrolstate.h"
 #include "libcommon/utility/cstypes.h"
 
 #include <optional>
@@ -31,5 +32,14 @@ namespace KDC {
  * Structured synchronization errors are intentionally excluded because Home renders them independently in its error banner.
  */
 [[nodiscard]] HomeController::HomeStatus resolveHomeStatus(bool hasSync, bool offline, std::optional<SyncStatus> runtimeStatus);
+
+/**
+ * Resolves the pause or resume control of one synchronization, shared by the selected synchronization and the actions on
+ * every synchronization.
+ *
+ * A blocked synchronization is restarted from its blocking error screen, and a synchronization with a start or stop request
+ * in flight waits for its reply. Connectivity is left to the caller.
+ */
+[[nodiscard]] SyncControlState resolveSyncControlState(std::optional<SyncStatus> runtimeStatus, bool actionPending, bool blocked);
 
 } // namespace KDC

@@ -54,4 +54,35 @@ HomeStatus resolveHomeStatus(const bool hasSync, const bool offline, const std::
     return HomeStatus::Loading;
 }
 
+SyncControlState resolveSyncControlState(const std::optional<SyncStatus> runtimeStatus, const bool actionPending,
+                                         const bool blocked) {
+    if (blocked) {
+        return SyncControlState::Disabled;
+    }
+    if (actionPending) {
+        return SyncControlState::Pending;
+    }
+    if (!runtimeStatus.has_value()) {
+        return SyncControlState::Disabled;
+    }
+
+    switch (*runtimeStatus) {
+        case SyncStatus::Running:
+        case SyncStatus::Idle:
+            return SyncControlState::Pause;
+        case SyncStatus::Paused:
+        case SyncStatus::Stopped:
+        case SyncStatus::Error:
+            return SyncControlState::Resume;
+        case SyncStatus::Starting:
+        case SyncStatus::PauseAsked:
+        case SyncStatus::StopAsked:
+            return SyncControlState::Pending;
+        case SyncStatus::Undefined:
+        case SyncStatus::EnumEnd:
+            return SyncControlState::Disabled;
+    }
+    return SyncControlState::Disabled;
+}
+
 } // namespace KDC

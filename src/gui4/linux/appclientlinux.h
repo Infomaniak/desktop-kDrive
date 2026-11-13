@@ -33,6 +33,7 @@
 #include "app/mainwindow/networkstatusobserver.h"
 #include "app/mainwindow/searchcontroller.h"
 #include "app/mainwindow/storage/storagecontroller.h"
+#include "app/mainwindow/synccontrolcontroller.h"
 #include "app/mainwindow/syncerroractionhandler.h"
 #include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
@@ -172,6 +173,8 @@ class AppClientLinux : public QApplication {
         NetworkStatusObserver _networkStatusObserver{this};
         HomeController _homeController{_appCache,  _mainSelectionStore,    _syncErrorsProjection, _syncService,
                                        _appRouter, _networkStatusObserver, _serverCommService,    this};
+        SyncControlController _syncControlController{_appCache,    _mainSelectionStore,    _syncErrorsProjection,
+                                                     _syncService, _networkStatusObserver, this};
         BlockingErrorController _blockingErrorController{_syncErrorsProjection, _mainSelectionStore, _syncService, _appRouter,
                                                          this};
         ActivitiesController _activitiesController{

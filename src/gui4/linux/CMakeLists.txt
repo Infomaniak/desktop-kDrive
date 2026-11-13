@@ -90,6 +90,9 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/storage/storagemeasurecache.h
         app/mainwindow/storage/storagescanner.cpp
         app/mainwindow/storage/storagescanner.h
+        app/mainwindow/synccontrolcontroller.cpp
+        app/mainwindow/synccontrolcontroller.h
+        app/mainwindow/synccontrolstate.h
         app/mainwindow/syncerroractionhandler.cpp
         app/mainwindow/syncerroractionhandler.h
         app/mainwindow/syncerrorexplanationcontroller.cpp
@@ -297,6 +300,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKSearchField.qml
         ui/components/IKSidebarItem.qml
         ui/components/IKDriveSyncSelectorItem.qml
+        ui/components/IKSyncIcon.qml
         ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
         ui/components/IKExternalLinkIcon.qml
@@ -313,6 +317,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
+        ui/windows/main/SyncControlMenu.qml
         ui/windows/main/storage/StorageActionCard.qml
         ui/windows/main/storage/StorageErrorState.qml
         ui/windows/main/storage/StorageLegendEntry.qml

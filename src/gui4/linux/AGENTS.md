@@ -166,7 +166,9 @@
   errors appear on the closed selector, and per-sync dots appear inside the open selector. Normal activity has no dot.
 - Keep the shared error banner surface visibly distinct from the page background in both themes.
 - Match the Figma main-toolbar Pause/Resume and Settings group: one subtly outlined 68 x 36 capsule with 4 px padding
-  and spacing, containing two independent 28 x 28 circular hover surfaces.
+  and spacing, containing two independent 28 x 28 circular hover surfaces. Pause/Resume always acts on the selected
+  synchronization. With several synchronizations, it is followed, without spacing, by a 16 x 28 chevron button with its
+  own hover surface that opens the menu, then a 1 x 20 px separator in a 3 px slot, which widens the capsule to 91 px.
 - Use the same resting surface for the main-toolbar Support and Pause/Settings controls, and the same stronger hover
   surface for all three buttons.
 - Render the main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
@@ -483,7 +485,8 @@
   each `AppCache` error with the `app/errors` domain, keeps the result by `ErrorDbId` and logs it once unless its kind
   changes (category `gui.v4.syncerrors`, never file paths; unclassified errors as warnings with their raw fields). It
   exposes the selected synchronization's errors (oldest first), its user-resolvable conflict ids, its blocking error
-  (including a disconnected user), whether any error is relevant to the tray, and whether an update is required.
+  (including a disconnected user), which synchronizations, selected or not, are blocked (`isSyncBlocked`), whether any
+  error is relevant to the tray, and whether an update is required.
   Changes are coalesced by a 150 ms single-shot timer that is never pushed back: the server replaces an error it detects
   again with `UTILITY_ERROR_REMOVED` then `UTILITY_ERROR_ADDED` (same `ErrorDbId`), and the pair must land in one
   refresh. A change of the selected synchronization refreshes at once, so a newly selected synchronization never shows
@@ -559,11 +562,10 @@
   `OpenSyncParentFolder` opens the folder above the synchronization root, and `CreateNewSync` opens Settings on the
   accounts. `trigger` runs the row action from the catalog, `run` any action (the dialog buttons).
   Logs name the kind, the action and the opened URL.
-- `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
-  resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
-  construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
-  a pending pause or resume request drives the toolbar control (`SyncControlState::Pending`), never the central status.
-  The control is disabled while the selected synchronization has a blocking error, as on macOS. The errors banner
+- `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home. It resolves the selected sync into
+  one central presentation state, exposes user/drive/error data, owns web-link construction, and delegates the "resume"
+  primary action to `SyncService`. The central status follows the cached runtime status only; a pending pause or resume
+  request drives the sync control (`SyncControlState::Pending`), never the central status. The errors banner
   opens the errors page (`showErrors()`); the primary action still opens the Activities tab.
   kDrive online opens the remote folder of an advanced synchronization (`itemRedirectUri`), the drive root otherwise;
   the other web shortcuts stay at the drive level. The Home avatar opens the user's card in Settings, its badge the
@@ -576,7 +578,15 @@
   independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
   server starts its synchronizations a few seconds after launch, is presented as up to date (offline without network),
-  as on macOS, instead of an empty loading state.
+  as on macOS, instead of an empty loading state. `resolveSyncControlState` is the single Pause/Resume rule of one
+  synchronization (`Running`/`Idle` pause, `Paused`/`Stopped`/`Error` resume; blocked, in transition, with a request in
+  flight, or undefined: no action), shared by Home and the toolbar. Its `SyncControlState` lives in the `SyncControl`
+  `Q_NAMESPACE` (`synccontrolstate.h`), read in QML as `SyncControl.Pause`, ...
+- `app/mainwindow/synccontrolcontroller.*`: QML-facing state of the toolbar Pause/Resume control. The button toggles
+  the selected synchronization; with several, the chevron opens `SyncControlMenu.qml`, which also acts on every
+  synchronization of every user, with the number of synchronizations each action concerns. A blocked synchronization
+  (`SyncErrorsProjection::isSyncBlocked`, a disconnected user included) or one in transition is counted nowhere, and the
+  whole control is disabled offline. Actions recompute their targets before reaching `SyncService`.
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
   reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
 - `app/mainwindow/searchcontroller.*`: QML-facing state of the search dialog for the drive of the selected
@@ -808,7 +818,8 @@
       reports clicks, so a model owning the selection stays authoritative.
       `IKBlockingState` is the shared card of full-page blocking states (update required, blocking synchronization
       errors): visual, title, description and a row of actions; the owner places it and supplies the visual and the
-      actions. Its tokens live in `IKBlockingStateTokens`.
+      actions. Its tokens live in `IKBlockingStateTokens`. `IKSyncIcon` renders a synchronization tinted with its drive
+      color (drive glyph, or folder for an advanced one), for the sidebar selector and the Pause/Resume menu.
       `IKSearchField` is the rounded search
       field (magnifier, clear button); its owner keeps the query through `text`, `textEdited` and `cleared`.
       `IKLinkButton` is the inline textual action for rows and cards that must not carry a button surface of their own.
@@ -896,6 +907,11 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   sent, as macOS does, because the server reports the new status only on its next progress tick after its reply. A
   failed request restores the previous status unless the server has reported one since. A start or stop is ignored while
   another one is pending for the same synchronization, so a rollback never restores the other request's status.
+  `startSyncs`/`stopSyncs` mark every target pending at once, then queue the requests in the single queue of the service,
+  shared by every batch and single start or stop, which sends one request at a time: the server jobs clear
+  `AppServer::_syncCacheMap`, shared by every synchronization, without a lock. A failure does not stop the next
+  requests. Sending a queued request reapplies its optimistic status, which a progress push may have replaced meanwhile;
+  that pushed status is then the one a failure restores.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
 - Main-sidebar drive/sync rows belong in `SyncSelectorModel`. Keep window state, tab navigation, desktop actions, and

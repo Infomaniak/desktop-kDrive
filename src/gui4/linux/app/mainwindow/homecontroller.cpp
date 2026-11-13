@@ -105,37 +105,13 @@ HomeController::PrimaryAction HomeController::primaryAction() const {
     return PrimaryAction::None;
 }
 
-HomeController::SyncControlState HomeController::syncControlState() const {
-    // A blocked synchronization is restarted from the blocking error screen, as on macOS.
-    if (!hasCurrentDrive() || _networkStatusObserver.offline() || _syncErrorsProjection.currentBlockingError().has_value()) {
-        return SyncControlState::Disabled;
-    }
-    if (syncActionPending()) {
-        return SyncControlState::Pending;
-    }
-
-    const auto runtimeStatus = currentRuntimeStatus();
-    if (!runtimeStatus.has_value()) {
+SyncControlState HomeController::syncControlState() const {
+    if (!hasCurrentDrive() || _networkStatusObserver.offline()) {
         return SyncControlState::Disabled;
     }
 
-    switch (*runtimeStatus) {
-        case SyncStatus::Running:
-        case SyncStatus::Idle:
-            return SyncControlState::Pause;
-        case SyncStatus::Paused:
-        case SyncStatus::Stopped:
-        case SyncStatus::Error:
-            return SyncControlState::Resume;
-        case SyncStatus::Starting:
-        case SyncStatus::PauseAsked:
-        case SyncStatus::StopAsked:
-            return SyncControlState::Pending;
-        case SyncStatus::Undefined:
-        case SyncStatus::EnumEnd:
-            return SyncControlState::Disabled;
-    }
-    return SyncControlState::Disabled;
+    return resolveSyncControlState(currentRuntimeStatus(), syncActionPending(),
+                                   _syncErrorsProjection.currentBlockingError().has_value());
 }
 
 QString HomeController::firstName() const {
@@ -228,27 +204,6 @@ void HomeController::triggerPrimaryAction() {
             emit setupRequested();
             return;
         case PrimaryAction::None:
-            return;
-    }
-}
-
-void HomeController::toggleSync() {
-    const auto syncDbId = currentSyncDbId();
-    if (syncDbId == 0) {
-        qCWarning(lcHomeController) << "Sync control ignored: no synchronization is selected";
-        return;
-    }
-
-    switch (syncControlState()) {
-        case SyncControlState::Pause:
-            _syncService.stopSync(syncDbId);
-            return;
-        case SyncControlState::Resume:
-            _syncService.startSync(syncDbId);
-            return;
-        case SyncControlState::Disabled:
-        case SyncControlState::Pending:
-            qCDebug(lcHomeController) << "Sync control ignored in current presentation state | syncDbId:" << syncDbId;
             return;
     }
 }
