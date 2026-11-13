@@ -34,7 +34,7 @@ class LinuxUpdater final : public AbstractUpdater {
         LinuxUpdater();
 
         void onUpdateFound() override;
-        void onAutomaticUpdatesEnabled() override;
+        void onAutoUpdatesEnabled() override;
         void startInstaller() override;
         void setQuitCallback(const std::function<void()> &quitCallback) override { _quitCallback = quitCallback; }
         bool checkMinOsVersion(const std::string &minOsVersion) const override;
