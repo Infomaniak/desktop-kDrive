@@ -76,9 +76,9 @@ void UpdateNotifier::notifyIfNeeded() {
     }
 
     // The full version tells apart two builds of a release, which can share the same label.
-    const auto key = u"%1/%2"_s.arg(static_cast<int32_t>(_updateStatusService.state()))
-                             .arg(QString::fromStdString(_updateStatusService.version()->fullVersion()));
-    if (!_notified.insert(key).second) {
+    if (const auto key = u"%1/%2"_s.arg(static_cast<int32_t>(_updateStatusService.state()))
+                                 .arg(QString::fromStdString(_updateStatusService.version()->fullVersion()));
+        !_notified.insert(key).second) {
         return;
     }
 

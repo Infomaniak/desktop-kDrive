@@ -124,9 +124,9 @@ void NotificationService::handleNotificationClosed(const uint notificationId, co
 
     if (const auto shown = _notificationByAction.find(it->second);
         shown != _notificationByAction.end() && shown->second == notificationId) {
-        _notificationByAction.erase(shown);
+        (void) _notificationByAction.erase(shown);
     }
-    _actionByNotification.erase(it);
+    (void) _actionByNotification.erase(it);
 }
 
 } // namespace KDC
