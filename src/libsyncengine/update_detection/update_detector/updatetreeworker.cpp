@@ -1512,8 +1512,8 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, st
 
     mergedNode = nullptr;
 
-    SyncPath dbPath;
     // If it's a move, we need the previous path to be able to retrieve database data from path
+    SyncPath dbPath;
     if (const auto exitCode = getOriginPath(tmpNode, dbPath); exitCode != ExitCode::Ok) {
         return exitCode;
     }
@@ -1560,6 +1560,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, st
                 if (prevNode->hasChangeEvent(OperationType::Move)) {
                     tmpNode->setName(prevNode->name());
                     tmpNode->setMoveOriginInfos(prevNode->moveOriginInfos());
+                    tmpNode->setParentNode(prevNode->parentNode());
                 }
 
                 // Update change events
@@ -1585,7 +1586,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, st
         }
     }
 
-    if (!_updateTree->updateNodeId(tmpNode, id.value())) {
+    if (!_updateTree->updateNodeId(tmpNode, *id)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
         return ExitCode::DataError;
     }
