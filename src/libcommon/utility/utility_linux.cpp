@@ -55,15 +55,23 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
 }
 
 namespace {
-std::mutex appImagePathMutex;
-SyncPath installedAppImagePath;
+struct AppImagePathState {
+        std::mutex mutex;
+        SyncPath installedPath;
+};
+
+AppImagePathState &appImagePathState() {
+    static AppImagePathState state;
+    return state;
+}
 } // namespace
 
 SyncPath CommonUtility::appImagePath() {
+    auto &state = appImagePathState();
     {
-        const std::scoped_lock lock(appImagePathMutex);
-        if (!installedAppImagePath.empty()) {
-            return installedAppImagePath;
+        const std::scoped_lock lock(state.mutex);
+        if (!state.installedPath.empty()) {
+            return state.installedPath;
         }
     }
 
@@ -71,8 +79,9 @@ SyncPath CommonUtility::appImagePath() {
 }
 
 void CommonUtility::setAppImagePath(const SyncPath &path) {
-    const std::scoped_lock lock(appImagePathMutex);
-    installedAppImagePath = path;
+    auto &state = appImagePathState();
+    const std::scoped_lock lock(state.mutex);
+    state.installedPath = path;
 }
 
 // The new AppImage is renamed over the running one, which requires write access to its folder.
