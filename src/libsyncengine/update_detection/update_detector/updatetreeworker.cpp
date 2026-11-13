@@ -1332,44 +1332,63 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
 }
 
 ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNode) {
+    std::unordered_set<std::shared_ptr<Node>> visitedNodes;
     std::queue<std::shared_ptr<Node>> nodeQueue;
     nodeQueue.push(parentNode);
 
     while (!nodeQueue.empty()) {
-        std::shared_ptr<Node> node = nodeQueue.front();
+        const auto node = nodeQueue.front();
         nodeQueue.pop();
 
         if (stopAsked()) {
             return ExitCode::Ok;
         }
 
-        for (auto &nodeChild: node->children()) {
-            nodeQueue.push(nodeChild.second);
-        }
+        // If node is temporary and merged with a permanent node, its children will be moved to the permanent node, so we need to
+        // copy them before merging.
+        auto queueChildren = [&nodeQueue](const NodeByIdMap &children) {
+            for (const auto &[_, child]: children) {
+                nodeQueue.push(child);
+            }
+        };
+
+        // Get the children of the node before possibly merging it.
+        const auto children = node->children();
 
         if (node->isTmp()) {
-            // Merge the node with a permanent one if possible
-            bool merged = false;
-            if (const auto exitCode = tryToMergeTmpNode(node, merged); exitCode != ExitCode::Ok) {
+            // Merge the node with a permanent one if possible.
+            std::shared_ptr<Node> permanentNode = nullptr;
+            if (const auto exitCode = tryToMergeTmpNode(node, permanentNode); exitCode != ExitCode::Ok) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::tryToMergeTmpNode for node "
                                                    << Utility::formatSyncName(node->name()));
                 return exitCode;
             }
-            if (merged) {
-                assert(node.use_count() == 1);
+
+            if (permanentNode) {
+                assert(node.use_count() == 1); // The node does not exist anymore in the tree.
+                if (visitedNodes.contains(permanentNode)) {
+                    // If the permanent node has already been visited, we need to queue the new children.
+                    queueChildren(children);
+                }
                 continue;
             }
         }
 
-        // update myself
-        // if it's a Create we don't have node's database data
+        // Update the node with DB data if it exists in the database. For a Create operation there is no data in DB.
+        bool childrenMerged = false;
         if (!node->hasChangeEvent(OperationType::Create)) {
-            // if node is temporary node
             if (node->isTmp()) {
-                if (const auto exitCode = updateTmpNode(node); exitCode != ExitCode::Ok) {
+                std::shared_ptr<Node> mergedNode = nullptr;
+                if (const auto exitCode = updateTmpNode(node, mergedNode); exitCode != ExitCode::Ok) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateTmpNode for node "
                                                        << Utility::formatSyncName(node->name()));
                     return exitCode;
+                }
+
+                if (mergedNode && visitedNodes.contains(mergedNode)) {
+                    // If the merged node has already been visited, we need to queue the new children
+                    queueChildren(children);
+                    childrenMerged = true;
                 }
             }
 
@@ -1416,6 +1435,12 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 node->setSize(dbNode.size());
             }
         }
+
+        if (!childrenMerged) {
+            queueChildren(node->children());
+        }
+
+        (void) visitedNodes.insert(node);
     }
 
     return ExitCode::Ok;
@@ -1446,11 +1471,11 @@ ExitCode UpdateTreeWorker::mergeNodeToParentChildren(std::shared_ptr<Node> paren
     return ExitCode::Ok;
 }
 
-ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, bool &merged) {
+ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &permanentNode) {
     assert(tmpNode);
     assert(tmpNode->parentNode());
 
-    merged = false;
+    permanentNode = nullptr;
 
     for (const auto &[_, brotherNode]: tmpNode->parentNode()->children()) {
         if (brotherNode == tmpNode || brotherNode->isTmp() || brotherNode->hasChangeEvent(OperationType::Delete)) continue;
@@ -1464,6 +1489,8 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
                     return ExitCode::DataError;
                 }
             }
+
+            // Detach tmpNode
             tmpNode->children().clear();
             if (!tmpNode->parentNode()->deleteChild(tmpNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::deleteChild: node "
@@ -1471,7 +1498,8 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
                                                    << Utility::formatSyncName(tmpNode->parentNode()->name()));
                 return ExitCode::DataError;
             }
-            merged = true;
+
+            permanentNode = brotherNode;
             break;
         }
     }
@@ -1479,7 +1507,11 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
     return ExitCode::Ok;
 }
 
-ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
+ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &mergedNode) {
+    assert(tmpNode);
+
+    mergedNode = nullptr;
+
     SyncPath dbPath;
     // If it's a move, we need the previous path to be able to retrieve database data from path
     if (const auto exitCode = getOriginPath(tmpNode, dbPath); exitCode != ExitCode::Ok) {
@@ -1497,9 +1529,60 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
                                                                 << SyncName2WStr(tmpNode->name()) << L"') on side" << _side);
         return ExitCode::DataError;
     }
-    if (!id.has_value()) {
+    if (!id) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve ID for node= " << SyncName2WStr(tmpNode->name()));
         return ExitCode::DataError;
+    }
+
+    if (auto it = _updateTree->nodes().find(*id); it != _updateTree->nodes().end()) {
+        auto prevNode = it->second;
+        if (prevNode && prevNode != tmpNode) {
+            // Update children list
+            for (const auto &[_, childNode]: prevNode->children()) {
+                if (!tmpNode->insertChild(childNode)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << SyncName2WStr(childNode->name())
+                                                                                    << L" parent node "
+                                                                                    << SyncName2WStr(tmpNode->name()));
+                    return ExitCode::DataError;
+                }
+
+                LOGW_SYNCPAL_DEBUG(
+                        _logger,
+                        _side << L" update tree: Node '" << SyncName2WStr(childNode->name()) << L"' (node ID: '"
+                              << CommonUtility::s2ws((childNode->id().has_value() ? *childNode->id() : std::string()))
+                              << L"') inserted in children list of node '" << SyncName2WStr(tmpNode->name()) << L"' (node ID: '"
+                              << CommonUtility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())) << L"')");
+            }
+
+            // Update events
+            if (tmpNode->changeEvents() != prevNode->changeEvents()) {
+                // if it's a Move event
+                if (prevNode->hasChangeEvent(OperationType::Move)) {
+                    tmpNode->setName(prevNode->name());
+                    tmpNode->setMoveOriginInfos(prevNode->moveOriginInfos());
+                }
+
+                // Update change events
+                tmpNode->setChangeEvents(prevNode->changeEvents());
+
+                LOGW_SYNCPAL_DEBUG(_logger,
+                                   _side << L" update tree: Changed events to '" << prevNode->changeEvents() << L"' for node '"
+                                         << SyncName2WStr(tmpNode->name()) << L"' (node ID: '"
+                                         << CommonUtility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string()))
+                                         << L"')");
+            }
+
+            // Detach prevNode
+            prevNode->children().clear();
+            if (!prevNode->parentNode()->deleteChild(prevNode)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::deleteChild: node "
+                                                   << Utility::formatSyncName(prevNode->name()) << L" parent node "
+                                                   << Utility::formatSyncName(prevNode->parentNode()->name()));
+                return ExitCode::DataError;
+            }
+
+            mergedNode = prevNode;
+        }
     }
 
     if (!_updateTree->updateNodeId(tmpNode, id.value())) {
@@ -1520,43 +1603,6 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     }
     tmpNode->setIdb(dbId);
     tmpNode->setIsTmp(false);
-
-    const auto &prevNode = _updateTree->nodes()[*id];
-    if (prevNode) {
-        // Update children list
-        for (const auto &[_, childNode]: prevNode->children()) {
-            if (!tmpNode->insertChild(childNode)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << SyncName2WStr(childNode->name())
-                                                                                << L" parent node "
-                                                                                << SyncName2WStr(tmpNode->name()));
-                return ExitCode::DataError;
-            }
-
-            LOGW_SYNCPAL_DEBUG(
-                    _logger, _side << L" update tree: Node '" << SyncName2WStr(childNode->name()) << L"' (node ID: '"
-                                   << CommonUtility::s2ws((childNode->id().has_value() ? *childNode->id() : std::string()))
-                                   << L"') inserted in children list of node '" << SyncName2WStr(tmpNode->name())
-                                   << L"' (node ID: '"
-                                   << CommonUtility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())) << L"')");
-        }
-
-        // Update events
-        if (tmpNode->changeEvents() != prevNode->changeEvents()) {
-            // if it's a Move event
-            if (prevNode->hasChangeEvent(OperationType::Move)) {
-                tmpNode->setName(prevNode->name());
-                tmpNode->setMoveOriginInfos(prevNode->moveOriginInfos());
-            }
-
-            // Update change events
-            tmpNode->setChangeEvents(prevNode->changeEvents());
-
-            LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Changed events to '" << prevNode->changeEvents()
-                                              << L"' for node '" << SyncName2WStr(tmpNode->name()) << L"' (node ID: '"
-                                              << CommonUtility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string()))
-                                              << L"')");
-        }
-    }
 
     _updateTree->nodes()[*id] = tmpNode;
     if (ParametersCache::isExtendedLogEnabled()) {
