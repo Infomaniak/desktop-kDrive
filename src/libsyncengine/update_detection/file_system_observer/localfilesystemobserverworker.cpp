@@ -573,11 +573,16 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     _liveSnapshot.init();
     setUpdateFlagValue(true);
-    _pendingFileEvents.clear();
+
+    {
+        const std::scoped_lock lock(_recursiveMutex);
+        _pendingFileEvents.clear();
+    }
+
     _restartOngoingSnapshotGeneration.store(false);
     if (const auto exitInfo = exploreDir(_rootFolder);
         exitInfo.code() == ExitCode::Ok && !stopAsked() && !_restartOngoingSnapshotGeneration.load()) {
-        _liveSnapshot.setValid(true);
+        _liveSnapshot.setValid(!_restartOngoingSnapshotGeneration.load());
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
                                                                   << _liveSnapshot.nbItems() << " items");
         perfMonitor.stop();

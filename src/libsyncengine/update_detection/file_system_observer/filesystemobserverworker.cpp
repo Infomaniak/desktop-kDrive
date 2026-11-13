@@ -40,7 +40,6 @@ void FileSystemObserverWorker::invalidateSnapshot() {
 
     _liveSnapshot.init();
     _restartOngoingSnapshotGeneration.store(true);
-    _pendingFileEvents.clear();
     _invalidateCounter = 0;
     LOG_SYNCPAL_DEBUG(_logger, _liveSnapshot.side() << " snapshot invalidated.");
 }
