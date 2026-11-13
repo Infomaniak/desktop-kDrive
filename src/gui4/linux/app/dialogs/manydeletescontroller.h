@@ -44,7 +44,7 @@ class ManyDeletesController final : public QObject {
         Q_PROPERTY(Severity severity READ severity NOTIFY presentationChanged)
         Q_PROPERTY(bool visible READ visible NOTIFY presentationChanged)
         Q_PROPERTY(quint64 itemCount READ itemCount NOTIFY presentationChanged)
-        Q_PROPERTY(QVariantList deletedItems READ deletedItems NOTIFY presentationChanged)
+        Q_PROPERTY(QVariantList deletedItems READ deletedItems NOTIFY deletedItemsChanged)
         Q_PROPERTY(quint64 hiddenItemCount READ hiddenItemCount NOTIFY presentationChanged)
         Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
         Q_PROPERTY(bool submissionFailed READ submissionFailed NOTIFY submissionFailedChanged)
@@ -79,6 +79,8 @@ class ManyDeletesController final : public QObject {
 
     signals:
         void presentationChanged();
+        /** Also emitted alone when the rows of the current warning are rebuilt, so the dialog keeps its state. */
+        void deletedItemsChanged();
         void busyChanged();
         void submissionFailedChanged();
         void canOpenTrashChanged();
@@ -89,12 +91,17 @@ class ManyDeletesController final : public QObject {
                 SyncDbId syncDbId{0};
                 Severity severity{Severity::None};
                 Count itemCount{0};
+                QStringList deletedPaths;
                 QVariantList deletedItems;
+                bool deletedItemsResolved{false};
         };
 
         void enqueue(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, Count itemCount,
                      const QStringList &deletedPaths);
         [[nodiscard]] QVariantList makeDeletedItems(SyncDbId syncDbId, QStringList deletedPaths) const;
+        [[nodiscard]] bool canResolveDeletedItems(SyncDbId syncDbId, const QStringList &deletedPaths) const;
+        void resolvePendingDeletedItems();
+        void onCacheContextChanged();
         void acknowledge(TooManyDeletesUserChoice userChoice);
         void finishCurrent();
         void disableFutureWarnings() const;
