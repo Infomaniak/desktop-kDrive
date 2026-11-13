@@ -65,9 +65,6 @@ log4cplus::Logger logger() {
 
 } // namespace
 
-LinuxUpdater::LinuxUpdater() :
-    _appImagePath(CommonUtility::appImagePath()) {}
-
 void LinuxUpdater::onUpdateFound() {
     const auto version = versionInfo().fullVersion();
     bool alreadyInstalled = false;
@@ -180,8 +177,8 @@ bool LinuxUpdater::checkMinOsVersion(const std::string &minOsVersion) const {
 }
 
 SyncPath LinuxUpdater::installTargetPath(const SyncPath &appImagePath) {
-    static const std::regex publishedName(R"(kDrive-[0-9]+(\.[0-9]+)*-(amd64|arm64)\.AppImage)");
-    if (!std::regex_match(appImagePath.filename().string(), publishedName)) {
+    if (static const std::regex publishedName(R"(kDrive-[0-9]+(\.[0-9]+)*-(amd64|arm64)\.AppImage)");
+        !std::regex_match(appImagePath.filename().string(), publishedName)) {
         return appImagePath;
     }
 
@@ -476,7 +473,7 @@ void LinuxUpdater::updateDesktopEntries(const SyncPath &targetPath) {
     }
 }
 
-std::string LinuxUpdater::expectedChecksum(const std::string &version) const {
+std::string LinuxUpdater::expectedChecksum(const std::string_view version) const {
     const std::scoped_lock lock(_stateMutex);
     return _checksumVersion == version ? _expectedChecksum : std::string{};
 }
