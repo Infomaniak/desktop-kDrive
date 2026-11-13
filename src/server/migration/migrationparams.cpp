@@ -602,14 +602,14 @@ void MigrationParams::deleteUselessConfigFiles() {
     filters << "sync-exclude.lst";
     filters << "litesync-exclude.lst";
     QStringList cfgFileNameList = cfgDir.entryList(filters, QDir::Files);
-    for (const QString &cfgFileName: cfgFileNameList) {
+    for (const QString &cfgFileName: std::as_const(cfgFileNameList)) {
         QFileInfo cfgFileInfo(cfgDir, cfgFileName);
         QFile cfgFile(cfgFileInfo.absoluteFilePath());
         cfgFile.remove();
     }
 
     // Remove old sync DB files
-    for (auto sync: _syncToMigrate) {
+    for (auto &sync: std::as_const(_syncToMigrate)) {
         QDir dbDir(SyncName2QStr(sync.second.first.native()));
         QStringList filters;
         filters << SyncName2QStr(sync.second.second);
@@ -618,7 +618,7 @@ void MigrationParams::deleteUselessConfigFiles() {
         filters << ".owncloudsync.log"; // This is a now unused log file from older kDrive versions, we keep this filter here to
                                         // avoid people with older config to synchronize it
         QStringList dbFileNameList = dbDir.entryList(filters, QDir::Files | QDir::Hidden);
-        for (const QString &dbFileName: dbFileNameList) {
+        for (const QString &dbFileName: std::as_const(dbFileNameList)) {
             QFileInfo dbFileInfo(dbDir, dbFileName);
             QFile dbFile(dbFileInfo.absoluteFilePath());
             dbFile.remove();
@@ -629,24 +629,16 @@ void MigrationParams::deleteUselessConfigFiles() {
 ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::string &appPassword, bool &found) {
 #if defined(KD_MACOS)
     const std::string serviceName("kDrive");
-    void *data;
-    uint32 length;
-
-    OSStatus status = SecKeychainFindGenericPassword(nullptr, static_cast<uint32>(serviceName.length()), serviceName.c_str(),
-                                                     static_cast<uint32>(keychainKey.length()), keychainKey.c_str(), &length,
-                                                     &data, nullptr);
-
-    if (status == errSecNoSuchKeychain) {
-        LOG_DEBUG(_logger, "Application password not found");
-        found = false;
-    } else if (status != errSecSuccess) {
+    if (!CommonUtility::readPasswordFromKeychain(serviceName, keychainKey, appPassword)) {
         LOG_WARN(_logger, "Unable to read application password");
         return ExitCode::SystemError;
-    } else if (data != nullptr) {
+    }
+
+    found = !appPassword.empty();
+    if (found) {
         LOG_DEBUG(_logger, "Application password found");
-        appPassword = std::string(reinterpret_cast<const char *>(data), length);
-        found = true;
-        SecKeychainItemFreeContent(nullptr, data);
+    } else {
+        LOG_DEBUG(_logger, "Application password not found");
     }
 #elif defined(KD_LINUX)
     const std::string package = "kDrive";

@@ -59,9 +59,16 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
 - (void)sendMessage:(NSData *)msg {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Message received %@", answer);
+    if (!answer) return;
 
     if (self.wrapper && self.wrapper->publicPtr) {
-        self.wrapper->inBuffer += std::string([answer UTF8String]);
+        const char *answerUtf8 = [answer UTF8String];
+        if (!answerUtf8) return;
+
+        KDC::CommString answerStr(answerUtf8);
+        if (!answerStr.empty()) {
+            self.wrapper->inBuffer += answerStr;
+        }
         self.wrapper->publicPtr->readyReadCbk();
     }
 }

@@ -19,19 +19,11 @@
 #include "selfsignedcert.h"
 
 #include "comm.h"
+#include "libcommonserver/utility/crypto.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 
-#include <Poco/Crypto/RSAKey.h>
-#include <Poco/Exception.h>
 #include <Poco/Crypto/X509Certificate.h>
-
-#include <openssl/x509.h>
-#include <openssl/x509v3.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/rand.h>
-#include <openssl/bn.h>
 
 #include <log4cplus/loggingmacros.h>
 
@@ -39,27 +31,7 @@ namespace KDC {
 
 namespace {
 
-struct X509Deleter {
-        void operator()(X509 *const x) const { X509_free(x); }
-};
-using UniqueX509 = std::unique_ptr<X509, X509Deleter>;
-
-struct EvpPkeyDeleter {
-        void operator()(EVP_PKEY *const p) const { EVP_PKEY_free(p); }
-};
-using UniqueEvpPkey = std::unique_ptr<EVP_PKEY, EvpPkeyDeleter>;
-
-struct BignumDeleter {
-        void operator()(BIGNUM *const b) const { BN_free(b); }
-};
-using UniqueBignum = std::unique_ptr<BIGNUM, BignumDeleter>;
-
 constexpr int64_t certValiditySeconds = 60LL * 60LL * 24LL * 365LL;
-
-const char *sslError() {
-    const unsigned long err = ERR_get_error();
-    return err ? ERR_error_string(err, nullptr) : "no OpenSSL error";
-}
 
 bool addExtension(X509 *const x509, const int32_t nid, const char *const value) {
     X509V3_CTX ctx;
@@ -186,14 +158,14 @@ bool SelfSignedCert::generate(Pem &pem, bool isClientCert) {
     LOG_INFO(Log::instance()->getLogger(),
              "Generating self-signed " << (isClientCert ? "client" : "server") << " certificate/key pair for local TLS IPC");
     try {
-        Poco::Crypto::RSAKey key(Poco::Crypto::RSAKey::KL_2048, Poco::Crypto::RSAKey::EXP_LARGE);
-
-        UniqueEvpPkey pkey(EVP_PKEY_new());
-        if (!pkey || EVP_PKEY_set1_RSA(pkey.get(), key.impl()->getRSA()) != 1) {
-            LOG_ERROR(Log::instance()->getLogger(), "EVP_PKEY setup failed: " << sslError());
+        // Generation of an asymmetric key pair.
+        UniqueEvpPkey pkey(EVP_PKEY_Q_keygen(nullptr, nullptr, "RSA", 2048));
+        if (!pkey) {
+            LOG_ERROR(Log::instance()->getLogger(), "EVP_PKEY_Q_keygen failed: " << sslError());
             return false;
         }
 
+        // Generation of a X.509 certificate
         UniqueX509 x509(X509_new());
         if (!x509) {
             LOG_ERROR(Log::instance()->getLogger(), "X509_new failed: " << sslError());
@@ -211,16 +183,31 @@ bool SelfSignedCert::generate(Pem &pem, bool isClientCert) {
             return false;
         }
 
+        // Save the certificate to pem.cert
         Poco::Crypto::X509Certificate cert(x509.release()); // takes ownership
 
         std::ostringstream certOut;
         cert.save(certOut);
-
-        std::ostringstream keyOut;
-        key.save(nullptr, &keyOut, ""); // public stream null, private to keyOut, no passphrase
-
         pem.cert = certOut.str();
-        pem.key = keyOut.str();
+
+        // Export the pkey to a PEM BIO buffer
+        UniqueBio bio(BIO_new(BIO_s_mem()));
+        if (!bio || PEM_write_bio_PrivateKey(bio.get(), pkey.get(), nullptr, nullptr, 0, nullptr, nullptr) != 1) {
+            LOG_ERROR(Log::instance()->getLogger(), "Private key export failed: " << sslError());
+            return false;
+        }
+
+        // Save the BIO buffer to pem.key
+        char *data = nullptr;
+        const auto len = BIO_get_mem_data(bio.get(), &data);
+        if (len <= 0 || !data) {
+            LOG_ERROR(Log::instance()->getLogger(), "Private key export returned no data: " << sslError());
+            return false;
+        }
+        (void) pem.key.assign(data, static_cast<size_t>(len));
+
+        // Clear memory
+        OPENSSL_cleanse(data, static_cast<size_t>(len));
 
         if (pem.cert.empty() || pem.key.empty()) {
             LOG_ERROR(Log::instance()->getLogger(), "Empty PEM output after certificate generation");

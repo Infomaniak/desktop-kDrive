@@ -576,6 +576,18 @@ struct COMMON_EXPORT CommonUtility {
          */
         static ExitInfo homeDirectoryPath(SyncPath &directoryPath) noexcept;
 
+#if defined(KD_MACOS)
+        //! Read a password from the keychain.
+        /*!
+         \param serviceName is the name of the service.
+         \param keychainKey is the key of the keychain entry.
+         \param password is set with the password read from the keychain. Empty if there is an error.
+         \return true if no error occurred, false otherwise.
+         */
+        static bool readPasswordFromKeychain(const std::string &serviceName, const std::string &keychainKey,
+                                             std::string &password);
+#endif
+
         static ExitInfo stdErrorToExitInfo(int64_t error) noexcept;
         static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept;
 
