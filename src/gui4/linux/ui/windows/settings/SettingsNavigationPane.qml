@@ -33,6 +33,7 @@ Item {
     readonly property bool hasPreviousPage: depth > 1
     readonly property bool canGoBack: hasPreviousPage && !stack.busy
     readonly property string currentTitle: stack.currentItem ? stack.currentItem["navigationTitle"] || "" : ""
+    readonly property string currentScreenId: stack.currentItem ? stack.currentItem["screenId"] || "" : ""
     readonly property string previousTitle: {
         const previousItem = depth > 1 ? stack.get(depth - 2) : null;
         return previousItem ? previousItem["navigationTitle"] || "" : "";

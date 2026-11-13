@@ -69,6 +69,8 @@ IKModal {
     iconSource: "qrc:/assets/main/triangle-alert.svg"
     initialFocusItem: softLimit ? closeButton : restoreButton
     title: qsTrId("manyDeleteDialogTitle").arg(controller.itemCount)
+    dialogId: "dialog.manyDeletes"
+    dialogDetails: ({ severity: root.hardLimit ? "hard" : "soft", itemCount: root.controller.itemCount })
 
     bodyData: [
         Text {
@@ -97,6 +99,7 @@ IKModal {
             text: qsTrId("manyDeleteDialogSoftLimitDoNotShowAgain")
             visible: root.softLimit
             width: parent.width
+            onToggled: UserActionLog.action(root.dialogId + ".doNotShowAgain", { value: checked })
 
             contentItem: Text {
                 color: IKColors.textPrimary
@@ -183,6 +186,8 @@ IKModal {
             role: IKModalButton.Secondary
             text: qsTrId("buttonOpenTrash")
             visible: root.softLimit
+            actionId: root.dialogId + ".openTrash"
+            actionDetails: ({ doNotShowAgain: doNotShowAgainCheckBox.checked })
 
             onClicked: root.controller.openTrash(doNotShowAgainCheckBox.checked)
         },
@@ -194,6 +199,8 @@ IKModal {
             role: IKModalButton.Primary
             text: qsTrId("buttonClose")
             visible: root.softLimit
+            actionId: root.dialogId + ".close"
+            actionDetails: ({ doNotShowAgain: doNotShowAgainCheckBox.checked })
 
             onClicked: root.controller.dismissSoft(doNotShowAgainCheckBox.checked)
         },
@@ -206,6 +213,7 @@ IKModal {
             role: IKModalButton.Destructive
             text: qsTrId("manyDeleteDialogHardLimitSecondary")
             visible: root.hardLimit
+            actionId: root.dialogId + ".deleteOnline"
 
             onClicked: {
                 root.pendingAction = ManyDeletesDialog.DeleteOnline;
@@ -221,6 +229,7 @@ IKModal {
             role: IKModalButton.Primary
             text: qsTrId("manyDeleteDialogHardLimitPrimary")
             visible: root.hardLimit
+            actionId: root.dialogId + ".restore"
 
             onClicked: {
                 root.pendingAction = ManyDeletesDialog.Restore;

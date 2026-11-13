@@ -23,6 +23,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "onboarding.login"
+
     // The step opens on its main action so keyboard users start somewhere instead of from nothing.
     Component.onCompleted: Qt.callLater(function() {
         loginButton.forceActiveFocus()
@@ -92,7 +95,10 @@ Item {
                 enabled: !root.onboardingFlowController.loginInProgress
                 height: IKOnboarding.loginButtonHeight
                 text: qsTrId("buttonCreateAccount")
-                onClicked: root.onboardingFlowController.requestAccountCreation()
+                onClicked: {
+                    UserActionLog.action(root.actionIdPrefix + ".createAccount");
+                    root.onboardingFlowController.requestAccountCreation();
+                }
 
                 contentItem: Text {
                     text: createAccountButton.text
@@ -125,7 +131,10 @@ Item {
                 enabled: !root.onboardingFlowController.loginInProgress
                 height: IKOnboarding.loginButtonHeight
                 text: qsTrId("buttonLogin")
-                onClicked: root.onboardingFlowController.requestLogin()
+                onClicked: {
+                    UserActionLog.action(root.actionIdPrefix + ".signIn");
+                    root.onboardingFlowController.requestLogin();
+                }
 
                 contentItem: Text {
                     text: loginButton.text
