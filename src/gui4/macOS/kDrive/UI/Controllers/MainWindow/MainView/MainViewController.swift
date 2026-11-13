@@ -194,7 +194,7 @@ extension MainViewController {
 
     private func makeSupportGroup() -> NSToolbarItemGroup {
         let helpButton = NSToolbarItem(itemIdentifier: .init("HelpButton"))
-        helpButton.image = KDriveResources.headphones.image
+        helpButton.image = Self.toolbarImage(KDriveResources.headphones.image)
         helpButton.label = "Help"
         helpButton.target = self
         helpButton.action = #selector(openHelpURL)
@@ -212,7 +212,7 @@ extension MainViewController {
         updatePauseResumeButton(pauseResumeButton, state: synchroStateObserver.synchroState)
 
         let settingsButton = NSToolbarItem(itemIdentifier: .init("SettingsButton"))
-        settingsButton.image = KDriveResources.cog.image
+        settingsButton.image = Self.toolbarImage(KDriveResources.cog.image)
         settingsButton.label = KDriveLocalizable.buttonSettings
         settingsButton.target = nil
         settingsButton.action = #selector(AppDelegate.openPreferencesWindow)
@@ -224,7 +224,7 @@ extension MainViewController {
 
     private func makeSearchGroup() -> NSToolbarItemGroup {
         let searchButton = NSToolbarItem(itemIdentifier: .init("SearchButton"))
-        searchButton.image = KDriveResources.magnifyingGlass.image
+        searchButton.image = Self.toolbarImage(KDriveResources.magnifyingGlass.image)
         searchButton.label = KDriveLocalizable.buttonSearch
         searchButton.target = self
         searchButton.action = #selector(showSearchSheet)
@@ -350,7 +350,7 @@ extension MainViewController {
         let image = showPause ? KDriveResources.pause.image : KDriveResources.play.image
         let label = showPause ? KDriveLocalizable.buttonPause : KDriveLocalizable.buttonStart
 
-        item.image = image
+        item.image = Self.toolbarImage(image)
         item.label = label
         item.isEnabled = enabled
     }
