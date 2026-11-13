@@ -43,40 +43,40 @@ UserActionLog::Details detailsFromJs(const QJSValue &value) {
 
     QJSValueIterator iterator(value);
     while (iterator.hasNext()) {
-        iterator.next();
+        (void) iterator.next();
         details.append({iterator.name(), iterator.value().toVariant()});
     }
 
-    std::ranges::sort(details, {}, &std::pair<QString, QVariant>::first);
+    (void) std::ranges::sort(details, {}, &std::pair<QString, QVariant>::first);
     return details;
 }
 
 } // namespace
 
-UserActionLog::UserActionLog(QObject *parent) :
+UserActionLog::UserActionLog(QObject *const parent) :
     QObject(parent) {}
 
-void UserActionLog::action(const QString &actionId, const QJSValue &details) {
+void UserActionLog::action(const QString &actionId, const QJSValue &details) const {
     recordAction(actionId, detailsFromJs(details));
 }
 
-void UserActionLog::screen(const QString &screenId, const QJSValue &details) {
+void UserActionLog::screen(const QString &screenId, const QJSValue &details) const {
     recordScreen(screenId, detailsFromJs(details));
 }
 
-void UserActionLog::dialog(const QString &dialogId, const bool opened, const QJSValue &details) {
+void UserActionLog::dialog(const QString &dialogId, const bool opened, const QJSValue &details) const {
     write(opened ? u"Dialog opened"_s : u"Dialog closed"_s, dialogId, detailsFromJs(details));
 }
 
-void UserActionLog::window(const QString &windowId, const bool shown, const QJSValue &details) {
+void UserActionLog::window(const QString &windowId, const bool shown, const QJSValue &details) const {
     write(shown ? u"Window shown"_s : u"Window hidden"_s, windowId, detailsFromJs(details));
 }
 
-void UserActionLog::recordAction(const QString &actionId, const Details &details) {
+void UserActionLog::recordAction(const QString &actionId, const Details &details) const {
     write(u"User action"_s, actionId, details);
 }
 
-void UserActionLog::recordScreen(const QString &screenId, const Details &details) {
+void UserActionLog::recordScreen(const QString &screenId, const Details &details) const {
     write(u"Screen shown"_s, screenId, details);
 }
 
