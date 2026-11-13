@@ -1491,14 +1491,7 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
             }
 
             // Detach tmpNode
-            tmpNode->children().clear();
-            if (!tmpNode->parentNode()->deleteChild(tmpNode)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::deleteChild: node "
-                                                   << Utility::formatSyncName(tmpNode->name()) << L" parent node "
-                                                   << Utility::formatSyncName(tmpNode->parentNode()->name()));
-                return ExitCode::DataError;
-            }
-            tmpNode->setParentNode(nullptr);
+            tmpNode->clear();
 
             permanentNode = brotherNode;
             break;
@@ -1574,15 +1567,8 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, st
             }
 
             // Detach prevNode
-            prevNode->children().clear();
-            if (!prevNode->parentNode()->deleteChild(prevNode)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Node::deleteChild: node "
-                                                   << Utility::formatSyncName(prevNode->name()) << L" parent node "
-                                                   << Utility::formatSyncName(prevNode->parentNode()->name()));
-                return ExitCode::DataError;
-            }
             const auto prevNodeParent = prevNode->parentNode();
-            prevNode->setParentNode(nullptr);
+            (void) prevNode->clear();
 
             // Move tmpNode to prevNode parent if needed
             if (tmpNode->parentNode() != prevNodeParent) {
