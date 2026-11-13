@@ -70,7 +70,7 @@ class SyncDb : public Db {
         bool ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found);
         bool dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
         bool dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found);
-        bool correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
+        bool correspondingNodeId(ReplicaSide sideIn, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
         bool node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found);
 
         // Getters with db IDs

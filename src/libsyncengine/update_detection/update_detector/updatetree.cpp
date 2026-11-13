@@ -34,7 +34,7 @@ UpdateTree::UpdateTree(ReplicaSide side, const DbNode &dbNode) :
             new Node(dbNode.nodeId(), side, (side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote()),
                      NodeType::Directory, {}, (side == ReplicaSide::Local ? dbNode.nodeIdLocal() : dbNode.nodeIdRemote()),
                      (side == ReplicaSide::Local ? dbNode.created() : dbNode.created()),
-                     (side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()), 0, nullptr))),
+                     (side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()), 0))),
     _side(side) {}
 
 UpdateTree::~UpdateTree() {
@@ -62,8 +62,9 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, bool deleteNodeLater, in
     }
 
     // Recursively remove all children
-    while (node->children().size() > 0) {
-        if (!deleteNode((node->children().begin())->second, deleteNodeLater, depth + 1)) {
+    const auto children = node->children();
+    for (const auto &[_, child]: children) {
+        if (!deleteNode(child, deleteNodeLater, depth + 1)) {
             return false;
         }
     }
@@ -73,7 +74,7 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, bool deleteNodeLater, in
         node->setStatus(NodeStatus::ToDelete);
     } else {
         // Remove node from tree
-        (void) node->parentNode()->deleteChild(node);
+        node->detach();
         _validNodes.erase(*node->id());
     }
 
@@ -188,25 +189,16 @@ void UpdateTree::init() {
 }
 
 bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
-    const NodeId oldId = node->id().has_value() ? *node->id() : "";
+    const NodeId oldId = node->id() ? *node->id() : "";
+    if (oldId == newId) return true;
 
-    if (!node->parentNode()) {
-        LOG_WARN(Log::instance()->getLogger(), "Bad parameters");
-        assert(false);
+    if (!node->setId(newId)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in Node::setId: " << Node::formatNode(node) << L" new ID: " << CommonUtility::s2ws(newId));
         return false;
     }
 
-    (void) node->parentNode()->deleteChild(node);
-    node->setId(newId);
-
-    if (!node->parentNode()->insertChild(node)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChild: node "
-                                                        << Utility::formatSyncName(node->name()) << L" parent node "
-                                                        << Utility::formatSyncName(node->parentNode()->name()));
-        return false;
-    }
-
-    if (ParametersCache::isExtendedLogEnabled() && newId != oldId) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_DEBUG(Log::instance()->getLogger(), _side << L" update tree: Node ID changed from '" << CommonUtility::s2ws(oldId)
                                                        << L"' to '" << CommonUtility::s2ws(newId) << L"' for node "
                                                        << Utility::formatSyncName(node->name()) << L".");
@@ -217,6 +209,7 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
         nodeRef.key() = newId;
         _validNodes.insert(std::move(nodeRef));
     }
+
     return true;
 }
 

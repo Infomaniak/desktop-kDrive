@@ -137,8 +137,7 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
 
         bool deleteOpNodes(SyncOpPtr syncOp);
 
-        void setProgressComplete(const SyncPath &relativePath, SyncOpPtr syncOp, SyncFileStatus status,
-                                 const NodeId &newRemoteNodeId = "");
+        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId = "");
 
         static void getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId);
 

@@ -105,9 +105,7 @@ std::shared_ptr<Node> TestSituationGenerator::moveNode(const ReplicaSide side, c
     const auto node = updateTree(side)->getNodeById(generateId(side, id));
 
     node->setMoveOriginInfos({node->getPath(), node->parentNode()->id().value()});
-    (void) node->parentNode()->deleteChild(node);
-    (void) node->setParentNode(newParentNode);
-    (void) newParentNode->insertChild(node);
+    (void) node->moveTo(newParentNode);
     if (!newName.empty()) node->setName(newName);
     node->insertChangeEvent(OperationType::Move);
     return node;
@@ -226,9 +224,9 @@ std::shared_ptr<Node> TestSituationGenerator::insertInUpdateTree(
     const auto size = itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
     const auto node =
             std::make_shared<Node>(dbNodeId, side, Str2SyncName(CommonUtility::toUpper(id)), itemType, OperationType::None,
-                                   generateId(side, id), testhelpers::defaultTime, testhelpers::defaultTime, size, parentNode);
+                                   generateId(side, id), testhelpers::defaultTime, testhelpers::defaultTime, size);
+    (void) node->moveTo(parentNode);
     updateTree(side)->insertNode(node);
-    (void) parentNode->insertChild(node);
     return node;
 }
 

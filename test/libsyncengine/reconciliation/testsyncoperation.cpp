@@ -29,34 +29,40 @@ void TestSyncOperation::setUp() {
     TestBase::start();
 
     const auto localRootNode =
-            std::make_shared<Node>(ReplicaSide::Local, Str(""), NodeType::Directory, OperationType::None, "1", 0, 0, 0, nullptr);
+            std::make_shared<Node>(ReplicaSide::Local, Str(""), NodeType::Directory, OperationType::None, "1", 0, 0, 0);
 
     const auto remoteRootNode =
-            std::make_shared<Node>(ReplicaSide::Remote, Str(""), NodeType::Directory, OperationType::None, "1", 0, 0, 0, nullptr);
+            std::make_shared<Node>(ReplicaSide::Remote, Str(""), NodeType::Directory, OperationType::None, "1", 0, 0, 0);
 
-    const auto localNodeA = std::make_shared<Node>(ReplicaSide::Local, Str("a"), NodeType::Directory, OperationType::None, "100",
-                                                   0, 0, 0, localRootNode);
+    const auto localNodeA =
+            std::make_shared<Node>(ReplicaSide::Local, Str("a"), NodeType::Directory, OperationType::None, "100", 0, 0, 0);
+    CPPUNIT_ASSERT(localNodeA->moveTo(localRootNode));
 
-    const auto remoteNodeA = std::make_shared<Node>(ReplicaSide::Remote, Str("a"), NodeType::Directory, OperationType::None,
-                                                    "100000", 0, 0, 0, remoteRootNode);
+    const auto remoteNodeA =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("a"), NodeType::Directory, OperationType::None, "100000", 0, 0, 0);
+    CPPUNIT_ASSERT(remoteNodeA->moveTo(remoteRootNode));
 
-    _localNodeAA = std::make_shared<Node>(ReplicaSide::Local, Str("aa"), NodeType::Directory, OperationType::None, "200", 0, 0, 0,
-                                          localNodeA);
+    _localNodeAA =
+            std::make_shared<Node>(ReplicaSide::Local, Str("aa"), NodeType::Directory, OperationType::None, "200", 0, 0, 0);
+    CPPUNIT_ASSERT(_localNodeAA->moveTo(localNodeA));
 
-    _remoteNodeAA = std::make_shared<Node>(ReplicaSide::Remote, Str("aa"), NodeType::Directory, OperationType::None, "200000", 0,
-                                           0, 0, remoteNodeA);
+    _remoteNodeAA =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("aa"), NodeType::Directory, OperationType::None, "200000", 0, 0, 0);
+    CPPUNIT_ASSERT(_remoteNodeAA->moveTo(remoteNodeA));
 
-    _localNodeAAA = std::make_shared<Node>(ReplicaSide::Local, Str("aaa"), NodeType::File, OperationType::None, "300", 0, 0, 0,
-                                           _localNodeAA);
+    _localNodeAAA = std::make_shared<Node>(ReplicaSide::Local, Str("aaa"), NodeType::File, OperationType::None, "300", 0, 0, 0);
+    CPPUNIT_ASSERT(_localNodeAAA->moveTo(_localNodeAA));
 
-    _remoteNodeAAA = std::make_shared<Node>(ReplicaSide::Remote, Str("aaa"), NodeType::File, OperationType::Edit, "300000", 0,
-                                            12345, 999, _remoteNodeAA);
+    _remoteNodeAAA =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("aaa"), NodeType::File, OperationType::Edit, "300000", 0, 12345, 999);
+    CPPUNIT_ASSERT(_remoteNodeAAA->moveTo(_remoteNodeAA));
 
-    _localNodeAAB = std::make_shared<Node>(ReplicaSide::Local, Str("aab"), NodeType::File, OperationType::Delete, "301", 0, 0, 0,
-                                           _localNodeAA);
+    _localNodeAAB = std::make_shared<Node>(ReplicaSide::Local, Str("aab"), NodeType::File, OperationType::Delete, "301", 0, 0, 0);
+    CPPUNIT_ASSERT(_localNodeAAB->moveTo(_localNodeAA));
 
-    _remoteNodeAAB = std::make_shared<Node>(ReplicaSide::Remote, Str("aab"), NodeType::File, OperationType::None, "300001", 0, 0,
-                                            0, _remoteNodeAA);
+    _remoteNodeAAB =
+            std::make_shared<Node>(ReplicaSide::Remote, Str("aab"), NodeType::File, OperationType::None, "300001", 0, 0, 0);
+    CPPUNIT_ASSERT(_remoteNodeAAB->moveTo(_remoteNodeAA));
 
     _op1 = generateSyncOperation(OperationType::Edit, _remoteNodeAAA, _localNodeAAA);
     _op2 = generateSyncOperation(OperationType::Delete, _localNodeAAB, _remoteNodeAAB);
