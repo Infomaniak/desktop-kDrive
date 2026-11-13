@@ -42,13 +42,13 @@ constexpr auto switchValueDetail = "value"_L1;
 void addEvents(QHash<QString, Event> &events, const QString &prefix, const QString &category, const NamesBySuffix names,
                const QString &valueDetail = {}) {
     for (const auto &[suffix, name]: names) {
-        events.insert(prefix + u'.' + suffix, {category, name, valueDetail});
+        (void) events.insert(prefix + u'.' + suffix, {category, name, valueDetail});
     }
 }
 
 void addPageViews(QHash<QString, QString> &pageViews, const QString &prefix, const NamesBySuffix categories) {
     for (const auto &[suffix, category]: categories) {
-        pageViews.insert(suffix.isEmpty() ? prefix : prefix + u'.' + suffix, category);
+        (void) pageViews.insert(suffix.isEmpty() ? prefix : prefix + u'.' + suffix, category);
     }
 }
 
@@ -116,6 +116,7 @@ void addErrorsEvents(QHash<QString, Event> &events) {
                {u"backErrorDriveMaintenance"_s, u"manageDriveInMaintenance"_s},
                {u"backErrorDriveNotRenew"_s, u"manageDriveNotRenew"_s},
                {u"invalidToken"_s, u"manageInvalidToken"_s},
+               {u"notEnoughINotifyWatches"_s, u"manageNotEnoughINotifyWatches"_s},
                {u"unknown"_s, u"manageUnexpectedError"_s}});
 
     addEvents(events, u"main.conflicts.quick"_s, u"batchConflictResolutionPage"_s,
