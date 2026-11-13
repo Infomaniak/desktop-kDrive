@@ -39,12 +39,12 @@ struct BignumDeleter {
 using UniqueBignum = std::unique_ptr<BIGNUM, BignumDeleter>;
 
 struct BioDeleter {
-        void operator()(BIO *const x) const { BIO_free(x); }
+        void operator()(BIO *const x) const { (void) BIO_free(x); }
 };
 using UniqueBio = std::unique_ptr<BIO, BioDeleter>;
 
 inline const char *sslError() {
-    const unsigned long err = ERR_get_error();
+    const auto err = ERR_get_error();
     return err ? ERR_error_string(err, nullptr) : "no OpenSSL error";
 }
 
