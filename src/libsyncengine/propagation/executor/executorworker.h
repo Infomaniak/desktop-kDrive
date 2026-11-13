@@ -150,7 +150,7 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
-        ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);
+        ExitInfo removeDependentOps(const SyncOpPtr syncOp, std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode);
 
         ExitInfo excludeFileFromSync(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath);
 

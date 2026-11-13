@@ -2285,7 +2285,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
         }
     }
     _syncPal->setRestart(true);
-    return removeDependentOps(localBlacklistedNode, remoteBlacklistedNode, syncOp->type());
+    return removeDependentOps(syncOp, localBlacklistedNode, remoteBlacklistedNode);
 }
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
@@ -2380,11 +2380,11 @@ ExitInfo ExecutorWorker::removeDependentOps(const SyncOpPtr syncOp) {
     const auto remoteNode =
             syncOp->affectedNode()->side() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
 
-    return removeDependentOps(localNode, remoteNode, syncOp->type());
+    return removeDependentOps(syncOp, localNode, remoteNode);
 }
 
-ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNode, const std::shared_ptr<Node> remoteNode,
-                                            const OperationType opType) {
+ExitInfo ExecutorWorker::removeDependentOps(const SyncOpPtr syncOp, const std::shared_ptr<Node> localNode,
+                                            const std::shared_ptr<Node> remoteNode) {
     const std::scoped_lock lock(_opListMutex);
 
     std::list<UniqueId> dependentOps;
@@ -2394,6 +2394,11 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
             LOGW_SYNCPAL_WARN(_logger, L"Operation doesn't exist anymore: id=" << opId);
             continue;
         }
+
+        if (syncOp2 == syncOp) {
+            continue; // Skip the operation that failed
+        }
+
         const auto localNode2 =
                 syncOp2->affectedNode()->side() == ReplicaSide::Local ? syncOp2->affectedNode() : syncOp2->correspondingNode();
         const auto remoteNode2 =
@@ -2401,18 +2406,18 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
         SyncName nodeName = localNode2 ? localNode2->name() : SyncName();
         if (nodeName.empty()) nodeName = remoteNode2 ? remoteNode2->name() : SyncName();
 
-        if (localNode && localNode2 && (localNode->isParentOf(localNode2))) {
+        if (localNode && localNode2 && (localNode->isParentOf(localNode2) || localNode == localNode2)) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
-                                                     << L" because it depends on " << opType << L" operation on "
+                                                     << L" because it depends on " << syncOp->type() << L" operation on "
                                                      << Utility::formatSyncName(localNode->name()) << L" which failed.");
 
             dependentOps.push_back(opId);
             continue;
         }
 
-        if (remoteNode && remoteNode2 && (remoteNode->isParentOf(remoteNode2))) {
+        if (remoteNode && remoteNode2 && (remoteNode->isParentOf(remoteNode2) || remoteNode == remoteNode2)) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
-                                                     << L" because it depends on " << opType << L" operation on "
+                                                     << L" because it depends on " << syncOp->type() << L" operation on "
                                                      << Utility::formatSyncName(remoteNode->name()) << L" which failed.");
 
             dependentOps.push_back(opId);
