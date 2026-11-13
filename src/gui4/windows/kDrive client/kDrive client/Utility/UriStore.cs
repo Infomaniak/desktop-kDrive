@@ -50,7 +50,7 @@ namespace Infomaniak.kDrive
     class DefaultUriStore : IUriStore
     {
         // ----------------------------------- Storage URLs -----------------------------------
-        private static readonly Uri _downloadUrl = new("https://download.storage.infomaniak.com/drive/desktopclient");
+        private static readonly Uri _downloadUrl = new("https://download.storage.infomaniak.com/drive/desktopclient/");
         public Uri ReleaseNoteUrl(string versionTag) => new(_downloadUrl, $"kDrive-{versionTag}-win-{BestLanguageCodeFor(LangueCodeContext.Storage)}.html");
 
 
@@ -61,7 +61,7 @@ namespace Infomaniak.kDrive
 
 
         // ----------------------------------- Shop URLs -----------------------------------
-        private static readonly Uri _shopDomainUri = new("https://shop.infomaniak.com");
+        private static readonly Uri _shopDomainUri = new("https://shop.infomaniak.com/");
 
         //// Shop - Start offer
         public Uri StartFreeUrl() => new($"https://www.infomaniak.com/{BestLanguageCodeFor(LangueCodeContext.InfomaniakSite)}/ksuite/myksuite#prices");
@@ -91,7 +91,7 @@ namespace Infomaniak.kDrive
 
 
         // ----------------------------------- WebApp URLs -----------------------------------
-        private static readonly Uri _kDriveWebAppUrl = new("https://ksuite.infomaniak.com/kdrive/app/drive");
+        private static readonly Uri _kDriveWebAppUrl = new("https://ksuite.infomaniak.com/kdrive/app/drive/");
         public Uri WebAppHomeUrl(DriveId driveId) => new(_kDriveWebAppUrl, $"{driveId}");
         public Uri WebAppTrashUrl(DriveId driveId) => new(_kDriveWebAppUrl, $"{driveId}/trash");
         public Uri WebAppFavoritesUrl(DriveId driveId) => new(_kDriveWebAppUrl, $"{driveId}/favorites");
