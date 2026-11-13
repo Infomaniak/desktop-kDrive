@@ -47,16 +47,11 @@ ManyDeletesController::ManyDeletesController(CommService &commService, AppCache 
     _commService(commService),
     _appCache(appCache) {
     (void) connect(&_commService, &CommService::manyDeletesNotification, this, &ManyDeletesController::enqueue);
-    (void) connect(&_appCache, &AppCache::syncsChanged, this, [this] {
-        if (visible()) {
-            emit canOpenTrashChanged();
-        }
-    });
-    (void) connect(&_appCache, &AppCache::drivesChanged, this, [this] {
-        if (visible()) {
-            emit canOpenTrashChanged();
-        }
-    });
+    // A synchronization context needs its sync, drive, account and user in the cache.
+    (void) connect(&_appCache, &AppCache::usersChanged, this, &ManyDeletesController::onCacheContextChanged);
+    (void) connect(&_appCache, &AppCache::accountsChanged, this, &ManyDeletesController::onCacheContextChanged);
+    (void) connect(&_appCache, &AppCache::drivesChanged, this, &ManyDeletesController::onCacheContextChanged);
+    (void) connect(&_appCache, &AppCache::syncsChanged, this, &ManyDeletesController::onCacheContextChanged);
 }
 
 ManyDeletesController::Severity ManyDeletesController::severity() const {
@@ -173,7 +168,9 @@ void ManyDeletesController::enqueue(const SyncDbId syncDbId, const TooManyDelete
     const Notification incoming{.syncDbId = syncDbId,
                                 .severity = incomingSeverity,
                                 .itemCount = itemCount,
-                                .deletedItems = makeDeletedItems(syncDbId, deletedPaths)};
+                                .deletedPaths = deletedPaths,
+                                .deletedItems = makeDeletedItems(syncDbId, deletedPaths),
+                                .deletedItemsResolved = canResolveDeletedItems(syncDbId, deletedPaths)};
     if (existing != _notifications.end()) {
         const bool currentReplaced = existing == _notifications.begin();
         *existing = incoming;
@@ -213,7 +210,7 @@ QVariantList ManyDeletesController::makeDeletedItems(const SyncDbId syncDbId, QS
 
     const auto context = _appCache.syncContext(syncDbId);
     if (!context.has_value() && !deletedPaths.isEmpty()) {
-        qCWarning(lcManyDeletesController) << "Mass deletion paths kept relative because the synchronization is unknown"
+        qCWarning(lcManyDeletesController) << "Mass deletion paths kept relative until the synchronization is in the cache"
                                            << "| syncDbId:" << syncDbId;
     }
 
@@ -244,6 +241,44 @@ QVariantList ManyDeletesController::makeDeletedItems(const SyncDbId syncDbId, QS
     }
 
     return deletedItems;
+}
+
+// Rows built without the synchronization context are only relative paths: they are rebuilt once it is cached.
+bool ManyDeletesController::canResolveDeletedItems(const SyncDbId syncDbId, const QStringList &deletedPaths) const {
+    return deletedPaths.isEmpty() || _appCache.syncContext(syncDbId).has_value();
+}
+
+// A warning can arrive before the cache holds its synchronization, for instance right after launch. Rebuilds the rows
+// of every warning still relative once its context is cached. Only `deletedItemsChanged` is emitted, so the dialog keeps
+// its checkbox and pending action.
+void ManyDeletesController::resolvePendingDeletedItems() {
+    bool currentChanged = false;
+    for (auto notification = _notifications.begin(); notification != _notifications.end(); ++notification) {
+        if (notification->deletedItemsResolved || !canResolveDeletedItems(notification->syncDbId, notification->deletedPaths)) {
+            continue;
+        }
+
+        notification->deletedItems = makeDeletedItems(notification->syncDbId, notification->deletedPaths);
+        notification->deletedItemsResolved = true;
+        qCInfo(lcManyDeletesController) << "Mass deletion paths resolved once the synchronization is in the cache"
+                                        << "| syncDbId:" << notification->syncDbId;
+        if (notification == _notifications.begin()) {
+            currentChanged = true;
+        }
+    }
+
+    if (currentChanged) {
+        emit deletedItemsChanged();
+    }
+}
+
+void ManyDeletesController::onCacheContextChanged() {
+    if (!visible()) {
+        return;
+    }
+
+    resolvePendingDeletedItems();
+    emit canOpenTrashChanged();
 }
 
 void ManyDeletesController::acknowledge(const TooManyDeletesUserChoice userChoice) {
@@ -328,6 +363,7 @@ void ManyDeletesController::setSubmissionFailed(const bool failed) {
 
 void ManyDeletesController::notifyPresentationChanged() {
     emit presentationChanged();
+    emit deletedItemsChanged();
     emit canOpenTrashChanged();
 }
 
