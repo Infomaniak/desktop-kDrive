@@ -209,6 +209,10 @@ You can access your advanced syncs from the drive picker on the home page.</sour
             <source>Automatic updates</source> 
             <translation>Αυτόματες ενημερώσεις</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Διαθέσιμο μόνο όταν το kDrive εκτελείται από ένα AppImage σε φάκελο με δικαίωμα εγγραφής.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Διαθέσιμο εκτός σύνδεσης</translation> 
@@ -509,6 +513,10 @@ You can open them at any time, even without an internet connection.</source>
         <message id="buttonRenameItem"> 
             <source>Rename %1</source> 
             <translation>Μετονομασία %1</translation> 
+        </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Επανεκκίνηση</translation> 
         </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
@@ -2688,6 +2696,10 @@ Your synchronization will resume automatically at the end.</source>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Διαθέσιμη ενημέρωση</translation> 
+        </message> 
+        <message id="updateInstalled"> 
+            <source>kDrive %1 installed. Restart the application to use it.</source> 
+            <translation>Το kDrive %1 εγκαταστάθηκε. Επανεκκινήστε την εφαρμογή για να το χρησιμοποιήσετε.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.

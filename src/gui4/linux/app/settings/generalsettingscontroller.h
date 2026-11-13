@@ -19,6 +19,8 @@
 #pragma once
 
 #include "app/services/parametersservice.h"
+#include "app/services/releasenotesservice.h"
+#include "libcommon/utility/utility.h"
 
 #include <QObject>
 #include <QUrl>
@@ -28,6 +30,7 @@ namespace KDC {
 class ParametersStore;
 class TranslationService;
 class UpdateStatusService;
+class AppCache;
 
 /** Presentation and immediate-save actions for General settings; the server remains authoritative. */
 class GeneralSettingsController final : public QObject {
@@ -42,14 +45,23 @@ class GeneralSettingsController final : public QObject {
         Q_PROPERTY(QString errorText READ errorText NOTIFY changed)
         Q_PROPERTY(QString updateText READ updateText NOTIFY changed)
         Q_PROPERTY(bool updateAvailable READ updateAvailable NOTIFY changed)
+        Q_PROPERTY(bool updateDownloading READ updateDownloading NOTIFY changed)
+        Q_PROPERTY(bool updateReadyToInstall READ updateReadyToInstall NOTIFY changed)
+        Q_PROPERTY(bool updateInstallable READ updateInstallable NOTIFY changed)
+        Q_PROPERTY(bool automaticUpdates READ automaticUpdates NOTIFY changed)
+        Q_PROPERTY(bool automaticUpdatesAvailable READ automaticUpdatesAvailable CONSTANT)
+        Q_PROPERTY(int32_t distributionChannel READ distributionChannel NOTIFY changed)
+        Q_PROPERTY(QString betaProgramStatus READ betaProgramStatus NOTIFY changed)
+        Q_PROPERTY(QVariantList distributionChannels READ distributionChannels NOTIFY changed)
         Q_PROPERTY(QString releaseVersion READ releaseVersion NOTIFY changed)
         Q_PROPERTY(QString releaseDetails READ releaseDetails NOTIFY changed)
         Q_PROPERTY(QString installedDetails READ installedDetails NOTIFY changed)
+        Q_PROPERTY(QVariantList releaseNotes READ releaseNotes NOTIFY releaseNotesChanged)
 
     public:
         GeneralSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
                                   TranslationService &translationService, UpdateStatusService &updateStatusService,
-                                  QObject *parent = nullptr);
+                                  const AppCache &appCache, QObject *parent = nullptr);
 
         [[nodiscard]] bool ready() const;
 
@@ -65,16 +77,29 @@ class GeneralSettingsController final : public QObject {
 
         [[nodiscard]] QString updateText() const;
         [[nodiscard]] bool updateAvailable() const;
+        [[nodiscard]] bool updateDownloading() const;
+        [[nodiscard]] bool updateReadyToInstall() const;
+        [[nodiscard]] bool updateInstallable() const;
+        [[nodiscard]] bool automaticUpdates() const;
+        [[nodiscard]] bool automaticUpdatesAvailable() const { return _automaticUpdatesAvailable; }
+        [[nodiscard]] int32_t distributionChannel() const;
+        [[nodiscard]] QString betaProgramStatus() const;
+        [[nodiscard]] QVariantList distributionChannels() const;
         [[nodiscard]] QString releaseVersion() const;
         [[nodiscard]] QString releaseDetails() const;
         [[nodiscard]] static QString installedDetails();
+        [[nodiscard]] const QVariantList &releaseNotes() const { return _releaseNotes.sections(); }
 
         Q_INVOKABLE void setAutoStart(bool enabled);
         Q_INVOKABLE void setNotificationsEnabled(bool enabled);
         Q_INVOKABLE void setMoveToTrash(bool enabled);
         Q_INVOKABLE void setLanguage(int32_t languageValue);
+        Q_INVOKABLE void setDistributionChannel(int32_t channelValue);
+        Q_INVOKABLE void setAutomaticUpdates(bool enabled);
 
         Q_INVOKABLE void openDownload();
+        Q_INVOKABLE void installUpdate() const;
+        Q_INVOKABLE void loadReleaseNotes();
         Q_INVOKABLE void openTrashHelp();
         Q_INVOKABLE void openSupport();
         Q_INVOKABLE void openFeedback();
@@ -85,6 +110,8 @@ class GeneralSettingsController final : public QObject {
 
     signals:
         void changed();
+        // Separate from changed(): a new list rebuilds the release notes Repeater.
+        void releaseNotesChanged();
 
     private:
         void save(const ParametersService::ParametersMutation &mutation);
@@ -94,6 +121,10 @@ class GeneralSettingsController final : public QObject {
         ParametersService &_parametersService;
         TranslationService &_translationService;
         UpdateStatusService &_updateStatusService;
+        const AppCache &_appCache;
+        ReleaseNotesService _releaseNotes;
+        // Same rule as the server updater: only a writable AppImage installation can update itself.
+        const bool _automaticUpdatesAvailable{CommonUtility::isAppImageUpdatable()};
 
         bool _saving{false};
 

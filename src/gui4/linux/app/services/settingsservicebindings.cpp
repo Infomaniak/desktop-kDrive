@@ -43,6 +43,7 @@ UpdateStatusService::UpdateStatusService(const CommService &commService, const P
                 const auto channel = parameters ? parameters->distributionChannel() : DistributionChannel::Unknown;
                 commService.requestUpdaterVersionInfo(channel, callback);
             },
+            [&commService](const CommService::VoidCallback &callback) { commService.requestUpdaterStartInstaller(callback); },
             parent) {
     (void) connect(&commService, &CommService::updateStateChanged, this, &UpdateStatusService::setState);
 }

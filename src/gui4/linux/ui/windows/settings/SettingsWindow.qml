@@ -281,6 +281,7 @@ IKShadowedWindow {
                 controller: root.controller.general
                 onReleaseInformationRequested: trigger => releaseDialog.showFrom(trigger)
                 onAboutRequested: trigger => aboutDialog.showFrom(trigger)
+                onBetaProgramRequested: trigger => betaProgramDialog.showFrom(trigger)
             }
 
             SettingsNavigationPane {
@@ -525,6 +526,14 @@ IKShadowedWindow {
         id: addExclusionRuleDialog
 
         controller: root.controller.fileExclusions
+        scrimInset: root.effectiveShadowMargin
+        scrimRadius: root.surfaceRadius
+    }
+
+    BetaProgramDialog {
+        id: betaProgramDialog
+
+        controller: root.controller.general
         scrimInset: root.effectiveShadowMargin
         scrimRadius: root.surfaceRadius
     }
@@ -858,5 +867,6 @@ IKShadowedWindow {
         root.controller.syncActivation.dismissFromHostWindow();
         releaseDialog.close();
         aboutDialog.close();
+        betaProgramDialog.close();
     }
 }

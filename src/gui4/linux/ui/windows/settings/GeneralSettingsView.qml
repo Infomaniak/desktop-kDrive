@@ -26,6 +26,7 @@ ScrollView {
     required property var controller
     signal releaseInformationRequested(var trigger)
     signal aboutRequested(var trigger)
+    signal betaProgramRequested(var trigger)
     contentWidth: availableWidth
     clip: true
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -54,11 +55,23 @@ ScrollView {
                 title: qsTrId("updateSettings")
                 description: root.controller.updateText
                 IKModalButton {
+                    readonly property bool manual: !root.controller.updateReadyToInstall
+                                                   && !root.controller.updateDownloading
+                                                   && !root.controller.updateInstallable
+
                     visible: root.controller.updateAvailable
-                    text: qsTrId("buttonDownloadManually")
-                    external: true
+                    // Ready: the update is installed, the button restarts the application on it. Installable: the
+                    // button downloads and installs the update, then restarts.
+                    text: root.controller.updateReadyToInstall ? qsTrId("buttonRestart")
+                                                               : root.controller.updateDownloading
+                                                                 ? qsTrId("buttonDownloadInProgress")
+                                                                 : root.controller.updateInstallable
+                                                                   ? qsTrId("buttonUpdate")
+                                                                   : qsTrId("buttonDownloadManually")
+                    external: manual
+                    actionEnabled: !root.controller.updateDownloading
                     implicitHeight: IKSettings.buttonHeight
-                    onClicked: root.controller.openDownload()
+                    onClicked: manual ? root.controller.openDownload() : root.controller.installUpdate()
                 }
                 SettingsInfoButton {
                     id: releaseInfo
@@ -66,11 +79,31 @@ ScrollView {
                 }
             }
             SettingsRow {
-                title: qsTrId("aboutKDrive")
+                title: qsTrId("automaticUpdatesSetting")
+                // Disabled outside an updatable AppImage, with the reason below the title.
+                enabled: root.controller.automaticUpdatesAvailable
+                description: root.controller.automaticUpdatesAvailable ? ""
+                                                                        : qsTrId("automaticUpdatesUnavailableDescription")
+                IKSwitch {
+                    text: qsTrId("automaticUpdatesSetting")
+                    enabled: root.controller.ready && !root.controller.saving
+                    // Off when unavailable: the stored parameter has no effect outside an updatable AppImage.
+                    value: root.controller.automaticUpdatesAvailable && root.controller.automaticUpdates
+                    onToggleRequested: value => root.controller.setAutomaticUpdates(value)
+                }
+            }
+            SettingsRow {
+                title: qsTrId("releaseChannelBeta")
                 separator: false
+                Text {
+                    text: root.controller.betaProgramStatus
+                    color: IKColors.textSecondary
+                    font.pixelSize: IKFonts.bodySize
+                }
                 SettingsInfoButton {
-                    id: aboutInfo
-                    onClicked: root.aboutRequested(aboutInfo)
+                    id: betaProgramInfo
+                    enabled: root.controller.ready
+                    onClicked: root.betaProgramRequested(betaProgramInfo)
                 }
             }
         }
@@ -151,6 +184,17 @@ ScrollView {
                     external: true
                     implicitHeight: IKSettings.buttonHeight
                     onClicked: root.controller.openFeedback()
+                }
+            }
+        }
+        SettingsGroup {
+            width: parent.width - 2 * IKSettings.pageMargin
+            SettingsRow {
+                title: qsTrId("aboutKDrive")
+                separator: false
+                SettingsInfoButton {
+                    id: aboutInfo
+                    onClicked: root.aboutRequested(aboutInfo)
                 }
             }
         }

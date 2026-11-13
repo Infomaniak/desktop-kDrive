@@ -19,9 +19,11 @@
 #include "generalsettingscontroller.h"
 
 #include "app/appconstants.h"
+#include "app/cache/appcache.h"
 #include "app/cache/parametersstore.h"
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
 
 #include "version.h"
@@ -30,6 +32,8 @@
 #include <QDesktopServices>
 #include <QLoggingCategory>
 #include <QPointer>
+
+#include <algorithm>
 
 namespace KDC {
 
@@ -42,22 +46,62 @@ QString installedVersion() {
     return QString::fromLatin1(KDRIVE_VERSION_STRING);
 }
 
+QString installedRelease() {
+    return u"%1.%2.%3"_s.arg(KDRIVE_VERSION_MAJOR).arg(KDRIVE_VERSION_MINOR).arg(KDRIVE_VERSION_PATCH);
+}
+
+// Channels without their own choice in the beta program are shown as "Do not join".
+DistributionChannel displayedChannel(const DistributionChannel channel) {
+    switch (channel) {
+        case DistributionChannel::Beta:
+        case DistributionChannel::Internal:
+        case DistributionChannel::Test:
+            return channel;
+        default:
+            return DistributionChannel::Prod;
+    }
+}
+
+QString channelLabel(const DistributionChannel channel) {
+    switch (channel) {
+        case DistributionChannel::Beta:
+            return qtTrId("releaseChannelBeta");
+        case DistributionChannel::Internal:
+            return qtTrId("releaseChannelInternal");
+        case DistributionChannel::Test:
+            return qtTrId("releaseChannelTest");
+        default:
+            return qtTrId("doNotJoin");
+    }
+}
+
+// Styled text: the translation is escaped and only the version and build are set in bold.
 QString versionDetails(const QString &version, const uint64_t build) {
-    return qtTrId("aboutAppVersionCopyrightMac").arg(version).arg(build).arg(QDate::currentDate().year());
+    const auto bold = [](const QString &text) { return u"<b>%1</b>"_s.arg(text.toHtmlEscaped()); };
+
+    return qtTrId("aboutAppVersionCopyrightMac")
+            .toHtmlEscaped()
+            .replace(u'\n', u"<br>"_s)
+            .arg(bold(version), bold(QString::number(build)), QString::number(QDate::currentDate().year()));
 }
 } // namespace
 
 GeneralSettingsController::GeneralSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
                                                      TranslationService &translationService,
-                                                     UpdateStatusService &updateStatusService, QObject *const parent) :
+                                                     UpdateStatusService &updateStatusService, const AppCache &appCache,
+                                                     QObject *const parent) :
     QObject(parent),
     _parametersStore(parametersStore),
     _parametersService(parametersService),
     _translationService(translationService),
-    _updateStatusService(updateStatusService) {
+    _updateStatusService(updateStatusService),
+    _appCache(appCache),
+    _releaseNotes(parametersStore) {
     (void) connect(&parametersStore, &ParametersStore::parametersChanged, this, &GeneralSettingsController::changed);
+    (void) connect(&appCache, &AppCache::usersChanged, this, &GeneralSettingsController::changed);
     (void) connect(&translationService, &TranslationService::languageChanged, this, &GeneralSettingsController::changed);
     (void) connect(&updateStatusService, &UpdateStatusService::changed, this, &GeneralSettingsController::changed);
+    (void) connect(&_releaseNotes, &ReleaseNotesService::changed, this, &GeneralSettingsController::releaseNotesChanged);
 }
 
 bool GeneralSettingsController::ready() const {
@@ -102,6 +146,10 @@ QString GeneralSettingsController::errorText() const {
 }
 
 QString GeneralSettingsController::updateText() const {
+    if (_updateStatusService.readyToInstall() && _updateStatusService.version()) {
+        return qtTrId("updateInstalled").arg(releaseVersion());
+    }
+
     if (_updateStatusService.available()) {
         return _updateStatusService.version() ? qtTrId("updateAvailable").arg(releaseVersion()) : qtTrId("updateDialogTitle");
     }
@@ -120,13 +168,72 @@ bool GeneralSettingsController::updateAvailable() const {
     return _updateStatusService.available();
 }
 
+bool GeneralSettingsController::updateDownloading() const {
+    return _updateStatusService.downloading();
+}
+
+bool GeneralSettingsController::updateReadyToInstall() const {
+    return _updateStatusService.readyToInstall();
+}
+
+bool GeneralSettingsController::updateInstallable() const {
+    return _updateStatusService.installable();
+}
+
+bool GeneralSettingsController::automaticUpdates() const {
+    const auto parameters = _parametersStore.parameters();
+    return parameters && parameters->automaticUpdates();
+}
+
+int32_t GeneralSettingsController::distributionChannel() const {
+    const auto parameters = _parametersStore.parameters();
+    const auto channel = parameters ? parameters->distributionChannel() : DistributionChannel::Prod;
+    return static_cast<int32_t>(displayedChannel(channel));
+}
+
+QString GeneralSettingsController::betaProgramStatus() const {
+    return channelLabel(static_cast<DistributionChannel>(distributionChannel()));
+}
+
+// Internal and Test are offered only when a connected account belongs to the staff. The current channel stays listed
+// so that the picker never shows a wrong value, even after the staff account is disconnected.
+QVariantList GeneralSettingsController::distributionChannels() const {
+    const auto users = _appCache.users();
+    const bool staff = std::ranges::any_of(users, [](const User &user) { return user.connected() && user.isStaff(); });
+
+    std::vector<DistributionChannel> channels{DistributionChannel::Prod, DistributionChannel::Beta};
+    if (staff) {
+        channels.push_back(DistributionChannel::Internal);
+        channels.push_back(DistributionChannel::Test);
+    }
+
+    const auto current = static_cast<DistributionChannel>(distributionChannel());
+    if (std::ranges::find(channels, current) == channels.end()) {
+        channels.push_back(current);
+    }
+
+    QVariantList options;
+    for (const auto channel: channels) {
+        options.append(QVariantMap{{u"value"_s, static_cast<int32_t>(channel)}, {u"label"_s, channelLabel(channel)}});
+    }
+
+    return options;
+}
+
 QString GeneralSettingsController::releaseVersion() const {
-    return _updateStatusService.version() ? QString::fromStdString(_updateStatusService.version()->tag) : installedVersion();
+    const auto &version = _updateStatusService.version();
+    if (!version) {
+        return installedVersion();
+    }
+
+    // A new build of the installed release shares its tag: the build number tells them apart.
+    const auto tag = QString::fromStdString(version->tag);
+    return tag == installedRelease() ? u"%1.%2"_s.arg(tag).arg(version->buildVersion) : tag;
 }
 
 QString GeneralSettingsController::releaseDetails() const {
-    return _updateStatusService.version() ? versionDetails(releaseVersion(), _updateStatusService.version()->buildVersion)
-                                          : installedDetails();
+    const auto &version = _updateStatusService.version();
+    return version ? versionDetails(QString::fromStdString(version->tag), version->buildVersion) : installedDetails();
 }
 
 QString GeneralSettingsController::installedDetails() {
@@ -173,12 +280,36 @@ void GeneralSettingsController::setNotificationsEnabled(const bool enabled) {
     });
 }
 
+void GeneralSettingsController::setAutomaticUpdates(const bool enabled) {
+    if (enabled == automaticUpdates()) {
+        return;
+    }
+
+    save([enabled](Parameters &parameters) { parameters.setAutomaticUpdates(enabled); });
+}
+
 void GeneralSettingsController::setMoveToTrash(const bool enabled) {
     if (enabled == moveToTrash()) {
         return;
     }
 
     save([enabled](Parameters &parameters) { parameters.setMoveToTrash(enabled); });
+}
+
+void GeneralSettingsController::setDistributionChannel(const int32_t channelValue) {
+    const auto channel = static_cast<DistributionChannel>(channelValue);
+    if (displayedChannel(channel) != channel) {
+        qCWarning(lcGeneralSettings) << "Ignoring unsupported distribution channel" << channelValue;
+        return;
+    }
+
+    // Compared with the stored channel: a hidden channel such as Next is displayed as Prod but must still be replaced.
+    if (const auto parameters = _parametersStore.parameters(); parameters && parameters->distributionChannel() == channel) {
+        return;
+    }
+
+    qCInfo(lcGeneralSettings) << "Distribution channel changed | channel:" << channelValue;
+    save([channel](Parameters &parameters) { parameters.setDistributionChannel(channel); });
 }
 
 void GeneralSettingsController::setLanguage(const int32_t languageValue) {
@@ -213,11 +344,34 @@ void GeneralSettingsController::openUrl(const QUrl &url) {
     emit changed();
 }
 
+// Manual fallback when the AppImage cannot be replaced in place (not an AppImage, read-only folder, download error).
+// The download page only offers the Prod version: a version announced on the Beta, Internal or Test channel is downloaded
+// directly. Next, a staged Prod release, and any unknown channel keep the download page.
 void GeneralSettingsController::openDownload() {
-    // TODO: The Linux server has no installer yet (`LinuxUpdater::startInstaller` is empty): the user downloads the new
-    // version from the website, from Settings or from the update-required screen. Once the packaging rework brings one,
-    // send UPDATER_START_INSTALLER instead, as on Windows and macOS, and present the installation state.
+    const auto &version = _updateStatusService.version();
+    const bool channelOutsideProd =
+            version && (version->channel == DistributionChannel::Beta || version->channel == DistributionChannel::Internal ||
+                        version->channel == DistributionChannel::Test);
+    if (channelOutsideProd && !version->downloadUrl.empty()) {
+        openUrl(QUrl(QString::fromStdString(version->downloadUrl)));
+        return;
+    }
+
     openUrl(AppConstants::Settings::downloadUri());
+}
+
+void GeneralSettingsController::installUpdate() const {
+    _updateStatusService.installUpdate();
+}
+
+// Loaded when the release information is shown, for the announced version in the application language.
+void GeneralSettingsController::loadReleaseNotes() {
+    const auto &version = _updateStatusService.version();
+    auto languageCode = CommonUtility::languageCode(_translationService.language()).left(2);
+    if (languageCode.isEmpty()) {
+        languageCode = u"en"_s;
+    }
+    _releaseNotes.load(version ? QString::fromStdString(version->tag) : QString(), languageCode);
 }
 
 void GeneralSettingsController::openTrashHelp() {

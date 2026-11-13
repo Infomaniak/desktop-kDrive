@@ -50,6 +50,7 @@ QtObject {
     readonly property real comboWidth: 150
     readonly property real textFieldHeight: 36
     readonly property real informationDialogWidth: 454
+    readonly property real releaseNotesDialogWidth: 560
     readonly property real dialogChromeHeight: 180
     readonly property real logoSize: 64
     readonly property real userCardPadding: 10
