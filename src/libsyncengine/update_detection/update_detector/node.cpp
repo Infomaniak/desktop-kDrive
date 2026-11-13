@@ -218,7 +218,7 @@ bool Node::setId(const std::optional<NodeId> &nodeId) {
         LOGW_WARN(Log::instance()->getLogger(), L"A node that has a parent cannot have an empty ID: "
                                                         << Node::formatNodeWithParent(shared_from_this(), _parentNode));
         sentry::Handler::captureMessage(sentry::Level::Error, "Node::setId", "A node that has a parent cannot have an empty ID");
-        // assert(false);
+        assert(false);
         return false;
     }
 
