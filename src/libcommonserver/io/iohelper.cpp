@@ -958,7 +958,8 @@ bool IoHelper::deleteItem(const SyncPath &path) noexcept {
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
-    ioError = IoError::Unknown;
+    ioError = IoHelper::checkIfPathTraversesLink(destinationPath);
+    if (ioError != IoError::Success) return false;
 
     // Get the destination type.
     ItemType destinationType;
@@ -978,8 +979,6 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
         }
     }
 
-    ioError = IoHelper::checkIfPathTraversesLink(destinationPath);
-    if (ioError != IoError::Success) return false;
 
     // Copy the source path to the destination path
     // - Overwrite if the destination path already exists
