@@ -34,7 +34,6 @@ class FolderWatcher_win : public FolderWatcher {
         FolderWatcher_win(LocalFileSystemObserverWorker *parent, const SyncPath &path);
 
         void changesLost();
-        ExitInfo changeDetected(const SyncPath &path, OperationType opType);
 
     protected:
         void startWatching() override;
@@ -46,9 +45,13 @@ class FolderWatcher_win : public FolderWatcher {
         HANDLE _stopEventHandle = nullptr;
 
         void watchChanges();
+        // Processes one ReadDirectoryChangesW completion. A 0-byte result means the notification buffer overflowed.
+        ExitInfo processNotifyBuffer(const void *buffer, DWORD bytesReturned);
         void closeHandle();
 
         OperationType operationFromAction(DWORD action);
+
+        friend class TestFolderWatcherWin;
 };
 
 } // namespace KDC
