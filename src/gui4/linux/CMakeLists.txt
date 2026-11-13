@@ -12,6 +12,9 @@ if (QT_FEATURE_xcb)
 endif ()
 find_package(keychain REQUIRED) # TLS certificate read by communicationlayer/tlscerthelper.cpp
 
+# Matomo tracking SDK (git submodule), built as a static library (BUILD_SHARED_LIBS is FALSE) and only when linked.
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/3rdparty/matomo-sdk-qt ${CMAKE_BINARY_DIR}/3rdparty/matomo-sdk-qt EXCLUDE_FROM_ALL)
+
 qt_standard_project_setup(REQUIRES 6.12)
 
 set(QT_QML_GENERATE_QMLLS_INI ON)
@@ -163,6 +166,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/serviceactiontracker.h
         app/services/serviceeventbus.cpp
         app/services/serviceeventbus.h
+        app/services/matomoservice.cpp
+        app/services/matomoservice.h
         app/services/sentryservice.cpp
         app/services/sentryservice.h
         app/services/syncerrorservice.cpp
@@ -205,6 +210,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/excludedfolderscontroller.h
         app/systraycontroller.cpp
         app/systraycontroller.h
+        app/useractions/analyticscatalog.cpp
+        app/useractions/analyticscatalog.h
         app/useractions/useractionlog.cpp
         app/useractions/useractionlog.h
         ui/chrome/windowdecorationcontroller.cpp
@@ -566,6 +573,7 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         ${libcommon_NAME}
         ${libcommongui_NAME}
         keychain::keychain
+        MatomoQt::Core
 )
 
 if (QT_FEATURE_xcb)

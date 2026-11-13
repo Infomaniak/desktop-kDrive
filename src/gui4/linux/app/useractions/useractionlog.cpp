@@ -18,10 +18,14 @@
 
 #include "useractionlog.h"
 
+#include "app/services/matomoservice.h"
+#include "app/useractions/analyticscatalog.h"
+
 #include <QJSValueIterator>
 #include <QLoggingCategory>
 
 #include <algorithm>
+#include <optional>
 
 using namespace Qt::StringLiterals;
 
@@ -51,10 +55,39 @@ UserActionLog::Details detailsFromJs(const QJSValue &value) {
     return details;
 }
 
+/**
+ * Event value read from the detail named by the catalog: a boolean becomes 1 or 0, a number is kept as is.
+ */
+std::optional<double> eventValue(const AnalyticsCatalog::Event &event, const UserActionLog::Details &details) {
+    if (event.valueDetail.isEmpty()) {
+        return std::nullopt;
+    }
+
+    for (const auto &[key, value]: details) {
+        if (key != event.valueDetail) {
+            continue;
+        }
+
+        if (value.typeId() == QMetaType::Bool) {
+            return value.toBool() ? 1.0 : 0.0;
+        }
+
+        bool isNumber = false;
+        if (const double number = value.toDouble(&isNumber); isNumber) {
+            return number;
+        }
+
+        return std::nullopt;
+    }
+
+    return std::nullopt;
+}
+
 } // namespace
 
-UserActionLog::UserActionLog(QObject *const parent) :
-    QObject(parent) {}
+UserActionLog::UserActionLog(MatomoService &matomoService, QObject *const parent) :
+    QObject(parent),
+    _matomoService(matomoService) {}
 
 void UserActionLog::action(const QString &actionId, const QJSValue &details) const {
     recordAction(actionId, detailsFromJs(details));
@@ -66,6 +99,14 @@ void UserActionLog::screen(const QString &screenId, const QJSValue &details) con
 
 void UserActionLog::dialog(const QString &dialogId, const bool opened, const QJSValue &details) const {
     write(opened ? u"Dialog opened"_s : u"Dialog closed"_s, dialogId, detailsFromJs(details));
+
+    if (!opened) {
+        return;
+    }
+
+    if (const auto category = AnalyticsCatalog::pageViewForScreen(dialogId); category.has_value()) {
+        _matomoService.trackPageView(*category);
+    }
 }
 
 void UserActionLog::window(const QString &windowId, const bool shown, const QJSValue &details) const {
@@ -74,10 +115,18 @@ void UserActionLog::window(const QString &windowId, const bool shown, const QJSV
 
 void UserActionLog::recordAction(const QString &actionId, const Details &details) const {
     write(u"User action"_s, actionId, details);
+
+    if (const auto event = AnalyticsCatalog::eventForAction(actionId); event.has_value()) {
+        _matomoService.trackEvent(event->category, event->name, eventValue(*event, details));
+    }
 }
 
 void UserActionLog::recordScreen(const QString &screenId, const Details &details) const {
     write(u"Screen shown"_s, screenId, details);
+
+    if (const auto category = AnalyticsCatalog::pageViewForScreen(screenId); category.has_value()) {
+        _matomoService.trackPageView(*category);
+    }
 }
 
 void UserActionLog::write(const QString &event, const QString &id, const Details &details) const {

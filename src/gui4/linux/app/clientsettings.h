@@ -23,8 +23,8 @@
 /**
  * Local settings of the Linux v4 client.
  *
- * Role: hold the few values the client needs before the server parameters are loaded, or that the server does not keep,
- * such as the cached Sentry consent. Every other setting belongs to the server parameters.
+ * Role: hold the few values the client needs before the server parameters are loaded, or that the server does not keep:
+ * the cached Sentry consent and the Matomo visitor id. Every other setting belongs to the server parameters.
  */
 namespace KDC::ClientSettings {
 

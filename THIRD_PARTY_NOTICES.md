@@ -159,6 +159,15 @@ The exact set of redistributed binaries can vary by platform:
 - **Repository:** https://github.com/pbek/qt-piwik-tracker
 - **Note:** Vendored in `src/3rdparty/` and built as part of `libcommongui`.
 
+### matomo-sdk-qt
+
+- **Version:** 1.0.0
+- **License:** Apache-2.0
+- **Copyright:** Copyright (C) 2026 Infomaniak Network SA
+- **Repository:** https://github.com/Infomaniak/matomo-sdk-qt
+- **Note:** Git submodule in `src/3rdparty/matomo-sdk-qt`, pinned to tag `v1.0.0`. Linux only: its `MatomoQt::Core`
+  static library is built and linked into the Linux v4 client.
+
 ### QProgressIndicator
 
 - **License:** MIT

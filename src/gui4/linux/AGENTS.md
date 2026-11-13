@@ -342,7 +342,19 @@
   declarative types of the module, and the provision fails (fatal at startup). It writes one line per interaction in
   the `gui.v4.useraction` category (Info, also a `useraction` Sentry breadcrumb): `User action | <actionId>`,
   `Screen shown | <screenId>`, `Dialog opened|closed | <dialogId>`, `Window shown|hidden | <windowId>`, followed by
-  `| key: value` details sorted by key.
+  `| key: value` details sorted by key. It then sends the matching Matomo page view or event when
+  `app/useractions/analyticscatalog.*` maps the id; an unmapped id is only logged.
+- `app/useractions/analyticscatalog.*`: Matomo taxonomy of the user action ids, with the categories and event names of
+  the kDrive v4 desktop application (`homePage`, `openSettings`, ...; action `click`). A `valueDetail` turns a boolean
+  detail into the event value (1 or 0). Error rows log `main.errors.row.<kindId>` (`ErrorListModel` `kindId` role), so
+  each error kind maps to its own `errors` event.
+- `app/services/matomoservice.*`: owner of the single `MatomoQt::Tracker` (`src/3rdparty/matomo-sdk-qt`, static
+  `MatomoQt::Core`), site `AppConstants::Matomo::siteId`, actions under `kdrive://<category>`. Requests carry the user
+  agent built by the SDK, the app language and the logical size of the primary screen at startup. Consent is the
+  server-confirmed `matomoEnabled` of `ParametersStore` (privacy mode `RequiresConsent`): nothing is sent before the
+  parameters are loaded or after an opt-out, which also forgets the visitor id, kept in `ClientSettings`, and aborts the
+  requests still in flight through the `QNetworkAccessManager` the service gives the tracker. Debug builds send
+  like release builds when consent is granted. Network failures are logged once per failure streak.
 - `communicationlayer/ipcclient.*`: TLS-over-loopback JSON transport (`QSslSocket`), request/reply correlation,
   reconnect-before-first-connect logic, and pinned self-signed certificate verification. The pinned CA certificate is
   loaded once from the OS keychain via `CertReader` and set as the socket's only CA; the peer is verified against
@@ -368,8 +380,8 @@
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
 - `app/clientsettings.*`: `kdrive-client.ini` in the application directory (`~/.config/kDrive`, next to
   `kdrive-client.lock`), read with `QSettings::IniFormat`. It only holds what the client needs before the server
-  parameters are loaded, or what the server does not keep, such as the cached Sentry consent (`sentry/enabled`). Every
-  other setting belongs to the server parameters.
+  parameters are loaded, or what the server does not keep: the cached Sentry consent (`sentry/enabled`) and the Matomo
+  visitor id (`MatomoQt/clientId`). Every other setting belongs to the server parameters.
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
@@ -988,6 +1000,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Never put displayed or typed text, local paths, exclusion patterns, folder names or proxy settings in user action
   details: only technical ids (`syncDbId`, `rowId`, `driveDbId`), booleans, enum names and row indexes. Window closing is
   logged once in `IKShadowedWindow.onClosing` (`window.close`), whatever closed the window.
+- Give a new Matomo event or page view an entry in `AnalyticsCatalog` with a category and event name of the kDrive v4
+  taxonomy; never derive them from the log id.
 - Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
