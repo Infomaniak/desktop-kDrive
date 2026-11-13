@@ -26,11 +26,19 @@ class TestLinuxUpdater final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestLinuxUpdater);
         CPPUNIT_TEST(testInstallTargetPath);
         CPPUNIT_TEST(testHasEnoughSpace);
+        CPPUNIT_TEST(testInstallUpdateRestarts);
+        CPPUNIT_TEST(testRecoveredDownloadRestarts);
+        CPPUNIT_TEST(testRelaunchFailureCanBeRetried);
+        CPPUNIT_TEST(testOutdatedUpdateDoesNotRestart);
         CPPUNIT_TEST_SUITE_END();
 
     private:
         void testInstallTargetPath();
         void testHasEnoughSpace();
+        void testInstallUpdateRestarts();
+        void testRecoveredDownloadRestarts();
+        void testRelaunchFailureCanBeRetried();
+        void testOutdatedUpdateDoesNotRestart();
 };
 
 } // namespace KDC
