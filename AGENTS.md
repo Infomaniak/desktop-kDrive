@@ -76,6 +76,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 > immediately so you don't make the same mistake again.
 
 ### Local Norms
+- When making an updated AppImage executable, add only the owner's execute permission (`u+x`) and preserve existing permissions.
 - The macOS desktop CI runner's runnable Xcode 26 installation is `/Applications/Xcode_26.app`; select it with job-scoped `DEVELOPER_DIR`.
 - macOS server build workflows use the desktop CI stack on M2-3 and `.github/actions/setup_xcode` to verify Xcode 26. macOS unit test jobs only run prebuilt binaries: they run on GitHub-hosted `macos-latest` and need no Xcode setup. Keep the redesigned Swift UI workflow on the iOS runners with `Xcode-Latest.app`.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
