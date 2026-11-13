@@ -22,6 +22,7 @@
 #include <MatomoQt/QSettingsClientIdStore.h>
 #include <MatomoQt/Tracker.h>
 
+#include <QNetworkAccessManager>
 #include <QObject>
 #include <QSettings>
 #include <QString>
@@ -50,6 +51,7 @@ class MatomoService final : public QObject {
 
     private:
         void reconcileConsentWithParametersStore();
+        void abortPendingRequests();
         void logRejectedRequest(const MatomoQt::RequestResult &result, const QString &category, const QString &eventName) const;
         void logDispatchResult(const MatomoQt::DispatchResult &result);
 
@@ -57,6 +59,8 @@ class MatomoService final : public QObject {
         QSettings _settings;
         MatomoQt::InMemoryConsentStore _consentStore;
         MatomoQt::QSettingsClientIdStore _clientIdStore{&_settings};
+        // Owned by the service, so that withdrawing the consent can abort the requests still in flight.
+        QNetworkAccessManager _networkAccessManager;
         MatomoQt::Tracker _tracker;
         std::optional<bool> _appliedConsent;
         bool _lastDispatchFailed{false};
