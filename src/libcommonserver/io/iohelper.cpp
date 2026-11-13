@@ -852,6 +852,17 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
         return IoError::InvalidArgument;
     }
 
+    // Reject parent references below the sync root, e.g. "/sync_root/../outside". The path is intentionally not normalized,
+    // since lexical normalization could hide the traversal of a link (e.g. "/sync_root/link/..").
+    auto componentIt = path.begin();
+    std::advance(componentIt, std::distance(rootPath.begin(), rootPath.end()));
+    for (; componentIt != path.end(); ++componentIt) {
+        if (*componentIt == Str("..")) {
+            LOGW_WARN(logger(), L"Path " << Utility::formatSyncPath(path) << L" contains a parent reference");
+            return IoError::InvalidArgument;
+        }
+    }
+
     // Check each ancestor directory of `path` located strictly below the sync root, from the closest to the farthest. The final
     // component of the path is ignored.
     for (SyncPath tmpPath = path.parent_path(); CommonUtility::isStrictDescendant(tmpPath, rootPath);

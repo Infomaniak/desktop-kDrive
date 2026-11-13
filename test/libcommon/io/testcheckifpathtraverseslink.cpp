@@ -58,6 +58,24 @@ void TestIo::testCheckIfPathTraversesLink() {
         CPPUNIT_ASSERT(linkPath.empty());
     }
 
+    // A parent reference below the sync root is rejected, even though the path is lexically located under the sync root.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const auto syncRootPath = temporaryDirectory.path() / "sync_root";
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::create_directories(syncRootPath / "dir", ec) && ec.value() == 0);
+        CPPUNIT_ASSERT(std::filesystem::create_directories(temporaryDirectory.path() / "outside", ec) && ec.value() == 0);
+
+        auto traversesLink = true;
+        auto linkPath = SyncPath("dummy");
+        for (const auto &path: {syncRootPath / ".." / "outside" / "item.txt", syncRootPath / "dir" / ".." / "item.txt"}) {
+            CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument,
+                                 IoHelper::checkIfPathTraversesLink(path, syncRootPath, traversesLink, linkPath));
+            CPPUNIT_ASSERT(!traversesLink);
+            CPPUNIT_ASSERT(linkPath.empty());
+        }
+    }
+
     // Links located at or above the sync root are ignored (e.g. "/var" -> "private/var" on macOS).
     {
         const LocalTemporaryDirectory temporaryDirectory;
