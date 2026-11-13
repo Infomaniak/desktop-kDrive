@@ -19,22 +19,11 @@
 #include "selfsignedcert.h"
 
 #include "comm.h"
+#include "libcommonserver/utility/crypto.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 
-#include <Poco/Crypto/RSAKey.h>
-#include <Poco/Exception.h>
 #include <Poco/Crypto/X509Certificate.h>
-
-#include <openssl/x509.h>
-#include <openssl/x509v3.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/rand.h>
-#include <openssl/bn.h>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
-#include <openssl/bio.h>
 
 #include <log4cplus/loggingmacros.h>
 
@@ -42,27 +31,7 @@ namespace KDC {
 
 namespace {
 
-struct X509Deleter {
-        void operator()(X509 *const x) const { X509_free(x); }
-};
-using UniqueX509 = std::unique_ptr<X509, X509Deleter>;
-
-struct EvpPkeyDeleter {
-        void operator()(EVP_PKEY *const p) const { EVP_PKEY_free(p); }
-};
-using UniqueEvpPkey = std::unique_ptr<EVP_PKEY, EvpPkeyDeleter>;
-
-struct BignumDeleter {
-        void operator()(BIGNUM *const b) const { BN_free(b); }
-};
-using UniqueBignum = std::unique_ptr<BIGNUM, BignumDeleter>;
-
 constexpr int64_t certValiditySeconds = 60LL * 60LL * 24LL * 365LL;
-
-const char *sslError() {
-    const unsigned long err = ERR_get_error();
-    return err ? ERR_error_string(err, nullptr) : "no OpenSSL error";
-}
 
 bool addExtension(X509 *const x509, const int32_t nid, const char *const value) {
     X509V3_CTX ctx;
@@ -222,8 +191,7 @@ bool SelfSignedCert::generate(Pem &pem, bool isClientCert) {
         pem.cert = certOut.str();
 
         // Export the pkey to a PEM BIO buffer
-        using UniqueBio = std::unique_ptr<BIO, decltype(&BIO_free)>;
-        UniqueBio bio(BIO_new(BIO_s_mem()), &BIO_free);
+        UniqueBio bio(BIO_new(BIO_s_mem()));
         if (!bio || PEM_write_bio_PrivateKey(bio.get(), pkey.get(), nullptr, nullptr, 0, nullptr, nullptr) != 1) {
             LOG_ERROR(Log::instance()->getLogger(), "Private key export failed: " << sslError());
             return false;
