@@ -92,7 +92,7 @@ void LinuxUpdater::onUpdateFound() {
         return;
     }
 
-    if (!ParametersCache::instance()->parameters().automaticUpdates()) {
+    if (!ParametersCache::instance()->parameters().autoUpdates()) {
         // The update stays Available until the user starts it from Settings.
         return;
     }
@@ -100,7 +100,7 @@ void LinuxUpdater::onUpdateFound() {
     prepareAnnouncedUpdate();
 }
 
-void LinuxUpdater::onAutomaticUpdatesEnabled() {
+void LinuxUpdater::onAutoUpdatesEnabled() {
     if (state() == UpdateState::Available) {
         onUpdateFound();
     }

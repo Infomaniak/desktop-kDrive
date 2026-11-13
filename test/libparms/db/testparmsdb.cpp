@@ -66,7 +66,7 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.dialogGeometry() == defaultParameters.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == defaultParameters.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == defaultParameters.matomoEnabled());
-    CPPUNIT_ASSERT(parameters.automaticUpdates() == defaultParameters.automaticUpdates());
+    CPPUNIT_ASSERT(parameters.autoUpdates() == defaultParameters.autoUpdates());
 
     ServerParameters parameters2;
     parameters2.setLanguage(Language::French);
@@ -83,7 +83,7 @@ void TestParmsDb::testParameters() {
     parameters2.setDialogGeometry("preferencesWindow", QByteArray::fromStdString(geometryStr));
     parameters2.setSentryEnabled(true);
     parameters2.setMatomoEnabled(true);
-    parameters2.setAutomaticUpdates(false);
+    parameters2.setAutoUpdates(false);
     CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters2, found) && found);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
@@ -105,7 +105,7 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.dialogGeometry() == parameters2.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == parameters2.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == parameters2.matomoEnabled());
-    CPPUNIT_ASSERT(parameters.automaticUpdates() == parameters2.automaticUpdates());
+    CPPUNIT_ASSERT(parameters.autoUpdates() == parameters2.autoUpdates());
 }
 
 void TestParmsDb::testUser() {
@@ -480,7 +480,7 @@ bool TestParmsDb::deleteColumns() {
     if (!deleteColumn("parameters", "distributionChannel")) return false;
     if (!deleteColumn("parameters", "sentryEnabled")) return false;
     if (!deleteColumn("parameters", "matomoEnabled")) return false;
-    if (!deleteColumn("parameters", "automaticUpdates")) return false;
+    if (!deleteColumn("parameters", "autoUpdates")) return false;
 
     // Account table
     if (!deleteColumn("account", "name")) return false;
@@ -919,7 +919,7 @@ void TestParmsDb::testAddMissingColumnsDuringUpgrade() {
     CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "distributionChannel", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "sentryEnabled", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "matomoEnabled", exists) && exists);
-    CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "automaticUpdates", exists) && exists);
+    CPPUNIT_ASSERT(parmsDb->columnExists("parameters", "autoUpdates", exists) && exists);
 
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "localNodeId", exists) && exists);
     CPPUNIT_ASSERT(parmsDb->columnExists("sync", "rootFolderCursor", exists) && exists);

@@ -49,7 +49,7 @@ ServerParameters getExpectedParameters() {
     parameters.setDialogGeometry("drivePreferencesPanel", "blob4567");
     parameters.setMaxAllowedCpu(50);
     parameters.setProxyConfig(proxyConfig);
-    parameters.setAutomaticUpdates(false);
+    parameters.setAutoUpdates(false);
     return parameters;
 };
 
@@ -87,7 +87,7 @@ Poco::JSON::Object createParametersObject() {
     (void) parametersObj.set("distributionChannel", toInt(DistributionChannel::Prod));
     (void) parametersObj.set("sentryEnabled", true);
     (void) parametersObj.set("matomoEnabled", true);
-    (void) parametersObj.set("automaticUpdates", false);
+    (void) parametersObj.set("autoUpdates", false);
 
     return parametersObj;
 };
@@ -178,15 +178,15 @@ void TestGuiCommChannel::testParametersUpdateJob() {
 #endif
 }
 
-// Only the Linux client sends automaticUpdates: an update from another client must still succeed and keep the default.
-void TestGuiCommChannel::testParametersUpdateJobWithoutAutomaticUpdates() {
+// Only the Linux client sends autoUpdates: an update from another client must still succeed and keep the default.
+void TestGuiCommChannel::testParametersUpdateJobWithoutAutoUpdates() {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
 #endif
     (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
     auto parametersObj = createParametersObject();
-    parametersObj.remove("automaticUpdates");
+    parametersObj.remove("autoUpdates");
     Poco::JSON::Object queryParamsObj;
     (void) queryParamsObj.set("parametersInfo", parametersObj);
     (void) queryObj.set("params", queryParamsObj);
@@ -213,7 +213,7 @@ void TestGuiCommChannel::testParametersUpdateJobWithoutAutomaticUpdates() {
         const auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
         CPPUNIT_ASSERT(parametersUpdateJob);
         auto res = getExpectedParameters();
-        res.setAutomaticUpdates(true);
+        res.setAutoUpdates(true);
         CPPUNIT_ASSERT(res == parametersUpdateJob->_parameters);
     };
 
