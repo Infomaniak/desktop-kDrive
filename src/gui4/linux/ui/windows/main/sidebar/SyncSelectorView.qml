@@ -25,6 +25,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.sidebar.syncSelector"
+
     required property var controller
 
     visible: controller.entryCount > 0
@@ -71,6 +74,7 @@ Item {
         interactive: root.controller.entryCount > 1
         showSurface: root.controller.entryCount > 1
         showChevron: root.controller.entryCount > 1
+        actionId: root.actionIdPrefix
         onTriggered: selectorPopup.open()
     }
 
@@ -135,6 +139,11 @@ Item {
                 warning: model.hasWarning
                 selected: model.isSelected
                 showSurface: false
+                actionId: root.actionIdPrefix + ".select"
+                actionDetails: ({
+                    syncDbId: model.syncDbId,
+                    advanced: model.entryType === SyncSelectorModel.AdvancedSync
+                })
                 onTriggered: {
                     root.controller.selectSync(model.syncDbId)
                     selectorPopup.close()

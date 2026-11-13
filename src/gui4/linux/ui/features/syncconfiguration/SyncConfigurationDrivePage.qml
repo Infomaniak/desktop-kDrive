@@ -25,6 +25,8 @@ Column {
     id: root
 
     required property var controller
+    // Prefix of the user action log ids of this page: the id of its dialog.
+    required property string dialogId
 
     // Set when the picker returns a path that still has to be validated: the button is disabled meanwhile, so it
     // cannot take the focus back before the controller goes idle again.
@@ -210,6 +212,7 @@ Column {
                     role: IKModalButton.Primary
                     text: qsTrId("buttonChangeFolder")
                     actionEnabled: !root.controller.busy
+                    actionId: root.dialogId + ".drive.changeFolder"
                     onClicked: root.controller.requestCustomFolder()
                     onEnabledChanged: {
                         if (enabled && root.focusRestorePending) {
@@ -223,6 +226,7 @@ Column {
                     role: IKModalButton.Primary
                     text: qsTrId("buttonReturnToDefaultFolder")
                     actionEnabled: !root.controller.busy
+                    actionId: root.dialogId + ".drive.defaultFolder"
                     onClicked: root.controller.returnToDefaultFolder()
                 }
             }
@@ -290,6 +294,7 @@ Column {
                     role: IKModalButton.Primary
                     text: qsTrId("buttonSelectFolders")
                     actionEnabled: !root.controller.busy
+                    actionId: root.dialogId + ".drive.selectFolders"
                     onClicked: root.controller.selectFolders()
                 }
 

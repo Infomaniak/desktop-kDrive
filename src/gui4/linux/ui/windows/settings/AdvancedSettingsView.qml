@@ -26,6 +26,8 @@ ScrollView {
     id: root
 
     readonly property string navigationTitle: qsTrId("sidebarItemAdvanced")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.advanced"
 
     signal fileExclusionsRequested(var trigger)
     signal dataManagementRequested(var trigger)
@@ -46,22 +48,26 @@ ScrollView {
 
             SettingsNavigationRow {
                 title: qsTrId("filesToExclude")
+                actionId: root.screenId + ".fileExclusions"
                 description: qsTrId("excludeRuleFileDescription")
                 onNavigationRequested: trigger => root.fileExclusionsRequested(trigger)
             }
 
             SettingsNavigationRow {
                 title: qsTrId("dataManagementSettings")
+                actionId: root.screenId + ".dataManagement"
                 onNavigationRequested: trigger => root.dataManagementRequested(trigger)
             }
 
             SettingsNavigationRow {
                 title: qsTrId("networkSettings")
+                actionId: root.screenId + ".network"
                 onNavigationRequested: trigger => root.networkRequested(trigger)
             }
 
             SettingsNavigationRow {
                 title: qsTrId("logLevelDebug")
+                actionId: root.screenId + ".debug"
                 separator: false
                 onNavigationRequested: trigger => root.debugRequested(trigger)
             }

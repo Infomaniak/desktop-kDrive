@@ -25,6 +25,8 @@ import kDrive.UI
 IKSearchField {
     id: root
 
+    actionId: "main.search.field"
+
     required property var controller
 
     signal moveToResultsRequested

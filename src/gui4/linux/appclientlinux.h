@@ -57,6 +57,7 @@
 #include "app/settings/settingswindowcontroller.h"
 #include "app/settings/settingssyncactivationcontroller.h"
 #include "app/systraycontroller.h"
+#include "app/useractions/useractionlog.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
 #include "ui/chrome/windowdecorationcontroller.h"
@@ -159,6 +160,7 @@ class AppClientLinux : public QApplication {
         ExclusionTemplateService _exclusionTemplateService{_serverCommService, _serviceEventBus, this};
         ActivityService _activityService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SentryService _sentryService{_parametersService, _appCache, _parametersStore, _serverCommService, this};
+        UserActionLog _userActionLog{this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, _parametersStore, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
         SyncService _syncService{_serverCommService, _appCache, _cachePopulator, _serviceActionTracker, _serviceEventBus, this};
@@ -168,7 +170,7 @@ class AppClientLinux : public QApplication {
                 _cachePopulator, _appCache, _serverCommService, _userService, _syncService, _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         WindowDecorationController _windowDecorationController{this};
-        SystemTrayController _systemTrayController{this};
+        SystemTrayController _systemTrayController{_userActionLog, this};
         NetworkStatusObserver _networkStatusObserver{this};
         HomeController _homeController{_appCache,  _mainSelectionStore,    _syncErrorsProjection, _syncService,
                                        _appRouter, _networkStatusObserver, _serverCommService,    this};

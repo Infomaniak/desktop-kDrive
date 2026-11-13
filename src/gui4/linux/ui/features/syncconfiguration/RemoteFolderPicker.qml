@@ -32,6 +32,8 @@ Rectangle {
     required property var controller
     required property var treeModel
     required property color driveColor
+    // Prefix of the user action log ids of the picker, given by its owner. The folder names are never logged.
+    required property string actionIdPrefix
 
     // The tree itself takes the keyboard focus; the surrounding frame is decoration.
     readonly property Item keyboardFocusItem: treeView
@@ -42,6 +44,17 @@ Rectangle {
     property string cursorNodeId: ""
     // Name typed in the editing row, kept here since the view can pool the row's delegate while it is scrolled out.
     property string folderNameDraft: ""
+
+    function selectCurrentFromKeyboard() {
+        UserActionLog.action(root.actionIdPrefix + ".select", { source: "keyboard" });
+        root.treeModel.select(treeSelection.currentIndex);
+    }
+
+    // The typed name is never logged.
+    function commitFolderCreation(name) {
+        UserActionLog.action(root.actionIdPrefix + ".createFolder.commit");
+        root.controller.commitFolderCreation(name);
+    }
 
     implicitHeight: IKSyncConfiguration.treeHeight
     radius: IKSyncConfiguration.treeRadius
@@ -116,6 +129,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             role: IKModalButton.Secondary
             text: qsTrId("buttonRetry")
+            actionId: root.actionIdPrefix + ".retryRoot"
             onClicked: root.treeModel.retryRoot()
         }
     }
@@ -146,6 +160,7 @@ Rectangle {
         // Keyboard path to the row's new-folder button, which never takes the focus.
         function beginFolderCreationAtCursor(): void {
             if (treeView.cursorRow() >= 0) {
+                UserActionLog.action(root.actionIdPrefix + ".createFolder", { source: "shortcut" });
                 root.controller.beginFolderCreation(treeSelection.currentIndex);
             }
         }
@@ -187,6 +202,7 @@ Rectangle {
         Keys.onEscapePressed: event => {
             event.accepted = root.treeModel.folderCreationPreparing;
             if (event.accepted) {
+                UserActionLog.action(root.actionIdPrefix + ".createFolder.cancel", { source: "keyboard" });
                 root.controller.cancelFolderCreation();
             }
         }
@@ -223,9 +239,9 @@ Rectangle {
             }
             treeView.moveCurrentToRow(row + 1);
         }
-        Keys.onSpacePressed: root.treeModel.select(treeSelection.currentIndex)
-        Keys.onReturnPressed: root.treeModel.select(treeSelection.currentIndex)
-        Keys.onEnterPressed: root.treeModel.select(treeSelection.currentIndex)
+        Keys.onSpacePressed: root.selectCurrentFromKeyboard()
+        Keys.onReturnPressed: root.selectCurrentFromKeyboard()
+        Keys.onEnterPressed: root.selectCurrentFromKeyboard()
 
         ScrollBar.vertical: ScrollBar {
             policy: treeView.contentHeight > treeView.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
@@ -284,6 +300,7 @@ Rectangle {
             // parent's listing, which has no editing row yet. The selection is made first, while the row still designates
             // this folder, since dropping the editing row can shift the rows below it.
             function requestSelection(): void {
+                UserActionLog.action(root.actionIdPrefix + ".select", { depth: folderRow.depth });
                 treeView.moveCurrentToRow(folderRow.row);
                 root.treeModel.select(folderRow.currentTreeIndex());
                 if (!root.treeModel.folderCreationPending) {
@@ -397,6 +414,10 @@ Rectangle {
                     focusPolicy: Qt.NoFocus
                     Accessible.ignored: true
                     onClicked: {
+                        const disclosureAction = folderRow.childrenLoadFailed
+                                                 ? "retryChildren"
+                                                 : folderRow.treeView.isExpanded(folderRow.row) ? "collapse" : "expand";
+                        UserActionLog.action(root.actionIdPrefix + "." + disclosureAction, { depth: folderRow.depth });
                         if (folderRow.childrenLoadFailed) {
                             root.treeModel.retryChildren(folderRow.currentTreeIndex());
                         } else {
@@ -496,12 +517,13 @@ Rectangle {
                 verticalAlignment: TextInput.AlignVCenter
                 Accessible.name: qsTrId("labelNewFolder")
                 onTextEdited: root.folderNameDraft = nameField.text
-                Keys.onReturnPressed: root.controller.commitFolderCreation(nameField.text)
-                Keys.onEnterPressed: root.controller.commitFolderCreation(nameField.text)
+                Keys.onReturnPressed: root.commitFolderCreation(nameField.text)
+                Keys.onEnterPressed: root.commitFolderCreation(nameField.text)
                 // Escape cancels the creation only: the modal's Escape shortcut must not take it first.
                 Keys.onShortcutOverride: event => event.accepted = (event.key === Qt.Key_Escape)
                 Keys.onEscapePressed: event => {
                     event.accepted = true;
+                    UserActionLog.action(root.actionIdPrefix + ".createFolder.cancel", { source: "keyboard" });
                     root.controller.cancelFolderCreation();
                     treeView.forceActiveFocus();
                 }
@@ -531,6 +553,8 @@ Rectangle {
                 text: qsTrId("labelNewFolder")
                 Accessible.name: text + " " + folderRow.folderName
                 onClicked: {
+                    UserActionLog.action(root.actionIdPrefix + ".createFolder",
+                                         { source: "button", depth: folderRow.depth });
                     treeView.moveCurrentToRow(folderRow.row);
                     root.controller.beginFolderCreation(folderRow.currentTreeIndex());
                 }

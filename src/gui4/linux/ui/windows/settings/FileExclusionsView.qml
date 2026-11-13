@@ -28,6 +28,8 @@ ScrollView {
 
     required property var controller
     readonly property string navigationTitle: qsTrId("filesToExclude")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.advanced.fileExclusions"
     readonly property bool saving: controller.saving
     // Row whose notification switch had keyboard focus when its save started; the save rebuilds the rows.
     property int keyboardFocusRow: -1
@@ -98,6 +100,7 @@ ScrollView {
             IKModalButton {
                 visible: !root.controller.ready && !root.controller.loading
                 text: qsTrId("buttonRetry")
+                actionId: root.screenId + ".retry"
                 role: IKModalButton.Tonal
                 onClicked: root.controller.ensureLoaded()
             }
@@ -129,6 +132,7 @@ ScrollView {
                 id: addRuleButton
 
                 text: qsTrId("buttonAddFileExclusionRule")
+                actionId: root.screenId + ".addRule"
                 actionEnabled: root.controller.ready && !root.controller.saving
                 onClicked: root.addRuleRequested(addRuleButton)
             }
@@ -143,6 +147,7 @@ ScrollView {
                     enabled: root.controller.ready && root.controller.userRuleCount > 0 && !root.controller.saving
                     checkState: root.controller.selectionCheckState
                     Accessible.name: qsTrId("labelRules")
+                    actionId: root.screenId + ".selectAll"
                     onClicked: checkState === Qt.Checked ? root.controller.clearSelection() : root.controller.selectAll()
                 }
 
@@ -208,6 +213,8 @@ ScrollView {
 
                 IKModalButton {
                     text: qsTrId("buttonRemoveFileExclusionRule", root.controller.selectedCount)
+                    actionId: root.screenId + ".removeSelected"
+                    actionDetails: ({ count: root.controller.selectedCount })
                     role: IKModalButton.Destructive
                     actionEnabled: root.controller.ready && !root.controller.saving
                     busy: root.controller.saving
@@ -216,6 +223,7 @@ ScrollView {
 
                 IKModalButton {
                     text: qsTrId("buttonCancel")
+                    actionId: root.screenId + ".clearSelection"
                     role: IKModalButton.Tonal
                     actionEnabled: root.controller.ready && !root.controller.saving
                     onClicked: root.controller.clearSelection()

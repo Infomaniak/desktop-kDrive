@@ -25,6 +25,8 @@ Column {
     id: root
 
     required property var controller
+    // Prefix of the user action log ids of this page: the id of its dialog.
+    required property string dialogId
 
     width: parent ? parent.width : implicitWidth
     spacing: IKSyncConfiguration.sectionSpacing
@@ -47,5 +49,6 @@ Column {
 
         width: parent.width
         treeModel: root.controller.folderTreeModel
+        actionIdPrefix: root.dialogId + ".folders"
     }
 }

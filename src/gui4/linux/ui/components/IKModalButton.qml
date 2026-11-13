@@ -40,6 +40,10 @@ Button {
     property bool external: false
     // Optional leading glyph, tinted like the label.
     property url iconSource: ""
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
+    // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
+    property var actionDetails: ({})
 
     readonly property real externalIconAllowance: external ? externalIcon.width + IKModalTokens.buttonExternalIconSpacing : 0
     readonly property real leadingIconAllowance: iconSource.toString().length > 0
@@ -86,6 +90,7 @@ Button {
     leftPadding: IKModalTokens.buttonHorizontalPadding
     rightPadding: IKModalTokens.buttonHorizontalPadding
     focusPolicy: Qt.StrongFocus
+    onClicked: UserActionLog.action(root.actionId, root.actionDetails)
     // Qt Quick buttons only react to Space: Return and Enter activate the focused action too.
     Keys.onReturnPressed: event => root.activateFromKey(event)
     Keys.onEnterPressed: event => root.activateFromKey(event)

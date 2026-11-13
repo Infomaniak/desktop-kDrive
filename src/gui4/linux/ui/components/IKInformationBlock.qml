@@ -39,6 +39,9 @@ Rectangle {
     property bool primaryActionExternal: false
     // The dismiss button is shown only when a label is set.
     property string dismissText
+    // Stable, language-independent id of the primary action in the user action log (see UserActionLog); the dismiss
+    // button logs `<actionId>.dismiss`.
+    required property string actionId
 
     readonly property real primaryExternalIconAllowance: primaryActionExternal
                                                          ? primaryExternalIcon.width + IKMainWindow.informationBlockExternalIconSpacing
@@ -128,7 +131,10 @@ Rectangle {
                 text: root.primaryActionText
                 visible: root.primaryActionText !== ""
                 focusPolicy: Qt.StrongFocus
-                onClicked: root.primaryActionTriggered()
+                onClicked: {
+                    UserActionLog.action(root.actionId);
+                    root.primaryActionTriggered();
+                }
 
                 contentItem: Item {
                     id: primaryContent
@@ -190,7 +196,10 @@ Rectangle {
                 hoverEnabled: true
                 // "Close" alone does not say what is closed: the title tells screen reader users.
                 Accessible.description: root.title
-                onClicked: root.dismissRequested()
+                onClicked: {
+                    UserActionLog.action(root.actionId + ".dismiss");
+                    root.dismissRequested();
+                }
 
                 contentItem: Text {
                     text: dismissButton.text

@@ -27,6 +27,8 @@ Button {
     id: root
 
     required property string title
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
     property string description: ""
     property bool separator: true
     // Renders an irreversible action: red title and no chevron, since it does not navigate.
@@ -45,7 +47,10 @@ Button {
     Accessible.role: Accessible.Button
     Accessible.name: title
     Accessible.description: description
-    onClicked: navigationRequested(root)
+    onClicked: {
+        UserActionLog.action(root.actionId);
+        navigationRequested(root);
+    }
 
     background: Rectangle {
         radius: IKRadius.r6

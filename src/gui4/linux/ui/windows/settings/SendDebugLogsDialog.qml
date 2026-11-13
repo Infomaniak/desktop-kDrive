@@ -44,6 +44,7 @@ IKModal {
     }
 
     title: qsTrId("logUploadPopupTitle")
+    dialogId: "settings.advanced.debug.sendLogsDialog"
     escapeDismissible: !controller.uploadInProgress
     initialFocusItem: controller.uploadHasResult ? closeButton : lastSessionCheckBox
     onDismissRequested: close()
@@ -80,6 +81,7 @@ IKModal {
                 id: lastSessionCheckBox
                 enabled: !root.controller.uploadInProgress
                 Accessible.name: qsTrId("sendLastSessionOnly")
+                actionId: root.dialogId + ".lastSessionOnly"
                 onClicked: root.toggleLastSessionOnly()
             }
             Text {
@@ -93,7 +95,10 @@ IKModal {
                     anchors.fill: parent
                     enabled: lastSessionCheckBox.enabled
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.toggleLastSessionOnly()
+                    onClicked: {
+                        UserActionLog.action(root.dialogId + ".lastSessionOnly", { source: "label" });
+                        root.toggleLastSessionOnly();
+                    }
                 }
             }
         },
@@ -137,6 +142,7 @@ IKModal {
             text: qsTrId("buttonCancel")
             role: IKModalButton.Secondary
             actionEnabled: !root.controller.uploadCancellationPending
+            actionId: root.dialogId + (root.controller.uploadInProgress ? ".cancelUpload" : ".cancel")
             onClicked: root.controller.uploadInProgress ? root.controller.cancelDebugLogs() : root.close()
         },
         IKModalButton {
@@ -146,6 +152,10 @@ IKModal {
             visible: !root.controller.uploadInProgress
             text: root.controller.uploadHasResult ? qsTrId("buttonClose") : qsTrId("buttonSend")
             actionEnabled: !root.controller.uploadInProgress
+            actionId: root.dialogId + (root.controller.uploadHasResult ? ".close" : ".send")
+            actionDetails: root.controller.uploadHasResult
+                           ? ({})
+                           : ({ lastSessionOnly: lastSessionCheckBox.checkState === Qt.Checked })
             onClicked: {
                 if (root.controller.uploadHasResult) {
                     root.close();

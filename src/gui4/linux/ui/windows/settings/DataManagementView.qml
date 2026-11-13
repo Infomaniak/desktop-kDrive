@@ -27,6 +27,8 @@ ScrollView {
 
     required property var controller
     readonly property string navigationTitle: qsTrId("dataManagementSettings")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.advanced.dataManagement"
 
     signal matomoRequested(var trigger)
     signal sentryRequested(var trigger)
@@ -59,6 +61,7 @@ ScrollView {
 
         IKLinkButton {
             text: qsTrId("viewSourceCode")
+            actionId: root.screenId + ".sources"
             external: true
             onClicked: root.controller.openSources()
         }
@@ -79,11 +82,13 @@ ScrollView {
 
             SettingsNavigationRow {
                 title: "Matomo"
+                actionId: root.screenId + ".matomo"
                 onNavigationRequested: trigger => root.matomoRequested(trigger)
             }
 
             SettingsNavigationRow {
                 title: "Sentry"
+                actionId: root.screenId + ".sentry"
                 separator: false
                 onNavigationRequested: trigger => root.sentryRequested(trigger)
             }

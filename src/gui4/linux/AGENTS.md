@@ -335,6 +335,14 @@
   an update is required), fallback-to-window startup behavior, retry loop for late tray availability, and main QML
   window show/hide behavior. Linux exposes no panel color, so it picks the white or black icon set from
   `KDRIVE_TRAY_ICONS` (`white`/`black`), else white on GNOME, else the system color scheme, else white.
+  Its menu entries and icon activations are logged through `UserActionLog` (`tray.menu.*`, `tray.icon`).
+- `app/useractions/useractionlog.*`: single entry point of the user action log, a typed QML singleton (`QML_ELEMENT`,
+  `QML_SINGLETON`, `QML_UNCREATABLE`, provided by `QQmlEngine::setExternalSingletonInstance`) also called from C++ by
+  the tray. Provide it before any runtime `qmlRegister*` call on `kDrive.UI`: such a call made first invalidates the
+  declarative types of the module, and the provision fails (fatal at startup). It writes one line per interaction in
+  the `gui.v4.useraction` category (Info, also a `useraction` Sentry breadcrumb): `User action | <actionId>`,
+  `Screen shown | <screenId>`, `Dialog opened|closed | <dialogId>`, `Window shown|hidden | <windowId>`, followed by
+  `| key: value` details sorted by key.
 - `communicationlayer/ipcclient.*`: TLS-over-loopback JSON transport (`QSslSocket`), request/reply correlation,
   reconnect-before-first-connect logic, and pinned self-signed certificate verification. The pinned CA certificate is
   loaded once from the OS keychain via `CertReader` and set as the socket's only CA; the peer is verified against
@@ -957,6 +965,29 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 ## Coding Conventions (Linux v4)
 
 - Use `QLoggingCategory` + `qCDebug/qCInfo/qCWarning/qCCritical`; no `std::cout`.
+- Log every user interaction from QML through `UserActionLog` (`action`, `screen`, `dialog`, `window`), never with a
+  direct `console.*` call. Ids are stable lowerCamel segments (`<surface>.<zone>.<control>`, surfaces `main`, `dialog`,
+  `onboarding`, `syncConfig`, `settings`, `window`, `shortcut`, `tray`); a dialog's controls derive their ids from its
+  `dialogId` (`<dialogId>.cancel`), and a keyboard shortcut logs `shortcut.<name>`.
+- Write an id prefix used more than once in a file only once: a page builds its ids from its `screenId`, a dialog from
+  its `dialogId`, any other file from a `readonly property string actionIdPrefix` declared at its root
+  (`root.actionIdPrefix + ".options"`). A file with a single id keeps it whole. To find the code of a log line, search
+  its last segment (`".useLog"`), then check the prefix of the file.
+- Interactive shared components require their id: `actionId` (`IKModalButton`, `IKLinkButton`, `IKSwitch`,
+  `IKCheckBox`, `IKComboBox`, `IKSidebarItem`, `IKDriveSyncSelectorItem`, `IKInformationBlock`, `IKErrorBanner`,
+  `IKSearchField`, `SettingsInfoButton`, `SettingsNavigationRow`), `dialogId` (`IKModal`, `IKConfirmationDialog`) or
+  `windowId` (`IKShadowedWindow`); they log by themselves, before the handler of the instance. Feature-neutral trees
+  (`RemoteFolderTree`, `RemoteFolderPicker`) take an `actionIdPrefix`. A new interactive shared component follows the same
+  rule; an ad hoc control (`Button`, `ToolButton`, `TapHandler`, `MouseArea`, `Keys.on*Pressed`, `Shortcut`) calls
+  `UserActionLog.action(...)` first in its handler. qmllint does not see instances placed in an aliased default property
+  (`SettingsRow`), so check them by hand: a missing required id only fails when the component is created.
+- Log a screen only while it is really shown, the item and its window both visible, and again each time it is shown
+  anew: a view can be created while the window is in the tray, or kept hidden behind another route
+  (`MainWindowView`, `OnboardingWindow`, `UpdateRequiredView`). Route assistive and keyboard activations through the
+  same logged path as the pointer, and log before the effect.
+- Never put displayed or typed text, local paths, exclusion patterns, folder names or proxy settings in user action
+  details: only technical ids (`syncDbId`, `rowId`, `driveDbId`), booleans, enum names and row indexes. Window closing is
+  logged once in `IKShadowedWindow.onClosing` (`window.close`), whatever closed the window.
 - Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.

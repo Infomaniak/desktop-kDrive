@@ -39,6 +39,7 @@ IKConfirmationDialog {
     confirmText: qsTrId("buttonSaveAnyway")
     description: qsTrId("proxyConnectionFailedDescription") + "\n\n" + qsTrId("proxySaveAnywayQuestion")
     title: qsTrId("proxyConnectionFailedTitle")
+    dialogId: "settings.advanced.network.connectionFailureDialog"
 
     onConfirmed: {
         awaitingSave = true;

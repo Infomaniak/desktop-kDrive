@@ -25,6 +25,9 @@ import kDrive.UI
 Rectangle {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "settings.accounts.user"
+
     required property var userDbId
     required property string name
     required property string email
@@ -73,7 +76,11 @@ Rectangle {
             Accessible.checkable: true
             Accessible.checked: root.expanded
             Accessible.onToggleAction: headerButton.clicked()
-            onClicked: root.expanded = !root.expanded
+            onClicked: {
+                UserActionLog.action(root.actionIdPrefix + "." + (root.expanded ? "collapse" : "expand"),
+                                     { userDbId: root.userDbId });
+                root.expanded = !root.expanded;
+            }
 
             background: Rectangle {
                 radius: IKRadius.r8
@@ -218,6 +225,8 @@ Rectangle {
                     implicitHeight: IKSettings.connectAccountButtonHeight
                     role: IKModalButton.Tonal
                     text: qsTrId("buttonRetry")
+                    actionId: root.actionIdPrefix + ".retryDrives"
+                    actionDetails: ({ userDbId: root.userDbId })
                     onClicked: root.retryRequested()
                 }
             }
@@ -242,6 +251,8 @@ Rectangle {
                     implicitHeight: IKSettings.connectAccountButtonHeight
                     role: IKModalButton.DestructiveSecondary
                     text: qsTrId("buttonDisconnectAccount")
+                    actionId: root.actionIdPrefix + ".disconnect"
+                    actionDetails: ({ userDbId: root.userDbId })
                     Accessible.name: text + " " + root.disconnectLabel
                     onClicked: root.disconnectRequested(disconnectButton, root.userDbId, root.disconnectLabel)
                 }

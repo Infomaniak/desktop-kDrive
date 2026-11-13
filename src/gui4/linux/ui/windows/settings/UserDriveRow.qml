@@ -24,6 +24,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "settings.accounts.drive"
+
     required property string name
     required property string accountName
     required property color color
@@ -127,6 +130,8 @@ Item {
         // Manage stays enabled; Enable is disabled while its activation is in flight.
         actionEnabled: root.isSynchronized || !root.actionBusy
         busy: root.actionBusy
+        actionId: root.actionIdPrefix + (root.isSynchronized ? ".manage" : ".enable")
+        actionDetails: root.isSynchronized ? ({ driveDbId: root.driveDbId }) : ({ driveId: root.driveId })
         Accessible.name: text + " " + root.name + (root.hasDistinctAccountName ? " " + root.accountName : "")
         onClicked: {
             if (root.isSynchronized) {

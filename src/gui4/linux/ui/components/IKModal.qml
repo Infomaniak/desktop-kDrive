@@ -29,6 +29,11 @@ Popup {
     id: root
 
     required property string title
+    // Stable, language-independent id of the dialog in the user action log (see UserActionLog). Its opening and closing
+    // are logged, Escape logs `<dialogId>.escape`, and its buttons derive their action ids from it.
+    required property string dialogId
+    // Context appended to the opening line: ids, booleans or enum values only, never displayed or typed text.
+    property var dialogDetails: ({})
     property url iconSource
     property color iconColor: IKColors.textPrimary
     property bool escapeDismissible: false
@@ -62,14 +67,21 @@ Popup {
         sequences: [ StandardKey.Cancel ]
         enabled: root.opened && root.escapeDismissible
         context: Qt.WindowShortcut
-        onActivated: root.dismissRequested()
+        onActivated: {
+            UserActionLog.action(root.dialogId + ".escape");
+            root.dismissRequested();
+        }
     }
 
-    onOpened: Qt.callLater(function() {
-        if (root.initialFocusItem) {
-            root.initialFocusItem.forceActiveFocus()
-        }
-    })
+    onOpened: {
+        UserActionLog.dialog(root.dialogId, true, root.dialogDetails);
+        Qt.callLater(function() {
+            if (root.initialFocusItem) {
+                root.initialFocusItem.forceActiveFocus()
+            }
+        });
+    }
+    onClosed: UserActionLog.dialog(root.dialogId, false)
 
     Overlay.modal: Item {
         Rectangle {

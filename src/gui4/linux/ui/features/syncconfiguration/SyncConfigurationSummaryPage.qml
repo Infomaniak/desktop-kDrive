@@ -26,6 +26,8 @@ Column {
     id: root
 
     required property var controller
+    // Prefix of the user action log ids of this page: the id of its dialog.
+    required property string dialogId
     required property real initialContentY
 
     signal contentYUpdated(real contentY)
@@ -175,6 +177,8 @@ Column {
                     // Every row repeats the same label, so the drive is what tells them apart.
                     Accessible.description: driveRow.driveName
                     actionEnabled: !root.controller.busy
+                    actionId: root.dialogId + ".summary.configureDrive"
+                    actionDetails: ({ row: driveRow.index })
                     onClicked: {
                         root.contentYUpdated(drivesList.contentY)
                         root.controller.configureDrive(driveRow.index)

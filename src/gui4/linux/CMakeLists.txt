@@ -205,6 +205,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/excludedfolderscontroller.h
         app/systraycontroller.cpp
         app/systraycontroller.h
+        app/useractions/useractionlog.cpp
+        app/useractions/useractionlog.h
         ui/chrome/windowdecorationcontroller.cpp
         ui/chrome/windowdecorationcontroller.h
 )
@@ -577,4 +579,11 @@ endif ()
 target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src # libcommon header files
+)
+
+# The generated QML type registration includes QML_ELEMENT headers by file name only:
+# their directories must be on the include path. Keep this list in sync when declaring
+# a QML type in a new directory, and keep including them by repo-relative path elsewhere.
+target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/app/useractions
 )

@@ -29,7 +29,18 @@ IKModal {
     property real summaryContentY: 0
     property bool focusRestorationPending: false
 
+    // Current page in the user action log: its screen is `<dialogId>.<pageName>`.
+    readonly property string pageName: root.controller.driveConfigurationPage ? "drive"
+                                       : root.controller.folderSelectionPage ? "folders" : "summary"
+
     signal fallbackFocusRequested
+
+    onOpened: UserActionLog.screen(root.dialogId + "." + root.pageName)
+    onPageNameChanged: {
+        if (root.opened) {
+            UserActionLog.screen(root.dialogId + "." + root.pageName);
+        }
+    }
 
     onReturnFocusItemChanged: {
         if (returnFocusItem) {
@@ -86,6 +97,8 @@ IKModal {
             role: IKModalButton.Secondary
             text: qsTrId("buttonCancel")
             actionEnabled: !root.controller.busy
+            actionId: root.dialogId + ".cancel"
+            actionDetails: ({ page: root.pageName })
             onClicked: root.controller.cancelCurrentPage()
         },
         IKModalButton {
@@ -95,6 +108,8 @@ IKModal {
             text: qsTrId("buttonValidate")
             actionEnabled: root.controller.canValidate
             busy: root.controller.busy
+            actionId: root.dialogId + ".validate"
+            actionDetails: ({ page: root.pageName })
             onClicked: root.controller.validateCurrentPage()
         }
     ]
@@ -104,6 +119,7 @@ IKModal {
 
         SyncConfigurationSummaryPage {
             controller: root.controller
+            dialogId: root.dialogId
             initialContentY: root.summaryContentY
             onContentYUpdated: contentY => root.summaryContentY = contentY
         }
@@ -114,6 +130,7 @@ IKModal {
 
         SyncConfigurationDrivePage {
             controller: root.controller
+            dialogId: root.dialogId
         }
     }
 
@@ -122,6 +139,7 @@ IKModal {
 
         SyncConfigurationFolderPage {
             controller: root.controller
+            dialogId: root.dialogId
         }
     }
 }

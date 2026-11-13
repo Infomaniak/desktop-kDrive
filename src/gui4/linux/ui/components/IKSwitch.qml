@@ -25,6 +25,10 @@ AbstractButton {
     id: root
     required text
     property bool value: false
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
+    // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
+    property var actionDetails: ({})
     signal toggleRequested(bool value)
     implicitWidth: IKSettings.switchWidth
     implicitHeight: IKSettings.buttonHeight
@@ -36,7 +40,10 @@ AbstractButton {
     Accessible.name: text
     Accessible.onPressAction: root.clicked()
     Accessible.onToggleAction: root.clicked()
-    onClicked: toggleRequested(!value)
+    onClicked: {
+        UserActionLog.action(actionId, Object.assign({}, actionDetails, { value: !value }));
+        toggleRequested(!value);
+    }
     background: Item {}
     contentItem: Item {
         Rectangle {

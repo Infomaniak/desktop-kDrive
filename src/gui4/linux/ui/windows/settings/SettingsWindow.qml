@@ -26,6 +26,9 @@ import kDrive.UI
 IKShadowedWindow {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "settings"
+
     enum Category {
         General,
         Accounts,
@@ -143,6 +146,34 @@ IKShadowedWindow {
         accountsPane.showAboveRoot(pages, animated);
     }
 
+    // Screen of the user action log: the General page or the current page of the Accounts or Advanced pane.
+    readonly property string currentScreenId: {
+        switch (selectedCategory) {
+        case SettingsWindow.Category.Accounts:
+            return accountsPane.currentScreenId || root.actionIdPrefix + ".accounts";
+        case SettingsWindow.Category.Advanced:
+            return advancedPane.currentScreenId || root.actionIdPrefix + ".advanced";
+        default:
+            return root.actionIdPrefix + ".general";
+        }
+    }
+    property string loggedScreenId: ""
+
+    // Called later, so a navigation that resets a pane before changing the category logs its final screen only.
+    function logScreen() {
+        if (!root.visible) {
+            root.loggedScreenId = "";
+            return;
+        }
+        if (root.currentScreenId !== root.loggedScreenId) {
+            root.loggedScreenId = root.currentScreenId;
+            UserActionLog.screen(root.currentScreenId);
+        }
+    }
+
+    onCurrentScreenIdChanged: Qt.callLater(root.logScreen)
+
+    windowId: "settings"
     visible: false
     transientParent: null
     modality: Qt.NonModal
@@ -155,6 +186,7 @@ IKShadowedWindow {
     windowTitleVisible: false
     Component.onCompleted: root.controller.takePendingTarget()
     onVisibleChanged: {
+        Qt.callLater(root.logScreen);
         if (visible && selectedCategory === SettingsWindow.Category.Accounts) {
             users.refresh();
             if (root.restoreAccountConnectionFocus) {
@@ -214,7 +246,10 @@ IKShadowedWindow {
             hasPreviousPage: accountsPane.hasPreviousPage
             currentTitle: accountsPane.currentTitle
             previousTitle: accountsPane.previousTitle
-            onBackRequested: accountsPane.pop()
+            onBackRequested: {
+                UserActionLog.action(root.actionIdPrefix + ".navigation.back", { from: root.currentScreenId });
+                accountsPane.pop();
+            }
         }
 
         SettingsNavigationHeader {
@@ -227,7 +262,10 @@ IKShadowedWindow {
             hasPreviousPage: advancedPane.hasPreviousPage
             currentTitle: advancedPane.currentTitle
             previousTitle: advancedPane.previousTitle
-            onBackRequested: advancedPane.pop()
+            onBackRequested: {
+                UserActionLog.action(root.actionIdPrefix + ".navigation.back", { from: root.currentScreenId });
+                advancedPane.pop();
+            }
         }
     }
 
@@ -250,6 +288,7 @@ IKShadowedWindow {
                     iconSource: "qrc:/assets/settings/general.svg"
                     selected: root.selectedCategory === SettingsWindow.Category.General
                     notificationDot: root.controller.general.updateAvailable
+                    actionId: root.actionIdPrefix + ".sidebar.general"
                     onTriggered: root.selectGeneral()
                 }
 
@@ -258,6 +297,7 @@ IKShadowedWindow {
                     label: qsTrId("sidebarItemAccounts")
                     iconSource: "qrc:/assets/settings/user-sync.svg"
                     selected: root.selectedCategory === SettingsWindow.Category.Accounts
+                    actionId: root.actionIdPrefix + ".sidebar.accounts"
                     onTriggered: root.selectAccounts()
                 }
 
@@ -266,6 +306,7 @@ IKShadowedWindow {
                     label: qsTrId("sidebarItemAdvanced")
                     iconSource: "qrc:/assets/settings/advanced.svg"
                     selected: root.selectedCategory === SettingsWindow.Category.Advanced
+                    actionId: root.actionIdPrefix + ".sidebar.advanced"
                     onTriggered: root.selectAdvanced()
                 }
             }
@@ -464,6 +505,7 @@ IKShadowedWindow {
         TrackingConsentView {
             controller: root.controller.advanced
             navigationTitle: "Matomo"
+            screenId: root.actionIdPrefix + ".advanced.dataManagement.matomo"
             logoSource: ThemeMode.isDark ? "qrc:/assets/settings/matomo-logo-dark.svg" : "qrc:/assets/settings/matomo-logo.svg"
             description: qsTrId("matomoDescription")
             errorText: root.controller.advanced.matomoErrorText
@@ -478,6 +520,7 @@ IKShadowedWindow {
         TrackingConsentView {
             controller: root.controller.advanced
             navigationTitle: "Sentry"
+            screenId: root.actionIdPrefix + ".advanced.dataManagement.sentry"
             logoSource: ThemeMode.isDark ? "qrc:/assets/settings/sentry-logo-dark.svg" : "qrc:/assets/settings/sentry-logo.svg"
             description: qsTrId("sentryDescription")
             errorText: root.controller.advanced.sentryErrorText
@@ -507,6 +550,7 @@ IKShadowedWindow {
     SettingsInformationDialog {
         id: releaseDialog
 
+        dialogId: root.actionIdPrefix + ".general.releaseInfoDialog"
         controller: root.controller.general
         scrimInset: root.effectiveShadowMargin
         scrimRadius: root.surfaceRadius
@@ -515,6 +559,7 @@ IKShadowedWindow {
     SettingsInformationDialog {
         id: aboutDialog
 
+        dialogId: root.actionIdPrefix + ".general.aboutDialog"
         controller: root.controller.general
         about: true
         scrimInset: root.effectiveShadowMargin
@@ -561,6 +606,7 @@ IKShadowedWindow {
     SyncConfigurationDialog {
         id: syncConfigurationDialog
 
+        dialogId: root.actionIdPrefix + ".syncActivation"
         controller: root.controller.syncActivation
         scrimInset: root.effectiveShadowMargin
         scrimRadius: root.surfaceRadius
@@ -574,6 +620,7 @@ IKShadowedWindow {
     DeleteSyncDialog {
         id: deleteSyncDialog
 
+        dialogId: root.actionIdPrefix + ".accounts.driveManagement.deleteSyncDialog"
         scrimInset: root.effectiveShadowMargin
         scrimRadius: root.surfaceRadius
         busy: root.controller.driveManagement.deletePending
@@ -623,11 +670,16 @@ IKShadowedWindow {
         id: advancedSyncLocalFolderDialog
 
         title: qsTrId("buttonSelectFolder")
+        // The chosen folder is a local path: it is never logged.
         onAccepted: {
+            UserActionLog.action(root.actionIdPrefix + ".accounts.advancedSyncs.addDialog.folderDialog.accept");
             root.advancedSyncs.creation?.applyLocalFolder(selectedFolder);
             root.advancedSyncs.creation?.notifyLocalFolderDialogClosed();
         }
-        onRejected: root.advancedSyncs.creation?.notifyLocalFolderDialogClosed()
+        onRejected: {
+            UserActionLog.action(root.actionIdPrefix + ".accounts.advancedSyncs.addDialog.folderDialog.reject");
+            root.advancedSyncs.creation?.notifyLocalFolderDialogClosed();
+        }
     }
 
     Connections {
@@ -680,6 +732,8 @@ IKShadowedWindow {
 
         property var syncDbId: 0
 
+        dialogId: root.actionIdPrefix + ".accounts.advancedSyncs.deleteSyncDialog"
+        dialogDetails: ({ syncDbId: advancedSyncDeleteDialog.syncDbId })
         scrimInset: root.effectiveShadowMargin
         scrimRadius: root.surfaceRadius
         busy: root.advancedSyncs.deletePending
@@ -731,11 +785,16 @@ IKShadowedWindow {
         id: localFolderDialog
 
         title: qsTrId("buttonSelectFolder")
+        // The chosen folder is a local path: it is never logged.
         onAccepted: {
+            UserActionLog.action(syncConfigurationDialog.dialogId + ".drive.folderDialog.accept");
             root.controller.syncActivation.applyCustomFolder(selectedFolder);
             root.controller.syncActivation.notifyCustomFolderDialogClosed();
         }
-        onRejected: root.controller.syncActivation.notifyCustomFolderDialogClosed()
+        onRejected: {
+            UserActionLog.action(syncConfigurationDialog.dialogId + ".drive.folderDialog.reject");
+            root.controller.syncActivation.notifyCustomFolderDialogClosed();
+        }
     }
 
     Connections {
@@ -781,7 +840,10 @@ IKShadowedWindow {
         sequences: [ StandardKey.Quit ] // Ctrl+Q
         autoRepeat: false
         context: Qt.WindowShortcut
-        onActivated: root.controller.requestQuitConfirmation()
+        onActivated: {
+            UserActionLog.action("shortcut.quit", { window: "settings" });
+            root.controller.requestQuitConfirmation();
+        }
     }
 
     // Same entry points as the sidebar. Navigation wraps around.
@@ -807,32 +869,47 @@ IKShadowedWindow {
     Shortcut {
         sequences: [ StandardKey.NextChild, "Ctrl+PgDown" ] // Ctrl+Tab
         context: Qt.WindowShortcut
-        onActivated: root.selectAdjacentCategory(1)
+        onActivated: {
+            UserActionLog.action("shortcut.nextTab", { window: "settings" });
+            root.selectAdjacentCategory(1);
+        }
     }
 
     Shortcut {
         // StandardKey.PreviousChild only holds Ctrl+Shift+Backtab, which Qt never matches on Wayland.
         sequences: [ "Ctrl+Shift+Tab", "Ctrl+PgUp" ]
         context: Qt.WindowShortcut
-        onActivated: root.selectAdjacentCategory(-1)
+        onActivated: {
+            UserActionLog.action("shortcut.previousTab", { window: "settings" });
+            root.selectAdjacentCategory(-1);
+        }
     }
 
     Shortcut {
         sequence: "Alt+1"
         context: Qt.WindowShortcut
-        onActivated: root.selectCategory(SettingsWindow.Category.General)
+        onActivated: {
+            UserActionLog.action("shortcut.settingsGeneral");
+            root.selectCategory(SettingsWindow.Category.General);
+        }
     }
 
     Shortcut {
         sequence: "Alt+2"
         context: Qt.WindowShortcut
-        onActivated: root.selectCategory(SettingsWindow.Category.Accounts)
+        onActivated: {
+            UserActionLog.action("shortcut.settingsAccounts");
+            root.selectCategory(SettingsWindow.Category.Accounts);
+        }
     }
 
     Shortcut {
         sequence: "Alt+3"
         context: Qt.WindowShortcut
-        onActivated: root.selectCategory(SettingsWindow.Category.Advanced)
+        onActivated: {
+            UserActionLog.action("shortcut.settingsAdvanced");
+            root.selectCategory(SettingsWindow.Category.Advanced);
+        }
     }
 
     Shortcut {
@@ -840,7 +917,10 @@ IKShadowedWindow {
         autoRepeat: false
         enabled: root.currentNavigationPane !== null && root.currentNavigationPane.canGoBack
         context: Qt.WindowShortcut
-        onActivated: root.currentNavigationPane.pop()
+        onActivated: {
+            UserActionLog.action("shortcut.back", { from: root.currentScreenId });
+            root.currentNavigationPane.pop();
+        }
     }
 
     onClosing: {

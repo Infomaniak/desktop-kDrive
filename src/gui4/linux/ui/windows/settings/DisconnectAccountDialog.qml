@@ -46,6 +46,8 @@ IKModal {
     }
 
     title: qsTrId("dialogRemoveAccountTitle")
+    dialogId: "settings.accounts.disconnectDialog"
+    dialogDetails: ({ userDbId: root.userDbId })
     actionsStacked: true
     escapeDismissible: !busy
     initialFocusItem: keepAccountButton
@@ -90,6 +92,7 @@ IKModal {
             Layout.fillWidth: true
             role: IKModalButton.Primary
             text: qsTrId("buttonKeepAccount")
+            actionId: root.dialogId + ".keepAccount"
             actionEnabled: !root.busy
             onClicked: root.close()
         },
@@ -97,6 +100,8 @@ IKModal {
             Layout.fillWidth: true
             role: IKModalButton.DestructiveSecondary
             text: qsTrId("buttonLogOut")
+            actionId: root.dialogId + ".logOut"
+            actionDetails: ({ userDbId: root.userDbId })
             actionEnabled: !root.busy
             busy: root.busy
             onClicked: {

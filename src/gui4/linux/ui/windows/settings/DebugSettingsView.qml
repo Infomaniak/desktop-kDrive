@@ -28,6 +28,8 @@ ScrollView {
 
     required property var controller
     readonly property string navigationTitle: qsTrId("logLevelDebug")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.advanced.debug"
 
     signal sendLogsRequested(var trigger)
 
@@ -64,6 +66,7 @@ ScrollView {
                 description: qsTrId("enableDebugLogDescription")
                 IKSwitch {
                     text: qsTrId("enableDebugLogsSetting")
+                    actionId: root.screenId + ".useLog"
                     value: root.controller.useLog
                     enabled: root.controller.ready && !root.controller.saving
                     onToggleRequested: value => root.controller.setUseLog(value)
@@ -75,6 +78,7 @@ ScrollView {
                 description: qsTrId("autoCleanupLogsDescription")
                 IKSwitch {
                     text: qsTrId("autoCleanupLogsSetting")
+                    actionId: root.screenId + ".purgeOldLogs"
                     value: root.controller.purgeOldLogs
                     enabled: root.controller.ready && !root.controller.saving
                     onToggleRequested: value => root.controller.setPurgeOldLogs(value)
@@ -84,9 +88,13 @@ ScrollView {
             SettingsRow {
                 title: qsTrId("extendedLogSetting")
                 description: qsTrId("extendedLogDescription")
-                SettingsInfoButton { text: qsTrId("extendedLogWarning") }
+                SettingsInfoButton {
+                    text: qsTrId("extendedLogWarning")
+                    actionId: root.screenId + ".extendedLogInfo"
+                }
                 IKSwitch {
                     text: qsTrId("extendedLogSetting")
+                    actionId: root.screenId + ".extendedLog"
                     value: root.controller.extendedLog
                     enabled: root.controller.ready && !root.controller.saving
                     onToggleRequested: value => root.controller.setExtendedLog(value)
@@ -101,6 +109,7 @@ ScrollView {
                 opacity: enabled ? 1 : 0.55
                 IKComboBox {
                     accessibleName: qsTrId("debugLevelSetting")
+                    actionId: root.screenId + ".logLevel"
                     enabled: !root.controller.saving
                     model: root.controller.logLevels
                     textRole: "label"
@@ -113,6 +122,7 @@ ScrollView {
 
         IKModalButton {
             text: qsTrId("buttonOpenDebugFolder")
+            actionId: root.screenId + ".openFolder"
             role: IKModalButton.Tonal
             onClicked: root.controller.openDebugFolder()
         }
@@ -139,6 +149,8 @@ ScrollView {
                 SettingsInfoButton {
                     readonly property bool failed: root.controller.latestUploadFailed
 
+                    actionId: root.screenId + ".lastUploadInfo"
+                    actionDetails: ({ failed: failed })
                     visible: !root.controller.uploadInProgress
                              && (failed || root.controller.lastSuccessfulUploadText.length > 0)
                     text: failed ? qsTrId("logsUploadErrorTooltip")
@@ -151,6 +163,7 @@ ScrollView {
                 IKModalButton {
                     id: sendLogsButton
                     text: qsTrId("buttonSendLog")
+                    actionId: root.screenId + ".sendLogs"
                     onClicked: root.sendLogsRequested(sendLogsButton)
                 }
             }

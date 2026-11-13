@@ -23,6 +23,9 @@ import kDrive.UI
 Column {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "onboarding.noDrive"
+
     // The view is always instantiated and only its visibility is bound, so it claims the focus when it actually
     // appears. Taking it on completion would leave the focus on a hidden button, which still receives key events.
     onVisibleChanged: {
@@ -70,7 +73,10 @@ Column {
 
             height: IKOnboarding.driveSelectionButtonHeight
             text: qsTrId("buttonShowOffers")
-            onClicked: root.selectionController.openDriveOffers()
+            onClicked: {
+                UserActionLog.action(root.actionIdPrefix + ".showOffers");
+                root.selectionController.openDriveOffers();
+            }
 
             contentItem: Text {
                 text: showOffersButton.text
@@ -102,7 +108,10 @@ Column {
 
             height: IKOnboarding.driveSelectionButtonHeight
             text: qsTrId("buttonStartForFree")
-            onClicked: root.selectionController.startForFree()
+            onClicked: {
+                UserActionLog.action(root.actionIdPrefix + ".startForFree");
+                root.selectionController.startForFree();
+            }
 
             contentItem: Text {
                 text: startForFreeButton.text

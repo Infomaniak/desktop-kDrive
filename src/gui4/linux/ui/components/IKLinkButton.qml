@@ -30,6 +30,10 @@ Button {
     property bool actionEnabled: true
     // Appends the external-link glyph. Set it whenever the action hands the user over to the web browser.
     property bool external: false
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
+    // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
+    property var actionDetails: ({})
 
     readonly property real externalIconAllowance: external ? externalIcon.width + IKLinkTokens.externalIconSpacing : 0
 
@@ -39,6 +43,7 @@ Button {
     implicitHeight: Math.max(linkText.implicitHeight, IKLinkTokens.minimumHeight)
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
+    onClicked: UserActionLog.action(root.actionId, root.actionDetails)
     Accessible.role: Accessible.Button
     Accessible.name: text
 

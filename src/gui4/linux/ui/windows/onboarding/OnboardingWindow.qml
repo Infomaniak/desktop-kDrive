@@ -20,10 +20,14 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Dialogs
+import QtQuick.Window
 import kDrive.UI
 
 Item {
     id: root
+
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "onboarding"
 
     required property var session
     // Modal scrim geometry of the hosting window: the overlay also covers the transparent custom-shadow margin, which
@@ -34,6 +38,8 @@ Item {
     readonly property var driveSelectionController: session.driveSelectionController
     readonly property var drivesModel: session.availableDrivesModel
     readonly property var syncConfigurationController: session.syncConfigurationController
+    // Screens of the user action log, in the order of the steps: `<actionIdPrefix>.<step>`.
+    readonly property var onboardingStepNames: [ "login", "driveSelection", "synchronization", "ready" ]
     readonly property var onboardingStepComponents: [
         loginComponent,
         driveSelectionComponent,
@@ -46,7 +52,40 @@ Item {
         color: IKColors.onboardingSurfacePrimary
     }
 
+    // Onboarding stays loaded behind the update-required screen and while the window is in the tray: a step is logged
+    // only once it is really shown, and again each time it is shown anew.
+    readonly property bool shown: root.visible && root.Window.window !== null && root.Window.window.visible
+    property string loggedScreenId: ""
+
+    function logCurrentStep() {
+        if (!root.shown) {
+            root.loggedScreenId = "";
+            return;
+        }
+
+        const stepName = root.onboardingStepNames[root.onboardingFlowController.currentStep] || "login";
+        const screenId = root.actionIdPrefix + "." + stepName;
+        if (screenId !== root.loggedScreenId) {
+            root.loggedScreenId = screenId;
+            UserActionLog.screen(screenId);
+        }
+    }
+
+    onShownChanged: root.logCurrentStep()
+    Component.onCompleted: logCurrentStep()
+
+    Connections {
+        target: root.onboardingFlowController
+
+        function onCurrentStepChanged() {
+            root.logCurrentStep();
+        }
+    }
+
     SyncConfigurationDialog {
+        id: syncConfigurationDialog
+
+        dialogId: "syncConfig"
         controller: root.syncConfigurationController
         scrimInset: root.surfaceInset
         scrimRadius: root.surfaceRadius
@@ -56,11 +95,16 @@ Item {
         id: localFolderDialog
 
         title: qsTrId("buttonSelectFolder")
+        // The chosen folder is a local path: it is never logged.
         onAccepted: {
+            UserActionLog.action(syncConfigurationDialog.dialogId + ".drive.folderDialog.accept")
             root.syncConfigurationController.applyCustomFolder(selectedFolder)
             root.syncConfigurationController.notifyCustomFolderDialogClosed()
         }
-        onRejected: root.syncConfigurationController.notifyCustomFolderDialogClosed()
+        onRejected: {
+            UserActionLog.action(syncConfigurationDialog.dialogId + ".drive.folderDialog.reject")
+            root.syncConfigurationController.notifyCustomFolderDialogClosed()
+        }
     }
 
     Connections {

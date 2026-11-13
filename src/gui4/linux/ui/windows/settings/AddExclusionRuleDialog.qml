@@ -41,8 +41,23 @@ IKModal {
         open();
     }
 
+    function isSubmittable() {
+        return canSubmit && !controller.saving;
+    }
+
+    // Enter in the pattern field: logged only when the rule is submitted, never with its pattern, and before the
+    // submission like the Add button.
+    function submitFromKeyboard() {
+        if (!root.isSubmittable()) {
+            return false;
+        }
+
+        UserActionLog.action(root.dialogId + ".submit", { source: "keyboard" });
+        return root.submit();
+    }
+
     function submit() {
-        if (!canSubmit || controller.saving) {
+        if (!root.isSubmittable()) {
             return false;
         }
 
@@ -51,6 +66,7 @@ IKModal {
     }
 
     title: qsTrId("dialogNewExclusionRuleTitle")
+    dialogId: "settings.advanced.fileExclusions.addRuleDialog"
     escapeDismissible: !controller.saving
     initialFocusItem: patternField
     onDismissRequested: {
@@ -96,8 +112,8 @@ IKModal {
             leftPadding: IKSpacing.s12
             rightPadding: IKSpacing.s12
             Accessible.name: qsTrId("filesToExclude")
-            Keys.onReturnPressed: event => event.accepted = root.submit()
-            Keys.onEnterPressed: event => event.accepted = root.submit()
+            Keys.onReturnPressed: event => event.accepted = root.submitFromKeyboard()
+            Keys.onEnterPressed: event => event.accepted = root.submitFromKeyboard()
 
             background: Rectangle {
                 radius: IKRadius.r6
@@ -117,6 +133,7 @@ IKModal {
                 Layout.preferredHeight: implicitHeight
                 enabled: !root.controller.saving
                 Accessible.name: qsTrId("notifyOnFileExcluded")
+                actionId: root.dialogId + ".notify"
                 onClicked: root.toggleNotification()
             }
 
@@ -131,7 +148,10 @@ IKModal {
                     anchors.fill: parent
                     enabled: notifyCheckBox.enabled
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.toggleNotification()
+                    onClicked: {
+                        UserActionLog.action(root.dialogId + ".notify", { source: "label" });
+                        root.toggleNotification();
+                    }
                 }
             }
         },
@@ -150,6 +170,7 @@ IKModal {
         IKModalButton {
             Layout.fillWidth: root.actionsStacked
             text: qsTrId("buttonCancel")
+            actionId: root.dialogId + ".cancel"
             role: IKModalButton.Secondary
             actionEnabled: !root.controller.saving
             onClicked: root.close()
@@ -157,6 +178,7 @@ IKModal {
         IKModalButton {
             Layout.fillWidth: root.actionsStacked
             text: qsTrId("buttonAddFileExclusionRule")
+            actionId: root.dialogId + ".submit"
             actionEnabled: root.canSubmit
             busy: root.controller.saving
             onClicked: root.submit()

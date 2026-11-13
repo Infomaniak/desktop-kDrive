@@ -78,6 +78,12 @@ void AppClientLinux::setupSystemTray() {
 }
 
 void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
+    // First: a runtime qmlRegister* call on the module URI before its declarative types are registered makes them invalid,
+    // and this call would then fail.
+    if (!_qmlEngine.setExternalSingletonInstance(AppConstants::Qml::moduleUri, "UserActionLog", &_userActionLog)) {
+        qCCritical(lcAppClientLinux) << "Cannot provide QML singleton UserActionLog";
+        SentryService::reportFatalAndExit("QML singleton registration failed", "UserActionLog");
+    }
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("appCache"), &_appCache);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("parametersStore"), &_parametersStore);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("userService"), &_userService);

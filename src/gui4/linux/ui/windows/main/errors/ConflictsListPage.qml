@@ -28,6 +28,9 @@ import kDrive.UI
 FocusScope {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.conflicts.list"
+
     required property var controller
     // Shared with the errors page: restores the focus on the control that opened it.
     required property var conflictVersionDialog
@@ -42,6 +45,7 @@ FocusScope {
     function chooseCurrentRow() {
         const row = list.currentItem;
         if (row && !row.actionPending) {
+            UserActionLog.action(root.actionIdPrefix + ".chooseVersion", { rowId: row.rowId, source: "keyboard" });
             root.openVersionDialog(() => root.controller.chooseVersion(row.rowId));
         }
     }
@@ -98,6 +102,7 @@ FocusScope {
                     radius: height / 2
                     placeholderText: qsTrId("conflictsSearchBoxPlaceholder")
                     accessibleName: qsTrId("conflictsSearchBoxPlaceholder")
+                    actionId: root.actionIdPrefix + ".search"
                     Component.onCompleted: text = root.listModel.searchText
                     onTextEdited: editedText => root.listModel.searchText = editedText
                     onCleared: root.listModel.searchText = ""
@@ -111,6 +116,8 @@ FocusScope {
                     implicitHeight: IKActivities.conflictsButtonHeight
                     text: qsTrId("buttonStartConflictsResolution")
                     actionEnabled: root.controller.count > 0 && !root.controller.resolutionPending
+                    actionId: root.actionIdPrefix + ".startChoices"
+                    actionDetails: ({ count: root.controller.count })
                     onClicked: root.openVersionDialog(() => root.controller.startChoices())
                 }
             }

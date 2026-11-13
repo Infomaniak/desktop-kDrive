@@ -71,7 +71,10 @@ Item {
             enabled: root.onboardingFlowController.readyActionEnabled
             height: IKOnboarding.completionButtonHeight
             text: qsTrId("buttonOpenKDrive")
-            onClicked: root.onboardingFlowController.completeOnboarding()
+            onClicked: {
+                UserActionLog.action("onboarding.ready.open");
+                root.onboardingFlowController.completeOnboarding();
+            }
 
             contentItem: Text {
                 text: openButton.text

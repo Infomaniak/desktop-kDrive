@@ -54,6 +54,7 @@ IKShadowedWindow {
     readonly property bool waitingActive: !updateRequiredActive && !onboardingActive && !appRouter.mainWindowActive
     readonly property bool tabNavigationActive: mainContentActive && appRouter.currentMainTabIndex !== AppRouter.BlockingError
 
+    windowId: "main"
     visible: false
     contentWidth: 900
     contentHeight: 600
@@ -159,14 +160,20 @@ IKShadowedWindow {
         sequences: [ StandardKey.Find ] // Ctrl+F
         enabled: mainWindow.mainContentActive && mainWindow.searchController.available
         context: Qt.WindowShortcut
-        onActivated: mainWindow.openSearch()
+        onActivated: {
+            UserActionLog.action("shortcut.search");
+            mainWindow.openSearch();
+        }
     }
 
     Shortcut {
         sequences: [ StandardKey.Quit ] // Ctrl+Q
         autoRepeat: false
         context: Qt.WindowShortcut
-        onActivated: globalModalHost.requestQuitConfirmation()
+        onActivated: {
+            UserActionLog.action("shortcut.quit");
+            globalModalHost.requestQuitConfirmation();
+        }
     }
 
     Shortcut {
@@ -177,7 +184,10 @@ IKShadowedWindow {
         autoRepeat: false
         enabled: mainWindow.mainContentActive
         context: Qt.WindowShortcut
-        onActivated: mainWindow.settingsController.requestOpen()
+        onActivated: {
+            UserActionLog.action("shortcut.settings");
+            mainWindow.settingsController.requestOpen();
+        }
     }
 
     Shortcut {
@@ -185,14 +195,20 @@ IKShadowedWindow {
         autoRepeat: false
         enabled: mainWindow.mainContentActive && mainWindow.mainSidebarController.canOpenCurrentSyncFolder
         context: Qt.WindowShortcut
-        onActivated: mainWindow.mainSidebarController.openCurrentSyncFolder()
+        onActivated: {
+            UserActionLog.action("shortcut.openSyncFolder");
+            mainWindow.mainSidebarController.openCurrentSyncFolder();
+        }
     }
 
     Shortcut {
         sequences: [ StandardKey.NextChild, "Ctrl+PgDown" ] // Ctrl+Tab
         enabled: mainWindow.tabNavigationActive
         context: Qt.WindowShortcut
-        onActivated: mainWindow.navigateToAdjacentMainTab(1)
+        onActivated: {
+            UserActionLog.action("shortcut.nextTab");
+            mainWindow.navigateToAdjacentMainTab(1);
+        }
     }
 
     Shortcut {
@@ -200,28 +216,40 @@ IKShadowedWindow {
         sequences: [ "Ctrl+Shift+Tab", "Ctrl+PgUp" ]
         enabled: mainWindow.tabNavigationActive
         context: Qt.WindowShortcut
-        onActivated: mainWindow.navigateToAdjacentMainTab(-1)
+        onActivated: {
+            UserActionLog.action("shortcut.previousTab");
+            mainWindow.navigateToAdjacentMainTab(-1);
+        }
     }
 
     Shortcut {
         sequence: "Alt+1"
         enabled: mainWindow.tabNavigationActive
         context: Qt.WindowShortcut
-        onActivated: mainWindow.navigateToMainTabIfAccessible(AppRouter.Home)
+        onActivated: {
+            UserActionLog.action("shortcut.home");
+            mainWindow.navigateToMainTabIfAccessible(AppRouter.Home);
+        }
     }
 
     Shortcut {
         sequence: "Alt+2"
         enabled: mainWindow.tabNavigationActive
         context: Qt.WindowShortcut
-        onActivated: mainWindow.navigateToMainTabIfAccessible(AppRouter.Activities)
+        onActivated: {
+            UserActionLog.action("shortcut.activities");
+            mainWindow.navigateToMainTabIfAccessible(AppRouter.Activities);
+        }
     }
 
     Shortcut {
         sequence: "Alt+3"
         enabled: mainWindow.tabNavigationActive
         context: Qt.WindowShortcut
-        onActivated: mainWindow.navigateToMainTabIfAccessible(AppRouter.Storage)
+        onActivated: {
+            UserActionLog.action("shortcut.storage");
+            mainWindow.navigateToMainTabIfAccessible(AppRouter.Storage);
+        }
     }
 
     Shortcut {
@@ -229,7 +257,10 @@ IKShadowedWindow {
         autoRepeat: false
         enabled: mainWindow.tabNavigationActive && mainWindow.appRouter.currentMainTabIndex === AppRouter.Storage
         context: Qt.WindowShortcut
-        onActivated: mainWindow.storageController.refresh()
+        onActivated: {
+            UserActionLog.action("shortcut.refreshStorage");
+            mainWindow.storageController.refresh();
+        }
     }
 
     SearchDialog {

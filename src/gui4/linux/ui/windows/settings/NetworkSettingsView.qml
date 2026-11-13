@@ -27,6 +27,8 @@ ScrollView {
 
     required property var controller
     readonly property string navigationTitle: qsTrId("networkSettings")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.advanced.network"
     readonly property bool inputsEnabled: controller.ready && !controller.checking && !controller.saving
     readonly property var proxyTypes: [
         { "label": qsTrId("labelSameAsSystem"), "value": controller.systemProxyType },
@@ -98,6 +100,7 @@ ScrollView {
                     id: proxyTypeCombo
 
                     accessibleName: qsTrId("proxySettings")
+                    actionId: root.screenId + ".proxyType"
                     enabled: root.inputsEnabled
                     model: root.proxyTypes
                     textRole: "label"
@@ -157,6 +160,7 @@ ScrollView {
 
                 IKSwitch {
                     text: qsTrId("proxyNeedAuth")
+                    actionId: root.screenId + ".needsAuth"
                     enabled: root.inputsEnabled
                     value: root.controller.needsAuth
                     onToggleRequested: value => root.controller.setNeedsAuth(value)
@@ -200,6 +204,7 @@ ScrollView {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTrId("buttonSave")
+                    actionId: root.screenId + ".save"
                     actionEnabled: root.controller.valid && !root.controller.checking && !root.controller.saving
                     busy: root.controller.checking || root.controller.saving
                     onClicked: root.controller.saveManual()

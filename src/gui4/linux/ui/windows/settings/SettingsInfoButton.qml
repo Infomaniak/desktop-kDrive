@@ -25,12 +25,17 @@ ToolButton {
     id: root
     property url iconSource: "qrc:/assets/settings/information.svg"
     property color iconColor: IKColors.textSecondary
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
+    // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
+    property var actionDetails: ({})
     implicitWidth: IKSettings.iconButtonSize
     implicitHeight: IKSettings.iconButtonSize
     text: qsTrId("accessibilityMoreInformation")
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
     Accessible.name: text
+    onClicked: UserActionLog.action(actionId, actionDetails)
     contentItem: Item {
         IKTintedIcon {
             anchors.centerIn: parent

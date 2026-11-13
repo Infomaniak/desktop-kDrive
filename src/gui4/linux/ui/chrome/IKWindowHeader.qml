@@ -25,6 +25,8 @@ Item {
     property alias backgroundData: customBackground.data
     property alias contentData: customContent.data
     required property var targetWindow
+    // Window id of the user action log (see UserActionLog).
+    required property string windowId
     property color backgroundColor: IKColors.surfacePrimary
     property bool titleVisible: true
     property string closeShortcutText: ""
@@ -67,8 +69,10 @@ Item {
             acceptedButtons: Qt.LeftButton
             onDoubleTapped: {
                 if (root.maximized) {
+                    UserActionLog.action("window.restore", { window: root.windowId, source: "headerDoubleClick" })
                     root.targetWindow.showNormal()
                 } else {
+                    UserActionLog.action("window.maximize", { window: root.windowId, source: "headerDoubleClick" })
                     root.targetWindow.showMaximized()
                 }
             }
@@ -111,16 +115,19 @@ Item {
 
         IKWindowControlButton {
             targetWindow: root.targetWindow
+            windowId: root.windowId
             controlType: IKWindowControlButton.Minimize
         }
 
         IKWindowControlButton {
             targetWindow: root.targetWindow
+            windowId: root.windowId
             controlType: root.maximized ? IKWindowControlButton.Restore : IKWindowControlButton.Maximize
         }
 
         IKWindowControlButton {
             targetWindow: root.targetWindow
+            windowId: root.windowId
             controlType: IKWindowControlButton.Close
             shortcutText: root.closeShortcutText
         }

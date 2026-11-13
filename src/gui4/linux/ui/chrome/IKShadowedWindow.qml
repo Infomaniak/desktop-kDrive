@@ -28,6 +28,8 @@ Window {
     default property alias contentData: contentHost.data
     property alias headerBackgroundData: windowHeader.backgroundData
     property alias headerData: windowHeader.contentData
+    // Stable id of the window in the user action log (see UserActionLog): it logs its showing, hiding and closing.
+    required property string windowId
 
     property real contentWidth: 900
     property real contentHeight: 600
@@ -88,6 +90,10 @@ Window {
         updateWindowDecoration()
     }
 
+    onVisibleChanged: UserActionLog.window(root.windowId, root.visible)
+    // Covers the close button, Ctrl+W and the window manager (Alt+F4) alike.
+    onClosing: UserActionLog.action("window.close", { window: root.windowId })
+
     Item {
         anchors.fill: parent
 
@@ -137,6 +143,7 @@ Window {
                 id: windowHeader
 
                 closeShortcutText: closeShortcut.nativeText
+                windowId: root.windowId
 
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -185,6 +192,9 @@ Window {
         sequences: [ StandardKey.Close ] // Ctrl+W
         autoRepeat: false
         context: Qt.WindowShortcut
-        onActivated: root.close()
+        onActivated: {
+            UserActionLog.action("shortcut.close", { window: root.windowId })
+            root.close()
+        }
     }
 }

@@ -28,7 +28,12 @@ import kDrive.UI
 Rectangle {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.errors.row"
+
     required property string rowId
+    // Error kind of the user action log, such as `notEnoughDiskSpace`.
+    required property string kindId
     required property string titleId
     required property int titleArgCount
     required property int titleCount
@@ -215,6 +220,8 @@ Rectangle {
                 busy: root.actionPending
                 // Several rows can share a label ("Rename file"): the item tells them apart.
                 Accessible.description: root.itemName.length > 0 ? root.itemName : root.title
+                actionId: root.actionIdPrefix + "." + root.kindId
+                actionDetails: ({ rowId: root.rowId })
                 onClicked: root.actionTriggered(root.rowId)
             }
         }
@@ -223,7 +230,10 @@ Rectangle {
             Layout.fillWidth: true
             visible: root.variant === SyncErrors.CopyablePath && root.copyablePath.length > 0
             value: root.copyablePath
-            onCopyRequested: root.copyRequested(root.rowId)
+            onCopyRequested: {
+                UserActionLog.action(root.actionIdPrefix + ".copyPath", { rowId: root.rowId, kind: root.kindId });
+                root.copyRequested(root.rowId);
+            }
         }
 
         ColumnLayout {
@@ -248,7 +258,11 @@ Rectangle {
                     padding: IKActivities.errorsDetailsHeaderPadding
                     Accessible.name: text
                     Accessible.role: Accessible.Button
-                    onToggled: root.detailsExpanded = checked
+                    onToggled: {
+                        UserActionLog.action(root.actionIdPrefix + ".technicalDetails",
+                                             { rowId: root.rowId, expanded: checked });
+                        root.detailsExpanded = checked;
+                    }
 
                     HoverHandler {
                         cursorShape: Qt.PointingHandCursor
@@ -293,7 +307,10 @@ Rectangle {
                 ErrorCopyButton {
                     text: qsTrId("buttonCopyTechnicalDetails")
                     copiedText: qsTrId("technicalDetailsCopiedToClipboard")
-                    onCopyRequested: root.technicalDetailsCopyRequested(root.rowId)
+                    onCopyRequested: {
+                        UserActionLog.action(root.actionIdPrefix + ".copyTechnicalDetails", { rowId: root.rowId });
+                        root.technicalDetailsCopyRequested(root.rowId);
+                    }
                 }
             }
 

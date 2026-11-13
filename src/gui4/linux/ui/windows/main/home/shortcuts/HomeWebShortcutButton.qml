@@ -26,6 +26,8 @@ Button {
     id: root
 
     required property url glyphSource
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
 
     implicitWidth: leftPadding + leadingIcon.width + IKSpacing.s8 + shortcutLabel.implicitWidth
                    + IKMainWindow.homeShortcutExternalIconSpacing
@@ -35,6 +37,7 @@ Button {
     rightPadding: IKSpacing.s8
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
+    onClicked: UserActionLog.action(actionId)
 
     contentItem: Row {
         spacing: IKMainWindow.homeShortcutExternalIconSpacing

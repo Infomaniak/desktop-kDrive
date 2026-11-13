@@ -27,10 +27,17 @@ Rectangle {
     id: root
 
     required property var treeModel
+    // Prefix of the user action log ids of the tree, given by its owner so the tree stays feature-neutral.
+    required property string actionIdPrefix
 
     // The tree itself takes the keyboard focus; the surrounding frame is decoration.
     readonly property Item keyboardFocusItem: treeView
     readonly property bool contentVisible: !treeModel.loading && !treeModel.loadFailed && !treeModel.empty
+
+    function toggleCurrentFromKeyboard() {
+        UserActionLog.action(root.actionIdPrefix + ".toggleFolder", { source: "keyboard" })
+        root.treeModel.toggleSelection(treeSelection.currentIndex)
+    }
 
     implicitHeight: IKSyncConfiguration.treeHeight
     radius: IKSyncConfiguration.treeRadius
@@ -66,6 +73,7 @@ Rectangle {
             checkState: root.treeModel.rootCheckState
             enabled: root.contentVisible
             Accessible.name: qsTrId("labelAllFolders")
+            actionId: root.actionIdPrefix + ".toggleAll"
             onClicked: root.treeModel.toggleRootSelection()
         }
 
@@ -145,6 +153,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 role: IKModalButton.Secondary
                 text: qsTrId("buttonRetry")
+                actionId: root.actionIdPrefix + ".retryRoot"
                 onClicked: root.treeModel.retryRoot()
             }
         }
@@ -239,9 +248,9 @@ Rectangle {
                 }
                 treeView.moveCurrentToRow(row + 1)
             }
-            Keys.onSpacePressed: root.treeModel.toggleSelection(treeSelection.currentIndex)
-            Keys.onReturnPressed: root.treeModel.toggleSelection(treeSelection.currentIndex)
-            Keys.onEnterPressed: root.treeModel.toggleSelection(treeSelection.currentIndex)
+            Keys.onSpacePressed: root.toggleCurrentFromKeyboard()
+            Keys.onReturnPressed: root.toggleCurrentFromKeyboard()
+            Keys.onEnterPressed: root.toggleCurrentFromKeyboard()
 
             ScrollBar.vertical: ScrollBar {
                 policy: treeView.contentHeight > treeView.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
@@ -311,8 +320,13 @@ Rectangle {
                 Accessible.checked: folderRow.checkState === Qt.Checked
                 Accessible.checkStateMixed: folderRow.checkState === Qt.PartiallyChecked
                 Accessible.readOnly: folderRow.accessDenied
-                // The row carries the check state, so it carries its action too: the checkbox is ignored above.
-                Accessible.onToggleAction: folderRow.requestToggle()
+                // The row carries the check state, so it carries its action too: the checkbox is ignored above. It goes
+                // through the checkbox click, which logs the action like the pointer does.
+                Accessible.onToggleAction: {
+                    if (!folderRow.accessDenied) {
+                        rowCheckBox.clicked()
+                    }
+                }
 
                 Component.onCompleted: folderRow.registerVisibleNode()
                 Component.onDestruction: folderRow.unregisterVisibleNode()
@@ -368,6 +382,8 @@ Rectangle {
                     enabled: !folderRow.accessDenied
                     focusPolicy: Qt.NoFocus
                     Accessible.ignored: true
+                    actionId: root.actionIdPrefix + ".toggleFolder"
+                    actionDetails: ({ depth: folderRow.depth })
                     onClicked: folderRow.requestToggle()
                 }
 
@@ -395,6 +411,11 @@ Rectangle {
                         focusPolicy: Qt.NoFocus
                         Accessible.ignored: true
                         onClicked: {
+                            const disclosureAction = folderRow.childrenLoadFailed
+                                                     ? "retryChildren"
+                                                     : folderRow.treeView.isExpanded(folderRow.row) ? "collapse" : "expand"
+                            UserActionLog.action(root.actionIdPrefix + "." + disclosureAction,
+                                                 { depth: folderRow.depth })
                             if (folderRow.childrenLoadFailed) {
                                 root.treeModel.retryChildren(folderRow.currentTreeIndex())
                             } else {

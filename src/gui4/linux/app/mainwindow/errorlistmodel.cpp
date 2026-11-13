@@ -55,6 +55,16 @@ QString textId(const char *const id) {
     return id ? QString::fromLatin1(id) : QString{};
 }
 
+// `NotEnoughDiskSpace` becomes `notEnoughDiskSpace`, the segment form of the user action log ids.
+QString lowerCamelKindId(const SyncErrorKind kind) {
+    QString kindId = QString::fromStdString(toString(kind));
+    if (!kindId.isEmpty()) {
+        kindId[0] = kindId[0].toLower();
+    }
+
+    return kindId;
+}
+
 bool isActionShown(const SyncErrorAction action) {
     switch (action) {
         case SyncErrorAction::None:
@@ -259,6 +269,8 @@ QVariant ErrorListModel::data(const QModelIndex &index, const int role) const {
             return row.actionExternal;
         case ActionPendingRole:
             return row.actionPending;
+        case KindIdRole:
+            return row.kindId;
         default:
             return {};
     }
@@ -286,6 +298,7 @@ QHash<int, QByteArray> ErrorListModel::roleNames() const {
             {ActionLabelArgCountRole, "actionLabelArgCount"},
             {ActionExternalRole, "actionExternal"},
             {ActionPendingRole, "actionPending"},
+            {KindIdRole, "kindId"},
     };
 }
 
@@ -394,6 +407,7 @@ ErrorListModel::Row ErrorListModel::makeErrorRow(const ClassifiedSyncError &clas
 
     Row row;
     row.rowId = errorRowId(error.dbId());
+    row.kindId = lowerCamelKindId(classified.kind);
     row.section = section;
     row.errorDbId = error.dbId();
     row.titleId = textId(presentation.title.id);
@@ -447,6 +461,7 @@ ErrorListModel::Row ErrorListModel::makeErrorRow(const ClassifiedSyncError &clas
 ErrorListModel::Row ErrorListModel::makeConflictsRow(std::vector<ErrorDbId> conflictDbIds) const {
     Row row;
     row.rowId = conflictsRowId;
+    row.kindId = u"conflicts"_s;
     row.section = SyncErrorCategory::Conflicts;
     row.titleId = u"manyConflictErrorTitle"_s;
     row.titleCount = static_cast<int32_t>(conflictDbIds.size());
@@ -501,6 +516,7 @@ void ErrorListModel::updateRow(const int32_t rowIndex, Row nextRow) {
     addRoleIf(row.actionLabelArgCount != nextRow.actionLabelArgCount, ActionLabelArgCountRole);
     addRoleIf(row.actionExternal != nextRow.actionExternal, ActionExternalRole);
     addRoleIf(row.actionPending != nextRow.actionPending, ActionPendingRole);
+    addRoleIf(row.kindId != nextRow.kindId, KindIdRole);
 
     row = std::move(nextRow);
     if (!changedRoles.empty()) {
