@@ -39,7 +39,7 @@ class LocalFileSystemObserverWorkerMock : public LocalFileSystemObserverWorker {
 
         void setSnapshotValid() { _liveSnapshot.setValid(true); }
         const auto &pendingFileEvents() const { return _pendingFileEvents; }
-        int changesDetectedCallCount() const { return _changesDetectedCallCount; }
+        int32_t changesDetectedCallCount() const { return _changesDetectedCallCount; }
 
         ExitInfo changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes) override {
             ++_changesDetectedCallCount;
@@ -47,7 +47,7 @@ class LocalFileSystemObserverWorkerMock : public LocalFileSystemObserverWorker {
         }
 
     private:
-        int _changesDetectedCallCount = 0;
+        int32_t _changesDetectedCallCount = 0;
 };
 
 // Builds a buffer laid out as ReadDirectoryChangesW returns it: DWORD-aligned FILE_NOTIFY_INFORMATION entries.
@@ -107,7 +107,7 @@ void TestFolderWatcherWin::testBufferOverflowInvalidatesSnapshot() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.processNotifyBuffer(nullptr, 0));
     CPPUNIT_ASSERT(!parent.liveSnapshot().isValid());
     CPPUNIT_ASSERT(syncPal->restart());
-    CPPUNIT_ASSERT_EQUAL(0, parent.changesDetectedCallCount());
+    CPPUNIT_ASSERT_EQUAL((int32_t)0, parent.changesDetectedCallCount());
 }
 
 void TestFolderWatcherWin::testNotificationsAreDispatchedInOneBatch() {
@@ -131,7 +131,7 @@ void TestFolderWatcherWin::testNotificationsAreDispatchedInOneBatch() {
     // The snapshot is not valid yet: events are queued in the pending list.
     CPPUNIT_ASSERT(!parent.liveSnapshot().isValid());
     CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.processNotifyBuffer(buffer.data(), buffer.size()));
-    CPPUNIT_ASSERT_EQUAL(1, parent.changesDetectedCallCount());
+    CPPUNIT_ASSERT_EQUAL((int32_t)1, parent.changesDetectedCallCount());
 
     const std::vector<std::pair<SyncName, OperationType>> expected = {
             {Str("created.txt"), OperationType::Create}, {Str("edited.txt"), OperationType::Edit},
