@@ -573,14 +573,19 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     _liveSnapshot.init();
     setUpdateFlagValue(true);
-
-    if (const auto exitInfo = exploreDir(_rootFolder); exitInfo.code() == ExitCode::Ok && !stopAsked()) {
+    _pendingFileEvents.clear();
+    _restartOngoingSnapshotGeneration.store(false);
+    if (const auto exitInfo = exploreDir(_rootFolder);
+        exitInfo.code() == ExitCode::Ok && !stopAsked() && !_restartOngoingSnapshotGeneration.load()) {
         _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << timer.elapsed<DoubleSeconds>().count() << "s for "
                                                                   << _liveSnapshot.nbItems() << " items");
         perfMonitor.stop();
     } else if (stopAsked()) {
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << timer.elapsed<DoubleSeconds>().count() << "s");
+    } else if (_restartOngoingSnapshotGeneration.load()) {
+        // The snapshot had been invalidated during the generation, for example because of filesystem events overflow.
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generation discarded after: " << timer.elapsed<DoubleSeconds>().count() << "s");
     } else {
         LOG_SYNCPAL_WARN(_logger, "Local snapshot generation failed after: " << timer.elapsed<DoubleSeconds>().count()
                                                                              << "s: " << exitInfo);
@@ -763,7 +768,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(entry.path()) << L" found");
         }
 
-        if (stopAsked()) {
+        if (stopAsked() || _restartOngoingSnapshotGeneration.load()) {
             return ExitCode::Ok;
         }
 

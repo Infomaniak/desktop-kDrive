@@ -46,8 +46,8 @@ void FolderWatcher_win::startWatching() {
 
         if (!_stop) {
             changesLost();
-            // TODO: Is it necessary to wait?
-            Utility::msleep(100);
+            Utility::msleep(100); // This is to avoid a busy loop in case of a persistent error (e.g. the folder is deleted) and the lfso is not stopped yet. The
+                                  // sleep time is arbitrary, but it should be short enough to not delay the next scan too much.
         }
     }
 

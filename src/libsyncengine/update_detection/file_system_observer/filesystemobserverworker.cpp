@@ -32,7 +32,6 @@ FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> sync
 
 
 void FileSystemObserverWorker::invalidateSnapshot() {
-    if (!_liveSnapshot.isValid()) return;
     // The synchronisation will restart.
     // The SyncPal reference is null when this worker is kept alive while the SyncPal is stopped (RemoteFileSystemObserverWorker).
     // In that case the restart flag is irrelevant (it is only meaningful while the SyncPal is running) and invalidating the live
@@ -40,6 +39,8 @@ void FileSystemObserverWorker::invalidateSnapshot() {
     if (_syncPal) _syncPal->setRestart(true);
 
     _liveSnapshot.init();
+    _restartOngoingSnapshotGeneration.store(true);
+    _pendingFileEvents.clear();
     _invalidateCounter = 0;
     LOG_SYNCPAL_DEBUG(_logger, _liveSnapshot.side() << " snapshot invalidated.");
 }
