@@ -1082,12 +1082,16 @@ std::string toString(const TooManyDeletesUserChoice e) {
 
 std::string toString(const UpsellTarget e) {
     switch (e) {
-        case UpsellTarget::None:
-            return "None";
-        case UpsellTarget::MykSuitePlus:
-            return "MykSuitePlus";
-        case UpsellTarget::kSuitePro:
-            return "LitekSuiteProSync";
+        case UpsellTarget::Unknown:
+            return "Unknown";
+        case UpsellTarget::MykSuiteToMykSuitePlus:
+            return "MykSuiteToMykSuitePlus";
+        case UpsellTarget::StandAloneToMykSuitePlus:
+            return "StandAloneToMykSuitePlus";
+        case UpsellTarget::kSuiteUpgrade:
+            return "kSuiteUpgrade";
+        case UpsellTarget::StandAloneTokSuitePro:
+            return "StandAloneTokSuitePro";
         default:
             return noConversionStr;
     }

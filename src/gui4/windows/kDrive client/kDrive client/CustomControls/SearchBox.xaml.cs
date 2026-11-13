@@ -122,7 +122,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (args.ChosenSuggestion is ISearchBoxResultItem { IsSelectable: false })
                 return;
-            
+
             // Prefer the chosen suggestion, then an exact name match, then the first result.
             var results = _pager.Items.Where(i => i.IsSelectable).ToList();
             var searchItem = (args.ChosenSuggestion as ISearchBoxResultItem)?.SearchItem
@@ -145,8 +145,13 @@ namespace Infomaniak.kDrive.CustomControls
             if (!searchItem.IsAvailableLocally)
             {
                 // Item is not available locally, open in web browser
-                var url = App.Constants.Drive.itemUri(ViewModel.SelectedSync.Drive.DriveId, searchItem.NodeId);
-                await Launcher.LaunchUriAsync(url);
+                var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+                if (!await uriStore.OpenInBrowserAsync(uriStore.WebAppItemUrl(ViewModel.SelectedSync.Drive.DriveId, searchItem.NodeId)))
+                {
+                    Logger.LogWarning("Failed to open WebAppItemUrl in browser");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+
                 _analyticsService.TrackClick(Analytics.Keys.Category.Search, Analytics.Keys.EventName.OpenItemWeb);
                 return;
             }

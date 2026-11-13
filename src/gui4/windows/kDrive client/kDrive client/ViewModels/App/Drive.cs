@@ -48,7 +48,8 @@ namespace Infomaniak.kDrive.ViewModels
         private string _packName = "";
         private string _packDisplayName = "";
         private UInt64 _packId = 0;
-        private UpsellTarget _packUpsellTarget = UpsellTarget.None;
+        private KSuiteId _kSuiteId = 0; // Not mandatory, only set if the pack is a kSuite pack. This is used to open the kSuite upsell page in the browser.
+        private UpsellTarget _packUpsellTarget = UpsellTarget.Unknown;
         private bool _isAsleep = false;
         private bool _isNotRenew = false;
         private bool _isWakingUp = false;
@@ -161,6 +162,11 @@ namespace Infomaniak.kDrive.ViewModels
             get => _packId;
             set => SetPropertyInUIThread(ref _packId, value);
         }
+        public KSuiteId KSuiteId
+        {
+            get => _kSuiteId;
+            set => SetPropertyInUIThread(ref _kSuiteId, value);
+        }
         public UpsellTarget PackUpsellTarget
         {
             get => _packUpsellTarget;
@@ -223,25 +229,13 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _displayRemoteSpaceWarning, value);
         }
 
-        public Uri GetWebUri()
-        {
-            return App.Constants.Drive.kSuiteHomeUrl(DriveId);
-        }
+        public Uri GetWebUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppHomeUrl(DriveId);
 
-        public Uri GetWebTrashUri()
-        {
-            return App.Constants.Drive.TrashUrl(DriveId);
-        }
+        public Uri GetWebTrashUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppTrashUrl(DriveId);
 
-        public Uri GetWebFavoritesUri()
-        {
-            return App.Constants.Drive.FavoriteUrl(DriveId);
-        }
+        public Uri GetWebFavoritesUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppFavoritesUrl(DriveId);
 
-        public Uri GetWebSharedUri()
-        {
-            return App.Constants.Drive.SharedUrl(DriveId);
-        }
+        public Uri GetWebSharedUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppSharedUrl(DriveId);
 
         public Account Account
         {

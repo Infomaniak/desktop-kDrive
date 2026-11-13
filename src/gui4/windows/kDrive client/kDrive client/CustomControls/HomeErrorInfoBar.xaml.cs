@@ -65,8 +65,14 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenStorage);
-            Uri changeOfferUri = App.Constants.Drive.ChangeOfferUri(AppViewModel.SelectedSync.Drive.DriveId);
-            await Launcher.LaunchUriAsync(changeOfferUri);
+
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (!await uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(AppViewModel.SelectedSync.Drive)))
+            {
+                Logger.LogWarning("Failed to open DriveUpsellUrl in browser");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+
         }
 
         private void TmpDirAccessError_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

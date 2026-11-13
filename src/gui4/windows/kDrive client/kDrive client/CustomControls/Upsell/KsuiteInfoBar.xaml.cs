@@ -26,6 +26,19 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
 {
     public sealed partial class KsuiteInfoBar : UserControl
     {
+        public static readonly DependencyProperty DriveProperty =
+           DependencyProperty.Register(
+               nameof(Drive),
+               typeof(Drive),
+               typeof(KsuiteInfoBar),
+               new PropertyMetadata(null));
+
+        public Drive? Drive
+        {
+            get => (Drive?)GetValue(DriveProperty);
+            set => SetValue(DriveProperty, value);
+        }
+
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
 
         public KsuiteInfoBar()
@@ -51,7 +64,20 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.Upsell, Analytics.Keys.EventName.kSuitePro);
-            await Localizer.Instance.TryLaunchUriAsync("kSuiteProUpsellLink");
+
+            if (Drive is null)
+            {
+                Logger.LogError("Drive is null in ksuiteInfoBar, cannot open upsell link");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (!await uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(Drive)))
+            {
+                Logger.LogWarning("Failed to open DriveUpsellUrl in browser");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
     }
 }

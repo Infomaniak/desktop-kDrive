@@ -65,24 +65,18 @@ namespace Infomaniak.kDrive.Pages.Settings
                 return;
 
             using var httpClient = new HttpClient();
+            Uri releaseNotesUri = App.ServiceProvider.GetRequiredService<IUriStore>().ReleaseNoteUrl(availableUpdate.Tag);
             string? releaseNotes = null;
             try
             {
-                releaseNotes = await httpClient.GetStringAsync(availableUpdate.ChangeLogUrlLocalized);
+                releaseNotes = await httpClient.GetStringAsync(releaseNotesUri);
             }
             catch (Exception ex)
             {
-                try
-                {
-                    Logger.LogInfo($"Failed to load release notes from localized URL: {ex.Message}. Attempting default language URL.");
-                    releaseNotes = await httpClient.GetStringAsync(availableUpdate.ChangeLogUrlDefaultLanguage);
-                }
-                catch (Exception innerEx)
-                {
-                    Logger.LogWarning($"Failed to load release notes from default language URL: {innerEx.Message}",
-                        "UpdateDialogPage: Failed to load default-language release notes");
-                    return;
-                }
+
+                Logger.LogWarning($"Failed to load release notes from {releaseNotesUri}. Exception: {ex.Message}", "UpdateDialogPage: Failed to load release notes");
+                return;
+
             }
 
             var items = ParseListItems(releaseNotes);
