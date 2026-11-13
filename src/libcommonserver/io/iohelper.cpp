@@ -837,6 +837,13 @@ bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError
     return checkIfIsHiddenFile(path, true, isHidden, ioError);
 }
 
+namespace {
+// Ignore a trailing separator, e.g. "/sync_root/".
+SyncPath trimTrailingSeparator(const SyncPath &path) {
+    return path.has_filename() ? path : path.parent_path();
+}
+} // namespace
+
 IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath &syncRootPath, bool &traversesLink,
                                            SyncPath &linkPath) noexcept {
     traversesLink = false;
@@ -844,8 +851,7 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
 
     if (syncRootPath.empty()) return IoError::Success;
 
-    // Ignore a trailing separator, e.g. "/sync_root/".
-    const SyncPath rootPath = syncRootPath.has_filename() ? syncRootPath : syncRootPath.parent_path();
+    const SyncPath rootPath = trimTrailingSeparator(syncRootPath);
     if (!CommonUtility::isDescendantOrEqual(path, rootPath)) {
         LOGW_WARN(logger(), L"Path " << Utility::formatSyncPath(path) << L" is not located under the sync root "
                                      << Utility::formatSyncPath(rootPath));
@@ -911,10 +917,11 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError,
                                const SyncPath &syncRootPath /*= {}*/) noexcept {
     if (!syncRootPath.empty()) {
+        const SyncPath rootPath = trimTrailingSeparator(syncRootPath);
         // Some ancestors of `path` may not exist yet (e.g. recursive creation). Only the deepest existing ancestor and its own
         // ancestors can be links, so the check is done on the first missing component of `path` (or on `path` itself).
         SyncPath firstMissingPath = path;
-        for (SyncPath ancestorPath = path.parent_path(); CommonUtility::isStrictDescendant(ancestorPath, syncRootPath);
+        for (SyncPath ancestorPath = path.parent_path(); CommonUtility::isStrictDescendant(ancestorPath, rootPath);
              ancestorPath = ancestorPath.parent_path()) {
             bool exists = false;
             if (!checkIfPathExists(ancestorPath, exists, ioError, PathCheckOption::Insensitive)) return false;
@@ -922,7 +929,7 @@ bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoErr
             firstMissingPath = ancestorPath;
         }
 
-        ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath, syncRootPath);
+        ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath, rootPath);
         if (ioError != IoError::Success) return false;
     }
 

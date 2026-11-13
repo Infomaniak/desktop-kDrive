@@ -386,6 +386,9 @@ void TestIo::testFilesystemAlterationsThroughLink() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(IoHelper::createDirectory(syncDirPath / "missing" / "new_dir", true, ioError, syncDirPath));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    // A trailing separator in the sync root path is ignored.
+    CPPUNIT_ASSERT(IoHelper::createDirectory(syncDirPath / "missing_2" / "new_dir", true, ioError, syncDirPath / ""));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(IoHelper::copyFileOrDirectory(sourceFilePath, syncDirPath / "copy.txt", ioError, syncDirPath));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(IoHelper::createSymlink(sourceFilePath, syncDirPath / "new_link", false, ioError, syncDirPath));
