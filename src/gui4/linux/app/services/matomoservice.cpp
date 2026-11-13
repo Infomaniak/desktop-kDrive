@@ -30,7 +30,10 @@
 
 #include <QGuiApplication>
 #include <QLoggingCategory>
+#include <QNetworkReply>
 #include <QScreen>
+
+#include <cstdint>
 
 using namespace Qt::StringLiterals;
 
@@ -72,7 +75,7 @@ MatomoService::MatomoService(const ParametersStore &parametersStore, QObject *pa
     QObject(parent),
     _parametersStore(parametersStore),
     _settings(ClientSettings::filePath(), QSettings::IniFormat),
-    _tracker(trackerConfig(), _consentStore, _clientIdStore) {
+    _tracker(trackerConfig(), &_networkAccessManager, _consentStore, _clientIdStore, nullptr) {
     (void) connect(&_parametersStore, &ParametersStore::parametersChanged, this,
                    &MatomoService::reconcileConsentWithParametersStore);
     (void) connect(&_tracker, &MatomoQt::Tracker::dispatchFinished, this, &MatomoService::logDispatchResult);
@@ -124,10 +127,28 @@ void MatomoService::reconcileConsentWithParametersStore() {
     } else {
         // An opt-out after a granted consent is a withdrawal; at startup it is a plain denial. Both forget the visitor id.
         _tracker.setConsentState(_appliedConsent.has_value() ? Withdrawn : Denied);
+        abortPendingRequests();
     }
 
     _appliedConsent = enabled;
     qCInfo(lcMatomoService) << "Matomo consent applied | enabled:" << enabled;
+}
+
+// The SDK does not cancel its requests when the consent is withdrawn: a request sent before, still in flight on a slow
+// connection, would reach Matomo with the forgotten visitor id. Its replies are children of the network manager, and
+// the SDK reports an aborted reply as cancelled, not as a server failure.
+void MatomoService::abortPendingRequests() {
+    uint32_t abortedCount = 0;
+    for (auto *const reply: _networkAccessManager.findChildren<QNetworkReply *>(Qt::FindDirectChildrenOnly)) {
+        if (reply->isRunning()) {
+            reply->abort();
+            ++abortedCount;
+        }
+    }
+
+    if (abortedCount > 0) {
+        qCInfo(lcMatomoService) << "Matomo requests aborted after the consent withdrawal | count:" << abortedCount;
+    }
 }
 
 /**

@@ -352,7 +352,8 @@
   `MatomoQt::Core`), site `AppConstants::Matomo::siteId`, actions under `kdrive://<category>`. Requests carry the user
   agent built by the SDK, the app language and the logical size of the primary screen at startup. Consent is the
   server-confirmed `matomoEnabled` of `ParametersStore` (privacy mode `RequiresConsent`): nothing is sent before the
-  parameters are loaded or after an opt-out, which also forgets the visitor id, kept in `ClientSettings`. Debug builds send
+  parameters are loaded or after an opt-out, which also forgets the visitor id, kept in `ClientSettings`, and aborts the
+  requests still in flight through the `QNetworkAccessManager` the service gives the tracker. Debug builds send
   like release builds when consent is granted. Network failures are logged once per failure streak.
 - `communicationlayer/ipcclient.*`: TLS-over-loopback JSON transport (`QSslSocket`), request/reply correlation,
   reconnect-before-first-connect logic, and pinned self-signed certificate verification. The pinned CA certificate is
