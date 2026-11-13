@@ -76,8 +76,9 @@ void LinuxUpdater::onUpdateFound() {
         alreadyInstalled = _installedVersion == version;
     }
     if (alreadyInstalled) {
-        // Periodic check of the version already installed: it only waits for the application to restart.
+        // Retry the relaunch if a previous attempt failed after installation.
         setState(UpdateState::Ready);
+        startInstaller();
         return;
     }
 
@@ -107,8 +108,8 @@ void LinuxUpdater::onAutoUpdatesEnabled() {
 }
 
 /**
- * Prepares the announced update when it is not installed yet (checksum, download, install on disk), restarts the
- * application on it otherwise.
+ * Prepares the announced update and restarts the application once installed, or retries the relaunch of an update
+ * already installed on disk.
  */
 void LinuxUpdater::startInstaller() {
     const auto version = versionInfo().fullVersion();
@@ -125,8 +126,16 @@ void LinuxUpdater::startInstaller() {
         return;
     }
 
+    restartApp(installedPath);
+}
+
+// The download completion and a GUI request can both reach this point while shutdown is being scheduled.
+void LinuxUpdater::restartApp(const SyncPath &installedPath) {
+    if (_restartInProgress.exchange(true)) return;
+
     if (!launchRelauncher(installedPath)) {
         // The new version is in place and starts at the next launch.
+        _restartInProgress = false;
         setState(UpdateState::UpdateError);
         return;
     }
@@ -397,8 +406,7 @@ void LinuxUpdater::finishPreparation(const UpdateState state) {
 }
 
 /**
- * Replaces the AppImage on disk with the verified download. The running process keeps its mount of the old file, so the
- * new version only starts at the next launch or when the user restarts from Settings.
+ * Replaces the AppImage on disk with the verified download, then restarts the application on the installed version.
  */
 void LinuxUpdater::installUpdate(const VersionInfo &info) {
     const auto version = info.fullVersion();
@@ -431,18 +439,16 @@ void LinuxUpdater::installUpdate(const VersionInfo &info) {
         finishPreparation(UpdateState::UpdateError);
         return;
     }
-    LOGW_INFO(logger(), L"New AppImage installed at " << Utility::formatSyncPath(targetPath)
-                                                      << L". Update is active once the application restarts.");
+    LOGW_INFO(logger(), L"New AppImage installed at " << Utility::formatSyncPath(targetPath) << L". Restarting the application.");
 
     if (targetPath != _appImagePath) {
-        // Launchers pointing to the old name (symlinks, user desktop entries) break. Ours are rewritten right away: the
-        // application may never be restarted before the next login.
+        // Launchers pointing to the old name (symlinks, user desktop entries) break. Rewrite ours before restarting.
         if (std::filesystem::remove(_appImagePath, ec)) {
             LOGW_INFO(logger(), L"Previous AppImage removed: " << Utility::formatSyncPath(_appImagePath));
         } else if (ec) {
             LOGW_WARN(logger(), L"Failed to remove the previous AppImage: " << Utility::formatStdError(_appImagePath, ec));
         }
-        // `$APPIMAGE` still names the removed file: later writes of the autostart entry use the installed one.
+        // Keep launchers valid until shutdown, including when starting the relauncher fails.
         CommonUtility::setAppImagePath(targetPath);
         updateDesktopEntries(targetPath);
     }
@@ -453,6 +459,7 @@ void LinuxUpdater::installUpdate(const VersionInfo &info) {
         _installedPath = targetPath;
     }
     finishPreparation(UpdateState::Ready);
+    restartApp(targetPath);
 }
 
 // Points the autostart entry (when enabled) and the login URL scheme to the installed AppImage.
