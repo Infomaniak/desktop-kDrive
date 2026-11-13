@@ -415,11 +415,7 @@ void LinuxUpdater::installUpdate(const VersionInfo &info) {
 
     // Set here rather than after the download, so that a download recovered from a previous session is executable too.
     std::error_code ec;
-    std::filesystem::permissions(partPath,
-                                 std::filesystem::perms::owner_all | std::filesystem::perms::group_read |
-                                         std::filesystem::perms::group_exec | std::filesystem::perms::others_read |
-                                         std::filesystem::perms::others_exec,
-                                 std::filesystem::perm_options::replace, ec);
+    std::filesystem::permissions(partPath, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add, ec);
     if (ec) {
         LOGW_WARN(logger(), L"Failed to make the AppImage executable: " << Utility::formatStdError(partPath, ec));
         auto ioError = IoError::Success;
