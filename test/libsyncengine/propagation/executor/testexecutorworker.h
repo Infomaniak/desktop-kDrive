@@ -34,6 +34,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testIsValidDestination);
         CPPUNIT_TEST(testTerminatedJobsQueue);
         CPPUNIT_TEST(testPropagateConflictToDbAndTree);
+        CPPUNIT_TEST(testPropagateDateOnlyUpdate);
         CPPUNIT_TEST(testDeleteOpNodes);
         CPPUNIT_TEST(testInitSyncFileItem);
         CPPUNIT_TEST(testHandleMoveThroughSymlinkError);
@@ -53,6 +54,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         void testIsValidDestination();
         void testTerminatedJobsQueue();
         void testPropagateConflictToDbAndTree();
+        void testPropagateDateOnlyUpdate();
         void testInitSyncFileItem();
         void testDeleteOpNodes();
         void testHandleMoveThroughSymlinkError();

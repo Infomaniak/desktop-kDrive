@@ -155,7 +155,7 @@ ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Con
         return exitInfo;
     }
     if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated && !vfsStatus.isSyncing) {
-        // Local node is a dehydrated placeholder, remove it so it will be detected as new on next sync (if still present on
+        // Local node is a dehydrated placeholder, remove it, so it will be detected as new on next sync (if still present on
         // remote replica).
         const auto op = std::make_shared<SyncOperation>();
         op->setType(OperationType::Delete);

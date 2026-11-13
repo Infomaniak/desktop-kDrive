@@ -99,6 +99,12 @@ class SyncOperation {
         [[nodiscard]] bool isRescueOperation() const { return _isRescueOperation; }
         void setIsRescueOperation(const bool val) { _isRescueOperation = val; }
 
+        // Set by the executor when an Edit-Edit conflict resolution is propagated as a date-only update, i.e., when the file
+        // contents are identical on both replicas: only the last modification date of the remote replica is applied to the
+        // local file, without any upload or download, and no conflicted copy is created.
+        [[nodiscard]] bool isDateOnlyUpdate() const { return _isDateOnlyUpdate; }
+        void setDateOnlyUpdate(const bool val) { _isDateOnlyUpdate = val; }
+
         [[nodiscard]] PropagationStatus propagationStatus() const { return _propagationStatus; }
         void setPropagationStatus(PropagationStatus val) { _propagationStatus = val; }
 
@@ -123,6 +129,7 @@ class SyncOperation {
         bool _isBreakingCycleOp{false};
         bool _isDehydratedPlaceholder{false};
         bool _isRescueOperation{false};
+        bool _isDateOnlyUpdate{false};
         PropagationStatus _propagationStatus{PropagationStatus::ToPropagate};
 
         SyncPath _relativeOriginPath;
@@ -180,7 +187,7 @@ class SyncOperationList : public SharedObject {
          * @return true is the Edit operation corresponds to a sync operation.
          */
         bool isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,
-                                       SyncTime lastModified, int64_t size);
+                                     SyncTime lastModified, int64_t size);
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;

@@ -26,12 +26,15 @@
 #include "test_utility/testhelpers.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
+#include <fstream>
+
 namespace KDC {
 void TestIntegration::conflictTests() {
     testCreateCreatePseudoConflict();
     testCreateCreateConflict();
     testEditEditPseudoConflict();
     testEditEditConflict();
+    testEditEditConflictIdenticalContent();
     testMoveCreateConflict();
     testEditDeleteConflict();
     testMoveDeleteConflict();
@@ -146,6 +149,72 @@ void TestIntegration::testEditEditConflict() {
     CPPUNIT_ASSERT(std::filesystem::exists(conflictedFilePath));
     CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPath));
     logStep("testEditEditConflict");
+}
+
+void TestIntegration::testEditEditConflictIdenticalContent() {
+    waitForSyncToBeIdle(std::source_location::current());
+
+    // Check that the creation of the remote file with ID `_testFileRemoteId` has been propagated on the local side.
+    SyncPath relativePath;
+    bool ignore = false;
+    (void) _syncPal->_remoteFSObserverWorker->liveSnapshot().path(_testFileRemoteId, relativePath, ignore);
+    const SyncPath absoluteLocalPath = _syncPal->localPath() / relativePath;
+    CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPath));
+
+    const SyncName conflictedFileNamePrefix = absoluteLocalPath.filename().native() + Str("_conflict_");
+    const auto assertNoConflictAndNoRename = [&]() {
+        CPPUNIT_ASSERT(
+                !std::filesystem::exists(testhelpers::findLocalFileByNamePrefix(_localSyncDir.path(), conflictedFileNamePrefix)));
+        CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPath));
+    };
+
+    // Edit the remote file with the given content and modification date.
+    const LocalTemporaryDirectory temporaryDir;
+    const auto tmpFilePath = temporaryDir.path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
+    const auto editRemoteFile = [this, &tmpFilePath](const std::string &content, const SyncTime modificationTime) {
+        std::ofstream ofs(tmpFilePath, std::ios_base::in | std::ios_base::trunc);
+        ofs << content;
+        ofs.close();
+        UploadJob job(_driveDbId, tmpFilePath, _testFileRemoteId, modificationTime);
+        (void) job.runSynchronously();
+        return job.modificationTime();
+    };
+
+    // The file has been edited on both replicas with an identical content, modification date are different .
+    // The remote modification date is the most recent one, but this is irrelevant in the resolution process: we always favour the
+    // remote date. The remote modification date shall be propagated to the local replica, without creating a conflict.
+    {
+        const auto now = CommonUtility::now();
+        std::ofstream ofs(absoluteLocalPath, std::ios_base::in | std::ios_base::trunc);
+        ofs << "Identical content on both replicas.";
+        ofs.close();
+        (void) IoHelper::setFileDates(absoluteLocalPath, now - 2000, now - 1000, false);
+
+        const auto appliedRemoteModificationTime = editRemoteFile("Identical content on both replicas.", now);
+
+        _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+        waitForSyncToBeIdle(std::source_location::current());
+
+        assertNoConflictAndNoRename();
+
+        // Check that the remote modification date has been propagated to the local replica.
+        FileStat fileStat;
+        bool exists = false;
+        IoHelper::getFileStat(absoluteLocalPath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
+        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT_EQUAL(appliedRemoteModificationTime, fileStat.modificationTime);
+
+        // Check that the modification dates have been updated in DB on both replicas.
+        std::optional<SyncTime> lastModified = std::nullopt;
+        bool found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Remote, _testFileRemoteId, lastModified, found) && found);
+        CPPUNIT_ASSERT_EQUAL(appliedRemoteModificationTime, *lastModified);
+        DbNode dbNode;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Remote, _testFileRemoteId, dbNode, found) && found);
+        CPPUNIT_ASSERT(_syncPal->syncDb()->lastModified(ReplicaSide::Local, *dbNode.nodeIdLocal(), lastModified, found) && found);
+        CPPUNIT_ASSERT_EQUAL(appliedRemoteModificationTime, *lastModified);
+        logStep("testEditEditConflictIdenticalContent: remote modification date is the most recent one");
+    }
 }
 
 void TestIntegration::testMoveCreateConflict() {
@@ -304,7 +373,6 @@ struct RemoteNodeInfo {
 };
 
 void generateInitialTestSituation(const DriveDbId driveDbId, const RemoteNodeId &parentId, RemoteNodeInfo &info) {
-
     // .
     // `-- A
     //     |-- AA
