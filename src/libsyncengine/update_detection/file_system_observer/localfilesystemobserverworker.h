@@ -45,6 +45,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
 
     private:
         ExitInfo generateInitialSnapshot() override;
+        ExitInfo processPendingFileEvents();
         ReplicaSide getSnapshotType() const override { return ReplicaSide::Local; }
 
         bool canComputeChecksum(const SyncPath &absolutePath);

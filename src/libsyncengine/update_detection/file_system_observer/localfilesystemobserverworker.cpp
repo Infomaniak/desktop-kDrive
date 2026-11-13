@@ -569,15 +569,17 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     const TimerUtility timer;
     auto perfMonitor = sentry::pTraces::scoped::LFSOGenerateInitialSnapshot(syncDbId());
 
-    _liveSnapshot.init();
+    {
+        const std::scoped_lock lock(_mutex);
+        _liveSnapshot.init();
+        _restartOngoingSnapshotGeneration.store(false);
+    }
     setUpdateFlagValue(true);
 
     {
         const std::scoped_lock lock(_recursiveMutex);
         _pendingFileEvents.clear();
     }
-
-    _restartOngoingSnapshotGeneration.store(false);
 
     const auto exitInfo = exploreDir(_rootFolder);
     if (!exitInfo) {
@@ -593,11 +595,8 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
         return ExitCode::Ok;
     }
 
-    _liveSnapshot.setValid(!_restartOngoingSnapshotGeneration.load());
-
-    if (_restartOngoingSnapshotGeneration.load()) {
+    if (!publishSnapshotIfNotRestarted()) {
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generation discarded after: " << timer.elapsed<DoubleSeconds>().count() << "s");
-        _liveSnapshot.setValid(false);
         setUpdateFlagValue(false);
         return ExitCode::Ok;
     }
@@ -607,20 +606,23 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
 
     perfMonitor.stop();
 
+    return processPendingFileEvents();
+}
+
+ExitInfo LocalFileSystemObserverWorker::processPendingFileEvents() {
     const std::scoped_lock lock(_recursiveMutex);
-    ExitInfo pendingFileExitInfo = ExitCode::Ok;
+    ExitInfo exitInfo = ExitCode::Ok;
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
-        pendingFileExitInfo = processDetectedChanges(_pendingFileEvents);
-        if (!pendingFileExitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << pendingFileExitInfo);
+        exitInfo = processDetectedChanges(_pendingFileEvents);
+        if (!exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
         }
         _pendingFileEvents.clear();
         LOG_SYNCPAL_DEBUG(_logger, "Pending file events processed");
     }
 
     setUpdateFlagValue(false);
-
     return exitInfo;
 }
 

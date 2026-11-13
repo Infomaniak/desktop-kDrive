@@ -64,6 +64,7 @@ class FileSystemObserverWorker : public ISyncWorker {
 
         void setUpdateFlagValue(bool isUpdating);
         void setInitFlagValue(bool isInitializing);
+        bool publishSnapshotIfNotRestarted();
 
     private:
         [[nodiscard]] virtual ReplicaSide getSnapshotType() const = 0;
