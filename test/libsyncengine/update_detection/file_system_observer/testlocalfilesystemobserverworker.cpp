@@ -797,7 +797,8 @@ void TestLocalFileSystemObserverWorker::testPendingFileEventErrorIsPropagated() 
     _syncPal->_localFSObserverWorker->waitForExit();
 
     localFSO->_liveSnapshot.setValid(true);
-    localFSO->_pendingFileEvents.emplace_back(_rootFolderPath / "missing-event-file.txt", OperationType::Create);
+    const SyncPath pathWithTooLongName = _rootFolderPath / SyncPath(std::string(300, 'x'));
+    localFSO->_pendingFileEvents.emplace_back(pathWithTooLongName, OperationType::Create);
 
     const auto exitInfo = localFSO->processPendingFileEvents();
 
