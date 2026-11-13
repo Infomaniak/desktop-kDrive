@@ -77,9 +77,10 @@ class SyncService : public QObject {
         void startSyncsAfterLogin(UserDbId userDbId);
         Q_INVOKABLE void stopSync(qint64 syncDbId);
         /**
-         * Resumes or pauses several synchronizations, one SYNC_START or SYNC_STOP after the other. Every target is marked
-         * pending with its optimistic status at once; a failure restores its status without stopping the next requests. A
-         * target that already has a start or stop in flight is skipped.
+         * Resumes or pauses several synchronizations. The requests join the queue shared with every other start or stop
+         * and are sent one after the other. Every target is marked pending with its optimistic status at once; a failure
+         * restores its status without stopping the next requests. A target that already has a start or stop pending is
+         * skipped.
          */
         void startSyncs(const std::vector<SyncDbId> &syncDbIds);
         void stopSyncs(const std::vector<SyncDbId> &syncDbIds);
@@ -110,21 +111,23 @@ class SyncService : public QObject {
             Stop,
         };
 
-        struct QueuedSyncControl {
-                SyncDbId syncDbId{0};
-                std::optional<SyncStatus> previousStatus;
-        };
-
         struct SyncControlBatch {
                 SyncControlRequest request{SyncControlRequest::Start};
-                std::deque<QueuedSyncControl> queue;
+                std::size_t remainingCount{0};
                 std::size_t sentCount{0};
                 std::size_t failureCount{0};
         };
 
+        struct QueuedSyncControl {
+                SyncDbId syncDbId{0};
+                std::optional<SyncStatus> previousStatus;
+                std::shared_ptr<SyncControlBatch> batch;
+        };
+
         void controlSyncs(SyncControlRequest request, const std::vector<SyncDbId> &syncDbIds);
-        void sendNextSyncControl(const std::shared_ptr<SyncControlBatch> &batch);
+        void sendNextSyncControl();
         void finishSyncControl(SyncControlRequest request, const QueuedSyncControl &queued, const ExitInfo &exitInfo);
+        void countSyncControlDone(const std::shared_ptr<SyncControlBatch> &batch);
         void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
         void endAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
         [[nodiscard]] bool isActionPending(const ServiceActionTracker::ActionKey &actionKey,
@@ -144,6 +147,9 @@ class SyncService : public QObject {
         ServiceEventBus &_serviceEventBus;
         uint64_t _findGoodPathGeneration{0};
         uint64_t _pathValidationGeneration{0};
+        // SYNC_START and SYNC_STOP requests of every batch, sent one at a time.
+        std::deque<QueuedSyncControl> _syncControlQueue;
+        bool _syncControlInFlight{false};
         // Successful creations whose SYNC_ADDED push has not reached AppCache yet.
         std::unordered_map<AvailableDriveKey, SyncDbId> _awaitingSyncPush;
         // Failed creations: SYNC_ADD may still have persisted the sync, so the reservation lasts until the cache is reconciled.

@@ -907,9 +907,11 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   sent, as macOS does, because the server reports the new status only on its next progress tick after its reply. A
   failed request restores the previous status unless the server has reported one since. A start or stop is ignored while
   another one is pending for the same synchronization, so a rollback never restores the other request's status.
-  `startSyncs`/`stopSyncs` mark every target pending at once, then send the requests one after the other: the server
-  jobs clear `AppServer::_syncCacheMap`, shared by every synchronization, without a lock. A failure does not stop the
-  next requests.
+  `startSyncs`/`stopSyncs` mark every target pending at once, then queue the requests in the single queue of the service,
+  shared by every batch and single start or stop, which sends one request at a time: the server jobs clear
+  `AppServer::_syncCacheMap`, shared by every synchronization, without a lock. A failure does not stop the next
+  requests. Sending a queued request reapplies its optimistic status, which a progress push may have replaced meanwhile;
+  that pushed status is then the one a failure restores.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
 - Main-sidebar drive/sync rows belong in `SyncSelectorModel`. Keep window state, tab navigation, desktop actions, and
