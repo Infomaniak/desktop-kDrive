@@ -320,8 +320,13 @@ Rectangle {
                 Accessible.checked: folderRow.checkState === Qt.Checked
                 Accessible.checkStateMixed: folderRow.checkState === Qt.PartiallyChecked
                 Accessible.readOnly: folderRow.accessDenied
-                // The row carries the check state, so it carries its action too: the checkbox is ignored above.
-                Accessible.onToggleAction: folderRow.requestToggle()
+                // The row carries the check state, so it carries its action too: the checkbox is ignored above. It goes
+                // through the checkbox click, which logs the action like the pointer does.
+                Accessible.onToggleAction: {
+                    if (!folderRow.accessDenied) {
+                        rowCheckBox.clicked()
+                    }
+                }
 
                 Component.onCompleted: folderRow.registerVisibleNode()
                 Component.onDestruction: folderRow.unregisterVisibleNode()
