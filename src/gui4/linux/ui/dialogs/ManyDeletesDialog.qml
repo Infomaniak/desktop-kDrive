@@ -80,6 +80,13 @@ IKModal {
             width: parent.width
             wrapMode: Text.WordWrap
         },
+        ManyDeletesFileList {
+            hiddenCount: root.controller.hiddenItemCount
+            itemCount: root.controller.itemCount
+            items: root.controller.deletedItems
+            visible: root.controller.deletedItems.length > 0
+            width: parent.width
+        },
         CheckBox {
             id: doNotShowAgainCheckBox
 

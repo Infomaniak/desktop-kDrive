@@ -1924,6 +1924,10 @@ Sprawdź i zmień nazwy plików zawierających nietypowe znaki, a następnie spr
             <source>%1 version conflicts detected</source> 
             <translation>Wykryto %1 konfliktów wersji</translation> 
         </message> 
+        <message id="manyDeleteDialogFilesHeader"> 
+            <source>%1 items deleted</source> 
+            <translation>%1 usuniętych elementów</translation> 
+        </message> 
         <message id="manyDeleteDialogHardLimitContent"> 
             <source>Synchronization is paused to prevent accidental deletion.
 What would you like to do?</source> 
@@ -1937,6 +1941,13 @@ Co chcesz zrobić?</translation>
         <message id="manyDeleteDialogHardLimitSecondary"> 
             <source>Delete online as well</source> 
             <translation>Usuń również online</translation> 
+        </message> 
+        <message numerus="yes" id="manyDeleteDialogOtherPlaceholder"> 
+            <source>and another element</source> 
+            <translation>
+                <numerusform>oraz kolejny element</numerusform> 
+                <numerusform>oraz %1 inne elementy</numerusform> 
+            </translation>
         </message> 
         <message id="manyDeleteDialogSoftLimitContent"> 
             <source>These files can still be recovered from the kDrive Recycle Bin.</source> 

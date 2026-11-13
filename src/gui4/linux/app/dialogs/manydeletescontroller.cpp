@@ -20,13 +20,19 @@
 
 #include "app/appconstants.h"
 #include "app/cache/appcache.h"
+#include "app/fileiconresolver.h"
 #include "app/services/commservice.h"
 #include "app/services/sentryservice.h"
+#include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/utility.h"
 
+#include <QCollator>
 #include <QDesktopServices>
+#include <QFileInfo>
+#include <QLocale>
 #include <QLoggingCategory>
 #include <QPointer>
+#include <QVariantMap>
 
 #include <algorithm>
 
@@ -41,16 +47,11 @@ ManyDeletesController::ManyDeletesController(CommService &commService, AppCache 
     _commService(commService),
     _appCache(appCache) {
     (void) connect(&_commService, &CommService::manyDeletesNotification, this, &ManyDeletesController::enqueue);
-    (void) connect(&_appCache, &AppCache::syncsChanged, this, [this] {
-        if (visible()) {
-            emit canOpenTrashChanged();
-        }
-    });
-    (void) connect(&_appCache, &AppCache::drivesChanged, this, [this] {
-        if (visible()) {
-            emit canOpenTrashChanged();
-        }
-    });
+    // A synchronization context needs its sync, drive, account and user in the cache.
+    (void) connect(&_appCache, &AppCache::usersChanged, this, &ManyDeletesController::onCacheContextChanged);
+    (void) connect(&_appCache, &AppCache::accountsChanged, this, &ManyDeletesController::onCacheContextChanged);
+    (void) connect(&_appCache, &AppCache::drivesChanged, this, &ManyDeletesController::onCacheContextChanged);
+    (void) connect(&_appCache, &AppCache::syncsChanged, this, &ManyDeletesController::onCacheContextChanged);
 }
 
 ManyDeletesController::Severity ManyDeletesController::severity() const {
@@ -61,6 +62,25 @@ ManyDeletesController::Severity ManyDeletesController::severity() const {
 quint64 ManyDeletesController::itemCount() const {
     const auto *const notification = currentNotification();
     return notification != nullptr ? static_cast<quint64>(notification->itemCount) : 0;
+}
+
+QVariantList ManyDeletesController::deletedItems() const {
+    const auto *const notification = currentNotification();
+    return notification != nullptr ? notification->deletedItems : QVariantList{};
+}
+
+quint64 ManyDeletesController::hiddenItemCount() const {
+    const auto *const notification = currentNotification();
+    if (notification == nullptr) {
+        return 0;
+    }
+
+    const auto shownItemCount = static_cast<Count>(notification->deletedItems.size());
+    if (notification->itemCount <= shownItemCount) {
+        return 0;
+    }
+
+    return static_cast<quint64>(notification->itemCount - shownItemCount);
 }
 
 bool ManyDeletesController::canOpenTrash() const {
@@ -124,7 +144,7 @@ void ManyDeletesController::deleteOnline() {
 }
 
 void ManyDeletesController::enqueue(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
-                                    const Count itemCount) {
+                                    const Count itemCount, const QStringList &deletedPaths) {
     const Severity incomingSeverity = severityFromNotificationType(notificationType);
     if (syncDbId <= 0 || incomingSeverity == Severity::None) {
         qCWarning(lcManyDeletesController) << "Invalid mass deletion notification ignored"
@@ -137,16 +157,21 @@ void ManyDeletesController::enqueue(const SyncDbId syncDbId, const TooManyDelete
         return;
     }
 
-    const Notification incoming{.syncDbId = syncDbId, .severity = incomingSeverity, .itemCount = itemCount};
-    if (const auto existing = std::ranges::find_if(
-                _notifications, [syncDbId](const Notification &notification) { return notification.syncDbId == syncDbId; });
-        existing != _notifications.end()) {
-        if (incomingSeverity <= existing->severity) {
-            qCDebug(lcManyDeletesController) << "Duplicate mass deletion notification ignored"
-                                             << "| syncDbId:" << syncDbId;
-            return;
-        }
+    const auto existing = std::ranges::find_if(
+            _notifications, [syncDbId](const Notification &notification) { return notification.syncDbId == syncDbId; });
+    if (existing != _notifications.end() && incomingSeverity <= existing->severity) {
+        qCDebug(lcManyDeletesController) << "Duplicate mass deletion notification ignored"
+                                         << "| syncDbId:" << syncDbId;
+        return;
+    }
 
+    const Notification incoming{.syncDbId = syncDbId,
+                                .severity = incomingSeverity,
+                                .itemCount = itemCount,
+                                .deletedPaths = deletedPaths,
+                                .deletedItems = makeDeletedItems(syncDbId, deletedPaths),
+                                .deletedItemsResolved = canResolveDeletedItems(syncDbId, deletedPaths)};
+    if (existing != _notifications.end()) {
         const bool currentReplaced = existing == _notifications.begin();
         *existing = incoming;
         if (currentReplaced) {
@@ -162,12 +187,98 @@ void ManyDeletesController::enqueue(const SyncDbId syncDbId, const TooManyDelete
     _notifications.push_back(incoming);
     qCInfo(lcManyDeletesController) << "Mass deletion warning queued"
                                     << "| syncDbId:" << syncDbId << "| severity:" << incomingSeverity
-                                    << "| itemCount:" << itemCount << "| queueSize:" << _notifications.size();
+                                    << "| itemCount:" << itemCount << "| pathCount:" << deletedPaths.size()
+                                    << "| queueSize:" << _notifications.size();
     if (wasEmpty) {
         setSubmissionFailed(false);
         notifyPresentationChanged();
         emit presentationRequested();
     }
+}
+
+// Sorts the deleted paths in natural order, as file managers do ("2" before "10", case ignored), then resolves the
+// shown path, the complete path and the icon of each one. The shown path starts with the synchronization folder, named
+// as in the synchronization selector, because the warning can come from any synchronization. The server does not tell
+// files from folders, so the icon follows the extension only.
+QVariantList ManyDeletesController::makeDeletedItems(const SyncDbId syncDbId, QStringList deletedPaths) const {
+    QCollator systemCollator(QLocale::system());
+    systemCollator.setNumericMode(true);
+    systemCollator.setCaseSensitivity(Qt::CaseInsensitive);
+    (void) std::ranges::sort(deletedPaths, [&systemCollator](const QString &lhs, const QString &rhs) {
+        return systemCollator.compare(lhs, rhs) < 0;
+    });
+
+    const auto context = _appCache.syncContext(syncDbId);
+    if (!context.has_value() && !deletedPaths.isEmpty()) {
+        qCWarning(lcManyDeletesController) << "Mass deletion paths kept relative until the synchronization is in the cache"
+                                           << "| syncDbId:" << syncDbId;
+    }
+
+    SyncPath syncFolder;
+    if (context.has_value()) {
+        const SyncPath &syncRoot = context->syncInfo.localPath();
+        syncFolder = syncRoot.filename().empty() ? syncRoot : syncRoot.filename();
+    }
+
+    const FileIconResolver fileIconResolver;
+    QVariantList deletedItems;
+    deletedItems.reserve(deletedPaths.size());
+    for (const QString &relativePath: std::as_const(deletedPaths)) {
+        QString shortPath = relativePath;
+        QString displayPath = relativePath;
+        if (context.has_value()) {
+            shortPath = Path2QStr(syncFolder / QStr2Path(relativePath));
+            const SyncPath absolutePath = absoluteSyncPath(context->syncInfo.localPath(), QStr2Path(relativePath));
+            displayPath = displayLocalPath(Path2QStr(absolutePath));
+        }
+
+        const QString fileName = QFileInfo(relativePath).fileName();
+        deletedItems.append(QVariantMap{
+                {QStringLiteral("shortPath"), shortPath},
+                {QStringLiteral("displayPath"), displayPath},
+                {QStringLiteral("iconName"), fileIconResolver.iconName(fileName, NodeType::File)},
+        });
+    }
+
+    return deletedItems;
+}
+
+// Rows built without the synchronization context are only relative paths: they are rebuilt once it is cached.
+bool ManyDeletesController::canResolveDeletedItems(const SyncDbId syncDbId, const QStringList &deletedPaths) const {
+    return deletedPaths.isEmpty() || _appCache.syncContext(syncDbId).has_value();
+}
+
+// A warning can arrive before the cache holds its synchronization, for instance right after launch. Rebuilds the rows
+// of every warning still relative once its context is cached. Only `deletedItemsChanged` is emitted, so the dialog keeps
+// its checkbox and pending action.
+void ManyDeletesController::resolvePendingDeletedItems() {
+    bool currentChanged = false;
+    for (auto notification = _notifications.begin(); notification != _notifications.end(); ++notification) {
+        if (notification->deletedItemsResolved || !canResolveDeletedItems(notification->syncDbId, notification->deletedPaths)) {
+            continue;
+        }
+
+        notification->deletedItems = makeDeletedItems(notification->syncDbId, notification->deletedPaths);
+        notification->deletedItemsResolved = true;
+        qCInfo(lcManyDeletesController) << "Mass deletion paths resolved once the synchronization is in the cache"
+                                        << "| syncDbId:" << notification->syncDbId;
+        if (notification == _notifications.begin()) {
+            currentChanged = true;
+        }
+    }
+
+    if (currentChanged) {
+        emit deletedItemsChanged();
+    }
+}
+
+void ManyDeletesController::onCacheContextChanged() {
+    if (!visible()) {
+        return;
+    }
+
+    resolvePendingDeletedItems();
+    emit canOpenTrashChanged();
 }
 
 void ManyDeletesController::acknowledge(const TooManyDeletesUserChoice userChoice) {
@@ -252,6 +363,7 @@ void ManyDeletesController::setSubmissionFailed(const bool failed) {
 
 void ManyDeletesController::notifyPresentationChanged() {
     emit presentationChanged();
+    emit deletedItemsChanged();
     emit canOpenTrashChanged();
 }
 

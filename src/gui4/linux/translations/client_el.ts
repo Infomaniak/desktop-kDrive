@@ -1920,6 +1920,10 @@ Please check and rename files containing unusual characters, then try again.</so
             <source>%1 version conflicts detected</source> 
             <translation>%1 συγκρούσεις εκδόσεων εντοπίστηκαν</translation> 
         </message> 
+        <message id="manyDeleteDialogFilesHeader"> 
+            <source>%1 items deleted</source> 
+            <translation>%1 στοιχεία που διαγράφηκαν</translation> 
+        </message> 
         <message id="manyDeleteDialogHardLimitContent"> 
             <source>Synchronization is paused to prevent accidental deletion.
 What would you like to do?</source> 
@@ -1933,6 +1937,13 @@ What would you like to do?</source>
         <message id="manyDeleteDialogHardLimitSecondary"> 
             <source>Delete online as well</source> 
             <translation>Διαγραφή και από το διαδίκτυο</translation> 
+        </message> 
+        <message numerus="yes" id="manyDeleteDialogOtherPlaceholder"> 
+            <source>and another element</source> 
+            <translation>
+                <numerusform>και ένα ακόμα στοιχείο</numerusform> 
+                <numerusform>και %1 άλλα στοιχεία</numerusform> 
+            </translation>
         </message> 
         <message id="manyDeleteDialogSoftLimitContent"> 
             <source>These files can still be recovered from the kDrive Recycle Bin.</source> 

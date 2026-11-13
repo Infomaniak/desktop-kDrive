@@ -38,6 +38,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 #include <functional>
 #include <vector>
@@ -258,7 +259,10 @@ class CommService : public QObject {
         void syncRemoved(SyncDbId syncDbId);
         void syncProgressInfo(SyncDbId syncDbId, const KDC::SyncRuntimeInfo &runtimeInfo);
         void itemCompleted(SyncDbId syncDbId, const SyncFileItem &item);
-        void manyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, Count itemCount);
+        /** `deletedPaths` are relative to the synchronization root and capped by the server, so `itemCount` can be
+         * larger. */
+        void manyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, Count itemCount,
+                                     const QStringList &deletedPaths);
 
         // --- Error ---
         void errorAdded(const Error &info);
