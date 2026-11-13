@@ -1498,6 +1498,7 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
                                                    << Utility::formatSyncName(tmpNode->parentNode()->name()));
                 return ExitCode::DataError;
             }
+            tmpNode->setParentNode(nullptr);
 
             permanentNode = brotherNode;
             break;
@@ -1560,7 +1561,6 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, st
                 if (prevNode->hasChangeEvent(OperationType::Move)) {
                     tmpNode->setName(prevNode->name());
                     tmpNode->setMoveOriginInfos(prevNode->moveOriginInfos());
-                    tmpNode->setParentNode(prevNode->parentNode());
                 }
 
                 // Update change events
@@ -1580,6 +1580,24 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, st
                                                    << Utility::formatSyncName(prevNode->name()) << L" parent node "
                                                    << Utility::formatSyncName(prevNode->parentNode()->name()));
                 return ExitCode::DataError;
+            }
+            const auto prevNodeParent = prevNode->parentNode();
+            prevNode->setParentNode(nullptr);
+
+            // Move tmpNode to prevNode parent if needed
+            if (tmpNode->parentNode() != prevNodeParent) {
+                if (!tmpNode->parentNode()->deleteChild(tmpNode)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in Node::deleteChild: node "
+                                                       << Utility::formatSyncName(tmpNode->name()) << L" parent node "
+                                                       << Utility::formatSyncName(tmpNode->parentNode()->name()));
+                    return ExitCode::DataError;
+                }
+                if (!tmpNode->setParentNode(prevNodeParent)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node"
+                                                       << Utility::formatSyncName(tmpNode->name()) << L" parent node "
+                                                       << Utility::formatSyncName(prevNodeParent->name()));
+                    return ExitCode::DataError;
+                }
             }
 
             mergedNode = prevNode;
