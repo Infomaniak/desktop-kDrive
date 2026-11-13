@@ -358,6 +358,10 @@
   (`begin/end/isActionPending/isServicePending`).
 - `app/services/serviceeventbus.*`: shared high-level service event hub (single UI subscription point for generic
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
+- `app/clientsettings.*`: `kdrive-client.ini` in the application directory (`~/.config/kDrive`, next to
+  `kdrive-client.lock`), read with `QSettings::IniFormat`. It only holds what the client needs before the server
+  parameters are loaded, or what the server does not keep, such as the cached Sentry consent (`sentry/enabled`). Every
+  other setting belongs to the server parameters.
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
