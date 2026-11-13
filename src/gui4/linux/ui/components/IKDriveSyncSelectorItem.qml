@@ -39,6 +39,10 @@ Button {
     property bool interactive: true
     property bool showSurface: true
     property bool showChevron: false
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
+    // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
+    property var actionDetails: ({})
     readonly property bool advancedSync: entryType === SyncSelectorModel.AdvancedSync
     readonly property bool hasSubtitle: subtitle.length > 0
     readonly property string accessibleStatusDescription: {
@@ -96,7 +100,10 @@ Button {
     hoverEnabled: interactive
     text: hasSubtitle ? title + ", " + subtitle : title
     Accessible.description: accessibleStatusDescription
-    onClicked: triggered()
+    onClicked: {
+        UserActionLog.action(actionId, actionDetails);
+        triggered();
+    }
 
     background: Rectangle {
         radius: IKRadius.r4

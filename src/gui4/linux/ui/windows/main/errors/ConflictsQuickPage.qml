@@ -28,12 +28,16 @@ import kDrive.UI
 FocusScope {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.conflicts.quick"
+
     required property var controller
 
     readonly property string countText: root.controller.count.toLocaleString(Qt.locale(), "f", 0)
     readonly property var strategies: [
         {
             "strategy": ConflictsPageController.MostRecent,
+            "logName": "mostRecent",
             "titleId": "labelConflictStrategyKeepMostRecentTitle",
             "descriptionId": "labelConflictStrategyKeepMostRecentDescription",
             "descriptionHasCount": false,
@@ -42,6 +46,7 @@ FocusScope {
         },
         {
             "strategy": ConflictsPageController.Online,
+            "logName": "online",
             "titleId": "labelConflictStrategyKeepRemoteTitle",
             "descriptionId": "labelConflictStrategyKeepRemoteDescription",
             "descriptionHasCount": true,
@@ -50,6 +55,7 @@ FocusScope {
         },
         {
             "strategy": ConflictsPageController.Local,
+            "logName": "local",
             "titleId": "labelConflictStrategyKeepLocalTitle",
             "descriptionId": "labelConflictStrategyKeepLocalDescription",
             "descriptionHasCount": true,
@@ -67,6 +73,8 @@ FocusScope {
         const current = root.strategies.findIndex(entry => entry.strategy === root.controller.strategy);
         const next = Math.max(0, Math.min(root.strategies.length - 1, current + step));
         if (next !== current) {
+            UserActionLog.action(root.actionIdPrefix + ".strategy",
+                                 { strategy: root.strategies[next].logName, source: "keyboard" });
             root.controller.selectStrategy(root.strategies[next].strategy);
         }
     }
@@ -149,6 +157,8 @@ FocusScope {
                             selected: root.controller.strategy === strategyCard.modelData.strategy
                             focus: strategyCard.selected
                             onSelectRequested: {
+                                UserActionLog.action(root.actionIdPrefix + ".strategy",
+                                                     { strategy: strategyCard.modelData.logName });
                                 root.controller.selectStrategy(strategyCard.modelData.strategy);
                                 strategyGroup.forceActiveFocus();
                             }
@@ -179,6 +189,11 @@ FocusScope {
                     text: qsTrId("buttonApplyToXFiles").arg(root.countText)
                     actionEnabled: root.controller.count > 0
                     busy: root.controller.resolutionPending
+                    actionId: root.actionIdPrefix + ".apply"
+                    actionDetails: ({
+                        strategy: root.strategies.find(entry => entry.strategy === root.controller.strategy)?.logName,
+                        count: root.controller.count
+                    })
                     onClicked: root.controller.apply()
                 }
 
@@ -187,6 +202,7 @@ FocusScope {
                     role: IKModalButton.Tonal
                     text: qsTrId("buttonManageIndividually")
                     actionEnabled: !root.controller.resolutionPending
+                    actionId: root.actionIdPrefix + ".manageIndividually"
                     onClicked: root.controller.manageIndividually()
                 }
 

@@ -27,6 +27,9 @@ import kDrive.UI
 AbstractButton {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "onboarding.driveSelection"
+
     property int row: -1
     property string driveName: ""
     property string accountName: ""
@@ -39,6 +42,8 @@ AbstractButton {
 
     function requestToggle(): void {
         if (root.cellEnabled) {
+            UserActionLog.action(root.actionIdPrefix + (root.checked ? ".unselectDrive" : ".selectDrive"),
+                                 { row: root.row })
             root.toggleRequested(root.row)
         }
     }

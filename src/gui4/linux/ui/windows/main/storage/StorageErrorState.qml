@@ -99,7 +99,10 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                     }
 
-                    onClicked: root.controller.retry()
+                    onClicked: {
+                        UserActionLog.action("main.storage.retry");
+                        root.controller.retry();
+                    }
                 }
                 IKLoadingSpinner {
                     Accessible.name: qsTrId("storageLoadingHint")

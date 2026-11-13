@@ -27,11 +27,24 @@ Item {
     id: root
 
     required property var controller
+    // Screen of the user action log, such as `main.blockingError.asleep`; the action logs `<screenId>.<action>`.
+    required property string screenId
 
     readonly property int kind: controller.kind
     readonly property bool renewsOnWeb: kind === BlockingErrors.NotRenew && controller.admin
     readonly property bool securityBadge: kind === BlockingErrors.Asleep || kind === BlockingErrors.WakingUp
     readonly property bool neutralBadge: kind === BlockingErrors.LoggedOut
+
+    // Action suffix in the user action log.
+    function actionName() {
+        if (root.kind === BlockingErrors.Asleep) {
+            return "wakeUp";
+        }
+        if (root.kind === BlockingErrors.LoggedOut) {
+            return "signIn";
+        }
+        return root.renewsOnWeb ? "renewSubscription" : "restartSync";
+    }
 
     // Actions that restart the synchronization stay busy until the server answers.
     function restartsSync() {
@@ -155,6 +168,7 @@ Item {
                 // Waking the drive up and renewing the subscription happen on the web.
                 external: root.kind === BlockingErrors.Asleep || root.renewsOnWeb
                 busy: root.restartsSync() && root.controller.actionPending
+                actionId: root.screenId + "." + root.actionName()
                 onClicked: root.controller.triggerAction()
             }
         ]
