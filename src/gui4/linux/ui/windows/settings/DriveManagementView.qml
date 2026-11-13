@@ -30,6 +30,8 @@ ScrollView {
     required property var activationController
     required property var driveDbId
     readonly property string navigationTitle: qsTrId("labelkDriveManagement")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.accounts.driveManagement"
     // Reads the notifying preparing/busy properties before targets(), an invokable without change notification, so the
     // binding re-evaluates when an activation starts.
     readonly property bool activationBusy: root.controller.syncCreationPending
@@ -100,6 +102,8 @@ ScrollView {
                         Layout.maximumWidth: root.availableWidth * IKSettings.driveManagementPathMaxWidthRatio
                         text: root.controller.localPath
                         Accessible.name: qsTrId("labelSyncLocation") + " " + text
+                        actionId: root.screenId + ".openLocalFolder"
+                        actionDetails: ({ driveDbId: root.driveDbId })
                         onClicked: root.controller.openLocalFolder()
                     }
                 }
@@ -110,6 +114,8 @@ ScrollView {
                     customSelection: root.controller.customSelection
                     blackListLoading: root.controller.blackListLoading
                     blackListLoadFailed: root.controller.blackListLoadFailed
+                    actionIdPrefix: root.screenId
+                    actionDetails: ({ driveDbId: root.driveDbId })
                     onRetryRequested: root.controller.reloadBlackList()
                     onManageRequested: trigger => root.manageSynchronizationRequested(trigger)
 
@@ -129,6 +135,8 @@ ScrollView {
                         Accessible.name: text + " " + qsTrId("labelSynchronisation") + " " + root.controller.driveName
                         actionEnabled: !root.activationBusy
                         busy: root.activationBusy
+                        actionId: root.screenId + ".enableSync"
+                        actionDetails: ({ driveDbId: root.driveDbId })
                         onClicked: root.activateRequested(activateButton)
                     }
                 }
@@ -144,6 +152,7 @@ ScrollView {
                 id: deleteRow
 
                 title: qsTrId("buttonRemoveSync")
+                actionId: root.screenId + ".deleteSync"
                 destructive: true
                 separator: false
                 enabled: !root.controller.deletePending
@@ -159,6 +168,7 @@ ScrollView {
                 id: advancedSyncsRow
 
                 title: qsTrId("advancedSyncTitle")
+                actionId: root.screenId + ".advancedSyncs"
                 separator: false
                 onNavigationRequested: root.advancedSyncsRequested(advancedSyncsRow)
             }

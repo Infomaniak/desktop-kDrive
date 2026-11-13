@@ -43,6 +43,8 @@ IKModal {
         required property string buttonText
         required property string folderName
         required property string folderPath
+        // Id of the choose button in the user action log.
+        required property string actionId
         property string errorText: ""
         property bool buttonEnabled: true
         property alias button: chooseButton
@@ -96,6 +98,7 @@ IKModal {
                     role: IKModalButton.Tonal
                     text: section.buttonText
                     actionEnabled: section.buttonEnabled
+                    actionId: section.actionId
                     onClicked: section.chooseRequested()
                 }
 
@@ -167,6 +170,7 @@ IKModal {
         }
     }
 
+    dialogId: "settings.accounts.advancedSyncs.addDialog"
     preferredWidth: IKSyncConfiguration.modalWidth
     escapeDismissible: !root.controller.busy
     visible: root.controller.active
@@ -220,6 +224,7 @@ IKModal {
                 folderName: root.controller.localFolderName
                 folderPath: root.controller.localPath
                 errorText: root.controller.localFolderInvalid ? qsTrId("teachingTipInvalidFolderAdvancedContent") : ""
+                actionId: root.dialogId + ".chooseLocalFolder"
                 onChooseRequested: root.controller.requestLocalFolder()
             }
 
@@ -232,6 +237,7 @@ IKModal {
                 buttonEnabled: !root.controller.busy
                 folderName: root.controller.remoteFolderName
                 folderPath: root.controller.remotePath
+                actionId: root.dialogId + ".chooseRemoteFolder"
                 onChooseRequested: root.controller.openLocationPicker()
             }
 
@@ -269,6 +275,7 @@ IKModal {
                 controller: root.controller
                 treeModel: root.controller.pickerModel
                 driveColor: root.driveColor
+                actionIdPrefix: root.dialogId + ".picker"
             }
 
             SyncConfigurationErrorBlock {
@@ -286,6 +293,8 @@ IKModal {
             role: IKModalButton.Secondary
             text: qsTrId("buttonCancel")
             actionEnabled: !root.controller.busy
+            actionId: root.dialogId + ".cancel"
+            actionDetails: ({ page: root.controller.locationPickerOpen ? "picker" : "folders" })
             onClicked: root.controller.cancelCurrentPage()
         },
         IKModalButton {
@@ -293,6 +302,7 @@ IKModal {
             text: root.controller.locationPickerOpen ? qsTrId("buttonSelect") : qsTrId("buttonValidate")
             actionEnabled: root.controller.locationPickerOpen ? root.controller.canConfirmLocation : root.controller.canSubmit
             busy: root.controller.submitting || root.controller.checkingLocalFolder
+            actionId: root.dialogId + (root.controller.locationPickerOpen ? ".picker.confirm" : ".submit")
             onClicked: {
                 if (root.controller.locationPickerOpen) {
                     root.controller.confirmLocation();

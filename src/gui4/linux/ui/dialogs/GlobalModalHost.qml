@@ -84,6 +84,7 @@ Item {
         scrimInset: root.surfaceInset
         scrimRadius: root.surfaceRadius
         title: qsTrId("quitConfirmationDialogTitle")
+        dialogId: "dialog.quitConfirmation"
 
         onConfirmed: {
             root.quitPending = true;

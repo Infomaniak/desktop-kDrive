@@ -27,6 +27,8 @@ ScrollView {
 
     required property var controller
     required property string navigationTitle
+    // Screen of the user action log (see UserActionLog); its switch logs `<screenId>.allowTracking`.
+    required property string screenId
     required property url logoSource
     required property string description
     required property string errorText
@@ -67,6 +69,7 @@ ScrollView {
 
                 IKSwitch {
                     text: qsTrId("labelAllowTracking")
+                    actionId: root.screenId + ".allowTracking"
                     value: root.trackingEnabled
                     enabled: root.controller.ready && !root.controller.saving
                     onToggleRequested: value => root.toggleAction(value)

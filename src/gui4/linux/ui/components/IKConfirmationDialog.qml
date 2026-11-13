@@ -83,6 +83,7 @@ IKModal {
             actionEnabled: !root.busy
             role: IKModalButton.Secondary
             text: root.cancelText
+            actionId: root.dialogId + ".cancel"
 
             onClicked: root.dismiss()
         },
@@ -94,6 +95,7 @@ IKModal {
             busy: root.busy
             role: root.confirmRole
             text: root.confirmText
+            actionId: root.dialogId + ".confirm"
 
             onClicked: root.confirmed()
         }

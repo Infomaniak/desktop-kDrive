@@ -46,6 +46,7 @@ Item {
             Layout.preferredHeight: visible ? implicitHeight : 0
             errorCount: root.controller.errorCount
             visible: root.controller.errorCount > 0
+            actionId: "main.home.errorBanner.showErrors"
             onActionTriggered: root.controller.showErrors()
         }
         IKInformationBlock {
@@ -57,6 +58,7 @@ Item {
             primaryActionText: qsTrId("onboardingV4Faq")
             primaryActionExternal: true
             dismissText: qsTrId("buttonClose")
+            actionId: "main.home.v4OnboardingBanner.faq"
             // One banner at a time: both would push the shortcuts card out of a minimum-size window.
             visible: root.controller.showV4Onboarding && root.controller.errorCount === 0
                      && root.controller.status !== HomeController.SetupRequired

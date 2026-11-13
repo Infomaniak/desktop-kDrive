@@ -28,6 +28,8 @@ Flickable {
     required property var controller
     required property var activationController
     property string navigationTitle: qsTrId("sidebarItemAccounts")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.accounts"
     property var userExpansionStates: ({})
     // User whose card is unfolded, scrolled to and focused once it exists, when Settings opens on a user.
     property var revealUserDbId: null
@@ -146,6 +148,7 @@ Flickable {
                     implicitHeight: IKSettings.connectAccountButtonHeight
                     role: IKModalButton.Tonal
                     text: qsTrId("buttonConnectAccount")
+                    actionId: root.screenId + ".connectAccount"
                     onClicked: root.connectAccountRequested(connectEmptyButton)
                 }
 
@@ -195,6 +198,7 @@ Flickable {
                     implicitHeight: IKSettings.connectAccountButtonHeight
                     role: IKModalButton.Tonal
                     text: qsTrId("buttonConnectAccount")
+                    actionId: root.screenId + ".connectAccount"
                     onClicked: root.connectAccountRequested(connectButton)
                 }
 

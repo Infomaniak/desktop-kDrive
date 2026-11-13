@@ -27,6 +27,9 @@ import kDrive.UI
 Popup {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.search"
+
     required property var controller
     // The overlay spans the complete native window: the scrim must not dim its transparent shadow margin.
     property real scrimInset: 0
@@ -55,14 +58,35 @@ Popup {
     closePolicy: Popup.CloseOnPressOutside
 
     onAboutToShow: root.controller.open()
-    onOpened: Qt.callLater(searchField.focusInput)
-    onClosed: root.controller.close()
+    onOpened: {
+        UserActionLog.dialog(root.actionIdPrefix, true);
+        Qt.callLater(searchField.focusInput);
+    }
+    onClosed: {
+        UserActionLog.dialog(root.actionIdPrefix, false);
+        root.controller.close();
+    }
+
+    // Logs the opening of a result, without its name or path: only whether it opens locally or on the web.
+    function logOpenResult(row, revealInFolder, source) {
+        const actionId = root.actionIdPrefix + (row && row.availableLocally ? ".openLocal" : ".openOnline");
+        UserActionLog.action(actionId, { index: row ? row.index : -1, revealInFolder: revealInFolder, source: source });
+    }
+
+    function openCurrentResult(event) {
+        const revealInFolder = (event.modifiers & Qt.ControlModifier) !== 0;
+        root.logOpenResult(resultList.currentItem, revealInFolder, "keyboard");
+        root.controller.openResult(resultList.currentIndex, revealInFolder);
+    }
 
     Shortcut {
         sequences: [ StandardKey.Cancel ]
         enabled: root.opened
         context: Qt.WindowShortcut
-        onActivated: root.close()
+        onActivated: {
+            UserActionLog.action(root.actionIdPrefix + ".escape");
+            root.close();
+        }
     }
 
     Overlay.modal: Item {
@@ -188,9 +212,14 @@ Popup {
                 }
 
                 delegate: SearchResultRow {
+                    id: resultRow
+
                     width: ListView.view.width
                     current: ListView.isCurrentItem && ListView.view.activeFocus
-                    onActivated: revealInFolder => root.controller.openResult(index, revealInFolder)
+                    onActivated: revealInFolder => {
+                        root.logOpenResult(resultRow, revealInFolder, "pointer");
+                        root.controller.openResult(index, revealInFolder);
+                    }
                 }
 
                 footer: Item {
@@ -220,15 +249,14 @@ Popup {
                         IKLinkButton {
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTrId("buttonRetry")
+                            actionId: root.actionIdPrefix + ".retryNextPage"
                             onClicked: root.controller.retry()
                         }
                     }
                 }
 
-                Keys.onReturnPressed: event => root.controller.openResult(currentIndex,
-                                                                          (event.modifiers & Qt.ControlModifier) !== 0)
-                Keys.onEnterPressed: event => root.controller.openResult(currentIndex,
-                                                                         (event.modifiers & Qt.ControlModifier) !== 0)
+                Keys.onReturnPressed: event => root.openCurrentResult(event)
+                Keys.onEnterPressed: event => root.openCurrentResult(event)
                 Keys.onUpPressed: event => {
                     if (currentIndex <= 0) {
                         searchField.focusInput();
@@ -313,6 +341,7 @@ Popup {
                     }
                 }
                 actionText: root.controller.state === root.stateError ? qsTrId("buttonRetry") : ""
+                actionId: root.actionIdPrefix + ".retry"
                 onActionTriggered: root.controller.retry()
             }
         }

@@ -28,6 +28,9 @@ import kDrive.UI
 Rectangle {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "settings.accounts.advancedSyncs.card"
+
     required property var syncDbId
     required property string localFolderName
     required property string localPath
@@ -84,7 +87,11 @@ Rectangle {
                 Accessible.checkable: true
                 Accessible.checked: root.expanded
                 Accessible.onToggleAction: headerButton.clicked()
-                onClicked: root.expanded = !root.expanded
+                onClicked: {
+                    UserActionLog.action(root.actionIdPrefix + "." + (root.expanded ? "collapse" : "expand"),
+                                         { syncDbId: root.syncDbId });
+                    root.expanded = !root.expanded;
+                }
 
                 // The hover surface overflows into the card padding, so the chevron stays aligned with the row titles
                 // below it while keeping some room around the glyph.
@@ -145,6 +152,8 @@ Rectangle {
                 text: qsTrId("buttonRemoveSync")
                 Accessible.name: text + " " + root.localFolderName
                 enabled: !root.deletePending
+                actionId: root.actionIdPrefix + ".deleteSync"
+                actionDetails: ({ syncDbId: root.syncDbId })
                 onClicked: root.deleteRequested(deleteButton)
             }
         }
@@ -166,6 +175,8 @@ Rectangle {
                     Layout.maximumWidth: root.width * IKSettings.driveManagementPathMaxWidthRatio
                     text: root.localPath
                     Accessible.name: qsTrId("labelComputerLocation") + " " + text
+                    actionId: root.actionIdPrefix + ".openLocalFolder"
+                    actionDetails: ({ syncDbId: root.syncDbId })
                     onClicked: root.openLocalFolderRequested()
                 }
             }
@@ -180,6 +191,8 @@ Rectangle {
                     text: root.remoteFolderName
                     external: true
                     Accessible.name: qsTrId("labelRemoteLocation") + " " + root.remotePath
+                    actionId: root.actionIdPrefix + ".openRemoteFolder"
+                    actionDetails: ({ syncDbId: root.syncDbId })
                     onClicked: root.openRemoteFolderRequested()
 
                     IKToolTip {
@@ -196,6 +209,8 @@ Rectangle {
                 blackListLoading: root.blackListLoading
                 blackListLoadFailed: root.blackListLoadFailed
                 accessibleContext: root.localFolderName
+                actionIdPrefix: root.actionIdPrefix
+                actionDetails: ({ syncDbId: root.syncDbId })
                 onRetryRequested: root.retryBlackListRequested()
                 onManageRequested: trigger => root.manageRequested(trigger)
             }

@@ -98,6 +98,8 @@ Item {
             focusPolicy: Qt.NoFocus
             // Tells the buttons of the rows apart.
             Accessible.name: text + ", " + root.name
+            actionId: "main.conflicts.list.chooseVersion"
+            actionDetails: ({ rowId: root.rowId })
             onClicked: root.chooseRequested(root.rowId)
         }
     }

@@ -28,6 +28,8 @@ Item {
     required property var controller
     required property var syncDbId
     readonly property string navigationTitle: qsTrId("titleManageSynchronization")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.accounts.excludedFolders"
     readonly property bool blackListReady: !root.controller.loading && !root.controller.loadFailed
 
     // Cancel and the back chevron both drop the draft: only Save publishes it.
@@ -75,6 +77,7 @@ Item {
                 // The saved list is captured when Save is clicked: a later edit would be lost when the page closes.
                 enabled: !root.controller.saving
                 treeModel: root.controller.folderTreeModel
+                actionIdPrefix: root.screenId + ".tree"
                 onVisibleChanged: {
                     if (visible) {
                         Qt.callLater(() => folderTree.keyboardFocusItem.forceActiveFocus());
@@ -112,6 +115,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     role: IKModalButton.Secondary
                     text: qsTrId("buttonRetry")
+                    actionId: root.screenId + ".retry"
                     onClicked: root.controller.retry()
                 }
             }
@@ -146,12 +150,16 @@ Item {
                 role: IKModalButton.Tonal
                 text: qsTrId("buttonCancel")
                 actionEnabled: !root.controller.saving
+                actionId: root.screenId + ".cancel"
+                actionDetails: ({ syncDbId: root.syncDbId })
                 onClicked: root.closeRequested()
             }
 
             IKModalButton {
                 role: IKModalButton.Primary
                 text: qsTrId("buttonSave")
+                actionId: root.screenId + ".save"
+                actionDetails: ({ syncDbId: root.syncDbId })
                 actionEnabled: root.controller.canSave
                 busy: root.controller.saving
                 onClicked: root.controller.save()

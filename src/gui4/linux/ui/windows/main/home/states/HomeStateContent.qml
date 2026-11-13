@@ -31,6 +31,21 @@ Item {
     required property string description
     property string actionLabel: ""
 
+    // Suffix of the primary action in the user action log.
+    function primaryActionName() {
+        switch (root.controller.primaryAction) {
+        case HomeController.ShowActivities:
+            return "showActivities";
+        case HomeController.ResumeSync:
+            return "resumeSync";
+        case HomeController.SignIn:
+            return "signIn";
+        case HomeController.ConfigureSync:
+            return "configureSync";
+        }
+        return "none";
+    }
+
     Column {
         id: content
 
@@ -73,7 +88,10 @@ Item {
                 text: root.actionLabel
                 flat: true
                 focusPolicy: Qt.StrongFocus
-                onClicked: root.controller.triggerPrimaryAction()
+                onClicked: {
+                    UserActionLog.action("main.home.primaryAction." + root.primaryActionName());
+                    root.controller.triggerPrimaryAction();
+                }
 
                 contentItem: Text {
                     text: parent.text

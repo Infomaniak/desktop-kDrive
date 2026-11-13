@@ -27,6 +27,9 @@ import kDrive.UI
 FocusScope {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.errors"
+
     required property var controller
     // Hosted by the Activities view, shared with the conflicts list.
     required property var conflictVersionDialog
@@ -104,6 +107,7 @@ FocusScope {
                 role: IKModalButton.Tonal
                 text: qsTrId("buttonRefresh")
                 busy: root.controller.refreshPending
+                actionId: root.actionIdPrefix + ".refresh"
                 onClicked: root.controller.refresh()
             }
         }
@@ -182,6 +186,7 @@ FocusScope {
             anchors.horizontalCenter: parent.horizontalCenter
             role: IKModalButton.Tonal
             text: qsTrId("buttonSeeActivities")
+            actionId: root.actionIdPrefix + ".showActivities"
             onClicked: root.controller.showActivities()
         }
     }

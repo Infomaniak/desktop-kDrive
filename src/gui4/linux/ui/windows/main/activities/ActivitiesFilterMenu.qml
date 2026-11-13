@@ -32,11 +32,13 @@ Popup {
     readonly property var filterOptions: [
         {
             filter: ActivityListModel.AllActivities,
+            logName: "allActivities",
             label: qsTrId("activitiesTypeAllActivities"),
             icon: "qrc:/assets/main/activities/filter-all-activities.svg"
         },
         {
             filter: ActivityListModel.ThisComputerOnly,
+            logName: "thisComputer",
             label: qsTrId("activitiesTypeThisComputer"),
             icon: "qrc:/assets/main/activities/filter-this-computer.svg"
         }
@@ -108,6 +110,7 @@ Popup {
             focusPolicy: Qt.StrongFocus
             hoverEnabled: true
             onClicked: {
+                UserActionLog.action("main.activities.filterMenu." + modelData.logName);
                 root.controller.filter = modelData.filter;
                 root.close();
             }

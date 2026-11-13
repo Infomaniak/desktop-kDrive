@@ -24,6 +24,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.storage"
+
     required property var controller
     // Main sidebar controller: names the selected synchronization the way the synchronization selector does.
     required property var selection
@@ -129,6 +132,7 @@ Item {
                 title: qsTrId("errNotEnoughDiskSpaceTitle")
                 description: qsTrId("storageDiskAlmostFullDescription")
                 actionText: qsTrId("buttonManageDiskSpace")
+                actionId: root.actionIdPrefix + ".manageDiskSpace"
 
                 onActionTriggered: root.controller.openDiskManagement()
             }
@@ -189,6 +193,7 @@ Item {
                 external: true
                 text: qsTrId("buttonUpgradeSubscription")
                 visible: root.controller.quotaFull
+                actionId: root.actionIdPrefix + ".upgradeSubscription"
 
                 onClicked: root.controller.openSubscriptionUpgrade()
             }
@@ -217,7 +222,10 @@ Item {
                     }
                 }
 
-                onClicked: root.controller.openSubscriptionUpgrade()
+                onClicked: {
+                    UserActionLog.action(root.actionIdPrefix + ".upgradeSubscription", { source: "cartIcon" });
+                    root.controller.openSubscriptionUpgrade();
+                }
 
                 // Drawn around the glyph without enlarging the control, so the header keeps its alignment.
                 Rectangle {

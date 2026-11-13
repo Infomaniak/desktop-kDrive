@@ -25,6 +25,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "onboarding"
+
     required property var session
     // Modal scrim geometry of the hosting window: the overlay also covers the transparent custom-shadow margin, which
     // must not be dimmed because it is not part of the visible application surface.
@@ -34,6 +37,8 @@ Item {
     readonly property var driveSelectionController: session.driveSelectionController
     readonly property var drivesModel: session.availableDrivesModel
     readonly property var syncConfigurationController: session.syncConfigurationController
+    // Screens of the user action log, in the order of the steps: `<actionIdPrefix>.<step>`.
+    readonly property var onboardingStepNames: [ "login", "driveSelection", "synchronization", "ready" ]
     readonly property var onboardingStepComponents: [
         loginComponent,
         driveSelectionComponent,
@@ -46,7 +51,25 @@ Item {
         color: IKColors.onboardingSurfacePrimary
     }
 
+    function logCurrentStep() {
+        const stepName = root.onboardingStepNames[root.onboardingFlowController.currentStep] || "login";
+        UserActionLog.screen(root.actionIdPrefix + "." + stepName);
+    }
+
+    Component.onCompleted: logCurrentStep()
+
+    Connections {
+        target: root.onboardingFlowController
+
+        function onCurrentStepChanged() {
+            root.logCurrentStep();
+        }
+    }
+
     SyncConfigurationDialog {
+        id: syncConfigurationDialog
+
+        dialogId: "syncConfig"
         controller: root.syncConfigurationController
         scrimInset: root.surfaceInset
         scrimRadius: root.surfaceRadius
@@ -56,11 +79,16 @@ Item {
         id: localFolderDialog
 
         title: qsTrId("buttonSelectFolder")
+        // The chosen folder is a local path: it is never logged.
         onAccepted: {
+            UserActionLog.action(syncConfigurationDialog.dialogId + ".drive.folderDialog.accept")
             root.syncConfigurationController.applyCustomFolder(selectedFolder)
             root.syncConfigurationController.notifyCustomFolderDialogClosed()
         }
-        onRejected: root.syncConfigurationController.notifyCustomFolderDialogClosed()
+        onRejected: {
+            UserActionLog.action(syncConfigurationDialog.dialogId + ".drive.folderDialog.reject")
+            root.syncConfigurationController.notifyCustomFolderDialogClosed()
+        }
     }
 
     Connections {

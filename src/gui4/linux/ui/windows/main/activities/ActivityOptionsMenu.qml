@@ -25,6 +25,9 @@ import kDrive.UI
 Popup {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.activities.options"
+
     required property var controller
     required property string rowId
     required property int availableActions
@@ -96,15 +99,19 @@ Popup {
         root.close();
         switch (action) {
         case ActivityOptionsMenu.OpenLocal:
+            UserActionLog.action(root.actionIdPrefix + ".openLocal", { rowId: root.rowId });
             root.controller.openLocal(root.rowId);
             break;
         case ActivityOptionsMenu.OpenOnline:
+            UserActionLog.action(root.actionIdPrefix + ".openOnline", { rowId: root.rowId });
             root.controller.openOnline(root.rowId);
             break;
         case ActivityOptionsMenu.CopyShareLink:
+            UserActionLog.action(root.actionIdPrefix + ".copyShareLink", { rowId: root.rowId });
             root.controller.copyShareLink(root.rowId);
             break;
         case ActivityOptionsMenu.FixErrors:
+            UserActionLog.action(root.actionIdPrefix + ".fixErrors", { rowId: root.rowId });
             root.controller.requestFixErrors(root.rowId);
             break;
         }

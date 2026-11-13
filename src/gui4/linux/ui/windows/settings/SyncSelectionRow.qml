@@ -32,6 +32,9 @@ SettingsRow {
     property bool blackListLoadFailed: false
     // Appended to the accessible names, to tell apart the rows of several synchronizations.
     property string accessibleContext: ""
+    // Prefix of the user action log ids of its buttons, given by its owner, and the context of their lines.
+    required property string actionIdPrefix
+    property var actionDetails: ({})
 
     signal retryRequested
     signal manageRequested(Item trigger)
@@ -50,6 +53,8 @@ SettingsRow {
         role: IKModalButton.Tonal
         text: qsTrId("buttonRetry")
         Accessible.name: (text + " " + root.title + " " + root.accessibleContext).trim()
+        actionId: root.actionIdPrefix + ".retrySelection"
+        actionDetails: root.actionDetails
         onClicked: root.retryRequested()
     }
 
@@ -63,6 +68,8 @@ SettingsRow {
         Accessible.description: root.customSelection ? qsTrId("onboardingExclusionSummarySome") : ""
         busy: root.blackListLoading
         actionEnabled: !root.blackListLoading
+        actionId: root.actionIdPrefix + ".manageSelection"
+        actionDetails: root.actionDetails
         onClicked: root.manageRequested(manageButton)
     }
 }

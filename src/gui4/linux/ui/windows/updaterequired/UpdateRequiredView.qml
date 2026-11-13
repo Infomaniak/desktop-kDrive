@@ -26,8 +26,13 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "updateRequired"
+
     signal downloadRequested
     signal quitRequested
+
+    Component.onCompleted: UserActionLog.screen("updateRequired")
 
     IKBlockingState {
         anchors.fill: parent
@@ -54,11 +59,13 @@ Item {
             IKModalButton {
                 text: qsTrId("statusBarQuitApp")
                 role: IKModalButton.Tonal
+                actionId: root.actionIdPrefix + ".quit"
                 onClicked: root.quitRequested()
             },
             IKModalButton {
                 text: qsTrId("buttonDownloadManually")
                 external: true
+                actionId: root.actionIdPrefix + ".download"
                 onClicked: root.downloadRequested()
             }
         ]

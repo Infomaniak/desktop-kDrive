@@ -25,6 +25,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "settings.advanced.fileExclusions.rule"
+
     required property var controller
     required property int row
     required property string pattern
@@ -71,6 +74,8 @@ Item {
             enabled: root.controller.ready && !root.controller.saving
             checkState: root.selected ? Qt.Checked : Qt.Unchecked
             Accessible.name: root.pattern
+            actionId: root.actionIdPrefix + ".select"
+            actionDetails: ({ row: root.row })
             onClicked: root.controller.setSelected(root.row, !root.selected)
         }
 
@@ -90,6 +95,8 @@ Item {
             visible: root.editable
             enabled: root.controller.ready && !root.controller.saving
             text: qsTrId("labelNotifyIfFileExcluded")
+            actionId: root.actionIdPrefix + ".notify"
+            actionDetails: ({ row: root.row })
             value: root.notificationEnabled
             Accessible.name: root.pattern
             Accessible.description: text

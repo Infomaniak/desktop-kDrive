@@ -111,7 +111,27 @@ IKModal {
         return ErrorTexts.text(id, 1, root.controller.nodeLabelId, 0);
     }
 
+    // Explanation kind in the user action log.
+    function kindName() {
+        switch (root.kind) {
+        case SyncErrors.LocalAccess:
+            return "localAccess";
+        case SyncErrors.SyncDirNotFound:
+            return "syncDirNotFound";
+        case SyncErrors.SyncDirDiskMissing:
+            return "syncDirDiskMissing";
+        case SyncErrors.SyncDirChangedLocally:
+            return "syncDirChangedLocally";
+        case SyncErrors.SyncDirChangedRemotely:
+            return "syncDirChangedRemotely";
+        case SyncErrors.INotifyWatches:
+            return "iNotifyWatches";
+        }
+        return "none";
+    }
+
     function followLink(link) {
+        UserActionLog.action(root.dialogId + ".link", { kind: root.kindName(), link: link });
         if (link === "faq") {
             // TODO Point to an article on restoring access rights once it exists: `faqUrl` is the FAQ home page, which
             // does not answer it.
@@ -138,6 +158,8 @@ IKModal {
             return "";
         }
     }
+    dialogId: "main.errors.explanationDialog"
+    dialogDetails: ({ kind: root.kindName() })
     escapeDismissible: true
     preferredWidth: IKActivities.errorsExplanationWidth
     initialFocusItem: mainButton
@@ -317,7 +339,10 @@ IKModal {
                 ErrorCopyablePath {
                     Layout.fillWidth: true
                     value: root.controller.copyablePath
-                    onCopyRequested: root.controller.copyPath()
+                    onCopyRequested: {
+                        UserActionLog.action(root.dialogId + ".copyPath", { kind: root.kindName() });
+                        root.controller.copyPath();
+                    }
                 }
             }
 
@@ -343,7 +368,10 @@ IKModal {
                     wrapsValue: true
                     copyText: qsTrId("linuxButtonCopyCommand")
                     copiedText: qsTrId("linuxCommandCopiedToClipboard")
-                    onCopyRequested: root.controller.copyWatchLimitCommand()
+                    onCopyRequested: {
+                        UserActionLog.action(root.dialogId + ".copyCommand", { kind: root.kindName() });
+                        root.controller.copyWatchLimitCommand();
+                    }
                 }
             }
         }
@@ -353,6 +381,7 @@ IKModal {
         IKModalButton {
             text: qsTrId("buttonClose")
             role: IKModalButton.Tonal
+            actionId: root.dialogId + ".close"
             onClicked: root.controller.close()
         },
         IKModalButton {
@@ -370,6 +399,8 @@ IKModal {
                     return qsTrId("buttonOpenParentFolder");
                 }
             }
+            actionId: root.dialogId + ".mainAction"
+            actionDetails: ({ kind: root.kindName() })
             onClicked: root.controller.triggerMainAction()
         }
     ]

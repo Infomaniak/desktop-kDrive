@@ -24,6 +24,10 @@ import kDrive.UI
 ComboBox {
     id: root
     required property string accessibleName
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
+    // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
+    property var actionDetails: ({})
     implicitWidth: Math.max(IKSettings.comboWidth, implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: IKSettings.buttonHeight
     leftPadding: IKSpacing.s8
@@ -31,6 +35,7 @@ ComboBox {
     font.pixelSize: IKFonts.bodySize
     focusPolicy: Qt.StrongFocus
     Accessible.name: accessibleName
+    onActivated: index => UserActionLog.action(actionId, Object.assign({}, actionDetails, { value: valueAt(index) }))
     contentItem: Text {
         text: root.displayText
         color: root.enabled ? IKColors.textPrimary : IKColors.actionDisabled

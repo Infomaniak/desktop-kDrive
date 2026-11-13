@@ -28,6 +28,8 @@ Rectangle {
     required property string title
     required property string description
     required property string actionText
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
 
     signal actionTriggered
 
@@ -98,6 +100,7 @@ Rectangle {
         role: IKModalButton.Tonal
         iconSource: root.iconSource
         text: root.actionText
+        actionId: root.actionId
 
         onClicked: root.actionTriggered()
     }

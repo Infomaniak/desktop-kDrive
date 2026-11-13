@@ -25,6 +25,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.activities.row"
+
     required property int rowIndex
     required property var rowModel
     required property real nameColumnWidth
@@ -180,7 +183,10 @@ Item {
 
                 TapHandler {
                     enabled: root.folder.length > 0
-                    onTapped: root.controller.openFolder(root.rowId)
+                    onTapped: {
+                        UserActionLog.action(root.actionIdPrefix + ".openFolder", { rowId: root.rowId });
+                        root.controller.openFolder(root.rowId);
+                    }
                 }
 
                 HoverHandler {
@@ -236,7 +242,10 @@ Item {
                     height: IKActivities.optionsButtonSize
                     focusPolicy: visible ? Qt.StrongFocus : Qt.NoFocus
                     hoverEnabled: visible
-                    onClicked: root.openOptionsMenu()
+                    onClicked: {
+                        UserActionLog.action(root.actionIdPrefix + ".options", { rowId: root.rowId });
+                        root.openOptionsMenu();
+                    }
 
                     contentItem: Item {
                         IKTintedIcon {

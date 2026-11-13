@@ -34,6 +34,10 @@ Button {
     property bool notificationDot: false
     property color notificationColor: IKColors.actionPrimary
     property url trailingIconSource
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
+    // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
+    property var actionDetails: ({})
     signal triggered
 
     implicitHeight: IKMainWindow.sidebarItemHeight
@@ -41,7 +45,10 @@ Button {
     focusPolicy: enabled ? Qt.StrongFocus : Qt.NoFocus
     hoverEnabled: enabled
     text: label
-    onClicked: triggered()
+    onClicked: {
+        UserActionLog.action(actionId, actionDetails);
+        triggered();
+    }
 
     background: Rectangle {
         radius: IKRadius.r8

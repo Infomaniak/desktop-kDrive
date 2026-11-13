@@ -30,6 +30,9 @@ Rectangle {
     property alias text: input.text
     property alias placeholderText: input.placeholderText
     property string accessibleName: qsTrId("buttonSearch")
+    // Stable, language-independent id of the field in the user action log (see UserActionLog). The typed text is never
+    // logged; the clear button logs `<actionId>.clear`.
+    required property string actionId
 
     // Typed by the user, unlike a change of `text` by the owner.
     signal textEdited(string editedText)
@@ -123,6 +126,7 @@ Rectangle {
         }
 
         onClicked: {
+            UserActionLog.action(root.actionId + ".clear");
             input.clear();
             root.cleared();
             input.forceActiveFocus();
