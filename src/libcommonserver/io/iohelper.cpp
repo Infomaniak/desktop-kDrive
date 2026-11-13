@@ -942,7 +942,12 @@ IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destina
 }
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
-    // NB: Symlinks are not followed (symlink is removed, not its target).
+    // If `path` itself is a link, the link is removed, not its target. However, links found among the ancestors of `path`
+    // would be followed by the operating system during path resolution, possibly removing items outside the expected tree:
+    // such paths are rejected.
+    ioError = IoHelper::checkIfPathTraversesLink(path);
+    if (ioError != IoError::Success) return false;
+
     std::error_code ec;
     (void) std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
@@ -978,7 +983,6 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
             return false;
         }
     }
-
 
     // Copy the source path to the destination path
     // - Overwrite if the destination path already exists
@@ -1024,7 +1028,8 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, c
         return false;
     }
 
-    if (ioError = IoHelper::checkIfPathTraversesLink(path); ioError != IoError::Success) return false;
+    ioError = IoHelper::checkIfPathTraversesLink(path);
+    if (ioError != IoError::Success) return false;
 
     std::error_code ec;
     if (isFolder) {

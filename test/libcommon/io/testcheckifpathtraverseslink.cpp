@@ -241,8 +241,25 @@ void TestIo::testFilesystemAlterationsThroughLink() {
         CPPUNIT_ASSERT(!IoHelper::createAlias("dummy alias data", parentPath / "new_alias", ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
         expectOutsideDirUnchanged();
+#elif defined(KD_WINDOWS)
+        // createJunctionFromPath / createJunction
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createJunctionFromPath(sourceDirPath, parentPath / "new_junction", ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+        expectOutsideDirUnchanged();
+
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createJunction("dummy junction data", parentPath / "new_junction", ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+        expectOutsideDirUnchanged();
 #endif
     }
+
+    // deleteItem: `linkPath / "sub_dir"` resolves to an existing directory outside the sync folder.
+    ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(!IoHelper::deleteItem(linkPath / "sub_dir", ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+    expectOutsideDirUnchanged();
 
     // A dangling link, whose target is a missing directory outside the sync folder, is detected as well when creating a
     // directory with missing intermediate directories below it: the dangling link itself exists, so it is checked.
@@ -270,6 +287,12 @@ void TestIo::testFilesystemAlterationsThroughLink() {
     CPPUNIT_ASSERT(IoHelper::createSymlink(sourceFilePath, syncDirPath / "new_link", false, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::renameItem(sourceFilePath, syncDirPath / "moved.txt"));
+
+    // Deleting the link itself removes the link, not its target.
+    CPPUNIT_ASSERT(IoHelper::deleteItem(linkPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(!std::filesystem::exists(std::filesystem::symlink_status(linkPath, ec)));
+    expectOutsideDirUnchanged();
 }
 
 } // namespace KDC

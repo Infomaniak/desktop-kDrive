@@ -838,7 +838,8 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
 }
 
 bool IoHelper::createJunction(const std::string &data, const SyncPath &path, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+    ioError = IoHelper::checkIfPathTraversesLink(path);
+    if (ioError != IoError::Success) return false;
 
     // Create the junction directory
     if (!CreateDirectoryW(Path2WStr(path).c_str(), nullptr)) {
@@ -907,7 +908,8 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
 }
 
 bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+    ioError = IoHelper::checkIfPathTraversesLink(path);
+    if (ioError != IoError::Success) return false;
 
     // Create the junction directory
     if (!CreateDirectoryW(Path2WStr(path).c_str(), nullptr)) {

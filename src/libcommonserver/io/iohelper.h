@@ -313,10 +313,11 @@ struct IoHelper {
         static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
         static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
 
-        //! Remove an item located under the specified path.
+        //! Remove an item located under the specified path. If the item is a link, the link is removed, not its target.
         /*!
          \param path is the file system path of the item to remove.
-         \param ioError holds the error returned when an underlying OS API call fails.
+         \param ioError holds the error returned when an underlying OS API call fails. It is set with
+         IoError::PathContainsSymlink if an ancestor of path is a link followed by the operating system.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool deleteItem(const SyncPath &path, IoError &ioError) noexcept;
