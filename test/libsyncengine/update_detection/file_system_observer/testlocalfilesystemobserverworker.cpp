@@ -790,15 +790,22 @@ void TestLocalFileSystemObserverWorker::testSnapshotPublicationRejectedAfterInva
 }
 
 void TestLocalFileSystemObserverWorker::testPendingFileEventErrorIsPropagated() {
-    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
-    CPPUNIT_ASSERT(localFSO);
-
     _syncPal->_localFSObserverWorker->stop();
     _syncPal->_localFSObserverWorker->waitForExit();
 
+    class FailingLocalFileSystemObserverWorker final : public LocalFileSystemObserverWorker {
+        public:
+            using LocalFileSystemObserverWorker::LocalFileSystemObserverWorker;
+
+            ExitInfo processDetectedChanges(const std::list<std::pair<SyncPath, OperationType>> &) override {
+                return ExitCode::SystemError;
+            }
+    };
+
+    auto localFSO =
+            std::make_shared<FailingLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
     localFSO->_liveSnapshot.setValid(true);
-    const SyncPath pathWithTooLongName = _rootFolderPath / SyncPath(std::string(300, 'x'));
-    localFSO->_pendingFileEvents.emplace_back(pathWithTooLongName, OperationType::Create);
+    localFSO->_pendingFileEvents.emplace_back(_rootFolderPath / "pending-event.txt", OperationType::Create);
 
     const auto exitInfo = localFSO->processPendingFileEvents();
 

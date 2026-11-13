@@ -38,6 +38,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         void execute() override;
 
         ExitInfo exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected = false);
+        virtual ExitInfo processDetectedChanges(const std::list<std::pair<SyncPath, OperationType>> &changes);
 
         SyncPath _rootFolder;
         //    std::unique_ptr<ContentChecksumWorker> _checksumWorker = nullptr;
@@ -67,8 +68,6 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         bool checkStopCondition(ExitInfo &exitInfo);
         // Returns true if the execute() loop should break.
         bool checkAndClearUpdateDelay(ExitInfo &exitInfo);
-
-        ExitInfo processDetectedChanges(const std::list<std::pair<SyncPath, OperationType>> &changes);
 
         std::chrono::steady_clock::time_point _needUpdateTimerStart = std::chrono::steady_clock::now();
         bool _useExtendedDelay = false;
