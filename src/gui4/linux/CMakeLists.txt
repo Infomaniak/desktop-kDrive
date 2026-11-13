@@ -166,6 +166,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/serviceactiontracker.h
         app/services/serviceeventbus.cpp
         app/services/serviceeventbus.h
+        app/services/matomoservice.cpp
+        app/services/matomoservice.h
         app/services/sentryservice.cpp
         app/services/sentryservice.h
         app/services/syncerrorservice.cpp
@@ -208,6 +210,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/excludedfolderscontroller.h
         app/systraycontroller.cpp
         app/systraycontroller.h
+        app/useractions/analyticscatalog.cpp
+        app/useractions/analyticscatalog.h
         app/useractions/useractionlog.cpp
         app/useractions/useractionlog.h
         ui/chrome/windowdecorationcontroller.cpp
