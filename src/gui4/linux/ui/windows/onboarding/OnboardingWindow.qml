@@ -20,6 +20,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Dialogs
+import QtQuick.Window
 import kDrive.UI
 
 Item {
@@ -51,11 +52,26 @@ Item {
         color: IKColors.onboardingSurfacePrimary
     }
 
+    // Onboarding stays loaded behind the update-required screen and while the window is in the tray: a step is logged
+    // only once it is really shown, and again each time it is shown anew.
+    readonly property bool shown: root.visible && root.Window.window !== null && root.Window.window.visible
+    property string loggedScreenId: ""
+
     function logCurrentStep() {
+        if (!root.shown) {
+            root.loggedScreenId = "";
+            return;
+        }
+
         const stepName = root.onboardingStepNames[root.onboardingFlowController.currentStep] || "login";
-        UserActionLog.screen(root.actionIdPrefix + "." + stepName);
+        const screenId = root.actionIdPrefix + "." + stepName;
+        if (screenId !== root.loggedScreenId) {
+            root.loggedScreenId = screenId;
+            UserActionLog.screen(screenId);
+        }
     }
 
+    onShownChanged: root.logCurrentStep()
     Component.onCompleted: logCurrentStep()
 
     Connections {
