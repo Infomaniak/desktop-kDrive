@@ -78,8 +78,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         switch startServerIfNeeded() {
         case .startedAndHandedOff:
             return
-        case .alreadyRunning:
-            IKLogger.general.info("kDrive server is already running; continuing with client launch")
+        case .launchedByServer:
+            IKLogger.general.info("Client launched by the kDrive server; continuing with client launch")
         case .failedNotLocated:
             IKLogger.general.error("Launch aborted: kDrive server application could not be located")
             NSApp.terminate(nil)
@@ -225,20 +225,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private enum ServerStartResult {
         case startedAndHandedOff
-        case alreadyRunning
+        case launchedByServer
         case failedNotLocated
         case failedToStart(Error)
     }
 
+    /// Only the client started by the server may run. A client launched another way (e.g. a login item added from the
+    /// "Open at Login" Dock menu) hands off to the server, which starts or shows its own client.
     private func startServerIfNeeded() -> ServerStartResult {
         #if DEBUG
         IKLogger.general.debug("Debug build: skipping automatic server start/handoff")
-        return .alreadyRunning
+        return .launchedByServer
         #else
         let serverBundleID = "com.infomaniak.drive.desktopclient"
-        guard NSRunningApplication.runningApplications(withBundleIdentifier: serverBundleID).isEmpty else {
-            IKLogger.general.info("kDrive server is already running")
-            return .alreadyRunning
+        let runningServers = NSRunningApplication.runningApplications(withBundleIdentifier: serverBundleID)
+        // The server starts the client as a child process, whereas LaunchServices launches it through launchd.
+        guard !runningServers.contains(where: { $0.processIdentifier == getppid() }) else {
+            return .launchedByServer
+        }
+
+        if !runningServers.isEmpty && isAnotherClientRunning() {
+            IKLogger.general.info("A kDrive client is already running; exiting")
+            isHandingOffToServer = true
+            NSApp.terminate(nil)
+            return .startedAndHandedOff
+        }
+
+        let arguments: [String]
+        if !runningServers.isEmpty {
+            // Without arguments, the running server shows its client or starts one if none is connected.
+            arguments = []
+        } else {
+            arguments = ProcessInfo.processInfo.arguments.contains("--settings") ? ["--settings"] : ["--synthesis"]
         }
 
         guard let serverURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: serverBundleID),
@@ -249,7 +267,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let server = Process()
         server.executableURL = executableURL
-        server.arguments = ProcessInfo.processInfo.arguments.contains("--settings") ? ["--settings"] : ["--synthesis"]
+        server.arguments = arguments
         do {
             try server.run()
         } catch {
@@ -262,6 +280,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.terminate(nil)
         return .startedAndHandedOff
         #endif
+    }
+
+    private func isAnotherClientRunning() -> Bool {
+        guard let clientBundleID = Bundle.main.bundleIdentifier else {
+            return false
+        }
+        let currentPID = ProcessInfo.processInfo.processIdentifier
+        return NSRunningApplication.runningApplications(withBundleIdentifier: clientBundleID)
+            .contains { $0.processIdentifier != currentPID }
     }
 
     private func observeAppPresentation() {
