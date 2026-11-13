@@ -26,9 +26,10 @@ namespace KDC {
 
 void TestNode::testIsParentValid() {
     const auto node1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 1"), NodeType::Directory,
-                                              OperationType::None, "l1", 0, 0, 12345, nullptr);
+                                              OperationType::None, "l1", 0, 0, 12345);
     const auto node11 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 1.1"), NodeType::Directory,
-                                               OperationType::None, "l11", 0, 0, 12345, node1);
+                                               OperationType::None, "l11", 0, 0, 12345);
+    CPPUNIT_ASSERT(node11->moveTo(node1));
 
     CPPUNIT_ASSERT(node11->isParentValid(node1));
     CPPUNIT_ASSERT(!node1->isParentValid(node11));
@@ -36,12 +37,13 @@ void TestNode::testIsParentValid() {
 
 void TestNode::testIsParentOf() {
     const auto node1 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 1"), NodeType::Directory,
-                                              OperationType::None, "l1", 0, 0, 12345, nullptr);
+                                              OperationType::None, "l1", 0, 0, 12345);
     const auto node11 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 1.1"), NodeType::Directory,
-                                               OperationType::None, "l11", 0, 0, 12345, node1);
+                                               OperationType::None, "l11", 0, 0, 12345);
+    CPPUNIT_ASSERT(node11->moveTo(node1));
     const auto node111 = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("Dir 1.1.1"), NodeType::Directory,
-                                                OperationType::None, "l111", 0, 0, 12345, node11);
-
+                                                OperationType::None, "l111", 0, 0, 12345);
+    CPPUNIT_ASSERT(node111->moveTo(node11));
 
     CPPUNIT_ASSERT(node1->isParentOf(node11));
     CPPUNIT_ASSERT(!node11->isParentOf(node1));

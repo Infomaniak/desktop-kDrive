@@ -120,28 +120,32 @@ void TestOperationProcessor::testIsPseudoConflict() {
                                                      testhelpers::defaultDirSize, false, true, true));
     const auto newLocalDirNode = std::make_shared<Node>( // Not synced directory (no dbId)
             ReplicaSide::Local, Str("testLocalDir"), NodeType::Directory, OperationType::None, "ldid", testhelpers::defaultTime,
-            testhelpers::defaultTime, testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+            testhelpers::defaultTime, testhelpers::defaultDirSize);
+    CPPUNIT_ASSERT(newLocalDirNode->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
 
     (void) remotelLiveSnapshot.updateItem(SnapshotItem("rdid", remotelLiveSnapshot.rootFolderId(), Str("testRemoteDir"),
                                                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                                                        testhelpers::defaultDirSize, false, true, true));
     const auto newRemoteDirNode = std::make_shared<Node>( // Not synced directory (no dbId)
             ReplicaSide::Remote, Str("testRemoteDir"), NodeType::Directory, OperationType::None, "rdid", testhelpers::defaultTime,
-            testhelpers::defaultTime, testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+            testhelpers::defaultTime, testhelpers::defaultDirSize);
+    CPPUNIT_ASSERT(newRemoteDirNode->moveTo(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
 
     (void) localLiveSnapshot.updateItem(SnapshotItem("lfid", localLiveSnapshot.rootFolderId(), Str("testLocalFile"),
                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                                      testhelpers::defaultFileSize, true, true, true));
     const auto newLocalFileNode = std::make_shared<Node>( // Not synced file (no dbId)
             ReplicaSide::Local, Str("testLocalFile"), NodeType::File, OperationType::None, "lfid", testhelpers::defaultTime,
-            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+            testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(newLocalFileNode->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
 
     (void) remotelLiveSnapshot.updateItem(SnapshotItem("rfid", remotelLiveSnapshot.rootFolderId(), Str("testRemoteFile"),
                                                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
                                                        testhelpers::defaultFileSize, true, true, true));
     const auto newRemoteFileNode = std::make_shared<Node>( // Not synced file (no dbId)
             ReplicaSide::Remote, Str("testRemoteFile"), NodeType::File, OperationType::None, "rfid", testhelpers::defaultTime,
-            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+            testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(newRemoteFileNode->moveTo(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
 
     _syncPal->copySnapshots();
 
@@ -234,8 +238,8 @@ void TestOperationProcessor::testIsPseudoConflict() {
     rNodeAA->setChangeEvents(OperationType::Move);
 
     // ## Both destination nodes are the same already synchronized directory and the file keeps the same name
-    CPPUNIT_ASSERT(lNodeAA->setParentNode(lNodeA)); // Moved to a synced directory
-    CPPUNIT_ASSERT(rNodeAA->setParentNode(rNodeA)); // Moved to a synced directory
+    CPPUNIT_ASSERT(lNodeAA->moveTo(lNodeA)); // Moved to a synced directory
+    CPPUNIT_ASSERT(rNodeAA->moveTo(rNodeA)); // Moved to a synced directory
     CPPUNIT_ASSERT(opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
 
     // ## Both destination nodes are the same already synchronized directory and the file name changes
@@ -245,13 +249,13 @@ void TestOperationProcessor::testIsPseudoConflict() {
 
     // ## One destination node is a not synchronized directory (Created in this sync) and the other is an already
     // synchronized directory
-    CPPUNIT_ASSERT(lNodeAA->setParentNode(newLocalDirNode)); // Moved to a not synced directory
-    CPPUNIT_ASSERT(rNodeAA->setParentNode(rNodeA)); // Moved to a synced directory
+    CPPUNIT_ASSERT(lNodeAA->moveTo(newLocalDirNode)); // Moved to a not synced directory
+    CPPUNIT_ASSERT(rNodeAA->moveTo(rNodeA)); // Moved to a synced directory
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
 
     // ## Both destination nodes are two different not synchronized directory (Created in this sync)
-    CPPUNIT_ASSERT(lNodeAA->setParentNode(newLocalDirNode)); // Moved to a not synced directory
-    CPPUNIT_ASSERT(rNodeAA->setParentNode(newRemoteDirNode)); // Moved to a not synced directory
+    CPPUNIT_ASSERT(lNodeAA->moveTo(newLocalDirNode)); // Moved to a not synced directory
+    CPPUNIT_ASSERT(rNodeAA->moveTo(newRemoteDirNode)); // Moved to a not synced directory
     CPPUNIT_ASSERT(!opProcessor.isPseudoConflictTest(lNodeAA, rNodeAA));
 
 
