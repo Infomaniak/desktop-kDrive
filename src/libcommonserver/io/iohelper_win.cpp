@@ -1091,6 +1091,8 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
 }
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+    if (IoHelper::checkIfPathTraversesLink(itemPath) != IoError::Success) return false;
+
     if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
         LOGW_INFO(logger(),
                   L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "

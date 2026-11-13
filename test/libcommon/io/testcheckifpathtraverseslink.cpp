@@ -261,6 +261,10 @@ void TestIo::testFilesystemAlterationsThroughLink() {
     CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
     expectOutsideDirUnchanged();
 
+    // moveItemToTrash: same target as above.
+    CPPUNIT_ASSERT(!IoHelper::moveItemToTrash(linkPath / "sub_dir"));
+    expectOutsideDirUnchanged();
+
     // A dangling link, whose target is a missing directory outside the sync folder, is detected as well when creating a
     // directory with missing intermediate directories below it: the dangling link itself exists, so it is checked.
     {

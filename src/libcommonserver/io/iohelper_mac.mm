@@ -299,6 +299,8 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
         return false;
     }
 
+    if (IoHelper::checkIfPathTraversesLink(itemPath) != IoError::Success) return false;
+
     NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
 
     if (filePath == nullptr) {

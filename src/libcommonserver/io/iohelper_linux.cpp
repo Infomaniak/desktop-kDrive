@@ -134,6 +134,8 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
 }
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+    if (IoHelper::checkIfPathTraversesLink(itemPath) != IoError::Success) return false;
+
     return QFile(itemPath).moveToTrash();
 }
 

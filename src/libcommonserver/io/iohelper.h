@@ -556,6 +556,7 @@ struct IoHelper {
         static bool getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError);
 #endif
 
+        //! Move an item to the trash. Fails if an ancestor of itemPath is a link followed by the operating system.
         static bool moveItemToTrash(const SyncPath &itemPath);
 
         static IoError getWeakCanonicalPath(const SyncPath &path, SyncPath &canonicalPath) noexcept;
