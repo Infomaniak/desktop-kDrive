@@ -25,6 +25,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main"
+
     required property var appRouter
     required property var activitiesController
     required property var blockingErrorController
@@ -45,6 +48,64 @@ Item {
     readonly property bool windowVisible: root.Window.window !== null && root.Window.window.visible
     readonly property bool canGoBackInActivities: root.currentTab === root.tabActivities
                                                   && root.appRouter.activitiesNavigation.canGoBack
+    // Screen of the user action log: the main tab, the Activities sub-page or the blocking error variant.
+    readonly property string screenId: {
+        switch (root.currentTab) {
+        case root.tabActivities:
+            switch (root.appRouter.activitiesNavigation.currentPage) {
+            case ActivitiesNavigation.Errors:
+                return root.actionIdPrefix + ".activities.errors";
+            case ActivitiesNavigation.ConflictsQuick:
+                return root.actionIdPrefix + ".activities.conflictsQuick";
+            case ActivitiesNavigation.ConflictsList:
+                return root.actionIdPrefix + ".activities.conflictsList";
+            default:
+                return root.actionIdPrefix + ".activities";
+            }
+        case root.tabStorage:
+            return root.actionIdPrefix + ".storage";
+        case root.tabBlockingError:
+            return root.actionIdPrefix + ".blockingError." + root.blockingErrorScreenSuffix();
+        default:
+            return root.actionIdPrefix + ".home";
+        }
+    }
+
+    function blockingErrorScreenSuffix() {
+        switch (root.blockingErrorController.kind) {
+        case BlockingErrors.Asleep:
+            return "asleep";
+        case BlockingErrors.WakingUp:
+            return "wakingUp";
+        case BlockingErrors.NotRenew:
+            return "notRenew";
+        case BlockingErrors.Maintenance:
+            return "maintenance";
+        case BlockingErrors.AccessDenied:
+            return "accessDenied";
+        case BlockingErrors.LoggedOut:
+            return "loggedOut";
+        }
+        return "unknown";
+    }
+
+    property string loggedScreenId: ""
+
+    // Called later, so a navigation that changes the tab and the Activities page at once logs its final screen only.
+    function logScreen() {
+        if (!root.windowVisible) {
+            root.loggedScreenId = "";
+            return;
+        }
+        if (root.screenId !== root.loggedScreenId) {
+            root.loggedScreenId = root.screenId;
+            UserActionLog.screen(root.screenId);
+        }
+    }
+
+    onScreenIdChanged: Qt.callLater(root.logScreen)
+    onWindowVisibleChanged: Qt.callLater(root.logScreen)
+    Component.onCompleted: Qt.callLater(root.logScreen)
 
     Row {
         anchors.fill: parent
@@ -102,13 +163,19 @@ Item {
     Shortcut {
         sequences: [ StandardKey.Back ]
         enabled: root.canGoBackInActivities
-        onActivated: root.appRouter.activitiesNavigation.back()
+        onActivated: {
+            UserActionLog.action("shortcut.back");
+            root.appRouter.activitiesNavigation.back();
+        }
     }
 
     TapHandler {
         acceptedButtons: Qt.BackButton
         enabled: root.canGoBackInActivities
-        onTapped: root.appRouter.activitiesNavigation.back()
+        onTapped: {
+            UserActionLog.action(root.actionIdPrefix + ".mouseBack");
+            root.appRouter.activitiesNavigation.back();
+        }
     }
 
     Connections {
@@ -132,6 +199,7 @@ Item {
 
         BlockingErrorView {
             controller: root.blockingErrorController
+            screenId: root.screenId
         }
     }
 

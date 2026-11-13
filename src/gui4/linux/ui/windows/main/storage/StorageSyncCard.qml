@@ -67,6 +67,7 @@ Rectangle {
         anchors.rightMargin: IKStorage.cardHorizontalPadding
         anchors.verticalCenter: parent.verticalCenter
         text: qsTrId("titleManageSynchronization")
+        actionId: "main.storage.manageSync"
 
         onClicked: root.manageRequested()
     }
