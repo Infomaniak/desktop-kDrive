@@ -27,7 +27,8 @@
 
 namespace KDC {
 
-LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest) :
+LocalMoveJob::LocalMoveJob(const SyncPath &syncRootPath, const SyncPath &source, const SyncPath &dest) :
+    _syncRootPath(syncRootPath),
     _source(source),
     _dest(dest) {}
 
@@ -84,9 +85,9 @@ ExitInfo LocalMoveJob::runJob() {
         return exitInfo;
     }
 
-    if (const auto ioError = IoHelper::moveItem(_source, _dest); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::moveItem(_source, _dest, _syncRootPath); ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::moveItem: " << Utility::formatIoError(_source, ioError));
-        if (ioError == IoError::MoveThroughSymlink) {
+        if (ioError == IoError::PathContainsSymlink) {
             return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
         }
         // We consider this as a permission denied error

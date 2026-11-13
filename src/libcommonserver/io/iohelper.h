@@ -202,17 +202,25 @@ struct IoHelper {
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
                                                     NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
-        //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path is a link that
-        //! the operating system follows during path resolution: a symbolic link, or a junction on Windows.
+        //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path, located strictly
+        //! below the specified sync root, is a link that the operating system follows during path resolution: a symbolic link,
+        //! or a junction on Windows. The sync root and its own ancestors are not inspected, as they are chosen by the user or
+        //! by the system (e.g. "/var" -> "private/var" on macOS).
         /*!
           \param path is the file system path whose ancestors are inspected. The final component of the path is ignored.
-          \param traversesLink is a boolean set with true if at least one ancestor of path is a followed link, false otherwise.
+          \param syncRootPath is the file system path of the sync root containing path. If it is empty, no check is performed.
+          \param traversesLink is a boolean set with true if at least one inspected ancestor of path is a followed link, false
+          otherwise.
           \param linkPath is set with the path of the first ancestor found to be a followed link, and with an empty path
           otherwise.
-          \return An ioError representing the success or failure of the underlying OS API call. IoError::Success is returned
-          whether a followed link is found; use traversesLink to know whether one was found.
+          \return IoError::PathContainsSymlink if an inspected ancestor of path is a followed link, IoError::Success if none is,
+          IoError::InvalidArgument if path is not located under syncRootPath, or the error returned by the underlying OS API call
+          otherwise (e.g. IoError::NoSuchFileOrDirectory if an ancestor does not exist).
          */
-        static IoError checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept;
+        static IoError checkIfPathTraversesLink(const SyncPath &path, const SyncPath &syncRootPath, bool &traversesLink,
+                                                SyncPath &linkPath) noexcept;
+        //! Same as above, for callers that only need the returned error.
+        static IoError checkIfPathTraversesLink(const SyncPath &path, const SyncPath &syncRootPath) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
@@ -253,7 +261,8 @@ struct IoHelper {
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
           \return true if no unexpected error occurred, false otherwise.
         */
-        static bool createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept;
+        static bool createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError,
+                                  const SyncPath &syncRootPath = {}) noexcept;
 
 #if defined(KD_MACOS)
         //! Create a Finder alias file for the specified target under the specified path.
@@ -263,9 +272,11 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept;
+        static bool createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError,
+                                        const SyncPath &syncRootPath = {}) noexcept;
 
-        static bool createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError) noexcept;
+        static bool createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError,
+                                const SyncPath &syncRootPath = {}) noexcept;
         static bool readAlias(const SyncPath &aliasPath, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept;
 #endif
 
@@ -288,7 +299,8 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise. If path indicates an existing directory, then the function
          returns false and sets ioError with IoError::DirectoryExists.
          */
-        static bool createDirectory(const SyncPath &path, bool recursive, IoError &ioError) noexcept;
+        static bool createDirectory(const SyncPath &path, bool recursive, IoError &ioError,
+                                    const SyncPath &syncRootPath = {}) noexcept;
 
         /** Move an item located under the specified path (actually calls renameItem).
          *
@@ -297,8 +309,10 @@ struct IoHelper {
          * @param ioError holds the error returned when an underlying OS API call fails.
          * @return true if no unexpected error occurred, false otherwise.
          */
-        static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
-        static IoError moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
+        static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError,
+                             const SyncPath &syncRootPath = {}) noexcept;
+        static IoError moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
+                                const SyncPath &syncRootPath = {}) noexcept;
 
         /** Rename an item located under the specified path.
          *
@@ -307,22 +321,25 @@ struct IoHelper {
          * @param ioError holds the error returned when an underlying OS API call fails.
          * @return true if no unexpected error occurred, false otherwise.
          */
-        static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
-        static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
+        static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError,
+                               const SyncPath &syncRootPath = {}) noexcept;
+        static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
+                                  const SyncPath &syncRootPath = {}) noexcept;
 
-        //! Remove an item located under the specified path.
+        //! Remove an item located under the specified path. If the item is a link, the link is removed, not its target.
         /*!
          \param path is the file system path of the item to remove.
-         \param ioError holds the error returned when an underlying OS API call fails.
+         \param ioError holds the error returned when an underlying OS API call fails. It is set with
+         IoError::PathContainsSymlink if an ancestor of path is a link followed by the operating system.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool deleteItem(const SyncPath &path, IoError &ioError) noexcept;
+        static bool deleteItem(const SyncPath &path, IoError &ioError, const SyncPath &syncRootPath = {}) noexcept;
         /**
          * @brief Remove an item located under the specified path silently.
          * @param path is the file system path of the item to remove.
          * @return true if no unexpected error occurred, false otherwise.
          */
-        static bool deleteItem(const SyncPath &path) noexcept;
+        static bool deleteItem(const SyncPath &path, const SyncPath &syncRootPath = {}) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.
@@ -366,7 +383,8 @@ struct IoHelper {
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
           \return true if no unexpected error occurred, false otherwise.
         */
-        static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+        static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError,
+                                        const SyncPath &syncRootPath = {}) noexcept;
 
 #if defined(KD_MACOS)
         // From `man xattr`:
@@ -431,9 +449,11 @@ struct IoHelper {
 
         // TODO: docstring and unit tests
         static bool checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError &ioError) noexcept;
-        static bool createJunction(const std::string &data, const SyncPath &path, IoError &ioError) noexcept;
+        static bool createJunction(const std::string &data, const SyncPath &path, IoError &ioError,
+                                   const SyncPath &syncRootPath = {}) noexcept;
         static bool readJunction(const SyncPath &path, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept;
-        static bool createJunctionFromPath(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept;
+        static bool createJunctionFromPath(const SyncPath &targetPath, const SyncPath &path, IoError &ioError,
+                                           const SyncPath &syncRootPath = {}) noexcept;
         static TRUSTEE &getTrustee();
 #endif
         //! Checks if the item indicated by the specified path is dehydrated.
@@ -552,7 +572,8 @@ struct IoHelper {
         static bool getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError);
 #endif
 
-        static bool moveItemToTrash(const SyncPath &itemPath);
+        //! Move an item to the trash. Fails if an ancestor of itemPath is a link followed by the operating system.
+        static bool moveItemToTrash(const SyncPath &itemPath, const SyncPath &syncRootPath = {});
 
         static IoError getWeakCanonicalPath(const SyncPath &path, SyncPath &canonicalPath) noexcept;
 

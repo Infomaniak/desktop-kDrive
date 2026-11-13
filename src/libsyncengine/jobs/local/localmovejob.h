@@ -24,7 +24,9 @@ namespace KDC {
 
 class LocalMoveJob : public SyncJob {
     public:
-        LocalMoveJob(const SyncPath &source, const SyncPath &dest);
+        //! \param syncRootPath is the path of the sync root containing the altered items. Links located strictly below it are
+        //! never followed when altering the file system (see IoHelper::checkIfPathTraversesLink).
+        LocalMoveJob(const SyncPath &syncRootPath, const SyncPath &source, const SyncPath &dest);
 
     protected:
         ExitInfo canRun() override;
@@ -32,6 +34,7 @@ class LocalMoveJob : public SyncJob {
     private:
         ExitInfo runJob() override;
 
+        SyncPath _syncRootPath;
         SyncPath _source;
         SyncPath _dest;
 };

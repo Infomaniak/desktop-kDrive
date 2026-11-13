@@ -29,7 +29,10 @@ class GenericLocalDeleteJob : public SyncJob {
             Yes,
             No
         };
-        explicit GenericLocalDeleteJob(SyncPath absolutePath, ForceHardDelete forceHardDelete = ForceHardDelete::No);
+        //! \param syncRootPath is the path of the sync root containing the altered items. Links located strictly below it are
+        //! never followed when altering the file system (see IoHelper::checkIfPathTraversesLink).
+        GenericLocalDeleteJob(SyncPath syncRootPath, SyncPath absolutePath,
+                              ForceHardDelete forceHardDelete = ForceHardDelete::No);
 
         [[nodiscard]] const SyncPath &absoluteLocalPath() const { return _absoluteLocalPath; }
 
@@ -39,6 +42,7 @@ class GenericLocalDeleteJob : public SyncJob {
         ExitInfo hardDelete(const SyncPath &path);
 
     private:
+        SyncPath _syncRootPath;
         SyncPath _absoluteLocalPath;
         bool _forceHardDelete{false};
 };

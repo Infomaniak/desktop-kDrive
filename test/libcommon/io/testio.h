@@ -37,6 +37,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testCheckIfPathExists);
         CPPUNIT_TEST(testCheckIfPathTraversesLink);
+        CPPUNIT_TEST(testFilesystemAlterationsThroughLink);
         CPPUNIT_TEST(testCheckIfIsDirectory);
         CPPUNIT_TEST(testCreateDirectory);
         CPPUNIT_TEST(testCreateSymlink);
@@ -89,6 +90,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckDirectoryIterator(void);
         void testCheckIfPathExists(void);
         void testCheckIfPathTraversesLink(void);
+        void testFilesystemAlterationsThroughLink(void);
         void testCheckIfIsDirectory(void);
         void testCreateDirectory(void);
         void testCreateSymlink(void);

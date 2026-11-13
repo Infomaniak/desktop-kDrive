@@ -93,8 +93,10 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
     return true;
 }
 
-bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError,
+                           const SyncPath &syncRootPath /*= {}*/) noexcept {
+    ioError = IoHelper::checkIfPathTraversesLink(aliasPath, syncRootPath);
+    if (ioError != IoError::Success) return false;
 
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
@@ -186,8 +188,10 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     return true;
 }
 
-bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError,
+                                   const SyncPath &syncRootPath /*= {}*/) noexcept {
+    ioError = IoHelper::checkIfPathTraversesLink(aliasPath, syncRootPath);
+    if (ioError != IoError::Success) return false;
 
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
@@ -291,11 +295,13 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, 
     return IoError::Success;
 }
 
-bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath, const SyncPath &syncRootPath /*= {}*/) {
     if (itemPath.empty()) {
         LOG_WARN(logger(), "Path is empty");
         return false;
     }
+
+    if (IoHelper::checkIfPathTraversesLink(itemPath, syncRootPath) != IoError::Success) return false;
 
     NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
 

@@ -80,4 +80,33 @@ void TestCacheDirectory::testCleanUpCacheDir() {
     CPPUNIT_ASSERT_EQUAL(3, count);
 }
 
+void TestCacheDirectory::testCacheDirIsLink() {
+    // A cache directory that is a symlink pointing outside the sync root must be rejected, so that no temporary file is written
+    // through it.
+    const LocalTemporaryDirectory syncDir;
+    const LocalTemporaryDirectory outsideDir;
+    const auto cacheDirectoryPath = syncDir.path() / CacheDirectory::name();
+
+    // The link already exists when the cache directory is initialized.
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::createSymlink(outsideDir.path(), cacheDirectoryPath, true, ioError));
+    {
+        CacheDirectory cacheDirectory(syncDir.path());
+        SyncPath path;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, cacheDirectory.path(path).code());
+        CPPUNIT_ASSERT(path.empty());
+    }
+
+    // The cache directory is replaced by a link after its initialization.
+    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectoryPath, ioError));
+    CacheDirectory cacheDirectory(syncDir.path());
+    SyncPath path;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, cacheDirectory.path(path).code());
+    CPPUNIT_ASSERT(IoHelper::deleteItem(cacheDirectoryPath, ioError));
+    CPPUNIT_ASSERT(IoHelper::createSymlink(outsideDir.path(), cacheDirectoryPath, true, ioError));
+    path.clear();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, cacheDirectory.path(path).code());
+    CPPUNIT_ASSERT(path.empty());
+}
+
 } // namespace KDC
