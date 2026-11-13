@@ -123,6 +123,17 @@ inline constexpr int32_t restartQuietDelayMs = 30 * 1000;
 
 } // namespace KDC::AppConstants::Updater
 
+namespace KDC::AppConstants::Matomo {
+// Matomo site of the kDrive v4 desktop application; the legacy client reports to MATOMO_SITE_ID.
+inline constexpr int32_t siteId = 41;
+// Page views and events are reported under kdrive://<category>.
+inline constexpr char actionUrlBase[] = "kdrive://";
+
+[[nodiscard]] inline QUrl trackingEndpointUri() {
+    return QUrl{QString::fromLatin1(MATOMO_URL) + QStringLiteral("/matomo.php")};
+}
+} // namespace KDC::AppConstants::Matomo
+
 namespace KDC::AppConstants::Support {
 
 [[nodiscard]] inline QUrl helpUri() {
