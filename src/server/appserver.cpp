@@ -948,8 +948,8 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &newPar
     setDistributionChannel(updatedParameters.distributionChannel());
 
     // Propagate automatic updates activation
-    if (!previousParameters.automaticUpdates() && updatedParameters.automaticUpdates() && !_noUpdate && _updateManager) {
-        _updateManager->onAutomaticUpdatesEnabled();
+    if (!previousParameters.autoUpdates() && updatedParameters.autoUpdates() && !_noUpdate && _updateManager) {
+        _updateManager->onAutoUpdatesEnabled();
     }
 
     return exitCode;

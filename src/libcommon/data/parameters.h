@@ -82,8 +82,8 @@ class Parameters {
         bool matomoEnabled() const { return _matomoEnabled; }
         void setMatomoEnabled(const bool value) { _matomoEnabled = value; }
 
-        bool automaticUpdates() const { return _automaticUpdates; }
-        void setAutomaticUpdates(const bool value) { _automaticUpdates = value; }
+        bool autoUpdates() const { return _autoUpdates; }
+        void setAutoUpdates(const bool value) { _autoUpdates = value; }
 
         bool operator==(const Parameters &) const = default;
 
@@ -127,7 +127,7 @@ class Parameters {
         DistributionChannel _distributionChannel{DistributionChannel::Prod};
         bool _sentryEnabled{true};
         bool _matomoEnabled{true};
-        bool _automaticUpdates{true};
+        bool _autoUpdates{true};
 };
 
 } // namespace KDC

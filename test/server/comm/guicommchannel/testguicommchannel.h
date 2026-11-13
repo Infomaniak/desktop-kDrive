@@ -102,7 +102,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         CPPUNIT_TEST(testParametersJob);
         CPPUNIT_TEST(testParametersUpdateJob);
-        CPPUNIT_TEST(testParametersUpdateJobWithoutAutomaticUpdates);
+        CPPUNIT_TEST(testParametersUpdateJobWithoutAutoUpdates);
         CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);
         CPPUNIT_TEST(testUtilityFindGoodPathForNewSyncJob);
         CPPUNIT_TEST(testUtilityIsPathValidForNewSyncJob);
@@ -196,7 +196,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         void testParametersJob();
         void testParametersUpdateJob();
-        void testParametersUpdateJobWithoutAutomaticUpdates();
+        void testParametersUpdateJobWithoutAutoUpdates();
         void testUtilityBestVfsAvailableModeJob();
         void testUtilityFindGoodPathForNewSyncJob();
         void testUtilityIsPathValidForNewSyncJob();
