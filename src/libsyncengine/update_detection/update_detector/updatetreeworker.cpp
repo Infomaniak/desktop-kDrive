@@ -423,28 +423,14 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
         }
 
         FSOpPtr op = deleteOp;
-        if (_side == ReplicaSide::Local) {
-            // Transform a Delete and a Create operations into one Edit operation.
-            // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
-            // replacing the original file. However, this behavior should be applied only on local side.
-            SyncPath normalizedPath;
-            if (!Utility::normalizedSyncPath(deleteOp->path(), normalizedPath)) {
-                normalizedPath = deleteOp->path();
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(deleteOp->path()));
-            }
-            if (auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
-                createFileOpSetIt != _createFileOperationSet.end()) {
-                FSOpPtr tmp = nullptr;
-                if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(),
-                                           tmp)) {
-                    continue;
-                }
-
-                // op is now the createOperation
-                op = tmp;
-                _createFileOperationSet.erase(normalizedPath);
-            }
+        bool skipOp = false;
+        if (const auto mergeExitCode = mergeWithCreateOperationIfApplicable(deleteOp, op, skipOp);
+            mergeExitCode != ExitCode::Ok) {
+            return mergeExitCode;
         }
+
+        if (skipOp) continue;
+
 
         const OperationType opType = op->operationType() == OperationType::Create ? OperationType::Edit : OperationType::Delete;
         if (auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId()); currentNodeIt != _updateTree->nodes().end()) {
@@ -524,6 +510,101 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 logUpdate(newNode, opType, parentNode);
             }
         }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode UpdateTreeWorker::mergeWithCreateOperationIfApplicable(const FSOpPtr &deleteOp, FSOpPtr &op, bool &skipOp) {
+    skipOp = false;
+
+    if (_side != ReplicaSide::Local) return ExitCode::Ok;
+
+    // Transform a Delete and a Create operations into one Edit operation.
+    // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
+    // replacing the original file. However, this behavior should be applied only on local side.
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(deleteOp->path(), normalizedPath)) {
+        normalizedPath = deleteOp->path();
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(deleteOp->path()));
+    }
+
+    const auto createFileOpSetIt = _createFileOperationSet.find(normalizedPath);
+    if (createFileOpSetIt == _createFileOperationSet.end()) {
+        // There is no Create operation on an item reusing the same path as the deleted one.
+
+        return ExitCode::Ok;
+    }
+
+    FSOpPtr createOp = nullptr;
+    if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(), createOp)) {
+        // The Create operation is no longer present in the operation set: the Delete operation must be ignored.
+        skipOp = true;
+
+        return ExitCode::Ok;
+    }
+
+    bool canMerge = false;
+    if (const auto exitCode = checkIfDeleteAndCreateCanBeMerged(deleteOp, createOp, canMerge); exitCode != ExitCode::Ok) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::checkIfDeleteAndCreateCanBeMerged"
+                                           << Utility::formatExitInfo(deleteOp->path(), exitCode));
+        return exitCode;
+    }
+
+    if (canMerge) {
+        // The Delete operation is replaced by the Create one, transforming both operations into a single Edit operation.
+        op = createOp;
+        _createFileOperationSet.erase(normalizedPath);
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode UpdateTreeWorker::checkIfDeleteAndCreateCanBeMerged(const FSOpPtr &deleteOp, const FSOpPtr &createOp, bool &canMerge) {
+    canMerge = true;
+    if (deleteOp->objectType() != createOp->objectType()) {
+        canMerge = false;
+
+        return ExitCode::Ok;
+    }
+
+    // A symbolic link is stored as a File node, both in the snapshots and in the database. A change of type between
+    // the deleted item and the newly created one (e.g., a symbolic link replaced by a regular file) can therefore
+    // only be detected by comparing the link flags of the two items.
+    if (!_syncPal) {
+        // A worker instantiated without a SyncPal (e.g., in some tests) cannot access the snapshots.
+        return ExitCode::Ok;
+    }
+
+    // The deleted item is not present in the local snapshot anymore, since the newly created item replaced it at the
+    // same path. Its link flag is thus retrieved from the corresponding item of the other replica, through the sync DB.
+    NodeId deletedItemCorrespondingNodeId;
+    bool found = false;
+    if (!_syncDbReadOnlyCache.correspondingNodeId(_side, deleteOp->nodeId(), deletedItemCorrespondingNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDbReadOnlyCache::correspondingNodeId");
+
+        return ExitCode::DbError;
+    }
+
+    bool deletedItemIsLink = false;
+    if (found) {
+        if (const auto otherReplicaSnapshot = _syncPal->snapshot(otherSide(_side))) {
+            deletedItemIsLink = otherReplicaSnapshot->isLink(deletedItemCorrespondingNodeId);
+        }
+    }
+
+    bool createdItemIsLink = false;
+    if (const auto snapshot = _syncPal->snapshot(_side)) {
+        createdItemIsLink = snapshot->isLink(createOp->nodeId());
+    }
+
+    if (deletedItemIsLink != createdItemIsLink) {
+        // Do not merge the Delete and Create operations into an Edit operation, as the API does not support
+        // editing an item while changing its type (e.g., replacing a symbolic link with a regular file).
+        // Keeping both operations separate allows the corresponding remote item to be deleted and re-created.
+        LOGW_SYNCPAL_WARN(_logger, L"Type of the item " << Utility::formatSyncPath(deleteOp->path())
+                                                        << L" has changed. Do not merge Delete and Create operations.");
+        canMerge = false;
     }
 
     return ExitCode::Ok;
