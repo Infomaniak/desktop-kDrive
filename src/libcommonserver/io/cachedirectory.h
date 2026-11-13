@@ -44,6 +44,7 @@ class CacheDirectory {
         static constexpr uint32_t tmpFileRandomPartLength = 10;
 
         ExitInfo initDirectory() noexcept;
+        ExitInfo checkIsNotLink() const noexcept;
         void cleanUp() const;
 
         const SyncPath _syncDirectoryPath;

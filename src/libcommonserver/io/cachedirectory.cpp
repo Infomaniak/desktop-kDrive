@@ -50,6 +50,8 @@ ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
     }
     if (!exists) {
         if (const auto exitInfo = initDirectory(); !exitInfo) return exitInfo;
+    } else if (const auto exitInfo = checkIsNotLink(); !exitInfo) {
+        return exitInfo;
     }
 
     cacheDirectory = _cacheDirectoryPath;
@@ -75,8 +77,28 @@ ExitInfo CacheDirectory::initDirectory() noexcept {
         return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
     }
 
+    // An existing cache directory must not be a link, otherwise temporary files would be written outside the sync root.
+    if (const auto exitInfo = checkIsNotLink(); !exitInfo) return exitInfo;
+
     // Hide cache directory
     IoHelper::setFileHidden(_cacheDirectoryPath, true);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo CacheDirectory::checkIsNotLink() const noexcept {
+    ItemType itemType;
+    if (!IoHelper::getItemType(_cacheDirectoryPath, itemType) || itemType.ioError != IoError::Success) {
+        sentry::Handler::captureMessage(sentry::Level::Error, "Failed to get kDrive-cache item type",
+                                        CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, itemType.ioError)));
+        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
+    }
+
+    if (itemType.linkType != LinkType::None) {
+        sentry::Handler::captureMessage(sentry::Level::Error, "kDrive-cache is a link",
+                                        CommonUtility::ws2s(Utility::formatSyncPath(_cacheDirectoryPath)));
+        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
+    }
 
     return ExitCode::Ok;
 }
