@@ -33,12 +33,18 @@ struct StorageItem: Sendable, Identifiable {
     let color: Color
     var usedBytes: Int64?
     let isDefault: Bool
+    /// Drive recalled next to the title, if the item refers to a specific drive.
+    var drive: UIDrive?
+    /// Sync recalled next to the title, if the item refers to a specific sync.
+    var synchro: UISynchro?
 
-    init(title: String, color: Color, usedBytes: Int64?, isDefault: Bool = false) {
+    init(title: String, color: Color, usedBytes: Int64?, isDefault: Bool = false, drive: UIDrive? = nil, synchro: UISynchro? = nil) {
         self.title = title
         self.color = color
         self.usedBytes = usedBytes
         self.isDefault = isDefault
+        self.drive = drive
+        self.synchro = synchro
     }
 }
 
@@ -92,6 +98,13 @@ struct StorageView: View {
         return cacheObservable.usersPublisher.drivePublisher(driveDbId: Int32(driveDbId))
     }
 
+    private var displayedVolumeStorageItems: [StorageItem] {
+        var items = volumeStorageItems
+        items[.usedByKDrive]?.synchro = mainViewModel.currentSynchro
+        items[.usedByKDrive]?.drive = mainViewModel.currentDrive
+        return Array(items.values)
+    }
+
     private var volumeStorageData: StorageSectionView.StorageData {
         guard let usedByKDrive = volumeStorageItems[.usedByKDrive]?.usedBytes,
               let usedByComputer = volumeStorageItems[.usedSpace]?.usedBytes,
@@ -113,7 +126,8 @@ struct StorageView: View {
             .usedSpace: StorageItem(
                 title: KDriveLocalizable.storageOnlineUsed,
                 color: .blue,
-                usedBytes: driveStorageInfo.usedSize
+                usedBytes: driveStorageInfo.usedSize,
+                drive: mainViewModel.currentDrive
             ),
             .freeSpace: StorageItem(
                 title: KDriveLocalizable.storageOnlineFree,
@@ -151,7 +165,7 @@ struct StorageView: View {
                     StorageSectionView(
                         title: volumeName,
                         storageData: volumeStorageData,
-                        items: Array(volumeStorageItems.values),
+                        items: displayedVolumeStorageItems,
                         byteCountFormatStyle: .file
                     )
 
