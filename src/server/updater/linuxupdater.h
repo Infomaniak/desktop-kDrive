@@ -19,6 +19,7 @@
 #pragma once
 
 #include "abstractupdater.h"
+#include "libcommon/utility/utility.h"
 
 #include <atomic>
 #include <cstdint>
@@ -26,12 +27,13 @@
 #include <ios>
 #include <mutex>
 #include <string>
+#include <string_view>
 
 namespace KDC {
 
 class LinuxUpdater : public AbstractUpdater {
     public:
-        LinuxUpdater();
+        LinuxUpdater() = default;
 
         void onUpdateFound() override;
         void onAutoUpdatesEnabled() override;
@@ -71,11 +73,11 @@ class LinuxUpdater : public AbstractUpdater {
         void installUpdate(const VersionInfo &info);
         void restartApp(const SyncPath &installedPath);
         static void updateDesktopEntries(const SyncPath &targetPath);
-        [[nodiscard]] std::string expectedChecksum(const std::string &version) const;
+        [[nodiscard]] std::string expectedChecksum(std::string_view version) const;
         [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const VersionInfo &info);
         [[nodiscard]] virtual bool launchRelauncher(const SyncPath &targetPath) const;
 
-        SyncPath _appImagePath;
+        SyncPath _appImagePath{CommonUtility::appImagePath()};
         std::atomic_bool _downloadInProgress{false};
         std::atomic_bool _restartInProgress{false};
 
