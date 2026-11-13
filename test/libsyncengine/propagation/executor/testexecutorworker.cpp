@@ -328,7 +328,7 @@ void TestExecutorWorker::testIsValidDestination() {
     }
 
     // False if the item is created on the local replica is a file and has Shared as corresponding parent node.
-    {        
+    {
         SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
         op->setTargetSide(ReplicaSide::Remote);
 
@@ -677,6 +677,37 @@ void TestExecutorWorker::testDeleteOpNodes() {
         CPPUNIT_ASSERT(_executorWorker->deleteOpNodes(syncOp));
         CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*syncOp->affectedNode()->id()));
     }
+}
+
+void TestExecutorWorker::testHandleOpsFileNotFound() {
+    _syncPal->_syncOps->clear();
+    _syncPal->setRestart(false);
+    const auto syncOp = generateSyncOperationWithNestedNodes(1, Str("parent"), OperationType::Create, NodeType::Directory);
+    syncOp->setTargetSide(ReplicaSide::Remote);
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(syncOp->affectedNode());
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(syncOp->correspondingNode());
+
+    const auto child = std::make_shared<Node>(ReplicaSide::Local, Str("child.txt"), NodeType::File, OperationType::Create,
+                                              "dependent-child-id", testhelpers::defaultTime, testhelpers::defaultTime,
+                                              testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(child->moveTo(syncOp->affectedNode()));
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(child);
+    const auto dependentOp = std::make_shared<SyncOperation>();
+    dependentOp->setAffectedNode(child);
+    dependentOp->setTargetSide(ReplicaSide::Remote);
+    dependentOp->setType(OperationType::Create);
+    (void) _syncPal->_syncOps->pushOp(syncOp);
+    (void) _syncPal->_syncOps->pushOp(dependentOp);
+    _executorWorker->_opList = _syncPal->_syncOps->opSortedList();
+
+    const auto exitInfo = _executorWorker->handleOpsFileNotFound(syncOp, {ExitCode::SystemError, ExitCause::NotFound});
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+
+    CPPUNIT_ASSERT(_syncPal->restart());
+    CPPUNIT_ASSERT(!opsExist(dependentOp));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*syncOp->affectedNode()->id()));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(*syncOp->correspondingNode()->id()));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*child->id()));
 }
 
 void TestExecutorWorker::testHandleMoveThroughSymlinkError() {

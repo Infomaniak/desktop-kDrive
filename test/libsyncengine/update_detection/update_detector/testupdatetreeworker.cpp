@@ -554,7 +554,8 @@ void TestUpdateTreeWorker::testCreateMissingNodesForDeletedItem() {
         CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5") == nullptr);
 
         std::shared_ptr<Node> parentNode;
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                             _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
         CPPUNIT_ASSERT(parentNode);
         CPPUNIT_ASSERT(parentNode->isTmp());
         CPPUNIT_ASSERT(SyncName(Str("Dir 5")) == parentNode->name());
@@ -565,12 +566,13 @@ void TestUpdateTreeWorker::testCreateMissingNodesForDeletedItem() {
     // Several parents are missing because an ancestor was moved to a non-existing location.
     {
         setUpUpdateTree(ReplicaSide::Local);
-        _operationSet->insertOp(std::make_shared<FSOperation>(
-                OperationType::Move, "id5", NodeType::Directory, testhelpers::defaultTime, testhelpers::defaultTime,
-                testhelpers::defaultFileSize, "Dir 5", "Dir 9/Dir 9.1/Dir 5"));
+        _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id5", NodeType::Directory,
+                                                              testhelpers::defaultTime, testhelpers::defaultTime,
+                                                              testhelpers::defaultFileSize, "Dir 5", "Dir 9/Dir 9.1/Dir 5"));
 
         std::shared_ptr<Node> parentNode;
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                             _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
         CPPUNIT_ASSERT(parentNode);
 
         const std::list<SyncName> expectedNames{Str("Dir 5"), Str("Dir 9.1"), Str("Dir 9")};
@@ -596,8 +598,8 @@ void TestUpdateTreeWorker::testCreateMissingNodesForDeletedItem() {
         CPPUNIT_ASSERT(node1 && node11);
 
         std::shared_ptr<Node> parentNode;
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 1/Dir 1.1/File 1.1.2",
-                                                                                                    parentNode));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                             _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 1/Dir 1.1/File 1.1.2", parentNode));
         CPPUNIT_ASSERT(parentNode);
         CPPUNIT_ASSERT(parentNode != node11);
         CPPUNIT_ASSERT(parentNode->isTmp());
@@ -836,6 +838,37 @@ void TestUpdateTreeWorker::testStep6() {
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 7/File 1.5")->id() == "id15");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 7/File 1.5")->parentNode()->isTmp());
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 7/File 1.5")->hasChangeEvent(OperationType::Create));
+}
+
+void TestUpdateTreeWorker::testStep6ReusesRenamedNode() {
+    for (const bool extendedLog: {false, true}) {
+        ParametersCache::instance()->parameters().setExtendedLog(extendedLog);
+        _operationSet->clear();
+        _localUpdateTree->clear();
+
+        const auto createOp =
+                std::make_shared<FSOperation>(OperationType::Create, "new-file-id", NodeType::File, testhelpers::defaultTime,
+                                              testhelpers::defaultTime, testhelpers::defaultFileSize, "new-file.txt");
+        _operationSet->insertOp(createOp);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->handleCreateOperationsWithSamePath());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step6CreateFile());
+        const auto originalNode = _localUpdateTree->getNodeById("new-file-id");
+        CPPUNIT_ASSERT(originalNode);
+
+        _operationSet->clear();
+        const auto renamedCreateOp =
+                std::make_shared<FSOperation>(OperationType::Create, "new-file-id", NodeType::File, testhelpers::defaultTime,
+                                              testhelpers::defaultTime, testhelpers::defaultFileSize, "renamed-file.txt");
+        _operationSet->insertOp(renamedCreateOp);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->handleCreateOperationsWithSamePath());
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step6CreateFile());
+
+        CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("renamed-file.txt") == originalNode);
+        CPPUNIT_ASSERT(!_localUpdateTree->getNodeByPath("new-file.txt"));
+        CPPUNIT_ASSERT(_localUpdateTree->getNodeById("new-file-id") == originalNode);
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, _localUpdateTree->rootNode()->children().size());
+        CPPUNIT_ASSERT(originalNode->hasChangeEvent(OperationType::Create));
+    }
 }
 
 void TestUpdateTreeWorker::testStep7() {
