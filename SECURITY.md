@@ -8,6 +8,15 @@ https://yeswehack.com/programs/infomaniak-bug-bounty-program
 
 Please do not open a public GitHub issue for security vulnerabilities.
 
+## Supported Versions
+
+| Version         | Supported          |
+|-----------------|--------------------|
+| 4.x             | :white_check_mark: |
+| 3.x and earlier | :x:                |
+
+Security updates are applied to the current release only. Please verify you are running the latest version before submitting a report.
+
 ## Reporting requirements
 
 Before submitting a report, please review the bug bounty program's scope, exclusions, and submission requirements. Scope exceptions and eligibility rules are defined by the program itself, and reports must follow those requirements.
