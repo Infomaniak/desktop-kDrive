@@ -89,7 +89,7 @@ void TestIntegration::testLocalChanges() {
     const SyncName newName = Str("testFileLocal_renamed");
     const std::filesystem::path destinationPath = subDirPath / newName;
     {
-        LocalMoveJob job(filePath, destinationPath);
+        LocalMoveJob job(_syncPal->localPath(), filePath, destinationPath);
         (void) job.runSynchronously();
     }
     waitForSyncToBeIdle(std::source_location::current());
@@ -103,7 +103,7 @@ void TestIntegration::testLocalChanges() {
 
     // Generate a delete operation.
     {
-        GenericLocalDeleteJob deleteJob(subDirPath);
+        GenericLocalDeleteJob deleteJob(_syncPal->localPath(), subDirPath);
         (void) deleteJob.runSynchronously();
     }
     waitForSyncToBeIdle(std::source_location::current());

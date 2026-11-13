@@ -133,8 +133,8 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
     return IoError::Success; // Only on macOS
 }
 
-bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
-    if (IoHelper::checkIfPathTraversesLink(itemPath) != IoError::Success) return false;
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath, const SyncPath &syncRootPath /*= {}*/) {
+    if (IoHelper::checkIfPathTraversesLink(itemPath, syncRootPath) != IoError::Success) return false;
 
     return QFile(itemPath).moveToTrash();
 }

@@ -68,8 +68,8 @@ ExitInfo CacheDirectory::initDirectory() noexcept {
 
     _cacheDirectoryPath = _syncDirectoryPath / name();
 
-    if (auto ioError = IoError::Success;
-        !IoHelper::createDirectory(_cacheDirectoryPath, false, ioError) && ioError != IoError::DirectoryExists) {
+    if (auto ioError = IoError::Success; !IoHelper::createDirectory(_cacheDirectoryPath, false, ioError, _syncDirectoryPath) &&
+                                         ioError != IoError::DirectoryExists) {
         sentry::Handler::captureMessage(sentry::Level::Error, "Failed to create kDrive-cache",
                                         CommonUtility::ws2s(Utility::formatIoError(_cacheDirectoryPath, ioError)));
         return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
@@ -93,7 +93,7 @@ void CacheDirectory::cleanUp() const {
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         if (isTmpFileName(SyncName2Str(entry.path().filename().native()))) {
-            (void) IoHelper::deleteItem(entry.path());
+            (void) IoHelper::deleteItem(entry.path(), _syncDirectoryPath);
         }
     }
 }

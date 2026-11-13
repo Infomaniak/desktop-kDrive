@@ -104,7 +104,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                 LOGW_INFO(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
                                                                  << L" is a dehydrated placeholder, remove it");
 
-                if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), ioError)) {
+                if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), ioError, _rootPath)) {
                     LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatIoError(absolutePath, tmpIoError));
                     _exitCode = ExitCode::SystemError;
                     _exitCause = ExitCause::FileAccessError;
@@ -214,7 +214,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             if (!isDehydrated) continue;
 
             const SyncPath &filePath = entry.path();
-            if (!IoHelper::deleteItem(filePath, ioError)) {
+            if (!IoHelper::deleteItem(filePath, ioError, _rootPath)) {
                 LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(filePath, ioError));
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;

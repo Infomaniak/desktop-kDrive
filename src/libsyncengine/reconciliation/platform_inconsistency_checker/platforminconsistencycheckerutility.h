@@ -53,7 +53,8 @@ class PlatformInconsistencyCheckerUtility {
 #endif
         bool checkReservedNames(const SyncName &name);
         SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
-        static ExitInfo renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
+        static ExitInfo renameLocalFile(const SyncPath &syncRootPath, const SyncPath &absoluteLocalPath, SuffixType suffixType,
+                                        SyncPath *newPathPtr = nullptr);
 
     private:
         PlatformInconsistencyCheckerUtility();

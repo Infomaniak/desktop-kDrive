@@ -1045,7 +1045,7 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
 
     if (fileStat->st_mode == S_IFDIR) {
         IoError ioError = IoError::Success;
-        if (!IoHelper::createDirectory(absolutePath, false, ioError)) {
+        if (!IoHelper::createDirectory(absolutePath, false, ioError, localSyncPath)) {
             LOGW_WARN(_logger, L"Call to IoHelper::createDirectory failed: " << Utility::formatSyncPath(absolutePath));
             return false;
         }
