@@ -2284,7 +2284,19 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
 ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
     _syncPal->setRestart(true);
     _syncPal->tryToInvalidateSnapshots(); // There is a file/dir missing; we need to recompute the snapshot.
-    return removeDependentOps(syncOp);
+
+    if (auto exitInfo = removeDependentOps(syncOp); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::removeDependentOps");
+        return exitInfo;
+    }
+
+    // Clear update tree
+    if (!deleteOpNodes(syncOp)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
+        return ExitCode::DataError;
+    }
+
+    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::handleOpsBlacklistRemoteFile(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {

@@ -624,29 +624,28 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
         std::shared_ptr<Node> newNode = parentNode->findChildById(operation->nodeId());
         if (newNode != nullptr) {
             // Node already exists, update it
-            if (newNode->name() == operation->path().filename().native()) {
-                if (!_updateTree->updateNodeId(newNode, operation->nodeId())) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
-                    return ExitCode::DataError;
-                }
-                newNode->setCreatedAt(operation->createdAt());
-                newNode->setModificationTime(operation->lastModified());
-                newNode->setSize(operation->size());
-                newNode->insertChangeEvent(operation->operationType());
-                newNode->setIsTmp(false);
-
-                _updateTree->nodes()[operation->nodeId()] = newNode;
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(
-                            _logger,
-                            _side << L" update tree: Node '" << SyncName2WStr(newNode->name()) << L"' (node ID: '"
-                                  << CommonUtility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string())
-                                  << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
-                                  << CommonUtility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1")
-                                  << L"') updated. Operation " << operation->operationType() << L" inserted in change events.");
-                }
-                continue;
+            if (!_updateTree->updateNodeId(newNode, operation->nodeId())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
+                return ExitCode::DataError;
             }
+            newNode->setName(operation->path().filename().native());
+            newNode->setCreatedAt(operation->createdAt());
+            newNode->setModificationTime(operation->lastModified());
+            newNode->setSize(operation->size());
+            newNode->insertChangeEvent(operation->operationType());
+            newNode->setIsTmp(false);
+
+            _updateTree->nodes()[operation->nodeId()] = newNode;
+            if (ParametersCache::isExtendedLogEnabled()) {
+                LOGW_SYNCPAL_DEBUG(
+                        _logger,
+                        _side << L" update tree: Node '" << SyncName2WStr(newNode->name()) << L"' (node ID: '"
+                              << CommonUtility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()) << L"', DB ID: '"
+                              << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
+                              << CommonUtility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1")
+                              << L"') updated. Operation " << operation->operationType() << L" inserted in change events.");
+            }
+            continue;
         }
 
         // create node
