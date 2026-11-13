@@ -27,6 +27,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.home.avatar"
+
     required property var controller
     property color maskColor: IKColors.surfaceSecondary
 
@@ -42,7 +45,10 @@ Item {
         hoverEnabled: true
         Accessible.name: root.controller.userName
         Accessible.description: qsTrId("buttonSettings")
-        onClicked: root.controller.openUserSettings()
+        onClicked: {
+            UserActionLog.action(root.actionIdPrefix + ".userSettings");
+            root.controller.openUserSettings();
+        }
 
         background: null
 
@@ -94,7 +100,10 @@ Item {
         hoverEnabled: true
         Accessible.name: root.controller.driveName
         Accessible.description: qsTrId("buttonOpenSyncSettings")
-        onClicked: root.controller.openSyncSettings()
+        onClicked: {
+            UserActionLog.action(root.actionIdPrefix + ".syncSettings");
+            root.controller.openSyncSettings();
+        }
 
         background: Rectangle {
             radius: width / 2

@@ -23,6 +23,9 @@ import kDrive.UI
 
 ScrollView {
     id: root
+
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.general"
     required property var controller
     signal releaseInformationRequested(var trigger)
     signal aboutRequested(var trigger)
@@ -58,6 +61,7 @@ ScrollView {
                     readonly property bool manual: !root.controller.updateDownloading && !root.controller.updateInstallable
 
                     visible: root.controller.updateAvailable
+                    actionId: root.screenId + ".downloadUpdate"
                     // Installable: the server downloads and installs the update, then restarts the application.
                     text: root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
                                                             : root.controller.updateInstallable
@@ -70,6 +74,7 @@ ScrollView {
                 }
                 SettingsInfoButton {
                     id: releaseInfo
+                    actionId: root.screenId + ".releaseInfo"
                     onClicked: root.releaseInformationRequested(releaseInfo)
                 }
             }
@@ -109,6 +114,7 @@ ScrollView {
                 IKComboBox {
                     id: languageCombo
                     accessibleName: qsTrId("languageSetting")
+                    actionId: root.screenId + ".language"
                     enabled: root.controller.ready && !root.controller.saving
                     model: root.controller.languages
                     textRole: "label"
@@ -129,6 +135,7 @@ ScrollView {
                 title: qsTrId("openKDriveAtStartupSetting")
                 IKSwitch {
                     text: qsTrId("openKDriveAtStartupSetting")
+                    actionId: root.screenId + ".autoStart"
                     enabled: root.controller.ready && !root.controller.saving
                     value: root.controller.autoStart
                     onToggleRequested: value => root.controller.setAutoStart(value)
@@ -138,6 +145,7 @@ ScrollView {
                 title: qsTrId("labelNotifications")
                 IKSwitch {
                     text: qsTrId("labelNotifications")
+                    actionId: root.screenId + ".notifications"
                     enabled: root.controller.ready && !root.controller.saving
                     value: root.controller.notificationsEnabled
                     onToggleRequested: value => root.controller.setNotificationsEnabled(value)
@@ -148,10 +156,12 @@ ScrollView {
                 description: qsTrId("moveDeletedFilesToRecycleBinWarning")
                 separator: false
                 SettingsInfoButton {
+                    actionId: root.screenId + ".trashHelp"
                     onClicked: root.controller.openTrashHelp()
                 }
                 IKSwitch {
                     text: qsTrId("moveDeletedFilesToRecycleBinSetting")
+                    actionId: root.screenId + ".moveToTrash"
                     enabled: root.controller.ready && !root.controller.saving
                     value: root.controller.moveToTrash
                     onToggleRequested: value => root.controller.setMoveToTrash(value)
@@ -164,6 +174,7 @@ ScrollView {
                 title: qsTrId("needHelpSetting")
                 IKModalButton {
                     text: qsTrId("buttonHelpdesk")
+                    actionId: root.screenId + ".support"
                     role: IKModalButton.Tonal
                     external: true
                     implicitHeight: IKSettings.buttonHeight
@@ -175,6 +186,7 @@ ScrollView {
                 separator: false
                 IKModalButton {
                     text: qsTrId("buttonFeedback")
+                    actionId: root.screenId + ".feedback"
                     role: IKModalButton.Tonal
                     external: true
                     implicitHeight: IKSettings.buttonHeight
@@ -189,6 +201,7 @@ ScrollView {
                 separator: false
                 SettingsInfoButton {
                     id: aboutInfo
+                    actionId: root.screenId + ".about"
                     onClicked: root.aboutRequested(aboutInfo)
                 }
             }

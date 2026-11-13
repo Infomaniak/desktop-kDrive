@@ -25,6 +25,9 @@ import kDrive.UI
 Rectangle {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.home.shortcuts"
+
     required property var controller
 
     readonly property real shortcutsImplicitWidth: Math.max(favoritesButton.implicitWidth,
@@ -99,6 +102,7 @@ Rectangle {
                 width: parent.width
                 text: qsTrId("folderFavorites")
                 glyphSource: "qrc:/assets/main/home/star.svg"
+                actionId: root.actionIdPrefix + ".favorites"
                 onClicked: root.controller.openDriveDestination(WebDrive.Favorites)
             }
 
@@ -108,6 +112,7 @@ Rectangle {
                 width: parent.width
                 text: qsTrId("folderShares")
                 glyphSource: "qrc:/assets/main/home/folder-share.svg"
+                actionId: root.actionIdPrefix + ".shared"
                 onClicked: root.controller.openDriveDestination(WebDrive.Shared)
             }
 
@@ -117,6 +122,7 @@ Rectangle {
                 width: parent.width
                 text: qsTrId("buttonKDriveOnline")
                 glyphSource: "qrc:/assets/main/home/kdrive-outline.svg"
+                actionId: root.actionIdPrefix + ".onlineDrive"
                 onClicked: root.controller.openDriveDestination(WebDrive.OnlineDrive)
             }
         }
@@ -132,6 +138,7 @@ Rectangle {
             width: parent.width
             text: qsTrId("folderTrash")
             glyphSource: "qrc:/assets/main/home/trash.svg"
+            actionId: root.actionIdPrefix + ".trash"
             onClicked: root.controller.openDriveDestination(WebDrive.Trash)
         }
     }
