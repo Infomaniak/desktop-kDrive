@@ -40,8 +40,6 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
 
     @Published private(set) var currentPath: RouterPath
 
-    private var pathCache: [Tab: RouterPath]
-
     @MainActor
     var hasDeepNavigated: Bool {
         return currentPath.details.count > 1
@@ -49,30 +47,22 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
 
     init(defaultTab: Tab) {
         self.defaultTab = defaultTab
-
-        let initialPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])
-
-        currentPath = initialPath
-        pathCache = [defaultTab: initialPath]
+        currentPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])
     }
 
     @MainActor
     func resetToDefaultState() {
-        let initialPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])
-
-        currentPath = initialPath
-        pathCache = [defaultTab: initialPath]
+        currentPath = RouterPath(mainTab: defaultTab, details: [defaultTab.rootPath])
     }
 
     @MainActor
     func setCurrentTab(_ tab: Tab) {
-        currentPath = pathCache[tab] ?? RouterPath(mainTab: tab, details: [tab.rootPath])
+        currentPath = RouterPath(mainTab: tab, details: [tab.rootPath])
     }
 
     @MainActor
     func setCurrentTabIfNecessary(_ tab: Tab) {
-        let rootPath = tab.rootPath
-        guard currentPath.details.first != rootPath else {
+        guard currentPath != RouterPath(mainTab: tab, details: [tab.rootPath]) else {
             return
         }
 
@@ -83,9 +73,8 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     func append(_ detail: Tab.Detail) {
         var newDetails = currentPath.details
         newDetails.append(detail)
-        let newPath = RouterPath(mainTab: currentPath.mainTab, details: newDetails)
-        currentPath = newPath
-        pathCache[currentPath.mainTab] = newPath
+
+        currentPath = RouterPath(mainTab: currentPath.mainTab, details: newDetails)
     }
 
     @MainActor
@@ -96,9 +85,6 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
 
         var newDetails = currentPath.details
         newDetails.removeLast(elementsToRemove)
-
-        let newPath = RouterPath(mainTab: currentPath.mainTab, details: newDetails)
-        currentPath = newPath
-        pathCache[currentPath.mainTab] = newPath
+        currentPath = RouterPath(mainTab: currentPath.mainTab, details: newDetails)
     }
 }
