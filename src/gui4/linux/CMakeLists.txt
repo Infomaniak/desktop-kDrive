@@ -12,6 +12,9 @@ if (QT_FEATURE_xcb)
 endif ()
 find_package(keychain REQUIRED) # TLS certificate read by communicationlayer/tlscerthelper.cpp
 
+# Matomo tracking SDK (git submodule), built as a static library (BUILD_SHARED_LIBS is FALSE) and only when linked.
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/3rdparty/matomo-sdk-qt ${CMAKE_BINARY_DIR}/3rdparty/matomo-sdk-qt EXCLUDE_FROM_ALL)
+
 qt_standard_project_setup(REQUIRES 6.12)
 
 set(QT_QML_GENERATE_QMLLS_INI ON)
@@ -566,6 +569,7 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         ${libcommon_NAME}
         ${libcommongui_NAME}
         keychain::keychain
+        MatomoQt::Core
 )
 
 if (QT_FEATURE_xcb)
