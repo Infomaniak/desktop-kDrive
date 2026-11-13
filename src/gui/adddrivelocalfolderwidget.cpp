@@ -52,6 +52,8 @@ static const int infoWidgetVMargin = 25;
 static const int progressBarMin = 0;
 static const int progressBarMax = 5;
 
+Q_LOGGING_CATEGORY(lcAddDriveLocalFolderWidget, "gui.adddrivelocalfolderwidget", QtInfoMsg)
+
 AddDriveLocalFolderWidget::AddDriveLocalFolderWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
     QWidget(parent),
     _gui(gui) {
