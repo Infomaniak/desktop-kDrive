@@ -29,7 +29,7 @@
 
 namespace KDC {
 
-class LinuxUpdater final : public AbstractUpdater {
+class LinuxUpdater : public AbstractUpdater {
     public:
         LinuxUpdater();
 
@@ -69,13 +69,15 @@ class LinuxUpdater final : public AbstractUpdater {
         void downloadFinished(UniqueId jobId, const VersionInfo &info);
         void finishPreparation(UpdateState state);
         void installUpdate(const VersionInfo &info);
+        void restartApp(const SyncPath &installedPath);
         static void updateDesktopEntries(const SyncPath &targetPath);
         [[nodiscard]] std::string expectedChecksum(const std::string &version) const;
         [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const VersionInfo &info);
-        [[nodiscard]] bool launchRelauncher(const SyncPath &targetPath) const;
+        [[nodiscard]] virtual bool launchRelauncher(const SyncPath &targetPath) const;
 
         SyncPath _appImagePath;
         std::atomic_bool _downloadInProgress{false};
+        std::atomic_bool _restartInProgress{false};
 
         mutable std::mutex _stateMutex;
         std::string _checksumVersion; // Version the cached checksum belongs to.
@@ -86,6 +88,8 @@ class LinuxUpdater final : public AbstractUpdater {
         SyncPath _installedPath;
 
         std::function<void()> _quitCallback;
+
+        friend class TestLinuxUpdater;
 };
 
 } // namespace KDC

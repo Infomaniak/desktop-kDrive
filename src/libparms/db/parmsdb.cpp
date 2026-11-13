@@ -120,7 +120,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     ",distributionChannel INTEGER"           \
     ",sentryEnabled INTEGER"                 \
     ",matomoEnabled INTEGER"                 \
-    ",autoUpdates INTEGER"              \
+    ",autoUpdates INTEGER"                   \
     ");"
 
 #define INSERT_PARAMETERS_REQUEST_ID "insert_parameters"
@@ -129,7 +129,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, "    \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "     \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "               \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, autoUpdates) "                            \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, autoUpdates) "                                 \
     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, " \
     "?25, ?26, ?27, ?28, ?29, ?30, ?31, ?32, ?33);"
 
@@ -151,7 +151,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "syncHiddenFiles, proxyType, proxyHostName, proxyPort, proxyNeedsAuth, proxyUser, proxyToken, useBigFolderSizeLimit, " \
     "bigFolderSizeLimit, darkTheme, showShortcuts, updateFileAvailable, updateTargetVersion, updateTargetVersionString, "  \
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
-    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, autoUpdates "                          \
+    "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled, autoUpdates "                               \
     "FROM parameters;"
 
 //

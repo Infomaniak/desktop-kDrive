@@ -45,7 +45,7 @@ class AbstractUpdater {
         /**
          * @brief Start the installation.
          * On macOS, raise the Sparkle dialog.
-         * Not used on Linux since we only send a notification to the user.
+         * On Linux, prepare the AppImage update and restart the application once installed.
          */
         virtual void startInstaller() = 0;
 
@@ -53,7 +53,7 @@ class AbstractUpdater {
          * @brief A new version is available on the server.
          * On macOS : start Sparkle
          * On Windows : download the installer package
-         * On Linux : notify the user
+         * On Linux : prepare and apply the AppImage update when automatic updates are enabled
          */
         virtual void onUpdateFound() = 0;
         /** Called when the user enables automatic updates: an update already found can be prepared right away. */
