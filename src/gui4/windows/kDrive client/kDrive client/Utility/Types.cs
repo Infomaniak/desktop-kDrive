@@ -18,6 +18,7 @@
 global using AccountId = System.Int64;
 global using DbId = System.Int64;
 global using DriveId = System.Int64;
+global using KSuiteId = System.Int64;
 global using NodeId = System.String;
 global using SyncPath = System.String;
 global using UserId = System.Int64;

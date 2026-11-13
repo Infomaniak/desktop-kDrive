@@ -63,14 +63,10 @@ namespace Infomaniak.kDrive
          * Example for testing:
          * internal static IAppConstants Constants => new CustomAppConstants(
          *     new ProductionSentry(),
-         *     new ProductionGitHub(),
-         *     new ProductionDrive(),
-         *     new ProductionStorage(),
-         *     new PreProdLogin(),
          *     new ProductionKSuite());
          */
 
-        internal static IAppConstants Constants = Environment.GetEnvironmentVariable("KDRIVE_USE_PREPROD_URL") == "1" ? new PreProdAppConstants() : new ProductionAppConstants();
+        internal static IAppConstants Constants = new ProductionAppConstants();
 
         internal App()
         {
@@ -79,6 +75,7 @@ namespace Infomaniak.kDrive
             services.AddSingleton<IKeychainStore, WindowsKeychainStore>();
             services.AddSingleton<IServerCommClient, TcpServerCommClient>();
             services.AddSingleton<IServerCommService, ServerCommService>();
+            services.AddSingleton<IUriStore, DefaultUriStore>();
             services.AddSingleton<AppStateService>();
             services.AddSingleton<UserDefaults>();
             services.AddSingleton<TrayIconManager>();

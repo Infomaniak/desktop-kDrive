@@ -26,11 +26,8 @@ namespace Infomaniak.kDrive
     {
         ISentryConstants Sentry { get; }
         IMatomoConstants Matomo { get; }
-        IGitHubConstants GitHub { get; }
         ISyncConstants Sync { get; }
-        IDriveConstants Drive { get; }
         IkSuiteConstants kSuite { get; }
-        IStorageConstants Storage { get; }
         ILoginConstants Login { get; }
     }
 
@@ -45,42 +42,18 @@ namespace Infomaniak.kDrive
         string SiteId { get; }
     }
 
-    internal interface IGitHubConstants
-    {
-        Uri RepoUrl { get; }
-        Uri LicenseUrl { get; }
-    }
-
-    internal interface IStorageConstants
-    {
-        Uri DownloadUrl { get; }
-        Uri ReleaseNoteUrl(string versionTag, string languageCode) =>
-            new($"{DownloadUrl}/kDrive-{versionTag}-win-{languageCode}.html");
-    }
-
     internal interface ILoginConstants
     {
         Uri OAuthRedirectUri { get; }
-        Uri OAuthAuthorizationEndpoint { get; }
         string OAuthClientId { get; }
     }
+    
     internal interface ISyncConstants
     {
         public NodeId RootNodeId { get; }
         public string RescueFolderName { get; }
     }
-    internal interface IDriveConstants
-    {
-        Uri RenewUrl(DriveId? driveId);
-        Uri kSuiteHomeUrl(DriveId? driveId);
-        Uri kDriveHomeUrl(DriveId? driveId);
-        Uri TrashUrl(DriveId? driveId);
-        Uri FavoriteUrl(DriveId? driveId);
-        Uri SharedUrl(DriveId? driveId);
-        Uri itemUri(DriveId? driveId, NodeId nodeId);
-        Uri ChangeOfferUri(DriveId? driveId);
-        public Uri StartFreeUri { get; }
-    }
+
     internal interface IkSuiteConstants
     {
         public Uri TarrifsUri { get; }
@@ -91,21 +64,15 @@ namespace Infomaniak.kDrive
     {
         public ISentryConstants Sentry { init; get; }
         public IMatomoConstants Matomo { init; get; }
-        public IGitHubConstants GitHub { init; get; }
-        public IDriveConstants Drive { init; get; }
-        public IStorageConstants Storage { init; get; }
         public ISyncConstants Sync { init; get; }
         public ILoginConstants Login { init; get; }
         public IkSuiteConstants kSuite { init; get; }
 
-        public CustomAppConstants(ISentryConstants sentry, IMatomoConstants matomo, IGitHubConstants gitHub, ISyncConstants sync, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth, IkSuiteConstants kSuite)
+        public CustomAppConstants(ISentryConstants sentry, IMatomoConstants matomo, ISyncConstants sync, ILoginConstants oAuth, IkSuiteConstants kSuite)
         {
             Sentry = sentry;
             Matomo = matomo;
-            GitHub = gitHub;
             Sync = sync;
-            Drive = drive;
-            Storage = storage;
             Login = oAuth;
             this.kSuite = kSuite;
         }
@@ -124,42 +91,11 @@ namespace Infomaniak.kDrive
         public string SiteId { get; } = "41";
     }
 
-    internal sealed class ProductionGitHub : IGitHubConstants
-    {
-        private const string Repo = "https://github.com/Infomaniak/desktop-kDrive";
-
-        public Uri RepoUrl { get; } = new(Repo);
-        public Uri LicenseUrl { get; } = new($"{Repo}?tab=GPL-3.0-1-ov-file");
-    }
-
     internal sealed class ProductionSync : ISyncConstants
     {
         public NodeId RootNodeId { get; } = "1";
 
         public string RescueFolderName { get; } = "kDrive Rescue Folder";
-    }
-
-
-    internal sealed class ProductionDrive : IDriveConstants
-    {
-        public Uri RenewUrl(DriveId? driveId) =>
-            new($"https://shop.infomaniak.com/order/drive/{driveId}");
-        public Uri kSuiteHomeUrl(DriveId? driveId) =>
-            new($"https://ksuite.infomaniak.com/kdrive/app/drive/{driveId}");
-        public Uri kDriveHomeUrl(DriveId? driveId) =>
-            new($"https://kdrive.infomaniak.com/app/drive/{driveId}");
-        public Uri TrashUrl(DriveId? driveId) => new($"{kSuiteHomeUrl(driveId)}/trash");
-        public Uri FavoriteUrl(DriveId? driveId) => new($"{kSuiteHomeUrl(driveId)}/favorites");
-        public Uri SharedUrl(DriveId? driveId) => new($"{kSuiteHomeUrl(driveId)}/shared-with-me");
-        public Uri itemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
-        public Uri ChangeOfferUri(DriveId? driveId) => new($"https://shop.infomaniak.com/order/drive/{driveId}");
-        public Uri StartFreeUri { get; } = new Uri("http://shop.infomaniak.com/order/select/drive");
-    }
-
-    internal sealed class ProductionStorage : IStorageConstants
-    {
-        public Uri DownloadUrl { get; } =
-            new("https://download.storage.infomaniak.com/drive/desktopclient");
     }
 
     internal sealed class ProductionLogin : ILoginConstants
@@ -179,35 +115,8 @@ namespace Infomaniak.kDrive
     {
         public ISentryConstants Sentry { get; } = new ProductionSentry();
         public IMatomoConstants Matomo { get; } = new ProductionMatomo();
-        public IGitHubConstants GitHub { get; } = new ProductionGitHub();
         public ISyncConstants Sync { get; } = new ProductionSync();
-        public IDriveConstants Drive { get; } = new ProductionDrive();
-        public IStorageConstants Storage { get; } = new ProductionStorage();
         public ILoginConstants Login { get; } = new ProductionLogin();
         public IkSuiteConstants kSuite { get; } = new ProductionKSuite();
     }
-
-
-    //////////////////////////////////////////////       PREPROD       //////////////////////////////////////////////
-
-    internal sealed class PreProdLogin : ILoginConstants
-    {
-        public Uri OAuthRedirectUri { get; } = new ProductionLogin().OAuthRedirectUri;
-        public Uri OAuthAuthorizationEndpoint { get; } = new Uri("https://login.preprod.dev.infomaniak.ch/authorize?skipAutoRedirect=true");
-        public string OAuthClientId { get; } = new ProductionLogin().OAuthClientId;
-    }
-
-    internal sealed class PreProdAppConstants : IAppConstants
-    {
-        public ISentryConstants Sentry { get; } = new ProductionSentry();
-        public IMatomoConstants Matomo { get; } = new ProductionMatomo();
-        public IGitHubConstants GitHub { get; } = new ProductionGitHub();
-        public ISyncConstants Sync { get; } = new ProductionSync();
-
-        public IDriveConstants Drive { get; } = new ProductionDrive();
-        public IStorageConstants Storage { get; } = new ProductionStorage();
-        public ILoginConstants Login { get; } = new PreProdLogin();
-        public IkSuiteConstants kSuite { get; } = new ProductionKSuite();
-    }
-
 }

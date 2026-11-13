@@ -92,7 +92,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         private async void OnStartFreeButtonClick(object sender, RoutedEventArgs e)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.OpenStartFreeWeb);
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.StartFreeUri);
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (!await uriStore.OpenInBrowserAsync(uriStore.StartFreeUrl()))
+            {
+                Logger.LogWarning("Failed to open StartFreeUrl in browser");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
 
         private async void OnOffersButtonClick(object sender, RoutedEventArgs e)

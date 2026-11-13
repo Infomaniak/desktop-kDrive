@@ -347,7 +347,12 @@ namespace Infomaniak.kDrive.Pages.Settings
                 control.IsEnabled = false;
             _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.OpenSourceCodeWeb);
 
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.GitHub.RepoUrl);
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (!await uriStore.OpenInBrowserAsync(uriStore.GithubRepoUrl()))
+            {
+                Logger.LogWarning("Failed to open GitHub repository URL in browser");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
 
             if (control is not null)
                 control.IsEnabled = true;

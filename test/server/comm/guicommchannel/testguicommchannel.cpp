@@ -582,7 +582,8 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) packInfoObj1.set("name", toBase64(Str("pack_free")));
     (void) packInfoObj1.set("displayName", toBase64(Str("PackFree")));
     (void) packInfoObj1.set("isFree", true);
-    (void) packInfoObj1.set("upsellTarget", toInt(UpsellTarget::MykSuitePlus));
+    (void) packInfoObj1.set("kSuiteId", 0);
+    (void) packInfoObj1.set("upsellTarget", toInt(UpsellTarget::StandAloneToMykSuitePlus));
     (void) driveInfoObj1.set("packInfo", packInfoObj1);
 
     Poco::JSON::Object driveInfoObj2;
@@ -609,7 +610,8 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) packInfoObj2.set("name", toBase64(Str("pack_pro")));
     (void) packInfoObj2.set("displayName", toBase64(Str("PackPro")));
     (void) packInfoObj2.set("isFree", false);
-    (void) packInfoObj2.set("upsellTarget", toInt(UpsellTarget::None));
+    (void) packInfoObj2.set("kSuiteId", 0);
+    (void) packInfoObj2.set("upsellTarget", toInt(UpsellTarget::StandAloneTokSuitePro));
     (void) driveInfoObj2.set("packInfo", packInfoObj2);
 
     Poco::JSON::Array driveInfoObjList;
