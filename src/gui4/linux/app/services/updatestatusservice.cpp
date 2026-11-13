@@ -18,12 +18,16 @@
 
 #include "updatestatusservice.h"
 
+#include "version.h"
+
 #include <QLoggingCategory>
 #include <QPointer>
 
 #include <utility>
 
 namespace KDC {
+
+using namespace Qt::StringLiterals;
 
 namespace {
 Q_LOGGING_CATEGORY(lcUpdateStatusService, "gui.v4.updatestatusservice", QtInfoMsg)
@@ -35,6 +39,17 @@ UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionReque
     _stateRequest(std::move(stateRequest)),
     _versionRequest(std::move(versionRequest)),
     _installRequest(std::move(installRequest)) {}
+
+QString UpdateStatusService::announcedRelease() const {
+    if (!_version) {
+        return {};
+    }
+
+    // A new build of the installed release shares its tag: the build number tells them apart.
+    const auto tag = QString::fromStdString(_version->tag);
+    const auto installedRelease = u"%1.%2.%3"_s.arg(KDRIVE_VERSION_MAJOR).arg(KDRIVE_VERSION_MINOR).arg(KDRIVE_VERSION_PATCH);
+    return tag == installedRelease ? u"%1.%2"_s.arg(tag).arg(_version->buildVersion) : tag;
+}
 
 bool UpdateStatusService::available() const {
     // Download and installation errors keep the update available: the user can still download it manually.

@@ -276,6 +276,8 @@ IKShadowedWindow {
             Layout.fillHeight: true
 
             GeneralSettingsView {
+                id: generalView
+
                 anchors.fill: parent
                 visible: root.selectedCategory === SettingsWindow.Category.General
                 controller: root.controller.general
@@ -667,6 +669,11 @@ IKShadowedWindow {
 
         function onFileExclusionsRequested() {
             root.selectAdvanced(fileExclusionsComponent);
+        }
+
+        function onUpdateRequested() {
+            root.selectGeneral();
+            generalView.focusUpdate();
         }
 
         function onAccountsRequested() {

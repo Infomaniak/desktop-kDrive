@@ -49,6 +49,8 @@
 #include "app/services/syncerrorservice.h"
 #include "app/services/syncservice.h"
 #include "app/services/translationservice.h"
+#include "app/services/notificationservice.h"
+#include "app/services/updatenotifier.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
 #include "app/settings/advancedsyncscontroller.h"
@@ -133,6 +135,7 @@ class AppClientLinux : public QApplication {
         void updateLoggerSettings();
         void requestQuit();
         void handleManyDeletesPresentationRequested();
+        void handleNotificationAction(NotificationService::Action action);
         void openMainWindow();
         void openOnboardingFromHome();
         void openOnboardingLoginFromSettings();
@@ -180,6 +183,8 @@ class AppClientLinux : public QApplication {
         SearchController _searchController{_serverCommService, _mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
+        NotificationService _notificationService{this};
+        UpdateNotifier _updateNotifier{_updateStatusService, _parametersStore, _notificationService, this};
         GeneralSettingsController _generalSettingsController{_parametersStore,     _parametersService, _translationService,
                                                              _updateStatusService, _appCache,          this};
         AdvancedSettingsController _advancedSettingsController{_parametersStore,   _parametersService,  _sentryService,
