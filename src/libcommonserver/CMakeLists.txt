@@ -61,6 +61,8 @@ if(APPLE)
     list(APPEND libcommonserver_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp)
     set_property(SOURCE io/iohelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
+    list(APPEND libcommonserver_SRCS db/tccdatabase_mac.h db/tccdatabase_mac.cpp)
+
     list(APPEND libcommonserver_SRCS utility/utility_mac.cpp utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     list(APPEND libcommonserver_SRCS utility/truststorehelper_mac.mm)

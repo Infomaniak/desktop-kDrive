@@ -242,7 +242,7 @@ resolve_required_dylib() {
 }
 
 # Qt frameworks required by the kDrive executable (includes transitive deps of the above)
-QT_FRAMEWORKS=(QtCore QtDBus QtGui QtWidgets QtNetwork QtSvg QtSql)
+QT_FRAMEWORKS=(QtCore QtDBus QtGui QtWidgets QtNetwork QtSvg)
 
 # Poco dylibs (version auto-detected)
 POCO_DYLIBS=(
@@ -269,7 +269,6 @@ SENTRY_DYLIBS=("$(resolve_required_dylib "$SENTRY_LIB_DIR" "libsentry*.dylib" "l
 # Qt plugins: "subdir/plugin.dylib" — add more as needed
 QT_PLUGINS=(
     platforms/libqcocoa.dylib
-    sqldrivers/libqsqlite.dylib
     imageformats/libqgif.dylib
     imageformats/libqico.dylib
     imageformats/libqjpeg.dylib

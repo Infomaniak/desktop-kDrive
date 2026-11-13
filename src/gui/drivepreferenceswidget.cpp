@@ -23,11 +23,6 @@
 #include "confirmsynchronizationdialog.h"
 #include "custommessagebox.h"
 #include "custompushbutton.h"
-
-#ifdef Q_OS_MAC
-#include "extensionsetupdialog.h"
-#endif
-
 #include "guiutility.h"
 #include "languagechangefilter.h"
 #include "enablestateholder.h"
@@ -400,33 +395,6 @@ bool DrivePreferencesWidget::switchVfsOn(const SyncDbId syncDbId) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSupportsVirtualFiles";
         return false;
     }
-
-#ifdef Q_OS_MAC
-    // Setup Vfs extension (Mac)
-    VirtualFileMode virtualFileMode;
-    if (const auto exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::bestAvailableVfsMode";
-        return false;
-    }
-
-    if (virtualFileMode == VirtualFileMode::Mac) {
-        // Check LiteSync ext authorizations
-        std::string liteSyncExtErrorDescription;
-        const bool liteSyncExtOk = CommonUtility::isLiteSyncExtEnabled() &&
-                                   CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescription);
-        if (!liteSyncExtErrorDescription.empty()) {
-            qCWarning(lcDrivePreferencesWidget)
-                    << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescription.c_str();
-        }
-        if (!liteSyncExtOk) {
-            // Extension Setup step
-            ExtensionSetupDialog dialog(this);
-            if (dialog.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this)) != QDialog::Accepted) {
-                // return false;
-            }
-        }
-    }
-#endif
 
     return true;
 }
