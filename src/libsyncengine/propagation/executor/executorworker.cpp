@@ -981,11 +981,12 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
         FileRescuer fileRescuer(_syncPal);
         if (const auto exitInfo = fileRescuer.executeRescueMoveJob(syncOp); !exitInfo) return exitInfo;
     } else {
-        if (const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+        const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete);
+        if (!exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-            return exitInfo;
         }
+        return exitInfo;
     }
     return ExitCode::Ok;
 }
@@ -1486,6 +1487,12 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
                 LOGW_SYNCPAL_WARN(_logger, L"Error in handleForbiddenAction for item: "
                                                    << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
                 return exitInfo;
+            } else { // The error is managed and the execution can continue.
+                LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
+                                                                    << L" operation for "
+                                                                    << Utility::formatSyncPath(relativeLocalPath));
+                bypassProgressComplete = true;
+                return {ExitCode::Ok, ExitCause::OperationCanceled};
             }
         } else if (const auto exitInfo = handleExecutorError(syncOp, job->exitInfo()); !exitInfo) {
             // Cancel all queued jobs

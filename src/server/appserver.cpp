@@ -4903,6 +4903,10 @@ void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &i
         return;
     }
 
+    // Keep auto resolved errors, to let the user know that they have been resolved
+    errorList.erase(std::remove_if(errorList.begin(), errorList.end(), [](const Error &error) { return error.isAutoResolved(); }),
+                    errorList.end());
+
     if (!found) return;
     resolveErrors(errorList);
 }
