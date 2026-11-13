@@ -53,16 +53,16 @@ class UserActionLog final : public QObject {
         explicit UserActionLog(QObject *parent = nullptr);
 
         /** `details` is a JavaScript object whose properties are logged sorted by name. */
-        Q_INVOKABLE void action(const QString &actionId, const QJSValue &details = QJSValue());
-        Q_INVOKABLE void screen(const QString &screenId, const QJSValue &details = QJSValue());
-        Q_INVOKABLE void dialog(const QString &dialogId, bool opened, const QJSValue &details = QJSValue());
-        Q_INVOKABLE void window(const QString &windowId, bool shown, const QJSValue &details = QJSValue());
+        Q_INVOKABLE void action(const QString &actionId, const QJSValue &details = QJSValue()) const;
+        Q_INVOKABLE void screen(const QString &screenId, const QJSValue &details = QJSValue()) const;
+        Q_INVOKABLE void dialog(const QString &dialogId, bool opened, const QJSValue &details = QJSValue()) const;
+        Q_INVOKABLE void window(const QString &windowId, bool shown, const QJSValue &details = QJSValue()) const;
 
         /** C++ counterpart of `action()`. */
-        void recordAction(const QString &actionId, const Details &details = {});
+        void recordAction(const QString &actionId, const Details &details = {}) const;
 
     private:
-        void recordScreen(const QString &screenId, const Details &details);
+        void recordScreen(const QString &screenId, const Details &details) const;
         void write(const QString &event, const QString &id, const Details &details) const;
 };
 
