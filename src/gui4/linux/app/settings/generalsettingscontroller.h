@@ -46,7 +46,6 @@ class GeneralSettingsController final : public QObject {
         Q_PROPERTY(QString updateText READ updateText NOTIFY changed)
         Q_PROPERTY(bool updateAvailable READ updateAvailable NOTIFY changed)
         Q_PROPERTY(bool updateDownloading READ updateDownloading NOTIFY changed)
-        Q_PROPERTY(bool updateReadyToInstall READ updateReadyToInstall NOTIFY changed)
         Q_PROPERTY(bool updateInstallable READ updateInstallable NOTIFY changed)
         Q_PROPERTY(bool automaticUpdates READ automaticUpdates NOTIFY changed)
         Q_PROPERTY(bool automaticUpdatesAvailable READ automaticUpdatesAvailable CONSTANT)
@@ -78,7 +77,6 @@ class GeneralSettingsController final : public QObject {
         [[nodiscard]] QString updateText() const;
         [[nodiscard]] bool updateAvailable() const;
         [[nodiscard]] bool updateDownloading() const;
-        [[nodiscard]] bool updateReadyToInstall() const;
         [[nodiscard]] bool updateInstallable() const;
         [[nodiscard]] bool automaticUpdates() const;
         [[nodiscard]] bool automaticUpdatesAvailable() const { return _automaticUpdatesAvailable; }

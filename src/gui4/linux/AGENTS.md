@@ -710,10 +710,10 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`,
   owns browser and clipboard side effects, and tracks concurrent actions without owning activity history.
-- `app/services/updatestatusservice.*`: process-wide updater state and announced version. The Update or Restart button
-  sends `UPDATER_START_INSTALLER`: the server prepares the AppImage update, or relaunches on the one already installed.
-  An Update click before the installation keeps a restart request that is honored once the state reaches `Ready`, and
-  dropped on any other final state, so an automatic preparation never restarts the application on its own.
+- `app/services/updatestatusservice.*`: process-wide updater state and announced version. The Update button sends
+  `UPDATER_START_INSTALLER`: the server downloads and installs the AppImage update, then restarts the application on it
+  without any client request. `Ready` therefore lasts only until that restart: Settings keep the in-progress button,
+  and neither the tray nor a notification announces it.
 - `app/services/releasenotesservice.*`: downloads and parses the release notes of the announced version for the update
   details dialog. They are shown only when the client can apply the configured proxy itself.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed

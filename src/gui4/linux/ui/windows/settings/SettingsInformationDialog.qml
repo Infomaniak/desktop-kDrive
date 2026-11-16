@@ -163,14 +163,12 @@ IKModal {
             onClicked: root.close()
         },
         IKModalButton {
-            readonly property bool manual: !root.controller.updateReadyToInstall && !root.controller.updateDownloading
-                                           && !root.controller.updateInstallable
+            readonly property bool manual: !root.controller.updateDownloading && !root.controller.updateInstallable
 
             visible: !root.about && root.controller.updateAvailable
-            text: root.controller.updateReadyToInstall ? qsTrId("buttonRestart")
-                                                       : root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
-                                                       : root.controller.updateInstallable ? qsTrId("buttonUpdate")
-                                                                                           : qsTrId("buttonDownloadManually")
+            text: root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
+                                                    : root.controller.updateInstallable ? qsTrId("buttonUpdate")
+                                                                                        : qsTrId("buttonDownloadManually")
             external: manual
             actionEnabled: !root.controller.updateDownloading
             onClicked: manual ? root.controller.openDownload() : root.controller.installUpdate()

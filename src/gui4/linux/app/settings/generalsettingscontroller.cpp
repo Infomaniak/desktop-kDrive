@@ -146,10 +146,6 @@ QString GeneralSettingsController::errorText() const {
 }
 
 QString GeneralSettingsController::updateText() const {
-    if (_updateStatusService.readyToInstall() && _updateStatusService.version()) {
-        return qtTrId("updateInstalled").arg(releaseVersion());
-    }
-
     if (_updateStatusService.available()) {
         return _updateStatusService.version() ? qtTrId("updateAvailable").arg(releaseVersion()) : qtTrId("updateDialogTitle");
     }
@@ -168,12 +164,9 @@ bool GeneralSettingsController::updateAvailable() const {
     return _updateStatusService.available();
 }
 
+// Once installed, the server restarts the application at once: the button keeps its in-progress label until then.
 bool GeneralSettingsController::updateDownloading() const {
-    return _updateStatusService.downloading();
-}
-
-bool GeneralSettingsController::updateReadyToInstall() const {
-    return _updateStatusService.readyToInstall();
+    return _updateStatusService.downloading() || _updateStatusService.installed();
 }
 
 bool GeneralSettingsController::updateInstallable() const {
