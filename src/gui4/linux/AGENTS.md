@@ -319,8 +319,10 @@
   shown path starts with the synchronization folder, since the warning can come from any synchronization; the tooltip
   gives the `~` form and the icon follows the extension only. The count of items left out closes the list. A warning
   received before the cache holds its synchronization keeps relative paths, rebuilt once the context is cached
-  (`deletedItemsChanged` alone, so the dialog keeps its state). The list is a single tab stop: Up and Down move its
-  current row, and the last row brings the count of the items left out into view.
+  (`contentChanged` alone, so the dialog keeps its state). The sync engine does not wait for a soft warning, so a second
+  soft warning of the same synchronization is another batch already deleted online: it merges into the queued one,
+  summing the counts and appending its paths up to 500 (`contentChanged` alone). The list is a single tab stop: Up and
+  Down move its current row, and the last row brings the count of the items left out into view.
 - `app/errors/*`: pure sync error domain, without QObject, IPC or cache access. `classifySyncError` maps a raw `Error` to
   a `SyncErrorKind` through an ordered matcher table aligned with the macOS and Windows definitions (first match
   wins), plus the Linux-only `NotEnoughINotifyWatches`; LiteSync and VFS kinds are absent and fall back to `Unknown`,
