@@ -536,7 +536,12 @@ ExitCode UpdateTreeWorker::mergeWithCreateOperationIfApplicable(const FSOpPtr &d
 
     FSOpPtr createOp = nullptr;
     if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(), createOp)) {
-        // The Create operation is no longer present in the operation set: the Delete operation must be ignored.
+        const std::string errorMsg =
+                "Failed to find Create operation in the operation set: nodeId=" + createFileOpSetIt->second->nodeId() +
+                ", operationType=" + toString(createFileOpSetIt->second->operationType()) +
+                ", path=" + createFileOpSetIt->second->path().string() +
+                ". This should never happen, as the Create operation was previously found in the operation set.";
+        LOG_MSG_IF_FAIL(_logger, false, errorMsg);
         skipOp = true;
 
         return ExitCode::Ok;
@@ -600,8 +605,8 @@ ExitCode UpdateTreeWorker::checkIfDeleteAndCreateCanBeMerged(const FSOpPtr &dele
         // Do not merge the Delete and Create operations into an Edit operation, as the API does not support
         // editing an item while changing its type (e.g., replacing a symbolic link with a regular file).
         // Keeping both operations separate allows the corresponding remote item to be deleted and re-created.
-        LOGW_SYNCPAL_WARN(_logger, L"Type of the item " << Utility::formatSyncPath(deleteOp->path())
-                                                        << L" has changed. Do not merge Delete and Create operations.");
+        LOGW_SYNCPAL_DEBUG(_logger, L"Type of the item " << Utility::formatSyncPath(deleteOp->path())
+                                                         << L" has changed. Do not merge Delete and Create operations.");
         canMerge = false;
     }
 

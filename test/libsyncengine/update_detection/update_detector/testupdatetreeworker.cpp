@@ -803,13 +803,13 @@ void TestUpdateTreeWorker::createSyncPalWithItemSnapshots(bool deletedItemIsLink
     _syncPal->createWorkers();
 
     // Simulate the state of the snapshots after the deletion of the item "Dir 5/File 5.1" (local ID "id51", remote ID
-    // "id drive 51") and the creation of a new item (local ID "id511") reusing the same path. The deleted item is not
+    // "id drive 51") and the creation of a new item (local ID "id51bis") reusing the same path. The deleted item is not
     // present in the local snapshot anymore, but its remote counterpart is still present on the remote replica.
     const SnapshotItem deletedRemoteItem("id drive 51", "id drive 5", Str("File 5.1"), testhelpers::defaultTime,
                                          testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
                                          deletedItemIsLink, true, true);
     CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(deletedRemoteItem));
-    const SnapshotItem createdLocalItem("id511", "id5", Str("File 5.1"), testhelpers::defaultTime + 1,
+    const SnapshotItem createdLocalItem("id51bis", "id5", Str("File 5.1"), testhelpers::defaultTime + 1,
                                         testhelpers::defaultTime + 1, NodeType::File, testhelpers::defaultFileSize,
                                         createdItemIsLink, true, true);
     CPPUNIT_ASSERT(_syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(createdLocalItem));
