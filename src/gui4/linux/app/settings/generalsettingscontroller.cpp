@@ -182,7 +182,7 @@ bool GeneralSettingsController::updateInstallable() const {
 
 bool GeneralSettingsController::automaticUpdates() const {
     const auto parameters = _parametersStore.parameters();
-    return parameters && parameters->automaticUpdates();
+    return parameters && parameters->autoUpdates();
 }
 
 int32_t GeneralSettingsController::distributionChannel() const {
@@ -285,7 +285,7 @@ void GeneralSettingsController::setAutomaticUpdates(const bool enabled) {
         return;
     }
 
-    save([enabled](Parameters &parameters) { parameters.setAutomaticUpdates(enabled); });
+    save([enabled](Parameters &parameters) { parameters.setAutoUpdates(enabled); });
 }
 
 void GeneralSettingsController::setMoveToTrash(const bool enabled) {
