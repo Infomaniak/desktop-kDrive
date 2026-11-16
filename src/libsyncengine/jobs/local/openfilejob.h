@@ -33,8 +33,6 @@
 
 namespace KDC {
 
-class HydratePlaceHolderJob;
-
 //! Asynchronous job performing the whole "open the item indicated by a kDrive deeplink" flow.
 /*!
  * The job first resolves the item indicated by the URL against the syncs configured for the drive. While the item has
@@ -43,8 +41,8 @@ class HydratePlaceHolderJob;
  *
  * Once the item has been resolved, it is made available locally:
  * - if it is not a dehydrated placeholder, it can be opened right away;
- * - otherwise, the job enqueues a HydratePlaceHolderJob and waits for the download to complete, during 1 hour at
- *   most, before giving up with a timeout error.
+ * - otherwise, the job sets the pin state of the item, enqueues a direct download job (SyncPal::addDlDirectJob), and
+ *   waits for the download to complete, during 1 hour at most, before giving up with a timeout error.
  *
  * While the item is being synchronized, and while it is being hydrated, the job reports its state through
  * `feedbackCallback` (see setFeedbackCallback) so that the user can be informed of the progress and cancel the
@@ -144,8 +142,21 @@ class OpenFileJob : public SyncJob {
         ExitInfo checkRemoteItemExistence(bool &exists) const;
         //! Opens the resolved item if it is available locally, or hydrates it first if it is a dehydrated placeholder.
         ExitInfo openResolvedLocalItem();
-        //! Enqueues the hydration of the dehydrated placeholder and waits for the download to complete.
+        //! Checks the state of the dehydrated placeholder, enqueues its download through SyncPal::addDlDirectJob, and
+        //! waits for the download to complete.
         ExitInfo hydrateResolvedPlaceholder();
+        //! Performs the checks allowing the item to be hydrated: local existence, type (symlinks are not hydrated),
+        //! server existence, and placeholder status. Informs the VFS and restores the pin state when a check fails.
+        //! Sets `hydrate` with true only if every check has passed; it is left false otherwise, and the returned
+        //! ExitInfo must then be propagated by hydrateResolvedPlaceholder (the job outcome is set accordingly).
+        ExitInfo checkHydrationPrerequisites(const std::shared_ptr<SyncPal> &syncPal, bool &hydrate);
+        //! Sets the pin state of the placeholder to PinState::AlwaysLocal (macOS only: the other platforms use
+        //! PinState::OnlineOnly). Sets `pinState` with the state to restore if the hydration is canceled or fails
+        //! later. Returns the error that prevented the preparation, if any.
+        ExitInfo setHydrationPinState(const std::shared_ptr<Vfs> &vfs, PinState &pinState);
+        //! Informs the VFS that the hydration of the item is canceled or has failed, and restores `pinState` if it is
+        //! not PinState::Unknown. Mirrors ExtensionJob::cancelHydrate.
+        ExitInfo cancelHydrate(const std::shared_ptr<Vfs> &vfs, PinState pinState, const ExitInfo &exitInfo);
         //! Marks the job as ready to open the item and returns `ExitCode::Ok`.
         ExitInfo readyToOpen();
         //! Reports the job state to the user interface through the feedback callback, when set. The name of the item
@@ -171,19 +182,15 @@ class OpenFileJob : public SyncJob {
 
         Outcome _outcome{Outcome::Failed};
 
-        //! Guards publication of and access to `_hydration` and `_hydrationJob`: both are published by the thread
-        //! running the job, and loaded by cancel() on the thread processing the cancellation. The internals of the
-        //! pointed-to state have their own finer-grained mutex (see HydrationCompletion in the .cpp file).
+        //! Guards publication of and access to `_hydration`: it is published by the thread running the job, and loaded
+        //! by cancel() on the thread processing the cancellation. The internals of the pointed-to state have their own
+        //! finer-grained mutex (see HydrationCompletion in the .cpp file).
         std::mutex _hydrationMutex;
 
         //! Completion state of the hydration, shared with the observers invoked by the download job. Published under
-        //! `_hydrationMutex` when the hydration of the item starts. Its type is defined in the .cpp file.
+        //! `_hydrationMutex` once the download of the item has been enqueued. Its type is defined in the .cpp file.
         struct HydrationCompletion; // Defined in the .cpp file.
         std::shared_ptr<HydrationCompletion> _hydration;
-
-        //! The hydration job enqueued by this job, retained so that cancel() can abort it while it is queued or
-        //! running. Published under `_hydrationMutex` together with `_hydration`.
-        std::shared_ptr<HydratePlaceHolderJob> _hydrationJob;
 
         FeedbackCallback _feedbackCallback;
         int8_t _lastNotifiedProgress{-1}; // Only accessed on the thread running the job.
