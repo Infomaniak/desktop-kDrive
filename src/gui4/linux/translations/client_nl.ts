@@ -514,10 +514,6 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</translation>
             <source>Rename %1</source> 
             <translation>%1 hernoemen</translation> 
         </message> 
-        <message id="buttonRestart"> 
-            <source>Restart</source> 
-            <translation>Opnieuw starten</translation> 
-        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Inloggen opnieuw starten</translation> 
@@ -2696,10 +2692,6 @@ Uw synchronisatie wordt automatisch hervat na afloop.</translation>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Update beschikbaar</translation> 
-        </message> 
-        <message id="updateInstalled"> 
-            <source>kDrive %1 installed. Restart the application to use it.</source> 
-            <translation>kDrive %1 is geïnstalleerd. Start de applicatie opnieuw om deze versie te gebruiken.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.

@@ -514,10 +514,6 @@ Puoi aprirli in qualsiasi momento, anche senza connessione a internet.</translat
             <source>Rename %1</source> 
             <translation>Rinomina %1</translation> 
         </message> 
-        <message id="buttonRestart"> 
-            <source>Restart</source> 
-            <translation>Riavvia</translation> 
-        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Riavvia accesso</translation> 
@@ -2696,10 +2692,6 @@ La sincronizzazione riprenderà automaticamente al termine.</translation>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Aggiornamento disponibile</translation> 
-        </message> 
-        <message id="updateInstalled"> 
-            <source>kDrive %1 installed. Restart the application to use it.</source> 
-            <translation>kDrive %1 installato. Riavvia l’applicazione per utilizzarlo.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.
