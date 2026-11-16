@@ -49,9 +49,15 @@ struct StorageItem: Sendable, Identifiable {
 }
 
 struct DriveStorageInfo {
+    /// Database id of the drive these values belong to, `nil` when they don't come from a drive.
+    var driveDbId: Int?
     var name: String
     var size: Int64?
     var usedSize: Int64?
+
+    static func loading(driveDbId: Int?) -> DriveStorageInfo {
+        return DriveStorageInfo(driveDbId: driveDbId, name: KDriveLocalizable.labelMySubscription, size: nil, usedSize: nil)
+    }
 }
 
 enum VolumeStorageItems {
@@ -66,10 +72,9 @@ enum DriveStorageItems {
 }
 
 struct StorageView: View {
-    private static let isRunningInPreviews = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-
     @InjectService private var storageDataProviding: StorageDataProviding
     @InjectService private var cacheObservable: CoherentCacheObservable
+    @InjectService private var coherentCache: CoherentCache
 
     @State private var volumeName = KDriveLocalizable.storageDeviceNameMac
     @State private var volumeStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
@@ -79,11 +84,7 @@ struct StorageView: View {
     ]
     @State private var isShowingVolumeNotFound = false
 
-    @State private var driveStorageInfo = DriveStorageInfo(
-        name: KDriveLocalizable.labelMySubscription,
-        size: nil,
-        usedSize: nil
-    )
+    @State private var driveStorageInfo = DriveStorageInfo.loading(driveDbId: nil)
 
     @ObservedObject var mainViewModel: MainViewModel
 
@@ -96,6 +97,15 @@ struct StorageView: View {
             return Empty().eraseToAnyPublisher()
         }
         return cacheObservable.usersPublisher.drivePublisher(driveDbId: Int32(driveDbId))
+    }
+
+    /// Drive values of the current drive, or a loading state while the ones received belong to another drive.
+    private var currentDriveStorageInfo: DriveStorageInfo {
+        let currentDriveDbId = mainViewModel.currentDrive?.dbId
+        guard driveStorageInfo.driveDbId == currentDriveDbId else {
+            return .loading(driveDbId: currentDriveDbId)
+        }
+        return driveStorageInfo
     }
 
     private var displayedVolumeStorageItems: [StorageItem] {
@@ -117,6 +127,7 @@ struct StorageView: View {
     }
 
     private var driveStorageItems: OrderedDictionary<DriveStorageItems, StorageItem> {
+        let driveStorageInfo = currentDriveStorageInfo
         var freeSpace: Int64?
         if let size = driveStorageInfo.size, let usedSize = driveStorageInfo.usedSize {
             freeSpace = max(size - usedSize, 0)
@@ -178,7 +189,7 @@ struct StorageView: View {
                     }
 
                     StorageSectionView(
-                        title: driveStorageInfo.name,
+                        title: currentDriveStorageInfo.name,
                         storageData: driveStorageData,
                         items: Array(driveStorageItems.values),
                         byteCountFormatStyle: .memory
@@ -188,18 +199,15 @@ struct StorageView: View {
             }
         }
         .onReceive(storagePublisher.receive(on: RunLoop.main), perform: handleUpdatedStorageData)
-        .onReceive(drivePublisher.receive(on: RunLoop.main), perform: handleUpdatedDrive)
-        .onAppear {
-            Task {
-                await getCachedStorageData()
-            }
+        .onAppear(perform: getCachedStorageData)
+        .task(id: mainViewModel.currentDrive?.dbId) {
+            await observeCurrentDrive()
         }
         .task(id: mainViewModel.currentSynchro?.dbId) {
             await fetchStorageData()
         }
         .task {
             // Ask the server to reload the drive info from the API, the updated quota is then received through `drivePublisher`.
-            guard !Self.isRunningInPreviews else { return }
             try? await UtilityJobs().activateLoadInfo()
         }
     }
@@ -226,9 +234,23 @@ struct StorageView: View {
         try? await storageDataProviding.fetchStorageData(forSynchroDbId: Int32(synchroDbId))
     }
 
+    /// Restarted each time the selected drive changes, as `onReceive` would keep its first subscription.
+    private func observeCurrentDrive() async {
+        guard let driveDbId = mainViewModel.currentDrive?.dbId else {
+            return
+        }
+
+        // `drivePublisher` only emits on cache updates, so start from the drive already in the cache.
+        handleUpdatedDrive(await coherentCache.getDrive(driveDbId: Int32(driveDbId)))
+
+        for await drive in drivePublisher.values {
+            handleUpdatedDrive(drive)
+        }
+    }
+
     private func handleUpdatedDrive(_ drive: Drive?) {
-        // In previews, drive values are pinned by the preview initializer; skip the real ones.
-        guard !Self.isRunningInPreviews, let drive else {
+        guard let drive else {
+            driveStorageInfo = .loading(driveDbId: mainViewModel.currentDrive?.dbId)
             return
         }
 
@@ -239,11 +261,17 @@ struct StorageView: View {
         name.append(drive.packInfo.displayName)
 
         withAnimation {
-            driveStorageInfo = DriveStorageInfo(name: name, size: drive.size, usedSize: drive.usedSize)
+            driveStorageInfo = DriveStorageInfo(
+                driveDbId: Int(drive.driveDbId),
+                name: name,
+                // The server sends a size of 0 until the drive info has been loaded from the API.
+                size: drive.size > 0 ? drive.size : nil,
+                usedSize: drive.size > 0 ? drive.usedSize : nil
+            )
         }
     }
 
-    private func getCachedStorageData() async {
+    private func getCachedStorageData() {
         updateVolumeStorage(from: storageDataProviding.storageData)
     }
 
@@ -283,6 +311,7 @@ extension StorageView {
     init(mainViewModel: MainViewModel, previewDriveSize: Int64, previewDriveUsedSize: Int64) {
         self.init(mainViewModel: mainViewModel)
         _driveStorageInfo = State(initialValue: DriveStorageInfo(
+            driveDbId: mainViewModel.currentDrive?.dbId,
             name: KDriveLocalizable.labelMySubscription,
             size: previewDriveSize,
             usedSize: previewDriveUsedSize

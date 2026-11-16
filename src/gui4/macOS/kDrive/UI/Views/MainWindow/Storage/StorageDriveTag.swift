@@ -20,12 +20,23 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-/// Small tag recalling the drive a storage item refers to.
+/// Small tag recalling the drive or the sync a storage item refers to.
 struct StorageDriveTag: View {
     let drive: UIDrive?
-    var synchro: UISynchro?
+    let synchro: UISynchro?
 
-    /// The sync name uses the default color; the drive's own color only applies when its name is shown.
+    private var title: String {
+        return synchro?.localPath.lastPathComponent ?? drive?.name ?? ""
+    }
+
+    private var icon: Image {
+        guard synchro == nil else {
+            return KDriveResources.folder.swiftUIImage
+        }
+        return KDriveResources.kdriveFoldersStackedFilled.swiftUIImage
+    }
+
+    /// The drive's own color only applies when its name is shown, the sync name uses the default color.
     private var iconColor: Color {
         guard synchro == nil, let driveColor = drive?.color else {
             return ColorToken.Drive.defaultColor.asColor
@@ -35,24 +46,14 @@ struct StorageDriveTag: View {
 
     var body: some View {
         Label {
-            Text(synchro?.localPath.lastPathComponent ?? drive?.name ?? "")
+            Text(title)
                 .lineLimit(1)
         } icon: {
-            if synchro == nil {
-                KDriveResources.kdriveFoldersStackedFilled.swiftUIImage
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 14, height: 14)
-                    .foregroundStyle(iconColor)
-            }
-            else {
-                KDriveResources.folder.swiftUIImage
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 14, height: 14)
-                    .foregroundStyle(ColorToken.Drive.defaultColor.asColor)
-            }
-            
+            icon
+                .resizable()
+                .scaledToFit()
+                .frame(width: 14, height: 14)
+                .foregroundStyle(iconColor)
         }
         .labelStyle(.titleAndIcon)
         .padding(.horizontal, AppPadding.padding4)
@@ -65,11 +66,24 @@ struct StorageDriveTag: View {
 }
 
 #Preview("Main sync") {
-    StorageDriveTag(drive: UIDrive(dbId: 1, driveId: 1, name: "My kDrive", isAdmin: true, hexColor: nil))
-        .padding()
+    StorageDriveTag(
+        drive: UIDrive(dbId: 1, driveId: 1, name: "My kDrive", isAdmin: true, hexColor: nil),
+        synchro: nil
+    )
+    .padding()
 }
 
 #Preview("Advanced sync") {
-    StorageDriveTag(drive: nil, synchro: UISynchro(dbId: 1, driveDbId: 1, localPath: URL(fileURLWithPath: "/test"), targetNodeId: "1", supportsVirtualFileSystem: true, useVirtualFileSystem: false))
-        .padding()
+    StorageDriveTag(
+        drive: nil,
+        synchro: UISynchro(
+            dbId: 1,
+            driveDbId: 1,
+            localPath: URL(fileURLWithPath: "/test"),
+            targetNodeId: "1",
+            supportsVirtualFileSystem: true,
+            useVirtualFileSystem: false
+        )
+    )
+    .padding()
 }
