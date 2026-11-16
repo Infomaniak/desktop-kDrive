@@ -38,11 +38,21 @@ struct StorageDriveTag: View {
             Text(synchro?.localPath.lastPathComponent ?? drive?.name ?? "")
                 .lineLimit(1)
         } icon: {
-            KDriveResources.kdriveFoldersStackedFilled.swiftUIImage
-                .resizable()
-                .scaledToFit()
-                .frame(width: 14, height: 14)
-                .foregroundStyle(iconColor)
+            if synchro == nil {
+                KDriveResources.kdriveFoldersStackedFilled.swiftUIImage
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 14, height: 14)
+                    .foregroundStyle(iconColor)
+            }
+            else {
+                KDriveResources.folder.swiftUIImage
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 14, height: 14)
+                    .foregroundStyle(ColorToken.Drive.defaultColor.asColor)
+            }
+            
         }
         .labelStyle(.titleAndIcon)
         .padding(.horizontal, AppPadding.padding4)
@@ -54,7 +64,12 @@ struct StorageDriveTag: View {
     }
 }
 
-#Preview {
+#Preview("Main sync") {
     StorageDriveTag(drive: UIDrive(dbId: 1, driveId: 1, name: "My kDrive", isAdmin: true, hexColor: nil))
+        .padding()
+}
+
+#Preview("Advanced sync") {
+    StorageDriveTag(drive: nil, synchro: UISynchro(dbId: 1, driveDbId: 1, localPath: URL(fileURLWithPath: "/test"), targetNodeId: "1", supportsVirtualFileSystem: true, useVirtualFileSystem: false))
         .padding()
 }
