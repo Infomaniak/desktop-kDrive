@@ -1473,7 +1473,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
 
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
     if (job->exitInfo().code() == ExitCode::BackError && details::isManagedBackError(job->exitInfo().cause())) {
-        bypassProgressComplete = true;
         return handleManagedBackError(job->exitInfo(), syncOp, job->exitInfo().cause() == ExitCause::InvalidName);
     }
 
@@ -1494,7 +1493,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
                 LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
                                                                     << L" operation for "
                                                                     << Utility::formatSyncPath(relativeLocalPath));
-                bypassProgressComplete = true;
                 return {ExitCode::Ok, ExitCause::OperationCanceled};
             }
         } else if (const auto exitInfo = handleExecutorError(syncOp, job->exitInfo()); !exitInfo) {
@@ -1506,7 +1504,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
                                                                 << L" operation for "
                                                                 << Utility::formatSyncPath(relativeLocalPath));
-            bypassProgressComplete = true;
             return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
     } else {
