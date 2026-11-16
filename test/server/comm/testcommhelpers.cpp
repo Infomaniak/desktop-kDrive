@@ -58,6 +58,16 @@ CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj) {
     return CommonUtility::str2CommString(json.str());
 }
 
+CommString normalizedJson(const CommString &json) {
+    Poco::JSON::Parser parser;
+    const auto obj = parser.parse(CommonUtility::commString2Str(json)).extract<Poco::JSON::Object::Ptr>();
+
+    std::ostringstream normalized;
+    Poco::JSON::Stringifier::stringify(obj, normalized, 0); // compact form
+
+    return CommonUtility::str2CommString(normalized.str());
+}
+
 Poco::JSON::Object createSimpleQuery(const RequestNum requestNum) {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
