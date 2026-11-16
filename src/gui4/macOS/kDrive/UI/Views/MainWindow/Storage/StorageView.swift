@@ -21,7 +21,6 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
-import OrderedCollections
 import SwiftUI
 
 struct StorageItem: Sendable, Identifiable {
@@ -50,25 +49,14 @@ struct StorageItem: Sendable, Identifiable {
 
 struct DriveStorageInfo {
     /// Database id of the drive these values belong to, `nil` when they don't come from a drive.
-    var driveDbId: Int?
-    var name: String
-    var size: Int64?
-    var usedSize: Int64?
+    let driveDbId: Int?
+    let name: String
+    let size: Int64
+    let usedSize: Int64
 
-    static func loading(driveDbId: Int?) -> DriveStorageInfo {
-        return DriveStorageInfo(driveDbId: driveDbId, name: KDriveLocalizable.labelMySubscription, size: nil, usedSize: nil)
+    var freeSpace: Int64 {
+        return max(size - usedSize, 0)
     }
-}
-
-enum VolumeStorageItems {
-    case freeSpace
-    case usedSpace
-    case usedByKDrive
-}
-
-enum DriveStorageItems {
-    case usedSpace
-    case freeSpace
 }
 
 struct StorageView: View {
@@ -76,15 +64,11 @@ struct StorageView: View {
     @InjectService private var cacheObservable: CoherentCacheObservable
     @InjectService private var coherentCache: CoherentCache
 
-    @State private var volumeName = KDriveLocalizable.storageDeviceNameMac
-    @State private var volumeStorageItems: OrderedDictionary<VolumeStorageItems, StorageItem> = [
-        .usedByKDrive: StorageItem(title: KDriveLocalizable.storageMacUsedByKDrive, color: .blue, usedBytes: nil),
-        .usedSpace: StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: nil),
-        .freeSpace: StorageItem(title: KDriveLocalizable.storageMacFreeSpace, color: .gray, usedBytes: nil, isDefault: true)
-    ]
-    @State private var isShowingVolumeNotFound = false
+    /// Storage results of every sync, the displayed values are derived from the selected sync's one.
+    @State private var indexedStorageData: IndexedStorageData = [:]
 
-    @State private var driveStorageInfo = DriveStorageInfo.loading(driveDbId: nil)
+    /// Storage info of the last drive received, the displayed values are derived from it if it is the selected drive.
+    @State private var driveStorageInfo: DriveStorageInfo?
 
     @ObservedObject var mainViewModel: MainViewModel
 
@@ -99,62 +83,98 @@ struct StorageView: View {
         return cacheObservable.usersPublisher.drivePublisher(driveDbId: Int32(driveDbId))
     }
 
-    /// Drive values of the current drive, or a loading state while the ones received belong to another drive.
-    private var currentDriveStorageInfo: DriveStorageInfo {
-        let currentDriveDbId = mainViewModel.currentDrive?.dbId
-        guard driveStorageInfo.driveDbId == currentDriveDbId else {
-            return .loading(driveDbId: currentDriveDbId)
+    // MARK: - Volume section
+
+    private var currentVolumeStorageResult: Result<VolumeStorageData, StorageDataError>? {
+        guard let synchroDbId = mainViewModel.currentSynchro?.dbId else {
+            return nil
+        }
+        return indexedStorageData[Int32(synchroDbId)]
+    }
+
+    /// Measurements of the selected sync's volume, `nil` while they are loading or couldn't be fetched.
+    private var currentVolumeStorage: VolumeStorageData? {
+        guard case .success(let volumeStorage) = currentVolumeStorageResult else {
+            return nil
+        }
+        return volumeStorage
+    }
+
+    private var isShowingVolumeNotFound: Bool {
+        return currentVolumeStorageResult == .failure(.cannotGetVolumeInfo)
+    }
+
+    private var volumeName: String {
+        return currentVolumeStorage?.name ?? KDriveLocalizable.storageDeviceNameMac
+    }
+
+    private var volumeStorageItems: [StorageItem] {
+        let volumeStorage = currentVolumeStorage
+        return [
+            StorageItem(
+                title: KDriveLocalizable.storageMacUsedByKDrive,
+                color: .blue,
+                usedBytes: volumeStorage?.usedByKDrive,
+                drive: mainViewModel.currentDrive,
+                synchro: mainViewModel.currentSynchro
+            ),
+            StorageItem(title: KDriveLocalizable.storageMacUsedByComputer, color: .purple, usedBytes: volumeStorage?.usedSpace),
+            StorageItem(
+                title: KDriveLocalizable.storageMacFreeSpace,
+                color: .gray,
+                usedBytes: volumeStorage?.freeSpace,
+                isDefault: true
+            )
+        ]
+    }
+
+    private var volumeStorageData: StorageSectionView.StorageData {
+        guard let volumeStorage = currentVolumeStorage, let usedByKDrive = volumeStorage.usedByKDrive else {
+            return .loading
+        }
+
+        let usedSpace = usedByKDrive + volumeStorage.usedSpace
+        return .data(usedBytes: usedSpace, availableBytes: usedSpace + volumeStorage.freeSpace)
+    }
+
+    // MARK: - Subscription section
+
+    /// Storage info of the selected drive, `nil` while it is loading or the info received belongs to another drive.
+    private var currentDriveStorage: DriveStorageInfo? {
+        guard let driveStorageInfo, driveStorageInfo.driveDbId == mainViewModel.currentDrive?.dbId else {
+            return nil
         }
         return driveStorageInfo
     }
 
-    private var displayedVolumeStorageItems: [StorageItem] {
-        var items = volumeStorageItems
-        items[.usedByKDrive]?.synchro = mainViewModel.currentSynchro
-        items[.usedByKDrive]?.drive = mainViewModel.currentDrive
-        return Array(items.values)
+    private var driveName: String {
+        return currentDriveStorage?.name ?? KDriveLocalizable.labelMySubscription
     }
 
-    private var volumeStorageData: StorageSectionView.StorageData {
-        guard let usedByKDrive = volumeStorageItems[.usedByKDrive]?.usedBytes,
-              let usedByComputer = volumeStorageItems[.usedSpace]?.usedBytes,
-              let freeSpace = volumeStorageItems[.freeSpace]?.usedBytes else {
-            return .loading
-        }
-
-        let usedSpace = usedByKDrive + usedByComputer
-        return .data(usedBytes: usedSpace, availableBytes: usedSpace + freeSpace)
-    }
-
-    private var driveStorageItems: OrderedDictionary<DriveStorageItems, StorageItem> {
-        let driveStorageInfo = currentDriveStorageInfo
-        var freeSpace: Int64?
-        if let size = driveStorageInfo.size, let usedSize = driveStorageInfo.usedSize {
-            freeSpace = max(size - usedSize, 0)
-        }
-
+    private var driveStorageItems: [StorageItem] {
+        let driveStorage = currentDriveStorage
         return [
-            .usedSpace: StorageItem(
+            StorageItem(
                 title: KDriveLocalizable.storageOnlineUsed,
                 color: .blue,
-                usedBytes: driveStorageInfo.usedSize,
+                usedBytes: driveStorage?.usedSize,
                 drive: mainViewModel.currentDrive
             ),
-            .freeSpace: StorageItem(
+            StorageItem(
                 title: KDriveLocalizable.storageOnlineFree,
                 color: .gray,
-                usedBytes: freeSpace,
+                usedBytes: driveStorage?.freeSpace,
                 isDefault: true
             )
         ]
     }
 
     private var driveStorageData: StorageSectionView.StorageData {
-        guard let usedSpace = driveStorageItems[.usedSpace]?.usedBytes,
-              let freeSpace = driveStorageItems[.freeSpace]?.usedBytes else {
+        guard let driveStorage = currentDriveStorage else {
             return .loading
         }
-        return .data(usedBytes: usedSpace, availableBytes: usedSpace + freeSpace)
+
+        return .data(usedBytes: driveStorage.usedSize, availableBytes: driveStorage.usedSize + driveStorage.freeSpace)
     }
 
     var body: some View {
@@ -176,7 +196,7 @@ struct StorageView: View {
                     StorageSectionView(
                         title: volumeName,
                         storageData: volumeStorageData,
-                        items: displayedVolumeStorageItems,
+                        items: volumeStorageItems,
                         byteCountFormatStyle: .file
                     )
 
@@ -189,9 +209,9 @@ struct StorageView: View {
                     }
 
                     StorageSectionView(
-                        title: currentDriveStorageInfo.name,
+                        title: driveName,
                         storageData: driveStorageData,
-                        items: Array(driveStorageItems.values),
+                        items: driveStorageItems,
                         byteCountFormatStyle: .memory
                     )
                 }
@@ -249,8 +269,9 @@ struct StorageView: View {
     }
 
     private func handleUpdatedDrive(_ drive: Drive?) {
-        guard let drive else {
-            driveStorageInfo = .loading(driveDbId: mainViewModel.currentDrive?.dbId)
+        // The server sends a size of 0 until the drive info has been loaded from the API.
+        guard let drive, drive.size > 0 else {
+            driveStorageInfo = nil
             return
         }
 
@@ -264,43 +285,19 @@ struct StorageView: View {
             driveStorageInfo = DriveStorageInfo(
                 driveDbId: Int(drive.driveDbId),
                 name: name,
-                // The server sends a size of 0 until the drive info has been loaded from the API.
-                size: drive.size > 0 ? drive.size : nil,
-                usedSize: drive.size > 0 ? drive.usedSize : nil
+                size: drive.size,
+                usedSize: drive.usedSize
             )
         }
     }
 
     private func getCachedStorageData() {
-        updateVolumeStorage(from: storageDataProviding.storageData)
+        indexedStorageData = storageDataProviding.storageData
     }
 
     private func handleUpdatedStorageData(_ indexedStorageData: IndexedStorageData) {
         withAnimation {
-            updateVolumeStorage(from: indexedStorageData)
-        }
-    }
-
-    private func updateVolumeStorage(from indexedStorageData: IndexedStorageData) {
-        guard let synchroDbId = mainViewModel.currentSynchro?.dbId,
-              let storageDataResult = indexedStorageData[Int32(synchroDbId)] else {
-            return
-        }
-
-        switch storageDataResult {
-        case .success(let storageData):
-            isShowingVolumeNotFound = false
-
-            volumeName = storageData.name
-
-            volumeStorageItems[.usedByKDrive]?.usedBytes = storageData.usedByKDrive
-            volumeStorageItems[.usedSpace]?.usedBytes = storageData.usedSpace
-            volumeStorageItems[.freeSpace]?.usedBytes = storageData.freeSpace
-        case .failure(let error):
-            guard error == .cannotGetVolumeInfo else {
-                return
-            }
-            isShowingVolumeNotFound = true
+            self.indexedStorageData = indexedStorageData
         }
     }
 }
