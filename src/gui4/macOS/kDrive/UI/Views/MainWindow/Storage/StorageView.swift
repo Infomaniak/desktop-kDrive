@@ -269,8 +269,9 @@ struct StorageView: View {
     }
 
     private func handleUpdatedDrive(_ drive: Drive?) {
-        // The server sends a size of 0 until the drive info has been loaded from the API.
-        guard let drive, drive.size > 0 else {
+        // Drives restored from the server database have a size but no used size nor pack, these are only set once the drive
+        // info has been loaded from the API. The pack id tells whether the quota comes from the API.
+        guard let drive, drive.packInfo.id != 0 else {
             driveStorageInfo = nil
             return
         }
