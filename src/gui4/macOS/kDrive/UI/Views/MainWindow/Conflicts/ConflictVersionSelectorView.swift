@@ -202,7 +202,10 @@ struct ConflictVersionSelectorView: View {
                 let remoteURL = nodeURLGenerator.remoteURL(for: remoteNodeId, driveId: synchroContext.drive.driveId)
                 NSWorkspace.shared.open(remoteURL)
             case .local:
-                let localURL = nodeURLGenerator.localURL(for: error.metadata.destinationPath, synchroPath: synchroContext.synchro.localPath)
+                let localURL = nodeURLGenerator.localURL(
+                    for: error.metadata.destinationPath,
+                    synchroPath: synchroContext.synchro.localPath
+                )
                 NSWorkspace.shared.open(localURL)
             }
         }
