@@ -135,13 +135,18 @@ function Invoke-UpdateLoop {
                 Complete-Updates $state "ready" "No routine update left to install."
             }
 
+            # Download and install are synchronous and can take over an hour: log each phase boundary.
+            Write-Log "  Downloading $($toInstall.Count) update(s)."
             $downloader = $session.CreateUpdateDownloader()
             $downloader.Updates = $toInstall
-            [void]$downloader.Download()
+            $downloadResult = $downloader.Download()
+            Write-Log "  Download finished: code=$($downloadResult.ResultCode) hresult=$($downloadResult.HResult)"
 
+            Write-Log "  Installing $($toInstall.Count) update(s)."
             $installer = $session.CreateUpdateInstaller()
             $installer.Updates = $toInstall
             $installResult = $installer.Install()
+            Write-Log "  Install finished: code=$($installResult.ResultCode) reboot=$($installResult.RebootRequired)"
 
             $failures = @{}
             if ($state.failures) {
