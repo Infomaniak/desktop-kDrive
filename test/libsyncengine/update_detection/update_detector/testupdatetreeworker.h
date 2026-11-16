@@ -41,7 +41,7 @@ class MockUpdateTreeWorker : public UpdateTreeWorker {
 };
 
 class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestUpdateTreeWorker); 
+        CPPUNIT_TEST_SUITE(TestUpdateTreeWorker);
         CPPUNIT_TEST(testUtilsFunctions);
         CPPUNIT_TEST(testUpdateTmpFileNode);
         CPPUNIT_TEST(testHandleCreateOperationsWithSamePath);
@@ -56,6 +56,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStep4);
         CPPUNIT_TEST(testStep5);
         CPPUNIT_TEST(testStep6);
+        CPPUNIT_TEST(testStep6ReusesRenamedNode);
         CPPUNIT_TEST(testStep7);
         CPPUNIT_TEST(testStep8);
         CPPUNIT_TEST(testStep8b);
@@ -104,6 +105,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         void testStep4();
         void testStep5();
         void testStep6();
+        void testStep6ReusesRenamedNode();
         void testStep7();
         void testStep8();
         void testStep8b();
