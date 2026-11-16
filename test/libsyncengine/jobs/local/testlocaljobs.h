@@ -37,7 +37,6 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDeleteExcludedDehydratedPlaceholderJob);
 #endif
         CPPUNIT_TEST(testGenericLocalDeleteJobHardDelete);
-        CPPUNIT_TEST(testHydratePlaceHolderJob);
         CPPUNIT_TEST(testOpenFileJob);
         CPPUNIT_TEST_SUITE_END();
 
@@ -52,7 +51,6 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
         void testDeleteFilesWithDuplicateNames();
         void testDeleteExcludedDehydratedPlaceholderJob();
         void testGenericLocalDeleteJobHardDelete();
-        void testHydratePlaceHolderJob();
         void testOpenFileJob();
 
     private:

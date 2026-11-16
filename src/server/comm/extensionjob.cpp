@@ -25,7 +25,6 @@
 #include "libcommon/theme/theme.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
-#include "libsyncengine/jobs/local/hydrateplaceholderjob.h"
 
 #include <QApplication>
 #include <QFileInfo>
@@ -320,12 +319,76 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
             continue;
         }
 
-        // The job checks the item state (symlink, placeholder, already hydrated/ing, pin state) and enqueues the
-        // download job.
-        HydratePlaceHolderJob job(std::move(syncPal), fileData.localPath, fileData.relativePath, parentFolder);
-        if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
+        if (fileData.isLink) {
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Don't hydrate symlinks - " << Utility::formatSyncPath(filePath));
+            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, PinState::OnlineOnly, ExitCode::Unknown);
+                !cancelHydrateExitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": "
+                                                                << cancelHydrateExitInfo);
+            }
+            continue;
+        }
+
+        // Check file status
+        auto status = SyncFileStatus::Unknown;
+        VfsStatus vfsStatus;
+        if (ExitInfo exitInfo = syncFileStatus(fileData, status, vfsStatus); !exitInfo) {
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in HydratePlaceHolderJob - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                      L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, PinState::OnlineOnly, exitInfo);
+                !cancelHydrateExitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": "
+                                                                << cancelHydrateExitInfo);
+            }
+            continue;
+        }
+
+        if (!vfsStatus.isPlaceholder) {
+            // File is not a placeholder, this should never happen
+            LOGW_WARN(Log::instance()->getLogger(), L"File is not a placeholder - " << Utility::formatSyncPath(filePath));
+            continue;
+        }
+
+        if (vfsStatus.isHydrated || status == SyncFileStatus::Syncing) {
+            LOGW_INFO(Log::instance()->getLogger(), L"File is already hydrated/ing - " << Utility::formatSyncPath(filePath));
+            continue;
+        }
+
+        PinState ps{PinState::Unknown};
+#if defined(KD_MACOS)
+        // Not done in Windows case: triggers a hydration
+        // Get pin state
+        if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
+            LOGW_INFO(Log::instance()->getLogger(),
+                      L"Error in ExtensionJob::getPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+            continue;
+        }
+
+        if (ps != PinState::AlwaysLocal) {
+            // Set pin state
+            if (const auto exitInfo = setPinState(fileData, PinState::AlwaysLocal); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                continue;
+            }
+        }
+#else
+        ps = PinState::OnlineOnly;
+#endif
+
+        if (ExitInfo exitInfo = addDownloadJob(fileData, parentFolder); !exitInfo) {
+            LOGW_INFO(Log::instance()->getLogger(),
+                      L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+
+            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, ps, exitInfo); !cancelHydrateExitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": "
+                                                                << cancelHydrateExitInfo);
+            }
+
+            continue;
         }
     }
 }
@@ -941,6 +1004,28 @@ ExitInfo ExtensionJob::cancelHydrate(const FileData &fileData, PinState pinState
     vfsMapIt->second->cancelHydrate(fileData.localPath, exitInfo);
 
     if (pinState != PinState::Unknown) return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
+    if (!fileData.syncDbId) {
+        return ExitCode::LogicError;
+    }
+
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+
+    if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
+
+    // Create download job
+    if (const ExitInfo exitInfo =
+                syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
+        !exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in SyncPal::addDownloadJob - " << Utility::formatSyncPath(fileData.relativePath));
+        return exitInfo;
+    }
 
     return ExitCode::Ok;
 }
