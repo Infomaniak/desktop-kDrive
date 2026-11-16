@@ -18,6 +18,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using System;
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -28,60 +29,90 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
+        public GridLength GetSectionWidth(Brush? color, long? value, long? value1, long? value2, long? value3, long? value4)
+        {
+            if (color is null)
+                return new GridLength(0, GridUnitType.Star);
+
+            long total = Math.Max(0, value1 ?? 0) + Math.Max(0, value2 ?? 0) + Math.Max(0, value3 ?? 0) + Math.Max(0, value4 ?? 0);
+            return new GridLength(Math.Max(Math.Max(0, value ?? 0), total / 100.0), GridUnitType.Star);
+        }
+
 
         private static readonly DependencyProperty Color1Property =
             DependencyProperty.Register("Color1", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value1Property =
-            DependencyProperty.Register("Value1", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(null));
+            DependencyProperty.Register("Value1", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
 
 
         private static readonly DependencyProperty Color2Property =
             DependencyProperty.Register("Color2", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value2Property =
-            DependencyProperty.Register("Value2", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(null));
+            DependencyProperty.Register("Value2", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
+
 
         private static readonly DependencyProperty Color3Property =
             DependencyProperty.Register("Color3", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value3Property =
-            DependencyProperty.Register("Value3", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata(null));
+            DependencyProperty.Register("Value3", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
+
+
+        private static readonly DependencyProperty Color4Property =
+            DependencyProperty.Register("Color4", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
+
+        private static readonly DependencyProperty Value4Property =
+            DependencyProperty.Register("Value4", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
+
 
         public Brush Color1
         {
-            get { return (Brush)GetValue(Color1Property); }
-            set { SetValue(Color1Property, value); }
+            get => (Brush)GetValue(Color1Property);
+            set => SetValue(Color1Property, value);
         }
 
         public long? Value1
         {
-            get { return (long?)GetValue(Value1Property); }
-            set { SetValue(Value1Property, value); }
+            get => (long?)GetValue(Value1Property);
+            set => SetValue(Value1Property, value);
         }
 
         public Brush Color2
         {
-            get { return (Brush)GetValue(Color2Property); }
-            set { SetValue(Color2Property, value); }
+            get => (Brush)GetValue(Color2Property);
+            set => SetValue(Color2Property, value);
         }
 
         public long? Value2
         {
-            get { return (long?)GetValue(Value2Property); }
-            set { SetValue(Value2Property, value); }
+            get => (long?)GetValue(Value2Property);
+            set => SetValue(Value2Property, value);
         }
 
         public Brush Color3
         {
-            get { return (Brush)GetValue(Color3Property); }
-            set { SetValue(Color3Property, value); }
+            get => (Brush)GetValue(Color3Property);
+            set => SetValue(Color3Property, value);
         }
 
         public long? Value3
         {
-            get { return (long?)GetValue(Value3Property); }
-            set { SetValue(Value3Property, value); }
+            get => (long?)GetValue(Value3Property);
+            set => SetValue(Value3Property, value);
+        }
+
+        public Brush Color4
+        {
+            get => (Brush)GetValue(Color4Property);
+            set => SetValue(Color4Property, value);
+        }
+
+        public long? Value4
+        {
+            get => (long?)GetValue(Value4Property);
+            set => SetValue(Value4Property, value);
         }
 
     }
