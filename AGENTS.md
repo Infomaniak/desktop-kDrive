@@ -75,6 +75,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 > immediately so you don't make the same mistake again.
 
 ### Local Norms
+- When making an updated AppImage executable, add only the owner's execute permission (`u+x`) and preserve existing permissions.
 - The macOS desktop CI runner's runnable Xcode 26 installation is `/Applications/Xcode_26.app`; select it with job-scoped `DEVELOPER_DIR`.
 - macOS server build and test workflows use the desktop CI stack on M2-3 and `.github/actions/setup_xcode` to verify Xcode 26. Keep the redesigned Swift UI workflow on the iOS runners with `Xcode-Latest.app`.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
@@ -93,6 +94,10 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 - When importing GUI translations from Loco, only keep keys actually referenced by the GUI code; never add a translation just because the key exists in Loco. Unused Loco keys are removed from the imported files and reappear on every import until the code starts using them.
+- Do not modify the recovery updater as part of Linux v4 GUI release work unless the user explicitly requests it.
+- For Linux v4 release work, package the recovery updater as a separate AppImage and never include its binary or
+  AppImage in the main kDrive AppImage. Limit recovery updater changes to build and packaging fixes unless explicitly
+  requested.
 <!-- Add project-specific user corrections here -->
 - Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.

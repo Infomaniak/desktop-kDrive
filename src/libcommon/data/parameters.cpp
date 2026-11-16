@@ -40,6 +40,7 @@ static const auto parametersMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersVersionChannel = "distributionChannel";
 static const auto parametersSentryEnabled = "sentryEnabled";
 static const auto parametersMatomoEnabled = "matomoEnabled";
+static const auto parametersAutoUpdates = "autoUpdates";
 
 void Parameters::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersLanguage, _language);
@@ -73,6 +74,7 @@ void Parameters::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersVersionChannel, _distributionChannel);
     CommonUtility::writeValueToStruct(dstruct, parametersSentryEnabled, _sentryEnabled);
     CommonUtility::writeValueToStruct(dstruct, parametersMatomoEnabled, _matomoEnabled);
+    CommonUtility::writeValueToStruct(dstruct, parametersAutoUpdates, _autoUpdates);
 };
 
 void Parameters::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -119,6 +121,9 @@ void Parameters::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersVersionChannel, _distributionChannel);
     CommonUtility::readValueFromStruct(dstruct, parametersSentryEnabled, _sentryEnabled);
     CommonUtility::readValueFromStruct(dstruct, parametersMatomoEnabled, _matomoEnabled);
+    if (dstruct.contains(parametersAutoUpdates)) { // Only sent by the Linux client
+        CommonUtility::readValueFromStruct(dstruct, parametersAutoUpdates, _autoUpdates);
+    }
 };
 
 } // namespace KDC

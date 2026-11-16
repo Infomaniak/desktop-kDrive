@@ -17,6 +17,7 @@
  */
 
 #include "testguicommchannel.h"
+#include "../testcommhelpers.h"
 #include "libcommonserver/log/log.h"
 
 namespace KDC {
@@ -83,9 +84,9 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
     };
 
     auto answerCbk = [=](const CommString &answer) {
-        CommString s{answer};
-        assert(answer == CommString(cbkAnswer));
-        CPPUNIT_ASSERT(answer == CommString(cbkAnswer));
+        const auto normalizedAnswer = testcommhelpers::normalizedJson(answer);
+        const auto expectedAnswer = testcommhelpers::normalizedJson(cbkAnswer);
+        CPPUNIT_ASSERT_MESSAGE(normalizedAnswer + " != " + expectedAnswer, normalizedAnswer == expectedAnswer);
     };
 
     GuiCommChannel::runProcessQuery(query, readyReadCbk, answerCbk);

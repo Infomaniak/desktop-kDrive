@@ -30,6 +30,9 @@ extern "C" {
 #endif
 #include "workers/testworkers.h"
 #include "updater/testabstractupdater.h"
+#if defined(KD_LINUX)
+#include "updater/testlinuxupdater.h"
+#endif
 #if defined(KD_WINDOWS)
 #include "updater/testwindowsupdater.h"
 #include "vfs/win/testvfswinregistration.h"
@@ -52,6 +55,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
+#if defined(KD_LINUX)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLinuxUpdater);
+#endif
 #if defined(KD_WINDOWS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWindowsUpdater);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsWinRegistration);

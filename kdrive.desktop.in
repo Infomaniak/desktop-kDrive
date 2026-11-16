@@ -12,19 +12,27 @@ MimeType=application/vnd.@APPLICATION_EXECUTABLE@;
 
 
 # Translations
+Comment[da]=@APPLICATION_NAME@-synkroniseringsklient til skrivebordet
+GenericName[da]=Mappesynkronisering
 Comment[de]=@APPLICATION_NAME@ Desktop-Synchronisationsclient
 GenericName[de]=Ordner-Synchronisation
-Name[de]=@APPLICATION_NAME@
-Icon[de]=@APPLICATION_ICON_NAME@
+Comment[el]=Εφαρμογή συγχρονισμού @APPLICATION_NAME@ για υπολογιστές
+GenericName[el]=Συγχρονισμός φακέλων
 Comment[es]=@APPLICATION_NAME@ cliente de sincronización de escritorio
 GenericName[es]=Sincronización de carpeta
-Name[es]=@APPLICATION_NAME@
-Icon[es]=@APPLICATION_ICON_NAME@
+Comment[fi]=@APPLICATION_NAME@-synkronointisovellus työpöydälle
+GenericName[fi]=Kansioiden synkronointi
 Comment[fr]=Client de synchronisation @APPLICATION_NAME@
 GenericName[fr]=Synchronisation de dossier
-Name[fr]=@APPLICATION_NAME@
-Icon[fr]=@APPLICATION_ICON_NAME@
 Comment[it]=Client di sincronizzazione del desktop di @APPLICATION_NAME@
 GenericName[it]=Sincronizzazione cartella
-Name[it]=@APPLICATION_NAME@
-Icon[it]=@APPLICATION_ICON_NAME@
+Comment[nb]=@APPLICATION_NAME@-synkroniseringsklient for skrivebordet
+GenericName[nb]=Mappesynkronisering
+Comment[nl]=@APPLICATION_NAME@-synchronisatieclient voor de desktop
+GenericName[nl]=Mapsynchronisatie
+Comment[pl]=Klient synchronizacji @APPLICATION_NAME@ dla komputerów
+GenericName[pl]=Synchronizacja folderów
+Comment[pt]=Cliente de sincronização @APPLICATION_NAME@ para computador
+GenericName[pt]=Sincronização de pastas
+Comment[sv]=@APPLICATION_NAME@-synkroniseringsklient för skrivbordet
+GenericName[sv]=Mappsynkronisering
