@@ -316,17 +316,16 @@ void TestAppServer::testResolveErrorsForNode() {
                     CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errAccess));
 
-    // Auto-resolved: TmpBlacklisted
+    // Cancellation errors remain visible after the operation is retried.
     Error errTmp(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
                  CancelType::TmpBlacklisted);
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errTmp));
 
-    // Auto-resolved: canceled edit
     Error errCanceled(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
                       CancelType::Edit);
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errCanceled));
 
-    // Auto-resolved: ForbiddenChar
+    // Non-cancellation errors are resolved when the file is synchronized.
     Error errChar(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::ForbiddenChar);
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errChar));
 
@@ -341,13 +340,13 @@ void TestAppServer::testResolveErrorsForNode() {
     item.setPath(path);
     _appPtr->resolveItemErrors(syncDbId, item);
 
-    // Auto-resolved errors and the conflict must remain, but the access error must be removed.
+    // Cancellation errors and conflicts remain; other errors are resolved.
     std::vector<Error> errorList;
     bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(syncDbId, localId, remoteId, std::nullopt, std::nullopt, errorList,
                                                               found));
     CPPUNIT_ASSERT(found);
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(4), errorList.size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), errorList.size());
     const auto containsError = [&errorList](const Error &error) {
         return std::any_of(errorList.begin(), errorList.end(),
                            [&error](const Error &entry) { return entry.dbId() == error.dbId(); });
@@ -355,7 +354,7 @@ void TestAppServer::testResolveErrorsForNode() {
     CPPUNIT_ASSERT(!containsError(errAccess));
     CPPUNIT_ASSERT(containsError(errTmp));
     CPPUNIT_ASSERT(containsError(errCanceled));
-    CPPUNIT_ASSERT(containsError(errChar));
+    CPPUNIT_ASSERT(!containsError(errChar));
     CPPUNIT_ASSERT(containsError(errConflict));
 }
 
