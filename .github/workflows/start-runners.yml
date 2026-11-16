@@ -30,7 +30,22 @@ env:
   REPO: ${{ github.repository }}
 
 jobs:
+  refresh-test:
+    if: github.event_name == 'workflow_dispatch' && inputs.count == '0'
+    uses: ./.github/workflows/update-windows-image.yml
+    with:
+      image_name: win_kdrive_runner_build_env_test
+      promote: true
+      windows_flavor: a16-ram32-disk80-perf1
+      work_volume_size_gb: "200"
+      sysprep_unattend: 'C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml'
+    secrets: inherit
+    permissions:
+      actions: write
+      contents: read
+
   start-instances:
+    if: github.event_name != 'workflow_dispatch' || inputs.count != '0'
     runs-on: ubuntu-latest
     # Shared with the promote job of update-windows-image.yml: never resolve the image during its renames.
     concurrency:

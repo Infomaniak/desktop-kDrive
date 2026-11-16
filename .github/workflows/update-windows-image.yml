@@ -26,6 +26,23 @@ on:
         description: "Unattend file used by Sysprep on the Windows VM"
         required: true
         default: 'C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml'
+  workflow_call:
+    inputs:
+      image_name:
+        type: string
+        required: true
+      promote:
+        type: boolean
+        default: true
+      windows_flavor:
+        type: string
+        required: true
+      work_volume_size_gb:
+        type: string
+        required: true
+      sysprep_unattend:
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -580,7 +597,7 @@ jobs:
           DEADLINE=$(( $(date +%s) + 30 * 60 ))
           while (( $(date +%s) < DEADLINE )); do
             STATUS="$(gh api "/repos/${REPO}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs?per_page=100" \
-              --jq '.jobs[] | select(.name == "Validate candidate image") | "\(.status) \(.runner_name // "")"')"
+              --jq '.jobs[] | select(.name == "Validate candidate image" or (.name | endswith(" / Validate candidate image"))) | "\(.status) \(.runner_name // "")"')"
             echo "Validation job: ${STATUS:-not created}"
             if [[ "$STATUS" =~ ^(in_progress|completed)\ (.*)$ ]]; then
               [[ "${BASH_REMATCH[2]}" == "$VALIDATE_NAME" ]] || { echo "::error::Picked by unexpected runner ${BASH_REMATCH[2]}"; exit 1; }
@@ -623,7 +640,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           RESULT="$(gh api "/repos/${REPO}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs?per_page=100" \
-            --jq '.jobs[] | select(.name == "Validate candidate image") | "\(.conclusion) \(.runner_name)"')"
+            --jq '.jobs[] | select(.name == "Validate candidate image" or (.name | endswith(" / Validate candidate image"))) | "\(.conclusion) \(.runner_name)"')"
           echo "Validation job: $RESULT"
           [[ "$RESULT" == "success $VALIDATE_NAME" ]] || { echo "::error::Validation was not completed by $VALIDATE_NAME"; exit 1; }
 
