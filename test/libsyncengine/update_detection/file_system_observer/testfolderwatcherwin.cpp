@@ -68,7 +68,7 @@ class NotifyBufferBuilder {
             auto *entry = entryAt(entryIndex);
             entry->Action = action;
             entry->FileNameLength = static_cast<DWORD>(nameBytes);
-            std::memcpy(entry->FileName, fileName.data(), nameBytes);
+            (void) std::memcpy(entry->FileName, fileName.data(), nameBytes);
         }
 
         [[nodiscard]] const void *data() const { return _words.data(); }
@@ -107,7 +107,7 @@ void TestFolderWatcherWin::testBufferOverflowInvalidatesSnapshot() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.processNotifyBuffer(nullptr, 0));
     CPPUNIT_ASSERT(!parent.liveSnapshot().isValid());
     CPPUNIT_ASSERT(syncPal->restart());
-    CPPUNIT_ASSERT_EQUAL((int32_t)0, parent.changesDetectedCallCount());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int32_t>(0), parent.changesDetectedCallCount());
 }
 
 void TestFolderWatcherWin::testNotificationsAreDispatchedInOneBatch() {
@@ -131,7 +131,7 @@ void TestFolderWatcherWin::testNotificationsAreDispatchedInOneBatch() {
     // The snapshot is not valid yet: events are queued in the pending list.
     CPPUNIT_ASSERT(!parent.liveSnapshot().isValid());
     CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.processNotifyBuffer(buffer.data(), buffer.size()));
-    CPPUNIT_ASSERT_EQUAL((int32_t)1, parent.changesDetectedCallCount());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int32_t>(1), parent.changesDetectedCallCount());
 
     const std::vector<std::pair<SyncName, OperationType>> expected = {
             {Str("created.txt"), OperationType::Create}, {Str("edited.txt"), OperationType::Edit},

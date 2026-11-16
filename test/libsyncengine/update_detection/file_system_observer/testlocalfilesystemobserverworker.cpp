@@ -802,10 +802,9 @@ void TestLocalFileSystemObserverWorker::testPendingFileEventErrorIsPropagated() 
             }
     };
 
-    auto localFSO =
-            std::make_shared<FailingLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
+    auto localFSO = std::make_shared<FailingLocalFileSystemObserverWorker>(_syncPal, "Local File System Observer", "LFSO");
     localFSO->_liveSnapshot.setValid(true);
-    localFSO->_pendingFileEvents.emplace_back(_rootFolderPath / "pending-event.txt", OperationType::Create);
+    (void) localFSO->_pendingFileEvents.emplace_back(_rootFolderPath / "pending-event.txt", OperationType::Create);
 
     const auto exitInfo = localFSO->processPendingFileEvents();
 
