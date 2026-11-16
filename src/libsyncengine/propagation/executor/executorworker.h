@@ -24,6 +24,7 @@
 #include "jobs/syncjob.h"
 #include "utility/timerutility.h"
 
+#include <functional>
 #include <queue>
 #include <unordered_map>
 
@@ -86,6 +87,45 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
         ExitInfo convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated);
         ExitInfo handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job, bool &ignored);
         ExitInfo generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job);
+        /**
+         * @brief Checks whether an Edit-Edit conflict resolved by renaming the local file can be propagated as a date-only
+         * update instead. The file contents are compared at execution time with the same hash mechanism as the one used by
+         * the upload and download jobs: this is the only moment where the equality can be verified without risking to act on
+         * outdated information. If the contents are identical (e.g., the same file has been edited on both sides while the
+         * synchronization was paused), the operation is resolved without renaming the local file: the last modification date
+         * of the remote replica is applied to the local file and the operation is flagged with `setDateOnlyUpdate`, so no
+         * conflicted copy is reported. Otherwise, nothing is modified here and the caller proceeds with the standard
+         * resolution, i.e., the local rename. In both cases, no upload or download is ever performed: the remote replica is
+         * never modified in this flow, since HTTP requests have a cost and a latency, and they impact other users.
+         */
+        ExitInfo propagateDateOnlyUpdate(SyncOpPtr syncOp);
+        /**
+         * @brief Checks whether the contents of the local and remote files of an Edit-Edit conflict are identical, i.e.,
+         * whether the conflict resolution can be propagated as a date-only update. The local file must be a regular hydrated
+         * file whose size matches the remote one, and the content equality is verified with the same hash mechanism as the
+         * one used by the upload and download jobs.
+         * @param syncOp The operation resolving the conflict by renaming the local file.
+         * @param absoluteLocalFilePath The absolute path of the local file.
+         * @return True if the contents are identical. False if they are not or if the equality cannot be verified, in which
+         * case the caller must proceed with the standard resolution, i.e., rename the local file.
+         */
+        [[nodiscard]] bool areContentsIdentical(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilePath) const;
+        /**
+         * @brief Applies the date-only update of an Edit-Edit conflict resolved on identical contents: applies the last
+         * modification date of the remote replica to the local file, propagates the change to the DB, the update trees and
+         * the VFS status, and flags the operation with `setDateOnlyUpdate` so that no conflicted copy is reported.
+         * @param syncOp The operation resolving the conflict by renaming the local file.
+         * @param absoluteLocalFilePath The absolute path of the local file.
+         * @return ExitCode indicating if the operation was successful.
+         */
+        ExitInfo applyDateOnlyUpdate(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilePath);
+        /// Check the content equality between the local file and the remote file with the same hash mechanism as the one
+        /// used by the upload and download jobs.
+        static ExitInfo checkContentEquality(const DriveDbId driveDbId, const SyncPath &absoluteLocalPath,
+                                             const NodeId &remoteNodeId, int64_t remoteSize, bool &contentEquality);
+        /// Function used to check the content equality between the local file and the remote one. Injectable to ease testing.
+        static std::function<ExitInfo(const DriveDbId, const SyncPath &, const NodeId &, int64_t, bool &)>
+                _checkContentEqualityFn;
 
         ExitInfo checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
                                           bool &isSyncing); // TODO : is called "check..." but perform some actions. Wording not

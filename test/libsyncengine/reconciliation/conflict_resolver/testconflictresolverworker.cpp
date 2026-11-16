@@ -87,6 +87,8 @@ void TestConflictResolverWorker::testEditEdit() {
 
     const Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditEdit);
     _syncPal->_conflictQueue->push(conflict);
+    _syncPal->copySnapshots(); // The Edit-Edit conflict resolution consumes snapshot copies, so those copies need to be copied
+                               // before execution of the conflict resolver worker.
     _syncPal->_conflictResolverWorker->execute();
 
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());

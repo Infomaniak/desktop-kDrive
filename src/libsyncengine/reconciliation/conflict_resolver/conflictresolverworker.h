@@ -67,6 +67,13 @@ class ConflictResolverWorker : public OperationProcessor {
         /**
          * @brief For Create-Create and Edit-Edit conflicts, the local file is renamed and excluded from the sync in order no to
          * lose any changes. The remote file will be pulled on next sync.
+         * For Edit-Edit conflicts, the content equality cannot be checked at resolution time without querying the remote file,
+         * which would be redundant with the check performed at execution time. The executor therefore checks the content
+         * equality when executing the generated operation: if the contents are identical (e.g., the same file has been edited
+         * on both sides while the synchronization was paused), it propagates only the last modification date of the remote
+         * replica to the local file, so no conflicted copy is created; if they are not, it simply proceeds with the local
+         * rename. In both cases, nothing is ever uploaded or downloaded: the remote replica is left untouched, since HTTP
+         * requests have a cost and a latency, and they impact other users.
          * @param conflict The conflict to be resolved.
          * @param continueSolving A boolean value indicating if we can generate more conflict resolution operations.
          * @return ExitCode indicating if the operation was successful.
