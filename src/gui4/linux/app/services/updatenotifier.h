@@ -30,9 +30,9 @@ class ParametersStore;
 class UpdateStatusService;
 
 /**
- * Notifies the user of an update: available for download, available while automatic updates are off, or installed and
- * waiting for a restart. Each version is notified once per state and per session, never while notifications are
- * disabled. A click opens Settings on the update button.
+ * Notifies the user of an update available for download, or available while automatic updates are off. The server
+ * restarts the application once an update is installed, without any notification. Each version is notified once per
+ * state and per session, never while notifications are disabled. A click opens Settings on the update button.
  */
 class UpdateNotifier final : public QObject {
         Q_OBJECT

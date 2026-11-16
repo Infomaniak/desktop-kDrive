@@ -59,13 +59,10 @@ void UpdateNotifier::notifyIfNeeded() {
             body = qtTrId("updateAvailable").arg(version);
             break;
         case UpdateState::Available:
-            // With automatic updates, the server prepares the update: only its installation is notified.
+            // With automatic updates, the server installs the update and restarts the application on its own.
             if (!parameters->autoUpdates()) {
                 body = qtTrId("updateAvailable").arg(version);
             }
-            break;
-        case UpdateState::Ready:
-            body = qtTrId("updateInstalled").arg(version);
             break;
         default:
             break;
