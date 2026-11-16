@@ -18,10 +18,8 @@
 
 #include "openfilejob.h"
 
-#include "jobs/local/hydrateplaceholderjob.h"
 #include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/kDrive_API/itemsexistjob.h"
-#include "jobs/syncjobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -91,12 +89,8 @@ constexpr std::chrono::milliseconds kProgressNotifyMinInterval(500);
 struct OpenFileJob::HydrationCompletion {
         std::mutex mutex;
         std::condition_variable cv;
-        bool triggered{false}; // The hydration job has run: the item state has been checked and the download has been
-                               // enqueued, unless an error occurred (see `triggerExitInfo`) or no download was needed
-                               // (see `finished`).
-        ExitInfo triggerExitInfo;
-        bool finished{false}; // The hydration is over: the download has completed, or no download was needed.
-        bool success{false}; // Meaningful once `finished` is true: the download succeeded, or no download was needed.
+        bool finished{false}; // The download has completed, successfully or not.
+        bool success{false}; // Meaningful once `finished` is true: the download succeeded.
         std::atomic<int8_t> percent{-1}; // Latest download progress in percent reported by the engine.
 };
 
@@ -441,26 +435,22 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
         return {ExitCode::DataError, ExitCause::Unknown};
     }
 
-    // The completion state and the hydration job are constructed first, then published together under the mutex:
-    // cancel() loads both under the same mutex, on the thread that processes the cancellation, always after aborting
-    // the job. This orders the publication against the cancellation: if cancel() runs first and observes no state,
-    // the abortion check below prevents the hydration from starting; if it runs second, it observes the state and
-    // cancels the hydration, aborting the hydration job with it.
+    const auto vfs = syncPal->vfs();
+    if (!vfs) {
+        LOGW_WARN(_logger, L"Vfs not found - " << Utility::formatSyncPath(_localPath));
+
+        return readyToOpen();
+    }
+
+    // The completion state is published under the mutex once the download has been enqueued, and loaded by cancel()
+    // on the thread processing the cancellation. This orders the publication against the cancellation: if cancel()
+    // runs before the publication, the abortion checks performed after each step of the hydration below undo it; if
+    // it runs after, it observes the state and cancels the download.
     const auto completion = std::make_shared<HydrationCompletion>();
 
-    // Two callbacks are wired to the hydration job below, and they report two different events:
-    //
-    // - The additional callback (AbstractJob::setAdditionalCallback): one of the two job-completion callbacks offered
-    //   by the job framework (alongside the main callback, invoked after it, unused here). It fires as soon as
-    //   HydratePlaceHolderJob::runJob() has returned, on the thread that ran it, and reports the trigger outcome:
-    //   whether the item checks passed and the download job was enqueued. Its signature carries no result, hence the
-    //   weak_ptr used to read exitInfo() and downloadQueued() from the job. A weak_ptr is required because the
-    //   callback is owned by the job: capturing a shared_ptr would create a reference cycle.
-    //
-    // - The observer (job constructor parameter, forwarded to SyncPal::addDlDirectJob): invoked by the engine when the
-    //   download job completes, possibly long after the hydration job has run and even after this job has timed out or
-    //   been aborted (the completion state is shared and kept alive by the shared_ptr). It reports the outcome of the
-    //   actual download.
+    // The observer is invoked by the engine when the download job completes, possibly long after this job has timed
+    // out or been aborted (the completion state is shared and kept alive by the shared_ptr). It reports the outcome of
+    // the actual download.
     const auto observer = [completion](const UniqueId, const bool success) {
         const std::scoped_lock lock(completion->mutex);
         completion->finished = true;
@@ -470,54 +460,51 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
 
     auto progressObserver = [completion](const int16_t progress) { completion->percent.store(static_cast<int8_t>(progress)); };
 
-    auto hydrationJob = std::make_shared<HydratePlaceHolderJob>(std::move(syncPal), _localPath, _relativePath, SyncPath{},
-                                                                observer, std::move(progressObserver));
-    std::weak_ptr<HydratePlaceHolderJob> weakHydrationJob = hydrationJob;
-    hydrationJob->setAdditionalCallback([weakHydrationJob, completion](UniqueId) {
-        if (const auto job = weakHydrationJob.lock()) {
-            const std::scoped_lock lock(completion->mutex);
-            completion->triggered = true;
-            completion->triggerExitInfo = job->exitInfo();
-            if (job->exitInfo() && !job->downloadQueued()) {
-                // The job ran successfully but enqueued no download (e.g. the item got hydrated in the meantime):
-                // there is nothing to wait for and the observer will never fire. Consider the hydration finished.
-                completion->finished = true;
-                completion->success = true;
-            }
-        }
-        completion->cv.notify_all();
-    });
+    // Check the item state and set the pin state of the placeholder. Any failure in this phase leaves the opening to
+    // the system, which hydrates the item on access.
+    bool hydrate = false;
+    const auto exitInfo = checkHydrationPrerequisites(syncPal, hydrate);
+    if (!hydrate) return exitInfo;
+
+    PinState pinState{PinState::Unknown};
+    if (const auto pinStateExitInfo = setHydrationPinState(vfs, pinState); !pinStateExitInfo) return readyToOpen();
+
+    // Enqueue the download job
+    if (const auto enqueueExitInfo = syncPal->addDlDirectJob(_relativePath, _localPath, SyncPath{}, observer, progressObserver);
+        !enqueueExitInfo) {
+        LOGW_INFO(_logger,
+                  L"Error in SyncPal::addDlDirectJob - " << Utility::formatSyncPath(_localPath) << L": " << enqueueExitInfo);
+        (void) cancelHydrate(vfs, pinState, enqueueExitInfo);
+
+        return readyToOpen();
+    }
 
     {
         const std::scoped_lock lock(_hydrationMutex);
-        if (isAborted()) {
-            LOGW_INFO(_logger, L"File opening canceled before starting the hydration - " << Utility::formatSyncPath(_localPath));
-            _outcome = Outcome::Canceled;
-
-            return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
-        }
         _hydration = completion;
-        _hydrationJob = hydrationJob;
     }
-
-    // Enqueue the hydration job: it checks the item state, sets the pin state to `AlwaysLocal` if needed (macOS), and
-    // enqueues the download job (see ExtensionJob::commandMakeAvailableLocallyDirect). It honors abortion: while it is
-    // still queued, the job manager discards it without running it; while it is running, its abortion checks stop it
-    // and undo a download registration it has just performed.
-    SyncJobManagerSingleton::instance()->queueAsyncJob(hydrationJob, Poco::Thread::PRIO_HIGH);
 
     // The download is starting: inform the user, and keep informing as long as the progress evolves.
     notifyFeedback(FileOpeningPhase::Hydrating, 0);
     _lastNotifiedProgress = 0;
     _lastProgressNotify = std::chrono::steady_clock::now();
 
+    if (isAborted()) {
+        // The request has been canceled while the download was being enqueued: stop that download and revert the pin
+        // state, so that nothing is transferred for a canceled request.
+        LOGW_INFO(_logger, L"File opening canceled - " << Utility::formatSyncPath(_localPath));
+        (void) syncPal->cancelDlDirectJobs({_localPath});
+        (void) cancelHydrate(vfs, pinState, {ExitCode::OperationCanceled, ExitCause::OperationCanceled});
+        _outcome = Outcome::Canceled;
+
+        return {ExitCode::OperationCanceled, ExitCause::OperationCanceled};
+    }
+
+    // Wait for the download to complete, keeping the user interface informed of the progress.
     const auto deadline = std::chrono::steady_clock::now() + kHydrationTimeout;
     std::unique_lock lock(completion->mutex);
 
-    // Body of the two wait loops below. Checks for abort and deadline, then waits for a tick. Returns an Ok ExitInfo
-    // to let the loop re-check its condition, or the ExitInfo to propagate when the job has been aborted or the
-    // deadline has been reached.
-    const auto handleWaitTick = [this, &completion, &lock, &deadline](const wchar_t *timeoutMessage) -> ExitInfo {
+    while (!completion->finished) {
         if (isAborted()) {
             LOGW_WARN(_logger, L"Job aborted while hydrating the item - " << Utility::formatSyncPath(_localPath));
             _outcome = Outcome::Canceled;
@@ -527,33 +514,13 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
 
         const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now());
         if (remaining <= std::chrono::milliseconds::zero()) {
-            LOGW_WARN(_logger, timeoutMessage << Utility::formatSyncPath(_localPath));
+            LOGW_WARN(_logger, L"The download of the item did not complete in time - " << Utility::formatSyncPath(_localPath));
             _outcome = Outcome::HydrationTimedOut;
 
             return {ExitCode::SystemError, ExitCause::Unknown};
         }
 
         completion->cv.wait_for(lock, std::min(remaining, kHydrationWaitTick));
-
-        return ExitCode::Ok;
-    };
-
-    // Wait for the hydration job to run.
-    while (!completion->triggered && !completion->finished) {
-        if (const auto exitInfo = handleWaitTick(L"The hydration did not complete in time - "); !exitInfo) return exitInfo;
-    }
-
-    if (completion->triggered && !completion->triggerExitInfo) {
-        // The download could not be triggered: open the item anyway, the system hydrates it on access.
-        LOGW_WARN(_logger, L"Error in HydratePlaceHolderJob - " << Utility::formatSyncPath(_localPath) << L": "
-                                                                << completion->triggerExitInfo);
-        return readyToOpen();
-    }
-
-    // Wait for the download to complete, keeping the user interface informed of the progress.
-    while (!completion->finished) {
-        if (const auto exitInfo = handleWaitTick(L"The download of the item did not complete in time - "); !exitInfo)
-            return exitInfo;
 
         notifyProgressIfChanged(completion->percent.load());
     }
@@ -578,30 +545,152 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     return readyToOpen();
 }
 
+ExitInfo OpenFileJob::checkHydrationPrerequisites(const std::shared_ptr<SyncPal> &syncPal, bool &hydrate) {
+    if (isAborted()) {
+        LOGW_INFO(_logger, L"File opening canceled - " << Utility::formatSyncPath(_localPath));
+        _outcome = Outcome::Canceled;
+
+        return ExitInfo{ExitCode::OperationCanceled, ExitCause::OperationCanceled};
+    }
+
+    const auto vfs = syncPal->vfs();
+
+    // Check that the file still exists locally
+    bool exists = false;
+    if (auto ioError = IoError::Success;
+        !IoHelper::checkIfPathExists(_localPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localPath, ioError));
+
+        return readyToOpen();
+    }
+
+    if (!exists) {
+        LOGW_DEBUG(_logger, L"Item does not exist - " << Utility::formatSyncPath(_localPath));
+
+        return readyToOpen();
+    }
+
+    // Check the item type
+    ItemType itemType;
+    if (!IoHelper::getItemTypeAndProcessIoError(_localPath, itemType) || itemType.ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"No file data - " << Utility::formatSyncPath(_localPath));
+
+        return readyToOpen();
+    }
+
+    if (itemType.linkType != LinkType::None) {
+        LOGW_DEBUG(_logger, L"Do not hydrate symlinks - " << Utility::formatSyncPath(_localPath));
+        (void) cancelHydrate(vfs, PinState::OnlineOnly, ExitCode::Unknown);
+
+        return readyToOpen();
+    }
+
+    // Check file status
+    auto status = SyncFileStatus::Unknown;
+    VfsStatus vfsStatus;
+    {
+        bool existsOnServer = false;
+        if (const auto exitInfo = syncPal->checkIfExistsOnServer(_relativePath, existsOnServer); !exitInfo) {
+            // Occurs when the sync is stopped
+            LOGW_DEBUG(_logger, L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(_relativePath) << L": "
+                                                                             << exitInfo);
+            (void) cancelHydrate(vfs, PinState::OnlineOnly, exitInfo);
+
+            return readyToOpen();
+        }
+
+        if (existsOnServer) status = SyncFileStatus::Success;
+
+        if (vfs->mode() == VirtualFileMode::Mac || vfs->mode() == VirtualFileMode::Win) {
+            if (const auto exitInfo = vfs->status(_localPath, vfsStatus); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in Vfs::status - " << Utility::formatSyncPath(_localPath));
+                (void) cancelHydrate(vfs, PinState::OnlineOnly, exitInfo);
+
+                return readyToOpen();
+            }
+
+            if (vfsStatus.isSyncing) status = SyncFileStatus::Syncing;
+        }
+    }
+
+    if (!vfsStatus.isPlaceholder) {
+        // File is not a placeholder, this should never happen
+        LOGW_WARN(_logger, L"File is not a placeholder - " << Utility::formatSyncPath(_localPath));
+
+        return readyToOpen();
+    }
+
+    if (vfsStatus.isHydrated || status == SyncFileStatus::Syncing) {
+        LOGW_INFO(_logger, L"File is already hydrated/ing - " << Utility::formatSyncPath(_localPath));
+
+        return readyToOpen();
+    }
+
+    if (isAborted()) {
+        // Canceled before the hydration could change anything: no pin state has been set and no download has been
+        // enqueued.
+        LOGW_INFO(_logger, L"File opening canceled - " << Utility::formatSyncPath(_localPath));
+        _outcome = Outcome::Canceled;
+
+        return ExitInfo{ExitCode::OperationCanceled, ExitCause::OperationCanceled};
+    }
+
+    hydrate = true;
+
+    return ExitCode::Ok;
+}
+
+ExitInfo OpenFileJob::setHydrationPinState(const std::shared_ptr<Vfs> &vfs, PinState &pinState) {
+#if defined(KD_MACOS)
+    // Not done in Windows case: triggers a hydration
+    // Get pin state
+    pinState = vfs->pinState(_relativePath);
+
+    if (pinState != PinState::AlwaysLocal) {
+        // Set pin state
+        if (const auto exitInfo = vfs->setPinState(_relativePath, PinState::AlwaysLocal); !exitInfo) {
+            LOGW_INFO(_logger, L"Error in Vfs::setPinState - " << Utility::formatSyncPath(_localPath) << L": " << exitInfo);
+
+            return exitInfo;
+        }
+    }
+#else
+    pinState = PinState::OnlineOnly;
+#endif
+
+    return ExitCode::Ok;
+}
+
+ExitInfo OpenFileJob::cancelHydrate(const std::shared_ptr<Vfs> &vfs, const PinState pinState, const ExitInfo &exitInfo) {
+    vfs->cancelHydrate(_localPath, exitInfo);
+
+    if (pinState == PinState::Unknown) return ExitCode::Ok;
+
+    if (const auto revertExitInfo = vfs->setPinState(_relativePath, pinState); !revertExitInfo) {
+        LOGW_INFO(_logger, L"Error in Vfs::setPinState - " << Utility::formatSyncPath(_localPath) << L": " << revertExitInfo);
+
+        return revertExitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
 void OpenFileJob::cancel() {
     abort();
 
-    // Cancel the hydration of the item, if it is in progress: abort the hydration job and the direct download, and
-    // revert the pin state set before starting the download. No-op when no hydration has been started or when it has
-    // already completed.
+    // Cancel the hydration of the item, if it is in progress: stop the direct download and revert the pin state set
+    // before starting it. No-op when no hydration has been started or when it has already completed.
     //
-    // The job is aborted before anything is loaded, and the state is loaded under the mutex it is published with:
-    // when the hydration has not started yet, the thread running the job re-checks isAborted() under the same mutex
-    // before publishing the state, and does not start the hydration at all.
+    // The state is loaded under the mutex it is published with. When cancel() runs before the publication, the
+    // abortion checks performed after each step of the hydration (see hydrateResolvedPlaceholder) undo it: no
+    // download has been enqueued yet, or the just-enqueued download is canceled and the pin state is reverted.
     std::shared_ptr<HydrationCompletion> hydration;
-    std::shared_ptr<HydratePlaceHolderJob> hydrationJob;
     {
         const std::scoped_lock lock(_hydrationMutex);
         hydration = _hydration;
-        hydrationJob = _hydrationJob;
     }
     if (!hydration) return;
-
-    // Stop the hydration job before canceling the download: while it is still queued, the job manager discards
-    // aborted jobs without ever running them, so that it can neither set the pin state nor enqueue a download
-    // anymore. While it is running, its own abortion checks stop it, and if a download was just enqueued, they stop
-    // that download and revert the pin state.
-    if (hydrationJob) hydrationJob->abort();
 
     {
         const std::scoped_lock lock(hydration->mutex);

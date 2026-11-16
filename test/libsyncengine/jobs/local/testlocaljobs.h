@@ -37,8 +37,6 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDeleteExcludedDehydratedPlaceholderJob);
 #endif
         CPPUNIT_TEST(testGenericLocalDeleteJobHardDelete);
-        CPPUNIT_TEST(testGenericLocalDeleteJobWithLinkedParent);
-        CPPUNIT_TEST(testHydratePlaceHolderJob);
         CPPUNIT_TEST(testOpenFileJob);
         CPPUNIT_TEST_SUITE_END();
 

@@ -21,7 +21,6 @@
 #include "config.h"
 #include "io/cachedirectory.h"
 #include "jobs/local/genericlocaldeletejob.h"
-#include "jobs/local/hydrateplaceholderjob.h"
 #include "jobs/local/openfilejob.h"
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/synclocaldeletejob.h"
@@ -546,64 +545,8 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobWithLinkedParent() {
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), deleteJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
-
-void KDC::TestLocalJobs::testHydratePlaceHolderJob() {
-    // The temporary directory is created inside the sync root, so that the items are addressed relatively to it.
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testHydratePlaceHolderJob", _localTempDir.path());
-
-    // A symlink is never hydrated.
-    {
-        const SyncPath targetPath = temporaryDirectory.path() / "tmp_target_file.txt";
-        { std::ofstream ofs(targetPath); }
-        const SyncPath linkPath = temporaryDirectory.path() / "tmp_link.txt";
-        IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, linkPath, false, ioError));
-
-        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), linkPath);
-        HydratePlaceHolderJob hydrateJob(_syncPal, linkPath, relativePath);
-        hydrateJob.runSynchronously();
-
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), hydrateJob.exitInfo());
-        // The job succeeded without enqueueing any download: the observer will never be invoked.
-        CPPUNIT_ASSERT(!hydrateJob.downloadQueued());
     }
 
-    // A placeholder cannot be hydrated when the sync is not running.
-    {
-        const SyncPath filePath = temporaryDirectory.path() / "tmp_file.txt";
-        { std::ofstream ofs(filePath); }
-
-        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
-        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
-        hydrateJob.runSynchronously();
-
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SyncPaused), hydrateJob.exitInfo());
-    }
-
-    // A missing item is reported as such.
-    {
-        const SyncPath filePath = temporaryDirectory.path() / "missing_file.txt";
-        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
-
-        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
-        hydrateJob.runSynchronously();
-
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), hydrateJob.exitInfo());
-    }
-
-    // A canceled job does not hydrate the item: no pin state is set and no download is enqueued.
-    {
-        const SyncPath filePath = temporaryDirectory.path() / "canceled_file.txt";
-        { std::ofstream ofs(filePath); }
-
-        const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), filePath);
-        HydratePlaceHolderJob hydrateJob(_syncPal, filePath, relativePath);
-        hydrateJob.abort();
-        hydrateJob.runSynchronously();
-
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::OperationCanceled, ExitCause::OperationCanceled), hydrateJob.exitInfo());
-        CPPUNIT_ASSERT(!hydrateJob.downloadQueued());
-    }
 }
 
 void KDC::TestLocalJobs::testOpenFileJob() {
