@@ -514,10 +514,6 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</translation>
             <source>Rename %1</source> 
             <translation>Omdøb %1</translation> 
         </message> 
-        <message id="buttonRestart"> 
-            <source>Restart</source> 
-            <translation>Genstart</translation> 
-        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Genstart login</translation> 
@@ -2696,10 +2692,6 @@ Din synkronisering genoptages automatisk til sidst.</translation>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Opdatering tilgængelig</translation> 
-        </message> 
-        <message id="updateInstalled"> 
-            <source>kDrive %1 installed. Restart the application to use it.</source> 
-            <translation>kDrive %1 er installeret. Genstart programmet for at bruge det.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.

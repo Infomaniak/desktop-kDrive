@@ -514,10 +514,6 @@ Du kan öppna dem när som helst, även utan internetanslutning.</translation>
             <source>Rename %1</source> 
             <translation>Byt namn på %1</translation> 
         </message> 
-        <message id="buttonRestart"> 
-            <source>Restart</source> 
-            <translation>Starta om</translation> 
-        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Starta om inloggning</translation> 
@@ -2696,10 +2692,6 @@ Din synkronisering återupptas automatiskt efteråt.</translation>
         <message id="updateDialogTitle"> 
             <source>Update available</source> 
             <translation>Uppdatering tillgänglig</translation> 
-        </message> 
-        <message id="updateInstalled"> 
-            <source>kDrive %1 installed. Restart the application to use it.</source> 
-            <translation>kDrive %1 är installerat. Starta om programmet för att använda det.</translation> 
         </message> 
         <message id="updateRequiredDescription"> 
             <source>A new version of kDrive is required to continue.
