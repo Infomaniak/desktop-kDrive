@@ -37,7 +37,14 @@ struct StorageItem: Sendable, Identifiable {
     /// Sync recalled next to the title, if the item refers to a specific sync.
     var synchro: UISynchro?
 
-    init(title: String, color: Color, usedBytes: Int64?, isDefault: Bool = false, drive: UIDrive? = nil, synchro: UISynchro? = nil) {
+    init(
+        title: String,
+        color: Color,
+        usedBytes: Int64?,
+        isDefault: Bool = false,
+        drive: UIDrive? = nil,
+        synchro: UISynchro? = nil
+    ) {
         self.title = title
         self.color = color
         self.usedBytes = usedBytes
@@ -261,7 +268,7 @@ struct StorageView: View {
         }
 
         // `drivePublisher` only emits on cache updates, so start from the drive already in the cache.
-        handleUpdatedDrive(await coherentCache.getDrive(driveDbId: Int32(driveDbId)))
+        await handleUpdatedDrive(coherentCache.getDrive(driveDbId: Int32(driveDbId)))
 
         for await drive in drivePublisher.values {
             handleUpdatedDrive(drive)
