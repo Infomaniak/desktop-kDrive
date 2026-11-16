@@ -34,25 +34,26 @@ struct StorageSectionView: View {
     var body: some View {
         Section {
             VStack {
-                Text(title)
-                    .bold()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                StorageBarView(items: items, byteCountFormatStyle: byteCountFormatStyle)
-
                 HStack {
+                    Text(title)
+                        .bold()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
                     switch storageData {
                     case .loading:
-                        Spacer()
                         ProgressView()
                             .progressViewStyle(.circular)
                             .controlSize(.small)
                     case .data(let usedBytes, let availableBytes):
-                        Text(usedBytes.formatted(ByteCountFormatStyle.byteCount(style: byteCountFormatStyle))).foregroundStyle(.secondary).font(.Tokens.subheadline)
-                        Spacer()
-                        Text(availableBytes.formatted(ByteCountFormatStyle.byteCount(style: byteCountFormatStyle))).foregroundStyle(.secondary).font(.Tokens.subheadline)
+                        Text(KDriveLocalizable.storageUsageLabel(
+                            usedBytes.formatted(ByteCountFormatStyle.byteCount(style: byteCountFormatStyle)),
+                            availableBytes.formatted(ByteCountFormatStyle.byteCount(style: byteCountFormatStyle))
+                        ))
+                        .foregroundStyle(.secondary)
                     }
                 }
+
+                StorageBarView(items: items, byteCountFormatStyle: byteCountFormatStyle)
             }
 
             ForEach(items) { item in
@@ -62,26 +63,11 @@ struct StorageSectionView: View {
     }
 }
 
-#Preview("Up to date") {
+#Preview {
     Form {
         StorageSectionView(
             title: "Mac",
             storageData: .data(usedBytes: 63_000_000_000, availableBytes: 250_000_000_000),
-            items: [
-                StorageItem(title: "First Storage Item", color: .blue, usedBytes: 13_000_000_000),
-                StorageItem(title: "Second Storage Item", color: .purple, usedBytes: 50_000_000_000)
-            ],
-            byteCountFormatStyle: .file
-        )
-    }
-    .groupedFormatStyle()
-}
-
-#Preview("Loading") {
-    Form {
-        StorageSectionView(
-            title: "Mac",
-            storageData: .loading,
             items: [
                 StorageItem(title: "First Storage Item", color: .blue, usedBytes: 13_000_000_000),
                 StorageItem(title: "Second Storage Item", color: .purple, usedBytes: 50_000_000_000)
