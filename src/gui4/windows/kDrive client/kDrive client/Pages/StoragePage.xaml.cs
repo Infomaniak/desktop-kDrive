@@ -28,6 +28,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -45,7 +46,39 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.LogInfo("Navigated to StoragePage - Initializing StoragePage components");
             InitializeComponent();
+            SetupKeyboardAccelerators();
             Logger.LogDebug("StoragePage components initialized");
+        }
+
+        private void SetupKeyboardAccelerators()
+        {
+            KeyboardAcceleratorPlacementMode = Microsoft.UI.Xaml.Input.KeyboardAcceleratorPlacementMode.Hidden;
+            AddRefreshAccelerator(Windows.System.VirtualKey.R);
+            AddRefreshAccelerator(Windows.System.VirtualKey.F5);
+        }
+
+        private void AddRefreshAccelerator(Windows.System.VirtualKey key)
+        {
+            var accelerator = new Microsoft.UI.Xaml.Input.KeyboardAccelerator
+            {
+                Key = key,
+                Modifiers = Windows.System.VirtualKeyModifiers.Control,
+               
+            };
+            accelerator.Invoked += async (_, args) =>
+            {
+                args.Handled = true;
+                try
+                {
+                    PageViewModel.UpdateOnlineStorage();
+                    await PageViewModel.UpdateDiskSizeAsync(forceRefresh: true);
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.LogInfo("Disk size update was canceled.");
+                }
+            };
+            KeyboardAccelerators.Add(accelerator);
         }
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -167,7 +200,8 @@ namespace Infomaniak.kDrive.Pages
         private long? _diskSize;
         private long? _diskUsedSize;
         private long? _diskFreeSize;
-        private long? _hydratedFileSize;
+        private long? _hydratedFilesSize;
+        private long? _otherSyncsHydratedFilesSize;
         private long? _otherFileSize;
         private bool _loading = false;
         private string _diskRoot = "";
@@ -269,7 +303,11 @@ namespace Infomaniak.kDrive.Pages
         public long? DiskUsedSize
         {
             get => _diskUsedSize;
-            set => SetPropertyInUIThread(ref _diskUsedSize, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _diskUsedSize, value))
+                    UpdateOtherFileSize();
+            }
         }
 
         public long? DiskFreeSize
@@ -278,16 +316,60 @@ namespace Infomaniak.kDrive.Pages
             set => SetPropertyInUIThread(ref _diskFreeSize, value);
         }
 
-        public long? HydratedFileSize
+        public long? HydratedFilesSize
         {
-            get => _hydratedFileSize;
-            set => SetPropertyInUIThread(ref _hydratedFileSize, value);
+            get => _hydratedFilesSize;
+            set
+            {
+                if (SetPropertyInUIThread(ref _hydratedFilesSize, value))
+                    UpdateOtherFileSize();
+            }
+        }
+        public long? OtherSyncsHydratedFilesSize
+        {
+            get => _otherSyncsHydratedFilesSize;
+            set
+            {
+                if (SetPropertyInUIThread(ref _otherSyncsHydratedFilesSize, value))
+                    UpdateOtherFileSize();
+            }
         }
 
         public long? OtherFileSize
         {
             get => _otherFileSize;
             set => SetPropertyInUIThread(ref _otherFileSize, value);
+        }
+
+        private bool _isHydratedFilesSizeLoading = false;
+        public bool IsHydratedFilesSizeLoading
+        {
+            get => _isHydratedFilesSizeLoading;
+            set
+            {
+                if (SetPropertyInUIThread(ref _isHydratedFilesSizeLoading, value))
+                    OnPropertyChangedInUIThread(nameof(IsOtherFileSizeLoading));
+            }
+        }
+
+        private bool _isOtherSyncsHydratedFilesSizeLoading = false;
+        public bool IsOtherSyncsHydratedFilesSizeLoading
+        {
+            get => _isOtherSyncsHydratedFilesSizeLoading;
+            set
+            {
+                if (SetPropertyInUIThread(ref _isOtherSyncsHydratedFilesSizeLoading, value))
+                    OnPropertyChangedInUIThread(nameof(IsOtherFileSizeLoading));
+            }
+        }
+
+        public bool IsOtherFileSizeLoading => IsHydratedFilesSizeLoading || IsOtherSyncsHydratedFilesSizeLoading;
+
+        private bool _hasOtherSyncsOnSameDisk = false;
+        public bool HasOtherSyncsOnSameDisk
+        {
+            get => _hasOtherSyncsOnSameDisk;
+            set => SetPropertyInUIThread(ref _hasOtherSyncsOnSameDisk, value);
         }
 
         public bool Loading
@@ -348,7 +430,7 @@ namespace Infomaniak.kDrive.Pages
             OnlineFreeSize = Math.Max(0, _sync.Drive.Size - _sync.Drive.UsedSize);
         }
 
-        public async Task UpdateDiskSizeAsync()
+        public async Task UpdateDiskSizeAsync(bool forceRefresh = false)
         {
             if (AppViewModel.SelectedSync == null)
                 return;
@@ -360,11 +442,12 @@ namespace Infomaniak.kDrive.Pages
                 _cancellationTokenSource = new CancellationTokenSource();
             }
             Loading = true;
-            DiskSize = null;
-            DiskFreeSize = null;
-            DiskUsedSize = null;
-            HydratedFileSize = null;
-            OtherFileSize = null;
+
+            // Reset failed values (-1) to loading state (null); keep previously loaded values displayed while refreshing.
+            HydratedFilesSize = (HydratedFilesSize == -1) ? null : HydratedFilesSize;
+            OtherSyncsHydratedFilesSize = (OtherSyncsHydratedFilesSize == -1) ? null : OtherSyncsHydratedFilesSize;
+            OtherFileSize = (OtherFileSize == -1) ? null : OtherFileSize;
+
             IsDiskConnected = false;
             var syncPath = sync.LocalPath;
             DiskRoot = Path.GetPathRoot(syncPath) ?? "";
@@ -376,7 +459,8 @@ namespace Infomaniak.kDrive.Pages
                 DiskSize = -1;
                 DiskFreeSize = -1;
                 DiskUsedSize = -1;
-                HydratedFileSize = -1;
+                HydratedFilesSize = -1;
+                OtherSyncsHydratedFilesSize = -1;
                 OtherFileSize = -1;
                 Loading = false;
                 return;
@@ -389,22 +473,24 @@ namespace Infomaniak.kDrive.Pages
                 DiskSize = driveInfo.TotalSize;
                 DiskFreeSize = driveInfo.AvailableFreeSpace;
                 DiskUsedSize = DiskSize - DiskFreeSize;
-                var hydratedFileSizeResult = await GetHydratedFileSizeAsync(_cancellationTokenSource.Token);
-                HydratedFileSize = hydratedFileSizeResult.Value;
-                if (hydratedFileSizeResult.ExitCode != ExitCode.Ok)
-                {
-                    Loading = false;
-                    HydratedFileSize = -1;
-                    OtherFileSize = -1;
-                    if (hydratedFileSizeResult.ExitCode != ExitCode.OperationCanceled)
-                    {
-                        Utility.ShowUnexpectedErrorTeachingTip();
-                        Logger.LogWarning($"Unable to get hydrated file size of {syncPath}",
-                            "StoragePageViewModel: Failed to get hydrated file size");
-                    }
-                    return;
-                }
-                OtherFileSize = DiskUsedSize - HydratedFileSize;
+
+                var cancellationToken = _cancellationTokenSource.Token;
+                var otherSyncs = SyncsOnSameDisk().Where(s => s != sync).ToList();
+                HasOtherSyncsOnSameDisk = otherSyncs.Count > 0;
+                if (otherSyncs.Count == 0)
+                    OtherSyncsHydratedFilesSize = 0;
+
+                IsHydratedFilesSizeLoading = true;
+                IsOtherSyncsHydratedFilesSizeLoading = otherSyncs.Count > 0;
+
+                Task currentSyncTask = LoadCurrentSyncHydratedFilesSizeAsync(sync, forceRefresh, cancellationToken);
+                Task otherSyncsTask = LoadOtherSyncsHydratedFilesSizeAsync(otherSyncs, forceRefresh, cancellationToken);
+
+                await Task.WhenAll(
+                    currentSyncTask,
+                    otherSyncsTask,
+                    Task.Delay(forceRefresh ? 1000 : 0, cancellationToken)
+                );
             }
             catch (System.IO.IOException ex)
             {
@@ -416,29 +502,88 @@ namespace Infomaniak.kDrive.Pages
                 Logger.LogInfo($"Error accessing drive info for root {DiskRoot}: {ex.Message}");
                 IsDiskConnected = false;
             }
+            IsHydratedFilesSizeLoading = false;
+            IsOtherSyncsHydratedFilesSizeLoading = false;
             Loading = false;
         }
 
-        private readonly record struct HydratedFileSizeResult(ExitCode ExitCode, long Value);
-        private async Task<HydratedFileSizeResult> GetHydratedFileSizeAsync(CancellationToken cancellationToken)
+        private async Task LoadCurrentSyncHydratedFilesSizeAsync(Sync sync, bool forceRefresh, CancellationToken cancellationToken)
         {
-            if (_sync is null)
-                return new HydratedFileSizeResult(ExitCode.DataError, -1);
+            var result = await sync.GetHydratedFileSizeAsync(forceRefresh, cancellationToken);
+            if (cancellationToken.IsCancellationRequested || result.ExitCode == ExitCode.OperationCanceled)
+                return;
 
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            UInt64? res = await commService.GetSyncOfflineFilesSize(_sync.DbId, cancellationToken);
-
-            if (res is null)
+            if (result.ExitCode != ExitCode.Ok)
             {
-                if (!cancellationToken.IsCancellationRequested)
-                    Logger.LogWarning("GetSyncOfflineFilesSize returned null");
-                return new HydratedFileSizeResult(ExitCode.OperationCanceled, -1);
+                HydratedFilesSize = -1;
+                Utility.ShowUnexpectedErrorTeachingTip();
+                Logger.LogWarning($"Unable to get hydrated file size of {sync.LocalPath}",
+                    "StoragePageViewModel: Failed to get hydrated file size");
+                return;
             }
 
-            if (res.Value > long.MaxValue)
-                return new HydratedFileSizeResult(ExitCode.Ok, long.MaxValue);
-            else
-                return new HydratedFileSizeResult(ExitCode.Ok, (long)res.Value);
+            HydratedFilesSize = result.Value;
+            IsHydratedFilesSizeLoading = false;
+        }
+
+        private async Task LoadOtherSyncsHydratedFilesSizeAsync(List<Sync> otherSyncs, bool forceRefresh, CancellationToken cancellationToken)
+        {
+            if (otherSyncs.Count == 0)
+                return;
+
+            using var otherSyncsCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            long total = 0;
+            bool failed = false;
+            // When refreshing an already loaded value, only publish the final total to avoid showing partial sums.
+            bool progressive = OtherSyncsHydratedFilesSize is null;
+
+            async Task LoadOneAsync(Sync otherSync)
+            {
+                var result = await otherSync.GetHydratedFileSizeAsync(forceRefresh, otherSyncsCts.Token);
+                if (failed || cancellationToken.IsCancellationRequested || result.ExitCode == ExitCode.OperationCanceled)
+                    return;
+
+                if (result.ExitCode != ExitCode.Ok)
+                {
+                    failed = true;
+                    Logger.LogWarning($"Unable to get hydrated file size of {otherSync.LocalPath}",
+                        "StoragePageViewModel: Failed to get other sync hydrated file size");
+                    await otherSyncsCts.CancelAsync();
+                    OtherSyncsHydratedFilesSize = -1;
+                    IsOtherSyncsHydratedFilesSizeLoading = false;
+                    return;
+                }
+
+                total += result.Value;
+                if (progressive)
+                    OtherSyncsHydratedFilesSize = total;
+            }
+
+            await Task.WhenAll(otherSyncs.Select(LoadOneAsync));
+            if (failed || cancellationToken.IsCancellationRequested)
+                return;
+
+            OtherSyncsHydratedFilesSize = total;
+            IsOtherSyncsHydratedFilesSizeLoading = false;
+        }
+
+        private List<Sync> SyncsOnSameDisk()
+        {
+            if (Sync is null)
+                return new List<Sync>();
+            string syncRoot = Path.GetPathRoot(Sync.LocalPath) ?? "";
+            return AppViewModel.AllSyncs.Where(s => Path.GetPathRoot(s.LocalPath) == syncRoot).ToList();
+        }
+
+        private void UpdateOtherFileSize()
+        {
+            if (!DiskUsedSize.HasValue)
+            {
+                OtherFileSize = null;
+                return;
+            }
+
+            OtherFileSize = DiskUsedSize - (Math.Max(0, HydratedFilesSize ?? 0) + Math.Max(0, OtherSyncsHydratedFilesSize ?? 0));
         }
     }
 }

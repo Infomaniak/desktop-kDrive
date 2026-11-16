@@ -29,9 +29,9 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
         }
 
-        public GridLength GetSectionWidth(Brush? color, long? value, long? value1, long? value2, long? value3, long? value4)
+        public GridLength GetSectionWidth(Visibility visibility, Brush? color, long? value, long? value1, long? value2, long? value3, long? value4)
         {
-            if (color is null)
+            if (visibility == Visibility.Collapsed || color is null)
                 return new GridLength(0, GridUnitType.Star);
 
             long total = Math.Max(0, value1 ?? 0) + Math.Max(0, value2 ?? 0) + Math.Max(0, value3 ?? 0) + Math.Max(0, value4 ?? 0);
@@ -66,6 +66,42 @@ namespace Infomaniak.kDrive.CustomControls
         private static readonly DependencyProperty Value4Property =
             DependencyProperty.Register("Value4", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
 
+
+        private static readonly DependencyProperty Visibility1Property =
+            DependencyProperty.Register("Visibility1", typeof(Visibility), typeof(MultiValueProgressBar), new PropertyMetadata(Visibility.Visible));
+
+        private static readonly DependencyProperty Visibility2Property =
+            DependencyProperty.Register("Visibility2", typeof(Visibility), typeof(MultiValueProgressBar), new PropertyMetadata(Visibility.Visible));
+
+        private static readonly DependencyProperty Visibility3Property =
+            DependencyProperty.Register("Visibility3", typeof(Visibility), typeof(MultiValueProgressBar), new PropertyMetadata(Visibility.Visible));
+
+        private static readonly DependencyProperty Visibility4Property =
+            DependencyProperty.Register("Visibility4", typeof(Visibility), typeof(MultiValueProgressBar), new PropertyMetadata(Visibility.Visible));
+
+        public Visibility Visibility1
+        {
+            get => (Visibility)GetValue(Visibility1Property);
+            set => SetValue(Visibility1Property, value);
+        }
+
+        public Visibility Visibility2
+        {
+            get => (Visibility)GetValue(Visibility2Property);
+            set => SetValue(Visibility2Property, value);
+        }
+
+        public Visibility Visibility3
+        {
+            get => (Visibility)GetValue(Visibility3Property);
+            set => SetValue(Visibility3Property, value);
+        }
+
+        public Visibility Visibility4
+        {
+            get => (Visibility)GetValue(Visibility4Property);
+            set => SetValue(Visibility4Property, value);
+        }
 
         public Brush Color1
         {
