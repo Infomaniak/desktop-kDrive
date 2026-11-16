@@ -1495,7 +1495,6 @@ ExitCode UpdateTreeWorker::tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::deleteChild: node "
                                                    << Utility::formatSyncName(tmpNode->name()) << L" parent node "
                                                    << Utility::formatSyncName(tmpNode->parentNode()->name()));
-                return ExitCode::DataError;
             }
             tmpNode->clear();
 
@@ -1578,7 +1577,6 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, st
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::deleteChild: node "
                                                    << Utility::formatSyncName(prevNode->name()) << L" parent node "
                                                    << Utility::formatSyncName(prevNodeParent->name()));
-                return ExitCode::DataError;
             }
             (void) prevNode->clear();
 
