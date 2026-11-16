@@ -31,8 +31,8 @@ namespace KDC {
 class ParametersStore;
 
 /**
- * Process-wide updater state and release metadata. Starts the AppImage update on the user's request, then restarts on
- * it; automatic updates are prepared by the server on its own.
+ * Process-wide updater state and release metadata. Starts the AppImage update on the user's request; automatic updates
+ * are prepared by the server on its own. Once installed, the server restarts the application on the new version.
  */
 class UpdateStatusService final : public QObject {
         Q_OBJECT
@@ -55,7 +55,8 @@ class UpdateStatusService final : public QObject {
 
         [[nodiscard]] bool available() const;
         [[nodiscard]] bool downloading() const { return _state == UpdateState::Downloading; }
-        [[nodiscard]] bool readyToInstall() const { return _state == UpdateState::Ready; }
+        /** The update is installed and the server is restarting the application on it. */
+        [[nodiscard]] bool installed() const { return _state == UpdateState::Ready; }
         [[nodiscard]] bool installable() const { return _state == UpdateState::Available; }
 
         void installUpdate();
@@ -66,7 +67,6 @@ class UpdateStatusService final : public QObject {
 
     private:
         void requestVersion();
-        void requestInstaller();
 
         StateRequest _stateRequest;
         VersionRequest _versionRequest;
@@ -77,7 +77,6 @@ class UpdateStatusService final : public QObject {
         uint64_t _versionGeneration{0};
         bool _versionPending{false};
         bool _forceVersionRefresh{false};
-        bool _restartWhenReady{false};
 };
 
 } // namespace KDC

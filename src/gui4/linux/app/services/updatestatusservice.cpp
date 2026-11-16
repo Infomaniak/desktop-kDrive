@@ -51,30 +51,20 @@ bool UpdateStatusService::available() const {
     }
 }
 
-// User action: prepares the available update then restarts on it, or restarts on the update already installed.
+// User action: the server downloads and installs the available update, then restarts the application on it.
 void UpdateStatusService::installUpdate() {
-    if (installable()) {
-        _restartWhenReady = true;
-        requestInstaller();
-    } else if (readyToInstall()) {
-        requestInstaller();
+    if (!installable()) {
+        return;
     }
-}
 
-// Prepares the available update, or restarts on the installed one: the server picks the step from its own state.
-void UpdateStatusService::requestInstaller() {
     qCInfo(lcUpdateStatusService) << "Requesting the update installer | state:" << _state;
-    _installRequest([self = QPointer(this)](const ExitInfo &result) {
+    _installRequest([](const ExitInfo &result) {
         if (result) {
             return;
         }
 
         qCWarning(lcUpdateStatusService) << "Update installer request failed | code:" << result.code()
                                          << "/ cause:" << result.cause();
-        // A later automatic preparation must not restart the application without the user's request.
-        if (self) {
-            self->_restartWhenReady = false;
-        }
     });
 }
 
@@ -110,23 +100,6 @@ void UpdateStatusService::setState(const UpdateState state) {
 
     if (available() && !_version && !_versionPending) {
         requestVersion();
-    }
-
-    switch (state) {
-        case UpdateState::Ready:
-            // The user asked for the update before it was installed: restart on it now.
-            if (std::exchange(_restartWhenReady, false)) {
-                requestInstaller();
-            }
-            break;
-        case UpdateState::Checking:
-        case UpdateState::Available:
-        case UpdateState::Downloading:
-            // A periodic check during the preparation keeps the user's request.
-            break;
-        default:
-            _restartWhenReady = false;
-            break;
     }
 }
 

@@ -55,19 +55,14 @@ ScrollView {
                 title: qsTrId("updateSettings")
                 description: root.controller.updateText
                 IKModalButton {
-                    readonly property bool manual: !root.controller.updateReadyToInstall
-                                                   && !root.controller.updateDownloading
-                                                   && !root.controller.updateInstallable
+                    readonly property bool manual: !root.controller.updateDownloading && !root.controller.updateInstallable
 
                     visible: root.controller.updateAvailable
-                    // Ready: the update is installed, the button restarts the application on it. Installable: the
-                    // button downloads and installs the update, then restarts.
-                    text: root.controller.updateReadyToInstall ? qsTrId("buttonRestart")
-                                                               : root.controller.updateDownloading
-                                                                 ? qsTrId("buttonDownloadInProgress")
-                                                                 : root.controller.updateInstallable
-                                                                   ? qsTrId("buttonUpdate")
-                                                                   : qsTrId("buttonDownloadManually")
+                    // Installable: the server downloads and installs the update, then restarts the application.
+                    text: root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
+                                                            : root.controller.updateInstallable
+                                                              ? qsTrId("buttonUpdate")
+                                                              : qsTrId("buttonDownloadManually")
                     external: manual
                     actionEnabled: !root.controller.updateDownloading
                     implicitHeight: IKSettings.buttonHeight
