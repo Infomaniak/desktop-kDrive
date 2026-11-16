@@ -32,6 +32,10 @@ env:
 jobs:
   start-instances:
     runs-on: ubuntu-latest
+    # Shared with the promote job of update-windows-image.yml: never resolve the image during its renames.
+    concurrency:
+      group: windows-runner-image-win_kdrive_runner_build_env
+      cancel-in-progress: false
     steps:
       - name: Checkout (for user-data template)
         uses: actions/checkout@v4

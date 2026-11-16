@@ -1,0 +1,735 @@
+name: Refresh Windows CI runner image
+
+# Routine Windows updates + Conan cache refresh for the OpenStack Windows runner image.
+# See .github/windows-image-refresh/README.md for prerequisites, operation and rollback.
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: "Image to refresh (use a test image name for trial runs)"
+        required: true
+        default: "win_kdrive_runner_build_env"
+      promote:
+        description: "Replace the image after the dedicated-runner validation succeeds (the old image is always kept)"
+        type: boolean
+        default: true
+      windows_flavor:
+        description: "Flavor of the Windows maintenance and validation VMs"
+        required: true
+        default: "a16-ram32-disk80-perf1"
+      work_volume_size_gb:
+        description: "Size of the temporary conversion volume (GB)"
+        required: true
+        default: "200"
+      sysprep_unattend:
+        description: "Unattend file used by Sysprep on the Windows VM"
+        required: true
+        default: 'C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-image-refresh
+  cancel-in-progress: false
+
+env:
+  OS_CLOUD: infomaniak
+  NETWORK_NAME: "ext-net1"
+  LINUX_IMAGE: ${{ vars.IMAGE_REFRESH_LINUX_IMAGE || 'Ubuntu 26.04 LTS Resolute Raccoon' }}
+  LINUX_FLAVOR: ${{ vars.IMAGE_REFRESH_LINUX_FLAVOR || 'a8-ram16-disk20-perf1' }}
+  VOLUME_TYPE: ${{ vars.IMAGE_REFRESH_VOLUME_TYPE || 'CEPH_1_perf1' }}
+  REPO: ${{ github.repository }}
+  IMAGE_NAME: ${{ inputs.image_name }}
+  REFRESH_PREFIX: img-refresh-${{ github.repository_id }}-
+  MAINT_NAME: img-refresh-${{ github.repository_id }}-maint-${{ github.run_id }}-${{ github.run_attempt }}
+  VALIDATE_NAME: img-refresh-${{ github.repository_id }}-validate-${{ github.run_id }}-${{ github.run_attempt }}
+  WORKER_NAME: img-refresh-${{ github.repository_id }}-worker-${{ github.run_id }}-${{ github.run_attempt }}
+  VOLUME_NAME: img-refresh-${{ github.repository_id }}-volume-${{ github.run_id }}-${{ github.run_attempt }}
+  SECGROUP_NAME: img-refresh-${{ github.repository_id }}-ssh-${{ github.run_id }}-${{ github.run_attempt }}
+  SNAPSHOT_NAME: img-refresh-${{ github.repository_id }}-snapshot-${{ github.run_id }}-${{ github.run_attempt }}
+  CANDIDATE_NAME: ${{ inputs.image_name }}_candidate_${{ github.repository_id }}_${{ github.run_id }}_${{ github.run_attempt }}
+  LIB: .github/windows-image-refresh/lib.sh
+
+jobs:
+  prepare:
+    name: Launch maintenance VM
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
+      CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
+      CLOUD_PASSWORD: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
+      CLOUD_PROJECT_ID: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
+      CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
+      CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
+      GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
+      WINDOWS_FLAVOR: ${{ inputs.windows_flavor }}
+    outputs:
+      source_image_id: ${{ steps.source.outputs.id }}
+      maint_server_id: ${{ steps.launch.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check configuration
+        env:
+          VOLUME_SIZE: ${{ inputs.work_volume_size_gb }}
+        run: |
+          source "$LIB"
+          [[ "$VOLUME_SIZE" =~ ^[0-9]+$ ]] || die "work_volume_size_gb must be a number"
+          (( 10#$VOLUME_SIZE > 0 )) || die "work_volume_size_gb must be positive"
+          [[ "$IMAGE_NAME" =~ ^[A-Za-z0-9._-]+$ ]] || die "Invalid image name: $IMAGE_NAME"
+
+      - name: Install OpenStack CLI
+        run: pip install python-openstackclient --quiet
+
+      - name: Write clouds.yaml
+        run: source "$LIB" && write_clouds_yaml
+
+      - name: Remove leftovers of interrupted refreshes
+        # Refreshes for this repository are serialized; other repositories have a different prefix.
+        # Retained "<image>_old_*" images never match these patterns.
+        run: |
+          source "$LIB"
+          ids="$(gh api --paginate "/repos/${REPO}/actions/runners?per_page=100" \
+              --jq ".runners[] | select(.name | startswith(\"${REFRESH_PREFIX}\")) | .id")"
+          for id in $ids; do
+            log "Deleting orphan runner $id"
+            gh api -X DELETE "/repos/${REPO}/actions/runners/${id}"
+          done
+          ids="$(os server list --name "^${REFRESH_PREFIX}" -f value -c ID)"
+          for id in $ids; do
+            log "Deleting orphan server $id"
+            os server delete --wait "$id"
+          done
+          ids="$(os volume list -f value -c ID -c Name | awk -v p="$REFRESH_PREFIX" 'index($2, p) == 1 {print $1}')"
+          for id in $ids; do
+            log "Deleting orphan volume $id"
+            os volume delete "$id"
+          done
+          ids="$(os security group list -f value -c ID -c Name | awk -v p="$REFRESH_PREFIX" 'index($2, p) == 1 {print $1}')"
+          for id in $ids; do
+            log "Deleting orphan security group $id"
+            os security group delete "$id"
+          done
+          ids="$(os image list --all --project "$CLOUD_PROJECT_ID" -f value -c ID -c Name \
+              | awk -v cand="${IMAGE_NAME}_candidate_${GITHUB_REPOSITORY_ID}_" -v snap="${REFRESH_PREFIX}snapshot-" 'index($2, cand) == 1 || index($2, snap) == 1 {print $1}')"
+          for id in $ids; do
+            log "Deleting orphan image $id"
+            os image delete "$id"
+          done
+
+      - name: Resolve source image
+        id: source
+        run: |
+          source "$LIB"
+          ID="$(resolve_unique_image "$IMAGE_NAME")"
+          os image show "$ID" -f json > source-image.json
+          jq '{id, name, status, disk_format, size, min_disk, min_ram, visibility, properties}' source-image.json
+          [[ "$(jq -r .status source-image.json)" == "active" ]] || die "Source image $ID is not active"
+          if jq -e '(.properties | type) == "object" and (.properties | has("block_device_mapping"))' source-image.json > /dev/null; then
+            die "Source image $ID is volume-backed; only image-backed images are supported"
+          fi
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+
+      - name: Launch maintenance VM
+        id: launch
+        run: |
+          source "$LIB"
+          TOKEN="$(mint_registration_token)"
+          echo "::add-mask::$TOKEN"
+          ADMIN_PASS="$(random_admin_password)"
+          echo "::add-mask::$ADMIN_PASS"
+          ADMIN_PASS_B64="$(printf '%s' "$ADMIN_PASS" | base64 -w0)"
+          echo "::add-mask::$ADMIN_PASS_B64"
+
+          sed \
+            -e "s|__REPO_URL__|https://github.com/${REPO}|" \
+            -e "s|__REG_TOKEN__|${TOKEN}|" \
+            -e "s|__LABEL__|${MAINT_NAME}|" \
+            -e "s|__REG_NAME__|${MAINT_NAME}|" \
+            -e "s|__ADMIN_PASS_B64__|${ADMIN_PASS_B64}|" \
+            .github/windows-image-refresh/maintenance-userdata.ps1 > userdata.ps1
+          ! grep -q '__[A-Z_]*__' userdata.ps1 || die "Unrendered placeholder in maintenance user-data"
+
+          ID="$(os server create \
+            --image "${{ steps.source.outputs.id }}" \
+            --flavor "$WINDOWS_FLAVOR" \
+            --network "$NETWORK_NAME" \
+            --user-data userdata.ps1 \
+            --property "purpose=image-refresh" \
+            --property "admin_pass=${ADMIN_PASS}" \
+            --wait -f value -c id \
+            "$MAINT_NAME")"
+          rm -f userdata.ps1
+          log "Maintenance VM $MAINT_NAME: $ID"
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+
+  wait-maintenance-runner:
+    name: Wait for Windows updates
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
+      CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
+      CLOUD_PASSWORD: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
+      CLOUD_PROJECT_ID: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
+      CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
+      CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
+      GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install OpenStack CLI
+        run: pip install python-openstackclient --quiet
+      - name: Wait for the maintenance runner
+        # The runner is only started once Windows Update converged (or failed; warm-cache then reports it).
+        run: |
+          source "$LIB"
+          write_clouds_yaml
+          wait_runner_online "$MAINT_NAME" "${{ needs.prepare.outputs.maint_server_id }}" 330
+
+  warm-cache:
+    name: Warm Conan cache and seal
+    needs: [ prepare, wait-maintenance-runner ]
+    runs-on: [ "img-refresh-${{ github.repository_id }}-maint-${{ github.run_id }}-${{ github.run_attempt }}" ]
+    timeout-minutes: 240
+    defaults:
+      run:
+        shell: powershell
+    outputs:
+      original_version: ${{ steps.state.outputs.original_version }}
+      updated_version: ${{ steps.state.outputs.updated_version }}
+    steps:
+      - name: Check runner identity and Windows Update result
+        id: state
+        run: |
+          if ($env:RUNNER_NAME -ne $env:MAINT_NAME) { throw "Unexpected runner '$env:RUNNER_NAME'" }
+          Get-Content C:\ImageRefresh\refresh.log
+          $state = Get-Content C:\ImageRefresh\state.json -Raw | ConvertFrom-Json
+          if ($state.stage -ne "ready") { throw "Windows Update ended with '$($state.stage)': $($state.message)" }
+          Write-Host "Windows $($state.originalVersion) -> $($state.updatedVersion)"
+          "original_version=$($state.originalVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "updated_version=$($state.updatedVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - uses: actions/checkout@v4
+
+      - name: Refresh Conan recipes and binaries
+        env:
+          QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
+        run: |
+          & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
+            -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+          & .\infomaniak-build-tools\conan\build_dependencies.ps1 Release -OutputDir "$env:RUNNER_TEMP\conan" -CI -MakeRelease -CleanCache -Update
+
+      - name: Schedule Sysprep after this job
+        env:
+          UNATTEND: ${{ inputs.sysprep_unattend }}
+          SOURCE_IMAGE_ID: ${{ needs.prepare.outputs.source_image_id }}
+          ORIGINAL_VERSION: ${{ steps.state.outputs.original_version }}
+          UPDATED_VERSION: ${{ steps.state.outputs.updated_version }}
+        run: |
+          if (-not (Test-Path -LiteralPath $env:UNATTEND)) { throw "Sysprep unattend file not found: $env:UNATTEND" }
+          if (-not (Test-Path "$env:SystemRoot\System32\Sysprep\sysprep.exe")) { throw "sysprep.exe not found" }
+
+          $seal = "C:\ImageRefresh\seal.ps1"
+          Copy-Item -Path .github\windows-image-refresh\seal.ps1 -Destination $seal -Force
+          $info = [ordered]@{
+            runId           = "$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+            runUrl          = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+            commit          = $env:GITHUB_SHA
+            sourceImageId   = $env:SOURCE_IMAGE_ID
+            originalVersion = $env:ORIGINAL_VERSION
+            windowsVersion  = $env:UPDATED_VERSION
+            refreshedAt     = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Compress
+          $infoB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($info))
+
+          $action = New-ScheduledTaskAction -Execute "powershell.exe" `
+            -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$seal`" -UnattendPath `"$env:UNATTEND`" -InfoJson $infoB64"
+          $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1)
+          $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+          Register-ScheduledTask -TaskName "ImageRefreshSeal" -Action $action -Trigger $trigger -Principal $principal -Force | Out-Null
+          Write-Host "Sysprep scheduled; the VM will shut down once this job has completed."
+
+  capture:
+    name: Capture and compress candidate image
+    needs: [ prepare, warm-cache ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
+      CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
+      CLOUD_PASSWORD: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
+      CLOUD_PROJECT_ID: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
+      CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
+      CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
+      GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
+      MAINT_SERVER_ID: ${{ needs.prepare.outputs.maint_server_id }}
+      SOURCE_IMAGE_ID: ${{ needs.prepare.outputs.source_image_id }}
+      VOLUME_SIZE: ${{ inputs.work_volume_size_gb }}
+      SSH_OPTS: -i /home/runner/.ssh/refresh -o UserKnownHostsFile=/home/runner/.ssh/refresh_known_hosts -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 -o ConnectTimeout=20
+    outputs:
+      candidate_id: ${{ steps.candidate.outputs.id }}
+      snapshot_size: ${{ steps.snapshot.outputs.size }}
+      candidate_size: ${{ steps.convert.outputs.size }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenStack CLI
+        run: pip install python-openstackclient --quiet
+
+      - name: Write clouds.yaml
+        run: source "$LIB" && write_clouds_yaml
+
+      - name: Remove maintenance runner registration
+        run: source "$LIB" && delete_runner "$MAINT_NAME"
+
+      - name: Wait for Sysprep shutdown
+        run: source "$LIB" && wait_server_status "$MAINT_SERVER_ID" SHUTOFF 120
+
+      - name: Snapshot sealed VM
+        id: snapshot
+        run: |
+          source "$LIB"
+          ID="$(os server image create --name "$SNAPSHOT_NAME" -f value -c id "$MAINT_SERVER_ID")"
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+          wait_image_active "$ID" 180
+          os image show "$ID" -f json > snapshot.json
+          jq '{id, status, disk_format, size, virtual_size}' snapshot.json
+          SIZE="$(jq -r '.size // 0' snapshot.json)"
+          (( SIZE > 0 )) || die "Snapshot $ID has no data (volume-backed server?)"
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          # The sealed VM must never boot again.
+          os server delete --wait "$MAINT_SERVER_ID"
+
+      - name: Start conversion VM with temporary volume
+        id: worker
+        run: |
+          source "$LIB"
+          mkdir -p ~/.ssh
+          ssh-keygen -q -t ed25519 -N "" -f ~/.ssh/refresh
+          MY_IP="$(curl -fsS https://api.ipify.org)"
+          [[ "$MY_IP" =~ ^[0-9.]+$ ]] || die "Could not determine runner public IPv4"
+
+          os security group create "$SECGROUP_NAME" -f value -c id > /dev/null
+          os security group rule create --ingress --protocol tcp --dst-port 22 --remote-ip "${MY_IP}/32" "$SECGROUP_NAME" > /dev/null
+
+          VOLUME_ARGS=(--size "$VOLUME_SIZE")
+          [[ -n "$VOLUME_TYPE" ]] && VOLUME_ARGS+=(--type "$VOLUME_TYPE")
+          VOLUME_ID="$(os volume create "${VOLUME_ARGS[@]}" -f value -c id "$VOLUME_NAME")"
+          for _ in $(seq 60); do
+            [[ "$(os volume show "$VOLUME_ID" -f value -c status)" == "available" ]] && break
+            sleep 10
+          done
+          [[ "$(os volume show "$VOLUME_ID" -f value -c status)" == "available" ]] || die "Volume $VOLUME_ID is not available"
+
+          cat > worker.yaml <<EOF
+          #cloud-config
+          users:
+            - name: refresh
+              sudo: "ALL=(ALL) NOPASSWD:ALL"
+              shell: /bin/bash
+              ssh_authorized_keys:
+                - $(cat ~/.ssh/refresh.pub)
+          package_update: true
+          packages: [qemu-utils, jq, curl]
+          EOF
+
+          SERVER_ID="$(os server create \
+            --image "$LINUX_IMAGE" \
+            --flavor "$LINUX_FLAVOR" \
+            --network "$NETWORK_NAME" \
+            --security-group "$SECGROUP_NAME" \
+            --user-data worker.yaml \
+            --property "purpose=image-refresh" \
+            --wait -f value -c id \
+            "$WORKER_NAME")"
+          os server add volume "$SERVER_ID" "$VOLUME_ID"
+
+          IP="$(os server show "$SERVER_ID" -f json -c addresses | jq -r '
+            .addresses
+            | if type == "string" then (split(", ") | map(split("=") | last)) else [.[][]] end
+            | map(select(test("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")))
+            | first // empty')"
+          [[ -n "$IP" ]] || die "Conversion VM has no IPv4 address"
+
+          for _ in $(seq 40); do
+            # cloud-init returns 2 for recoverable warnings, but 1 for an unrecoverable failure.
+            if ssh $SSH_OPTS "refresh@$IP" 'cloud-init status --wait > /dev/null; rc=$?; [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ] || exit "$rc"; command -v qemu-img && command -v jq && command -v curl' 2>/dev/null; then
+              READY=1; break
+            fi
+            sleep 30
+          done
+          [[ -n "${READY:-}" ]] || die "Conversion VM did not become ready"
+          scp $SSH_OPTS .github/windows-image-refresh/convert-image.sh "refresh@$IP:convert-image.sh"
+          echo "ip=$IP" >> "$GITHUB_OUTPUT"
+          echo "volume_id=$VOLUME_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download and convert to compressed qcow2
+        id: convert
+        env:
+          IP: ${{ steps.worker.outputs.ip }}
+          VOLUME_ID: ${{ steps.worker.outputs.volume_id }}
+          SNAPSHOT_ID: ${{ steps.snapshot.outputs.id }}
+          SNAPSHOT_SIZE: ${{ steps.snapshot.outputs.size }}
+        run: |
+          source "$LIB"
+          GLANCE="$(glance_endpoint)"
+          ssh $SSH_OPTS "refresh@$IP" "sudo bash convert-image.sh prepare $VOLUME_ID"
+          os token issue -f value -c id \
+            | ssh $SSH_OPTS "refresh@$IP" "sudo bash convert-image.sh download $GLANCE/v2/images/$SNAPSHOT_ID/file $SNAPSHOT_SIZE"
+          ssh $SSH_OPTS "refresh@$IP" "sudo bash convert-image.sh convert" | tee convert.log
+          grep -E '^(virtual_size|size|md5|sha512)=' convert.log >> "$GITHUB_OUTPUT"
+
+      - name: Create candidate image
+        id: candidate
+        env:
+          ORIGINAL_VERSION: ${{ needs.warm-cache.outputs.original_version }}
+          UPDATED_VERSION: ${{ needs.warm-cache.outputs.updated_version }}
+        run: |
+          source "$LIB"
+          os image show "$SOURCE_IMAGE_ID" -f json > source-image.json
+          # Keep boot/firmware/OS properties of the current image; drop Glance-managed, snapshot and refresh metadata.
+          mapfile -t PROPS < <(jq -r '
+            (.properties // {}) | if type == "object" then . else {} end
+            | to_entries[]
+            | select(.key | test("^(os_hash_algo|os_hash_value|os_hidden|os_glance_.*|stores|direct_url|locations|image_type|instance_uuid|base_image_ref|image_location|image_state|user_id|owner_id|owner_project_name|owner_user_name|boot_roles|block_device_mapping|bdm_v2|root_device_name|owner_specified\\..*|kdrive_.*)$") | not)
+            | "\(.key)=\(.value | if type == "string" then . else tojson end)"' source-image.json)
+          ARGS=()
+          for p in "${PROPS[@]}"; do ARGS+=(--property "$p"); done
+          mapfile -t TAGS < <(jq -r '.tags[]?' source-image.json)
+          for tag in "${TAGS[@]}"; do ARGS+=(--tag "$tag"); done
+
+          # Close stdin so openstackclient creates a queued image instead of uploading empty input.
+          ID="$(os image create \
+            --disk-format qcow2 --container-format bare --private \
+            --min-disk "$(jq -r '.min_disk // 0' source-image.json)" \
+            --min-ram "$(jq -r '.min_ram // 0' source-image.json)" \
+            "${ARGS[@]}" \
+            --property "kdrive_windows_version=${UPDATED_VERSION}" \
+            --property "kdrive_previous_windows_version=${ORIGINAL_VERSION}" \
+            --property "kdrive_source_image=${SOURCE_IMAGE_ID}" \
+            --property "kdrive_refresh_commit=${GITHUB_SHA}" \
+            --property "kdrive_refresh_run=${GITHUB_SERVER_URL}/${REPO}/actions/runs/${GITHUB_RUN_ID}" \
+            -f value -c id "$CANDIDATE_NAME" <&-)"
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+          log "Candidate image $CANDIDATE_NAME: $ID"
+
+      - name: Upload and verify candidate image
+        env:
+          IP: ${{ steps.worker.outputs.ip }}
+          CANDIDATE_ID: ${{ steps.candidate.outputs.id }}
+          EXPECTED_SIZE: ${{ steps.convert.outputs.size }}
+          EXPECTED_MD5: ${{ steps.convert.outputs.md5 }}
+          EXPECTED_SHA512: ${{ steps.convert.outputs.sha512 }}
+        run: |
+          source "$LIB"
+          GLANCE="$(glance_endpoint)"
+          os token issue -f value -c id \
+            | ssh $SSH_OPTS "refresh@$IP" "sudo bash convert-image.sh upload $GLANCE/v2/images/$CANDIDATE_ID/file"
+          wait_image_active "$CANDIDATE_ID" 120
+          os image show "$CANDIDATE_ID" -f json > candidate.json
+          jq '{id, name, status, disk_format, size, virtual_size, checksum, hash_algo, hash_value, properties}' candidate.json
+          [[ "$(jq -r .disk_format candidate.json)" == "qcow2" ]] || die "Candidate is not qcow2"
+          [[ "$(jq -r .size candidate.json)" == "$EXPECTED_SIZE" ]] || die "Candidate size mismatch"
+          HASH_ALGO="$(jq -r '.hash_algo // .os_hash_algo // .properties.os_hash_algo // ""' candidate.json)"
+          HASH_VALUE="$(jq -r '.hash_value // .os_hash_value // .properties.os_hash_value // ""' candidate.json)"
+          CHECKSUM="$(jq -r '.checksum // ""' candidate.json)"
+          if [[ "$HASH_ALGO" == "sha512" && -n "$HASH_VALUE" ]]; then
+            [[ "$HASH_VALUE" == "$EXPECTED_SHA512" ]] || die "Candidate SHA-512 mismatch"
+          elif [[ -n "$CHECKSUM" ]]; then
+            [[ "$CHECKSUM" == "$EXPECTED_MD5" ]] || die "Candidate checksum mismatch"
+          else
+            die "Glance did not provide a usable checksum for the uploaded image"
+          fi
+
+      - name: Remove conversion resources
+        if: always()
+        run: |
+          source "$LIB"
+          ids="$(os server list --name "^${WORKER_NAME}\$" -f value -c ID)"
+          for id in $ids; do os server delete --wait "$id"; done
+          ids="$(os volume list -f value -c ID -c Name | awk -v n="$VOLUME_NAME" '$2 == n {print $1}')"
+          for id in $ids; do os volume delete "$id"; done
+          ids="$(os security group list -f value -c ID -c Name | awk -v n="$SECGROUP_NAME" '$2 == n {print $1}')"
+          for id in $ids; do os security group delete "$id"; done
+          ids="$(os image list --private --project "$CLOUD_PROJECT_ID" -f value -c ID -c Name | awk -v n="$SNAPSHOT_NAME" '$2 == n {print $1}')"
+          for id in $ids; do os image delete "$id"; done
+
+  boot-candidate:
+    name: Boot candidate with a dedicated runner
+    needs: [ prepare, capture ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
+      CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
+      CLOUD_PASSWORD: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
+      CLOUD_PROJECT_ID: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
+      CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
+      CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
+      GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
+      CANDIDATE_ID: ${{ needs.capture.outputs.candidate_id }}
+      WINDOWS_FLAVOR: ${{ inputs.windows_flavor }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenStack CLI
+        run: pip install python-openstackclient --quiet
+
+      - name: Launch validation VM from the candidate image
+        # Uses the normal runner bootstrap, so first boot of the generalized image is exercised as in CI,
+        # but with only a run-unique label so that no other job can be picked up by this runner.
+        run: |
+          source "$LIB"
+          write_clouds_yaml
+          TOKEN="$(mint_registration_token)"
+          echo "::add-mask::$TOKEN"
+          ADMIN_PASS="$(random_admin_password)"
+          echo "::add-mask::$ADMIN_PASS"
+          ADMIN_PASS_B64="$(printf '%s' "$ADMIN_PASS" | base64 -w0)"
+          echo "::add-mask::$ADMIN_PASS_B64"
+
+          sed \
+            -e "s|__REPO_URL__|https://github.com/${REPO}|" \
+            -e "s|__REG_TOKEN__|${TOKEN}|" \
+            -e "s|__TAGS__|${VALIDATE_NAME}|" \
+            -e "s|__REG_NAME__|${VALIDATE_NAME}|" \
+            -e "s|__ADMIN_PASS_B64__|${ADMIN_PASS_B64}|" \
+            -e 's|^\([[:space:]]*\)--unattended `\r\?$|\1--unattended `\n\1--no-default-labels `|' \
+            .github/workflows/templates/userdata-template.ps1 > userdata.ps1
+          grep -q -- '--no-default-labels' userdata.ps1 || die "Could not disable default runner labels"
+          ! grep -q '__[A-Z_]*__' userdata.ps1 || die "Unrendered placeholder in validation user-data"
+
+          ID="$(os server create \
+            --image "$CANDIDATE_ID" \
+            --flavor "$WINDOWS_FLAVOR" \
+            --network "$NETWORK_NAME" \
+            --user-data userdata.ps1 \
+            --property "purpose=image-refresh" \
+            --property "admin_pass=${ADMIN_PASS}" \
+            --wait -f value -c id \
+            "$VALIDATE_NAME")"
+          rm -f userdata.ps1
+          log "Validation VM $VALIDATE_NAME: $ID"
+          wait_runner_online "$VALIDATE_NAME" "$ID" 90
+
+  validate:
+    name: Validate candidate image
+    needs: [ prepare, warm-cache, boot-candidate ]
+    runs-on: [ "img-refresh-${{ github.repository_id }}-validate-${{ github.run_id }}-${{ github.run_attempt }}" ]
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - name: Check runner identity and image provenance
+        env:
+          EXPECTED_VERSION: ${{ needs.warm-cache.outputs.updated_version }}
+        run: |
+          if ($env:RUNNER_NAME -ne $env:VALIDATE_NAME) { throw "Unexpected runner '$env:RUNNER_NAME'" }
+          $user = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+          if ($user -notlike "*\Administrator") { throw "Runner is not running as Administrator: $user" }
+
+          $cv = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+          $version = "$($cv.CurrentMajorVersionNumber).$($cv.CurrentMinorVersionNumber).$($cv.CurrentBuild).$($cv.UBR)"
+          if ($version -ne $env:EXPECTED_VERSION) { throw "Windows $version, expected $env:EXPECTED_VERSION" }
+
+          $info = Get-Content C:\ProgramData\kDriveImageRefresh\refresh-info.json -Raw | ConvertFrom-Json
+          if ($info.runId -ne "$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT") { throw "Image was not produced by this run: $($info.runId)" }
+          $sysprepLog = Get-Item "$env:SystemRoot\System32\Sysprep\Panther\setupact.log"
+          if ($sysprepLog.LastWriteTimeUtc -lt ([DateTime]$info.refreshedAt).ToUniversalTime()) { throw "Sysprep did not run after the refresh" }
+          $generalization = (Get-ItemProperty "HKLM:\SYSTEM\Setup\Status\SysprepStatus").GeneralizationState
+          if ($generalization -ne 7) { throw "Windows setup did not complete after Sysprep (GeneralizationState=$generalization)" }
+          if (Test-Path C:\ImageRefresh) { throw "Maintenance files were left in the image" }
+          if (Get-ScheduledTask -TaskName "ImageRefresh*" -ErrorAction SilentlyContinue) { throw "Maintenance tasks were left in the image" }
+          Write-Host "Validated Windows $version on $env:RUNNER_NAME ($user)"
+
+      - uses: actions/checkout@v4
+
+      - name: Check that the warmed Conan cache is reused
+        env:
+          QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
+        run: |
+          & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
+            -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+          $log = "$env:RUNNER_TEMP\conan-install.log"
+          & .\infomaniak-build-tools\conan\build_dependencies.ps1 Release -OutputDir "$env:RUNNER_TEMP\conan" -CI -MakeRelease -CleanCache *>&1 |
+            Tee-Object -FilePath $log
+          if ($LASTEXITCODE -ne 0) { throw "Conan dependency installation failed ($LASTEXITCODE)" }
+          if (Select-String -Path $log -Pattern "Calling build\(\)|Downloaded package revision|Downloading (package|binary)" -Quiet) {
+            throw "Dependencies were rebuilt or downloaded: the warmed Conan cache was not reused"
+          }
+
+  watchdog:
+    name: Ensure the dedicated runner picks the validation job
+    needs: boot-candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      actions: write
+    steps:
+      - name: Cancel the refresh if the validation job is not picked up
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DEADLINE=$(( $(date +%s) + 30 * 60 ))
+          while (( $(date +%s) < DEADLINE )); do
+            STATUS="$(gh api "/repos/${REPO}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs?per_page=100" \
+              --jq '.jobs[] | select(.name == "Validate candidate image") | "\(.status) \(.runner_name // "")"')"
+            echo "Validation job: ${STATUS:-not created}"
+            if [[ "$STATUS" =~ ^(in_progress|completed)\ (.*)$ ]]; then
+              [[ "${BASH_REMATCH[2]}" == "$VALIDATE_NAME" ]] || { echo "::error::Picked by unexpected runner ${BASH_REMATCH[2]}"; exit 1; }
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::The dedicated runner did not pick the validation job in time; cancelling (current image unchanged)."
+          gh run cancel "$GITHUB_RUN_ID" --repo "$REPO"
+          exit 1
+
+  promote:
+    name: Promote candidate image
+    needs: [ prepare, warm-cache, capture, validate, watchdog ]
+    if: inputs.promote
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+    # Shared with start-runners.yml so no runner launch resolves the image name between the two renames.
+    concurrency:
+      group: windows-runner-image-${{ inputs.image_name }}
+      cancel-in-progress: false
+    env:
+      CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
+      CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
+      CLOUD_PASSWORD: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
+      CLOUD_PROJECT_ID: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
+      CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
+      CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
+      SOURCE_IMAGE_ID: ${{ needs.prepare.outputs.source_image_id }}
+      CANDIDATE_ID: ${{ needs.capture.outputs.candidate_id }}
+      ORIGINAL_VERSION: ${{ needs.warm-cache.outputs.original_version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify the validation job ran on the candidate runner
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RESULT="$(gh api "/repos/${REPO}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs?per_page=100" \
+            --jq '.jobs[] | select(.name == "Validate candidate image") | "\(.conclusion) \(.runner_name)"')"
+          echo "Validation job: $RESULT"
+          [[ "$RESULT" == "success $VALIDATE_NAME" ]] || { echo "::error::Validation was not completed by $VALIDATE_NAME"; exit 1; }
+
+      - name: Install OpenStack CLI
+        run: pip install python-openstackclient --quiet
+
+      - name: Rename images
+        run: |
+          source "$LIB"
+          write_clouds_yaml
+          [[ "$ORIGINAL_VERSION" =~ ^[0-9.]+$ ]] || die "Invalid original Windows version: $ORIGINAL_VERSION"
+          CURRENT="$(resolve_unique_image "$IMAGE_NAME")"
+          [[ "$CURRENT" == "$SOURCE_IMAGE_ID" ]] || die "$IMAGE_NAME now resolves to $CURRENT, not $SOURCE_IMAGE_ID; not promoting"
+          [[ "$(os image show "$CANDIDATE_ID" -f value -c status)" == "active" ]] || die "Candidate is not active"
+
+          VISIBILITY="$(os image show "$SOURCE_IMAGE_ID" -f value -c visibility)"
+          if [[ "$VISIBILITY" != "private" ]]; then
+            os image set "--${VISIBILITY}" "$CANDIDATE_ID"
+            if [[ "$VISIBILITY" == "shared" ]]; then
+              for member in $(os image member list "$SOURCE_IMAGE_ID" -f value -c "Member ID"); do
+                os image add project "$CANDIDATE_ID" "$member" > /dev/null
+                echo "::warning::Project $member must accept the new shared image $CANDIDATE_ID"
+              done
+            fi
+          fi
+
+          OLD_NAME="${IMAGE_NAME}_old_${ORIGINAL_VERSION}_$(date -u +%Y%m%dT%H%MZ)"
+          trap 'restore_original_image "$SOURCE_IMAGE_ID" "$IMAGE_NAME" "$OLD_NAME" || true' EXIT
+          promote_image "$SOURCE_IMAGE_ID" "$CANDIDATE_ID" "$IMAGE_NAME" "$OLD_NAME" || die "Image promotion failed"
+          [[ "$(resolve_unique_image "$IMAGE_NAME")" == "$CANDIDATE_ID" ]] || die "Unexpected image state after promotion"
+          trap - EXIT
+          log "$IMAGE_NAME is now $CANDIDATE_ID; previous image kept as $OLD_NAME ($SOURCE_IMAGE_ID)"
+          echo "OLD_NAME=$OLD_NAME" >> "$GITHUB_ENV"
+
+      - name: Summary
+        env:
+          UPDATED_VERSION: ${{ needs.warm-cache.outputs.updated_version }}
+          SNAPSHOT_SIZE: ${{ needs.capture.outputs.snapshot_size }}
+          CANDIDATE_SIZE: ${{ needs.capture.outputs.candidate_size }}
+        run: |
+          {
+            echo "### Windows runner image refreshed"
+            echo ""
+            echo "| | Image | Windows | Size |"
+            echo "|---|---|---|---|"
+            echo "| New \`${IMAGE_NAME}\` | \`${CANDIDATE_ID}\` | ${UPDATED_VERSION} | ${CANDIDATE_SIZE} bytes (qcow2) |"
+            echo "| Kept \`${OLD_NAME}\` | \`${SOURCE_IMAGE_ID}\` | ${ORIGINAL_VERSION} | not measured |"
+            echo ""
+            echo "Updated VM snapshot: ${SNAPSHOT_SIZE} bytes"
+            echo "Commit: \`${GITHUB_SHA}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  cleanup:
+    name: Clean up temporary resources
+    needs: [ prepare, wait-maintenance-runner, warm-cache, capture, boot-candidate, validate, watchdog, promote ]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
+      CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
+      CLOUD_PASSWORD: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
+      CLOUD_PROJECT_ID: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
+      CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
+      CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
+      GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OpenStack CLI
+        run: pip install python-openstackclient --quiet
+
+      - name: Delete this run's runners, VMs, volume, snapshot and unpromoted candidate
+        # Only resources named after this run are deleted. A promoted candidate no longer has its
+        # candidate name, and retained "<image>_old_*" images are never touched.
+        run: |
+          source "$LIB"
+          write_clouds_yaml
+          failed=0
+          cleanup() {
+            if ! "$@"; then
+              echo "::warning::Cleanup failed: $*"
+              failed=1
+            fi
+          }
+          cleanup delete_runner "$MAINT_NAME"
+          cleanup delete_runner "$VALIDATE_NAME"
+          for name in "$MAINT_NAME" "$VALIDATE_NAME" "$WORKER_NAME"; do
+            ids="$(os server list --name "^${name}\$" -f value -c ID)" || { echo "::warning::Cannot list server $name"; failed=1; continue; }
+            for id in $ids; do
+              log "Deleting server $name ($id)"
+              cleanup os server delete --wait "$id"
+            done
+          done
+          ids="$(os volume list -f value -c ID -c Name | awk -v n="$VOLUME_NAME" '$2 == n {print $1}')" || { echo "::warning::Cannot list volumes"; failed=1; ids=""; }
+          for id in $ids; do
+            cleanup os volume delete "$id"
+          done
+          ids="$(os security group list -f value -c ID -c Name | awk -v n="$SECGROUP_NAME" '$2 == n {print $1}')" || { echo "::warning::Cannot list security groups"; failed=1; ids=""; }
+          for id in $ids; do
+            cleanup os security group delete "$id"
+          done
+          ids="$(os image list --all --project "$CLOUD_PROJECT_ID" -f value -c ID -c Name \
+              | awk -v s="$SNAPSHOT_NAME" -v c="$CANDIDATE_NAME" '$2 == s || $2 == c {print $1}')" || { echo "::warning::Cannot list images"; failed=1; ids=""; }
+          for id in $ids; do
+            log "Deleting image $id"
+            cleanup os image delete "$id"
+          done
+          (( failed == 0 ))
