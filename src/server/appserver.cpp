@@ -4904,7 +4904,7 @@ void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &i
     }
 
     // Keep auto resolved errors, to let the user know that they have been resolved
-    std::erase_if(errorList, [](const Error &error) { return error.isAutoResolved(); });
+    std::erase_if(errorList, [](const Error &error) { return error.cancelType() == CancelType::None; }); // Conflict errors are preserved by resolveErrors
 
     if (!found) return;
     resolveErrors(errorList);
