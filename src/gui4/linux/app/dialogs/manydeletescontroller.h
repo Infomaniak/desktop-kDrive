@@ -43,9 +43,9 @@ class ManyDeletesController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(Severity severity READ severity NOTIFY presentationChanged)
         Q_PROPERTY(bool visible READ visible NOTIFY presentationChanged)
-        Q_PROPERTY(quint64 itemCount READ itemCount NOTIFY presentationChanged)
-        Q_PROPERTY(QVariantList deletedItems READ deletedItems NOTIFY deletedItemsChanged)
-        Q_PROPERTY(quint64 hiddenItemCount READ hiddenItemCount NOTIFY presentationChanged)
+        Q_PROPERTY(quint64 itemCount READ itemCount NOTIFY contentChanged)
+        Q_PROPERTY(QVariantList deletedItems READ deletedItems NOTIFY contentChanged)
+        Q_PROPERTY(quint64 hiddenItemCount READ hiddenItemCount NOTIFY contentChanged)
         Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
         Q_PROPERTY(bool submissionFailed READ submissionFailed NOTIFY submissionFailedChanged)
         Q_PROPERTY(bool canOpenTrash READ canOpenTrash NOTIFY canOpenTrashChanged)
@@ -66,7 +66,7 @@ class ManyDeletesController final : public QObject {
         /** Deleted items sent by the server, in natural order: `shortPath` (from the synchronization folder),
          * `displayPath` (complete, `~` form) and `iconName`. */
         [[nodiscard]] QVariantList deletedItems() const;
-        /** Deleted items left out of `deletedItems`, which the server caps. */
+        /** Deleted items left out of `deletedItems`, which is capped at 500 paths. */
         [[nodiscard]] quint64 hiddenItemCount() const;
         [[nodiscard]] bool busy() const { return _busy; }
         [[nodiscard]] bool submissionFailed() const { return _submissionFailed; }
@@ -79,8 +79,8 @@ class ManyDeletesController final : public QObject {
 
     signals:
         void presentationChanged();
-        /** Also emitted alone when the rows of the current warning are rebuilt, so the dialog keeps its state. */
-        void deletedItemsChanged();
+        /** Also emitted alone when the count or the rows of the current warning change, so the dialog keeps its state. */
+        void contentChanged();
         void busyChanged();
         void submissionFailedChanged();
         void canOpenTrashChanged();
@@ -98,6 +98,7 @@ class ManyDeletesController final : public QObject {
 
         void enqueue(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, Count itemCount,
                      const QStringList &deletedPaths);
+        void mergeSoft(Notification &existing, Count itemCount, const QStringList &deletedPaths);
         [[nodiscard]] QVariantList makeDeletedItems(SyncDbId syncDbId, QStringList deletedPaths) const;
         [[nodiscard]] bool canResolveDeletedItems(SyncDbId syncDbId, const QStringList &deletedPaths) const;
         void resolvePendingDeletedItems();
