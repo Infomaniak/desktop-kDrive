@@ -4904,7 +4904,17 @@ void AppServer::resolveItemErrors(const SyncDbId syncDbId, const SyncFileItem &i
     }
 
     // Keep cancellation errors visible after the operation is retried
-    std::erase_if(errorList, [](const Error &error) { return error.cancelType() != CancelType::None; });
+    std::erase_if(errorList, [](const Error &error) {
+        switch (error.cancelType()) {
+            case CancelType::Create:
+            case CancelType::Edit:
+            case CancelType::Move:
+            case CancelType::Delete:
+                return true;
+            default:
+                return false;
+        }
+    });
 
     if (!found) return;
     resolveErrors(errorList);
