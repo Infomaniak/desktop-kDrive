@@ -24,6 +24,8 @@
 #include "test_utility/testhelpers.h"
 
 #include "libsyncengine/update_detection/update_detector/updatetreeworker.h"
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 
 #include <memory>
 
@@ -62,6 +64,17 @@ void TestUpdateTreeWorker::setUp() {
 }
 
 void TestUpdateTreeWorker::tearDown() {
+    // Detach the worker under test and break the SyncPal ownership cycles (SyncPal <-> workers, SyncPal <->
+    // ProgressInfo), otherwise the SyncPal, its workers and its snapshots are leaked once the fixture is destroyed.
+    _localUpdateTreeWorker->setSyncPal(nullptr);
+    if (_syncPal) {
+        _syncPal->freeWorkers();
+        _syncPal->freeSharedObjects();
+        if (_syncPal->syncDb()) {
+            _syncPal->syncDb()->close();
+        }
+        _syncPal.reset();
+    }
     ParmsDb::instance()->close();
     // The singleton ParmsDb calls KDC::Log()->instance() in its destructor.
     // As the two singletons are instantiated in different translation units, the order of their destruction is unknown.
@@ -779,6 +792,81 @@ void TestUpdateTreeWorker::testStep4() {
     CPPUNIT_ASSERT(node81 != nullptr);
     CPPUNIT_ASSERT(node81->hasChangeEvent(OperationType::Edit));
     CPPUNIT_ASSERT(node81->parentNode()->isTmp());
+}
+
+void TestUpdateTreeWorker::createSyncPalWithItemSnapshots(bool deletedItemIsLink, bool createdItemIsLink) {
+    const SyncPath syncDbPath = _localTempDir.path() / MockDb::makeDbMockFileName();
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath,
+                                         KDRIVE_VERSION_STRING, true);
+    _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
+
+    // Simulate the state of the snapshots after the deletion of the item "Dir 5/File 5.1" (local ID "id51", remote ID
+    // "id drive 51") and the creation of a new item (local ID "id51bis") reusing the same path. The deleted item is not
+    // present in the local snapshot anymore, but its remote counterpart is still present on the remote replica.
+    const SnapshotItem deletedRemoteItem("id drive 51", "id drive 5", Str("File 5.1"), testhelpers::defaultTime,
+                                         testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                                         deletedItemIsLink, true, true);
+    CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(deletedRemoteItem));
+    const SnapshotItem createdLocalItem("id51bis", "id5", Str("File 5.1"), testhelpers::defaultTime + 1,
+                                        testhelpers::defaultTime + 1, NodeType::File, testhelpers::defaultFileSize,
+                                        createdItemIsLink, true, true);
+    CPPUNIT_ASSERT(_syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(createdLocalItem));
+
+    _syncPal->copySnapshots();
+    _localUpdateTreeWorker->setSyncPal(_syncPal);
+}
+
+void TestUpdateTreeWorker::testStep4ItemTypeChanged() {
+    // A synchronized symbolic link is replaced by a regular file reusing the same path.
+    createSyncPalWithItemSnapshots(/*deletedItemIsLink=*/true, /*createdItemIsLink=*/false);
+
+    setUpUpdateTree(ReplicaSide::Local);
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id51", NodeType::File, testhelpers::defaultTime,
+                                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                                          "Dir 5/File 5.1"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id511", NodeType::File,
+                                                          testhelpers::defaultTime, testhelpers::defaultTime,
+                                                          testhelpers::defaultFileSize, "Dir 5/File 5.1"));
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step4DeleteFile());
+    // The Create operation was not merged with the Delete operation, it is processed by step 6.
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step6CreateFile());
+
+    // The deleted item is propagated as a Delete operation, and not as an Edit operation.
+    const auto deletedItemNode = _localUpdateTree->getNodeById("id51");
+    CPPUNIT_ASSERT(deletedItemNode);
+    CPPUNIT_ASSERT(deletedItemNode->hasChangeEvent(OperationType::Delete));
+    CPPUNIT_ASSERT(!deletedItemNode->hasChangeEvent(OperationType::Edit));
+    // The newly created item is propagated as a Create operation, without any previous ID.
+    const auto createdItemNode = _localUpdateTree->getNodeById("id511");
+    CPPUNIT_ASSERT(createdItemNode);
+    CPPUNIT_ASSERT(createdItemNode->hasChangeEvent(OperationType::Create));
+    CPPUNIT_ASSERT(!createdItemNode->isEditFromDeleteCreate());
+}
+
+void TestUpdateTreeWorker::testStep4ItemTypeUnchanged() {
+    // Both the deleted item "Dir 5/File 5.1" and the newly created item are regular files.
+    createSyncPalWithItemSnapshots(/*deletedItemIsLink=*/false, /*createdItemIsLink=*/false);
+
+    setUpUpdateTree(ReplicaSide::Local);
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id51", NodeType::File, testhelpers::defaultTime,
+                                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                                          "Dir 5/File 5.1"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id511", NodeType::File,
+                                                          testhelpers::defaultTime, testhelpers::defaultTime,
+                                                          testhelpers::defaultFileSize, "Dir 5/File 5.1"));
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step4DeleteFile());
+
+    // The Delete and Create operations are merged into an Edit operation.
+    const auto node = _localUpdateTree->getNodeByPath("Dir 5/File 5.1");
+    CPPUNIT_ASSERT(node);
+    CPPUNIT_ASSERT(node->id() == "id511");
+    CPPUNIT_ASSERT(node->hasChangeEvent(OperationType::Edit));
+    CPPUNIT_ASSERT(node->isEditFromDeleteCreate());
+    CPPUNIT_ASSERT(node->previousId() == "id51");
 }
 
 void TestUpdateTreeWorker::testStep5() {
