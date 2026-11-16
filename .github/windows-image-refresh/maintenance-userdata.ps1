@@ -1,6 +1,6 @@
 #ps1_sysnative
 # Cloudbase-Init user-data for the Windows image refresh maintenance VM.
-# Rendered by .github/workflows/update-windows-image.yml (placeholders __XXX__).
+# Rendered by .github/workflows/update-windows-image.yml (double-underscore placeholders).
 #
 # First boot (run by Cloudbase-Init): record the original Windows version, configure autologon,
 # register an isolated GitHub runner (unique label only, no default labels) WITHOUT starting it,
