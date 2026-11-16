@@ -361,9 +361,9 @@ if ($os -eq "linux-amd") {
         @("$app-amd64.AppImage", $true),
         @("$app-amd64.AppImage.sha256", $true),
         @("kDrive.dbg", $true),
-        @("kDrive_client.dbg", $true),
+        @("kdrive_qml.dbg", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true),
+        @("kdrive_qml.src.zip", $true),
         @("kDriveRecoveryUpdater-$version-amd64.AppImage", $true),
         @("kDriveRecoveryUpdater-$version-amd64.AppImage.sha256", $true)
     )
@@ -383,9 +383,9 @@ if ($os -eq "linux-arm") {
         @("$app-arm64.AppImage", $true),
         @("$app-arm64.AppImage.sha256", $true),
         @("kDrive.dbg", $true),
-        @("kDrive_client.dbg", $true),
+        @("kdrive_qml.dbg", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true),
+        @("kdrive_qml.src.zip", $true),
         @("kDriveRecoveryUpdater-$version-arm64.AppImage", $true),
         @("kDriveRecoveryUpdater-$version-arm64.AppImage.sha256", $true)
     )
