@@ -50,6 +50,9 @@
 ## First run
 
 GitHub requires the workflow file on the default branch before it can be dispatched.
+Before that, the branch can explicitly dispatch the existing `start-runners.yml` workflow
+with `count=0` and `labels=refresh-production-image` to run the production refresh. This
+bridge does not start normal runners and must be removed before merging.
 Run once with `image_name` set to a copy of the production image (for example
 `win_kdrive_runner_build_env_test`) and `promote` enabled to test the whole chain before
 refreshing production. Set `promote` to false to validate without replacing the image; the

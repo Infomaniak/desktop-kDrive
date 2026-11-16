@@ -30,96 +30,13 @@ env:
   REPO: ${{ github.repository }}
 
 jobs:
-  copy-test-image:
-    if: github.event_name == 'workflow_dispatch' && inputs.count == '0'
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
-    env:
-      CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
-      CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
-      CLOUD_PASSWORD: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
-      CLOUD_PROJECT_ID: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
-      CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
-      CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
-      LIB: .github/windows-image-refresh/lib.sh
-      TEST_IMAGE_NAME: win_kdrive_runner_build_env_test
-    steps:
-      - uses: actions/checkout@v4
-      - run: pip install python-openstackclient --quiet
-      - name: Create a private test copy when supported
-        run: |
-          source "$LIB"
-          write_clouds_yaml
-          EXISTING="$(os image list --name "$TEST_IMAGE_NAME" -f value -c ID)"
-          if [[ -n "$EXISTING" ]]; then
-            [[ "$(wc -l <<<"$EXISTING")" -eq 1 ]] || die "Multiple images named $TEST_IMAGE_NAME"
-            [[ "$(os image show "$EXISTING" -f value -c status)" == "active" ]] || die "Test image is not active"
-            log "Using existing test image $EXISTING"
-            exit 0
-          fi
-
-          SOURCE_ID="$(resolve_unique_image "$IMAGE_NAME")"
-          os image show "$SOURCE_ID" -f json > source-image.json
-          [[ "$(jq -r .status source-image.json)" == "active" ]] || die "Source image is not active"
-          if jq -e '(.properties | type) == "object" and (.properties | has("block_device_mapping"))' source-image.json > /dev/null; then
-            die "Source image is volume-backed"
-          fi
-          GLANCE="$(glance_endpoint)"
-          TOKEN="$(os token issue -f value -c id)"
-          echo "::add-mask::$TOKEN"
-          METHODS="$(curl --fail --silent --show-error --max-time 30 -H "X-Auth-Token: $TOKEN" "$GLANCE/v2/info/import")" \
-            || die "Could not retrieve Glance image import methods"
-          jq -e '."import-methods".value | index("glance-download") != null' <<<"$METHODS" > /dev/null \
-            || die "Cloud does not support server-side glance-download image copies"
-          unset TOKEN
-
-          mapfile -t PROPS < <(jq -r '
-            (.properties // {}) | if type == "object" then . else {} end
-            | to_entries[]
-            | select(.key | test("^(os_hash_algo|os_hash_value|os_hidden|os_glance_.*|stores|direct_url|locations|owner_specified\\..*|kdrive_test_copy_.*)$") | not)
-            | "\(.key)=\(.value | if type == "string" then . else tojson end)"' source-image.json)
-          ARGS=()
-          for p in "${PROPS[@]}"; do ARGS+=(--property "$p"); done
-          mapfile -t TAGS < <(jq -r '.tags[]?' source-image.json)
-          for tag in "${TAGS[@]}"; do ARGS+=(--tag "$tag"); done
-          TEST_ID=""
-          trap 'if [[ -n "$TEST_ID" && "${COPIED:-0}" != 1 ]]; then os image delete "$TEST_ID" || echo "::warning::Could not delete incomplete test image $TEST_ID"; fi' EXIT
-          TEST_ID="$(os image create --private \
-            --disk-format "$(jq -r .disk_format source-image.json)" \
-            --container-format "$(jq -r .container_format source-image.json)" \
-            --min-disk "$(jq -r '.min_disk // 0' source-image.json)" \
-            --min-ram "$(jq -r '.min_ram // 0' source-image.json)" \
-            "${ARGS[@]}" --property "kdrive_test_copy_source=$SOURCE_ID" \
-            --property "kdrive_test_copy_run=$GITHUB_RUN_ID" \
-            -f value -c id "$TEST_IMAGE_NAME" <&-)"
-          os image import --method glance-download --remote-image "$SOURCE_ID" \
-            --remote-region "$CLOUD_REGION_NAME" --remote-service-interface public --wait "$TEST_ID"
-          wait_image_active "$TEST_ID" 160
-          os image show "$TEST_ID" -f json > test-image.json
-          [[ "$(resolve_unique_image "$TEST_IMAGE_NAME")" == "$TEST_ID" ]] || die "Test image name is ambiguous"
-          [[ "$(jq -r .status test-image.json)" == "active" ]] || die "Test image is not active"
-          [[ "$(jq -r .size test-image.json)" == "$(jq -r .size source-image.json)" ]] || die "Test image size mismatch"
-          SOURCE_CHECKSUM="$(jq -r '.checksum // ""' source-image.json)"
-          TEST_CHECKSUM="$(jq -r '.checksum // ""' test-image.json)"
-          SOURCE_HASH="$(jq -r '.hash_value // ""' source-image.json)"
-          TEST_HASH="$(jq -r '.hash_value // ""' test-image.json)"
-          SOURCE_ALGO="$(jq -r '.hash_algo // ""' source-image.json)"
-          TEST_ALGO="$(jq -r '.hash_algo // ""' test-image.json)"
-          if [[ -n "$SOURCE_HASH" && -n "$SOURCE_ALGO" && "$SOURCE_ALGO" == "$TEST_ALGO" ]]; then
-            [[ "$SOURCE_HASH" == "$TEST_HASH" ]] || die "Test image hash mismatch"
-          else
-            [[ -n "$SOURCE_CHECKSUM" && "$SOURCE_CHECKSUM" == "$TEST_CHECKSUM" ]] \
-              || die "Test image checksum mismatch or unavailable"
-          fi
-          COPIED=1
-          log "Created private test image $TEST_ID from $SOURCE_ID"
-
-  refresh-test:
-    needs: copy-test-image
-    if: github.event_name == 'workflow_dispatch' && inputs.count == '0'
+  # Branch-only dispatch bridge: workflow_dispatch cannot discover a new workflow until it
+  # exists on the default branch. The two existing inputs make this an explicit opt-in.
+  refresh-production-image:
+    if: github.event_name == 'workflow_dispatch' && inputs.count == '0' && inputs.labels == 'refresh-production-image'
     uses: ./.github/workflows/update-windows-image.yml
     with:
-      image_name: win_kdrive_runner_build_env_test
+      image_name: win_kdrive_runner_build_env
       promote: true
       windows_flavor: a16-ram32-disk80-perf1
       work_volume_size_gb: "200"
@@ -130,7 +47,7 @@ jobs:
       contents: read
 
   start-instances:
-    if: github.event_name != 'workflow_dispatch' || inputs.count != '0'
+    if: github.event_name != 'workflow_dispatch' || inputs.count != '0' || inputs.labels != 'refresh-production-image'
     runs-on: ubuntu-latest
     # Shared with the promote job of update-windows-image.yml: never resolve the image during its renames.
     concurrency:
