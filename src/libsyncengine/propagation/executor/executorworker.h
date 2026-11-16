@@ -137,8 +137,7 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
 
         bool deleteOpNodes(SyncOpPtr syncOp);
 
-        void setProgressComplete(const SyncPath &relativePath, SyncOpPtr syncOp, SyncFileStatus status,
-                                 const NodeId &newRemoteNodeId = "");
+        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId = "");
 
         static void getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId);
 
@@ -151,7 +150,7 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
         ExitInfo handleOpsAlreadyExistError(SyncOpPtr syncOp, const ExitInfo &opsExitInfo);
 
         ExitInfo removeDependentOps(SyncOpPtr syncOp);
-        ExitInfo removeDependentOps(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, OperationType opType);
+        ExitInfo removeDependentOps(const SyncOpPtr syncOp, std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode);
 
         ExitInfo excludeFileFromSync(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath);
 

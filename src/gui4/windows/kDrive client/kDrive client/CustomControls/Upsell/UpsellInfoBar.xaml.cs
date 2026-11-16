@@ -39,11 +39,14 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
             set => SetValue(DriveProperty, value);
         }
 
+        private bool CanShowUpsell =>
+           (Drive?.IsAdmin ?? false) && (Drive?.PackIsFree ?? false);
+
         private bool MyKsuiteInfoBarLoad =>
-            Drive?.PackUpsellTarget == UpsellTarget.myKsuitePlus;
+           CanShowUpsell && (Drive?.PackUpsellTarget == UpsellTarget.MykSuiteToMykSuitePlus || Drive?.PackUpsellTarget == UpsellTarget.StandAloneToMykSuitePlus);
 
         private bool KsuiteInfoBarLoad =>
-            Drive?.PackUpsellTarget == UpsellTarget.KSuitePro;
+           CanShowUpsell && (Drive?.PackUpsellTarget == UpsellTarget.kSuiteUpgrade || Drive?.PackUpsellTarget == UpsellTarget.StandAloneTokSuitePro);
 
         public UpsellInfoBar()
         {
@@ -86,7 +89,7 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
 
         private void OnDrivePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Drive.PackUpsellTarget))
+            if (e.PropertyName == nameof(Drive.PackUpsellTarget) || e.PropertyName == nameof(Drive.PackIsFree) || e.PropertyName == nameof(Drive.IsAdmin))
                 Bindings.Update();
         }
     }

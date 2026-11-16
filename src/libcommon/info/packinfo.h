@@ -37,6 +37,8 @@ class PackInfo {
         void setDisplayName(const std::string_view displayName) { _displayName = displayName; }
         [[nodiscard]] bool isFree() const { return _isFree; }
         void setIsFree(const bool isFree) { _isFree = isFree; }
+        [[nodiscard]] int64_t kSuiteId() const { return _kSuiteId; }
+        void setKSuiteId(const int64_t kSuiteId) { _kSuiteId = kSuiteId; }
         [[nodiscard]] UpsellTarget upsellTarget() const;
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
@@ -49,6 +51,7 @@ class PackInfo {
         std::string _name;
         std::string _displayName;
         bool _isFree{false}; // False by default in order not to offer to upgrade when this value is not yet up to date.
+        int64_t _kSuiteId{0}; // Only for ksuite packs
 };
 
 

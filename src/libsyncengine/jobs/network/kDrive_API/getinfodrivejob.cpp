@@ -105,13 +105,18 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         bool isFree = false;
         (void) JsonParserUtility::extractValue(packObj, packIsFreeKey, isFree, false);
         _packInfo.setIsFree(isFree);
+
+        if (Poco::JSON::Object::Ptr kSuiteObj = dataObj->getObject(kSuiteKey); kSuiteObj) {
+            if (uint64_t kSuiteId = 0; JsonParserUtility::extractValue(kSuiteObj, idKey, kSuiteId))
+                _packInfo.setKSuiteId(kSuiteId);
+        }
     }
 
     return ExitCode::Ok;
 }
 
 void GetInfoDriveJob::setQueryParameters(Poco::URI &uri) {
-    uri.addQueryParameter("with", "preferences,pack");
+    uri.addQueryParameter("with", "preferences,pack,k_suite");
 }
 
 } // namespace KDC

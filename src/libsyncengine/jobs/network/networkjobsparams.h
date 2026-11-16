@@ -99,6 +99,7 @@ static const std::string accountKey = "account";
 static const std::string accountIdKey = "account_id";
 static const std::string driveIdKey = "drive_id";
 static const std::string driveNameKey = "drive_name";
+static const std::string kSuiteKey = "k_suite";
 static const std::string accountAdminKey = "account_admin";
 static const std::string capabilitiesKey = "capabilities";
 static const std::string canWriteKey = "can_write";

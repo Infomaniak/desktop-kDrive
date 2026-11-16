@@ -114,8 +114,8 @@ class UpdateTreeWorker : public ISyncWorker {
         ExitCode getNewPathAfterMove(const SyncPath &path, SyncPath &newPath);
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
         [[nodiscard]] ExitCode mergeNodeToParentChildren(std::shared_ptr<Node> parentNode, const std::shared_ptr<Node> node);
-        ExitCode tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, bool &merged);
-        ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode);
+        ExitCode tryToMergeTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &permanentNode);
+        ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> &mergedNode);
         ExitCode getOriginPath(const std::shared_ptr<Node> node, SyncPath &path);
 
         // Log update information if extended logging is on.
@@ -142,6 +142,39 @@ class UpdateTreeWorker : public ISyncWorker {
          *\return : ExitCode::Ok if no problematic create operations were detected.
          */
         ExitCode handleCreateOperationsWithSamePath();
+
+        /**
+         * Attempt to merge a Delete operation with the Create operation of an item reusing the same path, so that both
+         * operations are processed as a single Edit operation.
+         * Some software, such as Excel, keeps the current version into a temporary directory and moves it to the
+         * destination, replacing the original file. However, this behavior is applied on the local replica only.
+         * The merge is not performed if the type of the item has changed, as the API does not support editing an item
+         * while changing its type (see checkIfDeleteAndCreateCanBeMerged).
+         * \param deleteOp: the Delete operation to be merged with a Create operation.
+         * \param op: the operation to be processed. Set to the Create operation if the merge is performed, otherwise
+         *            left unchanged.
+         * \param skipOp: set to true if the Create operation is no longer present in the operation set, in which case
+         *                the Delete operation must be ignored.
+         * \return : ExitCode::Ok if no unexpected error occurred.
+         */
+        [[nodiscard]] ExitCode mergeWithCreateOperationIfApplicable(const FSOpPtr &deleteOp, FSOpPtr &op, bool &skipOp);
+
+        /**
+         * Check if a Delete operation and a Create operation, on an item reusing the same path, can be merged into a
+         * single Edit operation.
+         * The merge is not possible if the type of the item has changed (e.g., a symbolic link replaced by a regular
+         * file), as the API does not support editing an item while changing its type. In that case, the two operations
+         * are kept separate, so that the corresponding remote item is deleted and re-created.
+         * A symbolic link is stored as a File node, both in the snapshots and in the database. A change of type
+         * (e.g., a symbolic link replaced by a regular file) can therefore only be detected by comparing the link
+         * flags of the two items.
+         * \param deleteOp: the Delete operation of the deleted item.
+         * \param createOp: the Create operation of the newly created item.
+         * \param canMerge: will be set to true if the two operations can be merged into a single Edit operation.
+         * \return : ExitCode::Ok if no unexpected error occurred.
+         */
+        [[nodiscard]] ExitCode checkIfDeleteAndCreateCanBeMerged(const FSOpPtr &deleteOp, const FSOpPtr &createOp,
+                                                                 bool &canMerge);
 
         [[nodiscard]] ExitCode getOrCreateNodeFromPath(const SyncPath &path, std::shared_ptr<Node> &node);
         [[nodiscard]] ExitCode createTmpNode(std::shared_ptr<Node> &tmpNode, const SyncName &name,
