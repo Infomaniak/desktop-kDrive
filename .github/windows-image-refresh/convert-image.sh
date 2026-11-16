@@ -26,11 +26,22 @@ available_bytes() { df --output=avail -B1 "$WORK" | tail -n1 | tr -d ' '; }
 
 cmd_prepare() {
     local volume_id="$1"
-    local root_source root_ancestors ancestor ancestor_device device filesystems mounts
-    # Virtio exposes the first 20 characters of the Cinder volume ID as the disk serial.
+    local root_source root_ancestors ancestor ancestor_device device devices filesystems mounts link
+    # The Cinder volume ID (truncated to 20 characters by virtio-blk) is the disk serial. virtio-blk
+    # exposes it as virtio-<serial>, virtio-scsi as scsi-0QEMU_QEMU_HARDDISK_<serial> (and variants).
+    device=""
     for _ in {1..12}; do
-        device="$(readlink -f "/dev/disk/by-id/virtio-${volume_id:0:20}" 2>/dev/null || true)"
-        [[ -b "$device" ]] && break
+        devices=""
+        for link in /dev/disk/by-id/*"${volume_id:0:20}"*; do
+            [[ -e "$link" && "$link" != *-part* ]] || continue
+            devices+="$(readlink -f "$link")"$'\n'
+        done
+        devices="$(sort -u <<< "$devices" | sed '/^$/d')"
+        if [[ -n "$devices" ]]; then
+            [[ "$(wc -l <<< "$devices")" -eq 1 ]] || die "Work volume ${volume_id} matches several disks: ${devices//$'\n'/ }"
+            device="$devices"
+            [[ -b "$device" ]] && break
+        fi
         sleep 10
     done
     [[ -b "$device" ]] || die "Work volume ${volume_id} not found under /dev/disk/by-id"
