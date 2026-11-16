@@ -252,7 +252,6 @@ void SystemTrayController::handleUpdateStateChanged(const UpdateState state) {
         case UpdateState::ManualUpdateAvailable:
         // Without automatic updates, an update stays available until the user installs it.
         case UpdateState::Available:
-        case UpdateState::Ready:
         case UpdateState::DownloadError:
         case UpdateState::UpdateError:
             setNotificationActive(true);
@@ -261,6 +260,8 @@ void SystemTrayController::handleUpdateStateChanged(const UpdateState state) {
         case UpdateState::NoUpdate:
             setNotificationActive(false);
             return;
+        // Once installed, the server restarts the application at once.
+        case UpdateState::Ready:
         case UpdateState::Downloading:
         case UpdateState::Checking:
         case UpdateState::CheckError:
