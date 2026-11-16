@@ -40,6 +40,9 @@ namespace KDC {
 
 namespace {
 Q_LOGGING_CATEGORY(lcManyDeletesController, "gui.v4.manydeletescontroller", QtInfoMsg)
+
+// Same cap as the paths the sync engine sends with one warning.
+constexpr qsizetype maxDeletedPathCount = 500;
 } // namespace
 
 ManyDeletesController::ManyDeletesController(CommService &commService, AppCache &appCache, QObject *const parent) :
@@ -159,6 +162,11 @@ void ManyDeletesController::enqueue(const SyncDbId syncDbId, const TooManyDelete
 
     const auto existing = std::ranges::find_if(
             _notifications, [syncDbId](const Notification &notification) { return notification.syncDbId == syncDbId; });
+    if (existing != _notifications.end() && incomingSeverity == Severity::Soft && existing->severity == Severity::Soft) {
+        mergeSoft(*existing, itemCount, deletedPaths);
+        return;
+    }
+
     if (existing != _notifications.end() && incomingSeverity <= existing->severity) {
         qCDebug(lcManyDeletesController) << "Duplicate mass deletion notification ignored"
                                          << "| syncDbId:" << syncDbId;
@@ -193,6 +201,29 @@ void ManyDeletesController::enqueue(const SyncDbId syncDbId, const TooManyDelete
         setSubmissionFailed(false);
         notifyPresentationChanged();
         emit presentationRequested();
+    }
+}
+
+// The sync engine does not wait for a soft warning: two of them for the same synchronization are two batches already
+// deleted online. They become one warning whose count is their sum. The paths shown first are kept when the cap is
+// reached. Only `contentChanged` is emitted, so an open dialog keeps its checkbox and focus.
+void ManyDeletesController::mergeSoft(Notification &existing, const Count itemCount, const QStringList &deletedPaths) {
+    existing.itemCount += itemCount;
+
+    existing.deletedPaths.append(deletedPaths);
+    if (existing.deletedPaths.size() > maxDeletedPathCount) {
+        existing.deletedPaths.resize(maxDeletedPathCount);
+    }
+
+    existing.deletedItems = makeDeletedItems(existing.syncDbId, existing.deletedPaths);
+    existing.deletedItemsResolved = canResolveDeletedItems(existing.syncDbId, existing.deletedPaths);
+
+    qCInfo(lcManyDeletesController) << "Soft mass deletion warnings merged"
+                                    << "| syncDbId:" << existing.syncDbId << "| itemCount:" << existing.itemCount
+                                    << "| pathCount:" << existing.deletedPaths.size();
+
+    if (&existing == currentNotification()) {
+        emit contentChanged();
     }
 }
 
@@ -249,7 +280,7 @@ bool ManyDeletesController::canResolveDeletedItems(const SyncDbId syncDbId, cons
 }
 
 // A warning can arrive before the cache holds its synchronization, for instance right after launch. Rebuilds the rows
-// of every warning still relative once its context is cached. Only `deletedItemsChanged` is emitted, so the dialog keeps
+// of every warning still relative once its context is cached. Only `contentChanged` is emitted, so the dialog keeps
 // its checkbox and pending action.
 void ManyDeletesController::resolvePendingDeletedItems() {
     bool currentChanged = false;
@@ -268,7 +299,7 @@ void ManyDeletesController::resolvePendingDeletedItems() {
     }
 
     if (currentChanged) {
-        emit deletedItemsChanged();
+        emit contentChanged();
     }
 }
 
@@ -363,7 +394,7 @@ void ManyDeletesController::setSubmissionFailed(const bool failed) {
 
 void ManyDeletesController::notifyPresentationChanged() {
     emit presentationChanged();
-    emit deletedItemsChanged();
+    emit contentChanged();
     emit canOpenTrashChanged();
 }
 
