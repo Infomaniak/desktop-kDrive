@@ -168,7 +168,7 @@ ExitInfo OpenFileJob::resolveItem() {
                                                                              << _request.driveId);
         _outcome = Outcome::Failed;
 
-        return {ExitCode::DataError, ExitCause::Unknown};
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
     const auto deadline = std::chrono::steady_clock::now() + kSyncWaitTimeout;
