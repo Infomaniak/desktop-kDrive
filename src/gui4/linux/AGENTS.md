@@ -726,9 +726,9 @@
   with; each action keeps one notification on screen, a new one replacing the previous one. Without a notification
   server, the failure is logged once. Server notifications (`UTILITY_SHOW_NOTIFICATION`, synchronization activity,
   already filtered by the notification settings) open the activity list.
-- `app/services/updatenotifier.*`: notifies an update available for download, available while automatic updates are
-  off, or installed and waiting for a restart, once per state and version in a session, never while notifications are
-  disabled. A click opens Settings on the update button (`SettingsWindowController::requestOpenUpdate`). The server
+- `app/services/updatenotifier.*`: notifies an update available for download, or available while automatic updates
+  are off, once per state and version in a session, never while notifications are disabled. The restart that follows
+  an installation is silent. A click opens Settings on the update button (`SettingsWindowController::requestOpenUpdate`). The server
   does not announce updates on Linux, so the client is the only source of these notifications.
 - `app/services/releasenotesservice.*`: downloads and parses the release notes of the announced version for the update
   details dialog. They are shown only when the client can apply the configured proxy itself.
