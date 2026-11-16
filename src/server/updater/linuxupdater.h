@@ -19,14 +19,79 @@
 #pragma once
 
 #include "abstractupdater.h"
+#include "libcommon/utility/utility.h"
+
+#include <atomic>
+#include <cstdint>
+#include <functional>
+#include <ios>
+#include <mutex>
+#include <string>
+#include <string_view>
 
 namespace KDC {
 
-class LinuxUpdater final : public AbstractUpdater {
+class LinuxUpdater : public AbstractUpdater {
     public:
+        LinuxUpdater() = default;
+
         void onUpdateFound() override;
-        void startInstaller() override { /* No automatic update on Linux for now */ }
+        void onAutoUpdatesEnabled() override;
+        void startInstaller() override;
+        void setQuitCallback(const std::function<void()> &quitCallback) override { _quitCallback = quitCallback; }
         bool checkMinOsVersion(const std::string &minOsVersion) const override;
+
+        /**
+         * @brief Path where the new AppImage is installed.
+         * A published file name (`kDrive-<version>-<arch>.AppImage`) is normalized to `kDrive.AppImage` in the same
+         * directory; any other name chosen by the user is kept.
+         */
+        [[nodiscard]] static SyncPath installTargetPath(const SyncPath &appImagePath);
+
+        /**
+         * @brief Hidden download path, next to the running AppImage so that the final rename stays atomic.
+         */
+        [[nodiscard]] static SyncPath partialDownloadPath(const SyncPath &appImagePath);
+
+        /**
+         * @brief Whether `availableSpace` bytes can hold the new AppImage. An unknown size (negative) does not block the
+         * download.
+         */
+        [[nodiscard]] static bool hasEnoughSpace(std::streamsize expectedSize, std::uintmax_t availableSpace);
+
+    private:
+        [[nodiscard]] bool canUpdateInPlace() const;
+        void prepareAnnouncedUpdate();
+        void fetchChecksum(const VersionInfo &info);
+        void checksumFetched(UniqueId jobId, const VersionInfo &info);
+        void prepareUpdate(const VersionInfo &info);
+        void fetchSize(const VersionInfo &info);
+        void sizeFetched(UniqueId jobId, const VersionInfo &info);
+        void downloadUpdate(const VersionInfo &info);
+        void downloadFinished(UniqueId jobId, const VersionInfo &info);
+        void finishPreparation(UpdateState state);
+        void installUpdate(const VersionInfo &info);
+        void restartApp(const SyncPath &installedPath);
+        static void updateDesktopEntries(const SyncPath &targetPath);
+        [[nodiscard]] std::string expectedChecksum(std::string_view version) const;
+        [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const VersionInfo &info);
+        [[nodiscard]] virtual bool launchRelauncher(const SyncPath &targetPath) const;
+
+        SyncPath _appImagePath{CommonUtility::appImagePath()};
+        std::atomic_bool _downloadInProgress{false};
+        std::atomic_bool _restartInProgress{false};
+
+        mutable std::mutex _stateMutex;
+        std::string _checksumVersion; // Version the cached checksum belongs to.
+        std::string _expectedChecksum;
+        std::string _sizeVersion; // Version the cached size belongs to.
+        std::streamsize _expectedSize{-1}; // Negative when the server did not announce it.
+        std::string _installedVersion; // Version installed on disk, active once the application restarts.
+        SyncPath _installedPath;
+
+        std::function<void()> _quitCallback;
+
+        friend class TestLinuxUpdater;
 };
 
 } // namespace KDC

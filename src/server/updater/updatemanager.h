@@ -46,6 +46,7 @@ class UpdateManager final : public QObject {
         UpdateManager &operator=(UpdateManager &&) = delete;
 
         void setDistributionChannel(DistributionChannel channel);
+        void onAutoUpdatesEnabled() const { _updater->onAutoUpdatesEnabled(); }
         [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
         [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 

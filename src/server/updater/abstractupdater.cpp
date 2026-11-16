@@ -133,7 +133,6 @@ std::unique_ptr<AbstractUpdater> createUpdater() {
 #elif defined(KD_WINDOWS)
     return std::make_unique<WindowsUpdater>();
 #else
-    // the best we can do is notify about updates
     return std::make_unique<LinuxUpdater>();
 #endif
 }

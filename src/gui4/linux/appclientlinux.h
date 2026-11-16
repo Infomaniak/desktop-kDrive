@@ -125,13 +125,13 @@ class AppClientLinux : public QApplication {
         void setupSignalConnections();
         void setupQmlEngine(const QIcon &appIcon);
         void setupIpcConnection();
+        void handleLaunchArguments();
         void handleIpcDisconnection();
         void handleBootstrapCompletion();
         void openSettingsWindow();
         void retranslatePresentation();
         void updateLoggerSettings();
         void requestQuit();
-        void quitOnServerDisconnection();
         void handleManyDeletesPresentationRequested();
         void openMainWindow();
         void openOnboardingFromHome();
@@ -219,6 +219,7 @@ class AppClientLinux : public QApplication {
         bool _hadConfiguredSync{false};
         bool _quitPending{false};
         bool _restoreSettingsAfterOnboarding{false};
+        bool _settingsActivationPending{false};
         std::optional<bool> _appliedPurgeOldLogs;
 };
 
