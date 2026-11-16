@@ -410,28 +410,42 @@ jobs:
           source "$LIB"
           os image show "$SOURCE_IMAGE_ID" -f json > source-image.json
           # Keep boot/firmware/OS properties of the current image; drop Glance-managed, snapshot and refresh metadata.
-          mapfile -t PROPS < <(jq -r '
-            (.properties // {}) | if type == "object" then . else {} end
-            | to_entries[]
-            | select(.key | test("^(os_hash_algo|os_hash_value|os_hidden|os_glance_.*|stores|direct_url|locations|image_type|instance_uuid|base_image_ref|image_location|image_state|user_id|owner_id|owner_project_name|owner_user_name|boot_roles|block_device_mapping|bdm_v2|root_device_name|owner_specified\\..*|kdrive_.*)$") | not)
-            | "\(.key)=\(.value | if type == "string" then . else tojson end)"' source-image.json)
-          ARGS=()
-          for p in "${PROPS[@]}"; do ARGS+=(--property "$p"); done
-          mapfile -t TAGS < <(jq -r '.tags[]?' source-image.json)
-          for tag in "${TAGS[@]}"; do ARGS+=(--tag "$tag"); done
+          # Create the queued image record through the Glance API: openstackclient would read stdin as image data,
+          # and crashes when stdin is closed.
+          jq \
+            --arg name "$CANDIDATE_NAME" \
+            --arg updated "$UPDATED_VERSION" \
+            --arg previous "$ORIGINAL_VERSION" \
+            --arg source "$SOURCE_IMAGE_ID" \
+            --arg commit "$GITHUB_SHA" \
+            --arg run "${GITHUB_SERVER_URL}/${REPO}/actions/runs/${GITHUB_RUN_ID}" '
+            ((.properties // {}) | if type == "object" then . else {} end
+              | with_entries(select(.key | test("^(id|name|status|owner|protected|visibility|checksum|size|virtual_size|created_at|updated_at|self|file|schema|tags|min_disk|min_ram|disk_format|container_format|os_hash_algo|os_hash_value|os_hidden|os_glance_.*|stores|direct_url|locations|image_type|instance_uuid|base_image_ref|image_location|image_state|user_id|owner_id|owner_project_name|owner_user_name|boot_roles|block_device_mapping|bdm_v2|root_device_name|owner_specified\\..*|kdrive_.*)$") | not))
+              | map_values(if type == "string" then . else tojson end))
+            + {
+                name: $name,
+                disk_format: "qcow2",
+                container_format: "bare",
+                visibility: "private",
+                min_disk: (.min_disk // 0),
+                min_ram: (.min_ram // 0),
+                tags: (.tags // []),
+                kdrive_windows_version: $updated,
+                kdrive_previous_windows_version: $previous,
+                kdrive_source_image: $source,
+                kdrive_refresh_commit: $commit,
+                kdrive_refresh_run: $run
+              }' source-image.json > candidate-request.json
 
-          # Close stdin so openstackclient creates a queued image instead of uploading empty input.
-          ID="$(os image create \
-            --disk-format qcow2 --container-format bare --private \
-            --min-disk "$(jq -r '.min_disk // 0' source-image.json)" \
-            --min-ram "$(jq -r '.min_ram // 0' source-image.json)" \
-            "${ARGS[@]}" \
-            --property "kdrive_windows_version=${UPDATED_VERSION}" \
-            --property "kdrive_previous_windows_version=${ORIGINAL_VERSION}" \
-            --property "kdrive_source_image=${SOURCE_IMAGE_ID}" \
-            --property "kdrive_refresh_commit=${GITHUB_SHA}" \
-            --property "kdrive_refresh_run=${GITHUB_SERVER_URL}/${REPO}/actions/runs/${GITHUB_RUN_ID}" \
-            -f value -c id "$CANDIDATE_NAME" <&-)"
+          GLANCE="$(glance_endpoint)"
+          TOKEN="$(os token issue -f value -c id)"
+          echo "::add-mask::$TOKEN"
+          ID="$(curl --fail-with-body --silent --show-error --max-time 120 \
+            -X POST -H "X-Auth-Token: $TOKEN" -H "Content-Type: application/json" \
+            --data-binary @candidate-request.json "$GLANCE/v2/images" | jq -er .id)" \
+            || die "Could not create candidate image record"
+          unset TOKEN
+          [[ "$(os image show "$ID" -f value -c status)" == "queued" ]] || die "Candidate image $ID is not queued"
           echo "id=$ID" >> "$GITHUB_OUTPUT"
           log "Candidate image $CANDIDATE_NAME: $ID"
 
