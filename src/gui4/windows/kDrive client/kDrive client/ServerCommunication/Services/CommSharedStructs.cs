@@ -148,6 +148,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public string? Name { get; set; }
 
         public UInt64? Id { get; set; }
+        public KSuiteId? KSuiteId { get; set; }
         public bool? IsFree { get; set; }
         public UpsellTarget? UpsellTarget { get; set; }
     }
@@ -180,6 +181,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
                 CopyProperty(source.PackInfo, target, nameof(source.PackInfo.Id), nameof(target.PackId));
                 CopyProperty(source.PackInfo, target, nameof(source.PackInfo.IsFree), nameof(target.PackIsFree));
                 CopyProperty(source.PackInfo, target, nameof(source.PackInfo.UpsellTarget), nameof(target.PackUpsellTarget));
+                CopyProperty(source.PackInfo, target, nameof(source.PackInfo.KSuiteId), nameof(target.KSuiteId));
             }
         }
     }

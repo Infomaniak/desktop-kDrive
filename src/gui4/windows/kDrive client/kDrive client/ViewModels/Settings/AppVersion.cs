@@ -33,21 +33,6 @@ namespace Infomaniak.kDrive.ViewModels
             get => $"{Tag}.{BuildVersion}";
         }
 
-        public Uri ChangeLogUrlLocalized
-        {
-            get
-            {
-                return App.Constants.Storage.ReleaseNoteUrl(Tag, Localizer.Instance.CurrentLanguage);
-            }
-        }
-        public Uri ChangeLogUrlDefaultLanguage
-        {
-            get
-            {
-                return App.Constants.Storage.ReleaseNoteUrl(Tag, "en");
-            }
-        }
-
         public static AppVersion Current()
         {
             var assembly = Assembly.GetExecutingAssembly();

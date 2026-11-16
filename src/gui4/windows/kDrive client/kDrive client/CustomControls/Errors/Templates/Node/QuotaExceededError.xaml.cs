@@ -52,8 +52,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageQuotaExceeded);
 
-            Uri changeOfferUri = App.Constants.Drive.ChangeOfferUri(Error.Sync.Drive.DriveId);
-            await Launcher.LaunchUriAsync(changeOfferUri);
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (!await uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(Error.Sync.Drive)))
+            {
+                Logger.LogWarning("Failed to open DriveUpsellUrl in browser");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
     }
 }

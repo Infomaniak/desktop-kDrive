@@ -18,6 +18,7 @@
 using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
@@ -27,6 +28,19 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
 
+        public static readonly DependencyProperty DriveProperty =
+           DependencyProperty.Register(
+               nameof(Drive),
+               typeof(Drive),
+               typeof(MyKsuiteInfoBar),
+               new PropertyMetadata(null));
+
+        public Drive? Drive
+        {
+            get => (Drive?)GetValue(DriveProperty);
+            set => SetValue(DriveProperty, value);
+        }
+
         public MyKsuiteInfoBar()
         {
             InitializeComponent();
@@ -35,7 +49,20 @@ namespace Infomaniak.kDrive.CustomControls.Upsell
         private async void Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.Upsell, Analytics.Keys.EventName.myKsuitePlus);
-            await Localizer.Instance.TryLaunchUriAsync("mykSuiteUpsellLink");
+
+            if (Drive is null)
+            {
+                Logger.LogError("Drive is null in ksuiteInfoBar, cannot open upsell link");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (!await uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(Drive)))
+            {
+                Logger.LogWarning("Failed to open DriveUpsellUrl in browser");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
     }
 }
