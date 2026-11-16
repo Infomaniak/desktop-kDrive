@@ -186,7 +186,10 @@ void ExecutorWorker::execute() {
 
         // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
         if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
-            if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
+            if (!bypassProgressComplete && ignored)
+                setProgressComplete(syncOp, SyncFileStatus::Ignored);
+            else if (!bypassProgressComplete)
+                setProgressComplete(syncOp, SyncFileStatus::Error);
             continue;
         }
 
