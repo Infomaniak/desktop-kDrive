@@ -232,9 +232,9 @@ struct StorageView: View {
             return
         }
 
-        var name = KDriveLocalizable.labelMySubscription
+        var name = KDriveLocalizable.labelMySubscription + " "
         if isStandaloneDrivePack(drive.packInfo.name) {
-            name.append(" kDrive ")
+            name.append("kDrive ")
         }
         name.append(drive.packInfo.displayName)
 
