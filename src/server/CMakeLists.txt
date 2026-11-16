@@ -258,7 +258,8 @@ endif()
 ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEBAR_ICONS}" OUTFILE_BASENAME "${APPLICATION_ICON_NAME}")
 
 if(NOT BUILD_KDRIVE_OSX_BUNDLE)
-    if(NOT WIN32)
+    # The Linux v4 desktop entry uses the icon installed by src/gui4/linux.
+    if(NOT WIN32 AND NOT (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND BUILD_GUI))
         file(GLOB _icons "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon.png")
         foreach(_file ${_icons})
             string(REPLACE "${theme_dir}/colored/" "" _res ${_file})
@@ -384,6 +385,10 @@ endif(ZLIB_FOUND)
 
 # application.cpp still uses QDesktopServices::storageLocation
 target_compile_definitions(${APPLICATION_EXECUTABLE} PRIVATE "QT_DISABLE_DEPRECATED_BEFORE=0")
+
+if(KDRIVE_DEPLOY_QT_RUNTIME)
+    set_target_properties(${APPLICATION_EXECUTABLE} PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+endif()
 
 # Install
 install(TARGETS ${APPLICATION_EXECUTABLE}

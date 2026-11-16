@@ -178,6 +178,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool hasSystemLaunchOnStartup(const std::string &appName);
         static bool hasLaunchOnStartup(const std::string &appName);
         static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
+#if defined(KD_LINUX)
+        /** Writes the autostart entry for an explicit AppImage, such as the one installed by the updater. */
+        static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, const SyncPath &appImagePath);
+#endif
 
 #if defined(KD_WINDOWS)
         using kdVariant = std::variant<int, std::wstring>;
@@ -230,6 +234,10 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath getTrashPath();
 
         static bool registerLoginRedirection();
+#if defined(KD_LINUX)
+        /** Registers the login URL scheme for an explicit executable, such as the AppImage installed by the updater. */
+        static bool registerLoginRedirection(const SyncPath &executablePath);
+#endif
 
         // Format utility functions
         static std::wstring formatStdError(const std::error_code &ec);

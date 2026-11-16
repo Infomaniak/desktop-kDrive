@@ -18,6 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+script_directory_path="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+source "$script_directory_path/../version-helpers.sh"
+
 function get_host_arch() {
     case "$(uname -m)" in
     x86_64) architecture="amd64" ;;
@@ -36,5 +39,21 @@ function get_default_src_dir() {
      echo "$HOME/Projects/desktop-kDrive"
   else
      echo "$PWD"
+    fi
+}
+
+function get_linux_major_version() {
+    local version
+    version="$(GetVersionFromJson "$1" false "Linux")" || return 1
+    echo "${version%%.*}"
+}
+
+function check_linux_v4_version() {
+    local major
+    major="$(get_linux_major_version "$1")" || return 1
+
+    if [[ "$major" != "4" ]]; then
+        echo "Unsupported Linux major version '$major' in '$1/version.json': these scripts only build Linux 4.x." >&2
+        return 1
     fi
 }

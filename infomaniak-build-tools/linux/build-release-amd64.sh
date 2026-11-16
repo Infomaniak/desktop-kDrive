@@ -20,6 +20,9 @@
 
 set -e
 
+script_directory_path="$(cd -- "$(dirname "$0")" >/dev/null 2>&1; pwd -P)"
+source "$script_directory_path/build-utils.sh"
+source "$script_directory_path/appimage.sh"
 
 program_name="$(basename "$0")"
 
@@ -81,6 +84,7 @@ if [ ! -d "$src_dir" ]; then
     exit 1
 fi
 
+check_linux_v4_version "$src_dir"
 
 build_dir="$src_dir/build-linux"
 
@@ -89,7 +93,8 @@ if [ -d "$build_dir" ]; then
     rm -rf "$build_dir"
 fi
 
-app_dir="$build_dir/install"
+artifact_dir="$build_dir/install"
+app_dir="$build_dir/AppDir"
 build_type="RelWithDebInfo"
 
 export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
@@ -101,14 +106,9 @@ echo
 echo "Build type: $build_type"
 echo "Source directory '$src_dir'"
 echo "Build directory '$build_dir'"
-echo "Install directory '$app_dir'"
+echo "AppDir '$app_dir'"
+echo "Artifact directory '$artifact_dir'"
 echo
-
-extract_debug () {
-    objcopy --only-keep-debug "$1/$2" "$build_dir/$2.dbg"
-    objcopy --strip-debug "$1/$2"
-    objcopy --add-gnu-debuglink="$build_dir/kDrive.dbg" "$1/$2"
-}
 
 build_release() {
   mkdir -p "$app_dir"
@@ -134,10 +134,8 @@ build_release() {
 
   source "$conan_generator_folder/conanbuild.sh"
 
-  # Build client
   mkdir -p "$build_dir/build"
   cd "$build_dir/build"
-
 
   export KDRIVE_DEBUG=0
 
@@ -147,130 +145,88 @@ build_release() {
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DBIN_INSTALL_DIR="$build_dir/build/bin" \
       -DBUILD_UNIT_TESTS="$build_unit_tests" \
+      -DBUILD_GUI=ON \
+      -DBUILD_GUI_LEGACY=OFF \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
+      -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
+      -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 
   make -j"$(nproc)"
 
-  extract_debug ./bin kDrive
-  extract_debug ./bin kDrive_client
+  appimage_extract_debug_symbols ./bin "$build_dir" kDrive kdrive_qml
 
   make DESTDIR="$app_dir" install
 
   cp "$src_dir/sync-exclude-linux.lst" "$build_dir/build/bin/sync-exclude.lst"
   cp "$src_dir/sync-folder-rules-linux.csv" "$build_dir/build/bin/sync-folder-rules.csv"
-} 
+}
 
 package_release() {
   QTDIR="$(find_qt_conan_path "$build_dir")"
   export QTDIR
-  export QMAKE="$QTDIR/bin/qmake"
-  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
-  export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-  mkdir -p "$app_dir/usr/plugins" "$app_dir/usr/lib"
-  cd "$app_dir"
+  local full_version
 
-  cp -P -r "$QTDIR/plugins/"* "$app_dir/usr/plugins/"
-  # No Qt SQL driver is used on Linux, and most of them need client libraries that are not bundled
-  rm -rf "$app_dir/usr/plugins/sqldrivers"
-  cp -P -r "$QTDIR/libexec" "$app_dir/usr"
-  cp -P -r "$QTDIR/resources" "$app_dir/usr" || true # resources folder is not always present in the Qt installation, but we want to copy it when it is
-  cp -P -r "$QTDIR/translations" "$app_dir/usr"
+  appimage_prepare_appdir "$app_dir"
+  appimage_check_appdir "$app_dir"
 
-  cp -P "$conan_dependencies_folder/"* "$app_dir/usr/lib"
-
-  cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
-
-  cp -P "$QTDIR/lib/libQt6WaylandClient.so"* "$app_dir/usr/lib"
-
-  rm -rf "$app_dir/usr/lib/x86_64-linux-gnu/"
-  rm -rf "$app_dir/usr/include/"
-
-  cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
-
-  cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
-
-  # The Qt plugin deploys every SQL driver from the Qt installation, but no Qt SQL driver is used on Linux
-  export LINUXDEPLOY_EXCLUDED_LIBRARIES="libqsql*.so"
-  linuxdeploy --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
+  cd "$build_dir"
+  appimage_linuxdeploy_deploy "$app_dir"
+  appimage_strip_unneeded_symbols "$app_dir"
+  appimage_verify_bundle "$app_dir"
+  appimage_package "$app_dir"
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
-  app_name="kDrive-${full_version}-amd64.AppImage"
-  mv kDrive*.AppImage "$app_dir/$app_name"
+  mkdir -p "$artifact_dir"
+  mv kDrive*.AppImage "$artifact_dir/kDrive-${full_version}-amd64.AppImage"
 }
 
 package_recovery_updater() {
-  updater_bin="$app_dir/usr/bin/kDriveRecoveryUpdater"
+  local updater_bin="$app_dir/usr/bin/kDriveRecoveryUpdater"
+  local updater_appdir="$build_dir/updater-app"
+  local full_version
+  local updater_appimage
+
   if [ ! -f "$updater_bin" ]; then
-    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
-    return 0
+    echo "kDriveRecoveryUpdater not found at '$updater_bin'; the release requires its AppImage." >&2
+    return 1
   fi
 
-  QTDIR="$(find_qt_conan_path "$build_dir")"
-  export QTDIR
-  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
-  export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+  appimage_prepare_recovery_updater_appdir \
+    "$app_dir" \
+    "$updater_appdir" \
+    "$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
+  appimage_check_recovery_updater_appdir "$updater_appdir"
 
-  updater_appdir="$build_dir/updater-app"
-  rm -rf "$updater_appdir"
-  mkdir -p "$updater_appdir/usr/bin"
-  mkdir -p "$updater_appdir/usr/lib"
-  mkdir -p "$updater_appdir/usr/plugins/platforms"
-
-  cp "$updater_bin" "$updater_appdir/usr/bin/kDriveRecoveryUpdater"
-
-  # Copy Conan dependencies (Poco, xxhash, log4cplus, openssl, sentry, etc.)
-  cp -P "$conan_dependencies_folder/"* "$updater_appdir/usr/lib" 2>/dev/null || true
-
-  # Copy Qt plugins (platforms are required for a GUI app)
-  cp -P -r "$QTDIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
-
-  # Create a minimal .desktop file (required by linuxdeploy/appimagetool)
-  cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
-[Desktop Entry]
-Type=Application
-Name=kDriveRecoveryUpdater
-Exec=kDriveRecoveryUpdater
-Icon=kDriveRecoveryUpdater
-Categories=Utility;
-EOF
-
-  # Use the recovery updater icon
-  updater_icon="$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
-  if [ -f "$updater_icon" ]; then
-    cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
-  fi
-
-  export NO_STRIP=1
-  linuxdeploy --appdir "$updater_appdir" \
-    -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
-    -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
-    -i "$updater_appdir/kDriveRecoveryUpdater.png" \
-    --plugin qt --output appimage -v0
+  cd "$build_dir"
+  appimage_linuxdeploy_recovery_updater "$updater_appdir"
+  appimage_strip_unneeded_symbols "$updater_appdir"
+  appimage_verify_bundle "$updater_appdir"
+  appimage_package "$updater_appdir"
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
-  mv kDriveRecoveryUpdater*.AppImage "$app_dir/$updater_appimage"
+  mkdir -p "$artifact_dir"
+  mv kDriveRecoveryUpdater*.AppImage "$artifact_dir/$updater_appimage"
 
-  echo "Recovery updater AppImage created: $app_dir/$updater_appimage"
+  echo "Recovery updater AppImage created: $artifact_dir/$updater_appimage"
 }
 
 echo "Building ..."
 build_release
 
 echo
-
-echo "Packaging ..."
-package_release
-
-echo
-
 echo "Packaging recovery updater ..."
 package_recovery_updater
+
+rm -f "$app_dir/usr/bin/kDriveRecoveryUpdater"
+check_main_appdir_updater_separation "$app_dir"
+
+echo
+echo "Packaging ..."
+package_release
 
 echo
 
