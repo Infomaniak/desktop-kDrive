@@ -1202,17 +1202,16 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
             }
         }
 
-        if (const auto exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        const auto exitInfo = propagateDeleteToDbAndTree(syncOp);
+        if (!exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-            return exitInfo;
         }
+
+        return exitInfo;
     } else {
-        if (const auto exitInfo = generateDeleteJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
-            return exitInfo;
-        }
+        return generateDeleteJob(syncOp, ignored, bypassProgressComplete);
     }
-    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
