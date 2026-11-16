@@ -91,7 +91,10 @@ public enum ObservableData {
                                                                                        asleep: false,
                                                                                        wakingUp: false,
                                                                                        from: 0),
-                                                     notifications: true)
+                                                     notifications: true,
+                                                     size: 987654,
+                                                     usedSize: 123456789,
+                                                     packInfo: PackInfo(id: 1, name: "solo", displayName: "kDrive Solo", isFree: true))
 
     static let updatedDrive = Drive.some(driveDbId: expectedDriveDbId,
                                          driveId: expectedDriveId,
