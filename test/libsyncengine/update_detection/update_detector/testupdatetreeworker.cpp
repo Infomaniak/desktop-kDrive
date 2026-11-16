@@ -24,6 +24,8 @@
 #include "test_utility/testhelpers.h"
 
 #include "libsyncengine/update_detection/update_detector/updatetreeworker.h"
+#include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 
 #include <memory>
 
@@ -62,6 +64,17 @@ void TestUpdateTreeWorker::setUp() {
 }
 
 void TestUpdateTreeWorker::tearDown() {
+    // Detach the worker under test and break the SyncPal ownership cycles (SyncPal <-> workers, SyncPal <->
+    // ProgressInfo), otherwise the SyncPal, its workers and its snapshots are leaked once the fixture is destroyed.
+    _localUpdateTreeWorker->setSyncPal(nullptr);
+    if (_syncPal) {
+        _syncPal->freeWorkers();
+        _syncPal->freeSharedObjects();
+        if (_syncPal->syncDb()) {
+            _syncPal->syncDb()->close();
+        }
+        _syncPal.reset();
+    }
     ParmsDb::instance()->close();
     // The singleton ParmsDb calls KDC::Log()->instance() in its destructor.
     // As the two singletons are instantiated in different translation units, the order of their destruction is unknown.
@@ -232,59 +245,72 @@ void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {
      */
 
     std::shared_ptr<UpdateTree> updateTree = side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
+    updateTree->clear();
 
     bool found = false;
     DbNodeId dbNodeIdDir;
     _syncDb->dbId(ReplicaSide::Local, NodeId("id1"), dbNodeIdDir, found);
-    const auto node1 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 1"), NodeType::Directory,
-                                              OperationType::None, "id1", testhelpers::defaultTime, testhelpers::defaultTime,
-                                              testhelpers::defaultFileSize, updateTree->rootNode());
+    const auto node1 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "id1",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node1->moveTo(updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id2"), dbNodeIdDir, found);
-    const auto node2 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 2"), NodeType::Directory,
-                                              OperationType::None, "id2", testhelpers::defaultTime, testhelpers::defaultTime,
-                                              testhelpers::defaultFileSize, updateTree->rootNode());
+    const auto node2 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::None, "id2",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node2->moveTo(updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id3"), dbNodeIdDir, found);
-    const auto node3 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 3"), NodeType::Directory,
-                                              OperationType::None, "id3", testhelpers::defaultTime, testhelpers::defaultTime,
-                                              testhelpers::defaultFileSize, updateTree->rootNode());
+    const auto node3 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::None, "id3",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node3->moveTo(updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id4"), dbNodeIdDir, found);
     auto node4 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::None,
-                                        "id4", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
-                                        updateTree->rootNode());
+                                        "id4", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node4->moveTo(updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id11"), dbNodeIdDir, found);
-    auto node11 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 1.1"), NodeType::Directory,
-                                         OperationType::None, "id11", testhelpers::defaultTime, testhelpers::defaultTime,
-                                         testhelpers::defaultFileSize, node1);
+    auto node11 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None,
+                                   "id11", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node11->moveTo(node1));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id111"), dbNodeIdDir, found);
-    auto node111 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 1.1.1"), NodeType::Directory,
-                                          OperationType::None, "id111", testhelpers::defaultTime, testhelpers::defaultTime,
-                                          testhelpers::defaultFileSize, node11);
+    auto node111 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 1.1.1"), NodeType::Directory, OperationType::None,
+                                   "id111", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node111->moveTo(node11));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id1111"), dbNodeIdDir, found);
-    const auto node1111 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("File 1.1.1.1"), NodeType::File,
-                                                 OperationType::None, "id1111", testhelpers::defaultTime,
-                                                 testhelpers::defaultTime, testhelpers::defaultFileSize, node111);
+    const auto node1111 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("File 1.1.1.1"), NodeType::File, OperationType::None,
+                                   "id1111", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node1111->moveTo(node111));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id31"), dbNodeIdDir, found);
-    const auto node31 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 3.1"), NodeType::Directory,
-                                               OperationType::None, "id31", testhelpers::defaultTime, testhelpers::defaultTime,
-                                               testhelpers::defaultFileSize, node3);
-    const auto node41 = std::make_shared<Node>(_dbnodeIdDir41, updateTree->side(), Str("Dir 4.1"), NodeType::Directory,
-                                               OperationType::None, "id41", testhelpers::defaultTime, testhelpers::defaultTime,
-                                               testhelpers::defaultFileSize, node4);
+    const auto node31 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("Dir 3.1"), NodeType::Directory, OperationType::None,
+                                   "id31", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node31->moveTo(node3));
+    const auto node41 =
+            std::make_shared<Node>(_dbnodeIdDir41, updateTree->side(), Str("Dir 4.1"), NodeType::Directory, OperationType::None,
+                                   "id41", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node41->moveTo(node4));
     const auto node411 = std::make_shared<Node>(_dbnodeIdDir411, updateTree->side(), Str("Dir 4.1.1"), NodeType::Directory,
                                                 OperationType::None, "id411", testhelpers::defaultTime, testhelpers::defaultTime,
-                                                testhelpers::defaultFileSize, node41);
+                                                testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node411->moveTo(node41));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id4111"), dbNodeIdDir, found);
-    const auto node4111 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("File 4.1.1.1"), NodeType::File,
-                                                 OperationType::None, "id4111", testhelpers::defaultTime,
-                                                 testhelpers::defaultTime, testhelpers::defaultFileSize, node411);
+    const auto node4111 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("File 4.1.1.1"), NodeType::File, OperationType::None,
+                                   "id4111", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node4111->moveTo(node411));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id6"), dbNodeIdDir, found);
-    const auto node6 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("File 6"), NodeType::File, OperationType::None,
-                                              "id6", testhelpers::defaultTime, testhelpers::defaultTime,
-                                              testhelpers::defaultFileSize, updateTree->rootNode());
+    const auto node6 =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("File 6"), NodeType::File, OperationType::None, "id6",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node6->moveTo(updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id6a"), dbNodeIdDir, found);
-    const auto node6a = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("File 6a"), NodeType::File,
-                                               OperationType::None, "id6a", testhelpers::defaultTime, testhelpers::defaultTime,
-                                               testhelpers::defaultFileSize, updateTree->rootNode());
+    const auto node6a =
+            std::make_shared<Node>(dbNodeIdDir, updateTree->side(), Str("File 6a"), NodeType::File, OperationType::None, "id6a",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node6a->moveTo(updateTree->rootNode()));
 
     std::shared_ptr<Node> node7 = nullptr;
     if (side == ReplicaSide::Local) {
@@ -292,37 +318,22 @@ void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {
         _syncDb->dbId(ReplicaSide::Local, NodeId("id7l"), dbNodeIdDir, found);
         node7 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), testhelpers::makeNfdSyncName(), NodeType::File,
                                        OperationType::None, "id7l", testhelpers::defaultTime, testhelpers::defaultTime,
-                                       testhelpers::defaultFileSize, updateTree->rootNode());
+                                       testhelpers::defaultFileSize);
     } else {
         // Name encoded NFC on remote side
         _syncDb->dbId(ReplicaSide::Local, NodeId("id7r"), dbNodeIdDir, found);
         node7 = std::make_shared<Node>(dbNodeIdDir, updateTree->side(), testhelpers::makeNfcSyncName(), NodeType::File,
                                        OperationType::None, "id7r", testhelpers::defaultTime, testhelpers::defaultTime,
-                                       testhelpers::defaultFileSize, updateTree->rootNode());
+                                       testhelpers::defaultFileSize);
     }
+    CPPUNIT_ASSERT(node7->moveTo(updateTree->rootNode()));
 
     const auto node8 = std::make_shared<Node>(_dbnodeIdDir8, updateTree->side(), Str("Dir 8") + testhelpers::makeNfcSyncName(),
                                               NodeType::Directory, OperationType::None, "id8", testhelpers::defaultTime,
-                                              testhelpers::defaultTime, testhelpers::defaultFileSize, updateTree->rootNode());
+                                              testhelpers::defaultTime, testhelpers::defaultFileSize);
+    CPPUNIT_ASSERT(node8->moveTo(updateTree->rootNode()));
 
     updateTree->init();
-
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node1));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node2));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node3));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node4));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node6));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node6a));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node7));
-    CPPUNIT_ASSERT(updateTree->rootNode()->insertChild(node8));
-
-    CPPUNIT_ASSERT(node1->insertChild(node11));
-    CPPUNIT_ASSERT(node11->insertChild(node111));
-    CPPUNIT_ASSERT(node111->insertChild(node1111));
-    CPPUNIT_ASSERT(node3->insertChild(node31));
-    CPPUNIT_ASSERT(node4->insertChild(node41));
-    CPPUNIT_ASSERT(node41->insertChild(node411));
-    CPPUNIT_ASSERT(node411->insertChild(node4111));
 
     updateTree->insertNode(node1111);
     updateTree->insertNode(node111);
@@ -556,7 +567,8 @@ void TestUpdateTreeWorker::testCreateMissingNodesForDeletedItem() {
         CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 5") == nullptr);
 
         std::shared_ptr<Node> parentNode;
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                             _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
         CPPUNIT_ASSERT(parentNode);
         CPPUNIT_ASSERT(parentNode->isTmp());
         CPPUNIT_ASSERT(SyncName(Str("Dir 5")) == parentNode->name());
@@ -567,12 +579,13 @@ void TestUpdateTreeWorker::testCreateMissingNodesForDeletedItem() {
     // Several parents are missing because an ancestor was moved to a non-existing location.
     {
         setUpUpdateTree(ReplicaSide::Local);
-        _operationSet->insertOp(std::make_shared<FSOperation>(
-                OperationType::Move, "id5", NodeType::Directory, testhelpers::defaultTime, testhelpers::defaultTime,
-                testhelpers::defaultFileSize, "Dir 5", "Dir 9/Dir 9.1/Dir 5"));
+        _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id5", NodeType::Directory,
+                                                              testhelpers::defaultTime, testhelpers::defaultTime,
+                                                              testhelpers::defaultFileSize, "Dir 5", "Dir 9/Dir 9.1/Dir 5"));
 
         std::shared_ptr<Node> parentNode;
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                             _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 5/File 5.1", parentNode));
         CPPUNIT_ASSERT(parentNode);
 
         const std::list<SyncName> expectedNames{Str("Dir 5"), Str("Dir 9.1"), Str("Dir 9")};
@@ -598,8 +611,8 @@ void TestUpdateTreeWorker::testCreateMissingNodesForDeletedItem() {
         CPPUNIT_ASSERT(node1 && node11);
 
         std::shared_ptr<Node> parentNode;
-        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 1/Dir 1.1/File 1.1.2",
-                                                                                                    parentNode));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                             _localUpdateTreeWorker->createMissingNodesForDeletedItem("Dir 1/Dir 1.1/File 1.1.2", parentNode));
         CPPUNIT_ASSERT(parentNode);
         CPPUNIT_ASSERT(parentNode != node11);
         CPPUNIT_ASSERT(parentNode->isTmp());
@@ -648,7 +661,7 @@ void TestUpdateTreeWorker::testStep2() {
                                                           "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1", "Dir 1/File 1.1"));
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step2MoveFile());
-    std::shared_ptr<Node> node = _localUpdateTree->getNodeByPath("Dir 1/File 1.1");
+    const auto node = _localUpdateTree->getNodeByPath("Dir 1/File 1.1");
     CPPUNIT_ASSERT(node);
     CPPUNIT_ASSERT(node->hasChangeEvent(OperationType::Move));
     CPPUNIT_ASSERT(node->id() == "id1111");
@@ -781,6 +794,81 @@ void TestUpdateTreeWorker::testStep4() {
     CPPUNIT_ASSERT(node81->parentNode()->isTmp());
 }
 
+void TestUpdateTreeWorker::createSyncPalWithItemSnapshots(bool deletedItemIsLink, bool createdItemIsLink) {
+    const SyncPath syncDbPath = _localTempDir.path() / MockDb::makeDbMockFileName();
+    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbPath,
+                                         KDRIVE_VERSION_STRING, true);
+    _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->createSharedObjects();
+    _syncPal->createWorkers();
+
+    // Simulate the state of the snapshots after the deletion of the item "Dir 5/File 5.1" (local ID "id51", remote ID
+    // "id drive 51") and the creation of a new item (local ID "id51bis") reusing the same path. The deleted item is not
+    // present in the local snapshot anymore, but its remote counterpart is still present on the remote replica.
+    const SnapshotItem deletedRemoteItem("id drive 51", "id drive 5", Str("File 5.1"), testhelpers::defaultTime,
+                                         testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                                         deletedItemIsLink, true, true);
+    CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(deletedRemoteItem));
+    const SnapshotItem createdLocalItem("id51bis", "id5", Str("File 5.1"), testhelpers::defaultTime + 1,
+                                        testhelpers::defaultTime + 1, NodeType::File, testhelpers::defaultFileSize,
+                                        createdItemIsLink, true, true);
+    CPPUNIT_ASSERT(_syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(createdLocalItem));
+
+    _syncPal->copySnapshots();
+    _localUpdateTreeWorker->setSyncPal(_syncPal);
+}
+
+void TestUpdateTreeWorker::testStep4ItemTypeChanged() {
+    // A synchronized symbolic link is replaced by a regular file reusing the same path.
+    createSyncPalWithItemSnapshots(/*deletedItemIsLink=*/true, /*createdItemIsLink=*/false);
+
+    setUpUpdateTree(ReplicaSide::Local);
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id51", NodeType::File, testhelpers::defaultTime,
+                                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                                          "Dir 5/File 5.1"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id511", NodeType::File,
+                                                          testhelpers::defaultTime, testhelpers::defaultTime,
+                                                          testhelpers::defaultFileSize, "Dir 5/File 5.1"));
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step4DeleteFile());
+    // The Create operation was not merged with the Delete operation, it is processed by step 6.
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step6CreateFile());
+
+    // The deleted item is propagated as a Delete operation, and not as an Edit operation.
+    const auto deletedItemNode = _localUpdateTree->getNodeById("id51");
+    CPPUNIT_ASSERT(deletedItemNode);
+    CPPUNIT_ASSERT(deletedItemNode->hasChangeEvent(OperationType::Delete));
+    CPPUNIT_ASSERT(!deletedItemNode->hasChangeEvent(OperationType::Edit));
+    // The newly created item is propagated as a Create operation, without any previous ID.
+    const auto createdItemNode = _localUpdateTree->getNodeById("id511");
+    CPPUNIT_ASSERT(createdItemNode);
+    CPPUNIT_ASSERT(createdItemNode->hasChangeEvent(OperationType::Create));
+    CPPUNIT_ASSERT(!createdItemNode->isEditFromDeleteCreate());
+}
+
+void TestUpdateTreeWorker::testStep4ItemTypeUnchanged() {
+    // Both the deleted item "Dir 5/File 5.1" and the newly created item are regular files.
+    createSyncPalWithItemSnapshots(/*deletedItemIsLink=*/false, /*createdItemIsLink=*/false);
+
+    setUpUpdateTree(ReplicaSide::Local);
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id51", NodeType::File, testhelpers::defaultTime,
+                                                          testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                                          "Dir 5/File 5.1"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id511", NodeType::File,
+                                                          testhelpers::defaultTime, testhelpers::defaultTime,
+                                                          testhelpers::defaultFileSize, "Dir 5/File 5.1"));
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step4DeleteFile());
+
+    // The Delete and Create operations are merged into an Edit operation.
+    const auto node = _localUpdateTree->getNodeByPath("Dir 5/File 5.1");
+    CPPUNIT_ASSERT(node);
+    CPPUNIT_ASSERT(node->id() == "id511");
+    CPPUNIT_ASSERT(node->hasChangeEvent(OperationType::Edit));
+    CPPUNIT_ASSERT(node->isEditFromDeleteCreate());
+    CPPUNIT_ASSERT(node->previousId() == "id51");
+}
+
 void TestUpdateTreeWorker::testStep5() {
     setUpUpdateTree(ReplicaSide::Local);
 
@@ -838,6 +926,34 @@ void TestUpdateTreeWorker::testStep6() {
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 7/File 1.5")->id() == "id15");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 7/File 1.5")->parentNode()->isTmp());
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 7/File 1.5")->hasChangeEvent(OperationType::Create));
+}
+
+void TestUpdateTreeWorker::testStep6ReusesRenamedNode() {
+    _operationSet->clear();
+    _localUpdateTree->clear();
+
+    const auto createOp =
+            std::make_shared<FSOperation>(OperationType::Create, "new-file-id", NodeType::File, testhelpers::defaultTime,
+                                          testhelpers::defaultTime, testhelpers::defaultFileSize, "new-file.txt");
+    _operationSet->insertOp(createOp);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->handleCreateOperationsWithSamePath());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step6CreateFile());
+    const auto originalNode = _localUpdateTree->getNodeById("new-file-id");
+    CPPUNIT_ASSERT(originalNode);
+
+    _operationSet->clear();
+    const auto renamedCreateOp =
+            std::make_shared<FSOperation>(OperationType::Create, "new-file-id", NodeType::File, testhelpers::defaultTime,
+                                          testhelpers::defaultTime, testhelpers::defaultFileSize, "renamed-file.txt");
+    _operationSet->insertOp(renamedCreateOp);
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->handleCreateOperationsWithSamePath());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step6CreateFile());
+
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("renamed-file.txt") == originalNode);
+    CPPUNIT_ASSERT(!_localUpdateTree->getNodeByPath("new-file.txt"));
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeById("new-file-id") == originalNode);
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, _localUpdateTree->rootNode()->children().size());
+    CPPUNIT_ASSERT(originalNode->hasChangeEvent(OperationType::Create));
 }
 
 void TestUpdateTreeWorker::testStep7() {
@@ -927,7 +1043,7 @@ void TestUpdateTreeWorker::testClearTreeStep2() {
                                                           "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1", "Dir 1/File 1.1"));
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step2MoveFile());
-    std::shared_ptr<Node> node = _localUpdateTree->getNodeByPath("Dir 1/File 1.1");
+    const auto node = _localUpdateTree->getNodeByPath("Dir 1/File 1.1");
     CPPUNIT_ASSERT(node);
     CPPUNIT_ASSERT(node->hasChangeEvent(OperationType::Move));
     CPPUNIT_ASSERT(node->id() == "id1111");
@@ -1064,7 +1180,7 @@ void TestUpdateTreeWorker::testGetOriginPath() {
     setUpUpdateTree(ReplicaSide::Local);
 
     // Test without move operation
-    std::shared_ptr<Node> node = _localUpdateTree->getNodeById("id4111");
+    const auto node = _localUpdateTree->getNodeById("id4111");
     SyncPath path;
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
@@ -1073,7 +1189,7 @@ void TestUpdateTreeWorker::testGetOriginPath() {
     // Test with move operation on the child
     node->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1", "id411"});
     node->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(node->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 4111 under parent 4
+    CPPUNIT_ASSERT(node->moveTo(_localUpdateTree->getNodeById("id4"))); // Move node 4111 under parent 4
     node->setName(Str("File 4.1.1.1 renamed")); // Rename node
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
@@ -1084,10 +1200,10 @@ void TestUpdateTreeWorker::testGetOriginPath2() {
     setUpUpdateTree(ReplicaSide::Local);
 
     // Test with move operation on some parents
-    std::shared_ptr<Node> node = _localUpdateTree->getNodeById("id411");
+    auto node = _localUpdateTree->getNodeById("id411");
     node->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1", "id41"});
     node->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(node->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
+    CPPUNIT_ASSERT(node->moveTo(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
     node->setName(Str("Dir 4.1.1 renamed")); // Rename node
 
     SyncPath path;
@@ -1114,7 +1230,7 @@ void TestUpdateTreeWorker::testGetOriginPath3() {
 
     node411->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1", "id41"});
     node411->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(node411->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
+    CPPUNIT_ASSERT(node411->moveTo(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
 
     SyncPath path;
     CPPUNIT_ASSERT(_localUpdateTreeWorker->getOriginPath(node4111, path) == ExitCode::Ok);
@@ -1131,7 +1247,7 @@ void TestUpdateTreeWorker::testGetOriginPath4() {
 
     node411->setMoveOriginInfos({"Dir 4/Dir 4.1/Dir 4.1.1", "id41"});
     node411->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(node411->setParentNode(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
+    CPPUNIT_ASSERT(node411->moveTo(_localUpdateTree->getNodeById("id4"))); // Move node 411 under parent 4
 
     node4111->setMoveOriginInfos({"Dir 4/Dir 4.1.1/File 4.1.1.1", "id411"});
     node4111->insertChangeEvent(OperationType::Move);
@@ -1262,45 +1378,46 @@ void TestUpdateTreeWorker::testGetNodeFromDeletedPath() {
 
         const auto nodeA = std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None,
                                                   CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                                  testhelpers::defaultTime, testhelpers::defaultDirSize, updateTree->rootNode());
-
+                                                  testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeA->moveTo(updateTree->rootNode()));
         updateTree->insertNode(nodeA);
-        (void) updateTree->rootNode()->insertChild(nodeA);
 
         // Created branch
-        const auto nodeAAcreate = std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory, nodeA);
+        const auto nodeAAcreate = std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory);
+        CPPUNIT_ASSERT(nodeAAcreate->moveTo(nodeA));
         updateTree->insertNode(nodeAAcreate);
-        (void) nodeA->insertChild(nodeAAcreate);
 
         const auto nodeAAAcreate =
                 std::make_shared<Node>(ReplicaSide::Local, Str("AAA"), NodeType::Directory, OperationType::Create,
                                        CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAcreate);
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeAAAcreate->moveTo(nodeAAcreate));
         updateTree->insertNode(nodeAAAcreate);
-        (void) nodeAAcreate->insertChild(nodeAAAcreate);
 
         // Deleted branch
         const auto nodeAAdelete =
                 std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory, OperationType::Delete,
                                        CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeA);
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeAAdelete->moveTo(nodeA));
         updateTree->insertNode(nodeAAdelete);
-        (void) nodeA->insertChild(nodeAAdelete);
 
         const auto nodeAAAdelete =
                 std::make_shared<Node>(ReplicaSide::Local, Str("AAA"), NodeType::Directory, OperationType::Delete,
                                        CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAdelete);
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeAAAdelete->moveTo(nodeAAdelete));
         updateTree->insertNode(nodeAAAdelete);
-        (void) nodeAAdelete->insertChild(nodeAAAdelete);
 
         updateTree->drawUpdateTree(0);
 
-        std::shared_ptr<Node> node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
+        auto node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
         CPPUNIT_ASSERT_EQUAL(nodeAAAdelete->id().value(), node->id().value());
         (void) updateTreeWorker->getOrCreateNodeFromPath(SyncPath("/A/AA/AAA"), node);
         CPPUNIT_ASSERT_EQUAL(nodeAAAcreate->id().value(), node->id().value());
     }
+
+
     {
         // More complex case where a branch is deleted and re-created, and a file is moved inside the newly created branch.
         auto updateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());
@@ -1309,53 +1426,53 @@ void TestUpdateTreeWorker::testGetNodeFromDeletedPath() {
 
         const auto nodeA = std::make_shared<Node>(ReplicaSide::Local, Str("A"), NodeType::Directory, OperationType::None,
                                                   CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                                  testhelpers::defaultTime, testhelpers::defaultDirSize, updateTree->rootNode());
+                                                  testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeA->moveTo(updateTree->rootNode()));
         updateTree->insertNode(nodeA);
-        (void) updateTree->rootNode()->insertChild(nodeA);
 
         // Created branch
-        const auto nodeAAcreate = std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory, nodeA);
+        const auto nodeAAcreate = std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory);
+        CPPUNIT_ASSERT(nodeAAcreate->moveTo(nodeA));
         updateTree->insertNode(nodeAAcreate);
-        (void) nodeA->insertChild(nodeAAcreate);
 
         const auto nodeAAAcreate =
                 std::make_shared<Node>(ReplicaSide::Local, Str("AAA"), NodeType::Directory, OperationType::Create,
                                        CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAcreate);
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeAAAcreate->moveTo(nodeAAcreate));
         updateTree->insertNode(nodeAAAcreate);
-        (void) nodeAAcreate->insertChild(nodeAAAcreate);
 
         // Deleted branch
         const auto nodeAAdelete =
                 std::make_shared<Node>(ReplicaSide::Local, Str("AA"), NodeType::Directory, OperationType::Delete,
                                        CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeA);
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeAAdelete->moveTo(nodeA));
         updateTree->insertNode(nodeAAdelete);
-        (void) nodeA->insertChild(nodeAAdelete);
 
         const auto nodeAAAdelete =
                 std::make_shared<Node>(ReplicaSide::Local, Str("AAA"), NodeType::Directory, OperationType::Delete,
                                        CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAdelete);
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeAAAdelete->moveTo(nodeAAdelete));
         updateTree->insertNode(nodeAAAdelete);
-        (void) nodeAAdelete->insertChild(nodeAAAdelete);
 
-        const auto nodeAAA1delete = std::make_shared<Node>(ReplicaSide::Local, Str("AAA1"), NodeType::Directory, nodeAAdelete);
+        const auto nodeAAA1delete = std::make_shared<Node>(ReplicaSide::Local, Str("AAA1"), NodeType::Directory);
+        CPPUNIT_ASSERT(nodeAAA1delete->moveTo(nodeAAdelete));
         updateTree->insertNode(nodeAAA1delete);
-        (void) nodeAAdelete->insertChild(nodeAAA1delete);
 
         const auto nodeAAAAdelete =
                 std::make_shared<Node>(ReplicaSide::Local, Str("AAAA"), NodeType::File, OperationType::None,
                                        CommonUtility::generateRandomStringAlphaNum(), testhelpers::defaultTime,
-                                       testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAAA1delete);
+                                       testhelpers::defaultTime, testhelpers::defaultDirSize);
+        CPPUNIT_ASSERT(nodeAAAAdelete->moveTo(nodeAAA1delete));
         nodeAAAAdelete->setMoveOriginInfos({SyncPath("/A/AA/AAA"), nodeAAA1delete->id().value()});
         nodeAAAAdelete->setChangeEvents(OperationType::Move);
         updateTree->insertNode(nodeAAAAdelete);
-        (void) nodeAAA1delete->insertChild(nodeAAAAdelete);
 
         updateTree->drawUpdateTree(0);
 
-        std::shared_ptr<Node> node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
+        auto node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA"));
         CPPUNIT_ASSERT_EQUAL(nodeAAAdelete->id().value(), node->id().value());
         node = updateTreeWorker->getNodeFromDeletedPath(SyncPath("/A/AA/AAA1"));
         CPPUNIT_ASSERT_EQUAL(nodeAAA1delete->id().value(), node->id().value());
@@ -1381,16 +1498,14 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity()); // Not OK because "newNode" has been correctly added but its
                                                                    // parent ("Dir 5") is still a temporary node.
 
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->updateTmpNode(newNode->parentNode()));
+    std::shared_ptr<Node> mergedNode = nullptr;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->updateTmpNode(newNode->parentNode(), mergedNode));
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
-    newNode->setId(std::nullopt);
-    CPPUNIT_ASSERT_THROW(_localUpdateTreeWorker->checkTreeIntegrity(), UpdateTreeWorker::IntegrityError);
+    CPPUNIT_ASSERT(!newNode->setId(std::nullopt));
+    CPPUNIT_ASSERT(!newNode->setId(NodeId{}));
 
-    newNode->setId(NodeId{});
-    CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity());
-
-    newNode->setId(NodeId{"123"});
+    CPPUNIT_ASSERT(newNode->setId(NodeId{"123"}));
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setChangeEvents(OperationType::Create);
@@ -1405,31 +1520,36 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     newNode->setChangeEvents(OperationType::Edit | OperationType::Move);
     CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
-    newNode->parentNode()->setId(NodeId{"tmp_123"});
+    CPPUNIT_ASSERT(newNode->parentNode()->setId(NodeId{"tmp_123"}));
 
     CPPUNIT_ASSERT_THROW(_localUpdateTreeWorker->checkTreeIntegrity(), UpdateTreeWorker::IntegrityError);
 }
 
 void TestUpdateTreeWorker::testResetNodes() {
     // Normal unmodified node
-    const auto nodeA = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    const auto nodeA = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::Directory);
+    CPPUNIT_ASSERT(nodeA->moveTo(_remoteUpdateTree->rootNode()));
     _remoteUpdateTree->insertNode(nodeA);
     // Node created on previous sync
-    const auto nodeB = std::make_shared<Node>(ReplicaSide::Remote, Str("B"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    const auto nodeB = std::make_shared<Node>(ReplicaSide::Remote, Str("B"), NodeType::Directory);
+    CPPUNIT_ASSERT(nodeB->moveTo(_remoteUpdateTree->rootNode()));
     nodeB->setChangeEvents(OperationType::Create);
     nodeB->setStatus(NodeStatus::Processed);
     _remoteUpdateTree->insertNode(nodeB);
     // Node moved on previous sync
-    const auto nodeC = std::make_shared<Node>(ReplicaSide::Remote, Str("C2"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    const auto nodeC = std::make_shared<Node>(ReplicaSide::Remote, Str("C2"), NodeType::Directory);
+    CPPUNIT_ASSERT(nodeC->moveTo(_remoteUpdateTree->rootNode()));
     nodeC->setMoveOriginInfos({"C1", "1"});
     nodeC->setChangeEvents(OperationType::Move);
     _remoteUpdateTree->insertNode(nodeC);
     // Node to be removed from the UpdateTree
-    const auto nodeD = std::make_shared<Node>(ReplicaSide::Remote, Str("D"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    const auto nodeD = std::make_shared<Node>(ReplicaSide::Remote, Str("D"), NodeType::Directory);
+    CPPUNIT_ASSERT(nodeD->moveTo(_remoteUpdateTree->rootNode()));
     nodeD->setStatus(NodeStatus::ToDelete);
     _remoteUpdateTree->insertNode(nodeD);
     // Blacklisted node
-    const auto nodeE = std::make_shared<Node>(ReplicaSide::Remote, Str("E"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    const auto nodeE = std::make_shared<Node>(ReplicaSide::Remote, Str("E"), NodeType::Directory);
+    CPPUNIT_ASSERT(nodeE->moveTo(_remoteUpdateTree->rootNode()));
     (void) SyncNodeCache::instance()->update(testSyncDbId, SyncNodeType::TmpRemoteBlacklist, {nodeE->id().value()});
     _remoteUpdateTree->insertNode(nodeE);
 
@@ -1451,12 +1571,12 @@ void TestUpdateTreeWorker::testResetNodesRecursiveDelete() {
     // to the ToDelete node's successor before recursively deleting it (and its children); when the successor was the child
     // being erased, the just-advanced iterator was invalidated. Reproduce this deterministically with only two nodes: mark
     // one as ToDelete and make it the parent of the other, so deleting the parent also erases the child.
-    const auto node1 =
-            std::make_shared<Node>(ReplicaSide::Remote, Str("node1"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    const auto node1 = std::make_shared<Node>(ReplicaSide::Remote, Str("node1"), NodeType::Directory);
+    CPPUNIT_ASSERT(node1->moveTo(_remoteUpdateTree->rootNode()));
     _remoteUpdateTree->insertNode(node1);
 
-    const auto node2 =
-            std::make_shared<Node>(ReplicaSide::Remote, Str("node2"), NodeType::Directory, _remoteUpdateTree->rootNode());
+    const auto node2 = std::make_shared<Node>(ReplicaSide::Remote, Str("node2"), NodeType::Directory);
+    CPPUNIT_ASSERT(node2->moveTo(_remoteUpdateTree->rootNode()));
     _remoteUpdateTree->insertNode(node2);
 
 
@@ -1471,9 +1591,8 @@ void TestUpdateTreeWorker::testResetNodesRecursiveDelete() {
     // Make sure the parent will be listed before its child.
     if (std::distance(child, parent) < 0) std::swap(child, parent);
 
-    CPPUNIT_ASSERT(child->second->setParentNode(parent->second));
+    CPPUNIT_ASSERT(child->second->moveTo(parent->second));
     parent->second->setStatus(NodeStatus::ToDelete);
-    CPPUNIT_ASSERT(parent->second->insertChild(child->second));
 
     const auto parentId = *parent->second->id();
     const auto childrenId = *child->second->id();

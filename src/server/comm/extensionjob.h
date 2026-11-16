@@ -35,6 +35,7 @@ struct FileData {
 
         // Absolute path of the file locally
         SyncPath localPath;
+        NodeId localNodeId;
 
         // Relative path of the file
         SyncPath relativePath;

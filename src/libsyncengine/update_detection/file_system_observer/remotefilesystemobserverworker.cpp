@@ -916,8 +916,7 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         if (excluded) continue;
 
 #if defined(KD_WINDOWS)
-        actionInfo.snapshotItem.setName(
-                Utility::fixNameWithBackslash(actionInfo.snapshotItem.name()));
+        actionInfo.snapshotItem.setName(Utility::fixNameWithBackslash(actionInfo.snapshotItem.name()));
 #endif
         actionInfoList.push_back(actionInfo);
     }

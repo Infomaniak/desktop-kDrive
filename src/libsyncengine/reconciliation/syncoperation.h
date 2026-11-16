@@ -108,6 +108,8 @@ class SyncOperation {
         void setRelativeDestinationPath(const SyncPath &relativeDestinationPath) {
             _relativeDestinationPath = relativeDestinationPath;
         }
+        [[nodiscard]] const SyncPath &affectedFilePath() const { return _affectedFilePath; }
+        void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
 
     private:
         OperationType _type = OperationType::None;
@@ -127,6 +129,7 @@ class SyncOperation {
 
         SyncPath _relativeOriginPath;
         SyncPath _relativeDestinationPath;
+        SyncPath _affectedFilePath;
 
         UniqueId _id = -1;
 
@@ -180,7 +183,7 @@ class SyncOperationList : public SharedObject {
          * @return true is the Edit operation corresponds to a sync operation.
          */
         bool isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,
-                                       SyncTime lastModified, int64_t size);
+                                     SyncTime lastModified, int64_t size);
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;

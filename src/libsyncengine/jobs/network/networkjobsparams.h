@@ -99,6 +99,7 @@ static const std::string accountKey = "account";
 static const std::string accountIdKey = "account_id";
 static const std::string driveIdKey = "drive_id";
 static const std::string driveNameKey = "drive_name";
+static const std::string kSuiteKey = "k_suite";
 static const std::string accountAdminKey = "account_admin";
 static const std::string capabilitiesKey = "capabilities";
 static const std::string canWriteKey = "can_write";
@@ -135,6 +136,9 @@ static const std::string errorCodePathKey = "/Error/Code";
 static const std::string dirKey = "dir";
 static const std::string fileKey = "file";
 static const std::string urlKey = "url";
+
+static const std::string asleepKey = "asleep";
+static const std::string wakingUpKey = "waking_up";
 
 /// Action type
 enum class ActionCode {

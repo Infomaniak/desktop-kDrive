@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: el, Greek
   Tagged: windows
-  Exported by: Clément Kunz
-  Exported at: Thu, 29 Oct 2026 08:58:14 +0100 
+  Exported by: Herve Eruam
+  Exported at: Tue, 10 Nov 2026 10:09:15 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -455,6 +455,13 @@
   </data> 
   <data name="buttonUpgradeOffer" xml:space="preserve"> 
     <value>Αναβάθμιση</value> 
+  </data> 
+  <data name="buttonUpgradeSubscription" xml:space="preserve"> 
+    <value>Αναβάθμιση της συνδρομής μου</value> 
+    <comment>Storage page, subscription card: link shown when the kDrive subscription storage is full, and tooltip and accessible name of the cart icon button otherwise. Opens the Infomaniak shop for the drive, admins only.</comment> 
+  </data> 
+  <data name="buttonUpgradeSubscriptionShort" xml:space="preserve"> 
+    <value>Να εξελιχθεί</value> 
   </data> 
   <data name="buttonValidate" xml:space="preserve"> 
     <value>Επιβεβαίωση</value> 
@@ -976,6 +983,12 @@
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
   </data> 
+  <data name="kSuiteProUpsellLink" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/ksuite/ksuite-pro</value> 
+  </data> 
+  <data name="ksuiteProBannerDescription" xml:space="preserve"> 
+    <value>Δημιουργία και συνεργασία χωρίς όρια</value> 
+  </data> 
   <data name="labelAccessRightsModified" xml:space="preserve"> 
     <value>Τα δικαιώματα πρόσβασης τροποποιήθηκαν</value> 
   </data> 
@@ -1349,8 +1362,11 @@
   <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
     <value>Ορισμένα στοιχεία μπορεί να μην είναι δυνατό να μεταφερθούν.</value> 
   </data> 
+  <data name="myKsuiteUpsellLink" xml:space="preserve"> 
+    <value>https://www.infomaniak.com/en/ksuite/myksuite</value> 
+  </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
-    <value>Περισσότερος αποθηκευτικός χώρος, περισσότερες λειτουργίες με τη my kSuite+</value> 
+    <value>Περισσότερος χώρος αποθήκευσης, περισσότερες λειτουργίες με το my kSuite+</value> 
   </data> 
   <data name="needHelpSetting" xml:space="preserve"> 
     <value>Χρειάζεστε βοήθεια;</value> 
@@ -1578,11 +1594,23 @@
     <value>Άλλα αρχεία στον υπολογιστή</value> 
     <comment>Label for the other files segment in the local storage usage chart.</comment> 
   </data> 
+  <data name="storageComputerUsedByOtherSyncs" xml:space="preserve"> 
+    <value>Αρχεία kDrive από άλλους συγχρονισμούς</value> 
+    <comment>Storage page, local disk card: legend row for the space used on the same disk by the other kDrive synchronizations of the computer.</comment> 
+  </data> 
+  <data name="storageDiskAlmostFullDescription" xml:space="preserve"> 
+    <value>Ο δίσκος σας είναι σχεδόν γεμάτος. Διαγράψτε ή μετακινήστε προσωπικά αρχεία από αυτόν τον δίσκο για να συνεχίσετε να συγχρονίζετε τα δεδομένα σας.</value> 
+    <comment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</comment> 
+  </data> 
   <data name="storageOnlineFree" xml:space="preserve"> 
     <value>Διαθέσιμος χώρος στη συνδρομή σας</value> 
   </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Αρχεία kDrive που είναι αποθηκευμένα στο διαδίκτυο</value> 
+  </data> 
+  <data name="storageSyncBlockDescription" xml:space="preserve"> 
+    <value>Διαχειριστείτε τους συγχρονισμένους φακέλους για να ελευθερώσετε χώρο στον υπολογιστή σας.</value> 
+    <comment>Storage page: description of the Sync card (storageSyncBlockTitle), next to the titleManageSynchronization link. Computer variant of storageSyncBlockMacDescription.</comment> 
   </data> 
   <data name="storageSyncBlockTitle" xml:space="preserve"> 
     <value>Συγχρονισμός</value> 
@@ -1629,16 +1657,16 @@
     <value>Ο συγχρονισμός βρίσκεται σε εξέλιξη</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Αναζήτηση αλλαγών</value> 
+    <value>Αναζήτηση αλλαγών…</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Προετοιμασία των αρχείων σας</value> 
+    <value>Σάρωση των αρχείων προς συγχρονισμό…</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ στοιχείο συγχρονισμένο με %@</value> 
+    <value>%@ από %@ στοιχεία συγχρονίστηκε…</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ στοιχεία συγχρονισμένα σε %@</value> 
+    <value>%@ από %@ στοιχεία συγχρονίστηκαν…</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Συγχρονίστηκε</value> 

@@ -72,7 +72,8 @@ void OperationGeneratorWorker::execute() {
         LOG_IF_FAIL(currentNode->id().has_value());
 
         // Explore children even if node is processed
-        for (const auto &[_, child]: currentNode->children()) {
+        const auto children = currentNode->children();
+        for (const auto &[_, child]: children) {
             _queuedToExplore.push(child);
             LOG_IF_FAIL(child->parentNode() == currentNode);
             if (child->parentNode() != currentNode) {
@@ -81,7 +82,7 @@ void OperationGeneratorWorker::execute() {
                                                 "Invalid parent node");
                 // Fix the issue
                 LOGW_SYNCPAL_WARN(_logger, L"Update the node's parent: " << Utility::formatSyncName(child->name()));
-                if (!child->setParentNode(currentNode)) {
+                if (!child->moveTo(currentNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node "
                                                        << Utility::formatSyncName(child->name()) << L" parent node "
                                                        << Utility::formatSyncName(currentNode->name()));

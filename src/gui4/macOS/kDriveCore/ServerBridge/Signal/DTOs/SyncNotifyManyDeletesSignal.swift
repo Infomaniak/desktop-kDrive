@@ -23,4 +23,5 @@ struct SyncNotifyManyDeletesSignal: Codable, Sendable {
     let syncDbId: Int32
     let notificationType: KDC.TooManyDeletesNotificationType
     let nbFiles: UInt64
+    @Base64CodedStrings var filesPaths: [String]
 }

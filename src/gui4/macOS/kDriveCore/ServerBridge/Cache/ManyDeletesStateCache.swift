@@ -28,11 +28,13 @@ public struct ManyDeletesNotification: Hashable, Sendable, Identifiable {
     public let syncDbId: Int32
     public let notificationType: KDC.TooManyDeletesNotificationType
     public let nbFiles: UInt64
+    public let filesPaths: [String]
 
-    public init(syncDbId: Int32, notificationType: KDC.TooManyDeletesNotificationType, nbFiles: UInt64) {
+    public init(syncDbId: Int32, notificationType: KDC.TooManyDeletesNotificationType, nbFiles: UInt64, filesPaths: [String]) {
         self.syncDbId = syncDbId
         self.notificationType = notificationType
         self.nbFiles = nbFiles
+        self.filesPaths = filesPaths
     }
 }
 

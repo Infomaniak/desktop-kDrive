@@ -88,9 +88,9 @@ bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks
 
         uint64_t totalTicksSinceLastTime = totalTicks - previousTotalTicks;
         uint64_t idleTicksSinceLastTime = idleTicks - previousIdleTicks;
-        uint64_t proportion = (totalTicksSinceLastTime > 0)
-                                      ? static_cast<uint64_t>(((float) idleTicksSinceLastTime) / totalTicksSinceLastTime)
-                                      : 0.0;
+        const float proportion = (totalTicksSinceLastTime > 0) ? static_cast<float>(idleTicksSinceLastTime) /
+                                                                         static_cast<float>(totalTicksSinceLastTime)
+                                                               : 0.0f;
         percent = 1.0f - proportion;
         percent *= 100.0;
 

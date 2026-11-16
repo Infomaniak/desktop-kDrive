@@ -22,6 +22,7 @@ import InfomaniakDI
 import kDriveCore
 import kDriveResources
 import Sentry
+import SwiftUI
 
 @MainActor
 final class ManyDeletesModalPresenter {
@@ -131,7 +132,8 @@ final class ManyDeletesModalPresenter {
         case .SoftLimit:
             await runSoftLimitAlert(nbFiles: notification.nbFiles, driveId: Int(driveId))
         case .HardLimit:
-            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles) else {
+            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles, filesPaths: notification.filesPaths)
+            else {
                 IKLogger.general.info("[KD] Many deletes confirmation aborted syncDbId=\(syncDbId)")
                 return
             }
@@ -140,6 +142,12 @@ final class ManyDeletesModalPresenter {
         default:
             break
         }
+    }
+
+    private func makeDeletedFilesAccessoryView(nbFiles: UInt64, paths: [String]) -> NSView {
+        let accessoryView = NSHostingView(rootView: ManyDeletesDeletedFilesListView(totalNbFiles: nbFiles, filesPaths: paths))
+        accessoryView.frame = NSRect(origin: .zero, size: accessoryView.fittingSize)
+        return accessoryView
     }
 
     private func runSoftLimitAlert(nbFiles: UInt64, driveId: Int) async {
@@ -163,7 +171,7 @@ final class ManyDeletesModalPresenter {
         }
     }
 
-    private func runHardLimitAlert(nbFiles: UInt64) async -> KDC.TooManyDeletesUserChoice? {
+    private func runHardLimitAlert(nbFiles: UInt64, filesPaths: [String]) async -> KDC.TooManyDeletesUserChoice? {
         let alert = makeAlert(
             style: .critical,
             title: KDriveLocalizable.manyDeleteDialogTitle(nbFiles),
@@ -173,6 +181,7 @@ final class ManyDeletesModalPresenter {
         alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitPrimary)
         let secondaryButton = alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitSecondary)
         secondaryButton.hasDestructiveAction = true
+        alert.accessoryView = makeDeletedFilesAccessoryView(nbFiles: nbFiles, paths: filesPaths)
 
         let response = await runModal(for: alert)
 

@@ -52,5 +52,7 @@ struct SyncNotifyManyDeletesParsingTest {
         #expect(signal.body.syncDbId == 1)
         #expect(signal.body.notificationType == .HardLimit)
         #expect(signal.body.nbFiles == 12345)
+        let expectedFilesPaths = ["/Users/test/kDrive/Documents/report.pdf", "/Users/test/kDrive/Photos/été.jpg"]
+        #expect(signal.body.filesPaths == expectedFilesPaths)
     }
 }

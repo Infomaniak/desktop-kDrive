@@ -214,7 +214,7 @@ void ConflictFinderWorker::findConflictsInTree(const std::shared_ptr<UpdateTree>
         queue.pop();
 
         // visit children
-        for (auto &[_, child]: node->children()) {
+        for (const auto &[_, child]: node->children()) {
             if (!visited[child]) {
                 visited[child] = true;
                 queue.push(child);

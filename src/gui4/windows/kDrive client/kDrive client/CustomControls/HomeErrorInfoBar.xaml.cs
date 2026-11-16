@@ -65,8 +65,14 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenStorage);
-            Uri changeOfferUri = App.Constants.Drive.ChangeOfferUri(AppViewModel.SelectedSync.Drive.DriveId);
-            await Launcher.LaunchUriAsync(changeOfferUri);
+
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (!await uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(AppViewModel.SelectedSync.Drive)))
+            {
+                Logger.LogWarning("Failed to open DriveUpsellUrl in browser");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+
         }
 
         private void TmpDirAccessError_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -79,6 +85,7 @@ namespace Infomaniak.kDrive.CustomControls
     public class HomeErrorInfoBarViewModel : UISafeObservableObject, IDisposable
     {
         private bool _showDriveFullError = false;
+        private bool _isOpen = false;
         private bool _showTmpDirAccessError = false;
         private IDisposable? _appErrorsSubscriptions;
         private IDisposable? _selectedSyncErrorsSubscriptions;
@@ -134,6 +141,11 @@ namespace Infomaniak.kDrive.CustomControls
                 Refresh();
         }
 
+        public bool IsOpen
+        {
+            get => _isOpen;
+            set => SetPropertyInUIThread(ref _isOpen, value);
+        }
         public bool ShowDriveFullError
         {
             get => _showDriveFullError;
@@ -195,6 +207,7 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 HideAll();
             }
+            IsOpen = ShowDriveFullError || ShowTmpDirAccessError;
         }
 
         private bool HasTmpDirAccessError()

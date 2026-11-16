@@ -59,7 +59,11 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
 
         let replyData: Data
         do {
-            replyData = try await xpcConnectionProvider.sendQuery(requestData)
+            if (request as? XPCLoggableRequest)?.requestNum == .UTILITY_QUIT {
+                replyData = try await xpcConnectionProvider.sendQuitQuery(requestData)
+            } else {
+                replyData = try await xpcConnectionProvider.sendQuery(requestData)
+            }
         } catch {
             logNoReply(error, context: logContext, since: startTime)
             throw error

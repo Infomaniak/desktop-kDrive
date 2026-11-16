@@ -386,4 +386,14 @@ enum class TooManyDeletesUserChoice {
     EnumEnd
 };
 
+enum class UpsellTarget {
+    Unknown = 0,
+    StandAloneToMykSuitePlus,
+    StandAloneTokSuitePro,
+    MykSuiteToMykSuitePlus,
+    kSuiteUpgrade,
+    EnumEnd
+};
+
+
 } // namespace KDC

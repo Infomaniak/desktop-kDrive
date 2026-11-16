@@ -31,7 +31,7 @@ struct DriveInfoSignalMetadata: Codable, Sendable {
     @Base64CodedColor var color: HexColor
     let notifications: Bool
     let admin: Bool
-    let maintenance: Bool
+    let maintenance: DriveMaintenanceInfo
     let locked: Bool
     let accessDenied: Bool
     let size: Int64
@@ -51,7 +51,7 @@ extension DriveInfoSignalMetadata {
               accessDenied: accessDenied,
               admin: admin,
               locked: locked,
-              maintenance: maintenance,
+              maintenance: maintenance.inMaintenance,
               notifications: notifications,
               size: size,
               usedSize: usedSize,

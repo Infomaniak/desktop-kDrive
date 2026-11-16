@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.ComponentModel;
 namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class LicensesHyperlink : StackPanel
@@ -41,6 +43,8 @@ namespace Infomaniak.kDrive.CustomControls
              typeof(AppVersion),
              typeof(UpdateExpander),
              new PropertyMetadata(null, OnDisplayedVersionChanged));
+
+        public Uri LicenseUrl => App.ServiceProvider.GetRequiredService<IUriStore>().GithubLicenseUrl();
 
         private static void OnDisplayedVersionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See <http://www.gnu.org/licenses/>.
+ -->
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.Upsell.KsuiteInfoBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:media="using:CommunityToolkit.WinUI.Media"
+             xmlns:kDrive="using:Infomaniak.kDrive"
+             mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource Infomaniak.DS.kSuite.Pro.Background}"
+          CornerRadius="{StaticResource OverlayCornerRadius}">
+
+        <!-- Background gradients, clipped to banner bounds -->
+        <Border CornerRadius="3"
+                IsHitTestVisible="False">
+
+            <Grid>
+                <Canvas x:Name="GradientCanvas"
+                    Opacity="0.6"
+                        SizeChanged="GradientCanvas_SizeChanged"
+                        ActualThemeChanged="GradientCanvas_ActualThemeChanged">
+
+                    <Ellipse x:Name="Ellipse1"
+                             Canvas.Left="-30"
+                             Canvas.Top="34"
+                             Width="750"
+                             Height="109">
+                        <Ellipse.Fill>
+                            <LinearGradientBrush StartPoint="0.32,1"
+                                                 EndPoint="0.68,0">
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.lightblue}"
+                                              Offset="0.1261" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.darkblue}"
+                                              Offset="0.6419" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.purple}"
+                                              Offset="0.8706" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.pink}"
+                                              Offset="1.1313" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.orange}"
+                                              Offset="1.4872" />
+                            </LinearGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
+
+                    <!-- Ellipse 2 -->
+                    <Ellipse x:Name="Ellipse2"
+                             Canvas.Left="51"
+                             Canvas.Top="24"
+                             Width="750"
+                             Height="107">
+                        <Ellipse.Fill>
+                            <LinearGradientBrush StartPoint="0,1"
+                                                 EndPoint="1,0">
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.lightblue}"
+                                              Offset="-0.2369" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.darkblue}"
+                                              Offset="0.0691" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.purple}"
+                                              Offset="0.3134" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.pink}"
+                                              Offset="0.5157" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.orange}"
+                                              Offset="0.7116" />
+                            </LinearGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
+
+                    <!-- Ellipse 3 -->
+                    <Ellipse x:Name="Ellipse3"
+                             Canvas.Left="15"
+                             Canvas.Top="33"
+                             Width="750"
+                             Height="106">
+                        <Ellipse.Fill>
+                            <LinearGradientBrush StartPoint="0,1"
+                                                 EndPoint="1,0">
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.lightblue}"
+                                              Offset="-0.2395" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.darkblue}"
+                                              Offset="0.1967" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.purple}"
+                                              Offset="0.545" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.pink}"
+                                              Offset="0.9028" />
+                                <GradientStop Color="{ThemeResource Infomaniak.DS.kSuite.Gradient.orange}"
+                                              Offset="1.5054" />
+                            </LinearGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
+
+                </Canvas>
+
+                <!-- Blur the three spheres -->
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <media:BackdropBlurBrush Amount="9" />
+                    </Rectangle.Fill>
+                </Rectangle>
+
+            </Grid>
+        </Border>
+
+        <!-- Foreground content (not blurred) -->
+        <Grid Padding="16"
+              ColumnSpacing="1">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0"
+                        Spacing="5">
+
+                <controls:SvgIcon Height="24"
+                                  HorizontalAlignment="Left"
+                                  UriString="{StaticResource Infomaniak.Custom.Icons.logo-ksuitepro}" />
+
+                <TextBlock FontSize="14"
+                           FontWeight="Normal"
+                           LineHeight="20"
+                           Foreground="WhiteSmoke"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{x:Bind kDrive:Localizer.Instance.GetString('ksuiteProBannerDescription')}" />
+
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpgradeSubscriptionShort')}"
+                    Style="{ThemeResource SubtleButtonStyle}"
+                    Foreground="WhiteSmoke"
+                    Click="Button_Click" />
+
+        </Grid>
+
+    </Grid>
+</UserControl>

@@ -293,6 +293,14 @@ namespace Infomaniak.kDrive.ViewModels
             {
 
                 SyncErrorState = SyncErrorStates.Undefined;
+
+                if (Drive.IsAsleep) SyncErrorState = SyncErrorStates.Asleep;
+                else if (Drive.IsWakingUp) SyncErrorState = SyncErrorStates.WakingUp;
+                else if (Drive.IsNotRenew) SyncErrorState = SyncErrorStates.NotRenew;
+                else if (!Drive.Account.User.IsConnected) SyncErrorState = SyncErrorStates.LoggingError;
+                else if (Drive.IsInMaintenance) SyncErrorState = SyncErrorStates.Maintenance;
+                if (SyncErrorState != SyncErrorStates.Undefined) return;
+
                 bool hasQuotaExceeded = false;
                 foreach (var error in SyncErrors)
                 {
@@ -322,11 +330,6 @@ namespace Infomaniak.kDrive.ViewModels
                 }
 
                 Drive.DisplayRemoteSpaceWarning = hasQuotaExceeded;
-
-                if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
-                {
-                    //SyncErrorState = SyncErrorStates.LoggedOut;
-                }
             });
         }
 
@@ -346,7 +349,13 @@ namespace Infomaniak.kDrive.ViewModels
 
         public Uri GetWebUri()
         {
-            return IsAdvanced ? App.Constants.Drive.itemUri(Drive.DriveId, RemoteNodeId) : Drive.GetWebUri();
+            if (!IsAdvanced)
+                return Drive.GetWebUri();
+            else
+            {
+                var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+                return uriStore.WebAppItemUrl(Drive.DriveId, RemoteNodeId);
+            }
         }
 
         public async Task<List<NodeId>?> GetExcludedNodeIds()

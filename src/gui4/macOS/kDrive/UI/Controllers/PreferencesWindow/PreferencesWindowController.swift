@@ -23,6 +23,7 @@ final class PreferencesWindowController: NSWindowController {
 
     private static let frameName = "kDrivePreferencesWindow"
     private static let contentRect = NSRect(x: 0, y: 0, width: 700, height: 400)
+    private static let minimumSize = NSSize(width: 600, height: 300)
 
     init() {
         let window = NSWindow(
@@ -35,7 +36,6 @@ final class PreferencesWindowController: NSWindowController {
 
         window.center()
         window.setFrameAutosaveName(PreferencesWindowController.frameName)
-        window.minSize = NSSize(width: 600, height: 300)
         window.maxSize = NSSize(width: 1000, height: 1000)
         window.isReleasedWhenClosed = true
 
@@ -43,6 +43,7 @@ final class PreferencesWindowController: NSWindowController {
 
         preferencesViewController = PreferencesSplitViewController()
         window.contentView = preferencesViewController.view
+        window.applyMinimumSize(Self.minimumSize)
     }
 
     @available(*, unavailable)

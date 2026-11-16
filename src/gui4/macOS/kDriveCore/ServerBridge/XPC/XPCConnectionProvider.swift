@@ -37,19 +37,35 @@ public enum XPCLoginItemAgentConnectionState: Sendable, Equatable {
 
 public protocol XPCConnectionProvider: Sendable {
     func sendQuery(_ requestData: Data) async throws -> Data
+    /// Sends UTILITY_QUIT using a bounded transport lookup, without restarting normal connection work.
+    func sendQuitQuery(_ requestData: Data) async throws -> Data
 
-    var guiConnectionState: XPCConnectionState { get }
-    var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
+    @MainActor var guiConnectionState: XPCConnectionState { get }
+    @MainActor var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
 
-    var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState { get }
-    var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> { get }
+    @MainActor var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState { get }
+    @MainActor var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> { get }
 
     func reconnectToLoginAgent() async
 }
 
+public extension XPCConnectionProvider {
+    func sendQuitQuery(_ requestData: Data) async throws -> Data {
+        try await sendQuery(requestData)
+    }
+}
+
+public protocol XPCConnectionLifecycle: Sendable {
+    /// Stops ordinary connection attempts while allowing the dedicated quit request to obtain a transport.
+    @MainActor func beginShutdown()
+    @MainActor func finishShutdown()
+}
+
 extension XPCConnectionManager: XPCConnectionProvider {
+    @MainActor
     public var connection: NSXPCConnection {
         get throws {
+            guard lifecycleState != .stopped else { throw XPCError.shuttingDown }
             guard let appConnection else {
                 throw XPCError.noAppConnectionAvailable
             }
@@ -58,12 +74,33 @@ extension XPCConnectionManager: XPCConnectionProvider {
         }
     }
 
+    @MainActor
     public func sendQuery(_ requestData: Data) async throws -> Data {
+        guard lifecycleState == .running else { throw XPCError.shuttingDown }
         try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
+        guard lifecycleState == .running else { throw XPCError.shuttingDown }
 
-        let connection = try connection
-        return try await withCheckedThrowingContinuation { continuation in
-            let continuation = XPCContinuation(continuation)
+        return try await sendQuery(requestData, over: connection)
+    }
+
+    @MainActor
+    public func sendQuitQuery(_ requestData: Data) async throws -> Data {
+        guard lifecycleState != .stopped else { throw XPCError.shuttingDown }
+        let deadline = DispatchTime.now() + 5
+        if appConnection == nil {
+            if loginItemAgentConnection == nil {
+                initializeLoginItemAgentConnection()
+            }
+            let endpoint = try await getServerEndpoint(shutdownDeadline: deadline)
+            try connectToServer(endpoint: endpoint, forShutdown: true)
+        }
+        return try await sendQuery(requestData, over: connection, deadline: deadline)
+    }
+
+    @MainActor
+    private func sendQuery(_ requestData: Data, over connection: NSXPCConnection,
+                           deadline: DispatchTime? = nil) async throws -> Data {
+        return try await XPCContinuation<Data>.perform(deadline: deadline) { continuation in
             do {
                 let proxy = try connection.proxy(errorHandler: { error in
                     IKLogger.xpc.error("[KD] Failed to send query to server: \(error)")
@@ -79,10 +116,12 @@ extension XPCConnectionManager: XPCConnectionProvider {
         }
     }
 
+    @MainActor
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {
         return $guiConnectionState.eraseToAnyPublisher()
     }
 
+    @MainActor
     public var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> {
         return $loginItemAgentConnectionState.eraseToAnyPublisher()
     }

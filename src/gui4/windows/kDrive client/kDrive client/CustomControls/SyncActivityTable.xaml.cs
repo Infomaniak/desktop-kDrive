@@ -210,9 +210,13 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.LogError("DataContext is not a SyncFileItem");
                 return;
             }
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (!await uriStore.OpenInBrowserAsync(uriStore.WebAppItemUrl(activity.Sync.Drive.DriveId, activity.RemoteNodeId)))
+            {
+                Logger.LogWarning("Failed to open WebAppItemUrl in browser");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
 
-            Uri uri = App.Constants.Drive.itemUri(activity.Sync.Drive.DriveId, activity.RemoteNodeId);
-            await Windows.System.Launcher.LaunchUriAsync(uri);
             _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemWeb);
         }
 

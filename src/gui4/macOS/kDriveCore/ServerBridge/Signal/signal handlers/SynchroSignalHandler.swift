@@ -72,7 +72,8 @@ struct SynchroSignalHandler {
 
         await manyDeletesCache.notifyManyDeletes(ManyDeletesNotification(syncDbId: body.syncDbId,
                                                                          notificationType: body.notificationType,
-                                                                         nbFiles: body.nbFiles))
+                                                                         nbFiles: body.nbFiles,
+                                                                         filesPaths: body.filesPaths))
     }
 }
 

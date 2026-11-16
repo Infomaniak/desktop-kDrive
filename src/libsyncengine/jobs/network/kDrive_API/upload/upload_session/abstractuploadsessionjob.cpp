@@ -21,12 +21,21 @@
 namespace KDC {
 
 AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId) :
-    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, driveDbId, 0) {}
+    AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, driveDbId, 0) {
+    setApiVersion(uploadType);
+}
 
 AbstractUploadSessionJob::AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId,
                                                    const SyncPath &absoluteFilePath, const SessionInfo &sessionInfo) :
     AbstractTokenNetworkJob(uploadType == UploadSessionType::Drive ? ApiType::Drive : ApiType::Desktop, 0, driveDbId, 0),
 
     _sessionInfo(sessionInfo),
-    _absoluteFilePath(absoluteFilePath) {}
+    _absoluteFilePath(absoluteFilePath) {
+    setApiVersion(uploadType);
+}
+
+// The log upload session is only available on the v2 API.
+void AbstractUploadSessionJob::setApiVersion(const UploadSessionType uploadType) {
+    if (uploadType == UploadSessionType::Log) _apiVersion = 2;
+}
 } // namespace KDC

@@ -2027,16 +2027,16 @@ bool SyncDb::id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found
     return true;
 }
 
-bool SyncDb::correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found) {
+bool SyncDb::correspondingNodeId(const ReplicaSide sideIn, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found) {
     DbNodeId dbNodeId;
-    if (!dbId(side, nodeIdIn, dbNodeId, found)) {
+    if (!dbId(sideIn, nodeIdIn, dbNodeId, found)) {
         return false;
     }
     if (!found) {
         return true;
     }
 
-    return id(otherSide(side), dbNodeId, nodeIdOut, found);
+    return id(otherSide(sideIn), dbNodeId, nodeIdOut, found);
 }
 
 bool SyncDb::deleteSyncNode(const NodeId &nodeId, bool &found) {

@@ -70,8 +70,8 @@ struct UpdateRequiredView: View {
             }
         }
         .padding(AppPadding.padding16)
-        .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius16))
-        .padding(AppPadding.padding24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ColorToken.Surface.primary.asColor, ignoresSafeAreaEdges: .all)
         .task {
             guard let currentUpdateState: KDC.UpdateState = try? await UpdaterJobs().updaterState() else {
                 return

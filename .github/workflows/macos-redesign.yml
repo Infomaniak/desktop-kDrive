@@ -30,8 +30,13 @@ jobs:
         with:
           working_directory: src/gui4/macOS
           install_args: swiftlint
+      - name: Get version
+        id: version
+        uses: ./.github/actions/get_version
       - name: Check Release build warnings
         shell: bash
+        env:
+          KDRIVE_VERSION_FULL: ${{ steps.version.outputs.kDrive_version_macos }}
         run: |
           set -uo pipefail
           log_path="$RUNNER_TEMP/kdrive-gui4-release.log"
@@ -42,6 +47,8 @@ jobs:
             -configuration Release \
             -destination "platform=macOS,arch=arm64" \
             -derivedDataPath "$RUNNER_TEMP/kdrive-gui4-release" \
+            KDRIVE_VERSION="${KDRIVE_VERSION_FULL%.*}" \
+            KDRIVE_VERSION_BUILD="${KDRIVE_VERSION_FULL##*.}" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
@@ -102,11 +109,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
+      - name: Get version
+        id: version
+        uses: ./.github/actions/get_version
       - name: Build
+        env:
+          KDRIVE_VERSION_FULL: ${{ steps.version.outputs.kDrive_version_macos }}
         run: |
           xcodebuild \
             -scheme kDrive \
             -destination "platform=macOS,arch=arm64" \
+            KDRIVE_VERSION="${KDRIVE_VERSION_FULL%.*}" \
+            KDRIVE_VERSION_BUILD="${KDRIVE_VERSION_FULL##*.}" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \

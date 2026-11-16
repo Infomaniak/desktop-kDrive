@@ -211,43 +211,47 @@ void testToStringIntValues() {
 }
 
 void TestTypes::testToString() {
+    testToStringIntValues<ActionTarget>();
+    testToStringIntValues<ActionType>();
+    testToStringIntValues<AppStateKey>();
     testToStringIntValues<AppType>();
-    testToStringIntValues<SignalCategory>();
-    testToStringIntValues<ReplicaSide>();
-    testToStringIntValues<NodeType>();
+    testToStringIntValues<CancelType>();
+    testToStringIntValues<sentry::ConfidentialityLevel>();
+    testToStringIntValues<ConflictType>();
+    testToStringIntValues<ConflictResolutionStrategy>();
+    testToStringIntValues<ErrorLevel>();
+    testToStringIntValues<ExclusionTemplateComplexity>();
+    testToStringIntValues<SyncFolderRuleType>();
     testToStringIntValues<ExitCode>();
     testToStringIntValues<ExitCause>();
-    testToStringIntValues<ConflictType>();
-    testToStringIntValues<CancelType>();
+    testToStringIntValues<IoError>();
+    testToStringIntValues<Language>();
+    testToStringIntValues<LinkType>();
+    testToStringIntValues<LogLevel>();
+    testToStringIntValues<LogUploadState>();
     testToStringIntValues<NodeStatus>();
-    testToStringIntValues<SyncStatus>();
-    testToStringIntValues<UploadSessionType>();
-    // testToStringIntValues<SyncNodeType>(); We cannot test this one because the enums values are not continuous
-    testToStringIntValues<SyncDirection>();
-    testToStringIntValues<SyncFileStatus>();
+    testToStringIntValues<NodeType>();
+    testToStringIntValues<NotificationsDisabled>();
+    testToStringIntValues<PinState>();
+    testToStringIntValues<Platform>();
+    testToStringIntValues<ProxyType>();
+    testToStringIntValues<ReplicaSide>();
+    testToStringIntValues<SignalCategory>();
     testToStringIntValues<SyncDirection>();
     testToStringIntValues<SyncFileInstruction>();
+    testToStringIntValues<SyncFileStatus>();
+    // testToStringIntValues<SyncNodeType>(); We cannot test this one because the enums values are not continuous
+    testToStringIntValues<SyncStatus>();
     testToStringIntValues<SyncStep>();
-    testToStringIntValues<ActionType>();
-    testToStringIntValues<ActionTarget>();
-    testToStringIntValues<ErrorLevel>();
-    testToStringIntValues<Language>();
-    testToStringIntValues<LogLevel>();
-    testToStringIntValues<NotificationsDisabled>();
-    testToStringIntValues<VirtualFileMode>();
-    testToStringIntValues<PinState>();
-    testToStringIntValues<ProxyType>();
-    testToStringIntValues<ExclusionTemplateComplexity>();
-    testToStringIntValues<LinkType>();
-    testToStringIntValues<IoError>();
-    testToStringIntValues<AppStateKey>();
-    testToStringIntValues<LogUploadState>();
+    testToStringIntValues<UploadSessionType>();
     testToStringIntValues<UpdateState>();
     testToStringIntValues<DistributionChannel>();
-    testToStringIntValues<Platform>();
-    testToStringIntValues<ConflictResolutionStrategy>();
-    testToStringIntValues<sentry::ConfidentialityLevel>();
+    testToStringIntValues<VirtualFileMode>();
     testToStringIntValues<SyncConfiguration>();
+    testToStringIntValues<Scope>();
+    testToStringIntValues<TooManyDeletesNotificationType>();
+    testToStringIntValues<TooManyDeletesUserChoice>();
+    testToStringIntValues<UpsellTarget>();
 }
 
 } // namespace KDC

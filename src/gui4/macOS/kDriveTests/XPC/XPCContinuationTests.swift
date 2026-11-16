@@ -25,6 +25,16 @@ struct XPCContinuationTests {
         case proxyFailure
     }
 
+    @MainActor
+    @Test func deadlineRejectsMissingReplyAndIgnoresLateCallbacks() async {
+        var pending: XPCContinuation<String>?
+        await #expect(throws: NSXPCConnectionError.timedOut) {
+            try await XPCContinuation<String>.perform(deadline: .now()) { pending = $0 }
+        }
+        pending?.resume(returning: "late reply")
+        pending?.resume(throwing: TestError.proxyFailure)
+    }
+
     @Test func ignoresProxyErrorAfterReply() async throws {
         let replyCompleted = DispatchSemaphore(value: 0)
         let errorCompleted = DispatchSemaphore(value: 0)

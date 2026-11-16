@@ -196,6 +196,7 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 ```
 
 ## Local norms
+- Reproduce shutdown signals before changing signal handling; do not suppress Sentry reports as a shutdown fix.
 - Keep the possible server-crash notion in server connection-loss diagnostics; connection loss is a useful crash indicator.
 - Derive state from existing sources of truth rather than maintaining redundant flags. For example, infer whether refresh work is active from its task handle instead of a separate boolean.
 
@@ -214,6 +215,12 @@ rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 ```bash
 # Lint
 cd src/gui4/macOS && swiftlint lint
+
+# Format check (CI runs swiftformat --lint on the whole folder; apply fixes with swiftformat .)
+cd src/gui4/macOS && swiftformat --lint .
+```
+
+Check formatting before each commit, not only before a PR: CI fails on any file that does not pass `swiftformat --lint`.
 
 # Build + test
 xcodebuild test -project src/gui4/macOS/kDrive.xcodeproj -scheme kDrive -destination 'platform=macOS'
