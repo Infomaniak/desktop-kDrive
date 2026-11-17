@@ -12,11 +12,14 @@
    (no feature upgrades, drivers or previews), rebooting as needed.
 2. **warm-cache** runs on that runner: it fails if Windows Update failed, then refreshes Conan with
    `build_dependencies.ps1 Release -CI -MakeRelease -CleanCache -Update` and schedules `seal.ps1`.
-3. After the job ends, `seal.ps1` removes the runner state, autologon password and maintenance
-   files, writes `C:\ProgramData\kDriveImageRefresh\refresh-info.json`, and runs
+3. After the job ends, `seal.ps1` removes the runner state and autologon password, then restarts. At
+   startup it waits for servicing to be idle and restarts again (up to 3 times) while a reboot is still
+   pending; then it removes the maintenance files, writes
+   `C:\ProgramData\kDriveImageRefresh\refresh-info.json`, and runs
    `sysprep /generalize /oobe /shutdown` with the `sysprep_unattend` input.
 4. **capture** waits for `SHUTOFF`, snapshots the VM and deletes it. A temporary Linux VM with a
-   temporary volume downloads the snapshot, runs `qemu-img convert -c -O qcow2`, `qemu-img check` and
+   temporary volume downloads the snapshot, prints its sealing and Sysprep logs (read-only), runs
+   `qemu-img convert -c -O qcow2`, `qemu-img check` and
    `qemu-img compare`, then uploads a private `<image>_candidate_<run>_<attempt>` image with the
    current image's properties.
 5. **boot-candidate** starts a fresh VM from the candidate with the normal runner bootstrap

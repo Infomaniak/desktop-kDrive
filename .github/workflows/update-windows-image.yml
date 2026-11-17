@@ -326,7 +326,7 @@ jobs:
         run: source "$LIB" && delete_runner "$MAINT_NAME"
 
       - name: Wait for Sysprep shutdown
-        run: source "$LIB" && wait_server_status "$MAINT_SERVER_ID" SHUTOFF 120
+        run: source "$LIB" && wait_server_status "$MAINT_SERVER_ID" SHUTOFF 150
 
       - name: Snapshot sealed VM
         id: snapshot
@@ -373,7 +373,7 @@ jobs:
               ssh_authorized_keys:
                 - $(cat ~/.ssh/refresh.pub)
           package_update: true
-          packages: [qemu-utils, jq, curl]
+          packages: [qemu-utils, jq, curl, ntfs-3g]
           EOF
 
           SERVER_ID="$(os server create \
@@ -419,6 +419,7 @@ jobs:
           ssh $SSH_OPTS "refresh@$IP" "sudo bash convert-image.sh prepare $VOLUME_ID"
           os token issue -f value -c id \
             | ssh $SSH_OPTS "refresh@$IP" "sudo bash convert-image.sh download $GLANCE/v2/images/$SNAPSHOT_ID/file $SNAPSHOT_SIZE"
+          ssh $SSH_OPTS "refresh@$IP" "sudo bash convert-image.sh inspect" || echo "::warning::Could not show the sealing logs of the snapshot"
           ssh $SSH_OPTS "refresh@$IP" "sudo bash convert-image.sh convert" | tee convert.log
           grep -E '^(virtual_size|size|md5|sha512)=' convert.log >> "$GITHUB_OUTPUT"
 
