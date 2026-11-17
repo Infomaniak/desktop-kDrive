@@ -41,10 +41,9 @@
 namespace KDC {
 
 namespace {
-// The requested item may have been created on the remote side recently: keep resolving it during `kSyncWaitTimeout`
+// The requested item may have been created on the remote side recently: keep resolving it during `_syncWaitTimeout`
 // before giving up.
 constexpr std::chrono::milliseconds kSyncWaitTickInterval(2000);
-constexpr std::chrono::minutes kSyncWaitTimeout(10);
 // Downloading a large item may take a long time: keep waiting for the hydration during `kHydrationTimeout` before
 // giving up.
 constexpr std::chrono::hours kHydrationTimeout(1);
@@ -165,8 +164,8 @@ ExitInfo OpenFileJob::resolveItem() {
         return {ExitCode::DataError, ExitCause::NotFound};
     }
 
-    const auto deadline = std::chrono::steady_clock::now() + kSyncWaitTimeout;
     const auto waitStart = std::chrono::steady_clock::now();
+    const auto deadline = waitStart + _syncWaitTimeout;
     std::chrono::steady_clock::time_point lastWaitNotify;
 
     forever {
@@ -276,19 +275,13 @@ ExitInfo OpenFileJob::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync
             // The engine of this sync is not running: read its DB directly.
             syncDb = getOrOpenSyncDb(sync);
         }
+
         if (!syncDb) continue;
 
         bool nodeFound = false;
-        DbNodeId dbNodeId{0};
-        if (!syncDb->dbId(ReplicaSide::Remote, _request.remoteNodeId, dbNodeId, nodeFound)) {
+        if (!syncDb->path(ReplicaSide::Remote, _request.remoteNodeId, relativePath, nodeFound)) {
             LOGW_WARN(_logger, L"Error in SyncDb::dbId - syncDbId=" << sync.dbId());
-            continue;
-        }
 
-        if (!nodeFound) continue;
-
-        if (SyncPath unusedRemotePath; !syncDb->path(dbNodeId, relativePath, unusedRemotePath, nodeFound)) {
-            LOGW_WARN(_logger, L"Error in SyncDb::path - syncDbId=" << sync.dbId());
             continue;
         }
 
@@ -373,6 +366,21 @@ ExitInfo OpenFileJob::resolveDeeplink(bool &found) {
     _relativePath = relativePath;
     _localPath = relativePath.empty() ? bestSync.localPath() : bestSync.localPath() / relativePath;
 
+
+    bool pathTraversesLink = false;
+    SyncPath linkPath;
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(_localPath, pathTraversesLink, linkPath);
+        ioError != IoError::Success) {
+        _outcome = Outcome::Failed;
+
+        return IoHelper::toExitInfo(ioError);
+    } else if (pathTraversesLink) {
+        LOGW_WARN(_logger, L"The local path traverses a symlink - " << Utility::formatSyncPath(_localPath));
+        _outcome = Outcome::Failed;
+
+        return {ExitCode::DataError, ExitCause::InvalidArgument};
+    }
+
     return ExitCode::Ok;
 }
 
@@ -388,13 +396,40 @@ ExitInfo OpenFileJob::checkRemoteItemExistence(bool &exists) const {
     return exitInfo;
 }
 
+ExitInfo OpenFileJob::closeDbsOfNonRunningSyncs() {
+    std::vector<Sync> syncs;
+    if (!ParmsDb::instance()->selectAllSyncs(syncs)) {
+        LOGW_WARN(_logger, L"Error in ParmsDb::selectAllSyncs.");
+
+        return ExitCode::DbError;
+    }
+
+    (void) std::erase_if(syncs, [this](const Sync &sync) { return !_driveDbIds.contains(sync.driveDbId()); });
+
+    for (const auto &sync: syncs) {
+        if (_getSyncPal(sync.dbId())) continue; // The engine of this sync is running.
+
+        if (const auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId()); tempSyncDbIt != _tempSyncDbMap.end()) {
+            tempSyncDbIt->second->close();
+            _tempSyncDbMap.erase(tempSyncDbIt);
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo OpenFileJob::openResolvedLocalItem() {
+    // The temporary sync DBs of non-running syncs are not needed anymore.
+    if (const auto exitInfo = closeDbsOfNonRunningSyncs(); !exitInfo) {
+        LOGW_WARN(_logger, L"Error in OpenFileJob::closeDbsOfNonRunningSyncs: " << exitInfo);
+    }
+
     ItemType itemType;
     if (!IoHelper::getItemType(_localPath, itemType)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(_localPath, itemType.ioError));
         _outcome = Outcome::Failed;
 
-        return ExitCode::SystemError;
+        return IoHelper::toExitInfo(itemType.ioError);
     }
 
     if (itemType.linkType != LinkType::None || itemType.nodeType == NodeType::Directory) {
@@ -413,12 +448,20 @@ ExitInfo OpenFileJob::openResolvedLocalItem() {
         LOGW_WARN(_logger, L"Error in Vfs::status - " << Utility::formatSyncPath(_localPath) << L": " << exitInfo);
         _outcome = Outcome::Failed;
 
-        return ExitCode::SystemError;
+        return exitInfo;
     }
 
-    if (!vfsStatus.isPlaceholder || vfsStatus.isHydrated || vfsStatus.isSyncing) {
+    if (!vfsStatus.isPlaceholder || vfsStatus.isHydrated) {
         // Nothing to download, or a download is already ongoing: the system hydrates the file on access.
         return readyToOpen();
+    }
+
+    if (vfsStatus.isSyncing) {
+        // A download is already ongoing: we cannot launch another hydration process.
+        _outcome = Outcome::Failed;
+        LOGW_WARN(_logger, L"The file is being hydrated, retry later: " << Utility::formatSyncPath(_localPath));
+
+        return {ExitCode::DataError, ExitCause::Unknown};
     }
 
     // The item is a dehydrated placeholder: download it before opening it.

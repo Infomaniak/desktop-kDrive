@@ -94,7 +94,6 @@ enum class SpecialRemoteFolder {
 };
 
 using SpecialFolderNames = std::unordered_map<SpecialRemoteFolder, SyncName>;
-using SpecialFolderRemoteIds = std::unordered_map<SpecialRemoteFolder, RemoteNodeId>;
 
 using Url = std::string;
 struct SessionInfo {
