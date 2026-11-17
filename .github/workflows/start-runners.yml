@@ -41,6 +41,7 @@ jobs:
       windows_flavor: a16-ram32-disk80-perf1
       work_volume_size_gb: "200"
       sysprep_unattend: 'C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml'
+      keep_failed_validation: true
     secrets: inherit
     permissions:
       actions: write

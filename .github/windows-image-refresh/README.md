@@ -31,6 +31,9 @@
    - candidate → `<image>`.
 8. **cleanup** attempts to delete this run's VMs, volume, security group, snapshot, runner registrations
    and the candidate if it was not promoted. Hard cancellation can leave resources for a later sweep.
+   With `keep_failed_validation`, a failed validation keeps its VM and candidate for inspection; the
+   next run deletes them. If the runner never comes online, the boot job prints the VM status and
+   serial console.
 
 ## Prerequisites
 

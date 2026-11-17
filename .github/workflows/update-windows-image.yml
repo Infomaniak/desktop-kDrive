@@ -26,6 +26,10 @@ on:
         description: "Unattend file used by Sysprep on the Windows VM"
         required: true
         default: 'C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml'
+      keep_failed_validation:
+        description: "Keep the validation VM and candidate image for inspection if validation fails (removed by the next run)"
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       image_name:
@@ -43,6 +47,9 @@ on:
       sysprep_unattend:
         type: string
         required: true
+      keep_failed_validation:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -240,6 +247,20 @@ jobs:
           & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
             -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
           & .\infomaniak-build-tools\conan\build_dependencies.ps1 Release -OutputDir "$env:RUNNER_TEMP\conan" -CI -MakeRelease -CleanCache -Update
+
+      - name: Show Cloudbase-Init setup before sealing
+        # Diagnostics for first boot of the generalized image; secret-like settings are omitted.
+        continue-on-error: true
+        run: |
+          Get-CimInstance Win32_Service -Filter "Name='cloudbase-init'" | Format-List Name, State, StartMode, StartName
+          $conf = "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf"
+          foreach ($file in @("$conf\cloudbase-init.conf", "$conf\cloudbase-init-unattend.conf", "$env:SystemRoot\Setup\Scripts\SetupComplete.cmd")) {
+            Write-Host "--- $file"
+            if (Test-Path -LiteralPath $file) {
+              Get-Content -LiteralPath $file | Where-Object { $_ -notmatch "(?i)pass|token|secret|key" }
+            }
+          }
+          Get-ChildItem "HKLM:\SOFTWARE\Cloudbase Solutions\Cloudbase-Init" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PSChildName
 
       - name: Schedule Sysprep after this job
         env:
@@ -546,7 +567,14 @@ jobs:
             "$VALIDATE_NAME")"
           rm -f userdata.ps1
           log "Validation VM $VALIDATE_NAME: $ID"
-          wait_runner_online "$VALIDATE_NAME" "$ID" 90
+          if ! (wait_runner_online "$VALIDATE_NAME" "$ID" 90); then
+            # Secrets of this step are masked, so the serial console (Cloudbase-Init log) can be shown.
+            os server show "$ID" -c status -c OS-EXT-STS:vm_state -c OS-EXT-STS:power_state -c fault -c updated || true
+            echo "::group::Validation VM serial console"
+            os console log show --lines 400 "$ID" || true
+            echo "::endgroup::"
+            exit 1
+          fi
 
   validate:
     name: Validate candidate image
@@ -721,6 +749,7 @@ jobs:
       CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
       CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
       GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
+      KEEP_VALIDATION: ${{ inputs.keep_failed_validation && (needs.boot-candidate.result == 'failure' || needs.validate.result == 'failure') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -742,7 +771,13 @@ jobs:
           }
           cleanup delete_runner "$MAINT_NAME"
           cleanup delete_runner "$VALIDATE_NAME"
+          keep_server="" keep_image=""
+          if [[ "$KEEP_VALIDATION" == "true" ]]; then
+            keep_server="$VALIDATE_NAME" keep_image="$CANDIDATE_NAME"
+            echo "::warning::Keeping $VALIDATE_NAME and $CANDIDATE_NAME for inspection; the next run deletes them"
+          fi
           for name in "$MAINT_NAME" "$VALIDATE_NAME" "$WORKER_NAME"; do
+            [[ "$name" == "$keep_server" ]] && continue
             ids="$(os server list --name "^${name}\$" -f value -c ID)" || { echo "::warning::Cannot list server $name"; failed=1; continue; }
             for id in $ids; do
               log "Deleting server $name ($id)"
@@ -758,7 +793,7 @@ jobs:
             cleanup os security group delete "$id"
           done
           ids="$(os image list --all --project "$CLOUD_PROJECT_ID" -f value -c ID -c Name \
-              | awk -v s="$SNAPSHOT_NAME" -v c="$CANDIDATE_NAME" '$2 == s || $2 == c {print $1}')" || { echo "::warning::Cannot list images"; failed=1; ids=""; }
+              | awk -v s="$SNAPSHOT_NAME" -v c="$CANDIDATE_NAME" -v k="$keep_image" '($2 == s || $2 == c) && $2 != k {print $1}')" || { echo "::warning::Cannot list images"; failed=1; ids=""; }
           for id in $ids; do
             log "Deleting image $id"
             cleanup os image delete "$id"
