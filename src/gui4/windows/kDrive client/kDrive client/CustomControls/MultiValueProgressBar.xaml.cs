@@ -42,26 +42,24 @@ namespace Infomaniak.kDrive.CustomControls
         private static readonly DependencyProperty Color1Property =
             DependencyProperty.Register("Color1", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
-        private static readonly DependencyProperty Value1Property =
-            DependencyProperty.Register("Value1", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
-
-
         private static readonly DependencyProperty Color2Property =
             DependencyProperty.Register("Color2", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
-
-        private static readonly DependencyProperty Value2Property =
-            DependencyProperty.Register("Value2", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
-
 
         private static readonly DependencyProperty Color3Property =
             DependencyProperty.Register("Color3", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
-        private static readonly DependencyProperty Value3Property =
-            DependencyProperty.Register("Value3", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
-
-
         private static readonly DependencyProperty Color4Property =
             DependencyProperty.Register("Color4", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
+
+
+        private static readonly DependencyProperty Value1Property =
+            DependencyProperty.Register("Value1", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
+
+        private static readonly DependencyProperty Value2Property =
+            DependencyProperty.Register("Value2", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
+
+        private static readonly DependencyProperty Value3Property =
+            DependencyProperty.Register("Value3", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
 
         private static readonly DependencyProperty Value4Property =
             DependencyProperty.Register("Value4", typeof(long?), typeof(MultiValueProgressBar), new PropertyMetadata((long)0));
@@ -79,6 +77,7 @@ namespace Infomaniak.kDrive.CustomControls
         private static readonly DependencyProperty Visibility4Property =
             DependencyProperty.Register("Visibility4", typeof(Visibility), typeof(MultiValueProgressBar), new PropertyMetadata(Visibility.Visible));
 
+
         private static readonly DependencyProperty IsLoading1Property =
             DependencyProperty.Register("IsLoading1", typeof(bool), typeof(MultiValueProgressBar), new PropertyMetadata(false));
 
@@ -90,6 +89,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private static readonly DependencyProperty IsLoading4Property =
             DependencyProperty.Register("IsLoading4", typeof(bool), typeof(MultiValueProgressBar), new PropertyMetadata(false));
+
 
         public bool IsLoading1
         {
@@ -139,16 +139,11 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(Visibility4Property, value);
         }
 
+
         public Brush Color1
         {
             get => (Brush)GetValue(Color1Property);
             set => SetValue(Color1Property, value);
-        }
-
-        public long? Value1
-        {
-            get => (long?)GetValue(Value1Property);
-            set => SetValue(Value1Property, value);
         }
 
         public Brush Color2
@@ -157,16 +152,28 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(Color2Property, value);
         }
 
-        public long? Value2
-        {
-            get => (long?)GetValue(Value2Property);
-            set => SetValue(Value2Property, value);
-        }
-
         public Brush Color3
         {
             get => (Brush)GetValue(Color3Property);
             set => SetValue(Color3Property, value);
+        }
+        public Brush Color4
+        {
+            get => (Brush)GetValue(Color4Property);
+            set => SetValue(Color4Property, value);
+        }
+
+
+        public long? Value1
+        {
+            get => (long?)GetValue(Value1Property);
+            set => SetValue(Value1Property, value);
+        }
+
+        public long? Value2
+        {
+            get => (long?)GetValue(Value2Property);
+            set => SetValue(Value2Property, value);
         }
 
         public long? Value3
@@ -175,17 +182,10 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(Value3Property, value);
         }
 
-        public Brush Color4
-        {
-            get => (Brush)GetValue(Color4Property);
-            set => SetValue(Color4Property, value);
-        }
-
         public long? Value4
         {
             get => (long?)GetValue(Value4Property);
             set => SetValue(Value4Property, value);
         }
-
     }
 }
