@@ -159,7 +159,7 @@ bool SelfSignedCert::generate(Pem &pem, bool isClientCert) {
              "Generating self-signed " << (isClientCert ? "client" : "server") << " certificate/key pair for local TLS IPC");
     try {
         // Generation of an asymmetric key pair.
-        UniqueEvpPkey pkey(EVP_PKEY_Q_keygen(nullptr, nullptr, "RSA", 2048));
+        UniqueEvpPkey pkey(EVP_PKEY_Q_keygen(nullptr, nullptr, "RSA", size_t{2048}));
         if (!pkey) {
             LOG_ERROR(Log::instance()->getLogger(), "EVP_PKEY_Q_keygen failed: " << sslError());
             return false;
