@@ -118,6 +118,8 @@ inline constexpr int32_t freeSpacePollIntervalMs = 60 * 1000;
 namespace KDC::AppConstants::Matomo {
 // Matomo site of the kDrive v4 desktop application; the legacy client reports to MATOMO_SITE_ID.
 inline constexpr int32_t siteId = 41;
+// Visit-scoped custom dimension of site 41 holding the app version, as major.minor.patch.
+inline constexpr int32_t appVersionDimensionId = 1;
 // Page views and events are reported under kdrive://<category>.
 inline constexpr char actionUrlBase[] = "kdrive://";
 
