@@ -187,6 +187,13 @@ namespace Infomaniak.kDrive.Pages
             }
             return (int)Math.Round(number);
         }
+
+        private void UpsellButton_Click(object sender, RoutedEventArgs e)
+        {
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (PageViewModel.Sync?.Drive is Drive drive)
+                uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(drive));
+        }
     }
 
 
