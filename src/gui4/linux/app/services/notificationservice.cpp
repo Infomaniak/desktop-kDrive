@@ -34,14 +34,14 @@ using namespace Qt::StringLiterals;
 namespace {
 Q_LOGGING_CATEGORY(lcNotificationService, "gui.v4.notifications", QtInfoMsg)
 
-const auto notificationService = u"org.freedesktop.Notifications"_s;
-const auto notificationPath = u"/org/freedesktop/Notifications"_s;
-const auto notificationInterface = u"org.freedesktop.Notifications"_s;
+constexpr auto notificationService = "org.freedesktop.Notifications"_L1;
+constexpr auto notificationPath = "/org/freedesktop/Notifications"_L1;
+constexpr auto notificationInterface = "org.freedesktop.Notifications"_L1;
 // Action invoked by a click on the notification body; servers do not show it as a button.
-const auto defaultActionKey = u"default"_s;
-const auto bodyMarkupCapability = u"body-markup"_s;
+constexpr auto defaultActionKey = "default"_L1;
+constexpr auto bodyMarkupCapability = "body-markup"_L1;
 // Named after the installed desktop entry, see src/gui4/linux/CMakeLists.txt.
-const auto applicationIconName = u"kdrive"_s;
+constexpr auto applicationIconName = "kdrive"_L1;
 constexpr int32_t serverDefaultTimeout = -1;
 } // namespace
 
