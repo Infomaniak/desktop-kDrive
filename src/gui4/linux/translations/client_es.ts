@@ -209,6 +209,10 @@ Puede acceder a sus sincronizaciones avanzadas desde el selector de unidades en 
             <source>Automatic updates</source> 
             <translation>Actualizaciones automáticas</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Solo disponible cuando kDrive se ejecuta desde una AppImage ubicada en una carpeta con permiso de escritura.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Disponible sin conexión</translation> 

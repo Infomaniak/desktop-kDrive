@@ -209,6 +209,10 @@ You can access your advanced syncs from the drive picker on the home page.</sour
             <source>Automatic updates</source> 
             <translation>Αυτόματες ενημερώσεις</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Διαθέσιμο μόνο όταν το kDrive εκτελείται από ένα AppImage σε φάκελο με δικαίωμα εγγραφής.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Διαθέσιμο εκτός σύνδεσης</translation> 

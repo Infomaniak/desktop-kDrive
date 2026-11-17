@@ -209,6 +209,10 @@ Du kan få tilgang til avanserte synkroniseringer fra stasjonvelgeren på starts
             <source>Automatic updates</source> 
             <translation>Automatiske oppdateringer</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Kun tilgjengelig når kDrive kjøres fra en AppImage i en mappe med skrivetilgang.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Tilgjengelig frakoblet</translation> 

@@ -209,6 +209,10 @@ Du kan få adgang til dine avancerede synkroniseringer fra drevvælgeren på sta
             <source>Automatic updates</source> 
             <translation>Automatiske opdateringer</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Kun tilgængelig, når kDrive kører fra en AppImage i en mappe med skriveadgang.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Tilgængelig offline</translation> 

@@ -209,6 +209,10 @@ U kunt uw geavanceerde synchronisaties openen via de schijfkiezer op de startpag
             <source>Automatic updates</source> 
             <translation>Automatische updates</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Alleen beschikbaar wanneer kDrive wordt uitgevoerd vanuit een AppImage in een map met schrijfrechten.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Beschikbaar offline</translation> 

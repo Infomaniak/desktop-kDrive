@@ -209,6 +209,10 @@ Du kan komma åt dina avancerade synkroniseringar från enhetsväljaren på star
             <source>Automatic updates</source> 
             <translation>Automatiska uppdateringar</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Endast tillgängligt när kDrive körs från en AppImage i en mapp med skrivbehörighet.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Tillgänglig offline</translation> 

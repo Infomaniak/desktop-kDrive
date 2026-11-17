@@ -710,6 +710,12 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`,
   owns browser and clipboard side effects, and tracks concurrent actions without owning activity history.
+- `app/services/updatestatusservice.*`: process-wide updater state and announced version. The Update button sends
+  `UPDATER_START_INSTALLER`: the server downloads and installs the AppImage update, then restarts the application on it
+  without any client request. `Ready` therefore lasts only until that restart: Settings keep the in-progress button,
+  and neither the tray nor a notification announces it.
+- `app/services/releasenotesservice.*`: downloads and parses the release notes of the announced version for the update
+  details dialog. They are shown only when the client can apply the configured proxy itself.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
   `ParametersStore` snapshot, sends the full `PARAMETERS_UPDATE` payload, and updates the store only after server
   confirmation.
@@ -785,10 +791,8 @@
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
     - `ui/windows/updaterequired/`: update-required screen built on `IKBlockingState`, loaded by `Main.qml` above every
       other route, onboarding included (the session is hidden, not cancelled), while
-      `SyncErrorsProjection.updateRequired`; the header keeps only the kDrive logo and title. The Linux server has no
-      installer (`LinuxUpdater::startInstaller` is empty): "Download manually" calls
-      `GeneralSettingsController::openDownload`, whose `TODO` marks where to send `UPDATER_START_INSTALLER` once the
-      packaging rework brings one, and "Quit" calls `SystemTrayController::requestApplicationQuit`. Settings cannot be
+      `SyncErrorsProjection.updateRequired`; the header keeps only the kDrive logo and title. "Download manually" calls
+      `GeneralSettingsController::openDownload` and "Quit" calls `SystemTrayController::requestApplicationQuit`. Settings cannot be
       opened meanwhile: `AppClientLinux::openSettingsWindow` refuses, an open Settings window is closed, and the tray
       entry is disabled.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
