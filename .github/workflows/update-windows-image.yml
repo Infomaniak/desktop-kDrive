@@ -618,9 +618,11 @@ jobs:
           & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
             -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
           $log = "$env:RUNNER_TEMP\conan-install.log"
-          & .\infomaniak-build-tools\conan\build_dependencies.ps1 Release -OutputDir "$env:RUNNER_TEMP\conan" -CI -MakeRelease -CleanCache *>&1 |
-            Tee-Object -FilePath $log
-          if ($LASTEXITCODE -ne 0) { throw "Conan dependency installation failed ($LASTEXITCODE)" }
+          # Redirect in cmd: PowerShell 5.1 would turn Conan's stderr output into terminating errors.
+          cmd /c "powershell -NoProfile -ExecutionPolicy Bypass -File .\infomaniak-build-tools\conan\build_dependencies.ps1 Release -OutputDir `"$env:RUNNER_TEMP\conan`" -CI -MakeRelease -CleanCache > `"$log`" 2>&1"
+          $exitCode = $LASTEXITCODE
+          Get-Content -Path $log
+          if ($exitCode -ne 0) { throw "Conan dependency installation failed ($exitCode)" }
           if (Select-String -Path $log -Pattern "Calling build\(\)|Downloaded package revision|Downloading (package|binary)" -Quiet) {
             throw "Dependencies were rebuilt or downloaded: the warmed Conan cache was not reused"
           }

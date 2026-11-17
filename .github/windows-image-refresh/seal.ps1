@@ -144,8 +144,10 @@ try {
     Unregister-ScheduledTask -TaskName "ImageRefreshSeal" -Confirm:$false -ErrorAction SilentlyContinue
     Remove-Item -Path $StateDir -Recurse -Force
 
-    & "$env:SystemRoot\System32\Sysprep\sysprep.exe" /generalize /oobe /shutdown /quiet "/unattend:$UnattendPath"
-    if ($LASTEXITCODE -ne 0) { throw "Sysprep failed with exit code $LASTEXITCODE." }
+    # sysprep.exe is a GUI program: the call operator would not wait for it nor set $LASTEXITCODE.
+    $sysprep = Start-Process -FilePath "$env:SystemRoot\System32\Sysprep\sysprep.exe" -Wait -PassThru `
+        -ArgumentList "/generalize", "/oobe", "/shutdown", "/quiet", "`"/unattend:$UnattendPath`""
+    if ($sysprep.ExitCode -ne 0) { throw "Sysprep failed with exit code $($sysprep.ExitCode)." }
 }
 catch {
     New-Item -Path $InfoDir -ItemType Directory -Force | Out-Null
