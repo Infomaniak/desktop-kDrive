@@ -1008,7 +1008,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Log a screen only while it is really shown, the item and its window both visible, and again each time it is shown
   anew: a view can be created while the window is in the tray, or kept hidden behind another route
   (`MainWindowView`, `OnboardingWindow`, `UpdateRequiredView`). Route assistive and keyboard activations through the
-  same logged path as the pointer, and log before the effect.
+  same logged path as the pointer, and log before the effect. A key that activates a control outside a `Shortcut`
+  adds its origin to the details (`key: return` on `IKModalButton`).
 - Never put displayed or typed text, local paths, exclusion patterns, folder names or proxy settings in user action
   details: only technical ids (`syncDbId`, `rowId`, `driveDbId`), booleans, enum names and row indexes. Window closing is
   logged once in `IKShadowedWindow.onClosing` (`window.close`), whatever closed the window.
