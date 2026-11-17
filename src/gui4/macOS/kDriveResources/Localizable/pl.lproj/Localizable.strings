@@ -355,6 +355,9 @@
 /* loco:6989da5609f5a74cc30826c2 */
 "buttonUpgradeOffer" = "Uaktualnij";
 
+/* loco:6af2db6c55197681a509f7d2 */
+"buttonUpgradeSubscriptionShort" = "Rozwijać";
+
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Zatwierdź";
 

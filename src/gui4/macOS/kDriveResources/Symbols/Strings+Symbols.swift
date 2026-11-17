@@ -258,6 +258,8 @@ public enum KDriveLocalizable {
   public static let buttonUpdateSubscription = KDriveLocalizable.tr("Localizable", "buttonUpdateSubscription", fallback: "Update subscription")
   /// loco:6989da5609f5a74cc30826c2
   public static let buttonUpgradeOffer = KDriveLocalizable.tr("Localizable", "buttonUpgradeOffer", fallback: "Upgrade")
+  /// loco:6af2db6c55197681a509f7d2
+  public static let buttonUpgradeSubscriptionShort = KDriveLocalizable.tr("Localizable", "buttonUpgradeSubscriptionShort", fallback: "Upgrade")
   /// loco:69a69d71b2261fc281078712
   public static let buttonValidate = KDriveLocalizable.tr("Localizable", "buttonValidate", fallback: "Confirm")
   /// loco:69a69d809805f64236014d34
