@@ -131,7 +131,7 @@ QVariantList ReleaseNotesService::parse(const QString &html) {
     QVariantList sections;
     QString title;
     QStringList items;
-    const auto flush = [&] {
+    const auto flush = [&items, &sections, &title] {
         if (!items.isEmpty()) {
             sections.append(QVariantMap{{u"title"_s, title}, {u"items"_s, items}});
         }

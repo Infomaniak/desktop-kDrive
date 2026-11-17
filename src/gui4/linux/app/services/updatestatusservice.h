@@ -59,7 +59,7 @@ class UpdateStatusService final : public QObject {
         [[nodiscard]] bool installed() const { return _state == UpdateState::Ready; }
         [[nodiscard]] bool installable() const { return _state == UpdateState::Available; }
 
-        void installUpdate();
+        void installUpdate() const;
 
     signals:
         void changed();
