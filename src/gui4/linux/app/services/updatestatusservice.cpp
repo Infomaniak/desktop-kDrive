@@ -52,7 +52,7 @@ bool UpdateStatusService::available() const {
 }
 
 // User action: the server downloads and installs the available update, then restarts the application on it.
-void UpdateStatusService::installUpdate() {
+void UpdateStatusService::installUpdate() const {
     if (!installable()) {
         return;
     }

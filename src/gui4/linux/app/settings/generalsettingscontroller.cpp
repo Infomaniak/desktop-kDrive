@@ -194,14 +194,14 @@ QVariantList GeneralSettingsController::distributionChannels() const {
     const auto users = _appCache.users();
     const bool staff = std::ranges::any_of(users, [](const User &user) { return user.connected() && user.isStaff(); });
 
-    std::vector<DistributionChannel> channels{DistributionChannel::Prod, DistributionChannel::Beta};
+    std::vector channels{DistributionChannel::Prod, DistributionChannel::Beta};
     if (staff) {
         channels.push_back(DistributionChannel::Internal);
         channels.push_back(DistributionChannel::Test);
     }
 
-    const auto current = static_cast<DistributionChannel>(distributionChannel());
-    if (std::ranges::find(channels, current) == channels.end()) {
+    if (const auto current = static_cast<DistributionChannel>(distributionChannel());
+        std::ranges::find(channels, current) == channels.end()) {
         channels.push_back(current);
     }
 
