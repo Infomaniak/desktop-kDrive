@@ -209,6 +209,10 @@ Dostęp do zaawansowanych synchronizacji można uzyskać za pomocą selektora dy
             <source>Automatic updates</source> 
             <translation>Automatyczne aktualizacje</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Dostępne tylko wtedy, gdy kDrive jest uruchamiany z pliku AppImage w folderze z uprawnieniami do zapisu.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Dostępne offline</translation> 

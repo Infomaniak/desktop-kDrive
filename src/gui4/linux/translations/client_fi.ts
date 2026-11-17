@@ -209,6 +209,10 @@ Voit käyttää kehittyneitä synkronointejasi kotisivun asemavalikosta.</transl
             <source>Automatic updates</source> 
             <translation>Automaattiset päivitykset</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Käytettävissä vain, kun kDrive suoritetaan AppImagesta, joka on kansiossa, johon on kirjoitusoikeus.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Saatavilla offline-tilassa</translation> 

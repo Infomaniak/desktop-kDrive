@@ -209,6 +209,10 @@ Sie können auf Ihre erweiterten Synchronisierungen über die Laufwerksauswahl a
             <source>Automatic updates</source> 
             <translation>Automatische Aktualisierungen</translation> 
         </message> 
+        <message id="automaticUpdatesUnavailableDescription"> 
+            <source>Only available when kDrive runs from an AppImage stored in a writable folder.</source> 
+            <translation>Nur verfügbar, wenn kDrive aus einem AppImage in einem beschreibbaren Ordner gestartet wird.</translation> 
+        </message> 
         <message id="availableOffline"> 
             <source>Available offline</source> 
             <translation>Offline verfügbar</translation> 

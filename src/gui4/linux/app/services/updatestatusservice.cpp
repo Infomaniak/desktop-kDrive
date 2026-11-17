@@ -18,20 +18,54 @@
 
 #include "updatestatusservice.h"
 
+#include <QLoggingCategory>
 #include <QPointer>
 
 #include <utility>
 
 namespace KDC {
 
-UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, QObject *const parent) :
+namespace {
+Q_LOGGING_CATEGORY(lcUpdateStatusService, "gui.v4.updatestatusservice", QtInfoMsg)
+} // namespace
+
+UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, InstallRequest installRequest,
+                                         QObject *const parent) :
     QObject(parent),
     _stateRequest(std::move(stateRequest)),
-    _versionRequest(std::move(versionRequest)) {}
+    _versionRequest(std::move(versionRequest)),
+    _installRequest(std::move(installRequest)) {}
 
 bool UpdateStatusService::available() const {
-    // The Linux updater on the server side currently returns only ManualUpdateAvailable.
-    return _state == UpdateState::ManualUpdateAvailable || _state == UpdateState::Available || _state == UpdateState::Ready;
+    // Download and installation errors keep the update available: the user can still download it manually.
+    switch (_state) {
+        case UpdateState::ManualUpdateAvailable:
+        case UpdateState::Available:
+        case UpdateState::Downloading:
+        case UpdateState::Ready:
+        case UpdateState::DownloadError:
+        case UpdateState::UpdateError:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// User action: the server downloads and installs the available update, then restarts the application on it.
+void UpdateStatusService::installUpdate() const {
+    if (!installable()) {
+        return;
+    }
+
+    qCInfo(lcUpdateStatusService) << "Requesting the update installer | state:" << _state;
+    _installRequest([](const ExitInfo &result) {
+        if (result) {
+            return;
+        }
+
+        qCWarning(lcUpdateStatusService) << "Update installer request failed | code:" << result.code()
+                                         << "/ cause:" << result.cause();
+    });
 }
 
 void UpdateStatusService::refresh() {
