@@ -157,7 +157,7 @@ class QtConan(ConanFile):
         """
         compiler = str(self.settings.compiler)
 
-        if self.version == "6.12.0":
+        if self.version in ("6.8.3", "6.12.0"):
             return "win64_mingw" if compiler == "gcc" else "win64_msvc2022_64"
         else:
             return "win64_msvc2019_64"  # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
@@ -178,7 +178,7 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtpositioning"
         ]
 
-        if version == "6.12.0":
+        if version in ("6.8.3", "6.12.0"):
             modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
         else:
             modules.append(f"qt.qt{major}.{compact}.qt5compat")

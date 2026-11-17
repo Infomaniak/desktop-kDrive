@@ -202,14 +202,14 @@ class KDriveDesktop(ConanFile):
         """
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # From local recipe, using the qt online installer.
-        # Qt 6.12.0 for Linux and Windows, Qt 6.2.3 for macOS
+        # Qt 6.12.0 for Linux and Windows, Qt 6.8.3 for macOS
         if self.settings.os == "Linux" or self.settings.os == "Windows":
             qt_version = "6.12.0"
         else:
-            qt_version = "6.2.3"
+            qt_version = "6.8.3"
         self.requires(f"qt/{qt_version}")
         self.requires("xxhash/0.8.2")  # From local recipe
-        self.requires("sqlite3/3.53.0", options={
+        self.requires("sqlite3/3.54.1", options={
             "shared": False,
             "build_executable": False
         })
