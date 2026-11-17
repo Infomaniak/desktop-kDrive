@@ -31,6 +31,7 @@
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
     </Page.Resources>
     <ScrollViewer>
         <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
@@ -165,12 +166,15 @@
                                         VerticalAlignment="Center"
                                         Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
                                         CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
+                                    <ToolTipService.ToolTip>
+                                        <TextBlock Text="{x:Bind PageViewModel.Sync.LocalPath, Mode=OneWay}" />
+                                    </ToolTipService.ToolTip>
                                     <StackPanel Orientation="Horizontal"
                                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                                         <controls:SyncIcon Height="14"
                                                            Sync="{x:Bind PageViewModel.Sync, Mode=OneWay}" />
 
-                                        <TextBlock Text="{x:Bind PageViewModel.Sync.Drive.Name, Mode=OneWay}"
+                                        <TextBlock Text="{x:Bind PageViewModel.Sync.LocalPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}"
                                                    TextTrimming="CharacterEllipsis"
                                                    VerticalAlignment="Center"
                                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
@@ -179,29 +183,22 @@
                                 </Border>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="2"
-                                        Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                        Visibility="{x:Bind PageViewModel.HydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
-                                <TextBlock Text="{x:Bind PageViewModel.HydratedFilesSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
-                                           controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsHydratedFilesSizeLoading, Mode=OneWay}"
-                                           HorizontalAlignment="Right"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                            <TextBlock Grid.Column="2"
+                                       Text="{x:Bind PageViewModel.HydratedFilesSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                                       controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsHydratedFilesSizeLoading, Mode=OneWay}"
+                                       HorizontalAlignment="Right"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Visibility="{x:Bind PageViewModel.HydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
 
-                            <StackPanel Grid.Column="2"
-                                        Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                        Visibility="{x:Bind PageViewModel.HydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}">
-                                <ProgressRing Height="8"
-                                              Width="8" />
-
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelStorageLoading')}"
-                                           HorizontalAlignment="Right"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                            <TextBlock Grid.Column="2"
+                                       Text="{x:Bind kDrive:Localizer.Instance.GetString('labelStorageLoading')}"
+                                       controls:PulseAnimation.IsPulsing="True"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Visibility="{x:Bind PageViewModel.HydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
 
                         </Grid>
 
@@ -229,30 +226,23 @@
                                        VerticalAlignment="Center"
                                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
-                            <StackPanel Grid.Column="2"
-                                        Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                        Visibility="{x:Bind PageViewModel.OtherSyncsHydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
-                                <TextBlock Text="{x:Bind PageViewModel.OtherSyncsHydratedFilesSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
-                                           controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsOtherSyncsHydratedFilesSizeLoading, Mode=OneWay}"
-                                           HorizontalAlignment="Right"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
 
-                            <StackPanel Grid.Column="2"
-                                        Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                        Visibility="{x:Bind PageViewModel.OtherSyncsHydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}">
-                                <ProgressRing Height="8"
-                                              Width="8" />
+                            <TextBlock Grid.Column="2"
+                                       Text="{x:Bind PageViewModel.OtherSyncsHydratedFilesSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                                       controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsOtherSyncsHydratedFilesSizeLoading, Mode=OneWay}"
+                                       HorizontalAlignment="Right"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Visibility="{x:Bind PageViewModel.OtherSyncsHydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
 
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelStorageLoading')}"
-                                           HorizontalAlignment="Right"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-
+                            <TextBlock Grid.Column="2"
+                                       Text="{x:Bind kDrive:Localizer.Instance.GetString('labelStorageLoading')}"
+                                       controls:PulseAnimation.IsPulsing="True"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Visibility="{x:Bind PageViewModel.OtherSyncsHydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
                         </Grid>
 
                         <Rectangle Height="1"
@@ -276,31 +266,24 @@
                                        Grid.Column="1"
                                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
 
-                            <StackPanel Grid.Column="2"
-                                        Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                        Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
-                                <TextBlock Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
-                                           controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsOtherFileSizeLoading, Mode=OneWay}"
-                                           HorizontalAlignment="Right"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                            <TextBlock Grid.Column="2"
+                                       Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                                       controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsOtherFileSizeLoading, Mode=OneWay}"
+                                       HorizontalAlignment="Right"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
 
-                            <StackPanel Grid.Column="2"
-                                        Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                        Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}">
-                                <ProgressRing Height="8"
-                                              Width="8" />
 
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelStorageLoading')}"
-                                           HorizontalAlignment="Right"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-
+                            <TextBlock  Grid.Column="2"
+                                        Text="{x:Bind kDrive:Localizer.Instance.GetString('labelStorageLoading')}"
+                                        controls:PulseAnimation.IsPulsing="True"
+                                        HorizontalAlignment="Right"
+                                        Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
                         </Grid>
+
                         <Rectangle Height="1"
                                    Fill="LightGray"
                                    HorizontalAlignment="Stretch" />
@@ -329,18 +312,13 @@
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
 
-                            <StackPanel Grid.Column="2"
-                                        Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                                        Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}">
-                                <ProgressRing Height="8"
-                                              Width="8" />
-
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('labelStorageLoading')}"
-                                           HorizontalAlignment="Right"
-                                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
+                            <TextBlock Grid.Column="2"
+                                       Text="{x:Bind kDrive:Localizer.Instance.GetString('labelStorageLoading')}"
+                                       controls:PulseAnimation.IsPulsing="True"
+                                       HorizontalAlignment="Right"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
 
                         </Grid>
                     </StackPanel>
@@ -405,7 +383,8 @@
                                     <StackPanel Orientation="Horizontal"
                                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                                         <controls:SyncIcon Height="14"
-                                                           Sync="{x:Bind PageViewModel.Sync, Mode=OneWay}" />
+                                                           Sync="{x:Bind PageViewModel.Sync, Mode=OneWay}"
+                                                           VerticalAlignment="Center" />
                                         <TextBlock Text="{x:Bind PageViewModel.Sync.Drive.Name, Mode=OneWay}"
                                                    TextTrimming="CharacterEllipsis"
                                                    VerticalAlignment="Center"

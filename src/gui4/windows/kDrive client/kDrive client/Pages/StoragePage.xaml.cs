@@ -543,6 +543,7 @@ namespace Infomaniak.kDrive.Pages
 
         private async Task LoadCurrentSyncHydratedFilesSizeAsync(Sync sync, bool forceRefresh, CancellationToken cancellationToken)
         {
+            HydratedFilesSize = sync.CachedHydratedFileSize;
             var result = await sync.GetHydratedFileSizeAsync(forceRefresh, cancellationToken);
             if (cancellationToken.IsCancellationRequested || result.ExitCode == ExitCode.OperationCanceled)
                 return;
@@ -573,6 +574,9 @@ namespace Infomaniak.kDrive.Pages
 
             async Task LoadOneAsync(Sync otherSync)
             {
+                var cachedSize = otherSync.CachedHydratedFileSize;
+                total += cachedSize ?? 0;
+
                 var result = await otherSync.GetHydratedFileSizeAsync(forceRefresh, otherSyncsCts.Token);
                 if (failed || cancellationToken.IsCancellationRequested || result.ExitCode == ExitCode.OperationCanceled)
                     return;
@@ -588,6 +592,7 @@ namespace Infomaniak.kDrive.Pages
                     return;
                 }
 
+                total -= cachedSize ?? 0;
                 total += result.Value;
                 if (progressive)
                     OtherSyncsHydratedFilesSize = total;

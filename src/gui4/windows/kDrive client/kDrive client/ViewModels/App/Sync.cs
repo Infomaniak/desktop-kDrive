@@ -54,6 +54,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _syncTypeMigrationInProgress = false;
         private SyncFileItem? _lastActivity;
         private bool? _hasExcludedFolder = null;
+        private long? _cachedHydratedFileSize = null;
         private Task? _hasExcludedFolderLoadingTask = null;
         private Task<HydratedFileSizeResult>? _hydratedFileSizeTask = null;
         private readonly object _hydratedFileSizeLock = new();
@@ -220,6 +221,12 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _hasExcludedFolder, value);
         }
 
+        public long? CachedHydratedFileSize
+        {
+            get => _cachedHydratedFileSize;
+            set => SetPropertyInUIThread(ref _cachedHydratedFileSize, value);
+        }
+
         public string RescueFolderPath => System.IO.Path.Combine(LocalPath, App.Constants.Sync.RescueFolderName);
 
         public readonly record struct HydratedFileSizeResult(ExitCode ExitCode, long Value);
@@ -247,7 +254,7 @@ namespace Infomaniak.kDrive.ViewModels
         private async Task<HydratedFileSizeResult> LoadHydratedFileSizeAsync()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            UInt64? res = await commService.GetSyncOfflineFilesSize(DbId, CancellationToken.None);
+            ulong? res = await commService.GetSyncOfflineFilesSize(DbId, CancellationToken.None);
 
             if (res is null)
             {
@@ -255,10 +262,10 @@ namespace Infomaniak.kDrive.ViewModels
                 return new HydratedFileSizeResult(ExitCode.DataError, -1);
             }
 
-            if (res.Value > long.MaxValue)
-                return new HydratedFileSizeResult(ExitCode.Ok, long.MaxValue);
-            else
-                return new HydratedFileSizeResult(ExitCode.Ok, (long)res.Value);
+
+            long hydratedFileSize = (res.Value > long.MaxValue) ? long.MaxValue : (long)res.Value;
+            CachedHydratedFileSize = hydratedFileSize;
+            return new HydratedFileSizeResult(ExitCode.Ok, hydratedFileSize);
         }
 
         public async Task<bool> Start()
