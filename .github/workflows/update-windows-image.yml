@@ -394,12 +394,24 @@ jobs:
             | first // empty')"
           [[ -n "$IP" ]] || die "Conversion VM has no IPv4 address"
 
-          for _ in $(seq 40); do
-            # cloud-init returns 2 for recoverable warnings, but 1 for an unrecoverable failure.
-            if ssh $SSH_OPTS "refresh@$IP" 'cloud-init status --wait > /dev/null; rc=$?; [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ] || exit "$rc"; command -v qemu-img && command -v jq && command -v curl' 2>/dev/null; then
-              READY=1; break
+          for _ in $(seq 60); do
+            if ssh $SSH_OPTS "refresh@$IP" 'cloud-init status --wait > /dev/null || true' 2>/dev/null; then
+              BOOTED=1; break
             fi
             sleep 30
+          done
+          if [[ -z "${BOOTED:-}" ]]; then
+            os console log show --lines 200 "$SERVER_ID" || true
+            die "Conversion VM is not reachable over SSH"
+          fi
+          # cloud-init can fail to install the packages on a transient mirror error: retry it here.
+          for _ in 1 2 3; do
+            if ssh $SSH_OPTS "refresh@$IP" 'command -v qemu-img && command -v jq && command -v curl && command -v ntfs-3g' > /dev/null; then
+              READY=1; break
+            fi
+            ssh $SSH_OPTS "refresh@$IP" 'cloud-init status --long || true
+              sudo apt-get update -q && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q qemu-utils jq curl ntfs-3g' || true
+            sleep 10
           done
           [[ -n "${READY:-}" ]] || die "Conversion VM did not become ready"
           scp $SSH_OPTS .github/windows-image-refresh/convert-image.sh "refresh@$IP:convert-image.sh"
