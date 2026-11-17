@@ -108,6 +108,9 @@ class OpenFileJob : public SyncJob {
         //! and the pin state set before starting it is reverted.
         void cancel();
 
+        //! Overrides the duration after which the resolution of the item gives up (10 minutes by default). For tests.
+        void setSyncWaitTimeout(std::chrono::milliseconds syncWaitTimeout) { _syncWaitTimeout = syncWaitTimeout; }
+
         //! Returns true when the user interface must be informed that the item is being synchronized: the first
         //! notification is due after 5 seconds of waiting, the following ones every 2 minutes. A default-constructed
         //! `lastNotify` means that no notification has been sent yet.
@@ -138,8 +141,8 @@ class OpenFileJob : public SyncJob {
         //! Looks for the best admissible sync containing the requested item. Sets `found` with false if none has been
         //! found.
         ExitInfo getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath, bool &found);
-        //! Checks whether the item exists on the remote side.
-        ExitInfo checkRemoteItemExistence(bool &exists) const;
+        //! Checks whether the item exists on the remote side. Virtual so that tests can bypass the API call.
+        virtual ExitInfo checkRemoteItemExistence(bool &exists) const;
         //! Opens the resolved item if it is available locally, or hydrates it first if it is a dehydrated placeholder.
         ExitInfo openResolvedLocalItem();
         //! Checks the state of the dehydrated placeholder, enqueues its download through SyncPal::addDlDirectJob, and
@@ -159,6 +162,13 @@ class OpenFileJob : public SyncJob {
         ExitInfo cancelHydrate(const std::shared_ptr<Vfs> &vfs, PinState pinState, const ExitInfo &exitInfo);
         //! Marks the job as ready to open the item and returns `ExitCode::Ok`.
         ExitInfo readyToOpen();
+
+        //! Closes the read-only sync DBs of the syncs whose engine is not running (see `_tempSyncDbMap`): they were
+        //! opened to resolve the item and are not needed anymore. Only the syncs of the drives considered during the
+        //! resolution are examined, and the DBs of syncs with a running engine are owned by their SyncPal and left
+        //! untouched. Returns `ExitCode::DbError` if the syncs cannot be listed from the parameters database.
+        ExitInfo closeDbsOfNonRunningSyncs();
+
         //! Reports the job state to the user interface through the feedback callback, when set. The name of the item
         //! being opened is included, empty while the item has not been resolved.
         void notifyFeedback(FileOpeningPhase phase, int8_t percent) const;
@@ -179,6 +189,11 @@ class OpenFileJob : public SyncJob {
         // Read-only instances of the SyncDb of the syncs whose engine is not running, cached to avoid reopening them
         // on every resolution attempt.
         std::unordered_map<SyncDbId, std::shared_ptr<SyncDb>> _tempSyncDbMap;
+
+        //! The requested item may have been created on the remote side recently: keep resolving it during
+        //! `_syncWaitTimeout` before giving up.
+        static constexpr std::chrono::minutes kSyncWaitTimeout{10};
+        std::chrono::milliseconds _syncWaitTimeout{kSyncWaitTimeout};
 
         Outcome _outcome{Outcome::Failed};
 

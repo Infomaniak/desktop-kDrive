@@ -495,6 +495,23 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 #endif
 }
 
+namespace {
+
+//! OpenFileJob whose remote-existence check always succeeds without accessing the API, letting the tests reach the
+//! resolution deadline.
+class TestOpenFileJobWithExistingRemoteItem : public OpenFileJob {
+    public:
+        using OpenFileJob::OpenFileJob;
+
+    private:
+        ExitInfo checkRemoteItemExistence(bool &exists) const override {
+            exists = true;
+            return ExitCode::Ok;
+        }
+};
+
+} // namespace
+
 void KDC::TestLocalJobs::testOpenFileJob() {
     // URL parsing.
     {
@@ -543,6 +560,20 @@ void KDC::TestLocalJobs::testOpenFileJob() {
         const auto firstNotify = waitStart + std::chrono::seconds(5);
         CPPUNIT_ASSERT(!OpenFileJob::isWaitNotificationDue(firstNotify + std::chrono::seconds(119), waitStart, firstNotify));
         CPPUNIT_ASSERT(OpenFileJob::isWaitNotificationDue(firstNotify + std::chrono::minutes(2), waitStart, firstNotify));
+    }
+
+    // A file that is not synchronized within the resolve deadline: the job gives up with a dedicated outcome, and the
+    // client interface informs the user that the item could not be synchronized.
+    {
+        const testhelpers::TestVariables testVariables;
+        TestOpenFileJobWithExistingRemoteItem job(
+                "kdrive://open/user/12321/drive/" + testVariables.driveId + "/file/456", [](const SyncDbId) { return nullptr; },
+                [](const SyncDbId) { return nullptr; });
+        job.setSyncWaitTimeout(std::chrono::milliseconds(1));
+        job.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), job.exitInfo());
+        CPPUNIT_ASSERT(job.outcome() == OpenFileJob::Outcome::ResolveTimedOut);
     }
 }
 
