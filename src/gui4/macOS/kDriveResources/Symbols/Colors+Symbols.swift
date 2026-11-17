@@ -45,6 +45,13 @@ public enum KDriveColors {
     public static let fileVcard = ColorAsset(name: "FileTypes/fileVcard")
     public static let fileVideo = ColorAsset(name: "FileTypes/fileVideo")
   }
+  public enum Gradient {
+    public static let darkBlue = ColorAsset(name: "Gradient/DarkBlue")
+    public static let lightBlue = ColorAsset(name: "Gradient/LightBlue")
+    public static let orange = ColorAsset(name: "Gradient/Orange")
+    public static let pink = ColorAsset(name: "Gradient/Pink")
+    public static let purple = ColorAsset(name: "Gradient/Purple")
+  }
   public static let gray400 = ColorAsset(name: "Gray400")
   public static let gray500 = ColorAsset(name: "Gray500")
   public static let gray950 = ColorAsset(name: "Gray950")
