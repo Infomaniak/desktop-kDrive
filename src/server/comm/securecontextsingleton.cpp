@@ -17,38 +17,36 @@
  */
 
 #include "securecontextsingleton.h"
-
+#include "libcommonserver/utility/crypto.h"
 #include "libcommonserver/utility/selfsignedcert.h"
 #include "libcommonserver/log/log.h"
-
-#include <Poco/Net/Context.h>
-#include <Poco/Crypto/X509Certificate.h>
-#include <Poco/Crypto/RSAKey.h>
-#include <Poco/Exception.h>
-
-#include <openssl/ssl.h>
-#include <openssl/x509.h>
-
-#include <sstream>
 
 namespace KDC {
 
 namespace {
 
 bool applyPem(SSL_CTX *const sslCtx, const SelfSignedCert::Pem &pem) {
-    try {
-        std::istringstream certStream(pem.cert);
-        std::istringstream keyStream(pem.key);
-
-        const Poco::Crypto::X509Certificate cert(certStream);
-        const Poco::Crypto::RSAKey key(nullptr, &keyStream, "");
-
-        return SSL_CTX_use_certificate(sslCtx, const_cast<X509 *>(cert.certificate())) == 1 &&
-               SSL_CTX_use_RSAPrivateKey(sslCtx, key.impl()->getRSA()) == 1 && SSL_CTX_check_private_key(sslCtx) == 1;
-    } catch (const Poco::Exception &e) {
-        LOG_ERROR(Log::instance()->getLogger(), "Failed to apply TLS material: " << e.displayText());
+    UniqueBio certBio(BIO_new_mem_buf(pem.cert.data(), static_cast<int>(pem.cert.size())));
+    UniqueBio keyBio(BIO_new_mem_buf(pem.key.data(), static_cast<int>(pem.key.size())));
+    if (!certBio || !keyBio) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to create BIO: " << sslError());
         return false;
     }
+
+    UniqueX509 cert(PEM_read_bio_X509(certBio.get(), nullptr, nullptr, nullptr));
+    UniqueEvpPkey key(PEM_read_bio_PrivateKey(keyBio.get(), nullptr, nullptr, nullptr));
+    if (!cert || !key) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to parse TLS material: " << sslError());
+        return false;
+    }
+
+    if (SSL_CTX_use_certificate(sslCtx, cert.get()) != 1 || SSL_CTX_use_PrivateKey(sslCtx, key.get()) != 1 ||
+        SSL_CTX_check_private_key(sslCtx) != 1) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to apply TLS material: " << sslError());
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace

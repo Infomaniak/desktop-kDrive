@@ -42,7 +42,15 @@ struct DriveMaintenanceParsingTest {
                     "wakingUp": false,
                     "from": 0
                 },
-                "notifications": true
+                "notifications": true,
+                "size": 987654,
+                "usedSize": 123456,
+                "packInfo": {
+                    "id": 1,
+                    "name": "c29sbw==",
+                    "displayName": "a0RyaXZlIFNvbG8=",
+                    "isFree": true
+                }
             }
             """.utf8
         )
@@ -70,7 +78,15 @@ struct DriveMaintenanceParsingTest {
                     "from": 0
                 },
                 "locked": false,
-                "accessDenied": false
+                "accessDenied": false,
+                "size": 987654,
+                "usedSize": 123456,
+                "packInfo": {
+                    "id": 1,
+                    "name": "c29sbw==",
+                    "displayName": "a0RyaXZlIFNvbG8=",
+                    "isFree": true
+                }
             }
             """.utf8
         )

@@ -60,6 +60,9 @@ public struct DriveResponse: Codable, Sendable {
     let locked: Bool
     let maintenance: DriveMaintenanceInfo
     let notifications: Bool
+    let size: Int64
+    let usedSize: Int64
+    let packInfo: PackInfo
 
     enum CodingKeys: String, CodingKey {
         case driveDbId = "dbId"
@@ -72,6 +75,9 @@ public struct DriveResponse: Codable, Sendable {
         case locked
         case maintenance
         case notifications
+        case size
+        case usedSize
+        case packInfo
     }
 }
 
@@ -89,6 +95,9 @@ extension DriveResponse {
               locked: locked,
               maintenance: maintenance.inMaintenance,
               notifications: notifications,
+              size: size,
+              usedSize: usedSize,
+              packInfo: packInfo,
               synchros: synchros)
     }
 }
