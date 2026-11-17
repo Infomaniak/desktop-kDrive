@@ -461,9 +461,9 @@ void TestOperationSorterWorker::testFixCreateBeforeCreateSameIdOnBothSide() {
     // .
     // └── B (b)
     //     └── BA (aa)
-    const auto nodeB = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("B"), NodeType::Directory,
-                                              OperationType::Create, "b", testhelpers::defaultTime, testhelpers::defaultTime,
-                                              testhelpers::defaultDirSize);
+    const auto nodeB =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("B"), NodeType::Directory, OperationType::Create, "b",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize);
     CPPUNIT_ASSERT(nodeB->moveTo(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
     const auto opB = generateSyncOperation(OperationType::Create, nodeB);
