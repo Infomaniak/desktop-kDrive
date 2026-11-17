@@ -21,6 +21,7 @@ import SwiftUI
 
 struct StorageBarView: View {
     let items: [StorageItem]
+    let byteCountFormatStyle: ByteCountFormatStyle.Style
 
     private var totalUsedBytes: Int64 {
         return items.compactMap { $0.usedBytes }.reduce(0, +)
@@ -30,7 +31,12 @@ struct StorageBarView: View {
         GeometryReader { proxy in
             HStack(spacing: 1) {
                 ForEach(items) { item in
-                    StorageBlockItemView(item: item, totalUsedBytes: totalUsedBytes, proxy: proxy)
+                    StorageBlockItemView(
+                        item: item,
+                        byteCountFormatStyle: byteCountFormatStyle,
+                        totalUsedBytes: totalUsedBytes,
+                        proxy: proxy
+                    )
                 }
             }
         }
@@ -40,9 +46,12 @@ struct StorageBarView: View {
 }
 
 #Preview {
-    StorageBarView(items: [
-        StorageItem(title: "First Storage Item", color: .blue, usedBytes: 13_000_000_000),
-        StorageItem(title: "Second Storage Item", color: .purple, usedBytes: 50_000_000_000),
-        StorageItem(title: "Free Space", color: .gray, usedBytes: 50_000_000_000)
-    ])
+    StorageBarView(
+        items: [
+            StorageItem(title: "First Storage Item", color: .blue, usedBytes: 13_000_000_000),
+            StorageItem(title: "Second Storage Item", color: .purple, usedBytes: 50_000_000_000),
+            StorageItem(title: "Free Space", color: .gray, usedBytes: 50_000_000_000)
+        ],
+        byteCountFormatStyle: .file
+    )
 }
