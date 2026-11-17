@@ -44,21 +44,25 @@
             <Border Grid.Column="0"
                     Background="{x:Bind Color1, Mode=OneWay}"
                     Visibility="{x:Bind Visibility1, Mode=OneWay}"
+                    local:PulseAnimation.IsPulsing="{x:Bind IsLoading1, Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     Margin="0,0,1,0"/>
             <Border Grid.Column="1"
                     Background="{x:Bind Color2, Mode=OneWay}"
                     Visibility="{x:Bind Visibility2, Mode=OneWay}"
+                    local:PulseAnimation.IsPulsing="{x:Bind IsLoading2, Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     Margin="0,0,1,0" />
             <Border Grid.Column="2"
                     Background="{x:Bind Color3, Mode=OneWay}"
                     Visibility="{x:Bind Visibility3, Mode=OneWay}"
+                    local:PulseAnimation.IsPulsing="{x:Bind IsLoading3, Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     Margin="0,0,1,0" />
             <Border Grid.Column="3"
                     Background="{x:Bind Color4, Mode=OneWay}"
                     Visibility="{x:Bind Visibility4, Mode=OneWay}"
+                    local:PulseAnimation.IsPulsing="{x:Bind IsLoading4, Mode=OneWay}"
                     HorizontalAlignment="Stretch" />
         </Grid>
     </Border>

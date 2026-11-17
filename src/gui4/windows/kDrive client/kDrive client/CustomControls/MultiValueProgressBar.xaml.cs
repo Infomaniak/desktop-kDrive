@@ -79,6 +79,42 @@ namespace Infomaniak.kDrive.CustomControls
         private static readonly DependencyProperty Visibility4Property =
             DependencyProperty.Register("Visibility4", typeof(Visibility), typeof(MultiValueProgressBar), new PropertyMetadata(Visibility.Visible));
 
+        private static readonly DependencyProperty IsLoading1Property =
+            DependencyProperty.Register("IsLoading1", typeof(bool), typeof(MultiValueProgressBar), new PropertyMetadata(false));
+
+        private static readonly DependencyProperty IsLoading2Property =
+            DependencyProperty.Register("IsLoading2", typeof(bool), typeof(MultiValueProgressBar), new PropertyMetadata(false));
+
+        private static readonly DependencyProperty IsLoading3Property =
+            DependencyProperty.Register("IsLoading3", typeof(bool), typeof(MultiValueProgressBar), new PropertyMetadata(false));
+
+        private static readonly DependencyProperty IsLoading4Property =
+            DependencyProperty.Register("IsLoading4", typeof(bool), typeof(MultiValueProgressBar), new PropertyMetadata(false));
+
+        public bool IsLoading1
+        {
+            get => (bool)GetValue(IsLoading1Property);
+            set => SetValue(IsLoading1Property, value);
+        }
+
+        public bool IsLoading2
+        {
+            get => (bool)GetValue(IsLoading2Property);
+            set => SetValue(IsLoading2Property, value);
+        }
+
+        public bool IsLoading3
+        {
+            get => (bool)GetValue(IsLoading3Property);
+            set => SetValue(IsLoading3Property, value);
+        }
+
+        public bool IsLoading4
+        {
+            get => (bool)GetValue(IsLoading4Property);
+            set => SetValue(IsLoading4Property, value);
+        }
+
         public Visibility Visibility1
         {
             get => (Visibility)GetValue(Visibility1Property);

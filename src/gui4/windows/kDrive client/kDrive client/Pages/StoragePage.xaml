@@ -123,6 +123,9 @@
                                                         Value3="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay}"
                                                         Value4="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay}"
                                                         Visibility2="{x:Bind PageViewModel.HasOtherSyncsOnSameDisk, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                        IsLoading1="{x:Bind PageViewModel.IsHydratedFilesSizeLoading, Mode=OneWay}"
+                                                        IsLoading2="{x:Bind PageViewModel.IsOtherSyncsHydratedFilesSizeLoading, Mode=OneWay}"
+                                                        IsLoading3="{x:Bind PageViewModel.IsOtherFileSizeLoading, Mode=OneWay}"
                                                         Color1="{ThemeResource Infomaniak.DS.colors.accent.kdrive.defaultBrush}"
                                                         Color2="{ThemeResource Infomaniak.Custom.colors.storage.otherSyncsBrush}"
                                                         Color3="{ThemeResource Infomaniak.Custom.colors.storage.otherBrush}"
@@ -180,10 +183,8 @@
                                         Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                                         Visibility="{x:Bind PageViewModel.HydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
-                                <ProgressRing Height="8"
-                                              Width="8"
-                                              Visibility="{x:Bind PageViewModel.IsHydratedFilesSizeLoading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <TextBlock Text="{x:Bind PageViewModel.HydratedFilesSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                                           controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsHydratedFilesSizeLoading, Mode=OneWay}"
                                            HorizontalAlignment="Right"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -232,10 +233,8 @@
                                         Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                                         Visibility="{x:Bind PageViewModel.OtherSyncsHydratedFilesSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
-                                <ProgressRing Height="8"
-                                              Width="8"
-                                              Visibility="{x:Bind PageViewModel.IsOtherSyncsHydratedFilesSizeLoading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <TextBlock Text="{x:Bind PageViewModel.OtherSyncsHydratedFilesSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                                           controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsOtherSyncsHydratedFilesSizeLoading, Mode=OneWay}"
                                            HorizontalAlignment="Right"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -281,10 +280,8 @@
                                         Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                                         Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
-                                <ProgressRing Height="8"
-                                              Width="8"
-                                              Visibility="{x:Bind PageViewModel.IsOtherFileSizeLoading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <TextBlock Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                                           controls:PulseAnimation.IsPulsing="{x:Bind PageViewModel.IsOtherFileSizeLoading, Mode=OneWay}"
                                            HorizontalAlignment="Right"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -368,6 +365,7 @@
                                    Text="{x:Bind kDrive:Localizer.Instance.GetString('labelMySubscription')}" />
                         <controls:MultiValueProgressBar Value1="{x:Bind PageViewModel.OnlineUsedSize, Mode=OneWay}"
                                                         Value2="{x:Bind PageViewModel.OnlineFreeSize, Mode=OneWay}"
+                                                        IsLoading1="{x:Bind PageViewModel.OnlineUsedSizeIsLoading, Mode=OneWay}"
                                                         Color1="{ThemeResource Infomaniak.DS.colors.accent.kdrive.defaultBrush}"
                                                         Color2="{ThemeResource AccentAAFillColorDisabledBrush}" />
                         <Grid>

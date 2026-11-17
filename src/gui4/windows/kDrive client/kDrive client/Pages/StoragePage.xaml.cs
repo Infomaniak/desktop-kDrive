@@ -63,15 +63,14 @@ namespace Infomaniak.kDrive.Pages
             {
                 Key = key,
                 Modifiers = Windows.System.VirtualKeyModifiers.Control,
-               
+
             };
             accelerator.Invoked += async (_, args) =>
             {
                 args.Handled = true;
                 try
                 {
-                    PageViewModel.UpdateOnlineStorage();
-                    await PageViewModel.UpdateDiskSizeAsync(forceRefresh: true);
+                    await PageViewModel.ForceUpdate(forceRefresh: true);
                 }
                 catch (OperationCanceledException)
                 {
@@ -90,7 +89,7 @@ namespace Infomaniak.kDrive.Pages
 
             try
             {
-                await PageViewModel.ForceUpdate();
+                await PageViewModel.ForceUpdate(forceRefresh: true);
             }
             catch (OperationCanceledException)
             {
@@ -114,7 +113,7 @@ namespace Infomaniak.kDrive.Pages
                 RetryProgressRing.Visibility = Visibility.Visible;
                 try
                 {
-                    await PageViewModel.ForceUpdate();
+                    await PageViewModel.ForceUpdate(forceRefresh: true);
                     if (!PageViewModel.IsDiskConnected)
                     {
                         await Task.Delay(2000); // Add a small delay to let the user know we've done something but the disk still unavailable.
@@ -225,38 +224,37 @@ namespace Infomaniak.kDrive.Pages
                 Sync.Drive.PropertyChanged += OnDrivePropertyChanged;
         }
 
-        private void OnDrivePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private async void OnDrivePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(Drive.UsedSize) && e.PropertyName != nameof(Drive.Size)) return;
-
-            try
-            {
-                UpdateOnlineStorage();
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.LogInfo("Disk size update was canceled.");
-            }
+            if (_isDisposed) return;
+            await UpdateOnlineStorage(_cancellationTokenSource.Token);
         }
 
         private async void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            try
-            {
-                if (Sync is not null)
-                    Sync.Drive.PropertyChanged -= OnDrivePropertyChanged;
+            if (Sync is not null)
+                Sync.Drive.PropertyChanged -= OnDrivePropertyChanged;
 
-                Sync = AppViewModel.SelectedSync;
+            Sync = AppViewModel.SelectedSync;
 
-                if (Sync is not null)
-                    Sync.Drive.PropertyChanged += OnDrivePropertyChanged;
+            if (Sync is not null)
+                Sync.Drive.PropertyChanged += OnDrivePropertyChanged;
 
-                await ForceUpdate();
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.LogInfo("Disk size update was canceled.");
-            }
+            ResetDiskValues();
+            await ForceUpdate(true);
+
+        }
+
+        private void ResetDiskValues()
+        {
+            DiskSize = null;
+            DiskFreeSize = null;
+            DiskUsedSize = null;
+            HydratedFilesSize = null;
+            OtherSyncsHydratedFilesSize = null;
+            OtherFileSize = null;
+            HasOtherSyncsOnSameDisk = false;
         }
 
         // IDisposable implementation
@@ -274,6 +272,13 @@ namespace Infomaniak.kDrive.Pages
                 _cancellationTokenSource.Cancel();
                 _cancellationTokenSource.Dispose();
             }
+        }
+
+        bool _onlineUsedSizeIsLoading = false;
+        public bool OnlineUsedSizeIsLoading
+        {
+            get => _onlineUsedSizeIsLoading;
+            set => SetPropertyInUIThread(ref _onlineUsedSizeIsLoading, value);
         }
 
         public long? OnlineUsedSize
@@ -411,13 +416,23 @@ namespace Infomaniak.kDrive.Pages
             set => SetPropertyInUIThread(ref _isDiskConnected, value);
         }
 
-        public async Task ForceUpdate()
+        public async Task ForceUpdate(bool forceRefresh)
         {
-            UpdateOnlineStorage();
-            await UpdateDiskSizeAsync();
+
+            if (_isDisposed)
+                return;
+
+            await _cancellationTokenSource.CancelAsync();
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = _cancellationTokenSource.Token;
+
+            Task onlineUpdate = UpdateOnlineStorage(cancellationToken);
+            Task localUpdate = UpdateDiskSizeAsync(forceRefresh, cancellationToken);
+            await Task.WhenAll(onlineUpdate, localUpdate);
         }
 
-        public void UpdateOnlineStorage()
+        public async Task UpdateOnlineStorage(CancellationToken cancellationToken)
         {
             if (_sync is null)
             {
@@ -426,21 +441,36 @@ namespace Infomaniak.kDrive.Pages
                 return;
             }
 
+            OnlineUsedSizeIsLoading = true;
+
+            // prefill with known values
             OnlineUsedSize = _sync.Drive.UsedSize;
             OnlineFreeSize = Math.Max(0, _sync.Drive.Size - _sync.Drive.UsedSize);
+
+            try
+            {
+                await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(cancellationToken); // Force the server to refresh
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogInfo("ActivateLoadInfo cancelled");
+            }
+
+            // A newer update owns the state now.
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            OnlineUsedSize = _sync.Drive.UsedSize;
+            OnlineFreeSize = Math.Max(0, _sync.Drive.Size - _sync.Drive.UsedSize);
+            OnlineUsedSizeIsLoading = false;
         }
 
-        public async Task UpdateDiskSizeAsync(bool forceRefresh = false)
+        public async Task UpdateDiskSizeAsync(bool forceRefresh, CancellationToken cancellationToken)
         {
             if (AppViewModel.SelectedSync == null)
                 return;
             var sync = AppViewModel.SelectedSync;
-            if (Loading)
-            {
-                await _cancellationTokenSource.CancelAsync();
-                _cancellationTokenSource.Dispose();
-                _cancellationTokenSource = new CancellationTokenSource();
-            }
+
             Loading = true;
 
             // Reset failed values (-1) to loading state (null); keep previously loaded values displayed while refreshing.
@@ -474,7 +504,6 @@ namespace Infomaniak.kDrive.Pages
                 DiskFreeSize = driveInfo.AvailableFreeSpace;
                 DiskUsedSize = DiskSize - DiskFreeSize;
 
-                var cancellationToken = _cancellationTokenSource.Token;
                 var otherSyncs = SyncsOnSameDisk().Where(s => s != sync).ToList();
                 HasOtherSyncsOnSameDisk = otherSyncs.Count > 0;
                 if (otherSyncs.Count == 0)
@@ -489,7 +518,7 @@ namespace Infomaniak.kDrive.Pages
                 await Task.WhenAll(
                     currentSyncTask,
                     otherSyncsTask,
-                    Task.Delay(forceRefresh ? 1000 : 0, cancellationToken)
+                    Task.Delay(forceRefresh ? 1000 : 0, CancellationToken.None)
                 );
             }
             catch (System.IO.IOException ex)
@@ -502,6 +531,11 @@ namespace Infomaniak.kDrive.Pages
                 Logger.LogInfo($"Error accessing drive info for root {DiskRoot}: {ex.Message}");
                 IsDiskConnected = false;
             }
+
+            // A newer update owns the state now.
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
             IsHydratedFilesSizeLoading = false;
             IsOtherSyncsHydratedFilesSizeLoading = false;
             Loading = false;
@@ -577,7 +611,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void UpdateOtherFileSize()
         {
-            if (!DiskUsedSize.HasValue)
+            if (!DiskUsedSize.HasValue || !HydratedFilesSize.HasValue || !OtherSyncsHydratedFilesSize.HasValue)
             {
                 OtherFileSize = null;
                 return;
