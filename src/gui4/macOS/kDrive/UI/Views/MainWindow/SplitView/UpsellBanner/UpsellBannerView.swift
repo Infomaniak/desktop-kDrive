@@ -30,23 +30,26 @@ struct UpsellBannerView: View {
             logo
 
             Text(text)
-                .foregroundStyle(ColorToken.Text.primary.asColor)
+                .foregroundStyle(.white)
 
             Button(KDriveLocalizable.buttonUpgradeSubscriptionShort, action: didTapUpgrade)
+                .foregroundStyle(.white)
         }
         .padding(AppPadding.padding16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            KDriveResources.upsellGradient.swiftUIImage
+                .resizable()
+                .scaledToFill()
+                // The SVG's feGaussianBlur filters are ignored by the asset catalog renderer, so blur is applied here.
+                .blur(radius: 15.72)
+        }
+        .background(ColorToken.upsellBackground.asColor)
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius10))
         .overlay {
             RoundedRectangle(cornerRadius: AppRadius.radius10)
                 .strokeBorder(
                     LinearGradient(
-                        colors: [
-                            ColorToken.Gradient.lightBlue.asColor,
-                            ColorToken.Gradient.darkBlue.asColor,
-                            ColorToken.Gradient.purple.asColor,
-                            ColorToken.Gradient.pink.asColor,
-                            ColorToken.Gradient.orange.asColor
-                        ],
+                        colors: gradientColors,
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
@@ -59,6 +62,14 @@ struct UpsellBannerView: View {
         // TODO:
     }
 }
+
+private let gradientColors: [Color] = [
+    ColorToken.UpsellGradient.lightBlue.asColor,
+    ColorToken.UpsellGradient.darkBlue.asColor,
+    ColorToken.UpsellGradient.purple.asColor,
+    ColorToken.UpsellGradient.pink.asColor,
+    ColorToken.UpsellGradient.orange.asColor
+]
 
 #Preview {
     UpsellBannerView(

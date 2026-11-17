@@ -94,6 +94,7 @@ public enum KDriveResources {
   public static let kdriveCircleFilled = ImageAsset(name: "kdrive-circle-filled")
   public static let kdriveNeutral = ImageAsset(name: "kdrive-neutral")
   public static let onboardingGradient = ImageAsset(name: "OnboardingGradient")
+  public static let upsellGradient = ImageAsset(name: "upsell-gradient")
 }
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name
 
