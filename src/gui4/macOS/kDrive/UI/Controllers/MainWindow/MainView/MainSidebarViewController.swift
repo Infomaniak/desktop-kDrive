@@ -99,6 +99,20 @@ final class MainSidebarViewController: BaseViewController {
         return view
     }()
 
+    private lazy var upsellBannerView: WidthAdaptiveHostingView<UpsellBannerView> = {
+        // TODO: Provide the logo, text and link matching the user's current offer
+        let bannerView = UpsellBannerView(
+            logo: KDriveResources.ksuiteProLogo.swiftUIImage,
+            text: "Create and collaborate without limits",
+            upsellLink: URL(string: "https://www.infomaniak.com")!
+        )
+        let hostingView = WidthAdaptiveHostingView(rootView: bannerView)
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        hostingView.setContentCompressionResistancePriority(.required, for: .vertical)
+        return hostingView
+    }()
+
     private lazy var scrollView: NSScrollView = {
         let scrollView = NSScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -219,6 +233,7 @@ final class MainSidebarViewController: BaseViewController {
         }
         view.addSubview(synchroSelectorView)
         setupScrollAndOutlineView()
+        view.addSubview(upsellBannerView)
         view.addSubview(sidebarNotificationView)
 
         NSLayoutConstraint.activate([
@@ -243,7 +258,17 @@ final class MainSidebarViewController: BaseViewController {
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
 
-            sidebarNotificationView.topAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: AppPadding.padding16),
+            upsellBannerView.topAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: AppPadding.padding16),
+            upsellBannerView.leadingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+                constant: AppPadding.padding16
+            ),
+            upsellBannerView.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -AppPadding.padding16
+            ),
+
+            sidebarNotificationView.topAnchor.constraint(equalTo: upsellBannerView.bottomAnchor, constant: AppPadding.padding16),
             sidebarNotificationView.leadingAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                 constant: AppPadding.padding16
