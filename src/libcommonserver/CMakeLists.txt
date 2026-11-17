@@ -26,6 +26,7 @@ set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
     utility/checksumverifier.h utility/checksumverifier.cpp
+    utility/crypto.h
     utility/selfsignedcert.h utility/selfsignedcert.cpp
     utility/truststorehelper.h
     utility/certificateblocklist.h utility/certificateblocklist.cpp

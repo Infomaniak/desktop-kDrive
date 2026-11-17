@@ -29,6 +29,7 @@ struct StorageSectionView: View {
     let title: String
     let storageData: StorageData
     let items: [StorageItem]
+    let byteCountFormatStyle: ByteCountFormatStyle.Style
 
     var body: some View {
         Section {
@@ -45,18 +46,18 @@ struct StorageSectionView: View {
                             .controlSize(.small)
                     case .data(let usedBytes, let availableBytes):
                         Text(KDriveLocalizable.storageUsageLabel(
-                            usedBytes.formatted(StorageView.sizeFormatter),
-                            availableBytes.formatted(StorageView.sizeFormatter)
+                            usedBytes.formatted(ByteCountFormatStyle.byteCount(style: byteCountFormatStyle)),
+                            availableBytes.formatted(ByteCountFormatStyle.byteCount(style: byteCountFormatStyle))
                         ))
                         .foregroundStyle(.secondary)
                     }
                 }
 
-                StorageBarView(items: items)
+                StorageBarView(items: items, byteCountFormatStyle: byteCountFormatStyle)
             }
 
             ForEach(items) { item in
-                StorageItemCell(item: item)
+                StorageItemCell(item: item, byteCountFormatStyle: byteCountFormatStyle)
             }
         }
     }
@@ -70,7 +71,8 @@ struct StorageSectionView: View {
             items: [
                 StorageItem(title: "First Storage Item", color: .blue, usedBytes: 13_000_000_000),
                 StorageItem(title: "Second Storage Item", color: .purple, usedBytes: 50_000_000_000)
-            ]
+            ],
+            byteCountFormatStyle: .file
         )
     }
     .groupedFormatStyle()
