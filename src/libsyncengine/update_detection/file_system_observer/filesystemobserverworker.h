@@ -78,6 +78,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         friend class TestOperationProcessor;
         friend class TestSituationGenerator;
         friend class TestSyncPal;
+        friend class TestUpdateTreeWorker;
         friend class InitialSituationSetter;
         friend class SyncpalTestHelper;
 

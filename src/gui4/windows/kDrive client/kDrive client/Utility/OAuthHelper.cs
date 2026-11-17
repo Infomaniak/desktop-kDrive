@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -41,7 +42,7 @@ namespace Infomaniak.kDrive
             try
             {
                 var authRequestResult = await OAuth2Manager
-                    .RequestAuthWithParamsAsync(parentWindowId, App.Constants.Login.OAuthAuthorizationEndpoint, authRequestParams)
+                    .RequestAuthWithParamsAsync(parentWindowId, App.ServiceProvider.GetRequiredService<IUriStore>().OAuthAuthorizationEndpoint(), authRequestParams)
                     .AsTask(cancellationToken);
 
                 if (authRequestResult.Response is AuthResponse authResponse)

@@ -349,7 +349,13 @@ namespace Infomaniak.kDrive.ViewModels
 
         public Uri GetWebUri()
         {
-            return IsAdvanced ? App.Constants.Drive.itemUri(Drive.DriveId, RemoteNodeId) : Drive.GetWebUri();
+            if (!IsAdvanced)
+                return Drive.GetWebUri();
+            else
+            {
+                var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+                return uriStore.WebAppItemUrl(Drive.DriveId, RemoteNodeId);
+            }
         }
 
         public async Task<List<NodeId>?> GetExcludedNodeIds()
