@@ -131,8 +131,8 @@ class QtConan(ConanFile):
 
     def _get_compiler(self):
         """
-        Get the compiler name on QT installer based on the OS and architecture.
-        :return: The compiler name, e.g. 'clang_64', 'linux_gcc_64', 'linux_gcc_arm64', 'win64_msvc2022_64', or 'win64_mingw'.
+        Get the Qt installer package identifier based on the OS and architecture.
+        :return: The package identifier, e.g. 'clang_64', 'linux_gcc_64', 'linux_gcc_arm64', 'win64_msvc2022_64', or 'win64_mingw'.
         """
         if self.settings.os == "Macos":
             return "clang_64"
@@ -148,7 +148,9 @@ class QtConan(ConanFile):
 
     def _get_windows_compiler(self):
         """
-        Get the Windows compiler name based on the compiler used.
+        Get the Qt installer package identifier for the Windows compiler family.
+        The MSVC 2022 package name identifies Qt's prebuilt binaries; it does not
+        select the compiler used to build kDrive, which can use MSVC 2026.
         :return: 'win64_msvc2022_64' or 'win64_mingw'.
         """
         compiler = str(self.settings.compiler)
