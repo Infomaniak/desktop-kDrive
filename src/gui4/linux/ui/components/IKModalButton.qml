@@ -44,6 +44,8 @@ Button {
     required property string actionId
     // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
     property var actionDetails: ({})
+    // Key that triggers the current activation, logged as its origin; empty for a pointer or Space activation.
+    property string activationKey: ""
 
     readonly property real externalIconAllowance: external ? externalIcon.width + IKModalTokens.buttonExternalIconSpacing : 0
     readonly property real leadingIconAllowance: iconSource.toString().length > 0
@@ -77,7 +79,9 @@ Button {
     // A held key must not repeat the action.
     function activateFromKey(event) {
         if (!event.isAutoRepeat) {
+            root.activationKey = event.key === Qt.Key_Enter ? "enter" : "return";
             root.clicked();
+            root.activationKey = "";
         }
     }
 
@@ -90,7 +94,9 @@ Button {
     leftPadding: IKModalTokens.buttonHorizontalPadding
     rightPadding: IKModalTokens.buttonHorizontalPadding
     focusPolicy: Qt.StrongFocus
-    onClicked: UserActionLog.action(root.actionId, root.actionDetails)
+    onClicked: UserActionLog.action(root.actionId, root.activationKey.length > 0
+                                                   ? Object.assign({ key: root.activationKey }, root.actionDetails)
+                                                   : root.actionDetails)
     // Qt Quick buttons only react to Space: Return and Enter activate the focused action too.
     Keys.onReturnPressed: event => root.activateFromKey(event)
     Keys.onEnterPressed: event => root.activateFromKey(event)
