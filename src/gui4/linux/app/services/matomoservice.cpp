@@ -66,6 +66,7 @@ MatomoQt::TrackerConfig trackerConfig() {
     config.userAgent = MatomoQt::UserAgentBuilder::buildDesktopUserAgent(MatomoQt::UserAgentBuilder::currentDesktopInfo(
             QString::fromLatin1(APPLICATION_NAME), QString::fromLatin1(KDRIVE_VERSION_STRING)));
     config.screenResolution = screenResolution();
+    config.customDimensions[AppConstants::Matomo::appVersionDimensionId] = QString::fromLatin1(KDRIVE_STRINGIFY(KDRIVE_VERSION));
     return config;
 }
 
