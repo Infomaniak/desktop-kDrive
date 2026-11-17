@@ -132,7 +132,7 @@ class QtConan(ConanFile):
     def _get_compiler(self):
         """
         Get the compiler name on QT installer based on the OS and architecture.
-        :return: The compiler name, e.g. 'clang_64', 'gcc_64', 'linux_gcc_64', 'linux_gcc_arm64', 'win64_msvc2019_64', 'win64_msvc2022_64', or 'win64_mingw'.
+        :return: The compiler name, e.g. 'clang_64', 'linux_gcc_64', 'linux_gcc_arm64', 'win64_msvc2022_64', or 'win64_mingw'.
         """
         if self.settings.os == "Macos":
             return "clang_64"
@@ -140,11 +140,7 @@ class QtConan(ConanFile):
             if self._get_linux_arch() == "arm64":
                 return "linux_gcc_arm64"
             else:
-                # Qt 6.2.3 uses 'gcc_64', but newer versions (6.7.3+) use 'linux_gcc_64'
-                if self.version == "6.2.3":
-                    return "gcc_64"
-                else:
-                    return "linux_gcc_64"
+                return "linux_gcc_64"
         elif self.settings.os == "Windows":
             return self._get_windows_compiler()
         else:
@@ -152,20 +148,17 @@ class QtConan(ConanFile):
 
     def _get_windows_compiler(self):
         """
-        Get the Windows compiler name based on the Qt version and the compiler used.
-        :return: The compiler name for Windows, e.g. 'win64_msvc2019_64', 'win64_msvc2022_64', or 'win64_mingw'.
+        Get the Windows compiler name based on the compiler used.
+        :return: 'win64_msvc2022_64' or 'win64_mingw'.
         """
         compiler = str(self.settings.compiler)
 
-        if self.version in ("6.8.3", "6.12.0"):
-            return "win64_mingw" if compiler == "gcc" else "win64_msvc2022_64"
-        else:
-            return "win64_msvc2019_64"  # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
+        return "win64_mingw" if compiler == "gcc" else "win64_msvc2022_64"
 
     def _get_qt_submodules(self, version):
         """
         Get the list of Qt submodules to install based on the version and compiler.
-        :param version: The version of Qt to install, e.g. '6.2.3'.
+        :param version: The version of Qt to install, e.g. '6.8.3'.
         :return: The list of Qt submodules to install, adapted to the Qt version, the OS, and the compiler
         """
         major = version.split(".")[0]
@@ -175,15 +168,11 @@ class QtConan(ConanFile):
         modules = [
             f"qt.qt{major}.{compact}.{compiler}",
 
-            f"qt.qt{major}.{compact}.addons.qtpositioning"
+            f"qt.qt{major}.{compact}.addons.qtpositioning",
+            f"qt.qt{major}.{compact}.addons.qt5compat"
         ]
 
-        if version in ("6.8.3", "6.12.0"):
-            modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
-        else:
-            modules.append(f"qt.qt{major}.{compact}.qt5compat")
-
-        if version != "6.12.0" and self.options.debug_symbols:
+        if version == "6.8.3" and self.options.debug_symbols:
             modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files
 
         if self.settings.os == "Linux":
@@ -193,10 +182,7 @@ class QtConan(ConanFile):
         # Add vcredist module if requested (Windows MSVC only)
         if self.settings.os == "Windows" and self.options.install_vcredist:
             if str(self.settings.compiler) != "gcc":  # MSVC, not MinGW
-                if compiler == "win64_msvc2019_64":
-                    modules.append("qt.tools.vcredist_msvc2019_x86")
-                elif compiler == "win64_msvc2022_64":
-                    modules.append("qt.tools.vcredist_msvc2022_x64")
+                modules.append("qt.tools.vcredist_msvc2022_x64")
 
         return modules
 
@@ -260,8 +246,8 @@ class QtConan(ConanFile):
                 + ", ".join(missing))
 
     def validate(self):
-        if not self.version.startswith("6."):
-            raise ConanInvalidConfiguration("This recipe only supports Qt 6.x versions.")
+        if self.version not in ("6.8.3", "6.12.0"):
+            raise ConanInvalidConfiguration("This recipe only supports Qt 6.8.3 and 6.12.0.")
 
         valid_operating_systems = ["Macos", "Linux", "Windows"]
         if self.settings.os not in valid_operating_systems:
@@ -430,34 +416,22 @@ class QtConan(ConanFile):
         except Exception as e:
             self.output.warning(f"Cleanup failed: {e}")
 
+        self._patch_macos_opengl()
+
+    def _patch_macos_opengl(self):
+        if self.settings.os != "Macos" or self.version != "6.8.3":
+            return
+
         find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
-        if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
-            self.output.highlight("Patching Qt installation...")
+        if os.path.exists(find_wrap_open_gl):
+            self.output.highlight("Removing the obsolete AGL framework dependency from Qt...")
             from conan.tools.files import replace_in_file
-            if self.version == "6.2.3":
-                # AGL is unused by Qt 6 and is absent from recent macOS SDKs.
-                replace_in_file(
-                    self, find_wrap_open_gl,
-                    'target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})',
-                    ''
-                )
-            if self.version == "6.2.3":
-                """
-                Fixes spam of this kind of CMake warning on macOS:            
-                
-                CMake Warning at /Users/username/.conan2/p/b/qte693ca8061042/p/lib/cmake/Qt6/FindWrapOpenGL.cmake:41 (target_link_libraries):
-                  Target "kDrive_client" requests linking to directory
-                  "/Applications/Xcode-16.1.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk/System/Library/Frameworks".
-                  Targets may link only to libraries.  CMake is dropping the item.
-                Call Stack (most recent call first):
-                  /Applications/CMake.app/Contents/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
-                  src/CMakeLists.txt:1 (find_package)
-                """
-                replace_in_file(
-                    self, find_wrap_open_gl,
-                    "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path})",
-                    "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path}/OpenGL.framework)"
-                )
+            # AGL is unused by Qt 6 and is absent from recent macOS SDKs.
+            replace_in_file(
+                self, find_wrap_open_gl,
+                'target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})',
+                ''
+            )
 
     @staticmethod
     def _validate_installer_path(path):
@@ -470,7 +444,7 @@ class QtConan(ConanFile):
     def _subfolder_install(self):
         """
         Get the subfolder name where the Qt installation is done, based on the OS, architecture, and compiler.
-        :return: The subfolder name, e.g., 'macos', 'gcc_64', 'gcc_arm64', 'msvc2019_64', 'msvc2022_64', or 'mingw_64'.
+        :return: The subfolder name, e.g., 'macos', 'gcc_64', 'gcc_arm64', 'msvc2022_64', or 'mingw_64'.
         """
         if self.settings.os == "Macos":
             return "macos"
@@ -480,14 +454,10 @@ class QtConan(ConanFile):
             else:
                 return "gcc_64"
         elif self.settings.os == "Windows":
-            # Determine Windows subfolder based on compiler and version
-            if self.version == "6.2.3":
-                return "msvc2019_64"
-            else:
-                if str(self.settings.compiler) == "gcc":  # MinGW
-                    return "mingw_64"
-                else:  # MSVC 2022
-                    return "msvc2022_64"
+            if str(self.settings.compiler) == "gcc":  # MinGW
+                return "mingw_64"
+            else:  # MSVC 2022
+                return "msvc2022_64"
         else:
             raise ConanInvalidConfiguration(f"Unsupported OS: {self.settings.os}")
 
