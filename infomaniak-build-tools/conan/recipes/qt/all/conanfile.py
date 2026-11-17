@@ -182,8 +182,9 @@ class QtConan(ConanFile):
             modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
         else:
             modules.append(f"qt.qt{major}.{compact}.qt5compat")
-            if self.options.debug_symbols:
-                modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files
+
+        if version != "6.12.0" and self.options.debug_symbols:
+            modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files
 
         if self.settings.os == "Linux":
             modules.append(f"qt.qt{major}.{compact}.addons.qtserialport")
@@ -265,6 +266,10 @@ class QtConan(ConanFile):
         valid_operating_systems = ["Macos", "Linux", "Windows"]
         if self.settings.os not in valid_operating_systems:
             raise ConanInvalidConfiguration(f"Unsupported OS for Qt installation. Supported OS are: {', '.join(valid_operating_systems)}.")
+
+        if self.version == "6.8.3" and self.settings.os == "Macos" and self.options.debug_symbols:
+            raise ConanInvalidConfiguration(
+                "Qt 6.8.3 on macOS does not provide a separate debug-symbol component; set debug_symbols=False.")
 
         self._check_envvars_login_type(check_option=True, raise_error=True)
         self._check_credentials_login_type()

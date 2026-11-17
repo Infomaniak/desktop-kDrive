@@ -50,7 +50,7 @@ The exact set of redistributed binaries can vary by platform:
 
 ### Qt 6
 
-- **Version:** 6.2.3 (macOS) / 6.12.0 (Linux & Windows)
+- **Version:** 6.8.3 (macOS) / 6.12.0 (Linux & Windows)
 - **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
 - **Copyright:** Copyright (C) The Qt Company Ltd. and other contributors
 - **Repository:** https://www.qt.io/
