@@ -159,12 +159,14 @@ void addOnboardingEvents(QHash<QString, Event> &events) {
 void addSettingsEvents(QHash<QString, Event> &events) {
     addEvents(events, u"settings.general"_s, u"generalSettingsPage"_s,
               {{u"autoStart"_s, u"changeAutoStart"_s},
+               {u"autoUpdates"_s, u"changeAutoUpdate"_s},
                {u"notifications"_s, u"changeNotifications"_s},
                {u"moveToTrash"_s, u"changeMoveToTrash"_s}},
               switchValueDetail);
     addEvents(events, u"settings.general"_s, u"generalSettingsPage"_s,
               {{u"language"_s, u"changeLanguage"_s},
                {u"downloadUpdate"_s, u"startUpdate"_s},
+               {u"betaProgramDialog.validate"_s, u"changeReleaseChannel"_s},
                {u"support"_s, u"openSupportWeb"_s},
                {u"feedback"_s, u"openFeedbackWeb"_s}});
 
