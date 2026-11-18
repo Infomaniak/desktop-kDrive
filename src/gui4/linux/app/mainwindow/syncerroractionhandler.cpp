@@ -134,7 +134,7 @@ void SyncErrorActionHandler::run(const SyncErrorAction action, const ClassifiedS
             break;
         case SyncErrorAction::ManageStorage:
         case SyncErrorAction::RenewSubscription:
-            openUrl(AppConstants::Drive::renewalUri(context.drive));
+            openUrl(AppConstants::Drive::upsellUri(context.drive));
             break;
         case SyncErrorAction::WakeUp:
             // Opening the drive on the web wakes it up.
