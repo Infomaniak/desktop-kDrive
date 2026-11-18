@@ -29,6 +29,8 @@ Rectangle {
 
     property string title
     property string subtitle
+    // Lines the subtitle may wrap onto before eliding; one keeps a single eliding line.
+    property int subtitleMaximumLineCount: 1
     property int titleTextFormat: Text.PlainText
     property color surfaceColor: IKColors.informationBlockSurface
     // The icon tile is shown only when a source is set.
@@ -54,8 +56,10 @@ Rectangle {
         primaryButton.forceActiveFocus();
     }
 
-    // The actions set the height (64 px with one button, 80 px with the dismiss button below); the texts elide.
-    implicitHeight: Math.max(IKMainWindow.informationBlockMinHeight, actionsColumn.implicitHeight + 2 * IKSpacing.s16)
+    // The actions or a wrapped subtitle set the height (64 px with one button, 80 px with the dismiss button below).
+    implicitHeight: Math.max(IKMainWindow.informationBlockMinHeight,
+                             Math.max(actionsColumn.implicitHeight, root.subtitleMaximumLineCount > 1 ? leadingRow.implicitHeight : 0)
+                             + 2 * IKSpacing.s16)
     radius: IKRadius.r12
     color: root.surfaceColor
 
@@ -114,6 +118,8 @@ Rectangle {
                     text: root.subtitle
                     color: IKColors.textSecondary
                     font.pixelSize: IKFonts.subheadlineSize
+                    wrapMode: root.subtitleMaximumLineCount > 1 ? Text.WordWrap : Text.NoWrap
+                    maximumLineCount: root.subtitleMaximumLineCount
                     elide: Text.ElideRight
                 }
             }

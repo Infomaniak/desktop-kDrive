@@ -335,7 +335,6 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/MainWindowView.qml
         ui/windows/main/SyncControlMenu.qml
         ui/windows/main/SyncProgressText.qml
-        ui/windows/main/storage/StorageActionCard.qml
         ui/windows/main/storage/StorageErrorState.qml
         ui/windows/main/storage/StorageLegendEntry.qml
         ui/windows/main/storage/StorageSegment.qml
@@ -485,7 +484,9 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/house.svg
         ui/assets/main/home/cog.svg
         ui/assets/common/external-link.svg
+        ui/assets/main/home/circle-cross.svg
         ui/assets/main/home/folder-share.svg
+        ui/assets/main/home/hard-drive.svg
         ui/assets/main/home/headphones.svg
         ui/assets/main/home/kdrive-folders-stacked.svg
         ui/assets/main/home/kdrive-outline.svg
@@ -500,7 +501,6 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/search/empty-dark.svg
         ui/assets/main/storage.svg
         ui/assets/main/storage/cart-add.svg
-        ui/assets/main/storage/computer.svg
         ui/assets/main/storage/unavailable.svg
         ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg
