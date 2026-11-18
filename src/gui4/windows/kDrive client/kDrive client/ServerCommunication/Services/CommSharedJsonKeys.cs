@@ -114,6 +114,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string FileOpeningPhase = "phase";
         static public string FileOpeningPercent = "percent";
         static public string FileOpeningItemName = "itemName";
+        static public string FileOpeningItemPath = "itemPath";
+        static public string FileOpeningReceivedBytes = "receivedBytes";
+        static public string FileOpeningTotalBytes = "totalBytes";
 
         static public string IncludeArchivedLogs = "includeArchivedLogs";
 

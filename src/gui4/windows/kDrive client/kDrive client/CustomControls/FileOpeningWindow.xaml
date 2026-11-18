@@ -21,32 +21,100 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="using:Infomaniak.kDrive.CustomControls"
         xmlns:converters="using:Infomaniak.kDrive.Converters"
         mc:Ignorable="d"
         Title="kDrive">
 
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
     </Window.Resources>
 
     <Border Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
         <StackPanel x:Name="RootPanel"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center"
+                    VerticalAlignment="Top"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-            <TextBlock Text="{Binding ItemName}"
-                       FontWeight="Bold"
+            <!-- Downloading: title -->
+            <TextBlock Text="{Binding TitleText}"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
+                       Visibility="{Binding IsDownloading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+            <!-- Waiting: explanation -->
+            <TextBlock Text="{Binding Message}"
                        TextWrapping="Wrap"
-                       Visibility="{Binding HasItemName, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
-            <ProgressBar Maximum="100"
-                         MinWidth="320"
-                         Value="{Binding Percent, Mode=OneWay}"
-                         IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay}" />
-            <Button x:Name="CancelButton"
+                       Visibility="{Binding IsWaitingSync, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+            <!-- Card identifying the item through its icon, name, and parent folder path -->
+            <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
+                    Visibility="{Binding HasItemName, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <controls:SvgIcon Width="40"
+                                      Height="40"
+                                      VerticalAlignment="Center"
+                                      ResourceKey="{Binding ItemName, Converter={StaticResource FilePathToIconResourceKeyConverter}}" />
+                    <StackPanel VerticalAlignment="Center" Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                        <TextBlock Text="{Binding ItemName}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding ItemPath}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Visibility="{Binding HasItemPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Downloading: gauge with the cancellation cross -->
+            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                  Visibility="{Binding IsDownloading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ProgressBar Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Maximum="{Binding GaugeMaximum, Mode=OneWay}"
+                             Value="{Binding GaugeValue, Mode=OneWay}"
+                             IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay}"
+                             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}" />
+                <Button Grid.Column="1"
+                        x:Name="CancelGaugeButton"
+                        Click="OnCancelClicked"
+                        VerticalAlignment="Center"
+                        Width="28"
+                        Height="28"
+                        Padding="0"
+                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}"
+                        Background="{ThemeResource TextFillColorPrimaryBrush}">
+                    <FontIcon Glyph="&#xE711;"
+                              FontSize="10"
+                              Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+                </Button>
+            </Grid>
+
+            <!-- Downloading: downloaded amount -->
+            <TextBlock Text="{Binding ProgressText}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       Visibility="{Binding HasDownloadProgress, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+            <!-- Waiting: cancellation cross -->
+            <Button x:Name="CancelWaitingButton"
                     Click="OnCancelClicked"
                     HorizontalAlignment="Right"
-                    Style="{StaticResource Infomaniak.Style.Button.Secondary}" />
+                    Width="28"
+                    Height="28"
+                    Padding="0"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}"
+                    Background="{ThemeResource TextFillColorPrimaryBrush}"
+                    Visibility="{Binding IsWaitingSync, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <FontIcon Glyph="&#xE711;"
+                          FontSize="10"
+                          Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+            </Button>
         </StackPanel>
     </Border>
 </Window>
