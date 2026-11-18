@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "libcommon/utility/cstypes.h"
+
 #include <QDataStream>
 
 #include <Poco/Dynamic/Struct.h>
