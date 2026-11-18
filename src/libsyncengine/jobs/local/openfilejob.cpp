@@ -91,6 +91,8 @@ struct OpenFileJob::HydrationCompletion {
         bool finished{false}; // The download has completed, successfully or not.
         bool success{false}; // Meaningful once `finished` is true: the download succeeded.
         std::atomic<int8_t> percent{-1}; // Latest download progress in percent reported by the engine.
+        std::atomic<int64_t> receivedBytes{-1}; // Latest downloaded amount in bytes, -1 while the total size is unknown.
+        std::atomic<int64_t> totalBytes{-1}; // Total size of the item in bytes, -1 while it is unknown.
 };
 
 OpenFileJob::OpenFileJob(std::string url, GetSyncPalCallback getSyncPal, GetVfsCallback getVfs) :
@@ -479,6 +481,11 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
 
     auto progressObserver = [completion](const int16_t progress) { completion->percent.store(static_cast<int8_t>(progress)); };
 
+    const auto progressSizeObserver = [completion](const int64_t receivedBytes, const int64_t totalBytes) {
+        completion->receivedBytes.store(receivedBytes);
+        completion->totalBytes.store(totalBytes);
+    };
+
     // Check the item state and set the pin state of the placeholder. Most failures in this phase leave the opening to
     // the system, which hydrates the item on access; a failure to set the pin state fails the request.
     bool hydrate = false;
@@ -500,7 +507,8 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     }
 
     // Enqueue the download job
-    if (const auto enqueueExitInfo = syncPal->addDlDirectJob(_relativePath, _localPath, SyncPath{}, observer, progressObserver);
+    if (const auto enqueueExitInfo =
+                syncPal->addDlDirectJob(_relativePath, _localPath, SyncPath{}, observer, progressObserver, progressSizeObserver);
         !enqueueExitInfo) {
         LOGW_INFO(_logger,
                   L"Error in SyncPal::addDlDirectJob - " << Utility::formatSyncPath(_localPath) << L": " << enqueueExitInfo);
@@ -754,9 +762,42 @@ void OpenFileJob::cancel() {
 }
 
 void OpenFileJob::notifyFeedback(const FileOpeningPhase phase, const int8_t percent) const {
-    if (_feedbackCallback) {
-        _feedbackCallback(phase, percent, CommonUtility::syncPath2CommString(_localPath.filename()));
+    if (!_feedbackCallback) return;
+
+    int64_t receivedBytes = -1;
+    int64_t totalBytes = -1;
+    if (phase == FileOpeningPhase::Hydrating) {
+        std::shared_ptr<HydrationCompletion> hydration;
+        {
+            const std::scoped_lock lock(_hydrationMutex);
+            hydration = _hydration;
+        }
+        if (hydration) {
+            receivedBytes = hydration->receivedBytes.load();
+            totalBytes = hydration->totalBytes.load();
+        }
     }
+
+    _feedbackCallback(phase, percent, CommonUtility::syncPath2CommString(_localPath.filename()), itemPathForDisplay(),
+                      receivedBytes, totalBytes);
+}
+
+CommString OpenFileJob::itemPathForDisplay() const {
+    // The client interface displays the path of the parent folder of the item, relative to the home directory when the
+    // item lies inside it (e.g. "kDrive/Documents/Clients/2026"), absolute otherwise, and empty while the item has not
+    // been resolved.
+    if (_localPath.empty()) return {};
+
+    const auto parentPath = _localPath.parent_path();
+    SyncPath homePath;
+    if (CommonUtility::homeDirectoryPath(homePath)) return CommonUtility::syncPath2CommString(parentPath);
+
+    const auto relativePath = parentPath.lexically_relative(homePath);
+    if (relativePath.empty() || relativePath == "." || *relativePath.begin() == "..") {
+        return CommonUtility::syncPath2CommString(parentPath);
+    }
+
+    return CommonUtility::syncPath2CommString(relativePath);
 }
 
 void OpenFileJob::notifyProgressIfChanged(const int8_t percent) {

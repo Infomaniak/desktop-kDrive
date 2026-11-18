@@ -790,7 +790,8 @@ void SyncPal::resetSnapshotInvalidationCounters() {
 
 ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
                                  const SyncPath &parentFolderPath, const std::function<void(UniqueId, bool)> &observer,
-                                 const std::function<void(int16_t)> &progressObserver) {
+                                 const std::function<void(int16_t)> &progressObserver,
+                                 const std::function<void(int64_t, int64_t)> &progressSizeObserver) {
     // Get the nodeId from the File System (not from the DB).
     // It is possible that an element of the path has been renamed and that the change has not yet been synchronized.
     NodeId localNodeId;
@@ -867,6 +868,11 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     };
 
     job->setProgressPercentCallback(progressPercentCallback);
+    job->setProgressSizeCallback([progressSizeObserver](UniqueId, const int64_t receivedBytes, const int64_t totalBytes) {
+        if (progressSizeObserver) {
+            progressSizeObserver(receivedBytes, totalBytes);
+        }
+    });
 
     const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);

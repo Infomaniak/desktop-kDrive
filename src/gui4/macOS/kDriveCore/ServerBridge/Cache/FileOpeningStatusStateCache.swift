@@ -31,12 +31,19 @@ public struct FileOpeningStatus: Hashable, Sendable {
     public let phase: FileOpeningStatusPhase
     public let percent: Int
     public let itemName: String
+    public let itemPath: String
+    public let receivedBytes: Int64
+    public let totalBytes: Int64
 
-    public init(jobId: Int64, phase: FileOpeningStatusPhase, percent: Int, itemName: String) {
+    public init(jobId: Int64, phase: FileOpeningStatusPhase, percent: Int, itemName: String, itemPath: String = "",
+                receivedBytes: Int64 = -1, totalBytes: Int64 = -1) {
         self.jobId = jobId
         self.phase = phase
         self.percent = percent
         self.itemName = itemName
+        self.itemPath = itemPath
+        self.receivedBytes = receivedBytes
+        self.totalBytes = totalBytes
     }
 }
 

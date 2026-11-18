@@ -43,6 +43,9 @@ class SyncJob : public AbstractJob {
         void setProgressPercentCallback(const std::function<void(UniqueId, int16_t)> &newCallback) {
             _progressPercentCallback = newCallback;
         }
+        void setProgressSizeCallback(const std::function<void(UniqueId, int64_t, int64_t)> &newCallback) {
+            _progressSizeCallback = newCallback;
+        }
 
         virtual int64_t getProgress() { return _progressSize; }
         void setProgress(int64_t newProgressSize);
@@ -54,6 +57,8 @@ class SyncJob : public AbstractJob {
         int64_t _expectedFinishProgress = expectedFinishProgressNotSetValue; // Expected progress value when the job is finished.
         std::function<void(UniqueId id, int progress)> _progressPercentCallback =
                 nullptr; // Used by the caller to be notified of job progress.
+        std::function<void(UniqueId id, int64_t receivedBytes, int64_t totalBytes)> _progressSizeCallback =
+                nullptr; // Used by the caller to be notified of the downloaded amount, when it is meaningful.
         int64_t _progressSize = -1; // Progress is -1 when it is not relevant for the current job
         int64_t _lastProgressSize = -1; // Progress last time it was checked using progressChanged()
         std::chrono::time_point<std::chrono::steady_clock> _lastProgressTimestamp = std::chrono::steady_clock::now();

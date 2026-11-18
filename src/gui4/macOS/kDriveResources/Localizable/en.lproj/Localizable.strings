@@ -151,6 +151,8 @@
 "fileOpeningHydratingMessage" = "Downloading the item…";
 "fileOpeningWaitingSyncMessage" = "This item is not synchronized yet. Synchronizing it may take some time.";
 "fileOpeningWindowTitle" = "kDrive";
+"fileOpeningDownloadTitle" = "Download";
+"fileOpeningDownloadProgress" = "%1$@ over %2$@";
 
 /* loco:69c0f0398ae1831b640e5a62 */
 "buttonChangeFolder" = "Change folder";

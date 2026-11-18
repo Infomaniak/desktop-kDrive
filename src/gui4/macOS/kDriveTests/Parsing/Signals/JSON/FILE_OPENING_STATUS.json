@@ -5,6 +5,9 @@
     "jobId": 4242,
     "phase": 2,
     "percent": 42,
-    "itemName": "Z3Jvc19maWNoaWVycy56aXA="
+    "itemName": "Z3Jvc19maWNoaWVycy56aXA=",
+    "itemPath": "a0RyaXZlIEluZm9tYW5pYWsvRG9jdW1lbnRzL0NsaWVudHMvMjAyNg==",
+    "receivedBytes": 13107200,
+    "totalBytes": 50331648
   }
 }

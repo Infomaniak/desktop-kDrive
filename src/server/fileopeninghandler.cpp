@@ -99,11 +99,14 @@ void FileOpeningHandler::queueOpenFileJob() {
     _appServer->registerFileOpeningJob(_jobId, shared_from_this());
     const std::weak_ptr<FileOpeningHandler> weakThis = weak_from_this();
     job->setFeedbackCallback(
-            [weakThis, appServer = _appServer](const FileOpeningPhase phase, const int8_t percent, const CommString &itemName) {
+            [weakThis, appServer = _appServer](const FileOpeningPhase phase, const int8_t percent, const CommString &itemName,
+                                               const CommString &itemPath, const int64_t receivedBytes,
+                                               const int64_t totalBytes) {
                 // Job manager worker thread. A null lock means the flow has already been processed and its handler destroyed:
                 // discard the call. Hand the state over to the application thread otherwise.
                 if (const auto handler = weakThis.lock()) {
-                    appServer->dispatchFileOpeningStatus(handler, phase, percent, itemName);
+                    appServer->dispatchFileOpeningStatus(handler, phase, percent, itemName, itemPath, receivedBytes,
+                                                         totalBytes);
                 }
             });
     std::weak_ptr<OpenFileJob> weakJob = job;
@@ -126,7 +129,7 @@ void FileOpeningHandler::onOpenFileJobFinished(const OpenFileJob::Outcome outcom
                                                const SyncDbId syncDbId) {
     // Close the pop-up window on the client side, if one is open (item being synchronized or download in progress).
     // The item name is irrelevant here: the clients close the window upon receiving the Finished phase.
-    _appServer->sendFileOpeningStatus(_jobId, FileOpeningPhase::Finished, -1, {});
+    _appServer->sendFileOpeningStatus(_jobId, FileOpeningPhase::Finished, -1, {}, {}, -1, -1);
 
     switch (outcome) {
         case OpenFileJob::Outcome::ReadyToOpen:
@@ -227,9 +230,10 @@ ExitInfo FileOpeningHandler::cancel() {
     return {ExitCode::DataError, ExitCause::NotFound};
 }
 
-void FileOpeningHandler::onFileOpeningStatus(const FileOpeningPhase phase, const int8_t percent,
-                                             const CommString &itemName) const {
-    _appServer->sendFileOpeningStatus(_jobId, phase, percent, itemName);
+void FileOpeningHandler::onFileOpeningStatus(const FileOpeningPhase phase, const int8_t percent, const CommString &itemName,
+                                             const CommString &itemPath, const int64_t receivedBytes,
+                                             const int64_t totalBytes) const {
+    _appServer->sendFileOpeningStatus(_jobId, phase, percent, itemName, itemPath, receivedBytes, totalBytes);
 }
 
 bool FileOpeningHandler::isFileOpeningDeeplink(const std::string &urlStr) {

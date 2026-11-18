@@ -420,9 +420,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode sendShowFileNotification(SyncDbId syncDbId, const QString &filename, const QString &renameTarget,
                                           SyncFileInstruction status, int count) const;
         void sendShowNotification(const QString &title, const QString &message) const;
-        //! Reports the state of a file opening request, and the name of the item being opened, to the client interface.
-        virtual void sendFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent,
-                                           const CommString &itemName) const;
+        //! Reports the state of a file opening request, along with the name of the item being opened, the path of its
+        //! parent folder, and the download progress in bytes, to the client interface.
+        virtual void sendFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent, const CommString &itemName,
+                                           const CommString &itemPath, int64_t receivedBytes, int64_t totalBytes) const;
         void registerFileOpeningJob(UniqueId jobId, std::shared_ptr<FileOpeningHandler> handler);
         void unregisterFileOpeningJob(UniqueId jobId);
         //! Returns the number of file-opening flows currently active: their job is queued or running and their
@@ -432,7 +433,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         //! to the client interface. Invoked on a job manager worker thread; the call is discarded if the flow has
         //! already been processed and its handler destroyed.
         void dispatchFileOpeningStatus(const std::shared_ptr<FileOpeningHandler> &handler, FileOpeningPhase phase, int8_t percent,
-                                       const CommString &itemName);
+                                       const CommString &itemName, const CommString &itemPath, int64_t receivedBytes,
+                                       int64_t totalBytes);
         //! Hands the outcome of a file opening job over to the application thread, where the handler opens the item or
         //! notifies the user of the failure. Invoked on a job manager worker thread; the handler stays alive while it
         //! processes the outcome — during which it unregisters itself from the registry — and is destroyed right

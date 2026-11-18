@@ -23,4 +23,7 @@ struct FileOpeningStatusSignal: Codable, Sendable {
     let phase: FileOpeningStatusPhase
     let percent: Int
     @Base64CodedString var itemName: String
+    @Base64CodedString var itemPath: String
+    let receivedBytes: Int64
+    let totalBytes: Int64
 }

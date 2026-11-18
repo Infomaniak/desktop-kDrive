@@ -86,9 +86,11 @@ class FileOpeningHandler : public std::enable_shared_from_this<FileOpeningHandle
         void handleFileOpeningSuccess();
         void handleFileOpeningFailure(const QString &userMessage);
         void handleFileOpeningCanceled();
-        //! Invoked on the application thread when the OpenFileJob has reported a new state: forwards it, along with the
-        //! name of the item being opened, to the client interface.
-        void onFileOpeningStatus(FileOpeningPhase phase, int8_t percent, const CommString &itemName) const;
+        //! Invoked on the application thread when the OpenFileJob has reported a new state: forwards it, along with
+        //! the name of the item being opened, the path of its parent folder, and the download progress in bytes, to
+        //! the client interface.
+        void onFileOpeningStatus(FileOpeningPhase phase, int8_t percent, const CommString &itemName, const CommString &itemPath,
+                                 int64_t receivedBytes, int64_t totalBytes) const;
 
         AppServer *_appServer{nullptr};
         std::string _url;

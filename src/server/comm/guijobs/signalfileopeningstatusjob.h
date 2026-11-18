@@ -26,7 +26,8 @@ namespace KDC {
 //! "kdrive://open/..." deeplink, and to close the corresponding pop-up window once the request has been processed.
 class SignalFileOpeningStatusJob : public AbstractGuiJob {
     public:
-        explicit SignalFileOpeningStatusJob(UniqueId jobId, FileOpeningPhase phase, int8_t percent, const CommString &itemName);
+        explicit SignalFileOpeningStatusJob(UniqueId jobId, FileOpeningPhase phase, int8_t percent, const CommString &itemName,
+                                            const CommString &itemPath, int64_t receivedBytes, int64_t totalBytes);
 
     private:
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
@@ -38,6 +39,9 @@ class SignalFileOpeningStatusJob : public AbstractGuiJob {
         FileOpeningPhase _phase{FileOpeningPhase::Finished};
         int8_t _percent{-1};
         CommString _itemName;
+        CommString _itemPath;
+        int64_t _receivedBytes{-1};
+        int64_t _totalBytes{-1};
 };
 
 } // namespace KDC

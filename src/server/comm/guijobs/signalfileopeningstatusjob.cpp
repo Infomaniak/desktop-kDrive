@@ -23,15 +23,22 @@ static const auto outParamsJobId = "jobId";
 static const auto outParamsPhase = "phase";
 static const auto outParamsPercent = "percent";
 static const auto outParamsItemName = "itemName";
+static const auto outParamsItemPath = "itemPath";
+static const auto outParamsReceivedBytes = "receivedBytes";
+static const auto outParamsTotalBytes = "totalBytes";
 
 namespace KDC {
 
 SignalFileOpeningStatusJob::SignalFileOpeningStatusJob(const UniqueId jobId, const FileOpeningPhase phase, const int8_t percent,
-                                                       const CommString &itemName) :
+                                                       const CommString &itemName, const CommString &itemPath,
+                                                       const int64_t receivedBytes, const int64_t totalBytes) :
     _jobId(jobId),
     _phase(phase),
     _percent(percent),
-    _itemName(itemName) {
+    _itemName(itemName),
+    _itemPath(itemPath),
+    _receivedBytes(receivedBytes),
+    _totalBytes(totalBytes) {
     _signalNum = SignalNum::FILE_OPENING_STATUS;
 }
 
@@ -40,6 +47,9 @@ ExitInfo SignalFileOpeningStatusJob::serializeOutputParms() {
     writeParamValue(outParamsPhase, _phase);
     writeParamValue(outParamsPercent, _percent);
     writeParamValue(outParamsItemName, _itemName);
+    writeParamValue(outParamsItemPath, _itemPath);
+    writeParamValue(outParamsReceivedBytes, _receivedBytes);
+    writeParamValue(outParamsTotalBytes, _totalBytes);
 
     return ExitCode::Ok;
 }

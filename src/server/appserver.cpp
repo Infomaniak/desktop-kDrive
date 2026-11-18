@@ -2893,7 +2893,8 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
 }
 
 void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPhase phase, const int8_t percent,
-                                      const CommString &itemName) const {
+                                      const CommString &itemName, const CommString &itemPath, const int64_t receivedBytes,
+                                      const int64_t totalBytes) const {
     // Inform the client interface of the state of the file opening request, so that a pop-up window can be displayed,
     // updated, or closed.
     if (useOldCommServer()) {
@@ -2905,10 +2906,14 @@ void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPha
         paramsStream << phase;
         paramsStream << static_cast<qint8>(percent);
         paramsStream << CommonUtility::commString2QStr(itemName);
+        paramsStream << CommonUtility::commString2QStr(itemPath);
+        paramsStream << static_cast<qint64>(receivedBytes);
+        paramsStream << static_cast<qint64>(totalBytes);
         (void) OldCommServer::instance()->sendSignal(SignalNum::FILE_OPENING_STATUS, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, phase, percent, itemName));
+        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, phase, percent, itemName, itemPath,
+                                                                                 receivedBytes, totalBytes));
     }
 }
 
@@ -2941,15 +2946,16 @@ Count AppServer::fileOpeningJobCount() const {
 }
 
 void AppServer::dispatchFileOpeningStatus(const std::shared_ptr<FileOpeningHandler> &handler, const FileOpeningPhase phase,
-                                          const int8_t percent, const CommString &itemName) {
+                                          const int8_t percent, const CommString &itemName, const CommString &itemPath,
+                                          const int64_t receivedBytes, const int64_t totalBytes) {
     // Invoked on a job manager worker thread: hand the state over to the application thread. The weak reference lets
     // the queued call be discarded if the flow has been processed and its handler destroyed in the meantime.
     const std::weak_ptr<FileOpeningHandler> weakHandler = handler;
     (void) QMetaObject::invokeMethod(
             this,
-            [weakHandler, phase, percent, itemName] {
+            [weakHandler, phase, percent, itemName, itemPath, receivedBytes, totalBytes] {
                 if (const auto handler = weakHandler.lock()) {
-                    handler->onFileOpeningStatus(phase, percent, itemName);
+                    handler->onFileOpeningStatus(phase, percent, itemName, itemPath, receivedBytes, totalBytes);
                 }
             },
             Qt::QueuedConnection);
