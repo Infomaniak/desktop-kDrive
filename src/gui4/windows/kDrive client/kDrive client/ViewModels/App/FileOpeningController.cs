@@ -168,8 +168,8 @@ namespace Infomaniak.kDrive.ViewModels
         /// Downloaded amount as a localized "12.5 MB over 48 MB" string, only meaningful when
         /// <see cref="HasDownloadProgress"/> is true.
         public string ProgressText => Localizer.Instance.GetString1s2s("fileOpeningDownloadProgress",
-            (string)BytesConverter.Convert(ReceivedBytes, typeof(string), null, ""),
-            (string)BytesConverter.Convert(TotalBytes, typeof(string), null, ""));
+            (string)BytesConverter.Convert(ReceivedBytes, typeof(string), string.Empty, ""),
+            (string)BytesConverter.Convert(TotalBytes, typeof(string), string.Empty, ""));
 
         public string Message => Localizer.Instance.GetString(IsDownloading ? "fileOpeningHydratingMessage" : "fileOpeningWaitingSyncMessage");
 
