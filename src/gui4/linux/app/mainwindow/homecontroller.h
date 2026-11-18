@@ -59,6 +59,8 @@ class HomeController final : public QObject {
         Q_PROPERTY(bool hasCurrentDrive READ hasCurrentDrive NOTIFY homeChanged)
         Q_PROPERTY(bool hasConnectedUser READ hasConnectedUser NOTIFY homeChanged)
         Q_PROPERTY(bool showV4Onboarding READ showV4Onboarding NOTIFY v4OnboardingChanged)
+        Q_PROPERTY(HomeBanner banner READ banner NOTIFY bannerChanged)
+        Q_PROPERTY(bool driveAdmin READ driveAdmin NOTIFY homeChanged)
 
     public:
         enum class HomeStatus : uint8_t {
@@ -88,6 +90,16 @@ class HomeController final : public QObject {
         };
         Q_ENUM(SyncControlState)
 
+        /** Banner shown above the Home panels, the most urgent first: Home shows one banner at a time. */
+        enum class HomeBanner : uint8_t {
+            None = 0,
+            DriveFull,
+            ServerError,
+            SyncErrors,
+            V4Onboarding,
+        };
+        Q_ENUM(HomeBanner)
+
         explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore,
                                 const SyncErrorsProjection &syncErrorsProjection, SyncService &syncService, AppRouter &appRouter,
                                 NetworkStatusObserver &networkStatusObserver, CommService &commService,
@@ -109,6 +121,11 @@ class HomeController final : public QObject {
         /** Whether the "new kDrive app" banner is shown: the server sets it once, when the app comes from a version before 4. */
         [[nodiscard]] bool showV4Onboarding() const;
 
+        [[nodiscard]] HomeBanner banner() const;
+
+        /** Whether the user administrates the selected drive, the only one allowed to add storage. */
+        [[nodiscard]] bool driveAdmin() const;
+
         /** Reads `AppStateKey::ShowV4Onboarding` from the server. Called once the IPC connection is established. */
         void loadV4Onboarding();
 
@@ -124,9 +141,19 @@ class HomeController final : public QObject {
         /** Hides the "new kDrive app" banner and asks the server to never show it again. */
         Q_INVOKABLE void dismissV4Onboarding();
 
+        /** Opens the shop page offering more storage for the selected drive. Admins only. */
+        Q_INVOKABLE void openDriveUpsell() const;
+
+        /** Hides the "kDrive is full" banner until the selected synchronization has no quota error left. */
+        Q_INVOKABLE void dismissDriveFull();
+
+        /** Restarts the selected synchronization, from the server error banner. */
+        Q_INVOKABLE void retrySync();
+
     signals:
         void homeChanged();
         void v4OnboardingChanged();
+        void bannerChanged();
         void setupRequested();
         void userSettingsRequested(UserDbId userDbId);
         void driveSettingsRequested(DriveDbId driveDbId);
@@ -136,6 +163,7 @@ class HomeController final : public QObject {
         [[nodiscard]] std::optional<SyncStatus> currentRuntimeStatus() const;
         [[nodiscard]] qint64 currentSyncDbId() const;
         [[nodiscard]] bool syncActionPending() const;
+        void refreshDriveFullDismissal();
 
         AppCache &_appCache;
         MainSelectionStore &_mainSelectionStore;
@@ -145,6 +173,7 @@ class HomeController final : public QObject {
         NetworkStatusObserver &_networkStatusObserver;
         CommService &_commService;
         bool _showV4Onboarding{false};
+        SyncDbId _driveFullDismissedSyncDbId{0};
 };
 
 } // namespace KDC
