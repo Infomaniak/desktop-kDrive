@@ -4,14 +4,23 @@
 `start-runners.yml` (`win_kdrive_runner_build_env`). Run it manually from the Actions tab
 (**Refresh Windows CI runner image**).
 
+It also runs every Sunday and Wednesday at **23:00 Europe/Zurich**, following daylight saving
+time. GitHub only starts scheduled workflows once they are on the default branch. Manual runs
+always perform the full refresh, even if Windows Update installs nothing.
+
 ## What it does
 
 1. **Maintenance VM** (`img-refresh-<repository-id>-maint-<run>-<attempt>`) boots from the current image with
    `maintenance-userdata.ps1`. Its runner registers right away (unique label only, no default labels)
    but starts only after a SYSTEM startup task has installed every routine Windows update
    (no feature upgrades, drivers or previews), rebooting as needed.
-2. **warm-cache** runs on that runner: it fails if Windows Update failed, then refreshes Conan with
+2. **warm-cache** runs on that runner: it fails if Windows Update failed and records the original
+   and destination Windows versions and the successfully installed update titles across reboots.
+   On automatic runs with no installations, it skips Conan and sealing; capture, compression,
+   validation and promotion are also skipped, and cleanup deletes the maintenance VM.
+   Otherwise, it refreshes Conan with
    `build_dependencies.ps1 Release -CI -MakeRelease -CleanCache -Update` and schedules `seal.ps1`.
+   Defender intelligence updates count as installations even when the Windows build is unchanged.
 3. After the job ends, `seal.ps1` removes the runner state and autologon password, then restarts. At
    startup it waits for servicing to be idle and restarts again (up to 3 times) while a reboot is still
    pending; then it removes the maintenance files, writes
@@ -37,10 +46,17 @@
    With `keep_failed_validation`, a failed validation keeps its VM and candidate for inspection; the
    next run deletes them. If the runner never comes online, the boot job prints the VM status and
    serial console.
+9. **notify** posts the outcome to the existing kChat notification channel using
+   `KCHAT_WEBHOOK_URL` and `infomaniak-build-tools/notify_kchat.ps1`, after cleanup. Successful
+   refreshes list the original and destination Windows versions and every successfully installed
+   update; runs with no updates report the current Windows version instead. Failed runs are
+   explicitly marked as failed, including cleanup failures after a successful promotion.
+   Cancelled runs do not send a notification.
 
 ## Prerequisites
 
-- Existing secrets: `PUBLIC_CLOUD_OS_*`, `RUNNER_ADMIN_PAT`, `QT_ACCOUNT_EMAIL`, `QT_ACCOUNT_PASSWORD`.
+- Existing secrets: `PUBLIC_CLOUD_OS_*`, `RUNNER_ADMIN_PAT`, `QT_ACCOUNT_EMAIL`, `QT_ACCOUNT_PASSWORD`,
+  `KCHAT_WEBHOOK_URL`.
 - Optional repository variables override the conversion VM defaults:
   - `IMAGE_REFRESH_LINUX_IMAGE`: `Ubuntu 26.04 LTS Resolute Raccoon` (cloud-init required).
   - `IMAGE_REFRESH_LINUX_FLAVOR`: `a8-ram16-disk20-perf1`.
@@ -53,16 +69,10 @@
   allows port 22 from that runner's public IPv4. SSH trusts the host key on first use. Glance
   transfers use short-lived project-scoped tokens; a transfer exceeding the token lifetime will fail.
 
-## First run
+## Manual operation
 
-GitHub requires the workflow file on the default branch before it can be dispatched.
-Before that, the branch can explicitly dispatch the existing `start-runners.yml` workflow
-with `count=0` and `labels=refresh-production-image` to run the production refresh. This
-bridge does not start normal runners and must be removed before merging.
-Run once with `image_name` set to a copy of the production image (for example
-`win_kdrive_runner_build_env_test`) and `promote` enabled to test the whole chain before
-refreshing production. Set `promote` to false to validate without replacing the image; the
-unpromoted candidate is then deleted.
+Set `promote` to false to validate a refresh without replacing the image; the unpromoted
+candidate is then deleted.
 
 ## Troubleshooting and rollback
 
@@ -76,8 +86,3 @@ unpromoted candidate is then deleted.
   `<image>_old_*` image back to `<image>`:
   `openstack image set --name win_kdrive_runner_build_env <old-image-id>`.
 - Retained `_old_` images are never deleted automatically; remove obsolete ones manually.
-
-Run the local helper regression checks with `bash .github/windows-image-refresh/test-lib.sh`.
-On Windows, run `powershell -File .github\windows-image-refresh\test-maintenance.ps1` to simulate
-update selection and bounded failure handling without changing the machine.
-Run `powershell -File .github\windows-image-refresh\test-seal.ps1` to check the sealing idle guard.

@@ -4,6 +4,9 @@ name: Refresh Windows CI runner image
 # See .github/windows-image-refresh/README.md for prerequisites, operation and rollback.
 
 on:
+  schedule:
+    - cron: "0 23 * * 0,3"
+      timezone: "Europe/Zurich"
   workflow_dispatch:
     inputs:
       image_name:
@@ -65,7 +68,7 @@ env:
   LINUX_FLAVOR: ${{ vars.IMAGE_REFRESH_LINUX_FLAVOR || 'a8-ram16-disk20-perf1' }}
   VOLUME_TYPE: ${{ vars.IMAGE_REFRESH_VOLUME_TYPE || 'CEPH_1_perf1' }}
   REPO: ${{ github.repository }}
-  IMAGE_NAME: ${{ inputs.image_name }}
+  IMAGE_NAME: ${{ inputs.image_name || 'win_kdrive_runner_build_env' }}
   REFRESH_PREFIX: img-refresh-${{ github.repository_id }}-
   MAINT_NAME: img-refresh-${{ github.repository_id }}-maint-${{ github.run_id }}-${{ github.run_attempt }}
   VALIDATE_NAME: img-refresh-${{ github.repository_id }}-validate-${{ github.run_id }}-${{ github.run_attempt }}
@@ -73,7 +76,7 @@ env:
   VOLUME_NAME: img-refresh-${{ github.repository_id }}-volume-${{ github.run_id }}-${{ github.run_attempt }}
   SECGROUP_NAME: img-refresh-${{ github.repository_id }}-ssh-${{ github.run_id }}-${{ github.run_attempt }}
   SNAPSHOT_NAME: img-refresh-${{ github.repository_id }}-snapshot-${{ github.run_id }}-${{ github.run_attempt }}
-  CANDIDATE_NAME: ${{ inputs.image_name }}_candidate_${{ github.repository_id }}_${{ github.run_id }}_${{ github.run_attempt }}
+  CANDIDATE_NAME: ${{ inputs.image_name || 'win_kdrive_runner_build_env' }}_candidate_${{ github.repository_id }}_${{ github.run_id }}_${{ github.run_attempt }}
   LIB: .github/windows-image-refresh/lib.sh
 
 jobs:
@@ -89,7 +92,7 @@ jobs:
       CLOUD_USER_DOMAIN_NAME: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
       CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
       GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
-      WINDOWS_FLAVOR: ${{ inputs.windows_flavor }}
+      WINDOWS_FLAVOR: ${{ inputs.windows_flavor || 'a16-ram32-disk80-perf1' }}
     outputs:
       source_image_id: ${{ steps.source.outputs.id }}
       maint_server_id: ${{ steps.launch.outputs.id }}
@@ -98,7 +101,7 @@ jobs:
 
       - name: Check configuration
         env:
-          VOLUME_SIZE: ${{ inputs.work_volume_size_gb }}
+          VOLUME_SIZE: ${{ inputs.work_volume_size_gb || '200' }}
         run: |
           source "$LIB"
           [[ "$VOLUME_SIZE" =~ ^[0-9]+$ ]] || die "work_volume_size_gb must be a number"
@@ -235,7 +238,7 @@ jobs:
           wait_runner_online "$MAINT_NAME" "${{ needs.prepare.outputs.maint_server_id }}" 330
 
   warm-cache:
-    name: Warm Conan cache and seal
+    name: Check updates, warm Conan cache and seal
     needs: [ prepare, wait-maintenance-runner ]
     runs-on: [ "img-refresh-${{ github.repository_id }}-maint-${{ github.run_id }}-${{ github.run_attempt }}" ]
     timeout-minutes: 240
@@ -245,21 +248,35 @@ jobs:
     outputs:
       original_version: ${{ steps.state.outputs.original_version }}
       updated_version: ${{ steps.state.outputs.updated_version }}
+      installed_updates: ${{ steps.state.outputs.installed_updates }}
+      refresh_required: ${{ steps.state.outputs.refresh_required }}
     steps:
-      - name: Check runner identity and Windows Update result
-        id: state
+      - name: Check maintenance runner identity
         run: |
           if ($env:RUNNER_NAME -ne $env:MAINT_NAME) { throw "Unexpected runner '$env:RUNNER_NAME'" }
           Get-Content C:\ImageRefresh\refresh.log
-          $state = Get-Content C:\ImageRefresh\state.json -Raw | ConvertFrom-Json
-          if ($state.stage -ne "ready") { throw "Windows Update ended with '$($state.stage)': $($state.message)" }
-          Write-Host "Windows $($state.originalVersion) -> $($state.updatedVersion)"
-          "original_version=$($state.originalVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "updated_version=$($state.updatedVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - uses: actions/checkout@v4
 
+      - name: Check Windows Update result
+        id: state
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          . .\.github\windows-image-refresh\results.ps1
+          $state = Get-Content C:\ImageRefresh\state.json -Raw | ConvertFrom-Json
+          $outputs = Get-RefreshOutputs -State $state -EventName $env:EVENT_NAME
+          foreach ($property in $outputs.PSObject.Properties) {
+            "$($property.Name)=$($property.Value)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          }
+          if ($state.stage -ne "ready") { throw "Windows Update ended with '$($state.stage)': $($state.message)" }
+          Write-Host "Windows $($state.originalVersion) -> $($state.updatedVersion)"
+          if ($outputs.refresh_required -eq "false") {
+            Write-Host "No Windows updates installed on this automatic run; skipping the image refresh."
+          }
+
       - name: Refresh Conan recipes and binaries
+        if: steps.state.outputs.refresh_required == 'true'
         env:
           QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
           QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
@@ -271,6 +288,7 @@ jobs:
       - name: Show Cloudbase-Init setup before sealing
         # Diagnostics for first boot of the generalized image; secret-like settings are omitted.
         continue-on-error: true
+        if: steps.state.outputs.refresh_required == 'true'
         run: |
           Get-CimInstance Win32_Service -Filter "Name='cloudbase-init'" | Format-List Name, State, StartMode, StartName
           $conf = "C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf"
@@ -283,8 +301,9 @@ jobs:
           Get-ChildItem "HKLM:\SOFTWARE\Cloudbase Solutions\Cloudbase-Init" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PSChildName
 
       - name: Schedule Sysprep after this job
+        if: steps.state.outputs.refresh_required == 'true'
         env:
-          UNATTEND: ${{ inputs.sysprep_unattend }}
+          UNATTEND: ${{ inputs.sysprep_unattend || 'C:\Program Files\Cloudbase Solutions\Cloudbase-Init\conf\Unattend.xml' }}
           SOURCE_IMAGE_ID: ${{ needs.prepare.outputs.source_image_id }}
           ORIGINAL_VERSION: ${{ steps.state.outputs.original_version }}
           UPDATED_VERSION: ${{ steps.state.outputs.updated_version }}
@@ -315,6 +334,7 @@ jobs:
   capture:
     name: Capture and compress candidate image
     needs: [ prepare, warm-cache ]
+    if: needs.warm-cache.outputs.refresh_required == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 350
     env:
@@ -327,7 +347,7 @@ jobs:
       GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
       MAINT_SERVER_ID: ${{ needs.prepare.outputs.maint_server_id }}
       SOURCE_IMAGE_ID: ${{ needs.prepare.outputs.source_image_id }}
-      VOLUME_SIZE: ${{ inputs.work_volume_size_gb }}
+      VOLUME_SIZE: ${{ inputs.work_volume_size_gb || '200' }}
       SSH_OPTS: -i /home/runner/.ssh/refresh -o UserKnownHostsFile=/home/runner/.ssh/refresh_known_hosts -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=30 -o ConnectTimeout=20
     outputs:
       candidate_id: ${{ steps.candidate.outputs.id }}
@@ -558,7 +578,7 @@ jobs:
       CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
       GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
       CANDIDATE_ID: ${{ needs.capture.outputs.candidate_id }}
-      WINDOWS_FLAVOR: ${{ inputs.windows_flavor }}
+      WINDOWS_FLAVOR: ${{ inputs.windows_flavor || 'a16-ram32-disk80-perf1' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -689,7 +709,7 @@ jobs:
   promote:
     name: Promote candidate image
     needs: [ prepare, warm-cache, capture, validate, watchdog ]
-    if: inputs.promote
+    if: inputs.promote || (github.event_name == 'schedule' && !inputs.image_name)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -697,7 +717,7 @@ jobs:
       contents: read
     # Shared with start-runners.yml so no runner launch resolves the image name between the two renames.
     concurrency:
-      group: windows-runner-image-${{ inputs.image_name }}
+      group: windows-runner-image-${{ inputs.image_name || 'win_kdrive_runner_build_env' }}
       cancel-in-progress: false
     env:
       CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
@@ -834,3 +854,22 @@ jobs:
             cleanup os image delete "$id"
           done
           (( failed == 0 ))
+
+  notify:
+    name: Notify kChat
+    needs: [ prepare, wait-maintenance-runner, warm-cache, capture, boot-candidate, validate, watchdog, promote, cleanup ]
+    if: ${{ !cancelled() }}
+    runs-on: windows-latest
+    env:
+      KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
+      RESULTS_JSON: ${{ toJSON(needs) }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish image refresh result
+        shell: powershell
+        run: |
+          . .\.github\windows-image-refresh\results.ps1
+          $results = $env:RESULTS_JSON | ConvertFrom-Json
+          $message = Format-RefreshNotification -Results $results -RunUrl $env:RUN_URL
+          .\infomaniak-build-tools\notify_kchat.ps1 $message

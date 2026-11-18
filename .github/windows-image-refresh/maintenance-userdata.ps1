@@ -157,7 +157,13 @@ function Invoke-UpdateLoop {
                 $updateResult = $installResult.GetUpdateResult($i)
                 Write-Log "  Result for '$title': code=$($updateResult.ResultCode) hresult=$($updateResult.HResult)"
                 # Only a fully successful update is accepted.
-                if ($updateResult.ResultCode -ne 2) {
+                if ($updateResult.ResultCode -eq 2) {
+                    if ($state.installedUpdates -notcontains $title) {
+                        $state.installedUpdates = @($state.installedUpdates) + $title
+                        Save-State $state
+                    }
+                }
+                else {
                     $failures[$title] = 1 + [int]$failures[$title]
                     if ($failures[$title] -ge $MaxFailuresPerUpdate) {
                         $state.failures = [pscustomobject]$failures
@@ -200,15 +206,16 @@ if (Test-Path $StateFile) {
 }
 
 $state = [pscustomobject]@{
-    stage           = "updating"
-    runnerName      = $RunnerName
-    originalVersion = Get-WindowsVersionString
-    updatedVersion  = ""
-    iteration       = 0
-    failures        = [pscustomobject]@{}
-    message         = ""
-    started         = (Get-Date).ToUniversalTime().ToString("o")
-    finished        = ""
+    stage            = "updating"
+    runnerName       = $RunnerName
+    originalVersion  = Get-WindowsVersionString
+    updatedVersion   = ""
+    iteration        = 0
+    installedUpdates = @()
+    failures         = [pscustomobject]@{}
+    message          = ""
+    started          = (Get-Date).ToUniversalTime().ToString("o")
+    finished         = ""
 }
 Save-State $state
 Write-Log "Original Windows version: $($state.originalVersion)"
