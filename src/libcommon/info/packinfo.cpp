@@ -71,7 +71,7 @@ void PackInfo::setDisplayName(const std::string_view displayName) {
 
     size_t pos = 0;
     while ((pos = name.find(from, pos)) != std::string::npos) {
-        name.replace(pos, from.size(), to);
+        (void) name.replace(pos, from.size(), to);
         pos += to.size();
     }
 
