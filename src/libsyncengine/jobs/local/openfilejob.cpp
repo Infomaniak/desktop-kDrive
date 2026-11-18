@@ -43,11 +43,11 @@ namespace KDC {
 namespace {
 // The requested item may have been created on the remote side recently: keep resolving it during `_syncWaitTimeout`
 // before giving up.
-constexpr std::chrono::milliseconds kSyncWaitTickInterval(2000);
-// Downloading a large item may take a long time: keep waiting for the hydration during `kHydrationTimeout` before
+constexpr std::chrono::milliseconds syncWaitTickInterval(2000);
+// Downloading a large item may take a long time: keep waiting for the hydration during `hydrationTimeout` before
 // giving up.
-constexpr std::chrono::hours kHydrationTimeout(1);
-constexpr std::chrono::milliseconds kHydrationWaitTick(1000);
+constexpr std::chrono::hours hydrationTimeout(1);
+constexpr std::chrono::milliseconds hydrationWaitTick(1000);
 
 //! Parses `urlStr` into `uri`. Returns false if `urlStr` is not a syntactically valid URI.
 bool parseUri(const std::string &urlStr, Poco::URI &uri) {
@@ -217,7 +217,7 @@ ExitInfo OpenFileJob::resolveItem() {
         }
 
         // The item exists on the remote side only: wait for it to be synchronized.
-        std::this_thread::sleep_for(kSyncWaitTickInterval);
+        std::this_thread::sleep_for(syncWaitTickInterval);
         if (std::chrono::steady_clock::now() >= deadline) {
             LOGW_WARN(_logger,
                       L"The item was not synchronized in time - remoteNodeId=" << CommonUtility::s2ws(_request.remoteNodeId));
@@ -519,7 +519,7 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     }
 
     // Wait for the download to complete, keeping the user interface informed of the progress.
-    const auto deadline = std::chrono::steady_clock::now() + kHydrationTimeout;
+    const auto deadline = std::chrono::steady_clock::now() + hydrationTimeout;
     std::unique_lock lock(completion->mutex);
 
     while (!completion->finished) {
@@ -538,7 +538,7 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
             return {ExitCode::SystemError, ExitCause::Unknown};
         }
 
-        completion->cv.wait_for(lock, std::min(remaining, kHydrationWaitTick));
+        completion->cv.wait_for(lock, std::min(remaining, hydrationWaitTick));
 
         notifyProgressIfChanged(completion->percent.load());
     }
