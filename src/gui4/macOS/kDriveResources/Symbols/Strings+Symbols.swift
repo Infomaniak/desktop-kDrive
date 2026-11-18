@@ -601,6 +601,28 @@ public enum KDriveLocalizable {
   public static let fileExclusionNotificationWarning = KDriveLocalizable.tr("Localizable", "fileExclusionNotificationWarning", fallback: "A notification informs you when a file is excluded by this rule.")
   /// loco:699c56142c8d937001054c82
   public static let fileExistsErrorTitle = KDriveLocalizable.tr("Localizable", "fileExistsErrorTitle", fallback: "File already exists")
+  /// Download from kDrive
+  public static let fileOpeningDownloadButton = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadButton", fallback: "Download from kDrive")
+  /// Downloading %@…
+  public static func fileOpeningDownloadingMessage(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "fileOpeningDownloadingMessage", String(describing: p1), fallback: "Downloading %@…")
+  }
+  /// loco:6afdd20a9ee4cf55660ee934
+  public static func fileOpeningDownloadProgress(_ p1: Any, _ p2: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "fileOpeningDownloadProgress", String(describing: p1), String(describing: p2), fallback: "%@ over %@")
+  }
+  /// loco:6afdd1cddf6d796ad70d8a52
+  public static let fileOpeningDownloadTitle = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadTitle", fallback: "Download")
+  /// You can download it yourself from kDrive in your browser.
+  public static let fileOpeningFailureExplanation = KDriveLocalizable.tr("Localizable", "fileOpeningFailureExplanation", fallback: "You can download it yourself from kDrive in your browser.")
+  /// Cannot open the file
+  public static let fileOpeningFailureTitle = KDriveLocalizable.tr("Localizable", "fileOpeningFailureTitle", fallback: "Cannot open the file")
+  /// Downloading the item…
+  public static let fileOpeningHydratingMessage = KDriveLocalizable.tr("Localizable", "fileOpeningHydratingMessage", fallback: "Downloading the item…")
+  /// This item is not synchronized yet. Synchronizing it may take some time.
+  public static let fileOpeningWaitingSyncMessage = KDriveLocalizable.tr("Localizable", "fileOpeningWaitingSyncMessage", fallback: "This item is not synchronized yet. Synchronizing it may take some time.")
+  /// kDrive
+  public static let fileOpeningWindowTitle = KDriveLocalizable.tr("Localizable", "fileOpeningWindowTitle", fallback: "kDrive")
   /// loco:698b00c7f04008f614070e52
   public static let filesToExclude = KDriveLocalizable.tr("Localizable", "filesToExclude", fallback: "Files to exclude")
   /// loco:698b05aa9eefd9ba070ce4a2
@@ -866,20 +888,8 @@ public enum KDriveLocalizable {
   /// loco:6a6c9c2250ca28e030064894
   public static let manyDeleteDialogHardLimitPrimary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitPrimary", fallback: "Restore the files")
   /// loco:6a6c9c3be4819f7c890366e2
-  public static func fileOpeningDownloadingMessage(_ p1: Any) -> String {
-    return KDriveLocalizable.tr("Localizable", "fileOpeningDownloadingMessage", String(describing: p1), fallback: "Downloading %@…")
-  }
-  public static let fileOpeningHydratingMessage = KDriveLocalizable.tr("Localizable", "fileOpeningHydratingMessage", fallback: "Downloading the item…")
-  public static let fileOpeningWaitingSyncMessage = KDriveLocalizable.tr("Localizable", "fileOpeningWaitingSyncMessage", fallback: "This item is not synchronized yet. Synchronizing it may take some time.")
-  public static let fileOpeningWindowTitle = KDriveLocalizable.tr("Localizable", "fileOpeningWindowTitle", fallback: "kDrive")
-  public static let fileOpeningDownloadTitle = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadTitle", fallback: "Download")
-  public static func fileOpeningDownloadProgress(_ p1: Any, _ p2: Any) -> String {
-    return KDriveLocalizable.tr("Localizable", "fileOpeningDownloadProgress", String(describing: p1), String(describing: p2), fallback: "%1$@ over %2$@")
-  }
-  public static let fileOpeningFailureTitle = KDriveLocalizable.tr("Localizable", "fileOpeningFailureTitle", fallback: "Cannot open the file")
-  public static let fileOpeningFailureExplanation = KDriveLocalizable.tr("Localizable", "fileOpeningFailureExplanation", fallback: "You can download it yourself from kDrive in your browser.")
-  public static let fileOpeningDownloadButton = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadButton", fallback: "Download from kDrive")
   public static let manyDeleteDialogHardLimitSecondary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitSecondary", fallback: "Delete online as well")
+  /// and %@ other items
   public static func manyDeleteDialogOtherPlaceholder(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "manyDeleteDialogOtherPlaceholder", String(describing: p1), fallback: "and %@ other items")
   }

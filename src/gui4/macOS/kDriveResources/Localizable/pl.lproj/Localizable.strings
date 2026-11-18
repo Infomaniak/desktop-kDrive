@@ -797,6 +797,12 @@
 /* loco:699c56142c8d937001054c82 */
 "fileExistsErrorTitle" = "Plik już istnieje";
 
+/* loco:6afdd20a9ee4cf55660ee934 */
+"fileOpeningDownloadProgress" = "%@ z %@";
+
+/* loco:6afdd1cddf6d796ad70d8a52 */
+"fileOpeningDownloadTitle" = "Pobierz";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Tryb synchronizacji plików";
 
