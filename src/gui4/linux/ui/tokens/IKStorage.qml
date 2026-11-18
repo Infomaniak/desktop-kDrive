@@ -51,15 +51,8 @@ QtObject {
     readonly property real chipIconSize: 12
     readonly property real chipMaxWidth: 200
     readonly property real legendLabelSpacing: 6
-    readonly property real actionCardPadding: 10
-    readonly property real actionContentSpacing: 8
     readonly property real actionTextSpacing: 2
-    readonly property real actionIconTileSize: 26
-    readonly property real actionIconTileRadius: 5
-    readonly property real actionIconSize: 14
-    readonly property real actionButtonHeight: 24
     readonly property real actionSubtitleLineHeight: 14
-    readonly property real actionButtonSpacing: 16
     readonly property real unavailableCardPadding: 32
     readonly property int segmentAnimationDuration: 450
 }

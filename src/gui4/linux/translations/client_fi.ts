@@ -2372,11 +2372,6 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
             <source>Macintosh</source> 
             <translation>Macintosh</translation> 
         </message> 
-        <message id="storageDiskAlmostFullDescription"> 
-            <source>Your disk is almost full. Delete or move personal files from this disk to keep syncing your data.</source> 
-            <extracomment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</extracomment> 
-            <translation>Levysi on lähes täynnä. Poista tai siirrä henkilökohtaisia tiedostoja tältä levyltä, jotta voit jatkaa tietojesi synkronointia.</translation> 
-        </message> 
         <message id="storageLoadingHint"> 
             <source>Loading space usage…</source> 
             <translation>Ladataan tilankäyttöä…</translation> 

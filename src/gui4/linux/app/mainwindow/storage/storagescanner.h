@@ -35,7 +35,6 @@ namespace KDC {
 struct StorageVolume {
         QString volumeName;
         bool usesDefaultRootName{false};
-        SyncPath volumeRoot;
         dev_t device{0};
         uint64_t totalBytes{0};
         uint64_t availableBytes{0};

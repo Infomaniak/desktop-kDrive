@@ -237,8 +237,9 @@
 - Keep measured Storage segments visible with a nominal 1% minimum, but let free space and empty segments reach a true
   zero width; an unmeasured kDrive segment takes no width, the other-syncs row is hidden once they measure 0 bytes, and the other-files segment is the used space not yet attributed, so
   measures take their share from it. Normalize the displayed widths inside the single rounded graph mask.
-- Order the Storage cards as disk, insufficient disk space (below `AppConstants::Storage::diskAlmostFullThresholdBytes`),
-  subscription (hidden while the quota is unknown), synchronization. An unreadable disk replaces only the disk card. The
+- Order the Storage cards as disk, subscription (hidden while the quota is unknown), synchronization. Below
+  `AppConstants::Storage::diskAlmostFullThresholdBytes`, the disk card shows the used space only and the sidebar shows
+  the storage warning; there is no insufficient disk space card. An unreadable disk replaces only the disk card. The
   "Optimize computer space" card of the Figma relies on LiteSync and is not shown on Linux. Only drive admins get the
   subscription upgrade action.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
