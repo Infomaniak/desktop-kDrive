@@ -31,6 +31,8 @@ ToolButton {
     }
 
     required property var targetWindow
+    // Window id of the user action log (see UserActionLog).
+    required property string windowId
     required property int controlType
     property string shortcutText: ""
 
@@ -58,15 +60,19 @@ ToolButton {
         return ""
     }
 
+    // Closing is logged by the window itself (`window.close`), whatever closed it.
     onClicked: {
         switch (controlType) {
         case IKWindowControlButton.Minimize:
+            UserActionLog.action("window.minimize", { window: root.windowId, source: "button" })
             targetWindow.showMinimized()
             break
         case IKWindowControlButton.Maximize:
+            UserActionLog.action("window.maximize", { window: root.windowId, source: "button" })
             targetWindow.showMaximized()
             break
         case IKWindowControlButton.Restore:
+            UserActionLog.action("window.restore", { window: root.windowId, source: "button" })
             targetWindow.showNormal()
             break
         case IKWindowControlButton.Close:

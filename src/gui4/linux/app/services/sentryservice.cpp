@@ -20,6 +20,7 @@
 
 #include "app/cache/appcache.h"
 #include "app/cache/parametersstore.h"
+#include "app/clientsettings.h"
 #include "app/services/commservice.h"
 #include "app/services/parametersservice.h"
 #include "config.h"
@@ -41,8 +42,6 @@ namespace {
 
 Q_LOGGING_CATEGORY(lcSentryService, "gui.v4.sentry", QtInfoMsg)
 
-constexpr char settingsOrganization[] = "Infomaniak";
-constexpr char settingsApplication[] = APPLICATION_NAME;
 constexpr char sentryConsentKey[] = "sentry/enabled";
 
 QString normalizedDisplayServer(const QString &platformPlugin) {
@@ -85,7 +84,7 @@ SentryService::SentryService(ParametersService &parametersService, AppCache &app
 }
 
 std::optional<bool> SentryService::readCachedConsent() {
-    const QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
+    const QSettings settings(ClientSettings::filePath(), QSettings::IniFormat);
     if (!settings.contains(sentryConsentKey)) {
         return std::nullopt;
     }
@@ -93,7 +92,7 @@ std::optional<bool> SentryService::readCachedConsent() {
 }
 
 void SentryService::writeCachedConsent(const bool enabled) {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
+    QSettings settings(ClientSettings::filePath(), QSettings::IniFormat);
     if (settings.contains(sentryConsentKey) && settings.value(sentryConsentKey).toBool() == enabled) {
         return;
     }

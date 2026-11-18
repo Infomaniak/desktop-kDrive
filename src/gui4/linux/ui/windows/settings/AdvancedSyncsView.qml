@@ -31,6 +31,8 @@ ScrollView {
     // Synchronization whose card is unfolded, scrolled to and focused once it exists, when Settings opens on it.
     property var revealSyncDbId: null
     readonly property string navigationTitle: qsTrId("advancedSyncTitle")
+    // Screen of the user action log (see UserActionLog).
+    readonly property string screenId: "settings.accounts.advancedSyncs"
 
     signal manageRequested(Item trigger, var syncDbId)
     signal deleteRequested(Item trigger, var syncDbId)
@@ -129,6 +131,7 @@ ScrollView {
 
             role: IKModalButton.Tonal
             text: qsTrId("buttonAddAdvancedSync")
+            actionId: root.screenId + ".add"
             onClicked: root.addSyncRequested(addSyncButton)
         }
     }

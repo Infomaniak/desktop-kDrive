@@ -144,11 +144,13 @@ IKModal {
                 spacing: IKSpacing.s12
                 IKLinkButton {
                     text: "GPL v3"
+                    actionId: root.dialogId + ".license"
                     external: true
                     onClicked: root.controller.openLicense()
                 }
                 IKLinkButton {
                     text: qsTrId("viewSourceCode")
+                    actionId: root.dialogId + ".sources"
                     external: true
                     onClicked: root.controller.openSources()
                 }
@@ -159,6 +161,7 @@ IKModal {
         IKModalButton {
             id: closeButton
             text: qsTrId("buttonClose")
+            actionId: root.dialogId + ".close"
             role: IKModalButton.Secondary
             onClicked: root.close()
         },
@@ -169,6 +172,7 @@ IKModal {
             text: root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
                                                     : root.controller.updateInstallable ? qsTrId("buttonUpdate")
                                                                                         : qsTrId("buttonDownloadManually")
+            actionId: root.dialogId + ".download"
             external: manual
             actionEnabled: !root.controller.updateDownloading
             onClicked: manual ? root.controller.openDownload() : root.controller.installUpdate()

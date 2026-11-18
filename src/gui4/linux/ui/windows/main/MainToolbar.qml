@@ -25,6 +25,9 @@ import kDrive.UI
 Rectangle {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.toolbar"
+
     signal settingsRequested
     signal searchRequested
 
@@ -70,6 +73,7 @@ Rectangle {
         iconSource: "qrc:/assets/settings/chevron-left.svg"
         text: qsTrId("accessibilityBack")
         Accessible.description: qsTrId("tabTitleActivities")
+        actionId: root.actionIdPrefix + ".back"
         onClicked: root.activitiesNavigation.back()
     }
 
@@ -114,6 +118,7 @@ Rectangle {
         HeaderIconButton {
             iconSource: "qrc:/assets/main/home/headphones.svg"
             text: qsTrId("infomaniakSupport")
+            actionId: root.actionIdPrefix + ".support"
             onClicked: root.controller.openSupport()
         }
 
@@ -141,6 +146,7 @@ Rectangle {
                         enabled: root.syncControl.selectedState === SyncControl.Pause || root.syncShowsResume
                         iconSource: root.syncControlIcon
                         text: root.syncShowsResume ? qsTrId("buttonRestartSync") : qsTrId("buttonPause")
+                        actionId: root.syncShowsResume ? root.actionIdPrefix + ".resumeSync" : root.actionIdPrefix + ".pauseSync"
                         onClicked: root.syncControl.toggleSelected()
                     }
 
@@ -172,6 +178,7 @@ Rectangle {
                     iconSource: "qrc:/assets/main/home/cog.svg"
                     text: qsTrId("buttonSettings")
                     tooltipText: root.tooltipWithShortcut(text, root.settingsShortcutText)
+                    actionId: root.actionIdPrefix + ".settings"
                     onClicked: root.settingsRequested()
                 }
             }
@@ -183,6 +190,7 @@ Rectangle {
             iconSize: IKMainWindow.toolbarSearchIconSize
             text: qsTrId("buttonSearch")
             tooltipText: root.tooltipWithShortcut(text, root.searchShortcutText)
+            actionId: root.actionIdPrefix + ".search"
             onClicked: root.searchRequested()
         }
     }
@@ -199,6 +207,8 @@ Rectangle {
         id: buttonRoot
 
         required property url iconSource
+        // Stable, language-independent id of the action in the user action log (see UserActionLog).
+        required property string actionId
         property real iconSize: IKIconSizes.medium
         property string tooltipText: text
 
@@ -207,6 +217,7 @@ Rectangle {
         focusPolicy: Qt.StrongFocus
         hoverEnabled: true
         display: AbstractButton.IconOnly
+        onClicked: UserActionLog.action(actionId)
 
         contentItem: Item {
             IKTintedIcon {
@@ -235,6 +246,8 @@ Rectangle {
         id: groupedButton
 
         required property url iconSource
+        // Stable, language-independent id of the action in the user action log (see UserActionLog).
+        required property string actionId
         property string tooltipText: text
 
         width: IKMainWindow.toolbarActionGroupButtonSize
@@ -242,6 +255,7 @@ Rectangle {
         focusPolicy: Qt.StrongFocus
         hoverEnabled: true
         display: AbstractButton.IconOnly
+        onClicked: UserActionLog.action(actionId)
 
         contentItem: IKTintedIcon {
             width: IKIconSizes.medium

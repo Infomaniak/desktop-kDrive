@@ -96,7 +96,10 @@ Item {
         width: filterContent.implicitWidth + IKSpacing.s16
         focusPolicy: Qt.StrongFocus
         hoverEnabled: true
-        onClicked: filterMenu.open()
+        onClicked: {
+            UserActionLog.action("main.activities.filterMenu");
+            filterMenu.open();
+        }
 
         contentItem: Row {
             id: filterContent
