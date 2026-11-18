@@ -60,6 +60,8 @@
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
 #elif defined(KD_LINUX)
 #include "update_detection/file_system_observer/testfolderwatcherlinux.h"
+#elif defined(KD_WINDOWS)
+#include "update_detection/file_system_observer/testfolderwatcherwin.h"
 #endif
 
 namespace KDC {
@@ -88,6 +90,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
 #elif defined(KD_LINUX)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
+#elif defined(KD_WINDOWS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherWin);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteSnapshotItemHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
