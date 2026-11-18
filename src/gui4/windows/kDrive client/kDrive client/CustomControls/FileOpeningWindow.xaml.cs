@@ -44,8 +44,8 @@ namespace Infomaniak.kDrive.CustomControls
             _request = request;
             RootPanel.DataContext = request;
             request.PropertyChanged += OnRequestPropertyChanged;
-            CancelGaugeButton.AutomationProperties.Name = Localizer.Instance.GetString("buttonCancel");
-            CancelWaitingButton.AutomationProperties.Name = Localizer.Instance.GetString("buttonCancel");
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(CancelGaugeButton, Localizer.Instance.GetString("buttonCancel"));
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(CancelWaitingButton, Localizer.Instance.GetString("buttonCancel"));
             Utility.SetWindowProperties(this, _width, ContentHeight(), Utility.WindowResizeOptions.AllowMinimize);
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             AppWindow.IsShownInSwitchers = false;

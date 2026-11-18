@@ -26,12 +26,11 @@
         mc:Ignorable="d"
         Title="kDrive">
 
-    <Window.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
-    </Window.Resources>
-
     <Border Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
+        <Border.Resources>
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
+        </Border.Resources>
         <StackPanel x:Name="RootPanel"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
