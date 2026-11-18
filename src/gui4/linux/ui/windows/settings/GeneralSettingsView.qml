@@ -104,6 +104,7 @@ ScrollView {
                                                                         : qsTrId("automaticUpdatesUnavailableDescription")
                 IKSwitch {
                     text: qsTrId("automaticUpdatesSetting")
+                    actionId: root.screenId + ".autoUpdates"
                     enabled: root.controller.ready && !root.controller.saving
                     // Off when unavailable: the stored parameter has no effect outside an updatable AppImage.
                     value: root.controller.automaticUpdatesAvailable && root.controller.automaticUpdates
@@ -120,6 +121,7 @@ ScrollView {
                 }
                 SettingsInfoButton {
                     id: betaProgramInfo
+                    actionId: root.screenId + ".betaProgram"
                     enabled: root.controller.ready
                     onClicked: root.betaProgramRequested(betaProgramInfo)
                 }
