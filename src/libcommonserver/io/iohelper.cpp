@@ -925,7 +925,11 @@ bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoErr
         }
 
         ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath, syncRootPath);
-        if (ioError != IoError::Success) return false;
+        if (ioError != IoError::Success) {
+            LOGW_WARN(logger(),
+                      L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(firstMissingPath, ioError));
+            return false;
+        }
     }
 
     std::error_code ec;
@@ -963,8 +967,10 @@ IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destina
     // Refuse to move an item if one of the intermediate components of the source or destination path is a link that would be
     // followed by the operating system during the move. This check is intentionally not bypassable with bypassCheck().
     for (const SyncPath &path: {sourcePath, destinationPath}) {
-        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath); ioError != IoError::Success)
+        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath); ioError != IoError::Success) {
+            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
             return ioError;
+        }
     }
 
     std::error_code ec;
@@ -977,7 +983,10 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError, const SyncPath
     // would be followed by the operating system during path resolution, possibly removing items outside the expected tree:
     // such paths are rejected.
     ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
-    if (ioError != IoError::Success) return false;
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
 
     std::error_code ec;
     (void) std::filesystem::remove_all(path, ec);
@@ -996,7 +1005,10 @@ bool IoHelper::deleteItem(const SyncPath &path, const SyncPath &syncRootPath /*=
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError,
                                    const SyncPath &syncRootPath /*= {}*/) noexcept {
     ioError = IoHelper::checkIfPathTraversesLink(destinationPath, syncRootPath);
-    if (ioError != IoError::Success) return false;
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(destinationPath, ioError));
+        return false;
+    }
 
     // Get the destination type.
     ItemType destinationType;
@@ -1062,7 +1074,10 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, c
     }
 
     ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
-    if (ioError != IoError::Success) return false;
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
 
     std::error_code ec;
     if (isFolder) {
