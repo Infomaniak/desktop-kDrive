@@ -16,12 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import AppKit
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
-import UniformTypeIdentifiers
 
 /// Content of the file opening pop-up window: while the item is being synchronized, an explanation, a card
 /// identifying the item through its icon, name, and parent folder path once it has been fetched from the server, and
@@ -37,14 +35,7 @@ struct FileOpeningStatusView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Window title, horizontally centered in the title bar strip, where the traffic lights sit: the native
-            // title is left-aligned next to the traffic lights since macOS 26, while the design requires it centered
-            // (the native title is hidden and the title bar made transparent by the presenter).
-            Text(KDriveLocalizable.fileOpeningWindowTitle)
-                .font(Font.Tokens.headline)
-                .foregroundStyle(ColorToken.Text.primary.asColor)
-                .frame(maxWidth: .infinity)
-                .frame(height: 28)
+            FileOpeningWindowTitleRow()
 
             VStack(alignment: .leading, spacing: AppPadding.padding16) {
                 if phase == .hydrating {
@@ -70,7 +61,7 @@ struct FileOpeningStatusView: View {
             .foregroundStyle(ColorToken.Text.primary.asColor)
 
         if !itemName.isEmpty {
-            itemCard
+            FileOpeningItemCard(itemName: itemName, itemPath: itemPath)
         }
 
         HStack {
@@ -87,7 +78,7 @@ struct FileOpeningStatusView: View {
             .font(Font.Tokens.title2Emphasized)
             .foregroundStyle(ColorToken.Text.primary.asColor)
 
-        itemCard
+        FileOpeningItemCard(itemName: itemName, itemPath: itemPath)
 
         HStack(spacing: AppPadding.padding12) {
             ProgressView(value: progressFraction)
@@ -105,34 +96,6 @@ struct FileOpeningStatusView: View {
         }
     }
 
-    // MARK: - Item card
-
-    /// Card identifying the item through its icon, name, and parent folder path, shared by both phases.
-    private var itemCard: some View {
-        HStack(spacing: AppPadding.padding12) {
-            Image(nsImage: fileIcon)
-                .resizable()
-                .frame(width: 40, height: 40)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(itemName)
-                    .font(.headline)
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                if !itemPath.isEmpty {
-                    Text(itemPath)
-                        .font(.subheadline)
-                        .foregroundStyle(ColorToken.Text.secondary.asColor)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(AppPadding.padding12)
-        .background(RoundedRectangle(cornerRadius: AppRadius.radius12).fill(ColorToken.Surface.primary.asColor))
-    }
-
     /// Formats the downloaded amounts as localized byte sizes (e.g. "12,5 Mo" in French).
     private static let byteCountFormatter: ByteCountFormatter = {
         let formatter = ByteCountFormatter()
@@ -143,14 +106,6 @@ struct FileOpeningStatusView: View {
     private var progressFraction: Double {
         guard totalBytes > 0, receivedBytes >= 0 else { return 0 }
         return min(max(Double(receivedBytes) / Double(totalBytes), 0), 1)
-    }
-
-    private var fileIcon: NSImage {
-        let pathExtension = (itemName as NSString).pathExtension
-        let fileType = UTType(filenameExtension: pathExtension) ?? .data
-        let icon = NSWorkspace.shared.icon(for: fileType)
-        icon.size = NSSize(width: 40, height: 40)
-        return icon
     }
 
     // MARK: - Cancellation

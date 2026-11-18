@@ -180,6 +180,7 @@ namespace Infomaniak.kDrive.Types
         Finished = 0,
         WaitingSync,
         Hydrating,
+        Failed,
         EnumEnd
     };
 

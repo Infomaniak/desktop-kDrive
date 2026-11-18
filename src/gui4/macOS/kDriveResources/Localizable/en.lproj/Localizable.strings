@@ -153,6 +153,9 @@
 "fileOpeningWindowTitle" = "kDrive";
 "fileOpeningDownloadTitle" = "Download";
 "fileOpeningDownloadProgress" = "%1$@ over %2$@";
+"fileOpeningFailureTitle" = "Cannot open the file";
+"fileOpeningFailureExplanation" = "You can download it yourself from kDrive in your browser.";
+"fileOpeningDownloadButton" = "Download from kDrive";
 
 /* loco:69c0f0398ae1831b640e5a62 */
 "buttonChangeFolder" = "Change folder";

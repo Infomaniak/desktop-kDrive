@@ -24,6 +24,7 @@ public enum FileOpeningStatusPhase: Int, Codable, Sendable, Hashable {
     case finished = 0
     case waitingSync = 1
     case hydrating = 2
+    case failed = 3
 }
 
 public struct FileOpeningStatus: Hashable, Sendable {
@@ -34,9 +35,10 @@ public struct FileOpeningStatus: Hashable, Sendable {
     public let itemPath: String
     public let receivedBytes: Int64
     public let totalBytes: Int64
+    public let webUrl: String
 
     public init(jobId: Int64, phase: FileOpeningStatusPhase, percent: Int, itemName: String, itemPath: String = "",
-                receivedBytes: Int64 = -1, totalBytes: Int64 = -1) {
+                receivedBytes: Int64 = -1, totalBytes: Int64 = -1, webUrl: String = "") {
         self.jobId = jobId
         self.phase = phase
         self.percent = percent
@@ -44,6 +46,7 @@ public struct FileOpeningStatus: Hashable, Sendable {
         self.itemPath = itemPath
         self.receivedBytes = receivedBytes
         self.totalBytes = totalBytes
+        self.webUrl = webUrl
     }
 }
 

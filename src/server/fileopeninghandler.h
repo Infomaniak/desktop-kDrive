@@ -87,9 +87,12 @@ class FileOpeningHandler : public QObject {
         void onOpenFileJobFinished(OpenFileJob::Outcome outcome, const SyncPath &localPath, SyncDbId syncDbId);
         [[nodiscard]] ExitInfo openLocalItem(const SyncPath &localPath, SyncDbId syncDbId);
         [[nodiscard]] bool isSyncEngineRunning(SyncDbId syncDbId) const;
-        void notifyUser(const QString &message) const;
         void handleFileOpeningSuccess();
-        void handleFileOpeningFailure(const QString &userMessage);
+        //! Reports the failure of the request to the client interface, which shows its failure window with it. The
+        //! window offers to download the item from the kDrive web application, at the address returned by webUrl().
+        void handleFileOpeningFailure();
+        //! Returns the kDrive web application address of the requested item, empty when the request URL is invalid.
+        [[nodiscard]] CommString webUrl() const;
         void handleFileOpeningCanceled();
         //! Invoked on the application thread when the OpenFileJob has reported a new state: forwards it, along with
         //! the name of the item being opened, the path of its parent folder, and the download progress in bytes, to

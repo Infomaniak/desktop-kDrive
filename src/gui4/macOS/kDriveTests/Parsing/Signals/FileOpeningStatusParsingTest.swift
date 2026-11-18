@@ -60,5 +60,6 @@ struct FileOpeningStatusParsingTest {
         #expect(signal.body.itemPath == "kDrive Infomaniak/Documents/Clients/2026")
         #expect(signal.body.receivedBytes == 13_107_200)
         #expect(signal.body.totalBytes == 50_331_648)
+        #expect(signal.body.webUrl == "https://kdrive.infomaniak.com/app/drive/1064345/files/333684")
     }
 }

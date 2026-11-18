@@ -117,6 +117,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string FileOpeningItemPath = "itemPath";
         static public string FileOpeningReceivedBytes = "receivedBytes";
         static public string FileOpeningTotalBytes = "totalBytes";
+        static public string FileOpeningWebUrl = "webUrl";
 
         static public string IncludeArchivedLogs = "includeArchivedLogs";
 

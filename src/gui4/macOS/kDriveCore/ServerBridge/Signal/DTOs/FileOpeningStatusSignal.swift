@@ -26,4 +26,5 @@ struct FileOpeningStatusSignal: Codable, Sendable {
     @Base64CodedString var itemPath: String
     let receivedBytes: Int64
     let totalBytes: Int64
+    @Base64CodedString var webUrl: String
 }
