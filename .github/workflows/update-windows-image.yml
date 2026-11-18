@@ -80,7 +80,7 @@ jobs:
   prepare:
     name: Launch maintenance VM
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
     env:
       CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
       CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
@@ -184,11 +184,31 @@ jobs:
             --user-data userdata.ps1 \
             --property "purpose=image-refresh" \
             --property "admin_pass=${ADMIN_PASS}" \
-            --wait -f value -c id \
+            -f value -c id \
             "$MAINT_NAME")"
           rm -f userdata.ps1
-          log "Maintenance VM $MAINT_NAME: $ID"
           echo "id=$ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for maintenance VM
+        env:
+          ID: ${{ steps.launch.outputs.id }}
+        run: |
+          source "$LIB"
+          deadline=$(( $(date +%s) + 90 * 60 ))
+          while true; do
+            server="$(os server show "$ID" -f json)" || die "Cannot inspect maintenance VM $ID"
+            status="$(jq -r '.status // empty' <<<"$server")"
+            log "Maintenance VM $ID status: ${status:-unknown}"
+            if [[ "$status" == "ACTIVE" ]]; then
+              break
+            fi
+            if [[ "$status" == "ERROR" || $(date +%s) -ge $deadline ]]; then
+              jq '{id, name, status, fault: .fault}' <<<"$server"
+              os console log show --lines 200 "$ID" || true
+              die "Maintenance VM $ID did not become ACTIVE (status: ${status:-unknown})"
+            fi
+            sleep 30
+          done
 
   wait-maintenance-runner:
     name: Wait for Windows updates
