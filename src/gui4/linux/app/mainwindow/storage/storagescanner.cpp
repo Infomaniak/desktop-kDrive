@@ -300,7 +300,6 @@ StorageVolumeResult StorageScanner::readVolume(const SyncPath &syncRoot, const b
     StorageVolume volume;
     volume.volumeName = volumeName(storage);
     volume.usesDefaultRootName = volume.volumeName.isEmpty() && storage.isRoot();
-    volume.volumeRoot = volumeRoot;
     volume.device = rootStat.st_dev;
     volume.totalBytes = totalBytes;
     volume.availableBytes = std::min(static_cast<uint64_t>(storage.bytesAvailable()), totalBytes);

@@ -269,17 +269,6 @@ void StorageController::refresh() {
     refreshQuota();
 }
 
-void StorageController::openDiskManagement() const {
-    const SyncPath root = _volume ? _volume->volumeRoot : _selectedSyncRoot;
-    if (root.empty()) {
-        return;
-    }
-
-    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(root)))) {
-        qCWarning(lcStorageController) << "Unable to open the Storage volume root | path:" << Path2QStr(root);
-    }
-}
-
 void StorageController::openSubscriptionUpgrade() const {
     const auto drive = currentDrive();
     if (!drive || !drive->admin()) {
