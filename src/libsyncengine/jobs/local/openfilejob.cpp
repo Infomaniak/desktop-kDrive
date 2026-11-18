@@ -608,17 +608,28 @@ ExitInfo OpenFileJob::checkHydrationPrerequisites(const std::shared_ptr<SyncPal>
     auto status = SyncFileStatus::Unknown;
     VfsStatus vfsStatus;
     {
+        // The remote existence is checked through the API: unlike SyncPal::checkIfExistsOnServer, the check does not
+        // rely on the remote live snapshot of the sync and therefore works while the sync is paused.
         bool existsOnServer = false;
-        if (const auto exitInfo = syncPal->checkIfExistsOnServer(_relativePath, existsOnServer); !exitInfo) {
-            // Occurs when the sync is stopped
-            LOGW_DEBUG(_logger, L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(_relativePath) << L": "
-                                                                             << exitInfo);
+        if (const auto exitInfo = checkRemoteItemExistence(existsOnServer); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in OpenFileJob::checkRemoteItemExistence - " << Utility::formatSyncPath(_localPath)
+                                                                                    << L": " << exitInfo);
             (void) cancelHydrate(vfs, PinState::OnlineOnly, exitInfo);
 
             return readyToOpen();
         }
 
-        if (existsOnServer) status = SyncFileStatus::Success;
+        if (!existsOnServer) {
+            // The item does not exist on the remote side anymore: do not hydrate it, and inform the user interface.
+            LOGW_INFO(_logger, L"Item does not exist on the remote side anymore - " << Utility::formatSyncPath(_localPath));
+            _outcome = Outcome::NotFound;
+
+            (void) cancelHydrate(vfs, PinState::OnlineOnly, {ExitCode::DataError, ExitCause::NotFound});
+
+            return {ExitCode::DataError, ExitCause::NotFound};
+        }
+
+        status = SyncFileStatus::Success;
 
         if (vfs->mode() == VirtualFileMode::Mac || vfs->mode() == VirtualFileMode::Win) {
             if (const auto exitInfo = vfs->status(_localPath, vfsStatus); !exitInfo) {
