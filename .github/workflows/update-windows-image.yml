@@ -1,3 +1,19 @@
+# Infomaniak kDrive - Desktop
+# Copyright (C) 2023-2026 Infomaniak Network SA
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 name: Refresh Windows CI runner image
 
 # Routine Windows updates + Conan cache refresh for the OpenStack Windows runner image.
@@ -14,7 +30,7 @@ on:
         required: true
         default: "win_kdrive_runner_build_env"
       promote:
-        description: "Replace the image after the dedicated-runner validation succeeds (the old image is always kept)"
+        description: "Replace the image after validation; if false, retain the validated candidate separately"
         type: boolean
         default: true
       windows_flavor:
@@ -64,9 +80,9 @@ concurrency:
 env:
   OS_CLOUD: infomaniak
   NETWORK_NAME: "ext-net1"
-  LINUX_IMAGE: ${{ vars.IMAGE_REFRESH_LINUX_IMAGE || 'Ubuntu 26.04 LTS Resolute Raccoon' }}
-  LINUX_FLAVOR: ${{ vars.IMAGE_REFRESH_LINUX_FLAVOR || 'a8-ram16-disk20-perf1' }}
-  VOLUME_TYPE: ${{ vars.IMAGE_REFRESH_VOLUME_TYPE || 'CEPH_1_perf1' }}
+  LINUX_IMAGE: "Ubuntu 26.04 LTS Resolute Raccoon"
+  LINUX_FLAVOR: "a8-ram16-disk20-perf1"
+  VOLUME_TYPE: "CEPH_1_perf1"
   REPO: ${{ github.repository }}
   IMAGE_NAME: ${{ inputs.image_name || 'win_kdrive_runner_build_env' }}
   REFRESH_PREFIX: img-refresh-${{ github.repository_id }}-
@@ -97,7 +113,7 @@ jobs:
       source_image_id: ${{ steps.source.outputs.id }}
       maint_server_id: ${{ steps.launch.outputs.id }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Check configuration
         env:
@@ -227,7 +243,7 @@ jobs:
       CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
       GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
       - name: Install OpenStack CLI
         run: pip install python-openstackclient --quiet
       - name: Wait for the maintenance runner
@@ -256,7 +272,7 @@ jobs:
           if ($env:RUNNER_NAME -ne $env:MAINT_NAME) { throw "Unexpected runner '$env:RUNNER_NAME'" }
           Get-Content C:\ImageRefresh\refresh.log
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Check Windows Update result
         id: state
@@ -354,7 +370,7 @@ jobs:
       snapshot_size: ${{ steps.snapshot.outputs.size }}
       candidate_size: ${{ steps.convert.outputs.size }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install OpenStack CLI
         run: pip install python-openstackclient --quiet
@@ -580,7 +596,7 @@ jobs:
       CANDIDATE_ID: ${{ needs.capture.outputs.candidate_id }}
       WINDOWS_FLAVOR: ${{ inputs.windows_flavor || 'a16-ram32-disk80-perf1' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install OpenStack CLI
         run: pip install python-openstackclient --quiet
@@ -660,7 +676,7 @@ jobs:
           if (Get-ScheduledTask -TaskName "ImageRefresh*" -ErrorAction SilentlyContinue) { throw "Maintenance tasks were left in the image" }
           Write-Host "Validated Windows $version on $env:RUNNER_NAME ($user)"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Check that the warmed Conan cache is reused
         env:
@@ -715,10 +731,6 @@ jobs:
     permissions:
       actions: read
       contents: read
-    # Shared with start-runners.yml so no runner launch resolves the image name between the two renames.
-    concurrency:
-      group: windows-runner-image-${{ inputs.image_name || 'win_kdrive_runner_build_env' }}
-      cancel-in-progress: false
     env:
       CLOUD_AUTH_URL: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
       CLOUD_USERNAME: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
@@ -730,7 +742,7 @@ jobs:
       CANDIDATE_ID: ${{ needs.capture.outputs.candidate_id }}
       ORIGINAL_VERSION: ${{ needs.warm-cache.outputs.original_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Verify the validation job ran on the candidate runner
         env:
@@ -805,15 +817,38 @@ jobs:
       CLOUD_REGION_NAME: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
       GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
       KEEP_VALIDATION: ${{ inputs.keep_failed_validation && (needs.boot-candidate.result == 'failure' || needs.validate.result == 'failure') }}
+      RETAIN_VALIDATED: ${{ needs.validate.result == 'success' && needs.promote.result == 'skipped' && !inputs.promote && !(github.event_name == 'schedule' && !inputs.image_name) }}
+      CANDIDATE_ID: ${{ needs.capture.outputs.candidate_id }}
+      UPDATED_VERSION: ${{ needs.warm-cache.outputs.updated_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
       - name: Install OpenStack CLI
         run: pip install python-openstackclient --quiet
 
-      - name: Delete this run's runners, VMs, volume, snapshot and unpromoted candidate
+      - name: Retain validated candidate without replacing the source image
+        id: retain
+        if: env.RETAIN_VALIDATED == 'true'
+        run: |
+          source "$LIB"
+          write_clouds_yaml
+          [[ "$UPDATED_VERSION" =~ ^[0-9]+(\.[0-9]+){3}$ ]] || die "Invalid updated Windows version: $UPDATED_VERSION"
+          [[ "$(os image show "$CANDIDATE_ID" -f value -c status)" == "active" ]] || die "Candidate is not active"
+          RETAINED_NAME="${IMAGE_NAME}_validated_${UPDATED_VERSION}_$(date -u +%Y%m%dT%H%M%SZ)_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+          retain_image "$CANDIDATE_ID" "$CANDIDATE_NAME" "$RETAINED_NAME" || die "Could not retain validated candidate $CANDIDATE_ID"
+          log "Validated image kept as $RETAINED_NAME ($CANDIDATE_ID); $IMAGE_NAME is unchanged"
+          {
+            echo "### Validated Windows runner image retained"
+            echo ""
+            echo "Image: \`${RETAINED_NAME}\` (\`${CANDIDATE_ID}\`)"
+            echo "Windows version: ${UPDATED_VERSION}"
+            echo "The source image \`${IMAGE_NAME}\` was not replaced."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Delete this run's temporary resources
+        if: always()
         # Only resources named after this run are deleted. A promoted candidate no longer has its
-        # candidate name, and retained "<image>_old_*" images are never touched.
+        # candidate name, and retained "<image>_old_*" and "<image>_validated_*" images are never touched.
         run: |
           source "$LIB"
           write_clouds_yaml
@@ -830,6 +865,12 @@ jobs:
           if [[ "$KEEP_VALIDATION" == "true" ]]; then
             keep_server="$VALIDATE_NAME" keep_image="$CANDIDATE_NAME"
             echo "::warning::Keeping $VALIDATE_NAME and $CANDIDATE_NAME for inspection; the next run deletes them"
+          fi
+          if [[ "$RETAIN_VALIDATED" == "true" ]]; then
+            keep_image="$CANDIDATE_NAME"
+            if [[ "${{ steps.retain.outcome }}" != "success" ]]; then
+              echo "::warning::Could not confirm retention of $CANDIDATE_NAME; inspect or rename it before the next refresh"
+            fi
           fi
           for name in "$MAINT_NAME" "$VALIDATE_NAME" "$WORKER_NAME"; do
             [[ "$name" == "$keep_server" ]] && continue
@@ -865,7 +906,7 @@ jobs:
       RESULTS_JSON: ${{ toJSON(needs) }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
       - name: Publish image refresh result
         shell: powershell
         run: |

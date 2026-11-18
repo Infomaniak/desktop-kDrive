@@ -1,4 +1,21 @@
 #!/usr/bin/env bash
+#
+# Infomaniak kDrive - Desktop
+# Copyright (C) 2023-2026 Infomaniak Network SA
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # Helpers sourced by .github/workflows/update-windows-image.yml steps.
 # Requires: OS_CLOUD, REPO and, for GitHub runner helpers, GH_TOKEN.
 
@@ -125,6 +142,45 @@ resolve_unique_image() {
     [[ -n "$ids" ]] || die "No image named $1"
     [[ "$(wc -l <<<"$ids")" -eq 1 ]] || die "Several images are named $1: $(tr '\n' ' ' <<<"$ids")"
     printf '%s' "$ids"
+}
+
+retain_image() {
+    local id="$1" candidate_name="$2" retained_name="$3" current existing
+    current="$(os image show "$id" -f value -c name)" || {
+        echo "::error::Cannot inspect candidate image $id." >&2
+        return 1
+    }
+    if [[ "$current" != "$candidate_name" ]]; then
+        echo "::error::Candidate $id is named $current, not $candidate_name." >&2
+        return 1
+    fi
+    existing="$(os image list --name "$retained_name" -f value -c ID)" || {
+        echo "::error::Cannot check whether image $retained_name already exists." >&2
+        return 1
+    }
+    if [[ -n "$existing" ]]; then
+        echo "::error::Image $retained_name already exists." >&2
+        return 1
+    fi
+    if ! os image set --name "$retained_name" "$id"; then
+        current="$(os image show "$id" -f value -c name)" || {
+            echo "::error::Candidate rename failed and its state is unknown." >&2
+            return 1
+        }
+        if [[ "$current" != "$retained_name" ]]; then
+            echo "::error::Could not rename candidate image $id." >&2
+            return 1
+        fi
+        log "Candidate rename succeeded despite the API error."
+    fi
+    current="$(os image show "$id" -f value -c name)" || {
+        echo "::error::Cannot verify the retained image name for $id." >&2
+        return 1
+    }
+    [[ "$current" == "$retained_name" ]] || {
+        echo "::error::Candidate $id was not renamed to $retained_name." >&2
+        return 1
+    }
 }
 
 # Restore only after checking the names: a failed API call can still have taken effect.

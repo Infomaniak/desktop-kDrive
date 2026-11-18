@@ -1,3 +1,21 @@
+<!--
+Infomaniak kDrive - Desktop
+Copyright (C) 2023-2026 Infomaniak Network SA
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
 # Windows CI runner image refresh
 
 `.github/workflows/update-windows-image.yml` refreshes the OpenStack image used by
@@ -41,8 +59,10 @@ always perform the full refresh, even if Windows Update installs nothing.
    dedicated runner and that the image name still resolves to the original image, then renames:
    - current image → `<image>_old_<old Windows version>_<UTC date>` (never deleted);
    - candidate → `<image>`.
+   If `promote` is false, cleanup instead retains a successfully validated candidate as
+   `<image>_validated_<Windows version>_<UTC date>_<run>_<attempt>`, leaving the current image unchanged.
 8. **cleanup** attempts to delete this run's VMs, volume, security group, snapshot, runner registrations
-   and the candidate if it was not promoted. Hard cancellation can leave resources for a later sweep.
+   and any candidate that was not promoted or retained. Hard cancellation can leave resources for a later sweep.
    With `keep_failed_validation`, a failed validation keeps its VM and candidate for inspection; the
    next run deletes them. If the runner never comes online, the boot job prints the VM status and
    serial console.
@@ -57,10 +77,6 @@ always perform the full refresh, even if Windows Update installs nothing.
 
 - Existing secrets: `PUBLIC_CLOUD_OS_*`, `RUNNER_ADMIN_PAT`, `QT_ACCOUNT_EMAIL`, `QT_ACCOUNT_PASSWORD`,
   `KCHAT_WEBHOOK_URL`.
-- Optional repository variables override the conversion VM defaults:
-  - `IMAGE_REFRESH_LINUX_IMAGE`: `Ubuntu 26.04 LTS Resolute Raccoon` (cloud-init required).
-  - `IMAGE_REFRESH_LINUX_FLAVOR`: `a8-ram16-disk20-perf1`.
-  - `IMAGE_REFRESH_VOLUME_TYPE`: `CEPH_1_perf1`.
 - The image must be image-backed (not boot-from-volume) and contain Cloudbase-Init with the unattend
   file given by `sysprep_unattend`.
 - The OpenStack project needs quota for two Windows VMs, one Linux VM, the work volume
@@ -71,8 +87,8 @@ always perform the full refresh, even if Windows Update installs nothing.
 
 ## Manual operation
 
-Set `promote` to false to validate a refresh without replacing the image; the unpromoted
-candidate is then deleted.
+Set `promote` to false to validate a refresh without replacing the image. The validated candidate is
+kept under its dated, versioned name.
 
 ## Troubleshooting and rollback
 
@@ -82,7 +98,9 @@ candidate is then deleted.
   `C:\Windows\System32\Sysprep\Panther\setuperr.log` from the VM console.
 - Leftovers of a hard-cancelled run are swept at the start of the next refresh, scoped to this
   repository's ID and, for candidates, the selected image name.
+- If retaining a validated candidate fails, inspect or rename it before the next refresh, which sweeps
+  images still using the temporary candidate name.
 - Rollback: rename the new image (for example to `<image>_bad_<date>`), then rename the desired
   `<image>_old_*` image back to `<image>`:
   `openstack image set --name win_kdrive_runner_build_env <old-image-id>`.
-- Retained `_old_` images are never deleted automatically; remove obsolete ones manually.
+- Retained `_old_` and `_validated_` images are never deleted automatically; remove obsolete ones manually.
