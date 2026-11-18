@@ -108,6 +108,7 @@ public extension MatomoUtils {
         public static let maintenanceErrorPage = EventCategory(displayName: "maintenanceErrorPage")
         public static let notRenewErrorPage = EventCategory(displayName: "notRenewErrorPage")
         public static let UpdateDialog = EventCategory(displayName: "UpdateDialog")
+        public static let upsell = EventCategory(displayName: "upsell")
     }
 
     enum UserAction: String {

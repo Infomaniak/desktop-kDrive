@@ -16,50 +16,99 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct UpsellBannerView: View {
-    let logo: Image
-    let text: AttributedString
-    let upsellLink: URL
+    @Environment(\.openURL) private var openURL
+
+    @LazyInjectService private var matomo: MatomoUtils
+
+    let offer: UpsellOffer
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            logo
+            offer.plan.logo
 
-            Text(text)
-                .foregroundStyle(.white)
+            Text(offer.plan.description)
+                .foregroundStyle(offer.plan.foregroundStyle)
 
             Button(KDriveLocalizable.buttonUpgradeSubscriptionShort, action: didTapUpgrade)
-                .foregroundStyle(.white)
+                .foregroundStyle(offer.plan.foregroundStyle)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AppPadding.padding16)
         .background {
-            KDriveResources.upsellGradient.swiftUIImage
-                .resizable()
-                .scaledToFill()
-                // The SVG's feGaussianBlur filters are ignored by the asset catalog renderer, so blur is applied here.
-                .blur(radius: 15.72)
+            if offer.plan == .kSuitePro {
+                KDriveResources.upsellGradient.swiftUIImage
+                    .resizable()
+                    .scaledToFill()
+                    // The SVG's feGaussianBlur filters are ignored by the asset catalog renderer, so blur is applied here.
+                    .blur(radius: 15.72)
+                    .background(ColorToken.upsellBackground.asColor)
+            }
         }
-        .background(ColorToken.upsellBackground.asColor)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius10))
         .overlay {
-            RoundedRectangle(cornerRadius: AppRadius.radius10)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: gradientColors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
+            if offer.plan == .myKSuitePlus {
+                RoundedRectangle(cornerRadius: AppRadius.radius10)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: gradientColors,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            }
         }
     }
 
     private func didTapUpgrade() {
-        // TODO:
+        matomo.track(eventWithCategory: .upsell, name: offer.plan.matomoName)
+        openURL(offer.url)
+    }
+}
+
+private extension UpsellOffer.Plan {
+    var logo: Image {
+        switch self {
+        case .myKSuitePlus:
+            return KDriveResources.ksuitePlusLogo.swiftUIImage
+        case .kSuitePro:
+            return KDriveResources.ksuiteProLogo.swiftUIImage
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .myKSuitePlus:
+            return KDriveLocalizable.myksuitePlusBannerDescription
+        case .kSuitePro:
+            return KDriveLocalizable.ksuiteProBannerDescription
+        }
+    }
+
+    /// The kSuite Pro banner always has a dark background, whereas the my kSuite+ one follows the system appearance.
+    var foregroundStyle: Color {
+        switch self {
+        case .myKSuitePlus:
+            return ColorToken.Text.primary.asColor
+        case .kSuitePro:
+            return .white
+        }
+    }
+
+    var matomoName: String {
+        switch self {
+        case .myKSuitePlus:
+            return "myKsuitePlus"
+        case .kSuitePro:
+            return "kSuitePro"
+        }
     }
 }
 
@@ -71,10 +120,12 @@ private let gradientColors: [Color] = [
     ColorToken.UpsellGradient.orange.asColor
 ]
 
-#Preview {
-    UpsellBannerView(
-        logo: KDriveResources.ksuiteProLogo.swiftUIImage,
-        text: "Create and collaborate without limits",
-        upsellLink: URL(string: "https://www.test.com/en/test")!
-    )
+#Preview("kSuite Pro") {
+    UpsellBannerView(offer: UpsellOffer(plan: .kSuitePro, url: URL(string: "https://shop.infomaniak.com")!))
+        .padding()
+}
+
+#Preview("my kSuite+") {
+    UpsellBannerView(offer: UpsellOffer(plan: .myKSuitePlus, url: URL(string: "https://shop.infomaniak.com")!))
+        .padding()
 }
