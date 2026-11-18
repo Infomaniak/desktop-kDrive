@@ -575,43 +575,29 @@ namespace Infomaniak.kDrive.Pages
             if (otherSyncs.Count == 0)
                 return;
 
-            using var otherSyncsCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             long total = 0;
-            bool failed = false;
             // When refreshing an already loaded value, only publish the final total to avoid showing partial sums.
             bool progressive = OtherSyncsHydratedFilesSize is null;
 
-            async Task LoadOneAsync(Sync otherSync)
+            foreach (var otherSync in otherSyncs)
             {
-                var cachedSize = otherSync.CachedHydratedFileSize;
-                total += cachedSize ?? 0;
-
-                var result = await otherSync.GetHydratedFileSizeAsync(forceRefresh, otherSyncsCts.Token);
-                if (failed || cancellationToken.IsCancellationRequested || result.ExitCode == ExitCode.OperationCanceled)
+                var result = await otherSync.GetHydratedFileSizeAsync(forceRefresh, cancellationToken);
+                if (cancellationToken.IsCancellationRequested || result.ExitCode == ExitCode.OperationCanceled)
                     return;
 
                 if (result.ExitCode != ExitCode.Ok)
                 {
-                    failed = true;
                     Logger.LogWarning($"Unable to get hydrated file size of {otherSync.LocalPath}",
                         "StoragePageViewModel: Failed to get other sync hydrated file size");
-                    await otherSyncsCts.CancelAsync();
-                    if (cancellationToken.IsCancellationRequested)
-                        return;
                     OtherSyncsHydratedFilesSize = -1;
                     IsOtherSyncsHydratedFilesSizeLoading = false;
                     return;
                 }
 
-                total -= cachedSize ?? 0;
                 total += result.Value;
                 if (progressive)
                     OtherSyncsHydratedFilesSize = total;
             }
-
-            await Task.WhenAll(otherSyncs.Select(LoadOneAsync));
-            if (failed || cancellationToken.IsCancellationRequested)
-                return;
 
             OtherSyncsHydratedFilesSize = total;
             IsOtherSyncsHydratedFilesSizeLoading = false;
