@@ -145,11 +145,18 @@ class OpenFileJob : public SyncJob {
         ExitInfo getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath, bool &found);
         //! Checks whether the item exists on the remote side. Virtual so that tests can bypass the API call.
         virtual ExitInfo checkRemoteItemExistence(bool &exists) const;
+        //! Fetches once, without failing the resolution, the name and the drive-relative parent folder path of the
+        //! item from the API while the item is only known by its remote node id (it is not synchronized yet), so that
+        //! the user interface can identify it in the pop-up window.
+        void fetchRemoteItemInfo();
         //! Opens the resolved item if it is available locally, or hydrates it first if it is a dehydrated placeholder.
         ExitInfo openResolvedLocalItem();
         //! Checks the state of the dehydrated placeholder, enqueues its download through SyncPal::addDlDirectJob, and
         //! waits for the download to complete.
         ExitInfo hydrateResolvedPlaceholder();
+        //! Completion state of the hydration, shared with the observers invoked by the download job. Published under
+        //! `_hydrationMutex` once the download of the item has been enqueued. Its type is defined in the .cpp file.
+        struct HydrationCompletion; // Defined in the .cpp file.
         //! Performs the checks allowing the item to be hydrated: local existence, type (symlinks are not hydrated),
         //! server existence, and placeholder status. Informs the VFS and restores the pin state when a check fails.
         //! Sets `hydrate` with true only if every check has passed; it is left false otherwise, and the returned
@@ -169,8 +176,9 @@ class OpenFileJob : public SyncJob {
         //! being opened and the path of its parent folder are included, both empty while the item has not been resolved,
         //! along with the download progress in bytes while it is being hydrated.
         void notifyFeedback(FileOpeningPhase phase, int8_t percent) const;
-        //! Reports the download progress to the user interface through the feedback callback, throttled.
-        void notifyProgressIfChanged(int8_t percent);
+        //! Reports the download progress to the user interface through the feedback callback, throttled, as soon as
+        //! the percent or the downloaded amount changed since the previous report.
+        void notifyProgressIfChanged(const std::shared_ptr<HydrationCompletion> &completion);
         //! Returns the path of the parent folder of the item, relative to the home directory when the item lies inside
         //! it, absolute otherwise, and empty while the item has not been resolved.
         [[nodiscard]] CommString itemPathForDisplay() const;
@@ -186,6 +194,12 @@ class OpenFileJob : public SyncJob {
         SyncPath _relativePath; // Relative to the local folder of the sync.
         SyncPath _localPath; // Absolute path of the item on the local file system.
 
+        // Identity of the item fetched once from the API while it is only known by its remote node id (it is not
+        // synchronized yet): name, and parent folder path relative to the drive root. Empty when the fetch failed.
+        std::string _remoteItemName;
+        SyncPath _remoteItemPath;
+        bool _remoteItemInfoFetched{false};
+
         //! The requested item may have been created on the remote side recently: keep resolving it during
         //! `_syncWaitTimeout` (10 minutes by default) before giving up.
         std::chrono::milliseconds _syncWaitTimeout{std::chrono::minutes(10)};
@@ -198,13 +212,11 @@ class OpenFileJob : public SyncJob {
         //! own finer-grained mutex (see HydrationCompletion in the .cpp file).
         mutable std::mutex _hydrationMutex;
 
-        //! Completion state of the hydration, shared with the observers invoked by the download job. Published under
-        //! `_hydrationMutex` once the download of the item has been enqueued. Its type is defined in the .cpp file.
-        struct HydrationCompletion; // Defined in the .cpp file.
         std::shared_ptr<HydrationCompletion> _hydration;
 
         FeedbackCallback _feedbackCallback;
         int8_t _lastNotifiedProgress{-1}; // Only accessed on the thread running the job.
+        int64_t _lastNotifiedReceivedBytes{-1}; // Idem.
         std::chrono::steady_clock::time_point _lastProgressNotify; // Idem.
 };
 

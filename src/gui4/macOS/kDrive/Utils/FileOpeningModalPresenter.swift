@@ -62,8 +62,16 @@ final class FileOpeningModalPresenter {
                                                                  totalBytes: status.totalBytes) { [weak self] in
             self?.cancel(jobId: status.jobId)
         }
-        entry.window.setContentSize(NSSize(width: 392, height: status.phase == .hydrating ? 216 : 88))
+        entry.window.setContentSize(NSSize(width: 392, height: contentHeight(for: status)))
         entry.window.makeKeyAndOrderFront(nil)
+    }
+
+    /// Returns the window content height for the given status: it includes the 28 pt title row drawn by the view.
+    /// The waiting-sync window grows when the item card appears (once the identity of the item has been fetched from
+    /// the server).
+    private func contentHeight(for status: FileOpeningStatus) -> CGFloat {
+        if status.phase == .hydrating { return 244 }
+        return status.itemName.isEmpty ? 116 : 220
     }
 
     private func windowEntry(for jobId: Int64) -> FileOpeningWindowEntry {
@@ -77,10 +85,15 @@ final class FileOpeningModalPresenter {
                                             totalBytes: -1) {}
         )
         let window = NSWindow(contentViewController: hostingController)
-        window.styleMask = [.titled, .closable, .miniaturizable]
+        window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
         window.title = KDriveLocalizable.fileOpeningWindowTitle
+        // The native title is left-aligned next to the traffic lights since macOS 26, while the design requires it
+        // centered: hide it and let the view draw it at the top of the content, and keep the window draggable.
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        window.setContentSize(NSSize(width: 392, height: 88))
+        window.setContentSize(NSSize(width: 392, height: 116))
         window.center()
 
         let entry = FileOpeningWindowEntry(window: window, hostingController: hostingController)

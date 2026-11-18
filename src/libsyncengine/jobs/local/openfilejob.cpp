@@ -19,7 +19,9 @@
 #include "openfilejob.h"
 
 #include "jobs/network/kDrive_API/apitranslator.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/itemsexistjob.h"
+#include "jobs/network/jobexceptions.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -212,8 +214,10 @@ ExitInfo OpenFileJob::resolveItem() {
             return {ExitCode::DataError, ExitCause::NotFound};
         }
 
-        // The item exists on the remote side only: inform the user that synchronizing it may take some time, and give
-        // the user the opportunity to cancel the request.
+        // The item exists on the remote side only: fetch its identity from the API (once), so that the user interface
+        // can show it while waiting, then inform the user that synchronizing it may take some time, and give the user
+        // the opportunity to cancel the request.
+        fetchRemoteItemInfo();
         if (const auto now = std::chrono::steady_clock::now(); isWaitNotificationDue(now, waitStart, lastWaitNotify)) {
             notifyFeedback(FileOpeningPhase::WaitingSync, -1);
             lastWaitNotify = now;
@@ -400,6 +404,29 @@ ExitInfo OpenFileJob::checkRemoteItemExistence(bool &exists) const {
     return exitInfo;
 }
 
+void OpenFileJob::fetchRemoteItemInfo() {
+    if (_remoteItemInfoFetched) return;
+    _remoteItemInfoFetched = true;
+
+    // The item is not synchronized yet: fetch its identity from the API once, so that the user interface can show it
+    // while waiting. Best effort: on failure, the item stays unidentified and the pop-up window shows no card.
+    try {
+        const auto job = std::make_shared<GetFileInfoJob>(_driveDbId, _request.remoteNodeId);
+        job->setWithPath(true);
+        if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in GetFileInfoJob::runSynchronously - remoteNodeId="
+                                       << CommonUtility::s2ws(_request.remoteNodeId) << L": " << exitInfo);
+            return;
+        }
+
+        _remoteItemName = job->name();
+        const auto path = job->path();
+        if (!path.empty()) _remoteItemPath = path.parent_path();
+    } catch (const JobException &e) {
+        LOGW_WARN(_logger, L"Error in GetFileInfoJob::GetFileInfoJob: error=" << CommonUtility::s2ws(e.what()));
+    }
+}
+
 ExitInfo OpenFileJob::openResolvedLocalItem() {
     ItemType itemType;
     if (!IoHelper::getItemType(_localPath, itemType)) {
@@ -525,6 +552,7 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
     // The download is starting: inform the user, and keep informing as long as the progress evolves.
     notifyFeedback(FileOpeningPhase::Hydrating, 0);
     _lastNotifiedProgress = 0;
+    _lastNotifiedReceivedBytes = -1;
     _lastProgressNotify = std::chrono::steady_clock::now();
 
     if (isAborted()) {
@@ -561,7 +589,7 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
 
         completion->cv.wait_for(lock, std::min(remaining, hydrationWaitTick));
 
-        notifyProgressIfChanged(completion->percent.load());
+        notifyProgressIfChanged(completion);
     }
 
     if (isAborted()) {
@@ -778,8 +806,19 @@ void OpenFileJob::notifyFeedback(const FileOpeningPhase phase, const int8_t perc
         }
     }
 
-    _feedbackCallback(phase, percent, CommonUtility::syncPath2CommString(_localPath.filename()), itemPathForDisplay(),
-                      receivedBytes, totalBytes);
+    CommString itemName;
+    CommString itemPath;
+    if (!_localPath.empty()) {
+        itemName = CommonUtility::syncPath2CommString(_localPath.filename());
+        itemPath = itemPathForDisplay();
+    } else {
+        // The item is not synchronized yet: report the identity fetched from the API, empty if it could not be
+        // fetched.
+        itemName = CommonUtility::str2CommString(_remoteItemName);
+        itemPath = CommonUtility::syncPath2CommString(_remoteItemPath);
+    }
+
+    _feedbackCallback(phase, percent, std::move(itemName), std::move(itemPath), receivedBytes, totalBytes);
 }
 
 CommString OpenFileJob::itemPathForDisplay() const {
@@ -800,13 +839,20 @@ CommString OpenFileJob::itemPathForDisplay() const {
     return CommonUtility::syncPath2CommString(relativePath);
 }
 
-void OpenFileJob::notifyProgressIfChanged(const int8_t percent) {
-    if (percent < 0 || percent == _lastNotifiedProgress) return;
+void OpenFileJob::notifyProgressIfChanged(const std::shared_ptr<HydrationCompletion> &completion) {
+    // The engine reports the percent throttled (at least 1% and 1 s apart), while the downloaded amount is reported on
+    // every update: notify as soon as either changed, and let the minimum notification interval pace the client
+    // interface.
+    const auto percent = completion->percent.load();
+    const auto receivedBytes = completion->receivedBytes.load();
+    if (percent < 0 && receivedBytes < 0) return;
+    if (percent == _lastNotifiedProgress && receivedBytes == _lastNotifiedReceivedBytes) return;
 
     const auto now = std::chrono::steady_clock::now();
     if (percent != 100 && now - _lastProgressNotify < kProgressNotifyMinInterval) return;
 
     _lastNotifiedProgress = percent;
+    _lastNotifiedReceivedBytes = receivedBytes;
     _lastProgressNotify = now;
 
     notifyFeedback(FileOpeningPhase::Hydrating, percent);

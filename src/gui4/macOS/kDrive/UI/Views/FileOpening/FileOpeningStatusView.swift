@@ -23,9 +23,10 @@ import kDriveResources
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Content of the file opening pop-up window: an explanation and a cancellation button while the item is being
-/// synchronized, and while it is being downloaded a "Download" title, a card identifying the item through its icon,
-/// name, and parent folder path, a progress gauge with a cancellation cross, and the downloaded amount.
+/// Content of the file opening pop-up window: while the item is being synchronized, an explanation, a card
+/// identifying the item through its icon, name, and parent folder path once it has been fetched from the server, and
+/// a cancellation cross; while it is being downloaded, a "Download" title, the same card, a progress gauge with the
+/// cross, and the downloaded amount.
 struct FileOpeningStatusView: View {
     let itemName: String
     let itemPath: String
@@ -35,21 +36,47 @@ struct FileOpeningStatusView: View {
     let onCancel: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppPadding.padding16) {
-            if phase == .hydrating {
-                downloadContent
-            } else {
-                HStack(alignment: .top, spacing: AppPadding.padding16) {
-                    Text(KDriveLocalizable.fileOpeningWaitingSyncMessage)
-                        .font(.body)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-                    Spacer(minLength: 0)
-                    cancelButton
+        VStack(alignment: .leading, spacing: 0) {
+            // Window title, horizontally centered in the title bar strip, where the traffic lights sit: the native
+            // title is left-aligned next to the traffic lights since macOS 26, while the design requires it centered
+            // (the native title is hidden and the title bar made transparent by the presenter).
+            Text(KDriveLocalizable.fileOpeningWindowTitle)
+                .font(Font.Tokens.headline)
+                .foregroundStyle(ColorToken.Text.primary.asColor)
+                .frame(maxWidth: .infinity)
+                .frame(height: 28)
+
+            VStack(alignment: .leading, spacing: AppPadding.padding16) {
+                if phase == .hydrating {
+                    downloadContent
+                } else {
+                    waitingSyncContent
                 }
             }
+            .padding(AppPadding.padding16)
         }
-        .padding(AppPadding.padding16)
         .frame(width: 392)
+        // Extend to the very top of the window, so that the title row covers the title bar strip instead of being
+        // pushed below it by the title bar safe area inset.
+        .ignoresSafeArea(edges: .top)
+    }
+
+    // MARK: - Waiting for synchronization phase
+
+    @ViewBuilder
+    private var waitingSyncContent: some View {
+        Text(KDriveLocalizable.fileOpeningWaitingSyncMessage)
+            .font(.body)
+            .foregroundStyle(ColorToken.Text.primary.asColor)
+
+        if !itemName.isEmpty {
+            itemCard
+        }
+
+        HStack {
+            Spacer(minLength: 0)
+            cancelButton
+        }
     }
 
     // MARK: - Downloading phase
@@ -60,6 +87,28 @@ struct FileOpeningStatusView: View {
             .font(Font.Tokens.title2Emphasized)
             .foregroundStyle(ColorToken.Text.primary.asColor)
 
+        itemCard
+
+        HStack(spacing: AppPadding.padding12) {
+            ProgressView(value: progressFraction)
+                .progressViewStyle(DownloadGaugeStyle())
+            cancelButton
+        }
+
+        if totalBytes > 0, receivedBytes >= 0 {
+            Text(KDriveLocalizable.fileOpeningDownloadProgress(
+                Self.byteCountFormatter.string(fromByteCount: receivedBytes),
+                Self.byteCountFormatter.string(fromByteCount: totalBytes)
+            ))
+            .font(.subheadline)
+            .foregroundStyle(ColorToken.Text.secondary.asColor)
+        }
+    }
+
+    // MARK: - Item card
+
+    /// Card identifying the item through its icon, name, and parent folder path, shared by both phases.
+    private var itemCard: some View {
         HStack(spacing: AppPadding.padding12) {
             Image(nsImage: fileIcon)
                 .resizable()
@@ -82,21 +131,6 @@ struct FileOpeningStatusView: View {
         }
         .padding(AppPadding.padding12)
         .background(RoundedRectangle(cornerRadius: AppRadius.radius12).fill(ColorToken.Surface.primary.asColor))
-
-        HStack(spacing: AppPadding.padding12) {
-            ProgressView(value: progressFraction)
-                .progressViewStyle(DownloadGaugeStyle())
-            cancelButton
-        }
-
-        if totalBytes > 0, receivedBytes >= 0 {
-            Text(KDriveLocalizable.fileOpeningDownloadProgress(
-                Self.byteCountFormatter.string(fromByteCount: receivedBytes),
-                Self.byteCountFormatter.string(fromByteCount: totalBytes)
-            ))
-            .font(.subheadline)
-            .foregroundStyle(ColorToken.Text.secondary.asColor)
-        }
     }
 
     /// Formats the downloaded amounts as localized byte sizes (e.g. "12,5 Mo" in French).

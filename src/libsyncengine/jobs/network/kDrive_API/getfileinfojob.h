@@ -29,6 +29,7 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
 
         const RemoteNodeId &nodeId() const { return _nodeId; }
         const RemoteNodeId &parentNodeId() const { return _parentNodeId; }
+        const std::string &name() const { return _name; }
         SyncTime creationTime() const { return _creationTime; }
         SyncTime modificationTime() const { return _modificationTime; }
         int32_t lastModifiedByUserId() const { return _lastModifiedByUserId; }

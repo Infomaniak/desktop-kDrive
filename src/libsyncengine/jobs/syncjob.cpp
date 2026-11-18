@@ -29,7 +29,14 @@ namespace KDC {
 
 void SyncJob::setProgress(const int64_t newProgressSize) {
     _progressSize = newProgressSize;
-    if (_progressPercentCallback || _progressSizeCallback) {
+
+    // Report the downloaded amount on every update, unthrottled: the file opening pop-up polls it at its own pace and
+    // throttles the notifications to the client interface itself.
+    if (_progressSizeCallback) {
+        _progressSizeCallback(jobId(), _progressSize, _expectedFinishProgress);
+    }
+
+    if (_progressPercentCallback) {
         if (_expectedFinishProgress == expectedFinishProgressNotSetValue) {
             LOG_DEBUG(_logger,
                       "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
@@ -37,11 +44,9 @@ void SyncJob::setProgress(const int64_t newProgressSize) {
             sentry::Handler::captureMessage(sentry::Level::Warning, "SyncJob::setProgress",
                                             "_expectedFinishProgress is not set but _progressPercentCallback is set");
             _expectedFinishProgress = expectedFinishProgressNotSetValueWarningLogged;
-            if (_progressPercentCallback) _progressPercentCallback(jobId(), -1);
-            if (_progressSizeCallback) _progressSizeCallback(jobId(), -1, -1);
+            _progressPercentCallback(jobId(), -1);
         } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
-            if (_progressPercentCallback) _progressPercentCallback(jobId(), -1);
-            if (_progressSizeCallback) _progressSizeCallback(jobId(), -1, -1);
+            _progressPercentCallback(jobId(), -1);
         } else {
             const auto progressThresholdSize =
                     static_cast<int64_t>(static_cast<double>(_expectedFinishProgress) * progressThresholdSizePercent);
@@ -52,8 +57,7 @@ void SyncJob::setProgress(const int64_t newProgressSize) {
                         round(static_cast<float>(_progressSize) / static_cast<float>(_expectedFinishProgress) * 100));
                 _lastProgressSize = _progressSize;
                 _lastProgressTimestamp = progressTimestamp;
-                if (_progressPercentCallback) _progressPercentCallback(jobId(), progressPercent);
-                if (_progressSizeCallback) _progressSizeCallback(jobId(), _progressSize, _expectedFinishProgress);
+                _progressPercentCallback(jobId(), progressPercent);
             }
         }
     }
