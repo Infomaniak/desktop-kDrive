@@ -614,7 +614,7 @@ namespace Infomaniak.kDrive.Pages
             if (Sync is null)
                 return new List<Sync>();
             string syncRoot = Path.GetPathRoot(Sync.LocalPath) ?? "";
-            return AppViewModel.AllSyncs.Where(s => Path.GetPathRoot(s.LocalPath) == syncRoot).ToList();
+            return AppViewModel.AllSyncs.Where(s => string.Equals(Path.GetPathRoot(s.LocalPath), syncRoot, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         private void UpdateOtherFileSize()
