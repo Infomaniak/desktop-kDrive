@@ -435,10 +435,15 @@ SyncName CommonUtility::trim(const SyncName &s) {
 }
 #endif
 
+SyncPath CommonUtility::trimTrailingSeparator(const SyncPath &path) {
+    return path.has_filename() ? path : path.parent_path();
+}
+
 bool CommonUtility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
-    if (path == potentialDescendant) return true;
-    for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
-        if (it2 == path.end()) {
+    const SyncPath rootPath = trimTrailingSeparator(path);
+    if (rootPath == potentialDescendant) return true;
+    for (auto it = potentialDescendant.begin(), it2 = rootPath.begin(); it != potentialDescendant.end(); ++it, ++it2) {
+        if (it2 == rootPath.end()) {
             return true;
         }
         if (*it != *it2) {

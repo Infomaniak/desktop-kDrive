@@ -235,6 +235,13 @@ struct COMMON_EXPORT CommonUtility {
         static SyncName trim(const SyncName &s);
 #endif
 
+        /*!
+         * @brief Trims the trailing separator from the specified path, e.g. "/sync_root/".
+         * @param path is the file system path to trim.
+         * @return The path without the trailing separator.
+         */
+        static SyncPath trimTrailingSeparator(const SyncPath &path);
+
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
         static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
 

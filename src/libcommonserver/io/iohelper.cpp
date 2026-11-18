@@ -837,13 +837,6 @@ bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError
     return checkIfIsHiddenFile(path, true, isHidden, ioError);
 }
 
-namespace {
-// Ignore a trailing separator, e.g. "/sync_root/".
-SyncPath trimTrailingSeparator(const SyncPath &path) {
-    return path.has_filename() ? path : path.parent_path();
-}
-} // namespace
-
 IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath &syncRootPath, bool &traversesLink,
                                            SyncPath &linkPath) noexcept {
     traversesLink = false;
@@ -851,17 +844,16 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
 
     if (syncRootPath.empty()) return IoError::Success;
 
-    const SyncPath rootPath = trimTrailingSeparator(syncRootPath);
-    if (!CommonUtility::isDescendantOrEqual(path, rootPath)) {
+    if (!CommonUtility::isDescendantOrEqual(path, syncRootPath)) {
         LOGW_WARN(logger(), L"Path " << Utility::formatSyncPath(path) << L" is not located under the sync root "
-                                     << Utility::formatSyncPath(rootPath));
+                                     << Utility::formatSyncPath(syncRootPath));
         return IoError::InvalidArgument;
     }
 
     // Reject parent references below the sync root, e.g. "/sync_root/../outside". The path is intentionally not normalized,
     // since lexical normalization could hide the traversal of a link (e.g. "/sync_root/link/..").
     auto componentIt = path.begin();
-    std::advance(componentIt, std::distance(rootPath.begin(), rootPath.end()));
+    std::advance(componentIt, std::distance(syncRootPath.begin(), syncRootPath.end()));
     for (; componentIt != path.end(); ++componentIt) {
         if (*componentIt == Str("..")) {
             LOGW_WARN(logger(), L"Path " << Utility::formatSyncPath(path) << L" contains a parent reference");
@@ -871,7 +863,7 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
 
     // Check each ancestor directory of `path` located strictly below the sync root, from the closest to the farthest. The final
     // component of the path is ignored.
-    for (SyncPath tmpPath = path.parent_path(); CommonUtility::isStrictDescendant(tmpPath, rootPath);
+    for (SyncPath tmpPath = path.parent_path(); CommonUtility::isStrictDescendant(tmpPath, syncRootPath);
          tmpPath = tmpPath.parent_path()) {
         ItemType itemType;
         if (!IoHelper::getItemType(tmpPath, itemType) || itemType.ioError != IoError::Success) {
@@ -916,12 +908,11 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
 
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError,
                                const SyncPath &syncRootPath /*= {}*/) noexcept {
-    if (!syncRootPath.empty()) {
-        const SyncPath rootPath = trimTrailingSeparator(syncRootPath);
+    if (!syncRootPath.empty() && recursive) {
         // Some ancestors of `path` may not exist yet (e.g. recursive creation). Only the deepest existing ancestor and its own
         // ancestors can be links, so the check is done on the first missing component of `path` (or on `path` itself).
         SyncPath firstMissingPath = path;
-        for (SyncPath ancestorPath = path.parent_path(); CommonUtility::isStrictDescendant(ancestorPath, rootPath);
+        for (SyncPath ancestorPath = path.parent_path(); CommonUtility::isStrictDescendant(ancestorPath, syncRootPath);
              ancestorPath = ancestorPath.parent_path()) {
             bool exists = false;
             if (!checkIfPathExists(ancestorPath, exists, ioError, PathCheckOption::Insensitive)) return false;
@@ -929,7 +920,7 @@ bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoErr
             firstMissingPath = ancestorPath;
         }
 
-        ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath, rootPath);
+        ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath, syncRootPath);
         if (ioError != IoError::Success) return false;
     }
 
