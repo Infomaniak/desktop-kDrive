@@ -2271,9 +2271,30 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
+            // The item path and the download progress in bytes were added later: they are absent from the signals of
+            // an older server, in which case the pop-up window simply shows no card path and no downloaded amount.
+            string itemPath = "";
+            if (signalData.ContainsKey(JsonKeys.FileOpeningItemPath))
+            {
+                itemPath = Utility.FromBase64String(signalData[JsonKeys.FileOpeningItemPath]?.AsValue().GetValue<string>()) ?? "";
+            }
+
+            Int64 receivedBytes = -1;
+            if (signalData.ContainsKey(JsonKeys.FileOpeningReceivedBytes))
+            {
+                receivedBytes = signalData[JsonKeys.FileOpeningReceivedBytes]?.AsValue().GetValue<Int64>() ?? -1;
+            }
+
+            Int64 totalBytes = -1;
+            if (signalData.ContainsKey(JsonKeys.FileOpeningTotalBytes))
+            {
+                totalBytes = signalData[JsonKeys.FileOpeningTotalBytes]?.AsValue().GetValue<Int64>() ?? -1;
+            }
+
             await Utility.RunOnUIThread(() =>
             {
-                _viewModel.FileOpeningController.OnFileOpeningStatus(jobId.Value, phase.Value, percent.Value, itemName);
+                _viewModel.FileOpeningController.OnFileOpeningStatus(jobId.Value, phase.Value, percent.Value, itemName,
+                    itemPath, receivedBytes, totalBytes);
             });
         }
 

@@ -22,28 +22,46 @@ using Microsoft.UI.Xaml;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    /// Standalone pop-up window presenting the progress of a single file opening request, with a Cancel
-    /// button forwarding the cancellation to the <see cref="FileOpeningController"/>. It lives outside the
+    /// Standalone pop-up window presenting the progress of a single file opening request, with a cancellation
+    /// cross forwarding the cancellation to the <see cref="FileOpeningController"/>. It lives outside the
     /// main window so that the progress and the cancellation remain available in tray-only or cold launch
     /// scenarios, in which the main window does not exist.
     public sealed partial class FileOpeningWindow : Window
     {
-        // Effective pixels: the window only carries an item name, a short message, a progress gauge and a Cancel
-        // button, and must hug this content. Fits the worst case, i.e. a two-line wrapped message.
+        // Effective pixels: the window carries a title or an explanation, the item card, a progress gauge with a
+        // cancellation cross, and the downloaded amount, and must hug this content. Fits the worst case, i.e. a
+        // two-line wrapped message.
         private const int _width = 420;
-        private const int _height = 220;
+        private const int _heightWithCard = 260;
+        private const int _heightCompact = 160;
 
         private readonly FileOpeningController _controller = App.ServiceProvider.GetRequiredService<AppModel>().FileOpeningController;
+        private readonly FileOpeningRequest _request;
 
         public FileOpeningWindow(FileOpeningRequest request)
         {
             InitializeComponent();
+            _request = request;
             RootPanel.DataContext = request;
-            CancelButton.Content = Localizer.Instance.GetString("buttonCancel");
-            Utility.SetWindowProperties(this, _width, _height, Utility.WindowResizeOptions.AllowMinimize);
+            request.PropertyChanged += OnRequestPropertyChanged;
+            CancelGaugeButton.AutomationProperties.Name = Localizer.Instance.GetString("buttonCancel");
+            CancelWaitingButton.AutomationProperties.Name = Localizer.Instance.GetString("buttonCancel");
+            Utility.SetWindowProperties(this, _width, ContentHeight(), Utility.WindowResizeOptions.AllowMinimize);
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             AppWindow.IsShownInSwitchers = false;
             Activated += FileOpeningWindow_Activated;
+        }
+
+        /// Returns the window height for the current state of the request: compact while the item has not been
+        /// identified yet (waiting for the synchronization), with room for the item card otherwise.
+        private int ContentHeight() => _request.HasItemName || _request.IsDownloading ? _heightWithCard : _heightCompact;
+
+        private void OnRequestPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(FileOpeningRequest.HasItemName) or nameof(FileOpeningRequest.IsDownloading))
+            {
+                Utility.SetWindowProperties(this, _width, ContentHeight(), Utility.WindowResizeOptions.AllowMinimize);
+            }
         }
 
         private void FileOpeningWindow_Activated(object sender, WindowActivatedEventArgs args)
