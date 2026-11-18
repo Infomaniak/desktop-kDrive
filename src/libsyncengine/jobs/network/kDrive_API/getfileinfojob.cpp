@@ -74,6 +74,8 @@ ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
     std::string tmp;
     if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
+    if (!JsonParserUtility::extractValue(dataObj, nameKey, _name)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     if (tmp != dirKey && !JsonParserUtility::extractValue(dataObj, sizeKey, _size))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 

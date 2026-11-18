@@ -688,6 +688,11 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
     std::streamsize expectedSize = 0;
     if (istr) {
         expectedSize = httpResponse().getContentLength();
+        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
+            // The response may be sent with a chunked transfer encoding and no content length: fall back to the size
+            // of the item known by the sync database, so that the progress can still be tracked.
+            expectedSize = _fileDownloadInfo.expectedSize;
+        }
 
         setProgressExpectedFinalValue(expectedSize);
         setProgress(0);
