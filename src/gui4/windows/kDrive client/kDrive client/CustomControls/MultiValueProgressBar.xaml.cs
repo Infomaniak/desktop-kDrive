@@ -35,7 +35,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return new GridLength(0, GridUnitType.Star);
 
             long total = Math.Max(0, value1 ?? 0) + Math.Max(0, value2 ?? 0) + Math.Max(0, value3 ?? 0) + Math.Max(0, value4 ?? 0);
-            return new GridLength(Math.Max(Math.Max(0, value ?? 0), total / 100.0), GridUnitType.Star);
+            return new GridLength(Math.Max(Math.Max(0, value ?? 0), total / 200.0 /* 0.5% */), GridUnitType.Star);
         }
 
 

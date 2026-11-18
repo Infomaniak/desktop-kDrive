@@ -97,7 +97,11 @@ namespace Infomaniak.kDrive
             {
                 filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
                 StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
-                await Launcher.LaunchFileAsync(file);
+                var opt = new LauncherOptions
+                {
+                    TreatAsUntrusted = false,
+                };
+                await Launcher.LaunchFileAsync(file, opt);
             }
             catch (Exception ex)
             {

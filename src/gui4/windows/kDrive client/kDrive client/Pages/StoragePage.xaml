@@ -124,6 +124,7 @@
                                                         Value3="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay}"
                                                         Value4="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay}"
                                                         Visibility2="{x:Bind PageViewModel.HasOtherSyncsOnSameDisk, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                        Visibility4="{x:Bind PageViewModel.DiskIsFull, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                                         IsLoading1="{x:Bind PageViewModel.IsHydratedFilesSizeLoading, Mode=OneWay}"
                                                         IsLoading2="{x:Bind PageViewModel.IsOtherSyncsHydratedFilesSizeLoading, Mode=OneWay}"
                                                         IsLoading3="{x:Bind PageViewModel.IsOtherFileSizeLoading, Mode=OneWay}"
@@ -351,10 +352,16 @@
                                  Click="UpsellButton_Click"
                                  Style="{ThemeResource SubtleButtonStyle}"
                                  Visibility="{x:Bind PageViewModel.Sync.Drive.IsAdmin, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-
-                            <controls:SvgIcon Height="16"
-                                              Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                                              UriString="{StaticResource Infomaniak.DS.Icons.Actions.cart-add}" />
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpgradeSubscription')}"
+                                           Visibility="{x:Bind PageViewModel.Sync.Drive.DisplayRemoteSpaceWarning, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                           Foreground="{ThemeResource AccentFillColorDefaultBrush}"/>
+                                
+                                <controls:SvgIcon Height="16"
+                                                  Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.cart-add}" />
+                            </StackPanel>
                         </Button>
 
                         <controls:MultiValueProgressBar Grid.Column="0"
@@ -362,6 +369,7 @@
                                                         Grid.Row="1"
                                                         Value1="{x:Bind PageViewModel.OnlineUsedSize, Mode=OneWay}"
                                                         Value2="{x:Bind PageViewModel.OnlineFreeSize, Mode=OneWay}"
+                                                        Visibility2="{x:Bind PageViewModel.OnlineIsFull, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                                         IsLoading1="{x:Bind PageViewModel.OnlineUsedSizeIsLoading, Mode=OneWay}"
                                                         Color1="{ThemeResource Infomaniak.DS.colors.accent.kdrive.defaultBrush}"
                                                         Color2="{ThemeResource AccentAAFillColorDisabledBrush}" />
