@@ -910,8 +910,23 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
 
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError,
                                const SyncPath &syncRootPath /*= {}*/) noexcept {
-    ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
-    if (ioError != IoError::Success) return false;
+    if (!syncRootPath.empty()) {
+        // Some ancestors of `path` may not exist yet (e.g. recursive creation). Only the deepest existing ancestor and its own
+        // ancestors can be links, so the check is done on the first missing component of `path` (or on `path` itself).
+        SyncPath firstMissingPath = path;
+        if (recursive) {
+            for (SyncPath ancestorPath = path.parent_path(); CommonUtility::isStrictDescendant(ancestorPath, syncRootPath);
+                 ancestorPath = ancestorPath.parent_path()) {
+                bool exists = false;
+                if (!checkIfPathExists(ancestorPath, exists, ioError, PathCheckOption::Insensitive)) return false;
+                if (exists) break;
+                firstMissingPath = ancestorPath;
+            }
+        }
+
+        ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath, syncRootPath);
+        if (ioError != IoError::Success) return false;
+    }
 
     std::error_code ec;
     const bool creationSuccess =
