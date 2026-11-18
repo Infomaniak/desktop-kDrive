@@ -228,7 +228,7 @@ namespace Infomaniak.kDrive.Pages
         {
             if (e.PropertyName != nameof(Drive.UsedSize) && e.PropertyName != nameof(Drive.Size)) return;
             if (_isDisposed) return;
-            await UpdateOnlineStorage(_cancellationTokenSource.Token);
+            await UpdateOnlineStorage(false, _cancellationTokenSource.Token);
         }
 
         private async void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
@@ -430,12 +430,12 @@ namespace Infomaniak.kDrive.Pages
             if (_isDisposed || cancellationToken.IsCancellationRequested)
                 return;
 
-            Task onlineUpdate = UpdateOnlineStorage(cancellationToken);
+            Task onlineUpdate = UpdateOnlineStorage(forceRefresh, cancellationToken);
             Task localUpdate = UpdateDiskSizeAsync(forceRefresh, cancellationToken);
             await Task.WhenAll(onlineUpdate, localUpdate);
         }
 
-        public async Task UpdateOnlineStorage(CancellationToken cancellationToken)
+        public async Task UpdateOnlineStorage(bool forceRefresh, CancellationToken cancellationToken)
         {
             if (_sync is null)
             {
@@ -449,6 +449,12 @@ namespace Infomaniak.kDrive.Pages
             // prefill with known values
             OnlineUsedSize = _sync.Drive.UsedSize;
             OnlineFreeSize = Math.Max(0, _sync.Drive.Size - _sync.Drive.UsedSize);
+
+            if (!forceRefresh)
+            {
+                OnlineUsedSizeIsLoading = false;
+                return;
+            }
 
             try
             {
