@@ -135,9 +135,8 @@ class OpenFileJob : public SyncJob {
         //! Returns the live SyncDb of a sync whose engine is running, nullptr otherwise.
         std::shared_ptr<SyncDb> getSyncDb(SyncDbId syncDbId) const;
         //! Returns the SyncDb of `sync` read directly from its DB file when the engine of the sync is not running,
-        //! caching it in `_tempSyncDbMap` for the subsequent items of the same sync. Returns nullptr when the DB
-        //! file cannot be opened or prepared.
-        std::shared_ptr<SyncDb> getOrOpenSyncDb(const Sync &sync);
+        //! Returns nullptr when the DB file cannot be opened or prepared.
+        std::shared_ptr<SyncDb> openSyncDb(const Sync &sync);
         //! Looks for the best admissible sync containing the requested item. Sets `found` with false if none has been
         //! found.
         ExitInfo getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync &bestSync, SyncPath &relativePath, bool &found);
@@ -163,12 +162,6 @@ class OpenFileJob : public SyncJob {
         //! Marks the job as ready to open the item and returns `ExitCode::Ok`.
         ExitInfo readyToOpen();
 
-        //! Closes the read-only sync DBs of the syncs whose engine is not running (see `_tempSyncDbMap`): they were
-        //! opened to resolve the item and are not needed anymore. Only the syncs of the drives considered during the
-        //! resolution are examined, and the DBs of syncs with a running engine are owned by their SyncPal and left
-        //! untouched. Returns `ExitCode::DbError` if the syncs cannot be listed from the parameters database.
-        ExitInfo closeDbsOfNonRunningSyncs();
-
         //! Reports the job state to the user interface through the feedback callback, when set. The name of the item
         //! being opened is included, empty while the item has not been resolved.
         void notifyFeedback(FileOpeningPhase phase, int8_t percent) const;
@@ -185,10 +178,6 @@ class OpenFileJob : public SyncJob {
         SyncDbId _syncDbId{0};
         SyncPath _relativePath; // Relative to the local folder of the sync.
         SyncPath _localPath; // Absolute path of the item on the local file system.
-
-        // Read-only instances of the SyncDb of the syncs whose engine is not running, cached to avoid reopening them
-        // on every resolution attempt.
-        std::unordered_map<SyncDbId, std::shared_ptr<SyncDb>> _tempSyncDbMap;
 
         //! The requested item may have been created on the remote side recently: keep resolving it during
         //! `_syncWaitTimeout` before giving up.

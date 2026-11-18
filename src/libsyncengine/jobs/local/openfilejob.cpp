@@ -243,20 +243,16 @@ std::shared_ptr<SyncDb> OpenFileJob::getSyncDb(const SyncDbId syncDbId) const {
     return syncPal ? syncPal->syncDb() : nullptr;
 }
 
-std::shared_ptr<SyncDb> OpenFileJob::getOrOpenSyncDb(const Sync &sync) {
-    if (const auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId()); tempSyncDbIt != _tempSyncDbMap.end()) {
-        return tempSyncDbIt->second;
-    }
-
+std::shared_ptr<SyncDb> OpenFileJob::openSyncDb(const Sync &sync) {
     try {
-        const auto tempSyncDb = std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId());
+        auto tempSyncDb = std::make_shared<SyncDb>(sync.dbPath().string(), sync.targetNodeId());
         if (!tempSyncDb->prepare()) {
             LOGW_WARN(_logger, L"Failed to prepare the sync DB - syncDbId=" << sync.dbId());
 
             return nullptr;
         }
 
-        return _tempSyncDbMap.try_emplace(sync.dbId(), tempSyncDb).first->second;
+        return tempSyncDb;
     } catch (const std::runtime_error &e) {
         LOGW_WARN(_logger, L"Failed to open the sync DB - syncDbId=" << sync.dbId() << L": " << CommonUtility::s2ws(e.what()));
 
@@ -273,7 +269,7 @@ ExitInfo OpenFileJob::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync
         std::shared_ptr<SyncDb> syncDb = getSyncDb(sync.dbId());
         if (!syncDb) {
             // The engine of this sync is not running: read its DB directly.
-            syncDb = getOrOpenSyncDb(sync);
+            syncDb = openSyncDb(sync);
         }
 
         if (!syncDb) continue;
@@ -281,11 +277,16 @@ ExitInfo OpenFileJob::getBestAdmissibleSync(const std::vector<Sync> &syncs, Sync
         bool nodeFound = false;
         if (!syncDb->path(ReplicaSide::Remote, _request.remoteNodeId, relativePath, nodeFound)) {
             LOGW_WARN(_logger, L"Error in SyncDb::dbId - syncDbId=" << sync.dbId());
+        }
+
+        if (!nodeFound) {
+            if (!_getSyncPal(sync.dbId())) {
+                // The engine of this sync is still not running.
+                syncDb->close();
+            }
 
             continue;
         }
-
-        if (!nodeFound) continue;
 
         bestSync = sync;
         found = true;
@@ -378,7 +379,7 @@ ExitInfo OpenFileJob::resolveDeeplink(bool &found) {
         LOGW_WARN(_logger, L"The local path traverses a symlink - " << Utility::formatSyncPath(_localPath));
         _outcome = Outcome::Failed;
 
-        return {ExitCode::DataError, ExitCause::InvalidArgument};
+        return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
     }
 
     return ExitCode::Ok;
@@ -396,34 +397,7 @@ ExitInfo OpenFileJob::checkRemoteItemExistence(bool &exists) const {
     return exitInfo;
 }
 
-ExitInfo OpenFileJob::closeDbsOfNonRunningSyncs() {
-    std::vector<Sync> syncs;
-    if (!ParmsDb::instance()->selectAllSyncs(syncs)) {
-        LOGW_WARN(_logger, L"Error in ParmsDb::selectAllSyncs.");
-
-        return ExitCode::DbError;
-    }
-
-    (void) std::erase_if(syncs, [this](const Sync &sync) { return !_driveDbIds.contains(sync.driveDbId()); });
-
-    for (const auto &sync: syncs) {
-        if (_getSyncPal(sync.dbId())) continue; // The engine of this sync is running.
-
-        if (const auto tempSyncDbIt = _tempSyncDbMap.find(sync.dbId()); tempSyncDbIt != _tempSyncDbMap.end()) {
-            tempSyncDbIt->second->close();
-            _tempSyncDbMap.erase(tempSyncDbIt);
-        }
-    }
-
-    return ExitCode::Ok;
-}
-
 ExitInfo OpenFileJob::openResolvedLocalItem() {
-    // The temporary sync DBs of non-running syncs are not needed anymore.
-    if (const auto exitInfo = closeDbsOfNonRunningSyncs(); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in OpenFileJob::closeDbsOfNonRunningSyncs: " << exitInfo);
-    }
-
     ItemType itemType;
     if (!IoHelper::getItemType(_localPath, itemType)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(_localPath, itemType.ioError));
@@ -461,7 +435,8 @@ ExitInfo OpenFileJob::openResolvedLocalItem() {
         _outcome = Outcome::Failed;
         LOGW_WARN(_logger, L"The file is being hydrated, retry later: " << Utility::formatSyncPath(_localPath));
 
-        return {ExitCode::DataError, ExitCause::Unknown};
+        // Happens under normal circumstances.
+        return ExitCode::Ok;
     }
 
     // The item is a dehydrated placeholder: download it before opening it.
