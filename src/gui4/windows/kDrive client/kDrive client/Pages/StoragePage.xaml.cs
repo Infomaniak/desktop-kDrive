@@ -422,10 +422,13 @@ namespace Infomaniak.kDrive.Pages
             if (_isDisposed)
                 return;
 
-            await _cancellationTokenSource.CancelAsync();
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = _cancellationTokenSource.Token;
+            var currentSource = new CancellationTokenSource();
+            var cancellationToken = currentSource.Token;
+            var previousSource = Interlocked.Exchange(ref _cancellationTokenSource, currentSource);
+            await previousSource.CancelAsync();
+            previousSource.Dispose();
+            if (_isDisposed || cancellationToken.IsCancellationRequested)
+                return;
 
             Task onlineUpdate = UpdateOnlineStorage(cancellationToken);
             Task localUpdate = UpdateDiskSizeAsync(forceRefresh, cancellationToken);
