@@ -344,7 +344,7 @@
                                    Grid.Row="0"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}"
                                    VerticalAlignment="Center"
-                                   Text="{x:Bind kDrive:Localizer.Instance.GetString1s('storageSubscriptionTitle', PageViewModel.Sync.Drive.PackDisplayName), Mode=OneWay}" />
+                                   Text="{x:Bind GetMySubscriptionTitle(PageViewModel.Sync.Drive.PackDisplayName), Mode=OneWay}" />
 
                         <Button  Grid.Column="1"
                                  Grid.Row="0"

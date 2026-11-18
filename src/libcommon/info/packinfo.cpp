@@ -63,6 +63,11 @@ void PackInfo::setDisplayName(const std::string_view displayName) {
     static constexpr std::string_view kDrivePrefix = "kDrive";
     static constexpr std::string_view kSuitePrefix = "kSuite";
 
+    if (displayName.empty()) {
+        _displayName = displayName;
+        return;
+    }
+
     std::string name(displayName);
 
     // Replace all occurrences of "business" with "pro"
@@ -90,6 +95,7 @@ void PackInfo::setDisplayName(const std::string_view displayName) {
             break;
 
         case 8: // kSuite standard
+        case 11: // kSuite pro
         case 14: // kSuite enterprise
         case 29: // kSuite essential
         case 23: // kSuite special offer 1

@@ -144,6 +144,14 @@ namespace Infomaniak.kDrive.Pages
             return Localizer.Instance.GetString("storageThisComputerTitle", diskRoot, prettySize);
         }
 
+        private string GetMySubscriptionTitle(string packDisplayName)
+        {
+            if (String.IsNullOrEmpty(packDisplayName))
+                return Localizer.Instance.GetString("labelMySubscription");
+            else
+                return Localizer.Instance.GetString("storageSubscriptionTitle", PageViewModel.Sync.Drive.PackDisplayName);
+        }
+
         private string GetStorageUsedLabel(Int64? usedSize)
         {
             BytesToHumanReadableStringConverter converter = new BytesToHumanReadableStringConverter();

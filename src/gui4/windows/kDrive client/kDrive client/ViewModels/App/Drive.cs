@@ -226,7 +226,7 @@ namespace Infomaniak.kDrive.ViewModels
         public bool DisplayRemoteSpaceWarning
         {
             get => _displayRemoteSpaceWarning;
-            set => SetPropertyInUIThread(ref _displayRemoteSpaceWarning, value || (Size - UsedSize) < (Size / 1000));
+            set => SetPropertyInUIThread(ref _displayRemoteSpaceWarning, value);
         }
 
         public Uri GetWebUri() => App.ServiceProvider.GetRequiredService<IUriStore>().WebAppHomeUrl(DriveId);
