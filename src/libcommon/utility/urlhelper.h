@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "utility/types.h"
+
 namespace KDC {
 
 class UrlHelper {
@@ -26,6 +28,9 @@ class UrlHelper {
         static std::string kDriveApiUrl(uint8_t version = 2);
         static std::string notifyApiUrl(uint8_t version = 2);
         static std::string loginApiUrl();
+        //! Returns the address of the kDrive web application page of an item, from which the item can be downloaded
+        //! manually when the desktop application cannot open it.
+        static std::string kDriveWebAppFileUrl(DriveId driveId, const std::string &nodeId);
 
     private:
         static bool usePreProdUrl();

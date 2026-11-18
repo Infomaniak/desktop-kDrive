@@ -20,6 +20,7 @@
 
 #include "appserver.h"
 #include "libcommon/theme/theme.h"
+#include "libcommon/utility/urlhelper.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
@@ -60,7 +61,7 @@ void FileOpeningHandler::queueOpenFileJob() {
 
     if (OpenFileJob::Request request; !OpenFileJob::parseDeeplinkUrl(_url, request)) {
         LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
-        handleFileOpeningFailure(QObject::tr("This kDrive link is invalid."));
+        handleFileOpeningFailure();
 
         return;
     }
@@ -73,8 +74,7 @@ void FileOpeningHandler::queueOpenFileJob() {
     if (const auto activeFlows = _appServer->fileOpeningJobCount(); activeFlows >= maxFlows) {
         LOG_WARN(Log::instance()->getLogger(), "Too many concurrent file opening requests - active="
                                                        << activeFlows << ", max=" << maxFlows << " - url=" << _url);
-        handleFileOpeningFailure(
-                QObject::tr("Too many elements are currently being opened from kDrive links. Please try again later."));
+        handleFileOpeningFailure();
 
         return;
     }
@@ -136,17 +136,16 @@ void FileOpeningHandler::onOpenFileJobFinished(const OpenFileJob::Outcome outcom
             (void) openLocalItem(localPath, syncDbId);
             break;
         case OpenFileJob::Outcome::NotFound:
-            handleFileOpeningFailure(QObject::tr("The element requested from this kDrive link could not be found."));
+            handleFileOpeningFailure();
             break;
         case OpenFileJob::Outcome::ResolveTimedOut:
-            handleFileOpeningFailure(QObject::tr(
-                    "The element requested from this kDrive link could not be synchronized. Please try again later."));
+            handleFileOpeningFailure();
             break;
         case OpenFileJob::Outcome::HydrationTimedOut:
-            handleFileOpeningFailure(QObject::tr("The download of the element requested from this kDrive link took too long."));
+            handleFileOpeningFailure();
             break;
         case OpenFileJob::Outcome::Failed:
-            handleFileOpeningFailure(QObject::tr("The element requested from this kDrive deeplink could not be opened."));
+            handleFileOpeningFailure();
             break;
         case OpenFileJob::Outcome::Canceled:
             handleFileOpeningCanceled();
@@ -167,7 +166,7 @@ ExitInfo FileOpeningHandler::openLocalItem(const SyncPath &localPath, const Sync
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfFileIsDehydrated - " << Utility::formatIoError(pathToOpen, ioError));
 
-        handleFileOpeningFailure(QObject::tr("The download of the element requested from this kDrive link failed."));
+        handleFileOpeningFailure();
 
         return ExitCode::SystemError;
     }
@@ -175,15 +174,14 @@ ExitInfo FileOpeningHandler::openLocalItem(const SyncPath &localPath, const Sync
     // Do not attempt to open a dehydrated placeholder if the engine of the sync is not running: the system is unable
     // to hydrate it.
     if (isDeHydrated && !isSyncEngineRunning(syncDbId)) {
-        handleFileOpeningFailure(QObject::tr(
-                "The download of the element requested from this kDrive link failed because its sync is not running."));
+        handleFileOpeningFailure();
 
         return ExitCode::DataError;
     }
 
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(pathToOpen)))) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in QDesktopServices::openUrl - " << Utility::formatSyncPath(pathToOpen));
-        handleFileOpeningFailure(QObject::tr("The element requested from this kDrive link could not be opened."));
+        handleFileOpeningFailure();
 
         return ExitCode::SystemError;
     }
@@ -200,18 +198,28 @@ bool FileOpeningHandler::isSyncEngineRunning(const SyncDbId syncDbId) const {
     return it != _appServer->syncPalMap.end() && it->second && it->second->isRunning();
 }
 
-void FileOpeningHandler::notifyUser(const QString &message) const {
-    _appServer->sendShowNotification(QString::fromStdString(Theme::instance()->appName()), message);
-}
-
 void FileOpeningHandler::handleFileOpeningSuccess() {
     _appServer->unregisterFileOpeningJob(_jobId);
 }
 
-void FileOpeningHandler::handleFileOpeningFailure(const QString &userMessage) {
+void FileOpeningHandler::handleFileOpeningFailure() {
     LOG_WARN(Log::instance()->getLogger(), "Failed to open item from deeplink URL - url=" << _url);
-    notifyUser(userMessage);
+
+    // Inform the client interface of the failure: the pop-up window of the request is replaced by a failure window
+    // offering to download the item from the kDrive web application in a browser. No notification is sent anymore:
+    // the failure window replaces it.
+    _appServer->sendFileOpeningFailure(_jobId, webUrl());
+
     _appServer->unregisterFileOpeningJob(_jobId);
+}
+
+CommString FileOpeningHandler::webUrl() const {
+    // The kDrive web application address of the item is derived from the request URL, and is therefore unavailable
+    // when the URL itself is invalid.
+    OpenFileJob::Request request;
+    if (!OpenFileJob::parseDeeplinkUrl(_url, request)) return {};
+
+    return CommonUtility::str2CommString(UrlHelper::kDriveWebAppFileUrl(request.driveId, request.remoteNodeId));
 }
 
 void FileOpeningHandler::handleFileOpeningCanceled() {

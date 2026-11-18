@@ -2917,6 +2917,30 @@ void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPha
     }
 }
 
+void AppServer::sendFileOpeningFailure(const UniqueId jobId, const CommString &webUrl) const {
+    // Inform the client interface that the file opening request failed: its pop-up window is replaced by a failure
+    // window offering to download the item from the kDrive web application in a browser. No notification is sent:
+    // the failure window replaces it.
+    if (useOldCommServer()) {
+        int id = 0;
+
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << static_cast<qint64>(jobId);
+        paramsStream << FileOpeningPhase::Failed;
+        paramsStream << static_cast<qint8>(-1);
+        paramsStream << QString();
+        paramsStream << QString();
+        paramsStream << static_cast<qint64>(-1);
+        paramsStream << static_cast<qint64>(-1);
+        paramsStream << CommonUtility::commString2QStr(webUrl);
+        (void) OldCommServer::instance()->sendSignal(SignalNum::FILE_OPENING_STATUS, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, webUrl));
+    }
+}
+
 ExitInfo AppServer::cancelFileOpeningJob(const UniqueId jobId) {
     // Keep the mutex locked during the call: this prevents the handler from being unregistered and destroyed while it
     // is being canceled. `cancel()` never takes this mutex back, and it may only acquire the engine mutexes, which are

@@ -880,6 +880,9 @@ public enum KDriveLocalizable {
   public static func fileOpeningDownloadProgress(_ p1: Any, _ p2: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "fileOpeningDownloadProgress", String(describing: p1), String(describing: p2), fallback: "%1$@ over %2$@")
   }
+  public static let fileOpeningFailureTitle = KDriveLocalizable.tr("Localizable", "fileOpeningFailureTitle", fallback: "Cannot open the file")
+  public static let fileOpeningFailureExplanation = KDriveLocalizable.tr("Localizable", "fileOpeningFailureExplanation", fallback: "You can download it yourself from kDrive in your browser.")
+  public static let fileOpeningDownloadButton = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadButton", fallback: "Download from kDrive")
   public static let manyDeleteDialogHardLimitSecondary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitSecondary", fallback: "Delete online as well")
   public static func manyDeleteDialogOtherPlaceholder(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "manyDeleteDialogOtherPlaceholder", String(describing: p1), fallback: "and %@ other items")
