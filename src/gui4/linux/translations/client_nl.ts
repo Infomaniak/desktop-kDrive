@@ -1289,6 +1289,14 @@ open macOS Voorkeuren om ze in te schakelen.</translation>
             <source>Infomaniak Support</source> 
             <translation>Infomaniak Ondersteuning</translation> 
         </message> 
+        <message id="informationBlockBackErrorSubtitle"> 
+            <source>Synchronization is temporarily interrupted. It will resume automatically as soon as possible.</source> 
+            <translation>De synchronisatie is tijdelijk onderbroken. Deze wordt zo snel mogelijk automatisch hervat.</translation> 
+        </message> 
+        <message id="informationBlockBackErrorTitle"> 
+            <source>An error occurred</source> 
+            <translation>Er is een fout opgetreden</translation> 
+        </message> 
         <message id="informationBlockKDriveFullSubtitle"> 
             <source>Free up space or upgrade your plan to continue syncing your files.</source> 
             <translation>Maak ruimte vrij of upgrade uw abonnement om uw bestanden te blijven synchroniseren.</translation> 

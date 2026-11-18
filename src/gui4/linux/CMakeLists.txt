@@ -466,7 +466,9 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/house.svg
         ui/assets/main/home/cog.svg
         ui/assets/common/external-link.svg
+        ui/assets/main/home/circle-cross.svg
         ui/assets/main/home/folder-share.svg
+        ui/assets/main/home/hard-drive.svg
         ui/assets/main/home/headphones.svg
         ui/assets/main/home/kdrive-folders-stacked.svg
         ui/assets/main/home/kdrive-outline.svg

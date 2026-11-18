@@ -41,11 +41,39 @@ Item {
             controller: root.controller
             visible: root.controller.status !== HomeController.SetupRequired && root.controller.status !== HomeController.Loading
         }
+        // One banner at a time, chosen by HomeController.banner: two would push the shortcuts card out of a
+        // minimum-size window.
+        IKInformationBlock {
+            Layout.fillWidth: true
+            Layout.preferredHeight: visible ? implicitHeight : 0
+            title: qsTrId("informationBlockKDriveFullTitle")
+            subtitle: qsTrId("informationBlockKDriveFullSubtitle")
+            subtitleMaximumLineCount: IKMainWindow.informationBlockSubtitleMaxLines
+            iconSource: "qrc:/assets/main/home/hard-drive.svg"
+            // Only an admin can add storage; the others can only close the banner.
+            primaryActionText: root.controller.driveAdmin ? qsTrId("buttonAddStorage") : ""
+            primaryActionExternal: true
+            dismissText: qsTrId("buttonClose")
+            visible: root.controller.banner === HomeController.DriveFull
+            onPrimaryActionTriggered: root.controller.openDriveUpsell()
+            onDismissRequested: root.controller.dismissDriveFull()
+        }
+        IKInformationBlock {
+            Layout.fillWidth: true
+            Layout.preferredHeight: visible ? implicitHeight : 0
+            title: qsTrId("informationBlockBackErrorTitle")
+            subtitle: qsTrId("informationBlockBackErrorSubtitle")
+            subtitleMaximumLineCount: IKMainWindow.informationBlockSubtitleMaxLines
+            iconSource: "qrc:/assets/main/home/circle-cross.svg"
+            primaryActionText: qsTrId("buttonRetry")
+            visible: root.controller.banner === HomeController.ServerError
+            onPrimaryActionTriggered: root.controller.retrySync()
+        }
         IKErrorBanner {
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? implicitHeight : 0
             errorCount: root.controller.errorCount
-            visible: root.controller.errorCount > 0
+            visible: root.controller.banner === HomeController.SyncErrors
             onActionTriggered: root.controller.showErrors()
         }
         IKInformationBlock {
@@ -57,10 +85,7 @@ Item {
             primaryActionText: qsTrId("onboardingV4Faq")
             primaryActionExternal: true
             dismissText: qsTrId("buttonClose")
-            // One banner at a time: both would push the shortcuts card out of a minimum-size window.
-            visible: root.controller.showV4Onboarding && root.controller.errorCount === 0
-                     && root.controller.status !== HomeController.SetupRequired
-                     && root.controller.status !== HomeController.Loading
+            visible: root.controller.banner === HomeController.V4Onboarding
             onPrimaryActionTriggered: root.controller.openV4OnboardingFaq()
             onDismissRequested: root.controller.dismissV4Onboarding()
         }
