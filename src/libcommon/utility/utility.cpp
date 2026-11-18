@@ -454,7 +454,7 @@ bool CommonUtility::isDescendantOrEqual(const SyncPath &potentialDescendant, con
 }
 
 bool CommonUtility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
-    if (path == potentialDescendant) return false;
+    if (trimTrailingSeparator(path) == potentialDescendant) return false;
     return isDescendantOrEqual(potentialDescendant, path);
 }
 

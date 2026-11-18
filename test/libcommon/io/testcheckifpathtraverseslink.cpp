@@ -68,11 +68,14 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         auto traversesLink = true;
         auto linkPath = SyncPath("dummy");
-        for (const auto &path: {syncRootPath / ".." / "outside" / "item.txt", syncRootPath / "dir" / ".." / "item.txt"}) {
-            CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument,
-                                 IoHelper::checkIfPathTraversesLink(path, syncRootPath, traversesLink, linkPath));
-            CPPUNIT_ASSERT(!traversesLink);
-            CPPUNIT_ASSERT(linkPath.empty());
+        // A trailing separator in the sync root path must not skip the check of the first component below the sync root.
+        for (const auto &rootPath: {syncRootPath, syncRootPath / ""}) {
+            for (const auto &path: {syncRootPath / ".." / "outside" / "item.txt", syncRootPath / "dir" / ".." / "item.txt"}) {
+                CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument,
+                                     IoHelper::checkIfPathTraversesLink(path, rootPath, traversesLink, linkPath));
+                CPPUNIT_ASSERT(!traversesLink);
+                CPPUNIT_ASSERT(linkPath.empty());
+            }
         }
     }
 
@@ -365,6 +368,7 @@ void TestIo::testFilesystemAlterationsThroughLink() {
 
     // A dangling link, whose target is a missing directory outside the sync folder, is detected as well when creating a
     // directory with missing intermediate directories below it: the dangling link itself exists, so it is checked.
+    // A non-recursive creation fails earlier, because the parent directory is missing.
     {
         const auto missingTargetPath = outsideDirPath / "missing_target";
         const auto danglingLinkPath = syncDirPath / "dangling_link";
@@ -374,7 +378,7 @@ void TestIo::testFilesystemAlterationsThroughLink() {
         for (const bool recursive: {false, true}) {
             ioError = IoError::Unknown;
             CPPUNIT_ASSERT(!IoHelper::createDirectory(danglingLinkPath / "missing" / "new_dir", recursive, ioError, syncDirPath));
-            CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
+            CPPUNIT_ASSERT_EQUAL(recursive ? IoError::PathContainsSymlink : IoError::NoSuchFileOrDirectory, ioError);
             CPPUNIT_ASSERT(!std::filesystem::exists(missingTargetPath, ec));
             expectOutsideDirUnchanged();
         }

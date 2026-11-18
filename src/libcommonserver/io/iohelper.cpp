@@ -853,7 +853,8 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
     // Reject parent references below the sync root, e.g. "/sync_root/../outside". The path is intentionally not normalized,
     // since lexical normalization could hide the traversal of a link (e.g. "/sync_root/link/..").
     auto componentIt = path.begin();
-    std::advance(componentIt, std::distance(syncRootPath.begin(), syncRootPath.end()));
+    const SyncPath rootPath = CommonUtility::trimTrailingSeparator(syncRootPath);
+    std::advance(componentIt, std::distance(rootPath.begin(), rootPath.end()));
     for (; componentIt != path.end(); ++componentIt) {
         if (*componentIt == Str("..")) {
             LOGW_WARN(logger(), L"Path " << Utility::formatSyncPath(path) << L" contains a parent reference");
@@ -908,16 +909,18 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
 
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError,
                                const SyncPath &syncRootPath /*= {}*/) noexcept {
-    if (!syncRootPath.empty() && recursive) {
+    if (!syncRootPath.empty()) {
         // Some ancestors of `path` may not exist yet (e.g. recursive creation). Only the deepest existing ancestor and its own
         // ancestors can be links, so the check is done on the first missing component of `path` (or on `path` itself).
         SyncPath firstMissingPath = path;
-        for (SyncPath ancestorPath = path.parent_path(); CommonUtility::isStrictDescendant(ancestorPath, syncRootPath);
-             ancestorPath = ancestorPath.parent_path()) {
-            bool exists = false;
-            if (!checkIfPathExists(ancestorPath, exists, ioError, PathCheckOption::Insensitive)) return false;
-            if (exists) break;
-            firstMissingPath = ancestorPath;
+        if (recursive) {
+            for (SyncPath ancestorPath = path.parent_path(); CommonUtility::isStrictDescendant(ancestorPath, syncRootPath);
+                 ancestorPath = ancestorPath.parent_path()) {
+                bool exists = false;
+                if (!checkIfPathExists(ancestorPath, exists, ioError, PathCheckOption::Insensitive)) return false;
+                if (exists) break;
+                firstMissingPath = ancestorPath;
+            }
         }
 
         ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath, syncRootPath);
