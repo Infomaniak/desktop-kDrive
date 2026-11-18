@@ -420,9 +420,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode sendShowFileNotification(SyncDbId syncDbId, const QString &filename, const QString &renameTarget,
                                           SyncFileInstruction status, int count) const;
         void sendShowNotification(const QString &title, const QString &message) const;
-        //! Reports the state of a file opening request, and the name of the item being opened, to the client interface.
-        virtual void sendFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent,
-                                           const CommString &itemName) const;
+        //! Reports the state of a file opening request, along with the name of the item being opened, the path of its
+        //! parent folder, and the download progress in bytes, to the client interface.
+        virtual void sendFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent, const CommString &itemName,
+                                           const CommString &itemPath, int64_t receivedBytes, int64_t totalBytes) const;
         void registerFileOpeningJob(UniqueId jobId, FileOpeningHandler *handler);
         void unregisterFileOpeningJob(UniqueId jobId);
         //! Returns the number of file-opening flows currently active: their job is queued or running and their

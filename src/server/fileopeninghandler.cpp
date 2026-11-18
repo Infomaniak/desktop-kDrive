@@ -96,11 +96,16 @@ void FileOpeningHandler::queueOpenFileJob() {
     _jobId = job->jobId();
     _job = job;
     _appServer->registerFileOpeningJob(_jobId, this);
-    job->setFeedbackCallback([this](const FileOpeningPhase phase, const int8_t percent, const CommString &itemName) {
+    job->setFeedbackCallback([this](const FileOpeningPhase phase, const int8_t percent, const CommString &itemName,
+                                    const CommString &itemPath, const int64_t receivedBytes, const int64_t totalBytes) {
         // Job manager worker thread. Hand the state over to the application thread. `this` is used as the context
         // object: if the handler has been destroyed in the meantime, the call is simply discarded.
         (void) QMetaObject::invokeMethod(
-                this, [this, phase, percent, itemName] { onFileOpeningStatus(phase, percent, itemName); }, Qt::QueuedConnection);
+                this,
+                [this, phase, percent, itemName, itemPath, receivedBytes, totalBytes] {
+                    onFileOpeningStatus(phase, percent, itemName, itemPath, receivedBytes, totalBytes);
+                },
+                Qt::QueuedConnection);
     });
     std::weak_ptr<OpenFileJob> weakJob = job;
     job->setAdditionalCallback([this, weakJob](UniqueId) {
@@ -123,7 +128,7 @@ void FileOpeningHandler::onOpenFileJobFinished(const OpenFileJob::Outcome outcom
                                                const SyncDbId syncDbId) {
     // Close the pop-up window on the client side, if one is open (item being synchronized or download in progress).
     // The item name is irrelevant here: the clients close the window upon receiving the Finished phase.
-    _appServer->sendFileOpeningStatus(_jobId, FileOpeningPhase::Finished, -1, {});
+    _appServer->sendFileOpeningStatus(_jobId, FileOpeningPhase::Finished, -1, {}, {}, -1, -1);
 
     switch (outcome) {
         case OpenFileJob::Outcome::ReadyToOpen:
@@ -224,9 +229,10 @@ ExitInfo FileOpeningHandler::cancel() {
     return {ExitCode::DataError, ExitCause::NotFound};
 }
 
-void FileOpeningHandler::onFileOpeningStatus(const FileOpeningPhase phase, const int8_t percent,
-                                             const CommString &itemName) const {
-    _appServer->sendFileOpeningStatus(_jobId, phase, percent, itemName);
+void FileOpeningHandler::onFileOpeningStatus(const FileOpeningPhase phase, const int8_t percent, const CommString &itemName,
+                                             const CommString &itemPath, const int64_t receivedBytes,
+                                             const int64_t totalBytes) const {
+    _appServer->sendFileOpeningStatus(_jobId, phase, percent, itemName, itemPath, receivedBytes, totalBytes);
 }
 
 bool FileOpeningHandler::isFileOpeningDeeplink(const std::string &urlStr) {

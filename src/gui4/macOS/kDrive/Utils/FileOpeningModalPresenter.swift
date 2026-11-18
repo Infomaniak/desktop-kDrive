@@ -57,10 +57,12 @@ final class FileOpeningModalPresenter {
         }
 
         let entry = windowEntry(for: status.jobId)
-        entry.hostingController.rootView = FileOpeningStatusView(itemName: status.itemName, phase: status.phase,
-                                                                 percent: status.percent) { [weak self] in
+        entry.hostingController.rootView = FileOpeningStatusView(itemName: status.itemName, itemPath: status.itemPath,
+                                                                 phase: status.phase, receivedBytes: status.receivedBytes,
+                                                                 totalBytes: status.totalBytes) { [weak self] in
             self?.cancel(jobId: status.jobId)
         }
+        entry.window.setContentSize(NSSize(width: 392, height: status.phase == .hydrating ? 216 : 88))
         entry.window.makeKeyAndOrderFront(nil)
     }
 
@@ -71,13 +73,14 @@ final class FileOpeningModalPresenter {
 
         IKLogger.general.info("[KD] Presenting the file opening progress window jobId=\(jobId)")
         let hostingController = NSHostingController(
-            rootView: FileOpeningStatusView(itemName: "", phase: .waitingSync, percent: -1) {}
+            rootView: FileOpeningStatusView(itemName: "", itemPath: "", phase: .waitingSync, receivedBytes: -1,
+                                            totalBytes: -1) {}
         )
         let window = NSWindow(contentViewController: hostingController)
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.title = KDriveLocalizable.fileOpeningWindowTitle
         window.isReleasedWhenClosed = false
-        window.setContentSize(NSSize(width: 360, height: 120))
+        window.setContentSize(NSSize(width: 392, height: 88))
         window.center()
 
         let entry = FileOpeningWindowEntry(window: window, hostingController: hostingController)

@@ -2895,7 +2895,8 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
 }
 
 void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPhase phase, const int8_t percent,
-                                      const CommString &itemName) const {
+                                      const CommString &itemName, const CommString &itemPath, const int64_t receivedBytes,
+                                      const int64_t totalBytes) const {
     // Inform the client interface of the state of the file opening request, so that a pop-up window can be displayed,
     // updated, or closed.
     if (useOldCommServer()) {
@@ -2907,10 +2908,14 @@ void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPha
         paramsStream << phase;
         paramsStream << static_cast<qint8>(percent);
         paramsStream << CommonUtility::commString2QStr(itemName);
+        paramsStream << CommonUtility::commString2QStr(itemPath);
+        paramsStream << static_cast<qint64>(receivedBytes);
+        paramsStream << static_cast<qint64>(totalBytes);
         (void) OldCommServer::instance()->sendSignal(SignalNum::FILE_OPENING_STATUS, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, phase, percent, itemName));
+        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, phase, percent, itemName, itemPath,
+                                                                                 receivedBytes, totalBytes));
     }
 }
 

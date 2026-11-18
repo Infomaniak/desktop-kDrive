@@ -288,10 +288,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
           is locked, and must therefore not call any SyncPal method.
           \param progressObserver is an optional callback invoked with the download progress in percent each time the
           download job reports it.
+          \param progressSizeObserver is an optional callback invoked with the downloaded amount in bytes and the total
+          size of the item, each time the download job reports it (-1 for both while the total size is unknown).
         */
         ExitInfo addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath, const SyncPath &parentFolderPath,
                                 const std::function<void(UniqueId, bool)> &observer = nullptr,
-                                const std::function<void(int16_t)> &progressObserver = nullptr);
+                                const std::function<void(int16_t)> &progressObserver = nullptr,
+                                const std::function<void(int64_t, int64_t)> &progressSizeObserver = nullptr);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs();

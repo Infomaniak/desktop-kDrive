@@ -99,9 +99,12 @@ class OpenFileJob : public SyncJob {
 
         //! Callback through which the job reports its progress to the user interface: FileOpeningPhase::WaitingSync
         //! while the item is being synchronized (percent is -1), FileOpeningPhase::Hydrating while it is being
-        //! downloaded (percent is 0-100). `itemName` is the name of the item being opened, empty while the item has not
-        //! been resolved (i.e. during the WaitingSync phase). Invoked on a job manager worker thread.
-        using FeedbackCallback = std::function<void(FileOpeningPhase, int8_t, const CommString &itemName)>;
+        //! downloaded (percent is 0-100). `itemName` is the name of the item being opened, and `itemPath` the path of
+        //! its parent folder, relative to the home directory when possible, both empty while the item has not been
+        //! resolved (i.e. during the WaitingSync phase). `receivedBytes` and `totalBytes` describe the download
+        //! progress in bytes, and are -1 while unknown or not downloading. Invoked on a job manager worker thread.
+        using FeedbackCallback = std::function<void(FileOpeningPhase, int8_t, const CommString &itemName,
+                                                    const CommString &itemPath, int64_t receivedBytes, int64_t totalBytes)>;
         void setFeedbackCallback(FeedbackCallback callback) { _feedbackCallback = std::move(callback); }
 
         //! Aborts the job and cancels the hydration of the item, if it is in progress: the direct download is aborted
@@ -163,10 +166,14 @@ class OpenFileJob : public SyncJob {
         ExitInfo readyToOpen();
 
         //! Reports the job state to the user interface through the feedback callback, when set. The name of the item
-        //! being opened is included, empty while the item has not been resolved.
+        //! being opened and the path of its parent folder are included, both empty while the item has not been resolved,
+        //! along with the download progress in bytes while it is being hydrated.
         void notifyFeedback(FileOpeningPhase phase, int8_t percent) const;
         //! Reports the download progress to the user interface through the feedback callback, throttled.
         void notifyProgressIfChanged(int8_t percent);
+        //! Returns the path of the parent folder of the item, relative to the home directory when the item lies inside
+        //! it, absolute otherwise, and empty while the item has not been resolved.
+        [[nodiscard]] CommString itemPathForDisplay() const;
 
         const std::string _url;
         const GetSyncPalCallback _getSyncPal;
@@ -186,9 +193,10 @@ class OpenFileJob : public SyncJob {
         Outcome _outcome{Outcome::Failed};
 
         //! Guards publication of and access to `_hydration`: it is published by the thread running the job, and loaded
-        //! by cancel() on the thread processing the cancellation. The internals of the pointed-to state have their own
-        //! finer-grained mutex (see HydrationCompletion in the .cpp file).
-        std::mutex _hydrationMutex;
+        //! by cancel() on the thread processing the cancellation and by notifyFeedback() on the job manager worker
+        //! thread (hence `mutable`, as notifyFeedback() is const). The internals of the pointed-to state have their
+        //! own finer-grained mutex (see HydrationCompletion in the .cpp file).
+        mutable std::mutex _hydrationMutex;
 
         //! Completion state of the hydration, shared with the observers invoked by the download job. Published under
         //! `_hydrationMutex` once the download of the item has been enqueued. Its type is defined in the .cpp file.

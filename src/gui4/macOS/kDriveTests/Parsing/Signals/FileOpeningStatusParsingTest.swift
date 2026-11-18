@@ -57,5 +57,8 @@ struct FileOpeningStatusParsingTest {
         #expect(signal.body.phase == .hydrating)
         #expect(signal.body.percent == 42)
         #expect(signal.body.itemName == "gros_fichiers.zip")
+        #expect(signal.body.itemPath == "kDrive Infomaniak/Documents/Clients/2026")
+        #expect(signal.body.receivedBytes == 13_107_200)
+        #expect(signal.body.totalBytes == 50_331_648)
     }
 }

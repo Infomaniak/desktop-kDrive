@@ -30,7 +30,8 @@ struct FileOpeningSignalHandler {
 
         let body = fileOpeningStatusSignal.body
         await fileOpeningStatusCache.update(
-            FileOpeningStatus(jobId: body.jobId, phase: body.phase, percent: body.percent, itemName: body.itemName)
+            FileOpeningStatus(jobId: body.jobId, phase: body.phase, percent: body.percent, itemName: body.itemName,
+                              itemPath: body.itemPath, receivedBytes: body.receivedBytes, totalBytes: body.totalBytes)
         )
     }
 }
