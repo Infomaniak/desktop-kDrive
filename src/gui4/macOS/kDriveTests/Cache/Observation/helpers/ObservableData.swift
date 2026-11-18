@@ -41,6 +41,9 @@ extension Drive {
               locked: false,
               maintenance: false,
               notifications: false,
+              size: 0,
+              usedSize: 0,
+              packInfo: PackInfo(id: 0, name: "", displayName: "", isFree: false),
               synchros: synchros)
     }
 }
@@ -88,7 +91,15 @@ public enum ObservableData {
                                                                                        asleep: false,
                                                                                        wakingUp: false,
                                                                                        from: 0),
-                                                     notifications: true)
+                                                     notifications: true,
+                                                     size: 987_654,
+                                                     usedSize: 123_456_789,
+                                                     packInfo: PackInfo(
+                                                         id: 1,
+                                                         name: "solo",
+                                                         displayName: "kDrive Solo",
+                                                         isFree: true
+                                                     ))
 
     static let updatedDrive = Drive.some(driveDbId: expectedDriveDbId,
                                          driveId: expectedDriveId,

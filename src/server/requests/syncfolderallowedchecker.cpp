@@ -84,7 +84,6 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
         return ExitCode::Ok;
     }
 
-
     switch (bestMatch->folderRuleType()) {
         case SyncFolderRuleType::BlackList:
             LOGW_INFO(Log::instance()->getLogger(), L"Path rejected by blacklist rule \""
@@ -108,6 +107,9 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
             }
             break;
         case SyncFolderRuleType::None:
+            break;
+        case SyncFolderRuleType::EnumEnd:
+            assert(false && "Invalid enum value in switch statement.");
             break;
     }
 

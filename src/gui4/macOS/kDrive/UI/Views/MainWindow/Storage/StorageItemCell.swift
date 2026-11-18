@@ -21,6 +21,7 @@ import SwiftUI
 
 struct StorageItemCell: View {
     let item: StorageItem
+    let byteCountFormatStyle: ByteCountFormatStyle.Style
 
     var body: some View {
         HStack {
@@ -30,11 +31,17 @@ struct StorageItemCell: View {
                 .accessibilityHidden(true)
 
             HStack {
-                Text(item.title)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack {
+                    Text(item.title)
+
+                    if item.drive != nil || item.synchro != nil {
+                        StorageDriveTag(drive: item.drive, synchro: item.synchro)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 if let usedBytes = item.usedBytes {
-                    Text(usedBytes, format: StorageView.sizeFormatter)
+                    Text(usedBytes, format: ByteCountFormatStyle.byteCount(style: byteCountFormatStyle))
                         .foregroundStyle(.secondary)
                 } else {
                     Text("-0 GB-")
@@ -47,9 +54,21 @@ struct StorageItemCell: View {
 }
 
 #Preview("Real value") {
-    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: 12_000_000_000))
+    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: 12_000_000_000), byteCountFormatStyle: .file)
+}
+
+#Preview("With drive") {
+    StorageItemCell(
+        item: StorageItem(
+            title: "My Item",
+            color: .blue,
+            usedBytes: 12_000_000_000,
+            drive: UIDrive(dbId: 1, driveId: 1, name: "My kDrive", isAdmin: true, hexColor: nil)
+        ),
+        byteCountFormatStyle: .file
+    )
 }
 
 #Preview("Loading") {
-    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: nil))
+    StorageItemCell(item: StorageItem(title: "My Item", color: .blue, usedBytes: nil), byteCountFormatStyle: .file)
 }

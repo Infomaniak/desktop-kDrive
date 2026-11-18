@@ -186,7 +186,10 @@ void ExecutorWorker::execute() {
 
         // If an operation fails but is correctly handled by handleExecutorError, execution can proceed.
         if (executorExitInfo.cause() == ExitCause::OperationCanceled) {
-            if (!bypassProgressComplete) setProgressComplete(syncOp, SyncFileStatus::Error);
+            if (!bypassProgressComplete && ignored)
+                setProgressComplete(syncOp, SyncFileStatus::Ignored);
+            else if (!bypassProgressComplete)
+                setProgressComplete(syncOp, SyncFileStatus::Error);
             continue;
         }
 
@@ -981,11 +984,12 @@ ExitInfo ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &byp
         FileRescuer fileRescuer(_syncPal);
         if (const auto exitInfo = fileRescuer.executeRescueMoveJob(syncOp); !exitInfo) return exitInfo;
     } else {
-        if (const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
+        const auto exitInfo = generateMoveJob(syncOp, ignored, bypassProgressComplete);
+        if (!exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to generate move job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-            return exitInfo;
         }
+        return exitInfo;
     }
     return ExitCode::Ok;
 }
@@ -1198,17 +1202,16 @@ ExitInfo ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &b
             }
         }
 
-        if (const auto exitInfo = propagateDeleteToDbAndTree(syncOp); !exitInfo) {
+        const auto exitInfo = propagateDeleteToDbAndTree(syncOp);
+        if (!exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-            return exitInfo;
         }
+
+        return exitInfo;
     } else {
-        if (const auto exitInfo = generateDeleteJob(syncOp, ignored, bypassProgressComplete); !exitInfo) {
-            return exitInfo;
-        }
+        return generateDeleteJob(syncOp, ignored, bypassProgressComplete);
     }
-    return ExitCode::Ok;
 }
 
 ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete) {
@@ -1469,7 +1472,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
 
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
     if (job->exitInfo().code() == ExitCode::BackError && details::isManagedBackError(job->exitInfo().cause())) {
-        bypassProgressComplete = true;
         return handleManagedBackError(job->exitInfo(), syncOp, job->exitInfo().cause() == ExitCause::InvalidName);
     }
 
@@ -1486,6 +1488,11 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
                 LOGW_SYNCPAL_WARN(_logger, L"Error in handleForbiddenAction for item: "
                                                    << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
                 return exitInfo;
+            } else { // The error is managed and the execution can continue.
+                LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
+                                                                    << L" operation for "
+                                                                    << Utility::formatSyncPath(relativeLocalPath));
+                return {ExitCode::Ok, ExitCause::OperationCanceled};
             }
         } else if (const auto exitInfo = handleExecutorError(syncOp, job->exitInfo()); !exitInfo) {
             // Cancel all queued jobs
@@ -1496,7 +1503,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
             LOGW_DEBUG(_logger, L"Error successfully managed: " << job->exitInfo() << L" on " << syncOp->type()
                                                                 << L" operation for "
                                                                 << Utility::formatSyncPath(relativeLocalPath));
-            bypassProgressComplete = true;
             return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
     } else {
@@ -2278,7 +2284,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
         }
     }
     _syncPal->setRestart(true);
-    return removeDependentOps(localBlacklistedNode, remoteBlacklistedNode, syncOp->type());
+    return removeDependentOps(syncOp, localBlacklistedNode, remoteBlacklistedNode);
 }
 
 ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_unused]] const ExitInfo &opsExitInfo) {
@@ -2385,11 +2391,11 @@ ExitInfo ExecutorWorker::removeDependentOps(const SyncOpPtr syncOp) {
     const auto remoteNode =
             syncOp->affectedNode()->side() == ReplicaSide::Remote ? syncOp->affectedNode() : syncOp->correspondingNode();
 
-    return removeDependentOps(localNode, remoteNode, syncOp->type());
+    return removeDependentOps(syncOp, localNode, remoteNode);
 }
 
-ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNode, const std::shared_ptr<Node> remoteNode,
-                                            const OperationType opType) {
+ExitInfo ExecutorWorker::removeDependentOps(const SyncOpPtr syncOp, const std::shared_ptr<Node> localNode,
+                                            const std::shared_ptr<Node> remoteNode) {
     const std::scoped_lock lock(_opListMutex);
 
     std::list<UniqueId> dependentOps;
@@ -2399,6 +2405,11 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
             LOGW_SYNCPAL_WARN(_logger, L"Operation doesn't exist anymore: id=" << opId);
             continue;
         }
+
+        if (syncOp2 == syncOp) {
+            continue; // Skip the operation that failed
+        }
+
         const auto localNode2 =
                 syncOp2->affectedNode()->side() == ReplicaSide::Local ? syncOp2->affectedNode() : syncOp2->correspondingNode();
         const auto remoteNode2 =
@@ -2406,18 +2417,18 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
         SyncName nodeName = localNode2 ? localNode2->name() : SyncName();
         if (nodeName.empty()) nodeName = remoteNode2 ? remoteNode2->name() : SyncName();
 
-        if (localNode && localNode2 && (localNode->isParentOf(localNode2))) {
+        if (localNode && localNode2 && (localNode->isParentOf(localNode2) || localNode == localNode2)) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
-                                                     << L" because it depends on " << opType << L" operation on "
+                                                     << L" because it depends on " << syncOp->type() << L" operation on "
                                                      << Utility::formatSyncName(localNode->name()) << L" which failed.");
 
             dependentOps.push_back(opId);
             continue;
         }
 
-        if (remoteNode && remoteNode2 && (remoteNode->isParentOf(remoteNode2))) {
+        if (remoteNode && remoteNode2 && (remoteNode->isParentOf(remoteNode2) || remoteNode == remoteNode2)) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Removing " << syncOp2->type() << L" operation on " << Utility::formatSyncName(nodeName)
-                                                     << L" because it depends on " << opType << L" operation on "
+                                                     << L" because it depends on " << syncOp->type() << L" operation on "
                                                      << Utility::formatSyncName(remoteNode->name()) << L" which failed.");
 
             dependentOps.push_back(opId);

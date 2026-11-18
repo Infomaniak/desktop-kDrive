@@ -331,11 +331,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Convert to JSON
                 string jsonString = JsonSerializer.Serialize(requestObj);
                 byte[] jsonBytes = Encoding.Unicode.GetBytes(jsonString);
-                await _sendLock.WaitAsync();
+                await _sendLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    await _stream!.WriteAsync(jsonBytes, cancellationToken).ConfigureAwait(false);
-                    await _stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    // Cancellation after TLS encryption can discard a record and desynchronize the connection.
+                    // Keep transport writes independent of request cancellation.
+                    await _stream!.WriteAsync(jsonBytes).ConfigureAwait(false);
+                    await _stream.FlushAsync().ConfigureAwait(false);
                 }
                 finally
                 {

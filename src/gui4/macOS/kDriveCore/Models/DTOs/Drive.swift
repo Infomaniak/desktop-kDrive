@@ -52,6 +52,9 @@ public struct Drive: DriveRepresentation {
     public let locked: Bool
     public let maintenance: Bool
     public let notifications: Bool
+    public let size: Int64
+    public let usedSize: Int64
+    public let packInfo: PackInfo
     public var synchros: IndexedSynchros
 
     public var type: DriveType {

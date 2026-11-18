@@ -68,6 +68,8 @@ rg -n "vfs|Vfs|VFS" src/server/ -g "*.h" -l
 - The server process starts before the GUI; never assume GUI is alive when handling server-side events.
 - VFS mode (LiteSync) changes the file representation on disk; IO operations in VFS mode must go through the VFS plugin
   API, not direct `std::filesystem` calls.
+- `quotaUpdated` in `ServerRequests::loadDriveInfo` only feeds the legacy GUI. To notify gui4 of a drive change, set
+  `updated` (it triggers `sendDriveUpdated`).
 
 ## Pre-PR Checks
 

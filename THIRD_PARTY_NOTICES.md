@@ -50,11 +50,11 @@ The exact set of redistributed binaries can vary by platform:
 
 ### Qt 6
 
-- **Version:** 6.2.3 (macOS) / 6.12.0 (Linux & Windows)
+- **Version:** 6.8.3 (macOS) / 6.12.0 (Linux & Windows)
 - **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
 - **Copyright:** Copyright (C) The Qt Company Ltd. and other contributors
 - **Repository:** https://www.qt.io/
-- **Note:** Declared in `conanfile.py`. The application is built against Qt 6.2.3 on macOS and Qt 6.12.0 on Linux and
+- **Note:** Declared in `conanfile.py`. The application is built against Qt 6.8.3 on macOS and Qt 6.12.0 on Linux and
   Windows. Qt is deployed with the application on supported platforms. Qt source packages are available from
   https://download.qt.io/
 
@@ -171,7 +171,7 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** Public Domain
 - **Copyright:** The author disclaims copyright to the SQLite amalgamation
 - **Repository:** https://www.sqlite.org/
-- **Note:** Provided by Conan package `sqlite3/3.53.0`.
+- **Note:** Provided by Conan package `sqlite3/3.54.1`.
 
 ### QtSingleApplication
 

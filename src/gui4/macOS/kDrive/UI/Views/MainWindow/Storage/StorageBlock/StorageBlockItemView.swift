@@ -23,13 +23,14 @@ struct StorageBlockItemView: View {
     static let minimumPercentageSize = 0.01
 
     let item: StorageItem
+    let byteCountFormatStyle: ByteCountFormatStyle.Style
 
     let totalUsedBytes: Int64
     let proxy: GeometryProxy
 
     private var helpfulExplanation: String {
         if let usedBytes = item.usedBytes {
-            return "\(item.title): \(usedBytes.formatted(StorageView.sizeFormatter))"
+            return "\(item.title): \(usedBytes.formatted(ByteCountFormatStyle.byteCount(style: byteCountFormatStyle)))"
         } else {
             return KDriveLocalizable.storageLoadingHint
         }
@@ -62,6 +63,7 @@ struct StorageBlockItemView: View {
     GeometryReader { proxy in
         StorageBlockItemView(
             item: StorageItem(title: "My Item", color: .blue, usedBytes: 40_000_000_000),
+            byteCountFormatStyle: .file,
             totalUsedBytes: 80_000_000_000,
             proxy: proxy
         )

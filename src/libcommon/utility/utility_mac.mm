@@ -24,6 +24,9 @@
 #include <fstream>
 #include <sys/mount.h>
 
+#include <Security/Security.h>
+#include <CoreFoundation/CoreFoundation.h>
+
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSImage.h>
 
@@ -178,6 +181,33 @@ ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
 
     directoryPath = SyncPath([homeDir UTF8String]);
     return ExitCode::Ok;
+}
+
+bool CommonUtility::readPasswordFromKeychain(const std::string &serviceName, const std::string &keychainKey,
+                                             std::string &password) {
+    password.clear();
+
+    CFStringRef service = CFStringCreateWithCString(nullptr, serviceName.c_str(), kCFStringEncodingUTF8);
+    CFStringRef account = CFStringCreateWithCString(nullptr, keychainKey.c_str(), kCFStringEncodingUTF8);
+
+    const void *keys[] = {kSecClass, kSecAttrService, kSecAttrAccount, kSecReturnData, kSecMatchLimit};
+    const void *values[] = {kSecClassGenericPassword, service, account, kCFBooleanTrue, kSecMatchLimitOne};
+    CFDictionaryRef query =
+            CFDictionaryCreate(nullptr, keys, values, 5, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+
+    CFTypeRef result = nullptr;
+    OSStatus status = SecItemCopyMatching(query, &result);
+
+    if (status == errSecSuccess && result) {
+        CFDataRef data = static_cast<CFDataRef>(result);
+        password.assign(reinterpret_cast<const char *>(CFDataGetBytePtr(data)), CFDataGetLength(data));
+        CFRelease(result);
+    }
+
+    CFRelease(query);
+    CFRelease(service);
+    CFRelease(account);
+    return status == errSecSuccess;
 }
 
 } // namespace KDC

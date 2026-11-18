@@ -183,7 +183,7 @@ class SyncOperationList : public SharedObject {
          * @return true is the Edit operation corresponds to a sync operation.
          */
         bool isLocalEditCausedBySync(const NodeId &nodeId, const SyncPath &rootPath, const SyncPath &relativePath,
-                                       SyncTime lastModified, int64_t size);
+                                     SyncTime lastModified, int64_t size);
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;

@@ -51,6 +51,9 @@ int main(int argc, char **argv) {
     if (argc > 1 && std::string_view(argv[1]) == KDC::TestUtility::printApplicationDirPathOption) {
         return KDC::TestUtility::printApplicationDirPath();
     }
+#else
+    (void) argc;
+    (void) argv;
 #endif
     return runTestSuite("_kDriveTestCommon.log");
 }

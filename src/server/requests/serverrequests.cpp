@@ -1858,7 +1858,12 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
         quotaUpdated = true;
     }
 
-    drive.setPackInfo(job->packInfo());
+    if (drive.packInfo() != job->packInfo()) {
+        // The pack is not stored in DB: notify the GUI so that it receives the drive info loaded from the API, even when the
+        // other attributes are unchanged.
+        drive.setPackInfo(job->packInfo());
+        updated = true;
+    }
 
     return ExitCode::Ok;
 }
