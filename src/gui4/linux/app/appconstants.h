@@ -23,6 +23,7 @@
 
 #include <config.h>
 #include <QColor>
+#include <QLocale>
 #include <QString>
 #include <QUrl>
 
@@ -48,41 +49,40 @@ namespace KDC::AppConstants::Drive {
     return QColor{QStringLiteral("#0098FF")};
 }
 
-// Shop page renewing the subscription of a standalone drive, offered to its admins when it is not renewed.
-[[nodiscard]] inline QUrl renewSubscriptionUri(const DriveId driveId) {
-    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/drive/%1").arg(static_cast<qulonglong>(driveId))};
-}
-
-// Shop page renewing the my kSuite of the logged-in user.
-[[nodiscard]] inline QUrl myKSuiteRenewalUri() {
-    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/my_ksuite")};
-}
-
-// Shop home, for the drives of a kSuite whose renewal page needs an id the client does not have.
-[[nodiscard]] inline QUrl shopUri() {
-    return QUrl{QStringLiteral("https://shop.infomaniak.com")};
-}
-
 // Standalone kDrive offers, as opposed to kSuite and my kSuite ones. The API names them without the product ("Team").
 [[nodiscard]] inline bool isStandaloneDrivePack(const std::string_view packName) {
     constexpr std::array<std::string_view, 4> standaloneDrivePacks{"free", "solo", "team", "pro"};
     return std::ranges::find(standaloneDrivePacks, packName) != standaloneDrivePacks.end();
 }
 
-// Shop page renewing `drive`, chosen from its pack: shared by the blocking error screen and the errors page.
-// TODO: Renewing a kSuite (`order2/ksuite/<k_suite.id>`) needs an id the server does not fetch yet (drive API,
-// `with=k_suite`). Until then, a kSuite drive, or an unknown pack, opens shop.infomaniak.com.
-[[nodiscard]] inline QUrl renewalUri(const KDC::Drive &drive) {
-    const auto &packName = drive.packInfo().name();
-    if (isStandaloneDrivePack(packName)) {
-        return renewSubscriptionUri(drive.driveId());
-    }
+// Language of the Infomaniak shop pages: the application language when the site offers it, English otherwise.
+[[nodiscard]] inline QString shopLanguageCode() {
+    constexpr std::array<std::string_view, 7> shopLanguages{"en", "fr", "de", "es", "it", "pt", "nl"};
+    const QString languageCode = QLocale().name().left(2);
+    const bool supported = std::ranges::find(shopLanguages, languageCode.toStdString()) != shopLanguages.end();
+    return supported ? languageCode : QStringLiteral("en");
+}
 
-    if (packName.starts_with("my_ksuite")) {
-        return myKSuiteRenewalUri();
+// Shop page offering more storage for `drive`, chosen from its pack. It also renews a drive that is not renewed.
+[[nodiscard]] inline QUrl upsellUri(const KDC::Drive &drive) {
+    switch (drive.packInfo().upsellTarget()) {
+        case UpsellTarget::StandAloneToMykSuitePlus:
+        case UpsellTarget::StandAloneTokSuitePro:
+            return QUrl{QStringLiteral("https://shop.infomaniak.com/order/ksuite?migration=drive&drive_id=%1&lang=%2")
+                                .arg(static_cast<qulonglong>(drive.driveId()))
+                                .arg(shopLanguageCode())};
+        case UpsellTarget::kSuiteUpgrade:
+            // The kSuite id is missing until the drive info is loaded from the API: fall back to the shop home.
+            if (drive.packInfo().kSuiteId() <= 0) break;
+            return QUrl{QStringLiteral("https://shop.infomaniak.com/order2/ksuite/%1")
+                                .arg(static_cast<qlonglong>(drive.packInfo().kSuiteId()))};
+        case UpsellTarget::MykSuiteToMykSuitePlus:
+            return QUrl{QStringLiteral("https://shop.infomaniak.com/order/myksuite")};
+        case UpsellTarget::Unknown:
+        case UpsellTarget::EnumEnd:
+            break;
     }
-
-    return shopUri();
+    return QUrl{QStringLiteral("https://shop.infomaniak.com/")};
 }
 
 } // namespace KDC::AppConstants::Drive

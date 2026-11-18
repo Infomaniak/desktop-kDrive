@@ -106,7 +106,7 @@ void BlockingErrorController::triggerAction() {
             if (admin()) {
                 qCInfo(lcBlockingErrorController) << "Opening the drive renewal page | driveId:" << driveId
                                                   << "| pack:" << QString::fromStdString(context->drive.packInfo().name());
-                openUrl(AppConstants::Drive::renewalUri(context->drive));
+                openUrl(AppConstants::Drive::upsellUri(context->drive));
                 return;
             }
             restartCurrentSync();

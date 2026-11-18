@@ -306,8 +306,9 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
-  `AppConstants::Drive::renewalUri(drive)` holds the shop page rule per pack, shared by the blocking error screen and
-  the errors page.
+  `AppConstants::Drive::upsellUri(drive)` holds the shop page rule per `PackInfo::upsellTarget()` (kSuite migration of a
+  standalone drive, kSuite upgrade, my kSuite, shop home otherwise). It also renews a drive that is not renewed, and is
+  shared by the blocking error screen, the errors page and the Storage page.
 - `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
@@ -524,11 +525,9 @@
   `BlockingError` tab, keeps it there while the error lasts, and returns to Home when it disappears or another
   synchronization is selected; the sidebar selector and Settings stay usable. It exposes the variant (`kind`, texts
   translated in QML), the drive name, color and admin status, and `triggerAction()`: open the drive on the web (asleep),
-  open the shop (not renewed and admin: `AppConstants::Drive::renewalUri`, the renewal page of a standalone drive pack
-  such as `solo`, `team` or `pro`, the my kSuite page for a `my_ksuite*` pack, the shop home for any other pack until
-  the server fetches the kSuite id), restart the synchronization with `SyncService::startSync` (not renewed for a
-  non-admin, maintenance, access denied), or request an onboarding login (logged out). The waking-up variant has no
-  action, only a loader. The drive name shows a tooltip when truncated.
+  open the shop (not renewed and admin: `AppConstants::Drive::upsellUri`), restart the synchronization with
+  `SyncService::startSync` (not renewed for a non-admin, maintenance, access denied), or request an onboarding login
+  (logged out). The waking-up variant has no action, only a loader. The drive name shows a tooltip when truncated.
 - `app/mainwindow/errorlistmodel.*`: rows of the errors page for the selected synchronization, from
   `SyncErrorsProjection`. Sections follow `SyncErrorCategory` order, then the error database id. Up to
   `kMaxIndividualConflicts` conflicts are rows of the files to verify; beyond, one aggregated row stands for them in
@@ -566,7 +565,7 @@
   buttons are revalidated, then run through `SyncErrorActionHandler::run`.
 - `app/mainwindow/syncerroractionhandler.*`: the only place that knows what each error button does: rename or open the
   item online, open a local folder below the synchronization root, open the volume (disk space), open the shop
-  (`renewalUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
+  (`upsellUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
   (`loginRequested`, as on the blocking screen), or contact the support. `Explain` emits `explanationRequested`,
   `ChooseVersion` emits `versionSelectionRequested`, and `openConflictVersion` opens a conflict version (the local copy
   in its application, the remote one on kDrive web);

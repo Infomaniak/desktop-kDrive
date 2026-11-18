@@ -288,8 +288,9 @@ void StorageController::openSubscriptionUpgrade() const {
         return;
     }
 
-    if (!QDesktopServices::openUrl(AppConstants::Drive::renewalUri(*drive))) {
-        qCWarning(lcStorageController) << "Unable to open the subscription upgrade page | driveId:" << drive->driveId();
+    if (const QUrl url = AppConstants::Drive::upsellUri(*drive); !QDesktopServices::openUrl(url)) {
+        qCWarning(lcStorageController) << "Unable to open the subscription upgrade page | driveId:" << drive->driveId()
+                                       << "| url:" << url;
     }
 }
 
