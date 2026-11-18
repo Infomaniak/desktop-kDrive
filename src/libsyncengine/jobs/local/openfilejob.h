@@ -109,7 +109,7 @@ class OpenFileJob : public SyncJob {
         void cancel();
 
         //! Overrides the duration after which the resolution of the item gives up (10 minutes by default). For tests.
-        void setSyncWaitTimeout(std::chrono::milliseconds syncWaitTimeout) { _syncWaitTimeout = syncWaitTimeout; }
+        void setSyncWaitTimeout(const std::chrono::milliseconds &syncWaitTimeout) { _syncWaitTimeout = syncWaitTimeout; }
 
         //! Returns true when the user interface must be informed that the item is being synchronized: the first
         //! notification is due after 5 seconds of waiting, the following ones every 2 minutes. A default-constructed
@@ -180,9 +180,8 @@ class OpenFileJob : public SyncJob {
         SyncPath _localPath; // Absolute path of the item on the local file system.
 
         //! The requested item may have been created on the remote side recently: keep resolving it during
-        //! `_syncWaitTimeout` before giving up.
-        static constexpr std::chrono::minutes kSyncWaitTimeout{10};
-        std::chrono::milliseconds _syncWaitTimeout{kSyncWaitTimeout};
+        //! `_syncWaitTimeout` (10 minutes by default) before giving up.
+        std::chrono::milliseconds _syncWaitTimeout{std::chrono::minutes(10)};
 
         Outcome _outcome{Outcome::Failed};
 
