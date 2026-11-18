@@ -590,6 +590,8 @@ namespace Infomaniak.kDrive.Pages
                     Logger.LogWarning($"Unable to get hydrated file size of {otherSync.LocalPath}",
                         "StoragePageViewModel: Failed to get other sync hydrated file size");
                     await otherSyncsCts.CancelAsync();
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
                     OtherSyncsHydratedFilesSize = -1;
                     IsOtherSyncsHydratedFilesSizeLoading = false;
                     return;
