@@ -147,15 +147,6 @@
 
 /* loco:6989c98657a76723c20d0e92 */
 "buttonCancel" = "Cancel";
-"fileOpeningDownloadingMessage" = "Downloading %@…";
-"fileOpeningHydratingMessage" = "Downloading the item…";
-"fileOpeningWaitingSyncMessage" = "This item is not synchronized yet. Synchronizing it may take some time.";
-"fileOpeningWindowTitle" = "kDrive";
-"fileOpeningDownloadTitle" = "Download";
-"fileOpeningDownloadProgress" = "%1$@ over %2$@";
-"fileOpeningFailureTitle" = "Cannot open the file";
-"fileOpeningFailureExplanation" = "You can download it yourself from kDrive in your browser.";
-"fileOpeningDownloadButton" = "Download from kDrive";
 
 /* loco:69c0f0398ae1831b640e5a62 */
 "buttonChangeFolder" = "Change folder";
@@ -808,6 +799,12 @@
 
 /* loco:699c56142c8d937001054c82 */
 "fileExistsErrorTitle" = "File already exists";
+
+/* loco:6afdd20a9ee4cf55660ee934 */
+"fileOpeningDownloadProgress" = "%@ over %@";
+
+/* loco:6afdd1cddf6d796ad70d8a52 */
+"fileOpeningDownloadTitle" = "Download";
 
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "File sync mode";
@@ -1716,3 +1713,10 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "View source code";
+"fileOpeningDownloadingMessage" = "Downloading %@…";
+"fileOpeningHydratingMessage" = "Downloading the item…";
+"fileOpeningWaitingSyncMessage" = "This item is not synchronized yet. Synchronizing it may take some time.";
+"fileOpeningWindowTitle" = "kDrive";
+"fileOpeningFailureTitle" = "Cannot open the file";
+"fileOpeningFailureExplanation" = "You can download it yourself from kDrive in your browser.";
+"fileOpeningDownloadButton" = "Download from kDrive";
