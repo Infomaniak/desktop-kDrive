@@ -689,6 +689,8 @@ public enum KDriveLocalizable {
   public static let instructionOpenSystemSettingsLink = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettingsLink", fallback: "System Settings")
   /// loco:6a16da43bc4d91f15c0416e2
   public static let kSuiteOfferUrl = KDriveLocalizable.tr("Localizable", "kSuiteOfferUrl", fallback: "https://www.infomaniak.com/en/ksuite")
+  /// Create and collaborate without limits
+  public static let ksuiteProBannerDescription = KDriveLocalizable.tr("Localizable", "ksuiteProBannerDescription", fallback: "Create and collaborate without limits")
   /// loco:69a0079a3f0464f2af0a25d3
   public static let labelAccessRightsModified = KDriveLocalizable.tr("Localizable", "labelAccessRightsModified", fallback: "Access rights modified")
   /// loco:6989c851ba57b190ff0ebbf2
