@@ -17,47 +17,54 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#!/bin/bash
-
 # Color coding
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-conanrun=$(find . -type f -name "conanrun.sh" | head -n 1)
+# An explicit build root prevents executing stale binaries from another build.
+build_root=$(cd "${1:-.}" && pwd) || exit 1
+conanrun=$(find "$build_root" -type f -name "conanrun.sh" -print -quit)
 if [[ -n "$conanrun" ]]; then
-    source "$conanrun"
+    # shellcheck disable=SC1090
+    source "$conanrun" || exit 1
 else
     echo -e "${RED}conanrun.sh not found${NC}"
     exit 1
 fi
 
-testers=$(find . -type f -name "kDrive_test_*")
+testers=()
+while IFS= read -r -d '' tester; do
+    testers+=("$tester")
+done < <(find "$build_root" -type f -name "kDrive_test_*" -print0)
+if [[ ${#testers[@]} -eq 0 ]]; then
+    echo -e "${RED}No test executables found in $build_root${NC}" >&2
+    exit 1
+fi
 errors=0
 failures=()
 
-for tester in ${testers[@]}; do
-    echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
-    chmod +x $tester
-    pushd $(dirname "$tester") 1>/dev/null
-    ./$(basename "$tester")
-
-    if [ $? -ne 0 ]; then
+for tester in "${testers[@]}"; do
+    echo -e "${YELLOW}---------- Running $(basename "$tester") ----------${NC}"
+    if ! (
+        chmod +x "$tester" || exit 1
+        cd "$(dirname "$tester")" || exit 1
+        "$tester"
+    ); then
         (( errors+=1 ))
-        failures+=($(basename $tester))
-        echo -e "${RED}---------- Failure: $(basename $tester) ----------${NC}";
+        failures+=("$(basename "$tester")")
+        echo -e "${RED}---------- Failure: $(basename "$tester") ----------${NC}"
     else
-        echo -e "${GREEN}---------- Success: $(basename $tester) ----------${NC}";
+        echo -e "${GREEN}---------- Success: $(basename "$tester") ----------${NC}"
     fi
-    popd 1>/dev/null
 done
 
 if [ $errors -eq 0 ]; then
     echo -e "${GREEN}Success: All Tests passed !${NC}"
 else
     echo -e "${RED}Failures :\n"
-    for failure in ${failures[@]}; do
+    for failure in "${failures[@]}"; do
         echo -e "$failure"
     done
     echo -e "${NC}"
