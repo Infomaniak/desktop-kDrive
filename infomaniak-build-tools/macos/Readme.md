@@ -146,7 +146,9 @@ mise install
 mise exec -- ./infomaniak-build-tools/macos/build-release.sh
 ```
 
-Mise installs the CLI, not Conan profiles or system libraries. The profile setup below is still required.
+Mise installs the CLI, not system libraries. macOS CI uses the repository's
+`infomaniak-build-tools/conan/profiles/macos-ci` profile without relying on runner-installed profiles.
+Local builds still require the profile setup below.
 Existing local `.venv` installations remain supported:
 
 The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
