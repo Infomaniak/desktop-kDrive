@@ -170,7 +170,8 @@ void TestNetworkJobs::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    // Setup cache directory
+    // Setup cache directory. As in a real sync, the files downloaded with `_cacheDirectory` must be located under
+    // `_localTempDir`, which plays the role of the sync root.
     _cacheDirectory = std::make_shared<CacheDirectory>(_localTempDir.path());
 }
 
@@ -324,7 +325,7 @@ void TestNetworkJobs::testDelete() {
 void TestNetworkJobs::testDownload() {
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
-        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir", _localTempDir.path());
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_file.txt";
 
         const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
@@ -508,7 +509,7 @@ void TestNetworkJobs::testDownload() {
     // Cross Device Link
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
-        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir", _localTempDir.path());
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_file.txt";
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
                 []([[maybe_unused]] const SyncPath &, [[maybe_unused]] const SyncPath &, std::error_code &ec) {
@@ -624,7 +625,7 @@ void TestNetworkJobs::testDownload() {
         uploadJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitInfo().code());
         const NodeId remote0bytesFileId = uploadJob.nodeId();
-        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir", _localTempDir.path());
         const SyncPath localDestFilePath = temporaryDirectorySync.path() / "empty_file.txt";
         // Download an empty file
         {
@@ -642,7 +643,7 @@ void TestNetworkJobs::testDownload() {
     // File symlink
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
-        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir", _localTempDir.path());
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_sl";
 
         const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
@@ -685,7 +686,7 @@ void TestNetworkJobs::testDownload() {
     // Folder symlink
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
-        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir", _localTempDir.path());
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "Test_sl";
 
         const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
@@ -728,7 +729,7 @@ void TestNetworkJobs::testDownload() {
 #if defined(KD_MACOS)
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
-        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir", _localTempDir.path());
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_good";
 
         const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
@@ -765,7 +766,7 @@ void TestNetworkJobs::testDownload() {
 
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
-        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir", _localTempDir.path());
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_dnd";
 
         // Download an invalid alias (not imported by the desktop app)
@@ -786,7 +787,7 @@ void TestNetworkJobs::testDownload() {
 
     {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
-        const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
+        const LocalTemporaryDirectory temporaryDirectorySync("syncDir", _localTempDir.path());
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_alias_corrupted";
 
         // Download an invalid alias (corrupted)
@@ -840,7 +841,7 @@ void TestNetworkJobs::testSearch() {
 }
 
 void TestNetworkJobs::testDownloadAborted() {
-    const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
+    const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted", _localTempDir.path());
     const SyncPath localDestFilePath = temporaryDirectory.path() / "test_download";
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
@@ -977,7 +978,7 @@ void TestNetworkJobs::testGetFileList() {
 
 void TestNetworkJobs::testCheckHashMatch() {
     // Download picture-1.jpg once to use as a valid local reference file
-    const LocalTemporaryDirectory tmpDir("testGetFileHashMatch");
+    const LocalTemporaryDirectory tmpDir("testGetFileHashMatch", _localTempDir.path());
     const SyncPath validLocalFile = tmpDir.path() / "picture-1.jpg";
     {
         DownloadJob downloadJob(nullptr, _cacheDirectory,
@@ -1757,9 +1758,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
 
             // /!\ The base class constructor will not call this override.
             // This method can only be called after the derived class constructor has completed.
-            ApiToken loadApiToken() override {
-                return _apiToken;
-            }
+            ApiToken loadApiToken() override { return _apiToken; }
 
         private:
             ApiToken _apiToken;

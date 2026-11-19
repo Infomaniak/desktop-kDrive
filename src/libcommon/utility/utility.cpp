@@ -435,10 +435,17 @@ SyncName CommonUtility::trim(const SyncName &s) {
 }
 #endif
 
+SyncPath CommonUtility::trimTrailingSeparator(const SyncPath &path) {
+    return path.has_filename() ? path : path.parent_path();
+}
+
 bool CommonUtility::isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path) {
-    if (path == potentialDescendant) return true;
-    for (auto it = potentialDescendant.begin(), it2 = path.begin(); it != potentialDescendant.end(); ++it, ++it2) {
-        if (it2 == path.end()) {
+    const SyncPath trimmedPath = trimTrailingSeparator(path);
+    const SyncPath trimmedPotentialDescendant = trimTrailingSeparator(potentialDescendant);
+    if (trimmedPath == trimmedPotentialDescendant) return true;
+    for (auto it = trimmedPotentialDescendant.begin(), it2 = trimmedPath.begin(); it != trimmedPotentialDescendant.end();
+         ++it, ++it2) {
+        if (it2 == trimmedPath.end()) {
             return true;
         }
         if (*it != *it2) {
@@ -449,7 +456,7 @@ bool CommonUtility::isDescendantOrEqual(const SyncPath &potentialDescendant, con
 }
 
 bool CommonUtility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
-    if (path == potentialDescendant) return false;
+    if (trimTrailingSeparator(path) == trimTrailingSeparator(potentialDescendant)) return false;
     return isDescendantOrEqual(potentialDescendant, path);
 }
 

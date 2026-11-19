@@ -837,8 +837,10 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
     return true;
 }
 
-bool IoHelper::createJunction(const std::string &data, const SyncPath &path, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+bool IoHelper::createJunction(const std::string &data, const SyncPath &path, IoError &ioError,
+                              const SyncPath &syncRootPath /*= {}*/) noexcept {
+    ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
+    if (ioError != IoError::Success) return false;
 
     // Create the junction directory
     if (!CreateDirectoryW(Path2WStr(path).c_str(), nullptr)) {
@@ -906,8 +908,10 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
     return true;
 }
 
-bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath &path, IoError &ioError,
+                                      const SyncPath &syncRootPath /*= {}*/) noexcept {
+    ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
+    if (ioError != IoError::Success) return false;
 
     // Create the junction directory
     if (!CreateDirectoryW(Path2WStr(path).c_str(), nullptr)) {
@@ -1088,7 +1092,9 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     return true;
 }
 
-bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath, const SyncPath &syncRootPath /*= {}*/) {
+    if (IoHelper::checkIfPathTraversesLink(itemPath, syncRootPath) != IoError::Success) return false;
+
     if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
         LOGW_INFO(logger(),
                   L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "

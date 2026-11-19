@@ -26,7 +26,8 @@
 
 namespace KDC {
 
-LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) :
+LocalCreateDirJob::LocalCreateDirJob(const SyncPath &syncRootPath, const SyncPath &destFilepath) :
+    _syncRootPath(syncRootPath),
     _destFilePath(destFilepath) {}
 
 ExitInfo LocalCreateDirJob::canRun() {
@@ -60,7 +61,7 @@ ExitInfo LocalCreateDirJob::runJob() {
     }
 
     IoError ioError = IoError::Success;
-    if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {
+    if (IoHelper::createDirectory(_destFilePath, false, ioError, _syncRootPath) && ioError == IoError::Success) {
         if (isExtendedLog()) {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" created");
         }

@@ -25,7 +25,8 @@
 
 namespace KDC {
 
-LocalCopyJob::LocalCopyJob(const SyncPath &source, const SyncPath &dest) :
+LocalCopyJob::LocalCopyJob(const SyncPath &syncRootPath, const SyncPath &source, const SyncPath &dest) :
+    _syncRootPath(syncRootPath),
     _source(source),
     _dest(dest) {}
 
@@ -76,7 +77,7 @@ ExitInfo LocalCopyJob::runJob() {
     }
 
     IoError ioError = IoError::Success;
-    if (!IoHelper::copyFileOrDirectory(_source, _dest, ioError)) {
+    if (!IoHelper::copyFileOrDirectory(_source, _dest, ioError, _syncRootPath)) {
         LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L", error="
                                                    << Utility::formatIoError(ioError));
         if (ioError == IoError::NoSuchFileOrDirectory) {

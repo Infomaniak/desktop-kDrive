@@ -155,24 +155,14 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
         return ExitCode::Ok;
     }
 
-    // An item reached through a link located inside the sync root is not part of the synchronized tree. Links above the sync
-    // root (e.g. "/var" on macOS) are ignored: the closest link is returned first, so any link inside the sync root wins.
-    auto traversesLink = false;
-    SyncPath linkPath;
-    if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, traversesLink, linkPath);
-        ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
+    // An item reached through a link located inside the sync root is not part of the synchronized tree.
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, _syncRootPath); ioError != IoError::Success) {
         localProperties.isAvailableLocally = false;
         localProperties.isHydrated = false;
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-
-    if (const SyncPath syncRootPath = _syncRootPath.has_filename() ? _syncRootPath : _syncRootPath.parent_path();
-        traversesLink && CommonUtility::isStrictDescendant(linkPath, syncRootPath)) {
-        LOGW_WARN(_logger, L"Path " << Utility::formatSyncPath(absolutePath) << L" traverses the link "
-                                    << Utility::formatSyncPath(linkPath));
-        localProperties.isAvailableLocally = false;
-        localProperties.isHydrated = false;
+        if (ioError != IoError::PathContainsSymlink) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
     }
 
     return ExitCode::Ok;
