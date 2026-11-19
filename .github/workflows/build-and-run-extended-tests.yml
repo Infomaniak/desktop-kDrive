@@ -159,6 +159,18 @@ jobs:
       - name: Set up Xcode 27
         uses: ./.github/actions/setup_xcode
 
+      - name: Prepare isolated test directories
+        run: |
+          test_root="$RUNNER_TEMP/kdrive-extended-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -p "$test_root/conan" "$test_root/tmp" "$test_root/logs"
+          {
+            echo "MISE_DATA_DIR=$test_root/mise"
+            echo "MISE_CACHE_DIR=$test_root/mise-cache"
+            echo "CONAN_HOME=$test_root/conan"
+            echo "KDRIVE_TMP_PATH=$test_root/tmp"
+            echo "KDRIVE_TEST_LOG_DIR=$test_root/logs"
+          } >> "$GITHUB_ENV"
+
       - name: Set up Mise
         # jdx/mise-action@v3.6.1
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
@@ -166,20 +178,14 @@ jobs:
           cache: false
           mise_dir: ${{ runner.temp }}/kdrive-extended-${{ github.run_id }}-${{ github.run_attempt }}/mise
 
-      - name: Prepare isolated test directories
-        run: |
-          test_root="$RUNNER_TEMP/kdrive-extended-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          mkdir -p "$test_root/conan" "$test_root/tmp" "$test_root/logs"
-          {
-            echo "CONAN_HOME=$test_root/conan"
-            echo "KDRIVE_TMP_PATH=$test_root/tmp"
-            echo "KDRIVE_TEST_LOG_DIR=$test_root/logs"
-          } >> "$GITHUB_ENV"
-
       - name: Verify build tools
         run: |
           mise ls cmake
           cmake_install_dir="$(mise where cmake)"
+          case "$cmake_install_dir" in
+            "$MISE_DATA_DIR"/*) ;;
+            *) echo "::error::CMake resolved outside the job-local Mise directory"; exit 1 ;;
+          esac
           ls -ld "$cmake_install_dir"
           find "$cmake_install_dir" -maxdepth 6 -name cmake -print
           command -v cmake
