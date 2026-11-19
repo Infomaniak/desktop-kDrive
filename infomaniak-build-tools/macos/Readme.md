@@ -61,7 +61,9 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
 Use Xcode 27 to build the UI and server. Local build scripts use your `xcode-select`
 selection or explicit `DEVELOPER_DIR`; CI selects Xcode 27 through the setup action.
-They activate `.venv/bin/activate` (install Conan there) and require CMake >= 3.24 for `--fresh`.
+The macOS build action installs the Conan version pinned in the root `mise.toml`.
+Local scripts still activate `.venv/bin/activate` when present; otherwise they use Conan from `PATH`.
+CMake >= 3.24 is required for `--fresh`.
 
 
 ## CPPUnit
@@ -135,6 +137,18 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 ---
 
 ## Conan
+The macOS build action uses Mise to install **Conan 2.25.2** in an isolated pipx environment.
+The version is pinned in the root `mise.toml`, alongside pipx. To use it locally without a `.venv`:
+
+```bash
+mise trust
+mise install
+mise exec -- ./infomaniak-build-tools/macos/build-release.sh
+```
+
+Mise installs the CLI, not Conan profiles or system libraries. The profile setup below is still required.
+Existing local `.venv` installations remain supported:
+
 The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
 
 > **Tip:** Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See [Conan Downloads](https://conan.io/downloads) for the full list of options.

@@ -66,6 +66,8 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 
 ### Local Norms
 - macOS UI and server builds use Xcode 27. Keep local scripts on the operator-selected Xcode; use `.github/actions/setup_xcode` in desktop CI jobs. macOS unit test jobs only run prebuilt binaries and need no Xcode setup; redesigned Swift UI tests stay on the iOS runners with `Xcode-Latest.app`.
+- The main macOS CI build uses the collaborative `[self-hosted, iOS, Powerful]` pool, not the dedicated M2-3 runner. Keep Xcode 27 explicit.
+- Pin macOS build tools such as Conan in the root `mise.toml`; use Mise in the macOS build action rather than installing Conan with pip there. Keep existing local `.venv` builds working.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
 - Authenticate Qt in CI using `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`, with `--no-save-account`; keep INI authentication for local builds.
 - Keep ad hoc Conan recipe verification scripts local; do not include them in a PR unless explicitly requested.

@@ -76,7 +76,7 @@ jobs:
           qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
 
   build-MacOS:
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ self-hosted, iOS, Powerful ]
     env:
       DEVELOPER_DIR: /Applications/Xcode_27.app/Contents/Developer
     steps:
