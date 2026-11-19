@@ -514,6 +514,10 @@ Pode abri-los em qualquer momento, mesmo sem ligação à Internet.</translation
             <source>Rename %1</source> 
             <translation>Renomear %1</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Reiniciar</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Reiniciar o início de sessão</translation> 

@@ -47,6 +47,7 @@ class GeneralSettingsController final : public QObject {
         Q_PROPERTY(bool updateAvailable READ updateAvailable NOTIFY changed)
         Q_PROPERTY(bool updateDownloading READ updateDownloading NOTIFY changed)
         Q_PROPERTY(bool updateInstallable READ updateInstallable NOTIFY changed)
+        Q_PROPERTY(bool updateRestartable READ updateRestartable NOTIFY changed)
         Q_PROPERTY(bool automaticUpdates READ automaticUpdates NOTIFY changed)
         Q_PROPERTY(bool automaticUpdatesAvailable READ automaticUpdatesAvailable CONSTANT)
         Q_PROPERTY(int32_t distributionChannel READ distributionChannel NOTIFY changed)
@@ -78,6 +79,7 @@ class GeneralSettingsController final : public QObject {
         [[nodiscard]] bool updateAvailable() const;
         [[nodiscard]] bool updateDownloading() const;
         [[nodiscard]] bool updateInstallable() const;
+        [[nodiscard]] bool updateRestartable() const;
         [[nodiscard]] bool automaticUpdates() const;
         [[nodiscard]] bool automaticUpdatesAvailable() const { return _automaticUpdatesAvailable; }
         [[nodiscard]] int32_t distributionChannel() const;
@@ -97,6 +99,8 @@ class GeneralSettingsController final : public QObject {
 
         Q_INVOKABLE void openDownload();
         Q_INVOKABLE void installUpdate() const;
+        /** Restarts the application on the update already installed. */
+        Q_INVOKABLE void restartUpdate() const;
         Q_INVOKABLE void loadReleaseNotes();
         Q_INVOKABLE void openTrashHelp();
         Q_INVOKABLE void openSupport();

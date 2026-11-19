@@ -58,11 +58,14 @@ class UpdateStatusService final : public QObject {
 
         [[nodiscard]] bool available() const;
         [[nodiscard]] bool downloading() const { return _state == UpdateState::Downloading; }
-        /** The update is installed and the server is restarting the application on it. */
+        /** The update is installed: the application runs on it once restarted. */
         [[nodiscard]] bool installed() const { return _state == UpdateState::Ready; }
         [[nodiscard]] bool installable() const { return _state == UpdateState::Available; }
 
         void installUpdate() const;
+
+        /** Asks the server to restart the application on the update already installed (state `Ready`). */
+        void restartOnInstalledUpdate() const;
 
     signals:
         void changed();
@@ -70,6 +73,7 @@ class UpdateStatusService final : public QObject {
 
     private:
         void requestVersion();
+        void sendInstallRequest() const;
 
         StateRequest _stateRequest;
         VersionRequest _versionRequest;

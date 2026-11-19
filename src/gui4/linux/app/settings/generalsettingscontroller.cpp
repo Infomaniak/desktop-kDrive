@@ -160,13 +160,17 @@ bool GeneralSettingsController::updateAvailable() const {
     return _updateStatusService.available();
 }
 
-// Once installed, the server restarts the application at once: the button keeps its in-progress label until then.
 bool GeneralSettingsController::updateDownloading() const {
-    return _updateStatusService.downloading() || _updateStatusService.installed();
+    return _updateStatusService.downloading();
 }
 
 bool GeneralSettingsController::updateInstallable() const {
     return _updateStatusService.installable();
+}
+
+// An automatic update waits for the restart: the user can restart at once instead of waiting for the app to be idle.
+bool GeneralSettingsController::updateRestartable() const {
+    return _updateStatusService.installed();
 }
 
 bool GeneralSettingsController::automaticUpdates() const {
@@ -341,6 +345,10 @@ void GeneralSettingsController::openDownload() {
     }
 
     openUrl(AppConstants::Settings::downloadUri());
+}
+
+void GeneralSettingsController::restartUpdate() const {
+    _updateStatusService.restartOnInstalledUpdate();
 }
 
 void GeneralSettingsController::installUpdate() const {

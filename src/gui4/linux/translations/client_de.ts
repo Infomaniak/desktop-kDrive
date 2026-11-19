@@ -514,6 +514,10 @@ Sie können sie jederzeit öffnen, auch ohne Internetverbindung.</translation>
             <source>Rename %1</source> 
             <translation>%1 umbenennen</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Neu starten</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Anmeldung neu starten</translation> 

@@ -514,6 +514,10 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</translation>
             <source>Rename %1</source> 
             <translation>%1 hernoemen</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Opnieuw starten</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Inloggen opnieuw starten</translation> 

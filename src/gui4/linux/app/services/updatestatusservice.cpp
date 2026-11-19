@@ -73,6 +73,20 @@ void UpdateStatusService::installUpdate() const {
     }
 
     qCInfo(lcUpdateStatusService) << "Requesting the update installer | state:" << _state;
+    sendInstallRequest();
+}
+
+// The same request restarts the application when the update is already installed.
+void UpdateStatusService::restartOnInstalledUpdate() const {
+    if (!installed()) {
+        return;
+    }
+
+    qCInfo(lcUpdateStatusService) << "Requesting the restart on the installed update";
+    sendInstallRequest();
+}
+
+void UpdateStatusService::sendInstallRequest() const {
     _installRequest([](const ExitInfo &result) {
         if (result) {
             return;

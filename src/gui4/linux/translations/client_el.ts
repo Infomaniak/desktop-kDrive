@@ -514,6 +514,10 @@ You can open them at any time, even without an internet connection.</source>
             <source>Rename %1</source> 
             <translation>Μετονομασία %1</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Επανεκκίνηση</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Επανεκκίνηση σύνδεσης</translation> 

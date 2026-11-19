@@ -53,6 +53,7 @@
 #include "app/services/translationservice.h"
 #include "app/services/notificationservice.h"
 #include "app/services/updatenotifier.h"
+#include "app/services/updaterestartcoordinator.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
 #include "app/settings/advancedsyncscontroller.h"
@@ -193,6 +194,7 @@ class AppClientLinux : public QApplication {
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
         NotificationService _notificationService{this};
         UpdateNotifier _updateNotifier{_updateStatusService, _parametersStore, _notificationService, this};
+        UpdateRestartCoordinator _updateRestartCoordinator{_updateStatusService, _appCache, this};
         GeneralSettingsController _generalSettingsController{_parametersStore,     _parametersService, _translationService,
                                                              _updateStatusService, _appCache,          this};
         AdvancedSettingsController _advancedSettingsController{_parametersStore,   _parametersService,  _sentryService,

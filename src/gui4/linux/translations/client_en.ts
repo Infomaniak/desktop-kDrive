@@ -514,6 +514,10 @@ You can open them at any time, even without an internet connection.</translation
             <source>Rename %1</source> 
             <translation>Rename %1</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Restart</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Restart sign-in</translation> 

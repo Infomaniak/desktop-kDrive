@@ -174,6 +174,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     }
     mainWindow->setIcon(appIcon);
     _systemTrayController.setMainWindow(mainWindow);
+    _updateRestartCoordinator.watchWindow(mainWindow);
     (void) connect(mainWindow, &QWindow::visibleChanged, this, [this](const bool visible) {
         if (!visible && !_bootstrapCompleted && _mainWindowActivationPending) {
             _mainWindowActivationPending = false;
@@ -449,6 +450,7 @@ void AppClientLinux::openSettingsWindow() {
 
         object->setParent(&_qmlEngine);
         _settingsWindow = window;
+        _updateRestartCoordinator.watchWindow(window);
     }
 
     if (_settingsWindow->visibility() == QWindow::Minimized) {
