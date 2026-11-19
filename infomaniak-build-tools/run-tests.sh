@@ -50,6 +50,10 @@ for tester in "${testers[@]}"; do
     if ! (
         chmod +x "$tester" || exit 1
         cd "$(dirname "$tester")" || exit 1
+        if [[ -n "${KDRIVE_TEST_LOG_DIR:-}" ]]; then
+            KDRIVE_TEST_LOG_DIR="$KDRIVE_TEST_LOG_DIR/$(basename "$tester")"
+            export KDRIVE_TEST_LOG_DIR
+        fi
         "$tester"
     ); then
         (( errors+=1 ))

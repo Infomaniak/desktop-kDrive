@@ -1,6 +1,7 @@
 """Regression tests for the shell test runner; no build or live API needed."""
 
 from pathlib import Path
+import os
 import subprocess
 import tempfile
 import unittest
@@ -62,6 +63,21 @@ class TestRunTests(unittest.TestCase):
         self.add_binary("kDrive_test_common", "exit 0")
         result = self.run_tests(explicit_root=False)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_log_directories_are_scoped_per_binary(self):
+        binaries = [
+            self.add_binary(name, 'printf "%s" "$KDRIVE_TEST_LOG_DIR" > "$0.log-path"')
+            for name in ("kDrive_test_common", "kDrive_test_server")
+        ]
+        log_root = self.root / "logs"
+        environment = os.environ.copy()
+        environment["KDRIVE_TEST_LOG_DIR"] = str(log_root)
+        result = subprocess.run(
+            ["bash", str(RUNNER), str(self.build)], env=environment, text=True, capture_output=True, check=False
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for binary in binaries:
+            self.assertEqual(Path(str(binary) + ".log-path").read_text(), str(log_root / binary.name))
 
     def test_explicit_root_excludes_other_builds(self):
         stale_binary = self.root / "kDrive_test_stale"
