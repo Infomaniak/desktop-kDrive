@@ -152,12 +152,11 @@ jobs:
       - name: Set up Xcode 27
         uses: ./.github/actions/setup_xcode
 
-      - name: Prepare Python environment
-        shell: bash
-        run: |
-          python3 -m venv .venv
-          source .venv/bin/activate
-          python -m pip install 'conan==2.25.2'
+      - name: Set up Mise
+        # jdx/mise-action@v3.6.1
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
+        with:
+          cache: false
 
       - name: Grant empty trash script execute permission
         run : chmod +x ./infomaniak-build-tools/empty_drive_trash.sh

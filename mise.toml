@@ -1,0 +1,3 @@
+[tools]
+pipx = { version = "1.8.0", os = ["macos"] }
+"pipx:conan" = { version = "2.25.2", os = ["macos"] }
