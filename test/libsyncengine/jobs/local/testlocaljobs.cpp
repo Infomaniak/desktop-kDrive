@@ -572,7 +572,8 @@ void KDC::TestLocalJobs::testOpenFileJob() {
         job.setSyncWaitTimeout(std::chrono::milliseconds(1));
         job.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), job.exitInfo());
+        // The job completes successfully: the resolve timeout is reported through the outcome only.
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.exitInfo());
         CPPUNIT_ASSERT(job.outcome() == OpenFileJob::Outcome::ResolveTimedOut);
     }
 }
