@@ -914,11 +914,20 @@
   <data name="fileExistsErrorTitle" xml:space="preserve">
     <value>Το αρχείο υπάρχει ήδη</value>
   </data>
+  <data name="fileOpeningDownloadButton" xml:space="preserve">
+    <value>Λήψη από το kDrive</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ πάνω από %@</value>
   </data>
   <data name="fileOpeningDownloadTitle" xml:space="preserve">
     <value>Λήψη</value>
+  </data>
+  <data name="fileOpeningFailureExplanation" xml:space="preserve">
+    <value>Μπορείτε να το κατεβάσετε μόνοι σας από το kDrive μέσω του προγράμματος περιήγησής σας.</value>
+  </data>
+  <data name="fileOpeningFailureTitle" xml:space="preserve">
+    <value>Δεν είναι δυνατό να ανοίξει το αρχείο</value>
   </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Λειτουργία συγχρονισμού αρχείων</value>

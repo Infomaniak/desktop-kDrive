@@ -601,7 +601,7 @@ public enum KDriveLocalizable {
   public static let fileExclusionNotificationWarning = KDriveLocalizable.tr("Localizable", "fileExclusionNotificationWarning", fallback: "A notification informs you when a file is excluded by this rule.")
   /// loco:699c56142c8d937001054c82
   public static let fileExistsErrorTitle = KDriveLocalizable.tr("Localizable", "fileExistsErrorTitle", fallback: "File already exists")
-  /// Download from kDrive
+  /// loco:6afec1ed259fa742710c2c6c
   public static let fileOpeningDownloadButton = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadButton", fallback: "Download from kDrive")
   /// Downloading %@…
   public static func fileOpeningDownloadingMessage(_ p1: Any) -> String {
@@ -613,9 +613,9 @@ public enum KDriveLocalizable {
   }
   /// loco:6afdd1cddf6d796ad70d8a52
   public static let fileOpeningDownloadTitle = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadTitle", fallback: "Download")
-  /// You can download it yourself from kDrive in your browser.
+  /// loco:6afec1b2af0fa7297e057c14
   public static let fileOpeningFailureExplanation = KDriveLocalizable.tr("Localizable", "fileOpeningFailureExplanation", fallback: "You can download it yourself from kDrive in your browser.")
-  /// Cannot open the file
+  /// loco:6afebbdb99829c3b5d0dfa94
   public static let fileOpeningFailureTitle = KDriveLocalizable.tr("Localizable", "fileOpeningFailureTitle", fallback: "Cannot open the file")
   /// Downloading the item…
   public static let fileOpeningHydratingMessage = KDriveLocalizable.tr("Localizable", "fileOpeningHydratingMessage", fallback: "Downloading the item…")

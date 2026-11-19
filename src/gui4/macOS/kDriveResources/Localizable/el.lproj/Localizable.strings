@@ -797,11 +797,20 @@
 /* loco:699c56142c8d937001054c82 */
 "fileExistsErrorTitle" = "Το αρχείο υπάρχει ήδη";
 
+/* loco:6afec1ed259fa742710c2c6c */
+"fileOpeningDownloadButton" = "Λήψη από το kDrive";
+
 /* loco:6afdd20a9ee4cf55660ee934 */
 "fileOpeningDownloadProgress" = "%@ πάνω από %@";
 
 /* loco:6afdd1cddf6d796ad70d8a52 */
 "fileOpeningDownloadTitle" = "Λήψη";
+
+/* loco:6afec1b2af0fa7297e057c14 */
+"fileOpeningFailureExplanation" = "Μπορείτε να το κατεβάσετε μόνοι σας από το kDrive μέσω του προγράμματος περιήγησής σας.";
+
+/* loco:6afebbdb99829c3b5d0dfa94 */
+"fileOpeningFailureTitle" = "Δεν είναι δυνατό να ανοίξει το αρχείο";
 
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Λειτουργία συγχρονισμού αρχείων";

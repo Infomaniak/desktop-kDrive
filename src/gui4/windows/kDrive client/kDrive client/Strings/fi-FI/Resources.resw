@@ -914,11 +914,20 @@ Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value>
   <data name="fileExistsErrorTitle" xml:space="preserve">
     <value>Tiedosto on jo olemassa</value>
   </data>
+  <data name="fileOpeningDownloadButton" xml:space="preserve">
+    <value>Lataa kDrive-palvelusta</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ / %@</value>
   </data>
   <data name="fileOpeningDownloadTitle" xml:space="preserve">
     <value>Lataa</value>
+  </data>
+  <data name="fileOpeningFailureExplanation" xml:space="preserve">
+    <value>Voit ladata sen itse selaimesi kDrive-palvelusta.</value>
+  </data>
+  <data name="fileOpeningFailureTitle" xml:space="preserve">
+    <value>Tiedostoa ei voi avata</value>
   </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Tiedostojen synkronointitila</value>

@@ -914,11 +914,20 @@ La sincronizzazione riprenderà automaticamente una volta ripristinata la connes
   <data name="fileExistsErrorTitle" xml:space="preserve">
     <value>Il file esiste già</value>
   </data>
+  <data name="fileOpeningDownloadButton" xml:space="preserve">
+    <value>Scarica da kDrive</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ su %@</value>
   </data>
   <data name="fileOpeningDownloadTitle" xml:space="preserve">
     <value>Scarica</value>
+  </data>
+  <data name="fileOpeningFailureExplanation" xml:space="preserve">
+    <value>Puoi scaricarlo direttamente da kDrive nel tuo browser.</value>
+  </data>
+  <data name="fileOpeningFailureTitle" xml:space="preserve">
+    <value>Impossibile aprire il file</value>
   </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Modalità di sincronizzazione file</value>

@@ -914,11 +914,20 @@ Synkroniseringen återuptas automatiskt när anslutningen har återställts.</va
   <data name="fileExistsErrorTitle" xml:space="preserve">
     <value>Filen finns redan</value>
   </data>
+  <data name="fileOpeningDownloadButton" xml:space="preserve">
+    <value>Ladda ner från kDrive</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ av %@</value>
   </data>
   <data name="fileOpeningDownloadTitle" xml:space="preserve">
     <value>Ladda ner</value>
+  </data>
+  <data name="fileOpeningFailureExplanation" xml:space="preserve">
+    <value>Du kan ladda ner den själv från kDrive i din webbläsare.</value>
+  </data>
+  <data name="fileOpeningFailureTitle" xml:space="preserve">
+    <value>Det går inte att öppna filen</value>
   </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Filsynkroniseringsläge</value>

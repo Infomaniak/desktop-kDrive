@@ -797,11 +797,20 @@
 /* loco:699c56142c8d937001054c82 */
 "fileExistsErrorTitle" = "Bestand bestaat al";
 
+/* loco:6afec1ed259fa742710c2c6c */
+"fileOpeningDownloadButton" = "Downloaden via kDrive";
+
 /* loco:6afdd20a9ee4cf55660ee934 */
 "fileOpeningDownloadProgress" = "%@ van %@";
 
 /* loco:6afdd1cddf6d796ad70d8a52 */
 "fileOpeningDownloadTitle" = "Downloaden";
+
+/* loco:6afec1b2af0fa7297e057c14 */
+"fileOpeningFailureExplanation" = "Je kunt het zelf downloaden via kDrive in je browser.";
+
+/* loco:6afebbdb99829c3b5d0dfa94 */
+"fileOpeningFailureTitle" = "Het bestand kan niet worden geopend";
 
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Bestandssynchronisatiemodus";
