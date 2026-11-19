@@ -90,6 +90,16 @@ IKModal {
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
             }
+            // The LGPL asks for a visible notice of the Qt use.
+            Text {
+                width: parent.width
+                visible: root.about
+                text: qsTrId("aboutQtNotice").arg(root.controller.qtVersion)
+                textFormat: Text.PlainText
+                color: IKColors.textSecondary
+                font.pixelSize: IKFonts.bodySize
+                wrapMode: Text.WordWrap
+            }
             // Release notes of the announced version, hidden when they cannot be loaded.
             Column {
                 id: releaseNotesColumn
@@ -151,6 +161,12 @@ IKModal {
                     text: qsTrId("viewSourceCode")
                     external: true
                     onClicked: root.controller.openSources()
+                }
+                // Opens the notices folder of the AppImage in the file manager, not the browser.
+                IKLinkButton {
+                    visible: root.controller.thirdPartyLicensesAvailable
+                    text: qsTrId("viewThirdPartyLicenses")
+                    onClicked: root.controller.openThirdPartyLicenses()
                 }
             }
         }

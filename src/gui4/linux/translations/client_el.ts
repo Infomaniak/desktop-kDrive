@@ -34,6 +34,10 @@
             <source>Developed and hosted exclusively in Switzerland, kDrive ensures total protection of your data, with no reselling or spying, in ISO-certified data centers, with encryption and backup on multiple media.</source> 
             <translation>Αναπτύχθηκε και φιλοξενείται αποκλειστικά στην Ελβετία, το kDrive διασφαλίζει την πλήρη προστασία των δεδομένων σας, χωρίς μεταπώληση ή παρακολούθηση, σε κέντρα δεδομένων πιστοποιημένα ISO, με κρυπτογράφηση και δημιουργία αντιγράφων ασφαλείας σε πολλαπλά μέσα.</translation> 
         </message> 
+        <message id="aboutQtNotice"> 
+            <source>kDrive uses Qt %1 under the LGPL v3 and GPL v3 licenses.</source> 
+            <translation>Το kDrive χρησιμοποιεί το Qt %1 με τις άδειες LGPL v3 και GPL v3.</translation> 
+        </message> 
         <message id="accessibilityActivityTypePicker"> 
             <source>Visible activities</source> 
             <translation>Ορατές δραστηριότητες</translation> 
@@ -2741,6 +2745,10 @@ Please update the application to access your files and resume synchronization.</
         <message id="viewSourceCode"> 
             <source>View source code</source> 
             <translation>Προβολή πηγαίου κώδικα</translation> 
+        </message> 
+        <message id="viewThirdPartyLicenses"> 
+            <source>Third-party licenses</source> 
+            <translation>Άδειες τρίτων</translation> 
         </message> 
         <message id="winInformationBlockSynchroErrorTitle"> 
             <source>You have a sync error</source> 
