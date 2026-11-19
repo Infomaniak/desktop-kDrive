@@ -44,6 +44,7 @@ final class FileOpeningModalPresenter {
     private var windowEntriesByJobId = [Int64: WindowEntry]()
     private var failureWindowEntriesByJobId = [Int64: FailureWindowEntry]()
     private var lastStatusByJobId = [Int64: FileOpeningStatus]()
+    private var dismissedJobIds = Set<Int64>()
 
     init() {
         fileOpeningStatusCacheObservable.fileOpeningStatusPublisher
@@ -57,9 +58,15 @@ final class FileOpeningModalPresenter {
     // MARK: - Status handling
 
     private func handleStatus(_ status: FileOpeningStatus) {
+        // The server delivers the signals through a concurrent pool: a status can be reordered after the terminal
+        // Finished phase of the same request. Ignore such late statuses: the request is already dismissed, and
+        // resurrecting it would present a pop-up window that would never close.
+        if status.phase != .finished && dismissedJobIds.contains(status.jobId) { return }
+
         switch status.phase {
         case .finished:
             // The file opening request has been processed: close the progress pop-up window, if one is open.
+            dismissedJobIds.insert(status.jobId)
             lastStatusByJobId.removeValue(forKey: status.jobId)
             closeWindow(for: status.jobId)
         case .failed:
