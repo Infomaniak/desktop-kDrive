@@ -15,26 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls
 {
     /// Standalone pop-up window informing the user that a file opening requested through a "kdrive://open/..." deeplink
-    /// failed, and offering to download the item from the kDrive web application in a browser. It replaces the
-    /// progress pop-up window of the request when the server reports a failure phase, and stays open until the user
-    /// closes it. When the item does not exist on the remote side (NotFound), there is nothing to download: the
-    /// window shows a dedicated message and offers no download.
+    /// failed, and offering to download the item into the download folder of the user. It replaces the progress
+    /// pop-up window of the request when the server reports a failure phase. When the item does not exist on the
+    /// remote side (NotFound), there is nothing to download: the window shows a dedicated message and offers no
+    /// download. While the download triggered from this window runs, it shows its progress; when it fails, the
+    /// window shows an error and the download button falls back to the kDrive web application page of the item.
     public sealed partial class FileOpeningFailureWindow : Window
     {
         // Effective pixels: the window carries a failure title, an explanation that wraps on two lines, the item
         // card, and the two actions, and must hug this content. The not-found variant drops the explanation and the
-        // download button.
+        // download button, and the failed download adds the error message.
         private const int _width = 420;
         private const int _height = 300;
         private const int _heightNotFound = 180;
+        private const int _heightDownloadFailed = 336;
 
         private readonly FileOpeningRequest _request;
 
@@ -43,6 +46,7 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
             _request = request;
             RootPanel.DataContext = request;
+            _request.PropertyChanged += Request_PropertyChanged;
             if (request.IsNotFound)
             {
                 FailureTitleTextBlock.Text = Localizer.Instance.GetString("fileOpeningNotFoundMessage");
@@ -57,11 +61,19 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             CloseButton.Content = Localizer.Instance.GetString("buttonCancel");
-            Utility.SetWindowProperties(this, _width, request.IsNotFound ? _heightNotFound : _height,
-                Utility.WindowResizeOptions.None);
+            Utility.SetWindowProperties(this, _width, ContentHeight(), Utility.WindowResizeOptions.None);
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             AppWindow.IsShownInSwitchers = false;
             Activated += FileOpeningFailureWindow_Activated;
+        }
+
+        /// Content height of the window for the current state of the request: the download of the item into the
+        /// download folder of the user replaces the download button with its progress, and its failure adds an error
+        /// message to the explanation.
+        private int ContentHeight()
+        {
+            if (_request.IsNotFound) return _heightNotFound;
+            return _request.IsItemDownloadFailed ? _heightDownloadFailed : _height;
         }
 
         private void FileOpeningFailureWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -70,7 +82,56 @@ namespace Infomaniak.kDrive.CustomControls
             Activated -= FileOpeningFailureWindow_Activated;
         }
 
+        private void Request_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(FileOpeningRequest.IsItemDownloading):
+                case nameof(FileOpeningRequest.IsItemDownloadFailed):
+                    // The download of the item into the download folder of the user started or reached its terminal
+                    // phase: swap the download button for its progress, or add the error message, and resize.
+                    ItemDownloadProgressPanel.Visibility = _request.IsItemDownloading ? Visibility.Visible : Visibility.Collapsed;
+                    ItemDownloadErrorTextBlock.Text = _request.IsItemDownloadFailed
+                        ? Localizer.Instance.GetString("fileOpeningDownloadFailureMessage") : "";
+                    ItemDownloadErrorTextBlock.Visibility = _request.IsItemDownloadFailed ? Visibility.Visible : Visibility.Collapsed;
+                    UpdateItemDownloadProgress();
+                    Utility.SetWindowProperties(this, _width, ContentHeight(), Utility.WindowResizeOptions.None);
+                    break;
+                case nameof(FileOpeningRequest.HasItemDownloadProgress):
+                    UpdateItemDownloadProgress();
+                    break;
+            }
+        }
+
+        private void UpdateItemDownloadProgress()
+        {
+            ItemDownloadProgressBar.Maximum = _request.ItemDownloadGaugeMaximum;
+            ItemDownloadProgressBar.Value = _request.ItemDownloadGaugeValue;
+            ItemDownloadProgressBar.IsIndeterminate = _request.IsItemDownloading && !_request.HasItemDownloadProgress;
+            ItemDownloadProgressTextBlock.Text = _request.HasItemDownloadProgress ? _request.ItemDownloadProgressText : "";
+        }
+
         private async void OnDownloadClicked(object sender, RoutedEventArgs e)
+        {
+            if (_request.IsItemDownloadFailed)
+            {
+                // The download of the item into the download folder of the user failed: fall back to the kDrive web
+                // application page of the item, from which the user can download it manually.
+                await OpenWebPage();
+                return;
+            }
+
+            // Download the item into the download folder of the user: the window shows the progress of the download,
+            // and closes once the item has been downloaded.
+            var fileOpeningController = App.ServiceProvider.GetRequiredService<AppModel>().FileOpeningController;
+            if (!await fileOpeningController.DownloadRequestItemAsync(_request.JobId))
+            {
+                Logger.LogError($"Failed to start the download of the item of the file opening request. JobId: {_request.JobId}",
+                    "FileOpeningFailureWindow: Failed to start the item download");
+            }
+        }
+
+        private async Task OpenWebPage()
         {
             // Open the kDrive web application page of the item in a browser, from which the user can download it
             // manually.

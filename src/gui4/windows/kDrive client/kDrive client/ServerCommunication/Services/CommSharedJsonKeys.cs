@@ -118,6 +118,12 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string FileOpeningReceivedBytes = "receivedBytes";
         static public string FileOpeningTotalBytes = "totalBytes";
         static public string FileOpeningWebUrl = "webUrl";
+        static public string FileOpeningDriveDbId = "driveDbId";
+        static public string FileOpeningRemoteNodeId = "remoteNodeId";
+        static public string FileOpeningDownloadId = "downloadId";
+        static public string FileOpeningDownloadState = "state";
+        static public string FileOpeningDestinationFolderPath = "destinationFolderPath";
+        static public string FileOpeningFinalPath = "finalPath";
 
         static public string IncludeArchivedLogs = "includeArchivedLogs";
 

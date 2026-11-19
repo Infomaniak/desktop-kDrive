@@ -124,7 +124,8 @@ namespace Infomaniak.kDrive.Types
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
         UPDATER_START_INSTALLER,
-        UPDATER_SKIP_VERSION
+        UPDATER_SKIP_VERSION,
+        FILE_OPENING_DOWNLOAD
     };
 
     public enum SignalNum
@@ -172,7 +173,8 @@ namespace Infomaniak.kDrive.Types
         UTILITY_SHOW_SYNTHESIS,
         UTILITY_LOG_UPLOAD_STATUS_UPDATED,
         UTILITY_QUIT,
-        FILE_OPENING_STATUS
+        FILE_OPENING_STATUS,
+        FILE_OPENING_DOWNLOAD_STATE
     }
 
     public enum FileOpeningPhase
@@ -182,6 +184,14 @@ namespace Infomaniak.kDrive.Types
         Hydrating,
         Failed,
         NotFound,
+        EnumEnd
+    };
+
+    public enum FileOpeningDownloadState
+    {
+        Downloading = 0,
+        Done,
+        Failed,
         EnumEnd
     };
 
