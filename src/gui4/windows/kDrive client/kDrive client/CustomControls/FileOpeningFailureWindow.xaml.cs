@@ -24,14 +24,17 @@ namespace Infomaniak.kDrive.CustomControls
 {
     /// Standalone pop-up window informing the user that a file opening requested through a "kdrive://open/..." deeplink
     /// failed, and offering to download the item from the kDrive web application in a browser. It replaces the
-    /// progress pop-up window of the request when the server reports the Failed phase, and stays open until the user
-    /// closes it.
+    /// progress pop-up window of the request when the server reports a failure phase, and stays open until the user
+    /// closes it. When the item does not exist on the remote side (NotFound), there is nothing to download: the
+    /// window shows a dedicated message and offers no download.
     public sealed partial class FileOpeningFailureWindow : Window
     {
         // Effective pixels: the window carries a failure title, an explanation that wraps on two lines, the item
-        // card, and the two actions, and must hug this content.
+        // card, and the two actions, and must hug this content. The not-found variant drops the explanation and the
+        // download button.
         private const int _width = 420;
         private const int _height = 300;
+        private const int _heightNotFound = 180;
 
         private readonly FileOpeningRequest _request;
 
@@ -40,11 +43,22 @@ namespace Infomaniak.kDrive.CustomControls
             InitializeComponent();
             _request = request;
             RootPanel.DataContext = request;
-            FailureTitleTextBlock.Text = Localizer.Instance.GetString("fileOpeningFailureTitle");
-            FailureExplanationTextBlock.Text = Localizer.Instance.GetString("fileOpeningFailureExplanation");
+            if (request.IsNotFound)
+            {
+                FailureTitleTextBlock.Text = Localizer.Instance.GetString("fileOpeningNotFoundMessage");
+                FailureExplanationTextBlock.Visibility = Visibility.Collapsed;
+                DownloadButton.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                FailureTitleTextBlock.Text = Localizer.Instance.GetString("fileOpeningFailureTitle");
+                FailureExplanationTextBlock.Text = Localizer.Instance.GetString("fileOpeningFailureExplanation");
+                DownloadButton.Content = Localizer.Instance.GetString("fileOpeningDownloadButton");
+            }
+
             CloseButton.Content = Localizer.Instance.GetString("buttonCancel");
-            DownloadButton.Content = Localizer.Instance.GetString("fileOpeningDownloadButton");
-            Utility.SetWindowProperties(this, _width, _height, Utility.WindowResizeOptions.None);
+            Utility.SetWindowProperties(this, _width, request.IsNotFound ? _heightNotFound : _height,
+                Utility.WindowResizeOptions.None);
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
             AppWindow.IsShownInSwitchers = false;
             Activated += FileOpeningFailureWindow_Activated;

@@ -2919,17 +2919,18 @@ void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPha
     }
 }
 
-void AppServer::sendFileOpeningFailure(const UniqueId jobId, const CommString &webUrl) const {
+void AppServer::sendFileOpeningFailure(const UniqueId jobId, const FileOpeningPhase failurePhase,
+                                       const CommString &webUrl) const {
     // Inform the client interface that the file opening request failed: its pop-up window is replaced by a failure
-    // window offering to download the item from the kDrive web application in a browser. No notification is sent:
-    // the failure window replaces it.
+    // window. No notification is sent: the failure window replaces it. The web address of the item is reported only
+    // when the item can be downloaded manually from the kDrive web application.
     if (useOldCommServer()) {
         int id = 0;
 
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
         paramsStream << static_cast<qint64>(jobId);
-        paramsStream << FileOpeningPhase::Failed;
+        paramsStream << failurePhase;
         paramsStream << static_cast<qint8>(-1);
         paramsStream << QString();
         paramsStream << QString();
@@ -2939,7 +2940,7 @@ void AppServer::sendFileOpeningFailure(const UniqueId jobId, const CommString &w
         (void) OldCommServer::instance()->sendSignal(SignalNum::FILE_OPENING_STATUS, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, webUrl));
+        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, failurePhase, webUrl));
     }
 }
 

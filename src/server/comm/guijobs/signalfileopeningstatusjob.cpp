@@ -43,9 +43,10 @@ SignalFileOpeningStatusJob::SignalFileOpeningStatusJob(const UniqueId jobId, con
     _signalNum = SignalNum::FILE_OPENING_STATUS;
 }
 
-SignalFileOpeningStatusJob::SignalFileOpeningStatusJob(const UniqueId jobId, const CommString &webUrl) :
+SignalFileOpeningStatusJob::SignalFileOpeningStatusJob(const UniqueId jobId, const FileOpeningPhase failurePhase,
+                                                       const CommString &webUrl) :
     _jobId(jobId),
-    _phase(FileOpeningPhase::Failed),
+    _phase(failurePhase),
     _webUrl(webUrl) {
     _signalNum = SignalNum::FILE_OPENING_STATUS;
 }

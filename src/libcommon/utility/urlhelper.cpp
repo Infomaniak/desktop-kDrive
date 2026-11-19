@@ -47,12 +47,12 @@ std::string UrlHelper::loginApiUrl() {
     return usePreProdUrl() ? preprodLoginApiUrl : prodLoginApiUrl;
 }
 
-std::string UrlHelper::kDriveWebAppFileUrl(const DriveId driveId, const std::string &nodeId) {
+std::string UrlHelper::kDriveWebAppFolderUrl(const DriveId driveId, const std::string &folderNodeId) {
     // The pre-production address of the kDrive web application mirrors the address of its API and needs to be
     // verified when a pre-production environment is used.
     static const std::string prodKDriveWebAppUrl = "https://kdrive.infomaniak.com/app/drive/";
     static const std::string preprodKDriveWebAppUrl = "https://kdrive.preprod.dev.infomaniak.ch/app/drive/";
-    return (usePreProdUrl() ? preprodKDriveWebAppUrl : prodKDriveWebAppUrl) + std::to_string(driveId) + "/files/" + nodeId;
+    return (usePreProdUrl() ? preprodKDriveWebAppUrl : prodKDriveWebAppUrl) + std::to_string(driveId) + "/files/" + folderNodeId;
 }
 
 bool UrlHelper::usePreProdUrl() {

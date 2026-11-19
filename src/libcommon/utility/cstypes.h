@@ -401,6 +401,8 @@ enum class FileOpeningPhase {
     WaitingSync, //!< The item exists on the remote side but is not synchronized yet.
     Hydrating, //!< The item is a dehydrated placeholder being downloaded.
     Failed, //!< The opening failed: the client interface shows a failure window instead of a notification.
+    NotFound, //!< The opening failed because the item does not exist on the remote side: the failure window offers
+              //!< no download, since there is nothing to download.
     EnumEnd
 };
 

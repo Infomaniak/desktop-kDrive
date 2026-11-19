@@ -28,9 +28,10 @@ class UrlHelper {
         static std::string kDriveApiUrl(uint8_t version = 2);
         static std::string notifyApiUrl(uint8_t version = 2);
         static std::string loginApiUrl();
-        //! Returns the address of the kDrive web application page of an item, from which the item can be downloaded
-        //! manually when the desktop application cannot open it.
-        static std::string kDriveWebAppFileUrl(DriveId driveId, const std::string &nodeId);
+        //! Returns the address of the kDrive web application page of a folder of a drive. The web application opens
+        //! an item within its parent folder: the failure window of the file opening flow addresses the parent folder
+        //! of an item, from which the item can be located and downloaded manually.
+        static std::string kDriveWebAppFolderUrl(DriveId driveId, const std::string &folderNodeId);
 
     private:
         static bool usePreProdUrl();

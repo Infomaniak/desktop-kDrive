@@ -111,6 +111,9 @@ class OpenFileJob : public SyncJob {
         //! and the pin state set before starting it is reverted.
         void cancel();
 
+        //! The local database id of the drive the item belongs to, 0 while the request has not been resolved.
+        [[nodiscard]] DriveDbId driveDbId() const { return _driveDbId; }
+
         //! Overrides the duration after which the resolution of the item gives up (10 minutes by default). For tests.
         void setSyncWaitTimeout(const std::chrono::milliseconds &syncWaitTimeout) { _syncWaitTimeout = syncWaitTimeout; }
 
@@ -202,7 +205,8 @@ class OpenFileJob : public SyncJob {
 
         //! The requested item may have been created on the remote side recently: keep resolving it during
         //! `_syncWaitTimeout` (10 minutes by default) before giving up.
-        std::chrono::milliseconds _syncWaitTimeout{std::chrono::minutes(10)};
+        std::chrono::milliseconds _syncWaitTimeout{std::chrono::minutes(
+                1)}; // TEMPORARY: 10 min in production, lowered to 1 min for testing (revert before merging).
 
         Outcome _outcome{Outcome::Failed};
 

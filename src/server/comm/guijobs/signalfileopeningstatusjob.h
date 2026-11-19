@@ -28,9 +28,10 @@ class SignalFileOpeningStatusJob : public AbstractGuiJob {
     public:
         explicit SignalFileOpeningStatusJob(UniqueId jobId, FileOpeningPhase phase, int8_t percent, const CommString &itemName,
                                             const CommString &itemPath, int64_t receivedBytes, int64_t totalBytes);
-        //! Failure status: reports the failure of the request along with the kDrive web application address of the
-        //! item, from which it can be downloaded manually. The client interface shows its failure window with it.
-        explicit SignalFileOpeningStatusJob(UniqueId jobId, const CommString &webUrl);
+        //! Failure status: reports the failure of the request, with the failure phase (Failed or NotFound) and the
+        //! kDrive web application address of the item when it can be downloaded manually. The client interface
+        //! shows its failure window with it.
+        explicit SignalFileOpeningStatusJob(UniqueId jobId, FileOpeningPhase failurePhase, const CommString &webUrl);
 
     private:
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }

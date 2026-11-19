@@ -25,6 +25,7 @@ public enum FileOpeningStatusPhase: Int, Codable, Sendable, Hashable {
     case waitingSync = 1
     case hydrating = 2
     case failed = 3
+    case notFound = 4
 }
 
 public struct FileOpeningStatus: Hashable, Sendable {

@@ -424,9 +424,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         //! parent folder, and the download progress in bytes, to the client interface.
         virtual void sendFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent, const CommString &itemName,
                                            const CommString &itemPath, int64_t receivedBytes, int64_t totalBytes) const;
-        //! Reports the failure of a file opening request to the client interface, along with the kDrive web
-        //! application address of the item, from which it can be downloaded manually.
-        virtual void sendFileOpeningFailure(UniqueId jobId, const CommString &webUrl) const;
+        //! Reports the failure of a file opening request to the client interface. The failure phase (Failed or
+        //! NotFound) drives the content of the failure window, and the kDrive web application address of the item is
+        //! reported when the item can be downloaded manually.
+        virtual void sendFileOpeningFailure(UniqueId jobId, FileOpeningPhase failurePhase, const CommString &webUrl) const;
         void registerFileOpeningJob(UniqueId jobId, FileOpeningHandler *handler);
         void unregisterFileOpeningJob(UniqueId jobId);
         //! Returns the number of file-opening flows currently active: their job is queued or running and their

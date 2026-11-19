@@ -60,24 +60,27 @@ final class FileOpeningModalPresenter {
     private func handleStatus(_ status: FileOpeningStatus) {
         // The server delivers the signals through a concurrent pool: a status can be reordered after the terminal
         // phases of the same request. Ignore such late statuses: the request is already dismissed, and resurrecting
-        // it would present a pop-up window that would never close. The Failed phase is delivered after the Finished
-        // one and must not be dropped: it opens the failure window.
-        if status.phase != .finished && status.phase != .failed && dismissedJobIds.contains(status.jobId) { return }
+        // it would present a pop-up window that would never close. The failure phases are delivered after the
+        // Finished one and must not be dropped: they open the failure window.
+        if status.phase != .finished && status.phase != .failed && status.phase != .notFound &&
+            dismissedJobIds.contains(status.jobId) { return }
 
         switch status.phase {
         case .finished:
-            // The file opening request has been processed: close the progress pop-up window, if one is open.
+            // The file opening request has been processed: close the progress pop-up window, if one is open. The
+            // last reported state is kept: the failure phases are delivered after the Finished one and need the
+            // identity of the item to feed the failure window.
             dismissedJobIds.insert(status.jobId)
-            lastStatusByJobId.removeValue(forKey: status.jobId)
             closeWindow(for: status.jobId)
-        case .failed:
+        case .failed, .notFound:
             // The file opening request failed: close the progress pop-up window, if one is open, and present the
             // failure window. The identity of the item is the last one reported before the failure.
             dismissedJobIds.insert(status.jobId)
             let lastKnownStatus = lastStatusByJobId[status.jobId]
             lastStatusByJobId.removeValue(forKey: status.jobId)
             closeWindow(for: status.jobId)
-            presentFailureWindow(jobId: status.jobId, itemName: lastKnownStatus?.itemName ?? "",
+            presentFailureWindow(jobId: status.jobId, phase: status.phase,
+                                 itemName: lastKnownStatus?.itemName ?? "",
                                  itemPath: lastKnownStatus?.itemPath ?? "", webUrl: status.webUrl)
         default:
             lastStatusByJobId[status.jobId] = status
@@ -119,23 +122,33 @@ final class FileOpeningModalPresenter {
 
     // MARK: - Failure window
 
-    private func presentFailureWindow(jobId: Int64, itemName: String, itemPath: String, webUrl: String) {
+    private func presentFailureWindow(jobId: Int64, phase: FileOpeningStatusPhase, itemName: String, itemPath: String,
+                                      webUrl: String) {
         guard failureWindowEntriesByJobId[jobId] == nil else { return }
 
         IKLogger.general.info("[KD] Presenting the file opening failure window jobId=\(jobId)")
         let hostingController = NSHostingController(
-            rootView: FileOpeningFailureView(itemName: itemName, itemPath: itemPath, onDownload: { [weak self] in
-                self?.openWebPage(webUrl)
-            }, onClose: { [weak self] in
-                self?.closeFailureWindow(for: jobId)
-            })
+            rootView: FileOpeningFailureView(itemName: itemName, itemPath: itemPath, isNotFound: phase == .notFound,
+                                             webUrl: webUrl, onDownload: { [weak self] in
+                                                 self?.openWebPage(webUrl)
+                                             }, onClose: { [weak self] in
+                                                 self?.closeFailureWindow(for: jobId)
+                                             })
         )
-        let window = makeWindow(contentViewController: hostingController)
-        configure(window, width: 392, height: 348)
+        let window = makeWindow(contentViewController: hostingController, standardTitleBar: phase == .notFound)
+        configure(window, width: 392, height: failureWindowHeight(phase: phase, itemName: itemName))
 
         let entry = FailureWindowEntry(window: window, hostingController: hostingController)
         failureWindowEntriesByJobId[jobId] = entry
         window.makeKeyAndOrderFront(nil)
+    }
+
+    /// Returns the failure window content height for the given failure: the not-found variant drops the explanation
+    /// and the download button, carries the "kDrive" title in its standard title bar instead of a drawn title row,
+    /// and the card appears only when the identity of the item is known.
+    private func failureWindowHeight(phase: FileOpeningStatusPhase, itemName: String) -> CGFloat {
+        if phase == .notFound { return itemName.isEmpty ? 150 : 210 }
+        return 348
     }
 
     private func closeFailureWindow(for jobId: Int64) {
@@ -155,15 +168,16 @@ final class FileOpeningModalPresenter {
 
     // MARK: - Window management
 
-    /// Creates a pop-up window with the title bar of the file opening flow: the native title is hidden and the title
-    /// bar made transparent, so that the view draws the "kDrive" title centered in the title bar strip.
-    private func makeWindow(contentViewController: NSViewController) -> NSWindow {
+    /// Creates a pop-up window. By default it carries the title bar of the file opening flow: the native title is
+    /// hidden and the title bar made transparent, so that the view draws the "kDrive" title centered in the title
+    /// bar strip. With a standard title bar, the native "kDrive" title is shown in the title bar instead.
+    private func makeWindow(contentViewController: NSViewController, standardTitleBar: Bool = false) -> NSWindow {
         let window = NSWindow(contentViewController: contentViewController)
-        window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
+        window.styleMask = standardTitleBar ? [.titled, .closable] : [.titled, .closable, .miniaturizable, .fullSizeContentView]
         window.title = KDriveLocalizable.fileOpeningWindowTitle
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
-        window.isMovableByWindowBackground = true
+        window.titleVisibility = standardTitleBar ? .visible : .hidden
+        window.titlebarAppearsTransparent = !standardTitleBar
+        window.isMovableByWindowBackground = !standardTitleBar
         window.isReleasedWhenClosed = false
         return window
     }

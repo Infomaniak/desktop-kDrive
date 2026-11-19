@@ -89,8 +89,9 @@ class FileOpeningHandler : public QObject {
         [[nodiscard]] bool isSyncEngineRunning(SyncDbId syncDbId) const;
         void handleFileOpeningSuccess();
         //! Reports the failure of the request to the client interface, which shows its failure window with it. The
-        //! window offers to download the item from the kDrive web application, at the address returned by webUrl().
-        void handleFileOpeningFailure();
+        //! failure phase (Failed or NotFound) drives the content of the window: a NotFound failure offers no
+        //! download, since the item does not exist on the remote side.
+        void handleFileOpeningFailure(FileOpeningPhase failurePhase);
         //! Returns the kDrive web application address of the requested item, empty when the request URL is invalid.
         [[nodiscard]] CommString webUrl() const;
         void handleFileOpeningCanceled();
