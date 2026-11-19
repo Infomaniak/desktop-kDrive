@@ -27,6 +27,8 @@ static const auto outParamsItemPath = "itemPath";
 static const auto outParamsReceivedBytes = "receivedBytes";
 static const auto outParamsTotalBytes = "totalBytes";
 static const auto outParamsWebUrl = "webUrl";
+static const auto outParamsDriveDbId = "driveDbId";
+static const auto outParamsRemoteNodeId = "remoteNodeId";
 
 namespace KDC {
 
@@ -44,10 +46,13 @@ SignalFileOpeningStatusJob::SignalFileOpeningStatusJob(const UniqueId jobId, con
 }
 
 SignalFileOpeningStatusJob::SignalFileOpeningStatusJob(const UniqueId jobId, const FileOpeningPhase failurePhase,
-                                                       const CommString &webUrl) :
+                                                       const CommString &webUrl, const DriveDbId driveDbId,
+                                                       const CommString &remoteNodeId) :
     _jobId(jobId),
     _phase(failurePhase),
-    _webUrl(webUrl) {
+    _webUrl(webUrl),
+    _driveDbId(driveDbId),
+    _remoteNodeId(remoteNodeId) {
     _signalNum = SignalNum::FILE_OPENING_STATUS;
 }
 
@@ -60,6 +65,8 @@ ExitInfo SignalFileOpeningStatusJob::serializeOutputParms() {
     writeParamValue(outParamsReceivedBytes, _receivedBytes);
     writeParamValue(outParamsTotalBytes, _totalBytes);
     writeParamValue(outParamsWebUrl, _webUrl);
+    writeParamValue(outParamsDriveDbId, _driveDbId);
+    writeParamValue(outParamsRemoteNodeId, _remoteNodeId);
 
     return ExitCode::Ok;
 }

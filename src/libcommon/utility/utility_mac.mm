@@ -73,6 +73,17 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     return [[appSupportDirUrl path] UTF8String];
 }
 
+SyncPath CommonUtility::getGenericDownloadsDir() {
+    NSURL *downloadsDirUrl = [[NSFileManager defaultManager] URLForDirectory:NSDownloadsDirectory
+                                                                    inDomain:NSUserDomainMask
+                                                           appropriateForURL:nil
+                                                                      create:NO
+                                                                       error:nil];
+    if (!downloadsDirUrl) return {};
+
+    return [[downloadsDirUrl path] UTF8String];
+}
+
 SyncPath CommonUtility::getExtensionPath() {
     CFURLRef url = (CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle());
     CFStringRef urlStr = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);

@@ -406,4 +406,13 @@ enum class FileOpeningPhase {
     EnumEnd
 };
 
+//! State of the download of an item triggered from the failure window of a file opening request, reported to the
+//! client interface.
+enum class FileOpeningDownloadState {
+    Downloading = 0, //!< The item is being downloaded into the destination folder.
+    Done, //!< The item has been downloaded successfully into the destination folder.
+    Failed, //!< The download failed: the failure window shows an error and falls back to the web application.
+    EnumEnd
+};
+
 } // namespace KDC

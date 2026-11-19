@@ -36,6 +36,9 @@
 #include "updater/updatemanager.h"
 
 #include "jobs/network/kDrive_API/searchjob.h"
+#include "jobs/network/kDrive_API/downloadjob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "jobs/network/jobexceptions.h"
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 
@@ -63,6 +66,7 @@
 #include "server/comm/guijobs/signalutilityshowsynthesisjob.h"
 #include "server/comm/guijobs/signalutilityloguploadstatejob.h"
 #include "server/comm/guijobs/signalutilityquitjob.h"
+#include "server/comm/guijobs/signalfileopeningdownloadstatejob.h"
 
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/theme/theme.h"
@@ -70,6 +74,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/comm.h"
+#include "libcommonserver/io/cachedirectory.h"
 #include "libcommon/data/user.h"
 #include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/log/sentry/handler.h"
@@ -2919,11 +2924,13 @@ void AppServer::sendFileOpeningStatus(const UniqueId jobId, const FileOpeningPha
     }
 }
 
-void AppServer::sendFileOpeningFailure(const UniqueId jobId, const FileOpeningPhase failurePhase,
-                                       const CommString &webUrl) const {
+void AppServer::sendFileOpeningFailure(const UniqueId jobId, const FileOpeningPhase failurePhase, const CommString &webUrl,
+                                       const DriveDbId driveDbId, const CommString &remoteNodeId) const {
     // Inform the client interface that the file opening request failed: its pop-up window is replaced by a failure
     // window. No notification is sent: the failure window replaces it. The web address of the item is reported only
-    // when the item can be downloaded manually from the kDrive web application.
+    // when the item can be downloaded manually from the kDrive web application. The drive database id and the remote
+    // node id of the item are reported as well, so that the failure window can trigger its download into the download
+    // folder of the user. They are not reported to the legacy client interface, which does not use them.
     if (useOldCommServer()) {
         int id = 0;
 
@@ -2940,8 +2947,137 @@ void AppServer::sendFileOpeningFailure(const UniqueId jobId, const FileOpeningPh
         (void) OldCommServer::instance()->sendSignal(SignalNum::FILE_OPENING_STATUS, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningStatusJob>(jobId, failurePhase, webUrl));
+        _commManager->sendGuiSignal(
+                std::make_shared<SignalFileOpeningStatusJob>(jobId, failurePhase, webUrl, driveDbId, remoteNodeId));
     }
+}
+
+void AppServer::sendFileOpeningDownloadState(const UniqueId downloadId, const FileOpeningDownloadState state,
+                                             const int8_t percent, const int64_t receivedBytes, const int64_t totalBytes,
+                                             const CommString &finalPath) const {
+    // Inform the client interface of the state of the download of the item of a failed file opening request, so that
+    // its failure window can display the progress, close itself once the item has been downloaded, or fall back to
+    // the kDrive web application when the download failed.
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalFileOpeningDownloadStateJob>(downloadId, state, percent, receivedBytes,
+                                                                                        totalBytes, finalPath));
+    }
+}
+
+SyncPath AppServer::nonExistingItemPath(const SyncPath &folder, const SyncPath &itemPath) {
+    // Never overwrite an existing item: shift the item file name with an occurrence counter, like a web browser
+    // would, until it does not collide with any existing item of the folder. The comparison is insensitive to the
+    // case of the file names, as the file systems of the supported platforms may be insensitive to it.
+    const auto itemName = itemPath.filename();
+    const auto itemStem = itemPath.stem();
+    const auto itemSuffix = itemPath.extension();
+
+    auto pathExists = [](const SyncPath &path) {
+        bool exists = false;
+        IoError ioError = IoError::Success;
+        if (!IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive)) return true;
+        return exists;
+    };
+
+    SyncPath candidatePath(folder / itemName);
+    for (int occurrence = 1; pathExists(candidatePath); ++occurrence) {
+        candidatePath =
+                folder / (itemStem.native() + Str2SyncName(" (" + std::to_string(occurrence) + ")") + itemSuffix.native());
+    }
+
+    return candidatePath;
+}
+
+ExitInfo AppServer::downloadFileOpeningItem(const DriveDbId driveDbId, const CommString &remoteNodeId,
+                                            const CommString &destinationFolderPath, UniqueId &downloadId,
+                                            CommString &finalPath) {
+    // The item is downloaded by the engine from the kDrive API, into a temporary directory, then moved into the
+    // destination folder: the request returns immediately, and the client interface follows the progress and the
+    // completion of the download through the download state signals.
+    try {
+        // Item information: the name gives the destination file name, and the size feeds the progress.
+        const auto fileInfoJob = std::make_shared<GetFileInfoJob>(driveDbId, CommonUtility::commString2Str(remoteNodeId));
+        if (const auto exitInfo = fileInfoJob->runSynchronously(); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in GetFileInfoJob::runSynchronously - driveDbId=" << driveDbId << L": " << exitInfo);
+            return exitInfo;
+        }
+
+        // Resolve the destination folder: the download folder of the user when the client interface does not provide
+        // one.
+        SyncPath destinationFolder;
+        if (destinationFolderPath.empty()) {
+            if (const auto exitInfo = CommonUtility::downloadsDirectory(destinationFolder); !exitInfo) {
+                LOGW_WARN(_logger, L"Error in CommonUtility::downloadsDirectory: " << exitInfo);
+                return exitInfo;
+            }
+        } else {
+            destinationFolder = CommonUtility::commString2SyncPath(destinationFolderPath);
+        }
+
+        const SyncPath finalItemPath = nonExistingItemPath(destinationFolder, SyncPath(fileInfoJob->name()));
+
+        // The temporary files of the download are kept out of the destination folder, in a temporary directory
+        // removed by the cache directory once the download job is destroyed.
+        SyncPath tmpDirectory;
+        if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDirectory); !exitInfo) {
+            LOGW_WARN(_logger, L"Error in CommonUtility::tempDirectoryPath: " << exitInfo);
+            return exitInfo;
+        }
+
+        const auto downloadJob = std::make_shared<DownloadJob>(
+                nullptr, std::make_shared<CacheDirectory>(tmpDirectory),
+                DownloadJob::FileDownloadInfo{driveDbId, CommonUtility::commString2Str(remoteNodeId), finalItemPath,
+                                              fileInfoJob->size(), 0, fileInfoJob->modificationTime(), true},
+                fileInfoJob->modificationTime() > 0 ? DownloadJob::DateTimePolicy::ApplyDateTime
+                                                    : DownloadJob::DateTimePolicy::IgnoreDateTime);
+        downloadJob->setProgressSizeCallback(std::bind_front(&AppServer::onFileOpeningDownloadProgress, this,
+                                                             CommonUtility::syncPath2CommString(finalItemPath),
+                                                             std::make_shared<FileOpeningDownloadThrottleState>()));
+        downloadJob->setAdditionalCallback(std::bind_front(&AppServer::onFileOpeningDownloadJobFinished, this,
+                                                           std::weak_ptr<DownloadJob>(downloadJob),
+                                                           CommonUtility::syncPath2CommString(finalItemPath)));
+
+        downloadId = downloadJob->jobId();
+        finalPath = CommonUtility::syncPath2CommString(finalItemPath);
+        SyncJobManagerSingleton::instance()->queueAsyncJob(downloadJob, Poco::Thread::PRIO_NORMAL);
+
+        return ExitCode::Ok;
+    } catch (const JobException &e) {
+        LOGW_WARN(_logger, L"Error in GetFileInfoJob::GetFileInfoJob: error=" << CommonUtility::s2ws(e.what()));
+        return {ExitCode::SystemError, ExitCause::Unknown};
+    }
+}
+
+void AppServer::onFileOpeningDownloadProgress(const CommString &finalPath,
+                                              const std::shared_ptr<FileOpeningDownloadThrottleState> &throttleState,
+                                              const UniqueId downloadId, const int64_t receivedBytes, const int64_t totalBytes) {
+    // Throttle the notifications: inform the client interface when the percentage changed and at most every 500 ms,
+    // so that a large item does not flood it with updates.
+    const auto now = std::chrono::steady_clock::now();
+    const int percent = totalBytes > 0 ? static_cast<int>(100 * receivedBytes / totalBytes) : -1;
+    if (percent == throttleState->lastPercent && now - throttleState->lastNotify < std::chrono::milliseconds(500)) {
+        return;
+    }
+
+    throttleState->lastNotify = now;
+    throttleState->lastPercent = percent;
+    sendFileOpeningDownloadState(downloadId, FileOpeningDownloadState::Downloading, static_cast<int8_t>(percent), receivedBytes,
+                                 totalBytes, finalPath);
+}
+
+void AppServer::onFileOpeningDownloadJobFinished(const std::weak_ptr<DownloadJob> &job, const CommString &finalPath,
+                                                 const UniqueId downloadId) {
+    // The job is still alive: the callback is invoked by the job itself at the end of its run.
+    if (const auto downloadJob = job.lock(); downloadJob && downloadJob->exitInfo()) {
+        LOGW_INFO(_logger, L"Item downloaded into the download folder - " << Utility::formatSyncPath(downloadJob->localPath()));
+        sendFileOpeningDownloadState(downloadId, FileOpeningDownloadState::Done, 100, downloadJob->size(), downloadJob->size(),
+                                     finalPath);
+
+        return;
+    }
+
+    LOGW_WARN(_logger, L"Failed to download the item of a failed file opening request");
+    sendFileOpeningDownloadState(downloadId, FileOpeningDownloadState::Failed, -1, -1, -1, finalPath);
 }
 
 ExitInfo AppServer::cancelFileOpeningJob(const UniqueId jobId) {

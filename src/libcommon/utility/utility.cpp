@@ -1705,6 +1705,28 @@ ExitInfo CommonUtility::tempDirectoryPath(SyncPath &directoryPath) noexcept {
     return ExitCode::Ok;
 }
 
+ExitInfo CommonUtility::downloadsDirectory(SyncPath &directoryPath) noexcept {
+    directoryPath = getGenericDownloadsDir();
+    if (directoryPath.empty()) {
+        // Fallback to the default download directory of the default home directory when the system does not provide
+        // the location preferred by the user.
+        if (const auto exitInfo = homeDirectoryPath(directoryPath); !exitInfo) return exitInfo;
+        directoryPath /= "Downloads";
+    }
+
+    std::error_code ec;
+    if (!std::filesystem::exists(directoryPath, ec) && !ec) {
+        // The download directory may not exist yet on a fresh system: create it, as a download into it would
+        // otherwise fail.
+        (void) std::filesystem::create_directories(directoryPath, ec);
+        if (ec.value()) return stdErrorToExitInfo(ec.value());
+    } else if (ec.value()) {
+        return stdErrorToExitInfo(ec.value());
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo CommonUtility::stdErrorToExitInfo(const int64_t error) noexcept {
     switch (error) {
         case 0:

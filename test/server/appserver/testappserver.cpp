@@ -30,6 +30,7 @@
 #include "test_utility/testhelpers.h"
 
 #include <algorithm>
+#include <fstream>
 
 namespace KDC {
 
@@ -217,6 +218,33 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
     CPPUNIT_ASSERT(!exists);
+}
+
+void TestAppServer::testNonExistingItemPath() {
+    const SyncPath folder = _localTempDir.path() / "download_folder";
+    CPPUNIT_ASSERT(std::filesystem::create_directories(folder));
+
+    const auto createFile = [](const SyncPath &path) {
+        std::ofstream stream(path);
+        CPPUNIT_ASSERT(stream.is_open());
+    };
+
+    // A path that does not collide with any existing item of the folder is returned unchanged.
+    CPPUNIT_ASSERT_EQUAL(folder / "file.txt", AppServer::nonExistingItemPath(folder, "file.txt"));
+
+    // An existing item of the folder shifts the file name of the candidate path with an occurrence counter.
+    createFile(folder / "file.txt");
+    CPPUNIT_ASSERT_EQUAL(folder / "file (1).txt", AppServer::nonExistingItemPath(folder, "file.txt"));
+    createFile(folder / "file (1).txt");
+    CPPUNIT_ASSERT_EQUAL(folder / "file (2).txt", AppServer::nonExistingItemPath(folder, "file.txt"));
+
+    // The extension of the item is preserved by the shift.
+    createFile(folder / "archive.tar.gz");
+    CPPUNIT_ASSERT_EQUAL(folder / "archive (1).tar.gz", AppServer::nonExistingItemPath(folder, "archive.tar.gz"));
+
+    // An item of the folder with a different name or extension does not collide.
+    CPPUNIT_ASSERT_EQUAL(folder / "other.md", AppServer::nonExistingItemPath(folder, "other.md"));
+    CPPUNIT_ASSERT_EQUAL(folder / "file.md", AppServer::nonExistingItemPath(folder, "file.md"));
 }
 
 void TestAppServer::testCleanup() {
