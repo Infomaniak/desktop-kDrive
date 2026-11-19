@@ -550,7 +550,7 @@ ExitInfo Utility::tryCreateTmpDir([[maybe_unused]] const std::shared_ptr<CacheDi
     }
 
     auto ioError = IoError::Unknown;
-    (void) IoHelper::deleteItem(tmpPath, ioError);
+    (void) IoHelper::deleteItem(tmpPath, ioError, cacheDirectory->syncDirectoryPath());
 #else
     (void) name;
 #endif
@@ -616,7 +616,7 @@ ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDi
 
     if (!exists) return {ExitCode::SystemError, ExitCause::InvalidName};
 
-    (void) IoHelper::deleteItem(tmpPath);
+    (void) IoHelper::deleteItem(tmpPath, cacheDirectory->syncDirectoryPath());
 
     return ExitCode::Ok;
 }

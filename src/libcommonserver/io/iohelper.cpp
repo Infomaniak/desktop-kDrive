@@ -28,6 +28,7 @@
 #if defined(KD_MACOS) || defined(KD_LINUX)
 #include <sys/stat.h>
 #endif
+
 #include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN
 
@@ -167,8 +168,8 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "File or directory corrupted";
         case IoError::TooManySymbolicLinkLevels:
             return "Too many symbolic link levels";
-        case IoError::MoveThroughSymlink:
-            return "Move through symlink";
+        case IoError::PathContainsSymlink:
+            return "Path contains a symbolic link";
         case IoError::Unknown:
         default:
             return "Unknown error";
@@ -227,7 +228,7 @@ ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeO
     }
 }
 
-bool IoHelper::isExpectedError(IoError ioError) noexcept {
+bool IoHelper::isExpectedError(const IoError ioError) noexcept {
     return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
 }
 //! Set the target type of link item.
@@ -836,13 +837,36 @@ bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError
     return checkIfIsHiddenFile(path, true, isHidden, ioError);
 }
 
-IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept {
+IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath &syncRootPath, bool &traversesLink,
+                                           SyncPath &linkPath) noexcept {
     traversesLink = false;
     linkPath.clear();
 
-    // Check each ancestor directory of `path`, from the closest to the farthest. The final component of the path is ignored.
-    SyncPath tmpPath = path.parent_path();
-    while (!tmpPath.empty() && tmpPath != tmpPath.parent_path()) {
+    if (syncRootPath.empty()) return IoError::Success;
+
+    std::error_code ec;
+    const auto canonicalPath = std::filesystem::weakly_canonical(path, ec);
+    if (ec.value()) {
+        LOGW_WARN(logger(), L"Failed to get canonical path for " << Utility::formatStdError(path, ec));
+        return stdError2ioError(ec);
+    }
+
+    const auto canonicalRootPath = std::filesystem::weakly_canonical(syncRootPath, ec);
+    if (ec.value()) {
+        LOGW_WARN(logger(), L"Failed to get canonical path for " << Utility::formatStdError(syncRootPath, ec));
+        return stdError2ioError(ec);
+    }
+
+    if (!CommonUtility::isDescendantOrEqual(canonicalPath, canonicalRootPath)) {
+        LOGW_WARN(logger(), L"Path " << Utility::formatSyncPath(path) << L" is not located under the sync root "
+                                     << Utility::formatSyncPath(syncRootPath));
+        return IoError::InvalidArgument;
+    }
+
+    // Check each ancestor directory of `path` located strictly below the sync root, from the closest to the farthest. The final
+    // component of the path is ignored.
+    for (SyncPath tmpPath = path.parent_path(); CommonUtility::isStrictDescendant(tmpPath, syncRootPath);
+         tmpPath = tmpPath.parent_path()) {
         ItemType itemType;
         if (!IoHelper::getItemType(tmpPath, itemType) || itemType.ioError != IoError::Success) {
             LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
@@ -850,15 +874,21 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traverses
         }
 
         if (isLinkFollowedByDefault(itemType.linkType)) {
-            traversesLink = true;
             linkPath = tmpPath;
-            return IoError::Success;
+            traversesLink = true;
+            LOGW_WARN(logger(),
+                      L"Path " << Utility::formatSyncPath(path) << L" traverses the link " << Utility::formatSyncPath(linkPath));
+            return IoError::PathContainsSymlink;
         }
-
-        tmpPath = tmpPath.parent_path();
     }
 
     return IoError::Success;
+}
+
+IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath &syncRootPath) noexcept {
+    bool traversesLink = false;
+    SyncPath linkPath;
+    return checkIfPathTraversesLink(path, syncRootPath, traversesLink, linkPath);
 }
 
 bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoError &ioError) noexcept {
@@ -878,7 +908,30 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     return true;
 }
 
-bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError) noexcept {
+bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError,
+                               const SyncPath &syncRootPath /*= {}*/) noexcept {
+    if (!syncRootPath.empty()) {
+        // Some ancestors of `path` may not exist yet (e.g. recursive creation). Only the deepest existing ancestor and its own
+        // ancestors can be links, so the check is done on the first missing component of `path` (or on `path` itself).
+        SyncPath firstMissingPath = path;
+        if (recursive) {
+            for (SyncPath ancestorPath = path.parent_path(); CommonUtility::isStrictDescendant(ancestorPath, syncRootPath);
+                 ancestorPath = ancestorPath.parent_path()) {
+                bool exists = false;
+                if (!checkIfPathExists(ancestorPath, exists, ioError, PathCheckOption::Insensitive)) return false;
+                if (exists) break;
+                firstMissingPath = ancestorPath;
+            }
+        }
+
+        ioError = IoHelper::checkIfPathTraversesLink(firstMissingPath, syncRootPath);
+        if (ioError != IoError::Success) {
+            LOGW_WARN(logger(),
+                      L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(firstMissingPath, ioError));
+            return false;
+        }
+    }
+
     std::error_code ec;
     const bool creationSuccess =
             recursive ? std::filesystem::create_directories(path, ec) : std::filesystem::create_directory(path, ec);
@@ -893,35 +946,30 @@ bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoErr
     return creationSuccess;
 }
 
-bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
-    return renameItem(sourcePath, destinationPath, ioError);
+bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError,
+                        const SyncPath &syncRootPath /*= {}*/) noexcept {
+    return renameItem(sourcePath, destinationPath, ioError, syncRootPath);
 }
 
-IoError IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
-    return renameItem(sourcePath, destinationPath);
+IoError IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
+                           const SyncPath &syncRootPath /*= {}*/) noexcept {
+    return renameItem(sourcePath, destinationPath, syncRootPath);
 }
 
-bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
-    ioError = renameItem(sourcePath, destinationPath);
+bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError,
+                          const SyncPath &syncRootPath /*= {}*/) noexcept {
+    ioError = renameItem(sourcePath, destinationPath, syncRootPath);
     return ioError == IoError::Success;
 }
 
-IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
+IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
+                             const SyncPath &syncRootPath /*= {}*/) noexcept {
     // Refuse to move an item if one of the intermediate components of the source or destination path is a link that would be
     // followed by the operating system during the move. This check is intentionally not bypassable with bypassCheck().
     for (const SyncPath &path: {sourcePath, destinationPath}) {
-        auto traversesLink = false;
-        SyncPath linkPath;
-        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath); ioError != IoError::Success) {
+        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath); ioError != IoError::Success) {
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
             return ioError;
-        }
-
-        if (traversesLink) {
-            LOGW_WARN(logger(),
-                      L"Move from " << Utility::formatSyncPath(sourcePath) << L" to " << Utility::formatSyncPath(destinationPath)
-                                    << L" is forbidden: the path traverses the link " << Utility::formatSyncPath(linkPath));
-            return IoError::MoveThroughSymlink;
         }
     }
 
@@ -930,8 +978,16 @@ IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destina
     return stdError2ioError(ec);
 }
 
-bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
-    // NB: Symlinks are not followed (symlink is removed, not its target).
+bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError, const SyncPath &syncRootPath /*= {}*/) noexcept {
+    // If `path` itself is a link, the link is removed, not its target. However, links found among the ancestors of `path`
+    // would be followed by the operating system during path resolution, possibly removing items outside the expected tree:
+    // such paths are rejected.
+    ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
     std::error_code ec;
     (void) std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
@@ -941,13 +997,18 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     return ioError == IoError::Success;
 }
 
-bool IoHelper::deleteItem(const SyncPath &path) noexcept {
+bool IoHelper::deleteItem(const SyncPath &path, const SyncPath &syncRootPath /*= {}*/) noexcept {
     auto ioError = IoError::Unknown;
-    return IoHelper::deleteItem(path, ioError);
+    return IoHelper::deleteItem(path, ioError, syncRootPath);
 }
 
-bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
-    ioError = IoError::Unknown;
+bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError,
+                                   const SyncPath &syncRootPath /*= {}*/) noexcept {
+    ioError = IoHelper::checkIfPathTraversesLink(destinationPath, syncRootPath);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(destinationPath, ioError));
+        return false;
+    }
 
     // Get the destination type.
     ItemType destinationType;
@@ -961,7 +1022,7 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
     std::error_code ec;
     if (destinationType.ioError == IoError::Success && isLink(destinationType.linkType)) {
         // Remove the destination path.
-        if (!deleteItem(destinationPath, ioError)) {
+        if (!deleteItem(destinationPath, ioError, syncRootPath)) {
             LOGW_WARN(logger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(destinationPath, ioError));
             return false;
         }
@@ -998,7 +1059,8 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
     return ioError == IoError::Success;
 }
 
-bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
+bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, const bool isFolder, IoError &ioError,
+                             const SyncPath &syncRootPath /*= {}*/) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path));
         ioError = IoError::InvalidArgument;
@@ -1008,6 +1070,12 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
     if (targetPath.empty()) {
         LOGW_DEBUG(logger(), L"Cannot create symlink on an empty target: " << Utility::formatSyncPath(path));
         ioError = IoError::InvalidArgument;
+        return false;
+    }
+
+    ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
         return false;
     }
 

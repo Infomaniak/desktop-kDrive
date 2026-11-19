@@ -268,6 +268,27 @@ void TestIo::testCreateDirectory() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
+    // Creates successfully a directory and its missing ancestors
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "missing_1" / "missing_2" / "regular_directory";
+
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::createDirectory(path, true, ioError));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        CPPUNIT_ASSERT(std::filesystem::is_directory(path));
+    }
+
+    // Fails to create a directory whose parent is missing when not recursive
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "missing" / "regular_directory";
+
+        IoError ioError = IoError::Success;
+        CPPUNIT_ASSERT(!IoHelper::createDirectory(path, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+    }
+
     // Fails to create a directory because the dir path indicates an existing directory
     {
         const LocalTemporaryDirectory temporaryDirectory;

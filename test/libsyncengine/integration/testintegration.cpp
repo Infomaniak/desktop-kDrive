@@ -869,14 +869,15 @@ void TestIntegration::testMoveDeleteRename() {
         // Move aa
         const auto moveSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
         const auto moveDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "B" / "AA";
-        (void) LocalMoveJob(moveSourcePath, moveDestPath).runSynchronously();
+        (void) LocalMoveJob(_syncPal->localPath(), moveSourcePath, moveDestPath).runSynchronously();
         // Delete a
         const auto deletedPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
-        (void) GenericLocalDeleteJob(deletedPath, GenericLocalDeleteJob::ForceHardDelete::Yes).runSynchronously();
+        (void) GenericLocalDeleteJob(_syncPal->localPath(), deletedPath, GenericLocalDeleteJob::ForceHardDelete::Yes)
+                .runSynchronously();
         // Rename b
         const auto renameSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         const auto renameDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
-        (void) LocalMoveJob(renameSourcePath, renameDestPath).runSynchronously();
+        (void) LocalMoveJob(_syncPal->localPath(), renameSourcePath, renameDestPath).runSynchronously();
 
         _syncPal->unpause();
         waitForSyncToBeIdle(std::source_location::current());

@@ -124,7 +124,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
     // Create
     const SyncName testDirName = Str("testLocalJobs");
     const SyncPath testDirPath = _localTempDir.path() / testDirName;
-    LocalCreateDirJob createJob(testDirPath);
+    LocalCreateDirJob createJob(_localTempDir.path(), testDirPath);
     createJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(testDirPath));
@@ -136,14 +136,14 @@ void KDC::TestLocalJobs::testLocalJobs() {
     // Copy
     const auto suffix = CommonUtility::generateRandomStringAlphaNum(10);
     const SyncPath copyDirPath = _localTempDir.path() / (testDirName + Str("_copy_") + Str2SyncName(suffix));
-    LocalCopyJob copyJob(testDirPath, copyDirPath);
+    LocalCopyJob copyJob(_localTempDir.path(), testDirPath, copyDirPath);
     copyJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath));
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_picture.jpg"));
 
     // Move
-    LocalMoveJob moveJob(testDirPath, copyDirPath / testDirName);
+    LocalMoveJob moveJob(_localTempDir.path(), testDirPath, copyDirPath / testDirName);
     moveJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName));
@@ -219,7 +219,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
     // A move whose source path traverses the symbolic link is forbidden.
     {
         const SyncPath destPath = temporaryDirectory.path() / "moved_file.txt";
-        LocalMoveJob moveJob(linkPath / "tmp_file.txt", destPath);
+        LocalMoveJob moveJob(temporaryDirectory.path(), linkPath / "tmp_file.txt", destPath);
         moveJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
@@ -229,7 +229,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 
     // A move whose destination path traverses the symbolic link is forbidden.
     {
-        LocalMoveJob moveJob(filePath, linkPath / "moved_file.txt");
+        LocalMoveJob moveJob(temporaryDirectory.path(), filePath, linkPath / "moved_file.txt");
         moveJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
@@ -239,7 +239,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 
     // The interdiction is not bypassable with bypassCheck().
     {
-        LocalMoveJob moveJob(linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt");
+        LocalMoveJob moveJob(temporaryDirectory.path(), linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt");
         moveJob.setBypassCheck(true);
         moveJob.runSynchronously();
 
@@ -251,7 +251,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     ParametersCache::instance()->parameters().setMoveToTrash(false);
 
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testDeleteFilesWithDuplicateNames");
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testDeleteFilesWithDuplicateNames", _syncPal->localPath());
     const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
 
     // Create two files with the same name but distinct encodings.
