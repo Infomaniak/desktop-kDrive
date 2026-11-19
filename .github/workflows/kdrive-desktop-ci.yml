@@ -77,8 +77,6 @@ jobs:
 
   build-MacOS:
     runs-on: [ self-hosted, iOS, Powerful ]
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_27.app/Contents/Developer
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
