@@ -769,7 +769,9 @@ jobs:
           if [[ "$VISIBILITY" != "private" ]]; then
             os image set "--${VISIBILITY}" "$CANDIDATE_ID"
             if [[ "$VISIBILITY" == "shared" ]]; then
-              for member in $(os image member list "$SOURCE_IMAGE_ID" -f value -c "Member ID"); do
+              member_ids="$(os image member list "$SOURCE_IMAGE_ID" -f value -c "Member ID")" \
+                || die "Cannot list member projects for source image $SOURCE_IMAGE_ID"
+              for member in $member_ids; do
                 os image add project "$CANDIDATE_ID" "$member" > /dev/null
                 echo "::warning::Project $member must accept the new shared image $CANDIDATE_ID"
               done

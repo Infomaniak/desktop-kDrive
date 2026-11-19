@@ -135,6 +135,10 @@ function Invoke-UpdateLoop {
             $session.ClientApplicationID = "kDrive image refresh"
             $searcher = $session.CreateUpdateSearcher()
             $result = $searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Software'")
+            if ($result.ResultCode -ne 2) { # OperationResultCode.orcSucceeded
+                $warnings = @($result.Warnings | ForEach-Object { $_.Message })
+                throw "Windows Update scan did not complete successfully (result $($result.ResultCode)). $($warnings -join ' | ')"
+            }
 
             $toInstall = New-Object -ComObject Microsoft.Update.UpdateColl
             foreach ($update in $result.Updates) {
