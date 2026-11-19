@@ -64,6 +64,8 @@ selection or explicit `DEVELOPER_DIR`; CI selects Xcode 27 through the setup act
 The macOS build action installs the Conan version pinned in the root `mise.toml`.
 Local scripts still activate `.venv/bin/activate` when present; otherwise they use Conan from `PATH`.
 CMake >= 3.24 is required for `--fresh`.
+GitHub validation builds use `ci.xcconfig` to disable Xcode code signing for the UI and
+extensions on shared runners. Distribution builds through `build-release.sh` keep signing enabled.
 
 
 ## Native dependencies

@@ -1,0 +1,3 @@
+// Validation builds on shared runners do not require distribution certificates.
+CODE_SIGNING_ALLOWED = NO
+CODE_SIGNING_REQUIRED = NO
