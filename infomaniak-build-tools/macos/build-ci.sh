@@ -32,6 +32,10 @@ export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 src_dir="${1-$PWD}"
 app_name="kDrive"
 
+if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+	export XCODE_XCCONFIG_FILE="$src_dir/infomaniak-build-tools/macos/ci.xcconfig"
+fi
+
 # CI provides Conan through Mise; preserve the existing local Python environment.
 if [ "${GITHUB_ACTIONS:-}" != "true" ] && [ -f "$src_dir/.venv/bin/activate" ]; then
 	source "$src_dir/.venv/bin/activate"
