@@ -175,6 +175,16 @@ jobs:
             echo "KDRIVE_TEST_LOG_DIR=$test_root/logs"
           } >> "$GITHUB_ENV"
 
+      - name: Verify build tools
+        run: |
+          mise ls cmake
+          cmake_install_dir="$(mise where cmake)"
+          ls -ld "$cmake_install_dir"
+          find "$cmake_install_dir" -maxdepth 6 -name cmake -print
+          command -v cmake
+          cmake --version
+          conan --version
+
       - name: Check test runner regressions
         run: python3 -m unittest discover -s infomaniak-build-tools/tests
 
