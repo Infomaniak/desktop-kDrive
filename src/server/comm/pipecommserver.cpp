@@ -186,7 +186,7 @@ PSECURITY_DESCRIPTOR createCurrentUserSecurityDescriptor() {
 
     (void) CloseHandle(token);
 
-    const auto *tokenUser = reinterpret_cast<TOKEN_USER *>(buffer.data());
+    const auto * const tokenUser = reinterpret_cast<TOKEN_USER *>(buffer.data());
 
     LPWSTR sid = nullptr;
     if (!ConvertSidToStringSidW(tokenUser->User.Sid, &sid)) return nullptr;
@@ -259,10 +259,11 @@ void PipeCommServer::execute() {
                                              BUFSIZE * sizeof(TCHAR), // input buffer size
                                              pipeTimeOut, // client time-out (ms)
                                              &securityAttributes);
+        const DWORD pipeCreationError = GetLastError();
         (void) LocalFree(descriptor);
 
         if (channel->_pipeInst == INVALID_HANDLE_VALUE) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << GetLastError());
+            LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << pipeCreationError);
             _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
             return;
         }
