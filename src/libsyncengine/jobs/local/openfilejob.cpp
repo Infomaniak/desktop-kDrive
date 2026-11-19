@@ -419,7 +419,7 @@ ExitInfo OpenFileJob::openResolvedLocalItem() {
 
     VfsStatus vfsStatus;
     if (const auto exitInfo = vfs->status(_localPath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in Vfs::status - " << Utility::formatSyncPath(_localPath) << L": " << exitInfo);
+        LOGW_WARN(_logger, L"Error in Vfs::status - " << Utility::formatExitInfo(_localPath, exitInfo));
         _outcome = Outcome::Failed;
 
         return exitInfo;
@@ -478,14 +478,25 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
 
     auto progressObserver = [completion](const int16_t progress) { completion->percent.store(static_cast<int8_t>(progress)); };
 
-    // Check the item state and set the pin state of the placeholder. Any failure in this phase leaves the opening to
-    // the system, which hydrates the item on access.
+    // Check the item state and set the pin state of the placeholder. Most failures in this phase leave the opening to
+    // the system, which hydrates the item on access; a failure to set the pin state fails the request.
     bool hydrate = false;
     const auto exitInfo = checkHydrationPrerequisites(syncPal, hydrate);
+    if (!exitInfo) {
+        // The outcome is already set by checkHydrationPrerequisites for each of its error exits (Canceled or NotFound).
+        LOGW_WARN(_logger,
+                  L"Error in OpenFileJob::checkHydrationPrerequisites - " << Utility::formatExitInfo(_localPath, exitInfo));
+    }
     if (!hydrate) return exitInfo;
 
     PinState pinState{PinState::Unknown};
-    if (const auto pinStateExitInfo = setHydrationPinState(vfs, pinState); !pinStateExitInfo) return readyToOpen();
+    if (const auto pinStateExitInfo = setHydrationPinState(vfs, pinState); !pinStateExitInfo) {
+        LOGW_WARN(_logger,
+                  L"Error in OpenFileJob::setHydrationPinState - " << Utility::formatExitInfo(_localPath, pinStateExitInfo));
+        _outcome = Outcome::Failed;
+
+        return pinStateExitInfo;
+    }
 
     // Enqueue the download job
     if (const auto enqueueExitInfo = syncPal->addDlDirectJob(_relativePath, _localPath, SyncPath{}, observer, progressObserver);
@@ -535,7 +546,8 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
             LOGW_WARN(_logger, L"The download of the item did not complete in time - " << Utility::formatSyncPath(_localPath));
             _outcome = Outcome::HydrationTimedOut;
 
-            return {ExitCode::SystemError, ExitCause::Unknown};
+            // This is a regular scenario.
+            return ExitCode::Ok;
         }
 
         completion->cv.wait_for(lock, std::min(remaining, hydrationWaitTick));
@@ -564,8 +576,10 @@ ExitInfo OpenFileJob::hydrateResolvedPlaceholder() {
 }
 
 ExitInfo OpenFileJob::checkHydrationPrerequisites(const std::shared_ptr<SyncPal> &syncPal, bool &hydrate) {
+    assert(syncPal);
     if (isAborted()) {
         LOGW_INFO(_logger, L"File opening canceled - " << Utility::formatSyncPath(_localPath));
+        hydrate = false;
         _outcome = Outcome::Canceled;
 
         return ExitInfo{ExitCode::OperationCanceled, ExitCause::OperationCanceled};
@@ -679,7 +693,7 @@ ExitInfo OpenFileJob::setHydrationPinState(const std::shared_ptr<Vfs> &vfs, PinS
     if (pinState != PinState::AlwaysLocal) {
         // Set pin state
         if (const auto exitInfo = vfs->setPinState(_relativePath, PinState::AlwaysLocal); !exitInfo) {
-            LOGW_INFO(_logger, L"Error in Vfs::setPinState - " << Utility::formatSyncPath(_localPath) << L": " << exitInfo);
+            LOGW_INFO(_logger, L"Error in Vfs::setPinState - " << Utility::formatExitInfo(_localPath, exitInfo));
 
             return exitInfo;
         }
