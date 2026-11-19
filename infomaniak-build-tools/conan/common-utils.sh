@@ -14,9 +14,10 @@ find_conan_dependency_path() {
 
   local sourced=0
   local conan_path=""
+  local conan_home="${CONAN_HOME:-$HOME/.conan2}"
 
-  # If the LD_LIBRARY_PATH does not contain the ".conan2" folder, we need to source the conanrun.sh script to set it up
-  if [[ "$LD_LIBRARY_PATH" != *"/.conan2/"* ]]; then
+  # Load the generated environment unless it already references this Conan home.
+  if [[ "$LD_LIBRARY_PATH" != *"$conan_home/p/"* ]]; then
     conan_path="$(dirname "$(find "$build_dir" -iname "conanrun.sh" -type f | head -n 1)")"
     if [[ -n "$conan_path" && -f "$conan_path/conanrun.sh" ]]; then
       source "$conan_path/conanrun.sh"
@@ -45,16 +46,13 @@ find_conan_dependency_path() {
   IFS="$old_IFS"
   [[ -n "$ZSH_VERSION" && "$was_shwordsplit_set" == 0 ]] && unsetopt shwordsplit # Restore the previous state of shwordsplit in Zsh
 
-  # Define regex pattern to match Conan package paths in LD_LIBRARY_PATH.
-  # This recognize Conan package paths that are either in the form of:
-  # - /home/user/.conan2/p/log4c6abc1234def
-  # - /home/user/.conan2/p/b/log4c6abc1234def
-  # and ends with "/lib". The "b/" part is optional, as it is used for packages that are built on the machine
-  local conan_package_folder_regex="\.conan2/p/(b/)?${dep_name}[^/]*/p/lib$"
+  # Match downloaded and locally built packages relative to the configured home.
+  # Keep the home out of the regex: custom paths may contain regex metacharacters.
+  local conan_package_folder_regex="^p/(b/)?${dep_name}[^/]*/p/lib$"
 
   # Search through each directory in LD_LIBRARY_PATH for a matching Conan path
   for dir in "${path_dirs[@]}"; do
-    if echo "$dir" | grep -qE "$conan_package_folder_regex"; then
+    if [[ "$dir" == "$conan_home/"* ]] && echo "${dir#"$conan_home/"}" | grep -qE "$conan_package_folder_regex"; then
       echo "${dir%/lib}" # Remove the trailing "/lib" from the path to get the full Conan package path
       # Deactivate Conan environment if it was sourced
       [[ $sourced -eq 1 ]] && [[ -f "$conan_path/deactivate_conanrun.sh" ]] && source "$conan_path/deactivate_conanrun.sh" > /dev/null 2>&1
