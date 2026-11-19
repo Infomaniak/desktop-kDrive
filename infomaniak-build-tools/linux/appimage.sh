@@ -513,6 +513,24 @@ function appimage_verify_bundle() (
     exit "$failures"
 )
 
+function appimage_collect_licenses() (
+    set -eo pipefail
+    local app_dir="$1"
+    local conan_folder="$2"
+    local src_dir="$3"
+
+    local manifest
+    manifest="$(find "$conan_folder" -name 'kdrive_third_party.json' -print -quit 2>/dev/null)"
+    [[ -f "$manifest" ]] || {
+        echo "Conan third-party manifest not found under '$conan_folder'" >&2
+        exit 1
+    }
+
+    # Ships usr/share/doc/kDrive and fails when a bundled file has no known origin or license.
+    env -u LD_LIBRARY_PATH python3 "$src_dir/infomaniak-build-tools/linux/appimage_licenses.py" \
+        --app-dir "$app_dir" --manifest "$manifest" --source-dir "$src_dir"
+)
+
 function appimage_package() (
     set -eo pipefail
     env -u LD_LIBRARY_PATH linuxdeploy --list-plugins 2>&1 | grep -qw appimage || {

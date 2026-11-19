@@ -153,6 +153,7 @@ function build_app_image() {
   cd /build || return 1
   run_appimage_step appimage_linuxdeploy_deploy /app || return 1
   run_appimage_step appimage_strip_unneeded_symbols /app || return 1
+  run_appimage_step appimage_collect_licenses /app /build/conan /src || return 1
   run_appimage_step appimage_verify_bundle /app || return 1
   run_appimage_step appimage_package /app || return 1
 

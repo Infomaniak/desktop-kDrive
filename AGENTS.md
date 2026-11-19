@@ -169,4 +169,7 @@ rg -rn "TestClassName" test/
 - New logic has a corresponding test in `test/`.
 - No hardcoded credentials or platform-specific paths in shared code.
 - New dependencies licenses are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+- The Linux AppImage build fails when a bundled file has no known origin or license
+  (`infomaniak-build-tools/linux/appimage_licenses.py`): a new library from `/usr/local` or bundled by the Qt
+  installer goes in its `EXTRA_COMPONENTS`, with its license under `infomaniak-build-tools/linux/licenses/components/`.
 - Relevant CI passes: `kdrive-desktop-ci.yml` and any touched platform-specific workflow (for example `macos-redesign.yml` when editing `src/gui4/macOS/`).
