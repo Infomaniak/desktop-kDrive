@@ -929,6 +929,9 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Impossible d’ouvrir le fichier</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>L’élément demandé est introuvable.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Mode de synchronisation des fichiers</value>
   </data>

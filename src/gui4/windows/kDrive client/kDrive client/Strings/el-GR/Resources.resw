@@ -929,6 +929,9 @@
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Δεν είναι δυνατό να ανοίξει το αρχείο</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>Δεν ήταν δυνατή η εύρεση του στοιχείου που ζητήσατε.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Λειτουργία συγχρονισμού αρχείων</value>
   </data>

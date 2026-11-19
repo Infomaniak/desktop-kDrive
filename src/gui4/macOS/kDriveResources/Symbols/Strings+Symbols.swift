@@ -619,6 +619,8 @@ public enum KDriveLocalizable {
   public static let fileOpeningFailureTitle = KDriveLocalizable.tr("Localizable", "fileOpeningFailureTitle", fallback: "Cannot open the file")
   /// Downloading the item…
   public static let fileOpeningHydratingMessage = KDriveLocalizable.tr("Localizable", "fileOpeningHydratingMessage", fallback: "Downloading the item…")
+  /// loco:6afec9ed750a9c1b47035899
+  public static let fileOpeningNotFoundMessage = KDriveLocalizable.tr("Localizable", "fileOpeningNotFoundMessage", fallback: "The requested item was not found on your drive")
   /// This item is not synchronized yet. Synchronizing it may take some time.
   public static let fileOpeningWaitingSyncMessage = KDriveLocalizable.tr("Localizable", "fileOpeningWaitingSyncMessage", fallback: "This item is not synchronized yet. Synchronizing it may take some time.")
   /// kDrive

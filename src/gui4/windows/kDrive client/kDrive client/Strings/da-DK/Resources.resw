@@ -929,6 +929,9 @@ Synkronisering genoptages automatisk, når forbindelsen er genoprettet.</value>
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Filen kan ikke åbnes</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>Det ønskede emne kunne ikke findes.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Filsynkroniseringstilstand</value>
   </data>

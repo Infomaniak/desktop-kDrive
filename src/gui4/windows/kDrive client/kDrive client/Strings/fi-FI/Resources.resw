@@ -929,6 +929,9 @@ Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value>
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Tiedostoa ei voi avata</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>Pyydettyä kohdetta ei löytynyt.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Tiedostojen synkronointitila</value>
   </data>

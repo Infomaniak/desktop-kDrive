@@ -929,6 +929,9 @@ A sincronização será retomada automaticamente quando a ligação for restabel
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Não é possível abrir o ficheiro</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>Não foi possível encontrar o item solicitado.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Modo de sincronização de ficheiros</value>
   </data>
