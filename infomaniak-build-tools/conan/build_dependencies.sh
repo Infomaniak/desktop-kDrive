@@ -191,7 +191,13 @@ has_profile() {
   conan profile list 2>/dev/null | grep -v '\.cmake$' | grep -qx "$1"
 }
 
-if [[ $use_release_profile == true ]]; then
+if [[ $use_release_profile == true && "$build_type" == "Debug" ]]; then
+  error "Cannot use --make-release with Debug build_type. Use Release or RelWithDebInfo."
+fi
+
+if [[ "$(get_platform)" == "darwin" && ( "${GITHUB_ACTIONS:-}" == "true" || "${KDRIVE_TEST_CI_RUNNING_ON_CI:-}" == "true" ) ]]; then
+  conan_profile="$PWD/infomaniak-build-tools/conan/profiles/macos-ci"
+elif [[ $use_release_profile == true ]]; then
   release_profile="infomaniak_release"
   if has_profile "$release_profile"; then
     profile_path=$(conan profile path "$release_profile")
@@ -199,9 +205,6 @@ if [[ $use_release_profile == true ]]; then
       error "Profile '$release_profile' must set build_type to Release or RelWithDebInfo"
     fi
 
-    if [[ "$build_type" == "Debug" ]]; then
-      error "Cannot use --make-release with Debug build_type. Use Release or RelWithDebInfo."
-    fi
     if grep -qE '^os=Macos$' "$profile_path" && ! grep -qE '^os\.version=12\.4$' "$profile_path"; then
       error "Profile '$release_profile' must set os.version=12.4 for MacOS"
     fi
