@@ -35,4 +35,19 @@ public struct FileOpeningJobs: Sendable {
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
+
+    /// Starts the download, into `destinationFolderPath`, or into the download folder of the user when it is empty,
+    /// of the item of a failed file opening request. The reply carries the id of the started download, to be matched
+    /// with the download state signals, and the path into which the item is downloaded.
+    public func downloadFileOpeningItem(driveDbId: Int64, remoteNodeId: String,
+                                        destinationFolderPath: String) async throws -> FileOpeningDownloadResponse {
+        let query = FileOpeningDownloadQuery(driveDbId: driveDbId, remoteNodeId: remoteNodeId,
+                                             destinationFolderPath: destinationFolderPath)
+        let request = await RequestMessage<FileOpeningDownloadQuery>(
+            num: RequestNum.FILE_OPENING_DOWNLOAD,
+            body: query
+        )
+
+        return try await queryFetcher.query(request, responseType: CallbackMessage<FileOpeningDownloadResponse>.self).body
+    }
 }

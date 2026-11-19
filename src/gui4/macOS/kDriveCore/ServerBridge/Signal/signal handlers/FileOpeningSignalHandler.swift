@@ -22,6 +22,7 @@ import InfomaniakDI
 struct FileOpeningSignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var fileOpeningStatusCache: FileOpeningStatusCache
+    @LazyInjectService private var fileOpeningDownloadStateCache: FileOpeningDownloadStateCache
 
     func handleFileOpeningStatus(_ signal: Data) async throws {
         guard let fileOpeningStatusSignal = try? decoder.decode(SignalMessage<FileOpeningStatusSignal>.self, from: signal) else {
@@ -32,7 +33,23 @@ struct FileOpeningSignalHandler {
         await fileOpeningStatusCache.update(
             FileOpeningStatus(jobId: body.jobId, phase: body.phase, percent: body.percent, itemName: body.itemName,
                               itemPath: body.itemPath, receivedBytes: body.receivedBytes, totalBytes: body.totalBytes,
-                              webUrl: body.webUrl)
+                              webUrl: body.webUrl, driveDbId: body.driveDbId, remoteNodeId: body.remoteNodeId)
+        )
+    }
+
+    func handleFileOpeningDownloadState(_ signal: Data) async throws {
+        guard let fileOpeningDownloadStateSignal = try? decoder.decode(
+            SignalMessage<FileOpeningDownloadStateSignal>.self,
+            from: signal
+        ) else {
+            throw SignalError.unableToGetFileOpeningDownloadStateFromSignal
+        }
+
+        let body = fileOpeningDownloadStateSignal.body
+        await fileOpeningDownloadStateCache.update(
+            FileOpeningDownloadStateUpdate(downloadId: body.downloadId, state: body.state, percent: body.percent,
+                                           receivedBytes: body.receivedBytes, totalBytes: body.totalBytes,
+                                           finalPath: body.finalPath)
         )
     }
 }

@@ -124,8 +124,9 @@ struct FileOpeningStatusView: View {
     }
 }
 
-/// Gauge made of rounded capsules, matching the file opening mockup.
-private struct DownloadGaugeStyle: ProgressViewStyle {
+/// Gauge made of rounded capsules, matching the file opening mockup. Shared by the progress window and the failure
+/// window when it shows the progress of a download into the download folder of the user.
+struct DownloadGaugeStyle: ProgressViewStyle {
     private let height: CGFloat = 8
 
     func makeBody(configuration: Configuration) -> some View {

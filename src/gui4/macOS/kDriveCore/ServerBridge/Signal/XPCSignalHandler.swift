@@ -40,6 +40,7 @@ enum SignalError: Error {
     case unableToGetSyncFileItemFromSignal
     case unableToGetManyDeletesFromSignal
     case unableToGetFileOpeningStatusFromSignal
+    case unableToGetFileOpeningDownloadStateFromSignal
     case unableToGetNotificationFromSignal
     case unableToGetErrorInfoFromSignal
     case unableToGetErrorRemovedFromSignal
@@ -131,6 +132,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .FILE_OPENING_STATUS:
             try await fileOpeningSignalHandler.handleFileOpeningStatus(signal)
+
+        case .FILE_OPENING_DOWNLOAD_STATE:
+            try await fileOpeningSignalHandler.handleFileOpeningDownloadState(signal)
 
         case .UTILITY_SHOW_NOTIFICATION:
             try await utilitySignalHandler.handleShowNotification(signal)

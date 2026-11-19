@@ -29,6 +29,7 @@ import SwiftUI
 @MainActor
 final class FileOpeningModalPresenter {
     @LazyInjectService private var fileOpeningStatusCacheObservable: FileOpeningStatusCacheObservable
+    @LazyInjectService private var fileOpeningDownloadStateCacheObservable: FileOpeningDownloadStateCacheObservable
 
     private struct WindowEntry {
         let window: NSWindow
@@ -38,11 +39,21 @@ final class FileOpeningModalPresenter {
     private struct FailureWindowEntry {
         let window: NSWindow
         let hostingController: NSHostingController<FileOpeningFailureView>
+        let jobId: Int64
+        let phase: FileOpeningStatusPhase
+        let itemName: String
+        let itemPath: String
+        let webUrl: String
+        let driveDbId: Int64
+        let remoteNodeId: String
+        /// Id of the download of the item into the download folder of the user, once it has been started.
+        var downloadId: Int64?
     }
 
     private var bindStore = Set<AnyCancellable>()
     private var windowEntriesByJobId = [Int64: WindowEntry]()
     private var failureWindowEntriesByJobId = [Int64: FailureWindowEntry]()
+    private var failureWindowJobIdsByDownloadId = [Int64: Int64]()
     private var lastStatusByJobId = [Int64: FileOpeningStatus]()
     private var dismissedJobIds = Set<Int64>()
 
@@ -51,6 +62,12 @@ final class FileOpeningModalPresenter {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
                 self?.handleStatus(status)
+            }
+            .store(in: &bindStore)
+        fileOpeningDownloadStateCacheObservable.fileOpeningDownloadStatePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] update in
+                self?.handleDownloadState(update)
             }
             .store(in: &bindStore)
     }
@@ -79,9 +96,7 @@ final class FileOpeningModalPresenter {
             let lastKnownStatus = lastStatusByJobId[status.jobId]
             lastStatusByJobId.removeValue(forKey: status.jobId)
             closeWindow(for: status.jobId)
-            presentFailureWindow(jobId: status.jobId, phase: status.phase,
-                                 itemName: lastKnownStatus?.itemName ?? "",
-                                 itemPath: lastKnownStatus?.itemPath ?? "", webUrl: status.webUrl)
+            presentFailureWindow(status: status, lastKnownStatus: lastKnownStatus)
         default:
             lastStatusByJobId[status.jobId] = status
             presentProgressWindow(for: status)
@@ -122,37 +137,134 @@ final class FileOpeningModalPresenter {
 
     // MARK: - Failure window
 
-    private func presentFailureWindow(jobId: Int64, phase: FileOpeningStatusPhase, itemName: String, itemPath: String,
-                                      webUrl: String) {
+    /// Presents the failure window of a failed request. The identity of the item (its name and its parent folder
+    /// path) is the last one reported before the failure, and its server identity (its drive database id and its
+    /// remote node id) comes from the failure status itself.
+    private func presentFailureWindow(status: FileOpeningStatus, lastKnownStatus: FileOpeningStatus?) {
+        let jobId = status.jobId
         guard failureWindowEntriesByJobId[jobId] == nil else { return }
+
+        let itemName = lastKnownStatus?.itemName ?? ""
+        let itemPath = lastKnownStatus?.itemPath ?? ""
 
         IKLogger.general.info("[KD] Presenting the file opening failure window jobId=\(jobId)")
         let hostingController = NSHostingController(
-            rootView: FileOpeningFailureView(itemName: itemName, itemPath: itemPath, isNotFound: phase == .notFound,
-                                             webUrl: webUrl, onDownload: { [weak self] in
-                                                 self?.openWebPage(webUrl)
+            rootView: FileOpeningFailureView(itemName: itemName, itemPath: itemPath, isNotFound: status.phase == .notFound,
+                                             webUrl: status.webUrl, onDownload: { [weak self] in
+                                                 self?.startDownload(for: jobId)
+                                             }, onOpenWebPage: { [weak self] in
+                                                 self?.openWebPage(status.webUrl)
                                              }, onClose: { [weak self] in
                                                  self?.closeFailureWindow(for: jobId)
                                              })
         )
-        let window = makeWindow(contentViewController: hostingController, standardTitleBar: phase == .notFound)
-        configure(window, width: 392, height: failureWindowHeight(phase: phase, itemName: itemName))
+        let window = makeWindow(contentViewController: hostingController, standardTitleBar: status.phase == .notFound)
+        configure(window, width: 392, height: failureWindowHeight(phase: status.phase, itemName: itemName))
 
-        let entry = FailureWindowEntry(window: window, hostingController: hostingController)
+        let entry = FailureWindowEntry(window: window, hostingController: hostingController, jobId: jobId,
+                                       phase: status.phase, itemName: itemName, itemPath: itemPath,
+                                       webUrl: status.webUrl, driveDbId: status.driveDbId,
+                                       remoteNodeId: status.remoteNodeId, downloadId: nil)
         failureWindowEntriesByJobId[jobId] = entry
         window.makeKeyAndOrderFront(nil)
     }
 
     /// Returns the failure window content height for the given failure: the not-found variant drops the explanation
     /// and the download button, carries the "kDrive" title in its standard title bar instead of a drawn title row,
-    /// and the card appears only when the identity of the item is known.
-    private func failureWindowHeight(phase: FileOpeningStatusPhase, itemName: String) -> CGFloat {
+    /// and the card appears only when the identity of the item is known. The download states replace the download
+    /// button with the progress of the download, or with an error message followed by the fallback button.
+    private func failureWindowHeight(phase: FileOpeningStatusPhase, itemName: String,
+                                     downloadPhase: FileOpeningFailureView.DownloadPhase = .idle) -> CGFloat {
         if phase == .notFound { return itemName.isEmpty ? 150 : 210 }
-        return 348
+        switch downloadPhase {
+        case .idle, .downloading:
+            return 348
+        case .failed:
+            return 384
+        }
+    }
+
+    /// Starts the download of the item of the failure window into the download folder of the user. The identity of
+    /// the item is required: when it is unknown, the kDrive web application page of the item is opened instead.
+    private func startDownload(for jobId: Int64) {
+        guard let entry = failureWindowEntriesByJobId[jobId] else { return }
+        guard entry.driveDbId != 0, !entry.remoteNodeId.isEmpty else {
+            openWebPage(entry.webUrl)
+            return
+        }
+
+        IKLogger.general.info("[KD] Downloading the item of the file opening jobId=\(jobId) into the download folder")
+        Task {
+            do {
+                let response = try await FileOpeningJobs().downloadFileOpeningItem(driveDbId: entry.driveDbId,
+                                                                                   remoteNodeId: entry.remoteNodeId,
+                                                                                   destinationFolderPath: "")
+                IKLogger.general
+                    .info(
+                        "[KD] Downloading the item of the file opening jobId=\(jobId) downloadId=\(response.downloadId) into \(response.finalPath)"
+                    )
+                setFailureWindowDownloadPhase(jobId: jobId, downloadId: response.downloadId,
+                                              phase: .downloading, receivedBytes: 0, totalBytes: -1)
+            } catch {
+                IKLogger.general
+                    .error("[KD] Failed to start the download of the item of the file opening jobId=\(jobId): \(error)")
+                SentrySDK.capture(error: error)
+                setFailureWindowDownloadPhase(jobId: jobId, downloadId: nil, phase: .failed, receivedBytes: -1,
+                                              totalBytes: -1)
+            }
+        }
+    }
+
+    /// Handles a download state signal: updates the progress shown by the failure window, closes the window once the
+    /// item has been downloaded, or falls back to the kDrive web application when the download failed.
+    private func handleDownloadState(_ update: FileOpeningDownloadStateUpdate) {
+        guard let jobId = failureWindowJobIdsByDownloadId[update.downloadId] else { return }
+
+        switch update.state {
+        case .downloading:
+            setFailureWindowDownloadPhase(jobId: jobId, downloadId: update.downloadId, phase: .downloading,
+                                          receivedBytes: update.receivedBytes, totalBytes: update.totalBytes)
+        case .done:
+            IKLogger.general.info("[KD] Item of the file opening jobId=\(jobId) downloaded into \(update.finalPath)")
+            closeFailureWindow(for: jobId)
+        case .failed:
+            IKLogger.general.error("[KD] Failed to download the item of the file opening jobId=\(jobId)")
+            setFailureWindowDownloadPhase(jobId: jobId, downloadId: nil, phase: .failed, receivedBytes: -1,
+                                          totalBytes: -1)
+        }
+    }
+
+    /// Rebuilds the content of the failure window for the given download state, and resizes the window accordingly.
+    private func setFailureWindowDownloadPhase(jobId: Int64, downloadId: Int64?, phase: FileOpeningFailureView.DownloadPhase,
+                                               receivedBytes: Int64, totalBytes: Int64) {
+        guard var entry = failureWindowEntriesByJobId[jobId] else { return }
+
+        if let downloadId {
+            failureWindowJobIdsByDownloadId[downloadId] = jobId
+        }
+        entry.downloadId = downloadId
+        entry.hostingController.rootView = FileOpeningFailureView(
+            itemName: entry.itemName, itemPath: entry.itemPath, isNotFound: entry.phase == .notFound,
+            webUrl: entry.webUrl, downloadPhase: phase, receivedBytes: receivedBytes, totalBytes: totalBytes,
+            onDownload: { [weak self] in
+                self?.startDownload(for: jobId)
+            }, onOpenWebPage: { [weak self] in
+                self?.openWebPage(entry.webUrl)
+            }, onClose: { [weak self] in
+                self?.closeFailureWindow(for: jobId)
+            }
+        )
+        entry.window.setContentSize(NSSize(width: 392, height: failureWindowHeight(phase: entry.phase,
+                                                                                   itemName: entry.itemName,
+                                                                                   downloadPhase: phase)))
+        failureWindowEntriesByJobId[jobId] = entry
     }
 
     private func closeFailureWindow(for jobId: Int64) {
         guard let entry = failureWindowEntriesByJobId.removeValue(forKey: jobId) else { return }
+        if let downloadId = entry.downloadId {
+            failureWindowJobIdsByDownloadId.removeValue(forKey: downloadId)
+        }
         entry.window.orderOut(nil)
     }
 

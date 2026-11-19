@@ -61,5 +61,44 @@ struct FileOpeningStatusParsingTest {
         #expect(signal.body.receivedBytes == 13_107_200)
         #expect(signal.body.totalBytes == 50_331_648)
         #expect(signal.body.webUrl == "https://kdrive.infomaniak.com/app/drive/1064345/files/333684")
+        #expect(signal.body.driveDbId == 1234)
+        #expect(signal.body.remoteNodeId == "333338")
+    }
+
+    // MARK: - Download State Parsing Test
+
+    /// State of the download of the item of a failed file opening request into the download folder of the user,
+    /// reported by the FILE_OPENING_DOWNLOAD_STATE signal of the server.
+    static let downloadStateSignalJson = """
+    {
+      "id": 16970,
+      "num": 36,
+      "params": {
+        "downloadId": 777,
+        "state": 1,
+        "percent": 100,
+        "receivedBytes": 50331648,
+        "totalBytes": 50331648,
+        "finalPath": "L1VzZXJzL3Rlc3QvRG93bmxvYWRzL29mZnJlXzIwMjYuZG9jeA=="
+      }
+    }
+    """
+
+    @Test("Successfully parses a valid FILE_OPENING_DOWNLOAD_STATE signal")
+    func parseDownloadStateSignal() throws {
+        // GIVEN
+        let signalData = Data(Self.downloadStateSignalJson.utf8)
+
+        // WHEN
+        let signal = try decoder.decode(SignalMessage<FileOpeningDownloadStateSignal>.self, from: signalData)
+
+        // THEN
+        #expect(signal.num == SignalNum.FILE_OPENING_DOWNLOAD_STATE)
+        #expect(signal.body.downloadId == 777)
+        #expect(signal.body.state == .done)
+        #expect(signal.body.percent == 100)
+        #expect(signal.body.receivedBytes == 50_331_648)
+        #expect(signal.body.totalBytes == 50_331_648)
+        #expect(signal.body.finalPath == "/Users/test/Downloads/offre_2026.docx")
     }
 }

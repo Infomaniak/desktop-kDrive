@@ -77,15 +77,29 @@ struct FileOpeningItemCard: View {
 }
 
 /// Content of the failure pop-up window: a title, an explanation inviting the user to download the item from kDrive
-/// in a browser, the card identifying the item when its identity is known, and the actions: opening the kDrive web
-/// application page of the item, and closing the window. When the item does not exist on the remote side (not
+/// in a browser, the card identifying the item when its identity is known, and the actions: downloading the item into
+/// the download folder of the user, and closing the window. When the item does not exist on the remote side (not
 /// found), there is nothing to download: the window shows a dedicated message and offers no download.
 struct FileOpeningFailureView: View {
+    /// State of the download of the item into the download folder of the user, triggered from the window.
+    enum DownloadPhase {
+        /// The item can be downloaded into the download folder of the user.
+        case idle
+        /// The item is being downloaded: the window shows the progress of the download.
+        case downloading
+        /// The download failed: the button falls back to the kDrive web application page of the item.
+        case failed
+    }
+
     let itemName: String
     let itemPath: String
     let isNotFound: Bool
     let webUrl: String
+    var downloadPhase: DownloadPhase = .idle
+    var receivedBytes: Int64 = -1
+    var totalBytes: Int64 = -1
     let onDownload: () -> Void
+    let onOpenWebPage: () -> Void
     let onClose: () -> Void
 
     var body: some View {
@@ -111,11 +125,29 @@ struct FileOpeningFailureView: View {
                     FileOpeningItemCard(itemName: itemName, itemPath: itemPath)
                 }
 
-                if !isNotFound && !webUrl.isEmpty {
-                    actionButton(KDriveLocalizable.fileOpeningDownloadButton,
-                                 background: ColorToken.Action.primary.asColor,
-                                 foreground: ColorToken.Action.onPrimary.asColor,
-                                 action: onDownload)
+                if !isNotFound {
+                    switch downloadPhase {
+                    case .idle:
+                        if !webUrl.isEmpty {
+                            actionButton(KDriveLocalizable.fileOpeningDownloadButton,
+                                         background: ColorToken.Action.primary.asColor,
+                                         foreground: ColorToken.Action.onPrimary.asColor,
+                                         action: onDownload)
+                        }
+                    case .downloading:
+                        downloadProgress
+                    case .failed:
+                        Text(KDriveLocalizable.fileOpeningDownloadFailureMessage)
+                            .font(.subheadline)
+                            .foregroundStyle(ColorToken.Text.primary.asColor)
+
+                        if !webUrl.isEmpty {
+                            actionButton(KDriveLocalizable.fileOpeningDownloadButton,
+                                         background: ColorToken.Action.primary.asColor,
+                                         foreground: ColorToken.Action.onPrimary.asColor,
+                                         action: onOpenWebPage)
+                        }
+                    }
                 }
 
                 actionButton(KDriveLocalizable.buttonClose,
@@ -127,6 +159,34 @@ struct FileOpeningFailureView: View {
         }
         .frame(width: 392)
         .ignoresSafeArea(edges: isNotFound ? [] : .top)
+    }
+
+    /// Progress of the download of the item into the download folder of the user, as shown by the progress window.
+    @ViewBuilder
+    private var downloadProgress: some View {
+        ProgressView(value: progressFraction)
+            .progressViewStyle(DownloadGaugeStyle())
+
+        if totalBytes > 0, receivedBytes >= 0 {
+            Text(KDriveLocalizable.fileOpeningDownloadProgress(
+                Self.byteCountFormatter.string(fromByteCount: receivedBytes),
+                Self.byteCountFormatter.string(fromByteCount: totalBytes)
+            ))
+            .font(.subheadline)
+            .foregroundStyle(ColorToken.Text.secondary.asColor)
+        }
+    }
+
+    /// Formats the downloaded amounts as localized byte sizes (e.g. "12,5 Mo" in French).
+    private static let byteCountFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
+
+    private var progressFraction: Double {
+        guard totalBytes > 0, receivedBytes >= 0 else { return 0 }
+        return min(max(Double(receivedBytes) / Double(totalBytes), 0), 1)
     }
 
     private func actionButton(_ title: String, background: Color, foreground: Color, action: @escaping () -> Void)
