@@ -182,6 +182,8 @@ extension RequestNum: @retroactive CustomStringConvertible {
             return "UPDATER_SKIP_VERSION"
         case .FILE_OPENING_CANCEL:
             return "FILE_OPENING_CANCEL"
+        case .FILE_OPENING_DOWNLOAD:
+            return "FILE_OPENING_DOWNLOAD"
         case .EnumEnd:
             return "EnumEnd"
         @unknown default:

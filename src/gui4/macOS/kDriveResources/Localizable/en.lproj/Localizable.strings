@@ -800,6 +800,8 @@
 /* loco:6afec1ed259fa742710c2c6c */
 "fileOpeningDownloadButton" = "Download from kDrive";
 
+"fileOpeningDownloadFailureMessage" = "The download of the item failed. You can download it from kDrive in your browser.";
+
 /* loco:6afdd20a9ee4cf55660ee934 */
 "fileOpeningDownloadProgress" = "%@ over %@";
 

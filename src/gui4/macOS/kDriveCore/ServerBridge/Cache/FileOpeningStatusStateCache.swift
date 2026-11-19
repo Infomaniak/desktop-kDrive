@@ -37,9 +37,12 @@ public struct FileOpeningStatus: Hashable, Sendable {
     public let receivedBytes: Int64
     public let totalBytes: Int64
     public let webUrl: String
+    public let driveDbId: Int64
+    public let remoteNodeId: String
 
     public init(jobId: Int64, phase: FileOpeningStatusPhase, percent: Int, itemName: String, itemPath: String = "",
-                receivedBytes: Int64 = -1, totalBytes: Int64 = -1, webUrl: String = "") {
+                receivedBytes: Int64 = -1, totalBytes: Int64 = -1, webUrl: String = "", driveDbId: Int64 = 0,
+                remoteNodeId: String = "") {
         self.jobId = jobId
         self.phase = phase
         self.percent = percent
@@ -48,6 +51,8 @@ public struct FileOpeningStatus: Hashable, Sendable {
         self.receivedBytes = receivedBytes
         self.totalBytes = totalBytes
         self.webUrl = webUrl
+        self.driveDbId = driveDbId
+        self.remoteNodeId = remoteNodeId
     }
 }
 

@@ -27,4 +27,6 @@ struct FileOpeningStatusSignal: Codable, Sendable {
     let receivedBytes: Int64
     let totalBytes: Int64
     @Base64CodedString var webUrl: String
+    let driveDbId: Int64
+    @Base64CodedString var remoteNodeId: String
 }
