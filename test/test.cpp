@@ -46,8 +46,7 @@ int runTestSuite(const std::string &logFileName) {
     std::tm tm = *std::localtime(&now);
     std::ostringstream woss;
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
-    KDC::SyncPath logDirectoryPath;
-    (void) KDC::CommonUtility::logDirectoryPath(logDirectoryPath);
+    const auto logDirectoryPath = KDC::testhelpers::logDirectoryPath();
     const KDC::SyncPath logFilePath = logDirectoryPath / (woss.str() + logFileName);
     KDC::Log::instance(Path2WStr(logFilePath));
 

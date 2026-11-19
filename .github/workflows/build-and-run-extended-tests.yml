@@ -135,13 +135,14 @@ jobs:
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
 
   MacOS-extended-tests:
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    runs-on: [ self-hosted, iOS, Powerful ]
+    # These runs share remote integration fixtures, even across branches.
+    concurrency:
+      group: macos-extended-tests-remote-fixtures
+      cancel-in-progress: false
     env:
-      KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
+      QT_QPA_PLATFORM: offscreen
     steps:
-      - name: Clean-up XCode DerivedData
-        run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
-
       - name: Checkout the code
         uses: actions/checkout@v6.0.2
         with:
@@ -157,13 +158,18 @@ jobs:
         with:
           cache: false
 
-      - name: Grant empty trash script execute permission
-        run : chmod +x ./infomaniak-build-tools/empty_drive_trash.sh
-      - name: Empty drive's trash
-        run : ./infomaniak-build-tools/empty_drive_trash.sh
+      - name: Prepare isolated test directories
+        run: |
+          test_root="$RUNNER_TEMP/kdrive-extended-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -p "$test_root/conan" "$test_root/tmp" "$test_root/logs"
+          {
+            echo "CONAN_HOME=$test_root/conan"
+            echo "KDRIVE_TMP_PATH=$test_root/tmp"
+            echo "KDRIVE_TEST_LOG_DIR=$test_root/logs"
+          } >> "$GITHUB_ENV"
 
-      - name: Unlock keychain to use the certificate
-        run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
+      - name: Check test runner regressions
+        run: python3 infomaniak-build-tools/tests/test_run_tests.py
 
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
@@ -176,24 +182,25 @@ jobs:
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-tests.sh
+        run: |
+          set -o pipefail
+          ./infomaniak-build-tools/run-tests.sh "$GITHUB_WORKSPACE/build-macos/client" \
+            2>&1 | tee "$KDRIVE_TEST_LOG_DIR/test-output.log"
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-tests-logs
-          path: ~/Library/Logs/kDrive/*
+          path: ${{ runner.temp }}/kdrive-extended-${{ github.run_id }}-${{ github.run_attempt }}/logs
           retention-days: 3
           overwrite: true
         if: always()
 
-      - name: Clean the log directory
-        run : rm -rf $HOME/Library/Logs/kDrive/*
-        shell: bash
-        continue-on-error: true
-
       - name: Clean-up generated code
-        run : rm -rf build-macos
+        if: always()
+        run: |
+          rm -rf -- "$GITHUB_WORKSPACE/build-macos"
+          rm -rf -- "$RUNNER_TEMP/kdrive-extended-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
 
   Linux-extended-tests:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
