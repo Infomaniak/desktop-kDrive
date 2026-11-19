@@ -29,7 +29,6 @@
     <Border Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
         <Border.Resources>
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
         </Border.Resources>
         <StackPanel x:Name="RootPanel"
                     HorizontalAlignment="Stretch"
@@ -46,26 +45,8 @@
                        Visibility="{Binding IsWaitingSync, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
             <!-- Card identifying the item through its icon, name, and parent folder path -->
-            <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
-                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
-                    Visibility="{Binding HasItemName, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <controls:SvgIcon Width="40"
-                                      Height="40"
-                                      VerticalAlignment="Center"
-                                      ResourceKey="{Binding ItemName, Converter={StaticResource FilePathToIconResourceKeyConverter}}" />
-                    <StackPanel VerticalAlignment="Center" Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                        <TextBlock Text="{Binding ItemName}"
-                                   Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
-                                   TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="{Binding ItemPath}"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   TextTrimming="CharacterEllipsis"
-                                   Visibility="{Binding HasItemPath, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+            <controls:FileOpeningItemCard
+                Visibility="{Binding HasItemName, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
             <!-- Downloading: gauge with the cancellation cross -->
             <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"

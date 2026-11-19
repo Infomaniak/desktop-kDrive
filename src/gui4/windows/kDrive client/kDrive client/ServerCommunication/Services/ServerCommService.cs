@@ -2291,10 +2291,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 totalBytes = signalData[JsonKeys.FileOpeningTotalBytes]?.AsValue().GetValue<Int64>() ?? -1;
             }
 
+            // The kDrive web application address of the item was added with the failure window: it is absent from
+            // the signals of an older server, and empty while the request has not failed.
+            string webUrl = "";
+            if (signalData.ContainsKey(JsonKeys.FileOpeningWebUrl))
+            {
+                webUrl = Utility.FromBase64String(signalData[JsonKeys.FileOpeningWebUrl]?.AsValue().GetValue<string>()) ?? "";
+            }
+
             await Utility.RunOnUIThread(() =>
             {
-                _viewModel.FileOpeningController.OnFileOpeningStatus(jobId.Value, phase.Value, percent.Value, itemName,
-                    itemPath, receivedBytes, totalBytes);
+                _viewModel.FileOpeningController.OnFileOpeningStatus(new FileOpeningStatusUpdate
+                {
+                    JobId = jobId.Value,
+                    Phase = phase.Value,
+                    Percent = percent.Value,
+                    ItemName = itemName,
+                    ItemPath = itemPath,
+                    ReceivedBytes = receivedBytes,
+                    TotalBytes = totalBytes,
+                    WebUrl = webUrl,
+                });
             });
         }
 

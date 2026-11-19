@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<Window x:Class="Infomaniak.kDrive.CustomControls.FileOpeningFailureWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+        xmlns:converters="using:Infomaniak.kDrive.Converters"
+        mc:Ignorable="d"
+        Title="kDrive">
+
+    <Border Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
+        <Border.Resources>
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        </Border.Resources>
+        <StackPanel x:Name="RootPanel"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+            <!-- Failure title -->
+            <TextBlock x:Name="FailureTitleTextBlock"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
+                       TextWrapping="Wrap" />
+
+            <!-- Explanation: the item can be downloaded manually from the kDrive web application -->
+            <TextBlock x:Name="FailureExplanationTextBlock"
+                       TextWrapping="Wrap" />
+
+            <!-- Card identifying the item through its icon, name, and parent folder path, hidden while the identity
+                 of the item is unknown (e.g. for an invalid link) -->
+            <controls:FileOpeningItemCard
+                Visibility="{Binding HasItemName, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+            <!-- Actions: close the window, or open the kDrive web application page of the item in a browser -->
+            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                  Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        x:Name="CloseButton"
+                        Click="OnCloseClicked"
+                        MinHeight="40"
+                        HorizontalAlignment="Stretch" />
+                <Button Grid.Column="1"
+                        x:Name="DownloadButton"
+                        Click="OnDownloadClicked"
+                        MinHeight="40"
+                        HorizontalAlignment="Stretch"
+                        Style="{ThemeResource AccentButtonStyle}" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

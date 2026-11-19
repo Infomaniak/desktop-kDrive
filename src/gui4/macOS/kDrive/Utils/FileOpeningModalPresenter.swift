@@ -59,9 +59,10 @@ final class FileOpeningModalPresenter {
 
     private func handleStatus(_ status: FileOpeningStatus) {
         // The server delivers the signals through a concurrent pool: a status can be reordered after the terminal
-        // Finished phase of the same request. Ignore such late statuses: the request is already dismissed, and
-        // resurrecting it would present a pop-up window that would never close.
-        if status.phase != .finished && dismissedJobIds.contains(status.jobId) { return }
+        // phases of the same request. Ignore such late statuses: the request is already dismissed, and resurrecting
+        // it would present a pop-up window that would never close. The Failed phase is delivered after the Finished
+        // one and must not be dropped: it opens the failure window.
+        if status.phase != .finished && status.phase != .failed && dismissedJobIds.contains(status.jobId) { return }
 
         switch status.phase {
         case .finished:
@@ -72,6 +73,7 @@ final class FileOpeningModalPresenter {
         case .failed:
             // The file opening request failed: close the progress pop-up window, if one is open, and present the
             // failure window. The identity of the item is the last one reported before the failure.
+            dismissedJobIds.insert(status.jobId)
             let lastKnownStatus = lastStatusByJobId[status.jobId]
             lastStatusByJobId.removeValue(forKey: status.jobId)
             closeWindow(for: status.jobId)
