@@ -175,6 +175,7 @@ package_release() {
   cd "$build_dir"
   appimage_linuxdeploy_deploy "$app_dir"
   appimage_strip_unneeded_symbols "$app_dir"
+  appimage_collect_licenses "$app_dir" "$build_dir/conan" "$src_dir"
   appimage_verify_bundle "$app_dir"
   appimage_package "$app_dir"
 
