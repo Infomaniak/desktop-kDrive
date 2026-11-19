@@ -19,7 +19,6 @@
 #include "updaterestartcoordinator.h"
 
 #include "app/appconstants.h"
-#include "app/cache/appcache.h"
 #include "app/services/updatestatusservice.h"
 
 #include <QLoggingCategory>
@@ -32,11 +31,9 @@ namespace {
 Q_LOGGING_CATEGORY(lcUpdateRestartCoordinator, "gui.v4.updaterestartcoordinator", QtInfoMsg)
 } // namespace
 
-UpdateRestartCoordinator::UpdateRestartCoordinator(UpdateStatusService &updateStatusService, const AppCache &appCache,
-                                                   QObject *const parent) :
+UpdateRestartCoordinator::UpdateRestartCoordinator(UpdateStatusService &updateStatusService, QObject *const parent) :
     QObject(parent),
-    _updateStatusService(updateStatusService),
-    _appCache(appCache) {
+    _updateStatusService(updateStatusService) {
     _quietTimer.setSingleShot(true);
     _quietTimer.setInterval(AppConstants::Updater::restartQuietDelayMs);
     (void) connect(&_quietTimer, &QTimer::timeout, this, &UpdateRestartCoordinator::restartIfQuiet);
@@ -49,8 +46,6 @@ UpdateRestartCoordinator::UpdateRestartCoordinator(UpdateStatusService &updateSt
 
         scheduleRestart();
     });
-    (void) connect(&_appCache, &AppCache::syncStatusChanged, this, &UpdateRestartCoordinator::scheduleRestart);
-    (void) connect(&_appCache, &AppCache::syncsChanged, this, &UpdateRestartCoordinator::scheduleRestart);
 }
 
 void UpdateRestartCoordinator::watchWindow(QWindow *const window) {
@@ -87,26 +82,17 @@ void UpdateRestartCoordinator::restartIfQuiet() {
         return;
     }
 
-    qCInfo(lcUpdateRestartCoordinator) << "No window open and no synchronization running: restarting on the installed update";
+    qCInfo(lcUpdateRestartCoordinator) << "No window open: restarting on the installed update";
     _restartRequested = true;
     _updateStatusService.restartOnInstalledUpdate();
 }
 
 bool UpdateRestartCoordinator::canRestart() const {
-    return _updateStatusService.installed() && !_restartRequested && !anyWindowVisible() && !anySyncRunning();
+    return _updateStatusService.installed() && !_restartRequested && !anyWindowVisible();
 }
 
 bool UpdateRestartCoordinator::anyWindowVisible() const {
     return std::ranges::any_of(_windows, [](const QPointer<QWindow> &window) { return window && window->isVisible(); });
-}
-
-bool UpdateRestartCoordinator::anySyncRunning() const {
-    const auto contexts = _appCache.syncContexts();
-    return std::ranges::any_of(contexts, [this](const SyncContext &context) {
-        const auto runtimeInfo = _appCache.syncRuntimeInfo(context.syncInfo.dbId());
-        return runtimeInfo.has_value() &&
-               (runtimeInfo->status == SyncStatus::Running || runtimeInfo->status == SyncStatus::Starting);
-    });
 }
 
 } // namespace KDC

@@ -767,9 +767,10 @@
   an installation is silent. A click opens Settings on the update button (`SettingsWindowController::requestOpenUpdate`). The server
   does not announce updates on Linux, so the client is the only source of these notifications.
 - `app/services/updaterestartcoordinator.*`: requests the restart on an update in `Ready` once no window is visible
-  (main window, onboarding included, and Settings) and no synchronization is `Running` or `Starting`, after
-  `AppConstants::Updater::restartQuietDelayMs` without change. It sends one request per `Ready` period. If the
-  conditions never hold, the next launch uses the installed AppImage anyway.
+  (main window, onboarding included, and Settings) for `AppConstants::Updater::restartQuietDelayMs`. Running
+  synchronizations do not delay it: they resume after the restart, and a drive that is always busy must still receive
+  the update. It sends one request per `Ready` period; if a window stays open, the next launch uses the installed
+  AppImage anyway.
 - `app/services/releasenotesservice.*`: downloads and parses the release notes of the announced version for the update
   details dialog. They are shown only when the client can apply the configured proxy itself.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed

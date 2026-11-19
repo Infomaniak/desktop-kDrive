@@ -194,7 +194,7 @@ class AppClientLinux : public QApplication {
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
         NotificationService _notificationService{this};
         UpdateNotifier _updateNotifier{_updateStatusService, _parametersStore, _notificationService, this};
-        UpdateRestartCoordinator _updateRestartCoordinator{_updateStatusService, _appCache, this};
+        UpdateRestartCoordinator _updateRestartCoordinator{_updateStatusService, this};
         GeneralSettingsController _generalSettingsController{_parametersStore,     _parametersService, _translationService,
                                                              _updateStatusService, _appCache,          this};
         AdvancedSettingsController _advancedSettingsController{_parametersStore,   _parametersService,  _sentryService,
