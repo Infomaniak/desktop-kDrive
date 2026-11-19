@@ -514,6 +514,10 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
             <source>Rename %1</source> 
             <translation>Nimeä %1 uudelleen</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Käynnistä uudelleen</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Käynnistä kirjautuminen uudelleen</translation> 

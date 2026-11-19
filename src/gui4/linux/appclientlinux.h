@@ -49,6 +49,7 @@
 #include "app/services/syncerrorservice.h"
 #include "app/services/syncservice.h"
 #include "app/services/translationservice.h"
+#include "app/services/updaterestartcoordinator.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
 #include "app/settings/advancedsyncscontroller.h"
@@ -180,6 +181,7 @@ class AppClientLinux : public QApplication {
         SearchController _searchController{_serverCommService, _mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
+        UpdateRestartCoordinator _updateRestartCoordinator{_updateStatusService, _appCache, this};
         GeneralSettingsController _generalSettingsController{_parametersStore,     _parametersService, _translationService,
                                                              _updateStatusService, _appCache,          this};
         AdvancedSettingsController _advancedSettingsController{_parametersStore,   _parametersService,  _sentryService,

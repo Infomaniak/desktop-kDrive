@@ -171,6 +171,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/syncservice.h
         app/services/translationservice.cpp
         app/services/translationservice.h
+        app/services/updaterestartcoordinator.cpp
+        app/services/updaterestartcoordinator.h
         app/services/updatestatusservice.cpp
         app/services/updatestatusservice.h
         app/services/userservice.cpp
