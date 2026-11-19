@@ -164,6 +164,7 @@ jobs:
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           cache: false
+          mise_dir: ${{ runner.temp }}/kdrive-extended-${{ github.run_id }}-${{ github.run_attempt }}/mise
 
       - name: Prepare isolated test directories
         run: |
