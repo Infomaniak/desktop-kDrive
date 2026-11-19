@@ -96,6 +96,13 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 window.Close();
             }
+
+            // The dismissal may also be the completion of the download of the item of a failure window, which closes
+            // once the item has been downloaded.
+            if (_failureWindowsByJobId.Remove(e.Request.JobId, out var failureWindow))
+            {
+                failureWindow.Close();
+            }
         }
     }
 }

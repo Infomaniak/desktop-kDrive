@@ -40,6 +40,24 @@ namespace Infomaniak.kDrive.ViewModels
         private long _receivedBytes;
         private long _totalBytes;
         private string _webUrl;
+        private long _driveDbId;
+        private string _remoteNodeId = "";
+        private ItemDownloadPhase _itemDownloadPhase = ItemDownloadPhase.Idle;
+        private ulong? _itemDownloadId;
+        private int _itemDownloadPercent;
+        private long _itemDownloadReceivedBytes = -1;
+        private long _itemDownloadTotalBytes = -1;
+
+        /// Phase of the download of the item into the download folder of the user, triggered from the failure window.
+        public enum ItemDownloadPhase
+        {
+            /// The item can be downloaded into the download folder of the user.
+            Idle,
+            /// The item is being downloaded: the failure window shows the progress of the download.
+            Downloading,
+            /// The download failed: the failure window shows an error and falls back to the kDrive web application.
+            Failed
+        }
 
         public FileOpeningRequest(FileOpeningStatusUpdate update)
         {
@@ -221,6 +239,176 @@ namespace Infomaniak.kDrive.ViewModels
             ReceivedBytes = update.ReceivedBytes;
             TotalBytes = update.TotalBytes;
             WebUrl = update.WebUrl;
+            if (update.DriveDbId != 0)
+            {
+                DriveDbId = update.DriveDbId;
+            }
+
+            if (!string.IsNullOrEmpty(update.RemoteNodeId))
+            {
+                RemoteNodeId = update.RemoteNodeId;
+            }
+        }
+
+        /// Local database id of the drive of the item, reported by the failure signals: together with the remote node
+        /// id, it identifies the item to download into the download folder of the user.
+        public long DriveDbId
+        {
+            get => _driveDbId;
+            private set
+            {
+                if (SetPropertyInUIThread(ref _driveDbId, value))
+                {
+                    OnPropertyChangedInUIThread(nameof(HasItemIdentity));
+                }
+            }
+        }
+
+        /// Remote node id of the item, reported by the failure signals for the same purpose.
+        public string RemoteNodeId
+        {
+            get => _remoteNodeId;
+            private set
+            {
+                if (SetPropertyInUIThread(ref _remoteNodeId, value))
+                {
+                    OnPropertyChangedInUIThread(nameof(HasItemIdentity));
+                }
+            }
+        }
+
+        /// True when the identity of the item is known and the item exists on the remote side: the failure window
+        /// can then trigger its download into the download folder of the user.
+        public bool HasItemIdentity => !IsNotFound && DriveDbId != 0 && !string.IsNullOrEmpty(RemoteNodeId);
+
+        /// Phase of the download of the item into the download folder of the user, triggered from the failure window.
+        public ItemDownloadPhase DownloadPhase
+        {
+            get => _itemDownloadPhase;
+            private set
+            {
+                if (SetPropertyInUIThread(ref _itemDownloadPhase, value))
+                {
+                    OnPropertyChangedInUIThread(nameof(IsItemDownloading));
+                    OnPropertyChangedInUIThread(nameof(IsItemDownloadFailed));
+                }
+            }
+        }
+
+        public bool IsItemDownloading => DownloadPhase == ItemDownloadPhase.Downloading;
+
+        public bool IsItemDownloadFailed => DownloadPhase == ItemDownloadPhase.Failed;
+
+        /// Id of the download of the item into the download folder of the user, to be matched with the
+        /// FILE_OPENING_DOWNLOAD_STATE signals. Null while no download is in progress.
+        public ulong? ItemDownloadId
+        {
+            get => _itemDownloadId;
+            private set => SetPropertyInUIThread(ref _itemDownloadId, value);
+        }
+
+        /// Progress of the download of the item into the download folder of the user, in percent. Only meaningful
+        /// while <see cref="IsItemDownloading"/> is true and the total size of the item is unknown.
+        public int ItemDownloadPercent
+        {
+            get => _itemDownloadPercent;
+            private set
+            {
+                if (SetPropertyInUIThread(ref _itemDownloadPercent, value))
+                {
+                    OnPropertyChangedInUIThread(nameof(ItemDownloadGaugeValue));
+                }
+            }
+        }
+
+        /// Number of bytes downloaded so far into the download folder of the user, -1 while unknown.
+        public long ItemDownloadReceivedBytes
+        {
+            get => _itemDownloadReceivedBytes;
+            private set
+            {
+                if (SetPropertyInUIThread(ref _itemDownloadReceivedBytes, value))
+                {
+                    OnPropertyChangedInUIThread(nameof(ItemDownloadGaugeValue));
+                    OnPropertyChangedInUIThread(nameof(HasItemDownloadProgress));
+                    OnPropertyChangedInUIThread(nameof(ItemDownloadProgressText));
+                }
+            }
+        }
+
+        /// Total size of the item in bytes, -1 while unknown.
+        public long ItemDownloadTotalBytes
+        {
+            get => _itemDownloadTotalBytes;
+            private set
+            {
+                if (SetPropertyInUIThread(ref _itemDownloadTotalBytes, value))
+                {
+                    OnPropertyChangedInUIThread(nameof(ItemDownloadGaugeMaximum));
+                    OnPropertyChangedInUIThread(nameof(ItemDownloadGaugeValue));
+                    OnPropertyChangedInUIThread(nameof(HasItemDownloadProgress));
+                    OnPropertyChangedInUIThread(nameof(ItemDownloadProgressText));
+                }
+            }
+        }
+
+        /// True once both the downloaded amount and the total size of the item are known: the gauge tracks the bytes
+        /// and the downloaded amount is displayed under it.
+        public bool HasItemDownloadProgress => ItemDownloadTotalBytes > 0 && ItemDownloadReceivedBytes >= 0;
+
+        /// Upper bound of the gauge of the download into the download folder of the user: the total size of the item
+        /// when known, 100 with the percent otherwise.
+        public double ItemDownloadGaugeMaximum => ItemDownloadTotalBytes > 0 ? ItemDownloadTotalBytes : 100;
+
+        /// Current value of the gauge of the download into the download folder of the user: the downloaded amount
+        /// when the total size is known, the percent otherwise.
+        public double ItemDownloadGaugeValue => ItemDownloadTotalBytes > 0
+            ? Math.Max(ItemDownloadReceivedBytes, 0)
+            : Math.Max(ItemDownloadPercent, 0);
+
+        /// Downloaded amount as a localized "12.5 MB over 48 MB" string, only meaningful when
+        /// <see cref="HasItemDownloadProgress"/> is true.
+        public string ItemDownloadProgressText => Localizer.Instance.GetString1s2s("fileOpeningDownloadProgress",
+            (string)BytesConverter.Convert(ItemDownloadReceivedBytes, typeof(string), string.Empty, ""),
+            (string)BytesConverter.Convert(ItemDownloadTotalBytes, typeof(string), string.Empty, ""));
+
+        /// The server accepted the download of the item into the download folder of the user.
+        public void StartItemDownload(ulong downloadId)
+        {
+            ItemDownloadId = downloadId;
+            ItemDownloadPercent = 0;
+            ItemDownloadReceivedBytes = 0;
+            ItemDownloadTotalBytes = -1;
+            DownloadPhase = ItemDownloadPhase.Downloading;
+        }
+
+        /// The download of the item into the download folder of the user progressed.
+        public void UpdateItemDownloadProgress(FileOpeningDownloadStateUpdate update)
+        {
+            if (DownloadPhase != ItemDownloadPhase.Downloading || ItemDownloadId != update.DownloadId)
+            {
+                // A state of a download that is not the current one, or reordered after its terminal phase: ignore.
+                return;
+            }
+
+            ItemDownloadPercent = update.Percent;
+            ItemDownloadReceivedBytes = update.ReceivedBytes;
+            ItemDownloadTotalBytes = update.TotalBytes;
+        }
+
+        /// The download of the item into the download folder of the user succeeded: the failure window closes.
+        public void CompleteItemDownload()
+        {
+            ItemDownloadId = null;
+            DownloadPhase = ItemDownloadPhase.Idle;
+        }
+
+        /// The download of the item into the download folder of the user failed: the failure window shows an error
+        /// and falls back to the kDrive web application page of the item.
+        public void FailItemDownload()
+        {
+            ItemDownloadId = null;
+            DownloadPhase = ItemDownloadPhase.Failed;
         }
     }
 
@@ -248,6 +436,35 @@ namespace Infomaniak.kDrive.ViewModels
         /// kDrive web application address of the item, from which it can be downloaded manually when the opening
         /// failed. Empty otherwise.
         public string WebUrl { get; init; } = "";
+
+        /// Local database id of the drive of the item, reported by the failure signals so that the failure window
+        /// can trigger the download of the item into the download folder of the user. Zero otherwise.
+        public long DriveDbId { get; init; }
+
+        /// Remote node id of the item, reported by the failure signals for the same purpose. Empty otherwise.
+        public string RemoteNodeId { get; init; } = "";
+    }
+
+    /// The state of a download of the item of a failed file opening request into the download folder of the user, as
+    /// reported by a FILE_OPENING_DOWNLOAD_STATE signal of the server.
+    public sealed class FileOpeningDownloadStateUpdate
+    {
+        public ulong DownloadId { get; init; }
+        public FileOpeningDownloadState State { get; init; }
+        public int Percent { get; init; }
+        public long ReceivedBytes { get; init; }
+        public long TotalBytes { get; init; }
+
+        /// Path into which the item is downloaded.
+        public string FinalPath { get; init; } = "";
+    }
+
+    /// The reply of a FILE_OPENING_DOWNLOAD request: the id of the started download, to be matched with the
+    /// FILE_OPENING_DOWNLOAD_STATE signals, and the path into which the item is downloaded.
+    public sealed class FileOpeningDownloadResponse
+    {
+        public ulong DownloadId { get; init; }
+        public string FinalPath { get; init; } = "";
     }
 
     /// Tracks the file opening requests reported by the server through FILE_OPENING_STATUS signals and drives the
@@ -261,6 +478,10 @@ namespace Infomaniak.kDrive.ViewModels
     /// pool, so a progress update can be reordered after the Finished phase of the same request, and it must not
     /// resurrect a dismissed request.
     private readonly HashSet<ulong> _finishedJobIds = new();
+
+    /// Download identifiers of the item downloads triggered from the failure windows, mapped to the job identifier of
+    /// their request, so that the FILE_OPENING_DOWNLOAD_STATE signals find their request.
+    private readonly Dictionary<ulong, ulong> _jobIdsByDownloadId = new();
 
         /// Requests currently tracked, i.e. reported by the server and not finished yet. Used to replay the
         /// pending requests to a presentation surface subscribing after the requests have started.
@@ -327,6 +548,67 @@ namespace Infomaniak.kDrive.ViewModels
 
             Logger.LogInfo($"The server acknowledged the cancellation of the file opening request. JobId: {jobId}");
             return true;
+        }
+
+        /// Asks the server to download the item of a failed file opening request into the download folder of the
+        /// user. The server resolves the identity of the item from its API, shifts the name of the downloaded file
+        /// until it does not collide with an existing item of the folder, and reports the progress and the completion
+        /// of the download through the FILE_OPENING_DOWNLOAD_STATE signals.
+        public async Task<bool> DownloadRequestItemAsync(ulong jobId)
+        {
+            if (!_requests.TryGetValue(jobId, out var request) || !request.HasItemIdentity)
+            {
+                Logger.LogWarning($"Cannot download the item of the file opening request: unknown request or unknown item identity. JobId: {jobId}",
+                    "Cannot download the item of the file opening request");
+                return false;
+            }
+
+            var serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            var response = await serverCommService.DownloadFileOpeningItem(request.DriveDbId, request.RemoteNodeId, "", CancellationToken.None);
+            if (response is null)
+            {
+                Logger.LogWarning($"Failed to start the download of the item of the file opening request. JobId: {jobId}",
+                    "Failed to start the download of the item of the file opening request");
+                request.FailItemDownload();
+                return false;
+            }
+
+            Logger.LogInfo($"Downloading the item of the file opening request into {response.FinalPath}. JobId: {jobId}, DownloadId: {response.DownloadId}");
+            _jobIdsByDownloadId[response.DownloadId] = jobId;
+            request.StartItemDownload(response.DownloadId);
+            return true;
+        }
+
+        /// Called on the UI thread for every FILE_OPENING_DOWNLOAD_STATE signal received from the server: forwards
+        /// the progress to the failure window of the request, closes the window once the item has been downloaded, or
+        /// makes it fall back to the kDrive web application when the download failed.
+        public void OnFileOpeningDownloadState(FileOpeningDownloadStateUpdate update)
+        {
+            if (!_jobIdsByDownloadId.TryGetValue(update.DownloadId, out var jobId) || !_requests.TryGetValue(jobId, out var request))
+            {
+                Logger.LogWarning($"Received a download state for an unknown download. DownloadId: {update.DownloadId}",
+                    "Unknown download for FILE_OPENING_DOWNLOAD_STATE signal");
+                return;
+            }
+
+            switch (update.State)
+            {
+                case FileOpeningDownloadState.Downloading:
+                    request.UpdateItemDownloadProgress(update);
+                    break;
+                case FileOpeningDownloadState.Done:
+                    Logger.LogInfo($"The item of the file opening request has been downloaded into {update.FinalPath}. JobId: {jobId}");
+                    _jobIdsByDownloadId.Remove(update.DownloadId);
+                    request.CompleteItemDownload();
+                    DismissRequested?.Invoke(this, new FileOpeningStatusEventArgs(request));
+                    break;
+                case FileOpeningDownloadState.Failed:
+                    Logger.LogError($"The download of the item of the file opening request failed. JobId: {jobId}",
+                        "The download of the item of the file opening request failed");
+                    _jobIdsByDownloadId.Remove(update.DownloadId);
+                    request.FailItemDownload();
+                    break;
+            }
         }
     }
 }

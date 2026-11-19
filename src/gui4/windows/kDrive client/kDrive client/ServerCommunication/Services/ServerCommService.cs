@@ -1557,6 +1557,29 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
+        public async Task<FileOpeningDownloadResponse?> DownloadFileOpeningItem(long driveDbId, string remoteNodeId,
+            string destinationFolderPath, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.FileOpeningDriveDbId] = driveDbId,
+                [JsonKeys.FileOpeningRemoteNodeId] = Utility.ToBase64String(remoteNodeId),
+                [JsonKeys.FileOpeningDestinationFolderPath] = Utility.ToBase64String(destinationFolderPath)
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.FILE_OPENING_DOWNLOAD, parms, cancellationToken).ConfigureAwait(false);
+            if (!CheckJobResultAndLogIfError(data, cancellationToken) || data.Params is null ||
+                !data.Params.ContainsKey(JsonKeys.FileOpeningDownloadId) || !data.Params.ContainsKey(JsonKeys.FileOpeningFinalPath))
+            {
+                return null;
+            }
+
+            return new FileOpeningDownloadResponse
+            {
+                DownloadId = data.Params[JsonKeys.FileOpeningDownloadId]?.AsValue().GetValue<UInt64>() ?? 0,
+                FinalPath = Utility.FromBase64String(data.Params[JsonKeys.FileOpeningFinalPath]?.AsValue().GetValue<string>()) ?? ""
+            };
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -1595,6 +1618,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.FILE_OPENING_STATUS:
                     await HandleFileOpeningStatusAsync(sender, args);
+                    break;
+                case SignalNum.FILE_OPENING_DOWNLOAD_STATE:
+                    await HandleFileOpeningDownloadStateAsync(sender, args);
                     break;
                 case SignalNum.UPDATER_SHOW_DIALOG:
                     await HandleUpdaterShowDialog(sender, args);
@@ -2299,6 +2325,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 webUrl = Utility.FromBase64String(signalData[JsonKeys.FileOpeningWebUrl]?.AsValue().GetValue<string>()) ?? "";
             }
 
+            // The identity of the item (drive database id and remote node id) was added with the download of the item
+            // into the download folder of the user: it is absent from the signals of an older server, and from the
+            // progress signals.
+            long driveDbId = 0;
+            if (signalData.ContainsKey(JsonKeys.FileOpeningDriveDbId))
+            {
+                driveDbId = signalData[JsonKeys.FileOpeningDriveDbId]?.AsValue().GetValue<long>() ?? 0;
+            }
+
+            string remoteNodeId = "";
+            if (signalData.ContainsKey(JsonKeys.FileOpeningRemoteNodeId))
+            {
+                remoteNodeId = Utility.FromBase64String(signalData[JsonKeys.FileOpeningRemoteNodeId]?.AsValue().GetValue<string>()) ?? "";
+            }
+
             await Utility.RunOnUIThread(() =>
             {
                 _viewModel.FileOpeningController.OnFileOpeningStatus(new FileOpeningStatusUpdate
@@ -2311,6 +2352,49 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     ReceivedBytes = receivedBytes,
                     TotalBytes = totalBytes,
                     WebUrl = webUrl,
+                    DriveDbId = driveDbId,
+                    RemoteNodeId = remoteNodeId,
+                });
+            });
+        }
+
+        public async Task HandleFileOpeningDownloadStateAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData is null || !signalData.ContainsKey(JsonKeys.FileOpeningDownloadId) || !signalData.ContainsKey(JsonKeys.FileOpeningDownloadState))
+            {
+                Logger.LogError($"One or more required parameters are missing in signal data: {JsonKeys.FileOpeningDownloadId}, {JsonKeys.FileOpeningDownloadState}. Signal data: {signalData}",
+                    "ServerCommService: Missing parameters for FILE_OPENING_DOWNLOAD_STATE signal");
+                return;
+            }
+
+            UInt64? downloadId = signalData[JsonKeys.FileOpeningDownloadId]?.AsValue().GetValue<UInt64>();
+            FileOpeningDownloadState? state = signalData[JsonKeys.FileOpeningDownloadState]?.AsValue().Deserialize<FileOpeningDownloadState>();
+            Int32? percent = signalData[JsonKeys.FileOpeningPercent]?.AsValue().GetValue<Int32>();
+            if (downloadId is null || state is null || percent is null)
+            {
+                Logger.LogError($"required parameter is null: downloadId={downloadId}, state={state}, percent={percent}",
+                    "ServerCommService: Null parameter for FILE_OPENING_DOWNLOAD_STATE signal");
+                return;
+            }
+
+            Int64 receivedBytes = signalData.ContainsKey(JsonKeys.FileOpeningReceivedBytes)
+                ? signalData[JsonKeys.FileOpeningReceivedBytes]?.AsValue().GetValue<Int64>() ?? -1 : -1;
+            Int64 totalBytes = signalData.ContainsKey(JsonKeys.FileOpeningTotalBytes)
+                ? signalData[JsonKeys.FileOpeningTotalBytes]?.AsValue().GetValue<Int64>() ?? -1 : -1;
+            string finalPath = signalData.ContainsKey(JsonKeys.FileOpeningFinalPath)
+                ? Utility.FromBase64String(signalData[JsonKeys.FileOpeningFinalPath]?.AsValue().GetValue<string>()) ?? "" : "";
+
+            await Utility.RunOnUIThread(() =>
+            {
+                _viewModel.FileOpeningController.OnFileOpeningDownloadState(new FileOpeningDownloadStateUpdate
+                {
+                    DownloadId = downloadId.Value,
+                    State = state.Value,
+                    Percent = percent.Value,
+                    ReceivedBytes = receivedBytes,
+                    TotalBytes = totalBytes,
+                    FinalPath = finalPath,
                 });
             });
         }

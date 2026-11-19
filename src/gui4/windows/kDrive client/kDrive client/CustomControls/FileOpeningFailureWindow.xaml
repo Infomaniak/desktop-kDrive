@@ -48,6 +48,22 @@
             <controls:FileOpeningItemCard
                 Visibility="{Binding HasItemName, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
+            <!-- Progress of the download of the item into the download folder of the user, shown while the download
+                 triggered from this window is running -->
+            <StackPanel x:Name="ItemDownloadProgressPanel"
+                        Visibility="Collapsed"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <ProgressBar x:Name="ItemDownloadProgressBar" />
+                <TextBlock x:Name="ItemDownloadProgressTextBlock"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}" />
+            </StackPanel>
+
+            <!-- Error shown when the download of the item into the download folder of the user failed: the download
+                 button then falls back to the kDrive web application page of the item -->
+            <TextBlock x:Name="ItemDownloadErrorTextBlock"
+                       Visibility="Collapsed"
+                       TextWrapping="Wrap" />
+
             <!-- Actions: close the window, or open the kDrive web application page of the item in a browser -->
             <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
                   Margin="0,8,0,0">
