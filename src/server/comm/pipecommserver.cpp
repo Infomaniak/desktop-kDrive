@@ -176,7 +176,7 @@ PSECURITY_DESCRIPTOR createCurrentUserSecurityDescriptor() {
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) return nullptr;
 
     DWORD size = 0;
-    if (!GetTokenInformation(token, TokenUser, nullptr, 0, &size)) return nullptr;
+    (void) GetTokenInformation(token, TokenUser, nullptr, 0, &size);
 
     std::vector<BYTE> buffer(size);
     if (!GetTokenInformation(token, TokenUser, buffer.data(), size, &size)) {
