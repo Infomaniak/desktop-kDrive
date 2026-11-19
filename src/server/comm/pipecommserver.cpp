@@ -176,23 +176,23 @@ PSECURITY_DESCRIPTOR createCurrentUserSecurityDescriptor() {
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) return nullptr;
 
     DWORD size = 0;
-    GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+    if (!GetTokenInformation(token, TokenUser, nullptr, 0, &size)) return nullptr;
 
     std::vector<BYTE> buffer(size);
     if (!GetTokenInformation(token, TokenUser, buffer.data(), size, &size)) {
-        CloseHandle(token);
+        (void) CloseHandle(token);
         return nullptr;
     }
 
-    CloseHandle(token);
+    (void) CloseHandle(token);
 
-    auto *tokenUser = reinterpret_cast<TOKEN_USER *>(buffer.data());
+    const auto *tokenUser = reinterpret_cast<TOKEN_USER *>(buffer.data());
 
     LPWSTR sid = nullptr;
     if (!ConvertSidToStringSidW(tokenUser->User.Sid, &sid)) return nullptr;
 
-    std::wstring sddl = L"D:P(A;;GA;;;" + std::wstring(sid) + L")";
-    LocalFree(sid);
+    const std::wstring sddl = L"D:P(A;;GA;;;" + std::wstring(sid) + L")";
+    (void) LocalFree(sid);
 
     PSECURITY_DESCRIPTOR descriptor = nullptr;
     if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, &descriptor, nullptr))
@@ -238,8 +238,8 @@ void PipeCommServer::execute() {
 
         if (!descriptor) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createCurrentUserSecurityDescriptor: err=" << GetLastError());
-            sentry::Handler::instance()->captureMessage(
-                    sentry::Level::Error, "Unable to create security descriptor for named pipe", "pipecommserver failure");
+            sentry::Handler::captureMessage(sentry::Level::Error, "Unable to create security descriptor for named pipe",
+                                            "pipecommserver failure");
             return;
         }
 
@@ -259,7 +259,7 @@ void PipeCommServer::execute() {
                                              BUFSIZE * sizeof(TCHAR), // input buffer size
                                              pipeTimeOut, // client time-out (ms)
                                              &securityAttributes);
-        LocalFree(descriptor);
+        (void) LocalFree(descriptor);
 
         if (channel->_pipeInst == INVALID_HANDLE_VALUE) {
             LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << GetLastError());
