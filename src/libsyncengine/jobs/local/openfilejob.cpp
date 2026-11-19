@@ -139,8 +139,9 @@ ExitInfo OpenFileJob::runJob() {
         return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
-    // Step 1: resolve the item indicated by the URL, waiting for it to be synchronized if needed.
-    if (const auto exitInfo = resolveItem(); !exitInfo) return exitInfo;
+    // Step 1: resolve the item indicated by the URL, waiting for it to be synchronized if needed. A timeout is a
+    // terminal outcome reported to the user interface: stop here, there is nothing to open.
+    if (const auto exitInfo = resolveItem(); !exitInfo || _outcome == Outcome::ResolveTimedOut) return exitInfo;
 
     // Step 2: open the item, hydrating it first if it is a dehydrated placeholder.
     return openResolvedLocalItem();
@@ -223,7 +224,7 @@ ExitInfo OpenFileJob::resolveItem() {
                       L"The item was not synchronized in time - remoteNodeId=" << CommonUtility::s2ws(_request.remoteNodeId));
             _outcome = Outcome::ResolveTimedOut;
 
-            return {ExitCode::SystemError, ExitCause::Unknown};
+            return ExitCode::Ok;
         }
     }
 }
