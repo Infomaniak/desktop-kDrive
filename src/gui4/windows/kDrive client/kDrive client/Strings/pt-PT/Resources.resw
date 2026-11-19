@@ -914,11 +914,20 @@ A sincronização será retomada automaticamente quando a ligação for restabel
   <data name="fileExistsErrorTitle" xml:space="preserve">
     <value>O ficheiro já existe</value>
   </data>
+  <data name="fileOpeningDownloadButton" xml:space="preserve">
+    <value>Descarregar do kDrive</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ de %@</value>
   </data>
   <data name="fileOpeningDownloadTitle" xml:space="preserve">
     <value>Descarregar</value>
+  </data>
+  <data name="fileOpeningFailureExplanation" xml:space="preserve">
+    <value>Podes descarregá-lo tu mesmo a partir do kDrive no teu navegador.</value>
+  </data>
+  <data name="fileOpeningFailureTitle" xml:space="preserve">
+    <value>Não é possível abrir o ficheiro</value>
   </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Modo de sincronização de ficheiros</value>

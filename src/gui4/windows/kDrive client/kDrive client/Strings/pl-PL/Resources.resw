@@ -914,11 +914,20 @@ Synchronizacja zostanie wznowiona automatycznie po przywróceniu połączenia.</
   <data name="fileExistsErrorTitle" xml:space="preserve">
     <value>Plik już istnieje</value>
   </data>
+  <data name="fileOpeningDownloadButton" xml:space="preserve">
+    <value>Pobierz z serwisu kDrive</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ z %@</value>
   </data>
   <data name="fileOpeningDownloadTitle" xml:space="preserve">
     <value>Pobierz</value>
+  </data>
+  <data name="fileOpeningFailureExplanation" xml:space="preserve">
+    <value>Możesz pobrać go samodzielnie z serwisu kDrive w przeglądarce.</value>
+  </data>
+  <data name="fileOpeningFailureTitle" xml:space="preserve">
+    <value>Nie można otworzyć pliku</value>
   </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Tryb synchronizacji plików</value>
