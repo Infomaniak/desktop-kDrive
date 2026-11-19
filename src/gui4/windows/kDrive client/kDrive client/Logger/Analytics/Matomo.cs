@@ -1,5 +1,4 @@
 ﻿using CodeArt.MatomoTracking;
-using CodeArt.MatomoTracking.Models;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -14,17 +13,20 @@ namespace Infomaniak.kDrive.Analytics
         private const string _clickEventCategory = "click";
         private const string _otherEventCategory = "other";
         private const string _productName = "kDrive";
+        private const int AppVersionDimensionId = 1;
         private const int MaxConcurrentRequests = 4;
         private readonly SemaphoreSlim _throttle = new(MaxConcurrentRequests, MaxConcurrentRequests);
         private readonly IMatomoTracker _tracker;
         private readonly UserDefaults _userDefaults;
+        private readonly string _appVersion;
         private readonly string? _userAgent;
         private readonly string? _clientHints;
         public MatomoService(IMatomoTracker tracker, UserDefaults userDefaults)
         {
             _tracker = tracker;
             _userDefaults = userDefaults;
-            var userAgentInfo = UserAgentBuilder.CurrentDesktopInfo(_productName, AppVersion.Current().Tag, WindowsPlatformVersion.Current());
+            _appVersion = AppVersion.Current().Tag;
+            var userAgentInfo = UserAgentBuilder.CurrentDesktopInfo(_productName, _appVersion, WindowsPlatformVersion.Current());
             _userAgent = NullIfEmpty(UserAgentBuilder.BuildDesktopUserAgent(userAgentInfo));
             _clientHints = NullIfEmpty(UserAgentBuilder.BuildClientHints(userAgentInfo));
         }
@@ -65,6 +67,7 @@ namespace Infomaniak.kDrive.Analytics
                 NewVisit = false,
                 UserAgent = _userAgent,
                 ClientHints = _clientHints,
+                Dimensions = new() { [AppVersionDimensionId] = _appVersion },
                 Language = language
             }));
         }
@@ -81,6 +84,7 @@ namespace Infomaniak.kDrive.Analytics
                 ActionName = category.ToCamelCase(),
                 UserAgent = _userAgent,
                 ClientHints = _clientHints,
+                Dimensions = new() { [AppVersionDimensionId] = _appVersion },
                 Language = language
             }));
         }
