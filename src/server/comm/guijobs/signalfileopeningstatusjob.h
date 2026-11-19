@@ -30,8 +30,11 @@ class SignalFileOpeningStatusJob : public AbstractGuiJob {
                                             const CommString &itemPath, int64_t receivedBytes, int64_t totalBytes);
         //! Failure status: reports the failure of the request, with the failure phase (Failed or NotFound) and the
         //! kDrive web application address of the item when it can be downloaded manually. The client interface
-        //! shows its failure window with it.
-        explicit SignalFileOpeningStatusJob(UniqueId jobId, FileOpeningPhase failurePhase, const CommString &webUrl);
+        //! shows its failure window with it. The drive database id and the remote node id of the item are reported
+        //! as well, so that the failure window can trigger the download of the item into the download folder of the
+        //! user.
+        explicit SignalFileOpeningStatusJob(UniqueId jobId, FileOpeningPhase failurePhase, const CommString &webUrl,
+                                            DriveDbId driveDbId, const CommString &remoteNodeId);
 
     private:
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
@@ -47,6 +50,8 @@ class SignalFileOpeningStatusJob : public AbstractGuiJob {
         int64_t _receivedBytes{-1};
         int64_t _totalBytes{-1};
         CommString _webUrl; //!< kDrive web application address of the item, set when the opening failed.
+        DriveDbId _driveDbId{0}; //!< Local database id of the drive of the item, set when the opening failed.
+        CommString _remoteNodeId; //!< Remote node id of the item, set when the opening failed.
 };
 
 } // namespace KDC

@@ -98,6 +98,14 @@ class UrlSchemeEventFilter : public QObject {
 };
 
 class FileOpeningHandler;
+class DownloadJob;
+
+//! Progress notification state of a download triggered from the failure window of a file opening request: the client
+//! interface is informed of the progress when the percentage changes, at most once every 500 ms.
+struct FileOpeningDownloadThrottleState {
+        std::chrono::steady_clock::time_point lastNotify;
+        int lastPercent{-1};
+};
 
 class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
@@ -268,6 +276,26 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
         //! Cancels the file opening job identified by `jobId`, upon user request in the client interface.
         [[nodiscard]] ExitInfo cancelFileOpeningJob(UniqueId jobId);
+        //! Starts the download of the item of a failed file opening request into a local folder, e.g. the download
+        //! folder of the user, and returns immediately: the client interface follows the progress and the completion
+        //! of the download through `sendFileOpeningDownloadState`. The identity of the item is resolved from the file
+        //! information API, and the name of the downloaded file is shifted until it does not collide with an existing
+        //! item of the destination folder.
+        //! \param driveDbId is the local database id of the drive the item belongs to.
+        //! \param remoteNodeId is the remote node id of the item to download.
+        //! \param destinationFolderPath is the folder into which the item is downloaded, empty to download it into
+        //!        the download folder of the user.
+        //! \param downloadId is set with the id of the started download, to be matched with the state signals.
+        //! \param finalPath is set with the path into which the item is downloaded.
+        virtual ExitInfo downloadFileOpeningItem(DriveDbId driveDbId, const CommString &remoteNodeId,
+                                                 const CommString &destinationFolderPath, UniqueId &downloadId,
+                                                 CommString &finalPath);
+        //! Reports the state of the download of the item of a failed file opening request to the client interface.
+        virtual void sendFileOpeningDownloadState(UniqueId downloadId, FileOpeningDownloadState state, int8_t percent,
+                                                  int64_t receivedBytes, int64_t totalBytes, const CommString &finalPath) const;
+        //! Returns the path of an item of `folder`, derived from `itemPath`, that does not collide with any existing
+        //! item of `folder`: the file name is shifted with an occurrence counter, like a web browser would do.
+        static SyncPath nonExistingItemPath(const SyncPath &folder, const SyncPath &itemPath);
 
 #if defined(KD_MACOS)
         //! Install the Vfs Mac extension.
@@ -326,6 +354,16 @@ class AppServer : public SharedTools::QtSingleApplication {
         QProcess *_clientProcess = nullptr;
         mutable std::mutex _fileOpeningJobsMutex;
         std::unordered_map<UniqueId, std::shared_ptr<FileOpeningHandler>> _fileOpeningJobs;
+
+        //! Invoked by the download job of a file opening item on the sync job manager worker threads when its
+        //! progress has changed: throttles the updates, then forwards them to the client interface.
+        void onFileOpeningDownloadProgress(const CommString &finalPath,
+                                           const std::shared_ptr<FileOpeningDownloadThrottleState> &throttleState,
+                                           UniqueId downloadId, int64_t receivedBytes, int64_t totalBytes);
+        //! Invoked by the download job of a file opening item once it has completed: reports the outcome, along with
+        //! the path of the downloaded item, to the client interface.
+        void onFileOpeningDownloadJobFinished(const std::weak_ptr<DownloadJob> &job, const CommString &finalPath,
+                                              UniqueId downloadId);
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
@@ -426,8 +464,11 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const CommString &itemPath, int64_t receivedBytes, int64_t totalBytes) const;
         //! Reports the failure of a file opening request to the client interface. The failure phase (Failed or
         //! NotFound) drives the content of the failure window, and the kDrive web application address of the item is
-        //! reported when the item can be downloaded manually.
-        virtual void sendFileOpeningFailure(UniqueId jobId, FileOpeningPhase failurePhase, const CommString &webUrl) const;
+        //! reported when the item can be downloaded manually. The drive database id and the remote node id of the
+        //! item are reported as well, so that the failure window can trigger the download of the item into the
+        //! download folder of the user.
+        virtual void sendFileOpeningFailure(UniqueId jobId, FileOpeningPhase failurePhase, const CommString &webUrl,
+                                            DriveDbId driveDbId, const CommString &remoteNodeId) const;
         void registerFileOpeningJob(UniqueId jobId, std::shared_ptr<FileOpeningHandler> handler);
         void unregisterFileOpeningJob(UniqueId jobId);
         //! Returns the number of file-opening flows currently active: their job is queued or running and their

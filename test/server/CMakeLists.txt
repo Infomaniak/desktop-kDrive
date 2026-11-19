@@ -62,7 +62,9 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.h ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     ${server_srcs_path}/comm/guijobs/syncacknowledgemanydeletesjob.h ${server_srcs_path}/comm/guijobs/syncacknowledgemanydeletesjob.cpp
     ${server_srcs_path}/comm/guijobs/fileopeningcanceljob.h ${server_srcs_path}/comm/guijobs/fileopeningcanceljob.cpp
+    ${server_srcs_path}/comm/guijobs/fileopeningdownloadjob.h ${server_srcs_path}/comm/guijobs/fileopeningdownloadjob.cpp
     ${server_srcs_path}/comm/guijobs/signalfileopeningstatusjob.h ${server_srcs_path}/comm/guijobs/signalfileopeningstatusjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalfileopeningdownloadstatejob.h ${server_srcs_path}/comm/guijobs/signalfileopeningdownloadstatejob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp

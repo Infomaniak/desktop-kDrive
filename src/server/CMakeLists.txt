@@ -80,6 +80,8 @@ set(server_SRCS
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     comm/guijobs/syncacknowledgemanydeletesjob.h comm/guijobs/syncacknowledgemanydeletesjob.cpp
     comm/guijobs/fileopeningcanceljob.h comm/guijobs/fileopeningcanceljob.cpp
+    comm/guijobs/fileopeningdownloadjob.h comm/guijobs/fileopeningdownloadjob.cpp
+    comm/guijobs/signalfileopeningdownloadstatejob.h comm/guijobs/signalfileopeningdownloadstatejob.cpp
 
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp

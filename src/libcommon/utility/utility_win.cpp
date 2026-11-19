@@ -83,6 +83,16 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     return tempDirPath.parent_path().parent_path().native();
 }
 
+SyncPath CommonUtility::getGenericDownloadsDir() {
+    if (PWSTR path = nullptr; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Downloads, KF_FLAG_NO_ALIAS, nullptr, &path))) {
+        SyncPath downloadsPath = path;
+        CoTaskMemFree(path);
+        return downloadsPath;
+    }
+
+    return {};
+}
+
 SyncPath CommonUtility::getAppDir() {
     return "";
 }

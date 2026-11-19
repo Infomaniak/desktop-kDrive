@@ -53,6 +53,29 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     return appSupportPath;
 }
 
+SyncPath CommonUtility::getGenericDownloadsDir() {
+    // Read the download directory of the user from the XDG user directories configuration, e.g. a localized name.
+    SyncPath homeDir;
+    if (const auto exitInfo = homeDirectoryPath(homeDir); !exitInfo) return {};
+
+    std::ifstream userDirsStream(homeDir / ".config/user-dirs.dirs");
+    std::string line;
+    while (std::getline(userDirsStream, line)) {
+        const std::string prefix = "XDG_DOWNLOAD_DIR=";
+        if (!line.starts_with(prefix)) continue;
+
+        // The value is a shell-quoted path, either absolute or starting with the "$HOME" variable.
+        std::string value = line.substr(prefix.size());
+        if (!value.empty() && value.front() == '"') value = value.substr(1, value.size() - 2);
+        if (value.starts_with("$HOME")) value.replace(0, 5, homeDir.string());
+        if (value.empty()) return {};
+
+        return SyncPath(value);
+    }
+
+    return {};
+}
+
 SyncPath CommonUtility::getAppDir() {
     return {};
 }

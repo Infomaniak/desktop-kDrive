@@ -67,6 +67,7 @@
 #include "parametersupdatejob.h"
 #include "syncacknowledgemanydeletesjob.h"
 #include "fileopeningcanceljob.h"
+#include "fileopeningdownloadjob.h"
 
 #include "utilityfindgoodpathfornewsyncjob.h"
 #include "utilitybestvfsavailablemodejob.h"
@@ -121,6 +122,7 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
         {RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES, makeShared<SyncAcknowledgeManyDeletesJob>},
         {RequestNum::FILE_OPENING_CANCEL, makeShared<FileOpeningCancelJob>},
+        {RequestNum::FILE_OPENING_DOWNLOAD, makeShared<FileOpeningDownloadJob>},
         {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
         {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
         {RequestNum::NODE_PATH, makeShared<NodePathJob>},

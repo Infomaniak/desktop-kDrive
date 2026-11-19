@@ -209,8 +209,16 @@ void FileOpeningHandler::handleFileOpeningFailure(const FileOpeningPhase failure
 
     // Inform the client interface of the failure: the pop-up window of the request is replaced by a failure window.
     // No notification is sent anymore: the failure window replaces it. The web address of the item is reported only
-    // for a generic failure: when the item does not exist on the remote side, there is nothing to download.
-    _appServer->sendFileOpeningFailure(_jobId, failurePhase, failurePhase == FileOpeningPhase::Failed ? webUrl() : CommString{});
+    // for a generic failure: when the item does not exist on the remote side, there is nothing to download. The
+    // identity of the item is reported as well, so that the failure window can trigger its download into the download
+    // folder of the user.
+    OpenFileJob::Request request;
+    const bool urlParsed = OpenFileJob::parseDeeplinkUrl(_url, request);
+    DriveDbId driveDbId{0};
+    if (const auto job = _job.lock()) driveDbId = job->driveDbId();
+    _appServer->sendFileOpeningFailure(_jobId, failurePhase, failurePhase == FileOpeningPhase::Failed ? webUrl() : CommString{},
+                                       urlParsed ? driveDbId : DriveDbId{0},
+                                       urlParsed ? CommonUtility::str2CommString(request.remoteNodeId) : CommString{});
 
     _appServer->unregisterFileOpeningJob(_jobId);
 }

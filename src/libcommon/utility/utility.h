@@ -569,6 +569,17 @@ struct COMMON_EXPORT CommonUtility {
          */
         static ExitInfo tempDirectoryPath(SyncPath &directoryPath) noexcept;
 
+        //! Returns the download directory of the user, e.g. "~/Downloads" on macOS. The location is the one preferred
+        //! by the user when the system allows to move it, and the default one otherwise.
+        /*!
+         \param directoryPath is set with the path to the download directory of the user. Empty if there is an error.
+         \return An ExitInfo representing the return value of the underlying OS API call.
+         */
+        static ExitInfo downloadsDirectory(SyncPath &directoryPath) noexcept;
+
+        //! Returns the download directory of the user as reported by the system. Defined for each platform.
+        static SyncPath getGenericDownloadsDir();
+
         //! Returns the log directory path of the application.
         /*!
          \param directoryPath is set with the path to the log directory of the application. Empty if there is an error.

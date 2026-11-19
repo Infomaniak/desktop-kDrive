@@ -44,10 +44,10 @@ class MockAppServer : public AppServer {
         };
 
     private:
-        void sendUserUpdated(const User &) const override { /* Do not try to notify the client */ };
-        void sendAccountAdded(const Account &) const override { /* Do not try to notify the client */ };
-        void sendAccountUpdated(const Account &) const override { /* Do not try to notify the client */ };
-        void sendDriveUpdated(const Drive &) const override { /* Do not try to notify the client */ };
+        void sendUserUpdated(const User &) const override{/* Do not try to notify the client */};
+        void sendAccountAdded(const Account &) const override{/* Do not try to notify the client */};
+        void sendAccountUpdated(const Account &) const override{/* Do not try to notify the client */};
+        void sendDriveUpdated(const Drive &) const override{/* Do not try to notify the client */};
 
         std::filesystem::path _parmsDbPath;
 };
@@ -61,6 +61,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testManageInvalidTokenErrorForUser);
         CPPUNIT_TEST(testDriveAccessErrorWithInvalidToken);
         CPPUNIT_TEST(testProxyConfigUpdate);
+        CPPUNIT_TEST(testNonExistingItemPath);
         CPPUNIT_TEST(testCleanup); // Must be the last test
         CPPUNIT_TEST_SUITE_END();
 
@@ -75,6 +76,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
         void testManageInvalidTokenErrorForUser();
         void testDriveAccessErrorWithInvalidToken();
         void testProxyConfigUpdate();
+        void testNonExistingItemPath();
 
         void testCleanup();
 

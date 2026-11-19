@@ -142,6 +142,7 @@ enum class RequestNum {
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
+    FILE_OPENING_DOWNLOAD, // Downloads the item of a failed file opening request into the download folder of the user.
     EnumEnd
 };
 
@@ -195,6 +196,8 @@ inline std::string toString(RequestNum e) {
             return "SYNC_ACKNOWLEDGE_MANY_DELETES";
         case RequestNum::FILE_OPENING_CANCEL:
             return "FILE_OPENING_CANCEL";
+        case RequestNum::FILE_OPENING_DOWNLOAD:
+            return "FILE_OPENING_DOWNLOAD";
         case RequestNum::BLACKLISTED_NODE_LIST:
             return "BLACKLISTED_NODE_LIST";
         case RequestNum::BLACKLISTED_NODE_SETLIST:
@@ -353,6 +356,7 @@ enum class SignalNum {
     UTILITY_LOG_UPLOAD_STATUS_UPDATED,
     UTILITY_QUIT,
     FILE_OPENING_STATUS,
+    FILE_OPENING_DOWNLOAD_STATE, // State of the download of the item of a failed file opening request.
     EnumEnd
 };
 
@@ -428,6 +432,8 @@ inline std::string toString(SignalNum e) {
             return "UTILITY_QUIT";
         case SignalNum::FILE_OPENING_STATUS:
             return "FILE_OPENING_STATUS";
+        case SignalNum::FILE_OPENING_DOWNLOAD_STATE:
+            return "FILE_OPENING_DOWNLOAD_STATE";
         default:
             return "No conversion to string available";
     }
