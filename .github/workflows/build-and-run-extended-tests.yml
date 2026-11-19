@@ -2,6 +2,12 @@ name: Build and run extended tests
 on:
     # Allows manual execution
     workflow_dispatch:
+      inputs:
+        platform:
+          description: Platforms to validate
+          type: choice
+          options: [all, macos]
+          default: all
     # Runs every day at midnight
     schedule:
         - cron: '0 0 * * *'
@@ -33,6 +39,7 @@ env:
 
 jobs:
   Windows-extended-tests:
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'macos'
     runs-on: [ self-hosted, Windows, vs2026 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
@@ -169,7 +176,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Check test runner regressions
-        run: python3 infomaniak-build-tools/tests/test_run_tests.py
+        run: python3 -m unittest discover -s infomaniak-build-tools/tests
 
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
@@ -203,6 +210,7 @@ jobs:
           rm -rf -- "$RUNNER_TEMP/kdrive-extended-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
 
   Linux-extended-tests:
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'macos'
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
