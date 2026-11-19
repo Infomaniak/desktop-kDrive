@@ -208,6 +208,8 @@ namespace KDC::AppConstants::Settings {
 [[nodiscard]] inline QUrl sourcesUri() {
     return QUrl{QStringLiteral("https://github.com/Infomaniak/desktop-kDrive")};
 }
+// License notices of the bundled components, relative to the executable folder (AppImage usr/bin to usr/share/doc).
+inline constexpr auto thirdPartyLicensesRelativePath = "../share/doc/kDrive";
 } // namespace KDC::AppConstants::Settings
 
 namespace KDC::AppConstants::SyncConfiguration {
