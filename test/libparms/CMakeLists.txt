@@ -48,7 +48,7 @@ if(WIN32)
         "C:/Program Files (x86)/cppunit/lib/cppunit_dll.lib")
 elseif(APPLE)
     target_link_libraries(${testparms_NAME}
-        "/usr/local/lib/libcppunit.dylib")
+        cppunit::cppunit)
 else()
     target_link_libraries(${testparms_NAME}
         "/usr/local/lib/libcppunit.so")

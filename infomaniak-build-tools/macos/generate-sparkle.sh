@@ -34,7 +34,7 @@
 #   INSTALL_DIR  Directory containing kDrive.app and kDrive-<version>.pkg
 #                (default: <repo>/build-macos/client/install)
 #   SPARKLE_BIN  Directory containing the Sparkle "generate_appcast" tool
-#                (default: $HOME/Sparkle/bin)
+#                (default: generate_appcast from PATH, then $HOME/Sparkle/bin)
 #
 # Outputs (in $INSTALL_DIR/sparkle):
 #   kDrive-<version>.zip          Signed Sparkle archive of kDrive.app
@@ -61,7 +61,7 @@ fi
 app_name="kDrive"
 install_dir="${INSTALL_DIR:-$repo_root/build-macos/client/install}"
 sparkle_dir="$install_dir/sparkle"
-sparkle_bin="${SPARKLE_BIN:-$HOME/Sparkle/bin}"
+sparkle_bin="${SPARKLE_BIN:-$(dirname "$(command -v generate_appcast || echo "$HOME/Sparkle/bin/generate_appcast")")}"
 generate_appcast="$sparkle_bin/generate_appcast"
 insert_xml="$repo_root/infomaniak-build-tools/macos/insert_xml.py"
 venv_dir="$repo_root/infomaniak-build-tools/macos/venv"

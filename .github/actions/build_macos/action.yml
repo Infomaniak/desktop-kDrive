@@ -84,9 +84,6 @@ runs:
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
-          cp /usr/local/lib/libzip.5.dylib ./dependencies/
-          cp /usr/local/lib/libzstd.1.dylib ./dependencies/
-          cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
           # kDrive_vfs_mac lib is not cached and therefore is uploaded as a separate artifact
           find "${{ github.workspace }}/build-macos/client/bin" -name "*.dylib" \
@@ -113,7 +110,9 @@ runs:
                    -o -iname 'libsentry.dylib' \
                    -o -iname 'libssl*.dylib' \
                    -o -iname 'libcrypto*.dylib' \
-                   -o -iname 'libz.*.dylib' \
+                    -o -iname 'libz.*.dylib' \
+                    -o -iname 'libzip*.dylib' \
+                    -o -iname 'libzstd*.dylib' \
                    -o -iname 'libPocoNetSSL*.dylib' \
                    -o -iname 'libPocoUtil*.dylib' \
                    -o -iname 'libPocoJSON*.dylib' \
@@ -188,9 +187,10 @@ runs:
 
       - name: Generate Sparkle artifacts
         run: |
+          source "$(find "${{ github.workspace }}/build-macos/client/conan" -name conanrun.sh -print -quit)"
           mkdir -p ${{ github.workspace }}/build-macos/client/install/sparkle
           /usr/bin/ditto -c -k --sequesterRsrc --keepParent "${{ github.workspace }}/build-macos/client/install/kDrive.app" ${{ github.workspace }}/build-macos/client/install/sparkle/kDrive-${{ steps.get-version.outputs.kDrive_version }}.zip
-          $HOME/Sparkle/bin/generate_appcast ${{ github.workspace }}/build-macos/client/install/sparkle
+          generate_appcast ${{ github.workspace }}/build-macos/client/install/sparkle
           sed -e 's/www.infomaniak.com\/drive\/update/download.storage.infomaniak.com\/drive\/desktopclient/' \
               -e 's/sparkle:releaseNotesLink/sparkle:releaseNotesLink xml:lang="en"/' \
               "${{ github.workspace }}/build-macos/client/install/sparkle/desktopclient" > "${{ github.workspace }}/build-macos/client/install/sparkle/update-macos-${{ steps.get-version.outputs.kDrive_version }}.xml"

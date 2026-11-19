@@ -53,14 +53,6 @@ conan --version
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
 
-# Path to Sparkle installation
-sparkle_dir="$HOME/Library/Frameworks"
-if [ ! -f "$sparkle_dir/Sparkle.framework/Headers/Sparkle.h" ]; then
-	echo "Missing Sparkle framework: $sparkle_dir/Sparkle.framework" >&2
-	echo 'Copy Sparkle.framework from the Sparkle release to ~/Library/Frameworks before building.' >&2
-	exit 1
-fi
-
 # Set build dir
 build_dir="$PWD/build-macos/client"
 
@@ -103,6 +95,7 @@ export PATH="$QTDIR/bin:$PATH"
 
 
 source "$conan_build_folder/conanbuild.sh"
+source "$conan_build_folder/conanrun.sh"
 
 # Configure
 pushd "$build_dir"
@@ -112,7 +105,6 @@ cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$install_dir" \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DSPARKLE_LIBRARY="$sparkle_dir/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
 	-DBUILD_GUI=ON \
 	-DBUILD_GUI_LEGACY=OFF \
