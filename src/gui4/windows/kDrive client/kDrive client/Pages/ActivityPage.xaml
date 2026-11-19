@@ -52,10 +52,10 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                             VerticalAlignment="Center">
                     <ProgressRing IsActive="True"
-                                  Width="14"
-                                  Height="14"
+                                  Width="12"
+                                  Height="12"
                                   VerticalAlignment="Center" />
-                    <TextBlock Text="{x:Bind kDrive:LocalizerXamlHelper.PrettySyncRunningStatus(kDrive:Localizer.Instance, (viewmodels:Sync), SyncStep, SyncProgress.TotalFiles, SyncProgress.CurrentFile), Mode=OneWay}"
+                    <TextBlock Text="{x:Bind kDrive:LocalizerXamlHelper.PrettySyncRunningStatus(kDrive:Localizer.Instance, x:False,(viewmodels:Sync), SyncStep, SyncProgress.TotalFiles, SyncProgress.CurrentFile, NbItems), Mode=OneWay}"
                                Style="{StaticResource BodyTextBlockStyle}"
                                VerticalAlignment="Top" />
                 </StackPanel>

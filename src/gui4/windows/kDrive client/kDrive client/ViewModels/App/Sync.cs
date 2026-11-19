@@ -46,6 +46,7 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncStep _syncStep = SyncStep.None;
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
+        private ulong _nbItems = 0;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
@@ -65,6 +66,11 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _syncStep;
             set => SetPropertyInUIThread(ref _syncStep, value);
+        }
+        public ulong NbItems
+        {
+            get => _nbItems;
+            set => SetPropertyInUIThread(ref _nbItems, value);
         }
 
         public SyncStatus SyncStatus

@@ -19,32 +19,34 @@
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
+using System.Globalization;
 
 namespace Infomaniak.kDrive
 {
     internal class LocalizerXamlHelper
     {
-        public static string PrettySyncRunningStatus(Localizer localizer, Sync sync, SyncStep syncStep, Int64 totalFiles, Int64 currentFile)
+        public static string PrettySyncRunningStatus(Localizer localizer, bool showEllipsis, Sync sync, SyncStep syncStep, Int64 totalFiles, Int64 currentFile, ulong nbItems)
         {
+            string suffix = showEllipsis ? localizer.Ellipsis : string.Empty;
             if (sync is null)
-                return Localizer.Instance.GetString("syncStatusAnalysing");
+                return Localizer.Instance.GetString("syncStatusAnalysing") + suffix;
 
             switch (syncStep)
             {
                 case SyncStep.Idle:
                 case SyncStep.UpdateDetection1:
-                    return Localizer.Instance.GetString("syncStatusExploring");
+                    return Localizer.Instance.GetString("syncStatusExploring", nbItems.ToString("N0", CultureInfo.CurrentCulture)) + suffix;
                 case SyncStep.UpdateDetection2:
                 case SyncStep.Reconciliation1:
                 case SyncStep.Reconciliation2:
                 case SyncStep.Reconciliation3:
                 case SyncStep.Reconciliation4:
                 case SyncStep.Propagation1:
-                    return Localizer.Instance.GetString("syncStatusAnalysing");
+                    return Localizer.Instance.GetString("syncStatusAnalysing") + suffix;
                 case SyncStep.Propagation2:
-                    return Localizer.Instance.GetStringWithPlural("syncStatusPropagating", currentFile, currentFile, totalFiles);
+                    return Localizer.Instance.GetStringWithPlural("syncStatusPropagating", currentFile, currentFile.ToString("N0", CultureInfo.CurrentCulture), totalFiles.ToString("N0", CultureInfo.CurrentCulture)) + suffix;
                 default:
-                    return "...";
+                    return "…";
 
             }
         }

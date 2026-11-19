@@ -25,15 +25,17 @@ static const auto outParamsSyncDbId = "syncDbId";
 static const auto outParamsSyncstatus = "syncStatus";
 static const auto outParamsSyncStep = "syncStep";
 static const auto outParamsSyncProgress = "SyncProgress";
+static const auto outParamsNbItems = "nbItems";
 
 namespace KDC {
 
 SignalSyncProgressInfoJob::SignalSyncProgressInfoJob(int syncDbId, SyncStatus syncStatus, SyncStep syncStep,
-                                                     const SyncProgress &syncProgress) :
+                                                     const SyncProgress &syncProgress, uint64_t nbItems) :
     _syncDbId(syncDbId),
     _syncStatus(syncStatus),
     _syncStep(syncStep),
-    _syncProgress(syncProgress) {
+    _syncProgress(syncProgress),
+    _nbItems(nbItems) {
     _signalNum = SignalNum::SYNC_PROGRESSINFO;
 }
 
@@ -42,6 +44,7 @@ ExitInfo SignalSyncProgressInfoJob::serializeOutputParms() {
     writeParamValue(outParamsSyncstatus, _syncStatus);
     writeParamValue(outParamsSyncStep, _syncStep);
     writeParamValue(outParamsSyncProgress, _syncProgress, info2DynamicVar<SyncProgress>);
+    writeParamValue(outParamsNbItems, _nbItems);
     return ExitCode::Ok;
 }
 

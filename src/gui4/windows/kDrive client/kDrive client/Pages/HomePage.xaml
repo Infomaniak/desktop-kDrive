@@ -99,9 +99,10 @@
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
-                    <TextBlock Text="{x:Bind kDrive:LocalizerXamlHelper.PrettySyncRunningStatus(kDrive:Localizer.Instance, (viewmodel:Sync), SyncStep, SyncProgress.TotalFiles, SyncProgress.CurrentFile), Mode=OneWay}"
+                    <TextBlock Text="{x:Bind kDrive:LocalizerXamlHelper.PrettySyncRunningStatus(kDrive:Localizer.Instance, x:True,(viewmodel:Sync), SyncStep, SyncProgress.TotalFiles, SyncProgress.CurrentFile, NbItems), Mode=OneWay}"
                                HorizontalAlignment="Center"
-                               TextWrapping="Wrap" />
+                               TextWrapping="Wrap">
+                    </TextBlock>
                     <!-- Link -->
                     <HyperlinkButton HorizontalAlignment="Center"
                                      Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonSeeActivities')}"
@@ -324,7 +325,6 @@
                                  NavigateUri="https://faq.infomaniak.com/2923" />
             </InfoBar.ActionButton>
         </InfoBar>
-
 
         <!-- State widget -->
         <Border Grid.Column="0"

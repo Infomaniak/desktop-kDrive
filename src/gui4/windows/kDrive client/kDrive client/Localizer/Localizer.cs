@@ -132,6 +132,11 @@ namespace Infomaniak.kDrive
             return GetStringWithPlural(key, count, new object?[] { arg1 });
         }
 
+        public string GetStringWithPlural1ulong(string key, ulong count, ulong arg1)
+        {
+            return GetStringWithPlural(key, Convert.ToInt64(Math.Min(count, Int64.MaxValue)), new object?[] { arg1 });
+        }
+
         // This method is used to get a localized string that has a singular and plural form based on the count.
         // The singularKey is the key for the singular form of the string, and the plural form is expected to be defined in the resource file with the key singularKey + "-plural".
         public string GetStringWithPlural(string singularKey, Int64 count, params object?[]? args)
@@ -151,6 +156,8 @@ namespace Infomaniak.kDrive
         {
             return GetString(key, null);
         }
+
+        public readonly string Ellipsis = "…";
 
         public async Task<bool> TryLaunchUriAsync(string uriKey)
         {

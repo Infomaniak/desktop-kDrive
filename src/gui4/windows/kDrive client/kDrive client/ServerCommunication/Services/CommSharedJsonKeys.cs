@@ -51,6 +51,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string TotalFiles = "totalFiles";
         static public string SyncStep = "syncStep";
         static public string SyncStatus = "syncStatus";
+        static public string NbItems = "nbItems";
         static public string SyncFileItemInfo = "itemInfo";
         static public string RestartSync = "restartSync";
         static public string NotificationType = "notificationType";

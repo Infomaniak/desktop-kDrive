@@ -5182,7 +5182,7 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, const qint64 s
 }
 
 void AppServer::sendSyncProgressInfo(const SyncDbId syncDbId, const SyncStatus status, const SyncStep step,
-                                     const SyncProgress &progress) const {
+                                     const SyncProgress &progress, uint64_t nbItems) const {
     if (useOldCommServer()) {
         int id = 0;
         QByteArray params;
@@ -5198,7 +5198,7 @@ void AppServer::sendSyncProgressInfo(const SyncDbId syncDbId, const SyncStatus s
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfoJob>(syncDbId, status, step, progress));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfoJob>(syncDbId, status, step, progress, nbItems));
     }
 }
 
@@ -5278,7 +5278,7 @@ void AppServer::onUpdateSyncsProgress() {
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
             // Show the sync paused anyway. It is most likely that an external drive is not plugged in.
-            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress());
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress(), 0);
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);
@@ -5293,7 +5293,7 @@ void AppServer::onUpdateSyncsProgress() {
                 syncPal->loadProgress(progress);
             }
 
-            const SyncCache syncCache{syncPal->status(), syncPal->step(), progress};
+            const SyncCache syncCache{syncPal->status(), syncPal->step(), progress, syncPal->nbManagedItems()};
             if (const auto syncCacheMapIt = _syncCacheMap.find(sync.dbId());
                 syncCacheMapIt == _syncCacheMap.end() || syncCacheMapIt->second != syncCache) {
                 // Set/update sync cache
@@ -5303,7 +5303,7 @@ void AppServer::onUpdateSyncsProgress() {
                     syncCacheMapIt->second = syncCache;
 
                 // Send progress to the client
-                sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, progress);
+                sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, progress, syncPal->nbManagedItems());
             }
         }
     }
