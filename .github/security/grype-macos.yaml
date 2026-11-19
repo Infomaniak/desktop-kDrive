@@ -1,0 +1,14 @@
+# Applies only to the macOS Conan dependency scan, not the app-binary scan.
+# Evidence and review conditions: .github/security/README.md
+ignore:
+  - vulnerability: CVE-2026-119586
+    namespace: nvd:cpe
+    package:
+      name: sqlite3
+      version: "3.54.1"
+      type: conan
+    reason: >-
+      Not affected: this vulnerability is in the SQLite command-line shell's
+      .recover command, not the SQLite library. The macOS Conan requirement sets
+      build_executable=False and the app SBOM contains no sqlite3 executable.
+      Review conditions are documented in .github/security/README.md.
