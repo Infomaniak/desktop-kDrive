@@ -139,7 +139,7 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 ## Conan
 The macOS build action uses Mise to install **Conan 2.34.0** in an isolated pipx environment.
 This version recognizes Apple Clang 21 from Xcode 27 without custom Conan settings.
-The version is pinned in the root `mise.toml`, alongside pipx. To use it locally without a `.venv`:
+The root `mise.toml` pins Conan, pipx and CMake 3.30.5. To use them locally without a `.venv`:
 
 ```bash
 mise trust
