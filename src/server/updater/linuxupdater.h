@@ -36,7 +36,7 @@ class LinuxUpdater : public AbstractUpdater {
         LinuxUpdater() = default;
 
         void onUpdateFound() override;
-        void onAutoUpdatesEnabled() override;
+        void onUpdateFoundAfterChannelChange() override;
         void startInstaller() override;
         void setQuitCallback(const std::function<void()> &quitCallback) override { _quitCallback = quitCallback; }
         bool checkMinOsVersion(const std::string &minOsVersion) const override;
@@ -61,7 +61,8 @@ class LinuxUpdater : public AbstractUpdater {
 
     private:
         [[nodiscard]] bool canUpdateInPlace() const;
-        void prepareAnnouncedUpdate();
+        void handleUpdateFound(bool automaticInstallAllowed);
+        void prepareAnnouncedUpdate(bool restartWhenInstalled);
         void fetchChecksum(const VersionInfo &info);
         void checksumFetched(UniqueId jobId, const VersionInfo &info);
         void prepareUpdate(const VersionInfo &info);
@@ -71,14 +72,15 @@ class LinuxUpdater : public AbstractUpdater {
         void downloadFinished(UniqueId jobId, const VersionInfo &info);
         void finishPreparation(UpdateState state);
         void installUpdate(const VersionInfo &info);
-        void restartApp(const SyncPath &installedPath);
+        void restartApp(const SyncPath &installedPath, bool showSettings);
         static void updateDesktopEntries(const SyncPath &targetPath);
         [[nodiscard]] std::string expectedChecksum(std::string_view version) const;
         [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const VersionInfo &info);
-        [[nodiscard]] virtual bool launchRelauncher(const SyncPath &targetPath) const;
+        [[nodiscard]] virtual bool launchRelauncher(const SyncPath &targetPath, bool showSettings) const;
 
         SyncPath _appImagePath{CommonUtility::appImagePath()};
         std::atomic_bool _downloadInProgress{false};
+        std::atomic_bool _restartWhenInstalled{false}; // The user started the preparation: restart once installed.
         std::atomic_bool _restartInProgress{false};
 
         mutable std::mutex _stateMutex;

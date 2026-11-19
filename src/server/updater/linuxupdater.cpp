@@ -46,18 +46,20 @@ namespace {
 constexpr auto installedFileName = "kDrive.AppImage";
 constexpr auto partialFileName = ".kDrive.AppImage.part";
 
-// Waits for the old server to exit, then starts the new AppImage on the Settings window, where the update was requested.
-// The single-instance check of the new version would hand over to a server still running, so the script waits for the
-// complete shutdown (synchronizations included); 5 minutes is only a safeguard against a stuck process.
-// Arguments: $1 = PID, $2 = AppImage.
+// Waits for the old server to exit, then starts the new AppImage with the remaining arguments (`--settings` when the
+// update was requested from Settings). The single-instance check of the new version would hand over to a server still
+// running, so the script waits for the complete shutdown (synchronizations included); 5 minutes is only a safeguard
+// against a stuck process.
+// Arguments: $1 = PID, $2 = AppImage, then the arguments of the new AppImage.
 constexpr auto relauncherScript = R"(pid="$1"
 target="$2"
+shift 2
 i=0
 while kill -0 "$pid" 2>/dev/null && [ "$i" -lt 1500 ]; do
     sleep 0.2
     i=$((i + 1))
 done
-exec "$target" --settings)";
+exec "$target" "$@")";
 
 log4cplus::Logger logger() {
     return Log::instance()->getLogger();
@@ -66,6 +68,18 @@ log4cplus::Logger logger() {
 } // namespace
 
 void LinuxUpdater::onUpdateFound() {
+    handleUpdateFound(true);
+}
+
+void LinuxUpdater::onUpdateFoundAfterChannelChange() {
+    handleUpdateFound(false);
+}
+
+/**
+ * Installs the announced update when automatic updates are enabled and the check allows it. The application is not
+ * restarted: the client requests the restart once it cannot interrupt the user.
+ */
+void LinuxUpdater::handleUpdateFound(const bool automaticInstallAllowed) {
     const auto version = versionInfo().fullVersion();
     bool alreadyInstalled = false;
     {
@@ -73,9 +87,8 @@ void LinuxUpdater::onUpdateFound() {
         alreadyInstalled = _installedVersion == version;
     }
     if (alreadyInstalled) {
-        // Retry the relaunch if a previous attempt failed after installation.
+        // Waits for the restart request again, including after a failed relaunch.
         setState(UpdateState::Ready);
-        startInstaller();
         return;
     }
 
@@ -90,23 +103,17 @@ void LinuxUpdater::onUpdateFound() {
         return;
     }
 
-    if (!ParametersCache::instance()->parameters().autoUpdates()) {
-        // The update stays Available until the user starts it from Settings.
+    if (!automaticInstallAllowed || !ParametersCache::instance()->parameters().autoUpdates()) {
+        // The update stays Available until the user starts it from Settings, or until a scheduled check installs it.
         return;
     }
 
-    prepareAnnouncedUpdate();
-}
-
-void LinuxUpdater::onAutoUpdatesEnabled() {
-    if (state() == UpdateState::Available) {
-        onUpdateFound();
-    }
+    prepareAnnouncedUpdate(false);
 }
 
 /**
- * Prepares the announced update and restarts the application once installed, or retries the relaunch of an update
- * already installed on disk.
+ * Prepares the announced update and restarts the application on the Settings window once installed, or restarts the
+ * application on the update already installed on disk, which is the restart the client requests.
  */
 void LinuxUpdater::startInstaller() {
     const auto version = versionInfo().fullVersion();
@@ -119,18 +126,18 @@ void LinuxUpdater::startInstaller() {
     }
 
     if (installedPath.empty()) {
-        prepareAnnouncedUpdate();
+        prepareAnnouncedUpdate(true);
         return;
     }
 
-    restartApp(installedPath);
+    restartApp(installedPath, false);
 }
 
 // The download completion and a GUI request can both reach this point while shutdown is being scheduled.
-void LinuxUpdater::restartApp(const SyncPath &installedPath) {
+void LinuxUpdater::restartApp(const SyncPath &installedPath, const bool showSettings) {
     if (_restartInProgress.exchange(true)) return;
 
-    if (!launchRelauncher(installedPath)) {
+    if (!launchRelauncher(installedPath, showSettings)) {
         // The new version is in place and starts at the next launch.
         _restartInProgress = false;
         setState(UpdateState::UpdateError);
@@ -142,7 +149,7 @@ void LinuxUpdater::restartApp(const SyncPath &installedPath) {
     }
 }
 
-void LinuxUpdater::prepareAnnouncedUpdate() {
+void LinuxUpdater::prepareAnnouncedUpdate(const bool restartWhenInstalled) {
     if (state() != UpdateState::Available && state() != UpdateState::DownloadError && state() != UpdateState::UpdateError) {
         LOG_INFO(logger(), "No AppImage update to prepare in state " << state());
         return;
@@ -153,11 +160,16 @@ void LinuxUpdater::prepareAnnouncedUpdate() {
         return;
     }
 
-    // The user's request (GUI job thread) and an automatic preparation (main thread) can race: only one starts.
+    // The user's request (GUI job thread) and an automatic preparation (main thread) can race: only one starts, and the
+    // user's request still restarts the application once the update is installed.
     if (_downloadInProgress.exchange(true)) {
+        if (restartWhenInstalled) {
+            _restartWhenInstalled = true;
+        }
         LOG_INFO(logger(), "AppImage update already being prepared");
         return;
     }
+    _restartWhenInstalled = restartWhenInstalled;
 
     // The announced version and its URL are captured together: a check or a channel change during the preparation
     // replaces versionInfo().
@@ -403,7 +415,8 @@ void LinuxUpdater::finishPreparation(const UpdateState state) {
 }
 
 /**
- * Replaces the AppImage on disk with the verified download, then restarts the application on the installed version.
+ * Replaces the AppImage on disk with the verified download. The application restarts on it at once when the user started
+ * the update; otherwise the client requests the restart later, and the next launch uses it anyway.
  */
 void LinuxUpdater::installUpdate(const VersionInfo &info) {
     const auto version = info.fullVersion();
@@ -436,7 +449,7 @@ void LinuxUpdater::installUpdate(const VersionInfo &info) {
         finishPreparation(UpdateState::UpdateError);
         return;
     }
-    LOGW_INFO(logger(), L"New AppImage installed at " << Utility::formatSyncPath(targetPath) << L". Restarting the application.");
+    LOGW_INFO(logger(), L"New AppImage installed at " << Utility::formatSyncPath(targetPath));
 
     if (targetPath != _appImagePath) {
         // Launchers pointing to the old name (symlinks, user desktop entries) break. Rewrite ours before restarting.
@@ -456,7 +469,13 @@ void LinuxUpdater::installUpdate(const VersionInfo &info) {
         _installedPath = targetPath;
     }
     finishPreparation(UpdateState::Ready);
-    restartApp(targetPath);
+
+    if (!_restartWhenInstalled) {
+        LOG_INFO(logger(), "Automatic update installed, waiting for the client to request the restart");
+        return;
+    }
+
+    restartApp(targetPath, true);
 }
 
 // Points the autostart entry (when enabled) and the login URL scheme to the installed AppImage.
@@ -497,7 +516,7 @@ bool LinuxUpdater::verifyChecksum(const SyncPath &filepath, const VersionInfo &i
  * Starts a detached shell that waits for this server to exit, then launches the new AppImage. Variables set by the
  * AppImage runtime or pointing into its mount are removed so that the new AppImage starts with a clean environment.
  */
-bool LinuxUpdater::launchRelauncher(const SyncPath &targetPath) const {
+bool LinuxUpdater::launchRelauncher(const SyncPath &targetPath, const bool showSettings) const {
     auto environment = QProcessEnvironment::systemEnvironment();
     const auto appDir = environment.value(QStringLiteral("APPDIR"));
     for (const auto &name: environment.keys()) {
@@ -512,6 +531,9 @@ bool LinuxUpdater::launchRelauncher(const SyncPath &targetPath) const {
     QStringList arguments{
             QStringLiteral("/bin/sh"),           QStringLiteral("-c"),        QString::fromLatin1(relauncherScript),
             QStringLiteral("kdrive-relauncher"), QString::number(::getpid()), QString::fromStdString(targetPath.string())};
+    if (showSettings) {
+        arguments.append(QStringLiteral("--settings"));
+    }
 
     // Started at login, kDrive runs in the systemd service generated from its autostart entry. Before systemd 250
     // (Ubuntu 22.04), the end of the main process stops that service and kills the rest of its cgroup, relauncher
