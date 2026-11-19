@@ -47,7 +47,7 @@
 
             <!-- Card identifying the item through its icon, name, and parent folder path -->
             <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
-                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
                     Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
                     Visibility="{Binding HasItemName, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal" Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -76,10 +76,10 @@
                 </Grid.ColumnDefinitions>
                 <ProgressBar Grid.Column="0"
                              VerticalAlignment="Center"
+                             Height="8"
                              Maximum="{Binding GaugeMaximum, Mode=OneWay}"
                              Value="{Binding GaugeValue, Mode=OneWay}"
-                             IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay}"
-                             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}" />
+                             IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay}" />
                 <Button Grid.Column="1"
                         x:Name="CancelGaugeButton"
                         Click="OnCancelClicked"
@@ -87,11 +87,11 @@
                         Width="28"
                         Height="28"
                         Padding="0"
-                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}"
-                        Background="{ThemeResource TextFillColorPrimaryBrush}">
+                        Background="Transparent"
+                        BorderThickness="0">
                     <FontIcon Glyph="&#xE711;"
-                              FontSize="10"
-                              Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+                              FontSize="16"
+                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                 </Button>
             </Grid>
 
@@ -107,12 +107,12 @@
                     Width="28"
                     Height="28"
                     Padding="0"
-                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}"
-                    Background="{ThemeResource TextFillColorPrimaryBrush}"
+                    Background="Transparent"
+                    BorderThickness="0"
                     Visibility="{Binding IsWaitingSync, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <FontIcon Glyph="&#xE711;"
-                          FontSize="10"
-                          Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+                          FontSize="16"
+                          Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
             </Button>
         </StackPanel>
     </Border>
