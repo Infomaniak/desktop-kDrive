@@ -66,7 +66,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 
 ### Local Norms
 - macOS UI and server builds use Xcode 27. Keep local scripts on the operator-selected Xcode; use `.github/actions/setup_xcode` in desktop CI jobs. macOS unit test jobs only run prebuilt binaries and need no Xcode setup; redesigned Swift UI tests stay on the iOS runners with `Xcode-Latest.app`.
-- The main macOS CI build uses the collaborative `[self-hosted, iOS, Powerful]` pool, not the dedicated M2-3 runner. Keep Xcode 27 explicit.
+- The main macOS CI build and vulnerability scan use the collaborative `[self-hosted, iOS, Powerful]` pool, not the dedicated M2-3 runner. Keep Xcode 27 explicit.
 - Let `.github/actions/setup_xcode` export the verified Xcode path after checkout; a nonexistent job-wide `DEVELOPER_DIR` also breaks Apple's Git during checkout.
 - Pin macOS build tools such as Conan in the root `mise.toml`; use Mise in the macOS build action rather than installing Conan with pip there. Keep existing local `.venv` builds working.
 - GitHub macOS validation builds use `infomaniak-build-tools/macos/ci.xcconfig` through `XCODE_XCCONFIG_FILE` to avoid requiring Mac Development certificates on shared runners. Never apply this unsigned configuration to distribution release builds.
