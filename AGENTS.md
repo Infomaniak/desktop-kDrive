@@ -70,6 +70,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 - Migrate macOS `desktop-kdrive` jobs (M2-3) to `[self-hosted, iOS, Powerful]` incrementally: migrate Release build warnings and extended tests; defer macOS release builds until explicitly requested. Leave Linux `desktop-kdrive` runners unchanged. Keep Xcode 27 explicit for macOS builds.
 - Let `.github/actions/setup_xcode` export the verified Xcode path after checkout; a nonexistent job-wide `DEVELOPER_DIR` also breaks Apple's Git during checkout.
 - Pin macOS build tools such as Conan in the root `mise.toml`; use Mise in the macOS build action rather than installing Conan with pip there. Keep existing local `.venv` builds working.
+- For job-local Mise tools, export `MISE_DATA_DIR` before setup; `mise-action`'s `mise_dir` alone only relocates the executable, not the tool installations.
 - GitHub macOS validation builds use `infomaniak-build-tools/macos/ci.xcconfig` through `XCODE_XCCONFIG_FILE` to avoid requiring Mac Development certificates on shared runners. Never apply this unsigned configuration to distribution release builds.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
 - Authenticate Qt in CI using `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`, with `--no-save-account`; keep INI authentication for local builds.
