@@ -28,10 +28,14 @@
 
 #include "version.h"
 
+#include <QCoreApplication>
 #include <QDate>
 #include <QDesktopServices>
+#include <QDir>
+#include <QFileInfo>
 #include <QLoggingCategory>
 #include <QPointer>
+#include <QtVersion>
 
 #include <algorithm>
 
@@ -83,6 +87,12 @@ QString versionDetails(const QString &version, const uint64_t build) {
             .toHtmlEscaped()
             .replace(u'\n', u"<br>"_s)
             .arg(bold(version), bold(QString::number(build)), QString::number(QDate::currentDate().year()));
+}
+
+// License notices of the bundled components, written next to the executable by the AppImage build.
+QString thirdPartyLicensesPath() {
+    const auto relativePath = QString::fromLatin1(AppConstants::Settings::thirdPartyLicensesRelativePath);
+    return QDir::cleanPath(QCoreApplication::applicationDirPath() + u'/' + relativePath);
 }
 } // namespace
 
@@ -393,6 +403,18 @@ void GeneralSettingsController::openLicense() {
 
 void GeneralSettingsController::openSources() {
     openUrl(AppConstants::Settings::sourcesUri());
+}
+
+bool GeneralSettingsController::thirdPartyLicensesAvailable() {
+    return QFileInfo(thirdPartyLicensesPath()).isDir();
+}
+
+QString GeneralSettingsController::qtVersion() {
+    return QString::fromLatin1(qVersion());
+}
+
+void GeneralSettingsController::openThirdPartyLicenses() {
+    openUrl(QUrl::fromLocalFile(thirdPartyLicensesPath()));
 }
 
 } // namespace KDC
