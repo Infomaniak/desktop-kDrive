@@ -65,8 +65,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
 
 ### Local Norms
-- The macOS desktop CI runner's runnable Xcode 26 installation is `/Applications/Xcode_26.app`; select it with job-scoped `DEVELOPER_DIR`.
-- macOS server build workflows use the desktop CI stack on M2-3 and `.github/actions/setup_xcode` to verify Xcode 26. macOS unit test jobs only run prebuilt binaries: they run on GitHub-hosted `macos-latest` and need no Xcode setup. Keep the redesigned Swift UI workflow on the iOS runners with `Xcode-Latest.app`.
+- macOS UI and server builds use Xcode 27. Keep local scripts on the operator-selected Xcode; use `.github/actions/setup_xcode` in desktop CI jobs. macOS unit test jobs only run prebuilt binaries and need no Xcode setup; redesigned Swift UI tests stay on the iOS runners with `Xcode-Latest.app`.
 - In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
 - Authenticate Qt in CI using `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`, with `--no-save-account`; keep INI authentication for local builds.
 - Keep ad hoc Conan recipe verification scripts local; do not include them in a PR unless explicitly requested.

@@ -59,7 +59,8 @@ Once installed, run the following command :
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
 
-CI and release scripts use your `xcode-select` selection or explicit `DEVELOPER_DIR`.
+Use Xcode 27 to build the UI and server. Local build scripts use your `xcode-select`
+selection or explicit `DEVELOPER_DIR`; CI selects Xcode 27 through the setup action.
 They activate `.venv/bin/activate` (install Conan there) and require CMake >= 3.24 for `--fresh`.
 
 
@@ -186,7 +187,7 @@ Conan version 2.x.x
    os.version=12.4
    arch=armv8|x86_64
    compiler=apple-clang
-   compiler.version=16
+   compiler.version=21
    compiler.cppstd=20
    compiler.libcxx=libc++
    build_type=Debug
@@ -233,7 +234,7 @@ The project requires additional CMake variables for a correct build. To inject t
     ```
    macOS v4 requires macOS 12.4 or later. CI and release builds use this profile.
    Match `compiler.version` to `xcrun clang --version`
-   on local machines and runners (Apple Clang 21 for Xcode 26.5).
+   on local machines and runners (Apple Clang 21 for Xcode 27.1).
 
 ---
 
