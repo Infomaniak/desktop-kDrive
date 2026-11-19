@@ -268,7 +268,12 @@ class Collector:
             if is_elf(path):
                 self.classify(path, relative)
         if self.errors:
-            raise LicenseError("Bundled files without a known origin:\n  " + "\n  ".join(self.errors))
+            raise LicenseError(
+                "Bundled files without a known origin:\n  "
+                + "\n  ".join(self.errors)
+                + "\nDeclare a library from /usr/local or the Qt installer in EXTRA_COMPONENTS, with its license"
+                " under infomaniak-build-tools/linux/licenses/components/."
+            )
         self.write()
 
     def classify(self, path: Path, relative: str):
