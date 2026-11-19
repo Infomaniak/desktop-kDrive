@@ -181,6 +181,7 @@ namespace Infomaniak.kDrive.Types
         WaitingSync,
         Hydrating,
         Failed,
+        NotFound,
         EnumEnd
     };
 

@@ -78,34 +78,45 @@ struct FileOpeningItemCard: View {
 
 /// Content of the failure pop-up window: a title, an explanation inviting the user to download the item from kDrive
 /// in a browser, the card identifying the item when its identity is known, and the actions: opening the kDrive web
-/// application page of the item, and closing the window.
+/// application page of the item, and closing the window. When the item does not exist on the remote side (not
+/// found), there is nothing to download: the window shows a dedicated message and offers no download.
 struct FileOpeningFailureView: View {
     let itemName: String
     let itemPath: String
+    let isNotFound: Bool
+    let webUrl: String
     let onDownload: () -> Void
     let onClose: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            FileOpeningWindowTitleRow()
+            // The not-found variant is a standard window whose title bar carries the "kDrive" title: it draws no
+            // title row of its own.
+            if !isNotFound {
+                FileOpeningWindowTitleRow()
+            }
 
             VStack(alignment: .leading, spacing: AppPadding.padding16) {
-                Text(KDriveLocalizable.fileOpeningFailureTitle)
+                Text(isNotFound ? KDriveLocalizable.fileOpeningNotFoundMessage : KDriveLocalizable.fileOpeningFailureTitle)
                     .font(Font.Tokens.title2Emphasized)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
 
-                Text(KDriveLocalizable.fileOpeningFailureExplanation)
-                    .font(.body)
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
+                if !isNotFound {
+                    Text(KDriveLocalizable.fileOpeningFailureExplanation)
+                        .font(.body)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                }
 
                 if !itemName.isEmpty {
                     FileOpeningItemCard(itemName: itemName, itemPath: itemPath)
                 }
 
-                actionButton(KDriveLocalizable.fileOpeningDownloadButton,
-                             background: ColorToken.Action.primary.asColor,
-                             foreground: ColorToken.Action.onPrimary.asColor,
-                             action: onDownload)
+                if !isNotFound && !webUrl.isEmpty {
+                    actionButton(KDriveLocalizable.fileOpeningDownloadButton,
+                                 background: ColorToken.Action.primary.asColor,
+                                 foreground: ColorToken.Action.onPrimary.asColor,
+                                 action: onDownload)
+                }
 
                 actionButton(KDriveLocalizable.buttonClose,
                              background: ColorToken.Surface.secondary.asColor,
@@ -115,7 +126,7 @@ struct FileOpeningFailureView: View {
             .padding(AppPadding.padding16)
         }
         .frame(width: 392)
-        .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea(edges: isNotFound ? [] : .top)
     }
 
     private func actionButton(_ title: String, background: Color, foreground: Color, action: @escaping () -> Void)

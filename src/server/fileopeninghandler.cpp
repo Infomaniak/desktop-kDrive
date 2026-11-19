@@ -25,6 +25,8 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
+#include "jobs/network/jobexceptions.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "libsyncengine/syncpal/syncpal.h"
 
@@ -61,7 +63,7 @@ void FileOpeningHandler::queueOpenFileJob() {
 
     if (OpenFileJob::Request request; !OpenFileJob::parseDeeplinkUrl(_url, request)) {
         LOG_WARN(Log::instance()->getLogger(), "Invalid file opening URL - url=" << _url);
-        handleFileOpeningFailure();
+        handleFileOpeningFailure(FileOpeningPhase::Failed);
 
         return;
     }
@@ -74,7 +76,7 @@ void FileOpeningHandler::queueOpenFileJob() {
     if (const auto activeFlows = _appServer->fileOpeningJobCount(); activeFlows >= maxFlows) {
         LOG_WARN(Log::instance()->getLogger(), "Too many concurrent file opening requests - active="
                                                        << activeFlows << ", max=" << maxFlows << " - url=" << _url);
-        handleFileOpeningFailure();
+        handleFileOpeningFailure(FileOpeningPhase::Failed);
 
         return;
     }
@@ -136,16 +138,16 @@ void FileOpeningHandler::onOpenFileJobFinished(const OpenFileJob::Outcome outcom
             (void) openLocalItem(localPath, syncDbId);
             break;
         case OpenFileJob::Outcome::NotFound:
-            handleFileOpeningFailure();
+            handleFileOpeningFailure(FileOpeningPhase::NotFound);
             break;
         case OpenFileJob::Outcome::ResolveTimedOut:
-            handleFileOpeningFailure();
+            handleFileOpeningFailure(FileOpeningPhase::Failed);
             break;
         case OpenFileJob::Outcome::HydrationTimedOut:
-            handleFileOpeningFailure();
+            handleFileOpeningFailure(FileOpeningPhase::Failed);
             break;
         case OpenFileJob::Outcome::Failed:
-            handleFileOpeningFailure();
+            handleFileOpeningFailure(FileOpeningPhase::Failed);
             break;
         case OpenFileJob::Outcome::Canceled:
             handleFileOpeningCanceled();
@@ -166,7 +168,7 @@ ExitInfo FileOpeningHandler::openLocalItem(const SyncPath &localPath, const Sync
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfFileIsDehydrated - " << Utility::formatIoError(pathToOpen, ioError));
 
-        handleFileOpeningFailure();
+        handleFileOpeningFailure(FileOpeningPhase::Failed);
 
         return ExitCode::SystemError;
     }
@@ -174,14 +176,14 @@ ExitInfo FileOpeningHandler::openLocalItem(const SyncPath &localPath, const Sync
     // Do not attempt to open a dehydrated placeholder if the engine of the sync is not running: the system is unable
     // to hydrate it.
     if (isDeHydrated && !isSyncEngineRunning(syncDbId)) {
-        handleFileOpeningFailure();
+        handleFileOpeningFailure(FileOpeningPhase::Failed);
 
         return ExitCode::DataError;
     }
 
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(pathToOpen)))) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in QDesktopServices::openUrl - " << Utility::formatSyncPath(pathToOpen));
-        handleFileOpeningFailure();
+        handleFileOpeningFailure(FileOpeningPhase::Failed);
 
         return ExitCode::SystemError;
     }
@@ -202,24 +204,48 @@ void FileOpeningHandler::handleFileOpeningSuccess() {
     _appServer->unregisterFileOpeningJob(_jobId);
 }
 
-void FileOpeningHandler::handleFileOpeningFailure() {
+void FileOpeningHandler::handleFileOpeningFailure(const FileOpeningPhase failurePhase) {
     LOG_WARN(Log::instance()->getLogger(), "Failed to open item from deeplink URL - url=" << _url);
 
-    // Inform the client interface of the failure: the pop-up window of the request is replaced by a failure window
-    // offering to download the item from the kDrive web application in a browser. No notification is sent anymore:
-    // the failure window replaces it.
-    _appServer->sendFileOpeningFailure(_jobId, webUrl());
+    // Inform the client interface of the failure: the pop-up window of the request is replaced by a failure window.
+    // No notification is sent anymore: the failure window replaces it. The web address of the item is reported only
+    // for a generic failure: when the item does not exist on the remote side, there is nothing to download.
+    _appServer->sendFileOpeningFailure(_jobId, failurePhase, failurePhase == FileOpeningPhase::Failed ? webUrl() : CommString{});
 
     _appServer->unregisterFileOpeningJob(_jobId);
 }
 
 CommString FileOpeningHandler::webUrl() const {
-    // The kDrive web application address of the item is derived from the request URL, and is therefore unavailable
-    // when the URL itself is invalid.
     OpenFileJob::Request request;
     if (!OpenFileJob::parseDeeplinkUrl(_url, request)) return {};
 
-    return CommonUtility::str2CommString(UrlHelper::kDriveWebAppFileUrl(request.driveId, request.remoteNodeId));
+    // The kDrive web application opens an item within its parent folder: resolve the parent node id of the item from
+    // the file information API. Best effort: when the parent node id cannot be resolved, the failure window shows no
+    // download button.
+    const auto job = _job.lock();
+    if (!job || job->driveDbId() == 0) return {};
+
+    try {
+        const auto fileInfoJob = std::make_shared<GetFileInfoJob>(job->driveDbId(), request.remoteNodeId);
+        if (const auto exitInfo = fileInfoJob->runSynchronously(); !exitInfo) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in GetFileInfoJob::runSynchronously - remoteNodeId="
+                                                            << CommonUtility::s2ws(request.remoteNodeId) << L": " << exitInfo);
+            return {};
+        }
+
+        const auto parentNodeId = fileInfoJob->parentNodeId();
+        if (parentNodeId.empty()) {
+            LOGW_WARN(Log::instance()->getLogger(), L"The file information carries no parent node id - remoteNodeId="
+                                                            << CommonUtility::s2ws(request.remoteNodeId));
+            return {};
+        }
+
+        return CommonUtility::str2CommString(UrlHelper::kDriveWebAppFolderUrl(request.driveId, parentNodeId));
+    } catch (const JobException &e) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in GetFileInfoJob::GetFileInfoJob: error=" << CommonUtility::s2ws(e.what()));
+        return {};
+    }
 }
 
 void FileOpeningHandler::handleFileOpeningCanceled() {

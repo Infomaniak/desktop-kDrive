@@ -64,6 +64,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     OnPropertyChangedInUIThread(nameof(IsDownloading));
                     OnPropertyChangedInUIThread(nameof(IsWaitingSync));
+                    OnPropertyChangedInUIThread(nameof(IsFailed));
                     OnPropertyChangedInUIThread(nameof(IsIndeterminate));
                     OnPropertyChangedInUIThread(nameof(Message));
                 }
@@ -100,9 +101,13 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        /// True once the request failed: the user interface must present the failure window instead of the progress
-        /// one.
-        public bool IsFailed => Phase == FileOpeningPhase.Failed;
+        /// True once the request failed (generic failure, or item not found on the remote side): the user interface
+        /// must present the failure window instead of the progress one.
+        public bool IsFailed => Phase is FileOpeningPhase.Failed or FileOpeningPhase.NotFound;
+
+        /// True when the request failed because the item does not exist on the remote side: the failure window shows
+        /// a dedicated message and offers no download, since there is nothing to download.
+        public bool IsNotFound => Phase == FileOpeningPhase.NotFound;
 
         /// True while the gauge has no measurable progress to display: no byte downloaded yet and no percent reported.
         public bool IsIndeterminate => IsDownloading && TotalBytes <= 0 && Percent <= 0;
@@ -276,7 +281,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 // The request has been processed (successfully or not, or canceled): the pop-up window must be
                 // closed. Remember the terminal phase, so that a progress update reordered after it is ignored.
-                // The request is kept: the Failed phase follows the Finished one and feeds the failure window with
+                // The request is kept: the failure phases follow the Finished one and feed the failure window with
                 // the identity of the item.
                 _finishedJobIds.Add(update.JobId);
                 if (_requests.TryGetValue(update.JobId, out var dismissedRequest))
@@ -287,10 +292,11 @@ namespace Infomaniak.kDrive.ViewModels
                 return;
             }
 
-            // The Failed phase is reported after the Finished one and carries the web address of the item: process
-            // it even though the request has already been dismissed. Any other update for a dismissed request is
+            // The failure phases are reported after the Finished one and carry the outcome of the request: process
+            // them even though the request has already been dismissed. Any other update for a dismissed request is
             // ignored: recreating it would leave a pop-up window open forever.
-            if (update.Phase != FileOpeningPhase.Failed && _finishedJobIds.Contains(update.JobId))
+            if (update.Phase is not (FileOpeningPhase.Failed or FileOpeningPhase.NotFound) &&
+                _finishedJobIds.Contains(update.JobId))
             {
                 return;
             }
