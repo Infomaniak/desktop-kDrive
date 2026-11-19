@@ -144,6 +144,14 @@ namespace Infomaniak.kDrive.Pages
             return Localizer.Instance.GetString("storageThisComputerTitle", diskRoot, prettySize);
         }
 
+        private string GetMySubscriptionTitle(string packDisplayName)
+        {
+            if (String.IsNullOrEmpty(packDisplayName))
+                return Localizer.Instance.GetString("labelMySubscription");
+            else
+                return Localizer.Instance.GetString("storageSubscriptionTitle", PageViewModel.Sync.Drive.PackDisplayName);
+        }
+
         private string GetStorageUsedLabel(Int64? usedSize)
         {
             BytesToHumanReadableStringConverter converter = new BytesToHumanReadableStringConverter();
@@ -187,6 +195,13 @@ namespace Infomaniak.kDrive.Pages
             }
             return (int)Math.Round(number);
         }
+
+        private async void UpsellButton_Click(object sender, RoutedEventArgs e)
+        {
+            var uriStore = App.ServiceProvider.GetRequiredService<IUriStore>();
+            if (PageViewModel.Sync?.Drive is Drive drive)
+                await uriStore.OpenInBrowserAsync(uriStore.DriveUpsellUrl(drive));
+        }
     }
 
 
@@ -199,6 +214,7 @@ namespace Infomaniak.kDrive.Pages
         private long? _diskSize;
         private long? _diskUsedSize;
         private long? _diskFreeSize;
+        private bool _diskIsFull;
         private long? _hydratedFilesSize;
         private long? _otherSyncsHydratedFilesSize;
         private long? _otherFileSize;
@@ -208,6 +224,7 @@ namespace Infomaniak.kDrive.Pages
         private bool _isDisposed = false;
         private long? _onlineUsedSize;
         private long? _onlineFreeSize;
+        private bool _onlineIsFull;
         private Sync? _sync = null;
 
         // Text
@@ -290,7 +307,19 @@ namespace Infomaniak.kDrive.Pages
         public long? OnlineFreeSize
         {
             get => _onlineFreeSize;
-            set => SetPropertyInUIThread(ref _onlineFreeSize, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _onlineFreeSize, value))
+                {
+                    OnlineIsFull = (OnlineFreeSize.HasValue && OnlineFreeSize.Value <= 0);
+                }
+            }
+        }
+
+        public bool OnlineIsFull
+        {
+            get => _onlineIsFull;
+            set => SetPropertyInUIThread(ref _onlineIsFull, value);
         }
 
         public Sync? Sync
@@ -318,9 +347,20 @@ namespace Infomaniak.kDrive.Pages
         public long? DiskFreeSize
         {
             get => _diskFreeSize;
-            set => SetPropertyInUIThread(ref _diskFreeSize, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _diskFreeSize, value))
+                {
+                    DiskIsFull = (DiskFreeSize.HasValue && DiskFreeSize.Value <= 0);
+                }
+            }
         }
 
+        public bool DiskIsFull
+        {
+            get => _diskIsFull;
+            set => SetPropertyInUIThread(ref _diskIsFull, value);
+        }
         public long? HydratedFilesSize
         {
             get => _hydratedFilesSize;

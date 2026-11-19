@@ -59,6 +59,56 @@ PackInfo::PackInfo(const uint64_t id, const std::string &name, const std::string
     _displayName(displayName),
     _isFree(isFree) {}
 
+void PackInfo::setDisplayName(const std::string_view displayName) {
+    static constexpr std::string_view kDrivePrefix = "kDrive";
+    static constexpr std::string_view kSuitePrefix = "kSuite";
+
+    if (displayName.empty()) {
+        _displayName = displayName;
+        return;
+    }
+
+    std::string name(displayName);
+
+    // Replace all occurrences of "business" with "pro"
+    constexpr std::string_view from = "Business";
+    constexpr std::string_view to = "Pro";
+
+    size_t pos = 0;
+    while ((pos = name.find(from, pos)) != std::string::npos) {
+        (void) name.replace(pos, from.size(), to);
+        pos += to.size();
+    }
+
+    if (name.find(kDrivePrefix) != std::string::npos || name.find(kSuitePrefix) != std::string::npos) {
+        _displayName = std::move(name);
+        return;
+    }
+
+    switch (_id) {
+        case 1: // Solo
+        case 2: // Team
+        case 3: // Pro
+        case 6: // Free
+        case 22: // Solo special offer
+            _displayName = std::string(kDrivePrefix) + " " + name;
+            break;
+
+        case 8: // kSuite standard
+        case 11: // kSuite pro
+        case 14: // kSuite enterprise
+        case 29: // kSuite essential
+        case 23: // kSuite special offer 1
+        case 26: // kSuite special offer 2
+            _displayName = std::string(kSuitePrefix) + " " + name;
+            break;
+
+        default:
+            _displayName = std::move(name);
+            break;
+    }
+}
+
 UpsellTarget PackInfo::upsellTarget() const {
     return getUpsellTarget(_id);
 }

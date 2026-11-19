@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 10 Nov 2026 10:09:15 +0100 
+  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -1362,7 +1362,7 @@
   <data name="moveDeletedFilesToRecycleBinWarning" xml:space="preserve"> 
     <value>Ορισμένα στοιχεία μπορεί να μην είναι δυνατό να μεταφερθούν.</value> 
   </data> 
-  <data name="myKsuiteUpsellLink" xml:space="preserve"> 
+  <data name="mykSuiteUpsellLink" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite/myksuite</value> 
   </data> 
   <data name="myksuitePlusBannerDescription" xml:space="preserve"> 
@@ -1607,6 +1607,10 @@
   </data> 
   <data name="storageOnlineUsed" xml:space="preserve"> 
     <value>Αρχεία kDrive που είναι αποθηκευμένα στο διαδίκτυο</value> 
+  </data> 
+  <data name="storageSubscriptionTitle" xml:space="preserve"> 
+    <value>Συνδρομή %@</value> 
+    <comment>Storage page: title of the subscription card. %@ is the offer name of the drive, e.g. "kDrive Team" or "kSuite Business". labelMySubscription is shown instead when the offer is unknown.</comment> 
   </data> 
   <data name="storageSyncBlockDescription" xml:space="preserve"> 
     <value>Διαχειριστείτε τους συγχρονισμένους φακέλους για να ελευθερώσετε χώρο στον υπολογιστή σας.</value> 

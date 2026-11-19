@@ -34,7 +34,7 @@ class PackInfo {
         [[nodiscard]] const std::string &name() const { return _name; }
         void setName(const std::string_view name) { _name = name; }
         [[nodiscard]] const std::string &displayName() const { return _displayName; }
-        void setDisplayName(const std::string_view displayName) { _displayName = displayName; }
+        void setDisplayName(const std::string_view displayName);
         [[nodiscard]] bool isFree() const { return _isFree; }
         void setIsFree(const bool isFree) { _isFree = isFree; }
         [[nodiscard]] int64_t kSuiteId() const { return _kSuiteId; }

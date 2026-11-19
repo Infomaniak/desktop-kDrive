@@ -89,6 +89,11 @@
                                   UriString="{StaticResource Infomaniak.DS.Icons.Network.hardware-outline}"
                                   Foreground="{ThemeResource TextFillColorPrimary}" />
             </NavigationViewItem.Icon>
+            <NavigationViewItem.InfoBadge>
+                <InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}"
+                           VerticalAlignment="Center"
+                           Visibility="{x:Bind ViewModel.SelectedSync.Drive.DisplayRemoteSpaceWarning, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay, FallbackValue=Collapsed}" />
+            </NavigationViewItem.InfoBadge>
         </NavigationViewItem>
     </NavigationView.MenuItems>
 
