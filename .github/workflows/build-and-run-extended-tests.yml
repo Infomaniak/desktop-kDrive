@@ -137,7 +137,7 @@ jobs:
   MacOS-extended-tests:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_27.app/Contents/Developer
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_MACOS }}
     steps:
       - name: Clean-up XCode DerivedData
@@ -149,7 +149,7 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
 
-      - name: Set up Xcode 26
+      - name: Set up Xcode 27
         uses: ./.github/actions/setup_xcode
 
       - name: Prepare Python environment

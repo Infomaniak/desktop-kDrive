@@ -53,6 +53,11 @@ kdrive_dir="$src_dir/infomaniak"
 
 # Path to Sparkle installation
 sparkle_dir="$HOME/Library/Frameworks"
+if [ ! -f "$sparkle_dir/Sparkle.framework/Headers/Sparkle.h" ]; then
+	echo "Missing Sparkle framework: $sparkle_dir/Sparkle.framework" >&2
+	echo 'Copy Sparkle.framework from the Sparkle release to ~/Library/Frameworks before building.' >&2
+	exit 1
+fi
 
 # Set build dir
 build_dir="$PWD/build-macos/client"
