@@ -127,6 +127,12 @@ class SentryNativeConan(ConanFile):
             # libunwind is vendored and statically linked into libsentry on Linux
             copy(self, "COPYING", src=pjoin(self.source_folder, "vendor", "libunwind"),
                  dst=pjoin(self.package_folder, "licenses", "libunwind"))
+            # Crashpad and its third-party code are shipped in the AppImage (crashpad_handler)
+            crashpad_folder = pjoin(self.source_folder, "external", "crashpad")
+            copy(self, "LICENSE", src=crashpad_folder, dst=pjoin(self.package_folder, "licenses", "crashpad"))
+            # The pattern applies to the path relative to third_party: the notices are in subfolders.
+            copy(self, "*/LICENSE*", src=pjoin(crashpad_folder, "third_party"),
+                 dst=pjoin(self.package_folder, "licenses", "crashpad", "third_party"))
         cmake = CMake(self)
         cmake.install()
         if self.settings.os == "Macos":
