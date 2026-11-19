@@ -571,7 +571,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
 
         } else {
             if (syncOp->affectedNode()->type() == NodeType::Directory) {
-                job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath);
+                job = std::make_shared<LocalCreateDirJob>(_syncPal->localPath(), absoluteLocalFilePath);
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
@@ -1063,7 +1063,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         }
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
 
-        job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
+        job = std::make_shared<LocalMoveJob>(_syncPal->localPath(), absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
     } else {
         // Target side is remote, so affected node is on local side.
         std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();
@@ -1552,7 +1552,8 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             // Rename the file so as not to lose any information
             SyncPath newSyncPath;
             if (const auto exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                        absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &newSyncPath);
+                        _syncPal->localPath(), absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Conflict,
+                        &newSyncPath);
                 !exitInfo) {
                 return exitInfo;
             }
@@ -2465,7 +2466,7 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
 ExitInfo ExecutorWorker::excludeFileFromSync(const SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath) {
     // Blacklist placeholder
     if (const auto exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                absoluteLocalFilepath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+                _syncPal->localPath(), absoluteLocalFilepath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
         !exitInfo) {
         return exitInfo;
     }

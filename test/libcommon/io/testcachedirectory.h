@@ -26,6 +26,7 @@ class TestCacheDirectory final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestCacheDirectory);
         CPPUNIT_TEST(testCacheDir);
         CPPUNIT_TEST(testCleanUpCacheDir);
+        CPPUNIT_TEST(testCacheDirIsLink);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -35,6 +36,7 @@ class TestCacheDirectory final : public CppUnit::TestFixture, public TestBase {
     private:
         void testCacheDir();
         void testCleanUpCacheDir();
+        void testCacheDirIsLink();
 };
 
 } // namespace KDC

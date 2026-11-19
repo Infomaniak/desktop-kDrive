@@ -1043,9 +1043,15 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
 
     const auto absolutePath = localSyncPath / relativePath;
 
+    // Refuse to create a placeholder (file or directory) through a link located below the sync root.
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, localSyncPath); ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Placeholder creation rejected: " << Utility::formatIoError(absolutePath, ioError));
+        return false;
+    }
+
     if (fileStat->st_mode == S_IFDIR) {
         IoError ioError = IoError::Success;
-        if (!IoHelper::createDirectory(absolutePath, false, ioError)) {
+        if (!IoHelper::createDirectory(absolutePath, false, ioError, localSyncPath)) {
             LOGW_WARN(_logger, L"Call to IoHelper::createDirectory failed: " << Utility::formatSyncPath(absolutePath));
             return false;
         }
@@ -1055,7 +1061,8 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
             return false;
         }
     } else if (fileStat->st_mode == S_IFREG) {
-        int flags = O_CREAT | FWRITE | O_NONBLOCK;
+        // O_NOFOLLOW: do not write through a link located at `absolutePath`.
+        int flags = O_CREAT | FWRITE | O_NONBLOCK | O_NOFOLLOW;
         int mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // Rights rw-r--r--
 
         int fd = open(absolutePath.c_str(), flags, mode);

@@ -31,6 +31,8 @@ class CacheDirectory {
         ~CacheDirectory();
 
         ExitInfo path(SyncPath &cacheDirectory) noexcept;
+        //! Returns the path of the sync root containing the cache directory.
+        [[nodiscard]] const SyncPath &syncDirectoryPath() const noexcept { return _syncDirectoryPath; }
         static std::string_view name() noexcept;
 
         // Shared naming contract used by creators and cleanup logic.
@@ -42,6 +44,7 @@ class CacheDirectory {
         static constexpr uint32_t tmpFileRandomPartLength = 10;
 
         ExitInfo initDirectory() noexcept;
+        ExitInfo checkIsNotLink() const noexcept;
         void cleanUp() const;
 
         const SyncPath _syncDirectoryPath;

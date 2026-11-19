@@ -84,12 +84,12 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     return sub + suffix + name.extension().native();
 }
 
-ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType,
-                                                              SyncPath *newPathPtr /*= nullptr*/) {
+ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &syncRootPath, const SyncPath &absoluteLocalPath,
+                                                              SuffixType suffixType, SyncPath *newPathPtr /*= nullptr*/) {
     const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(absoluteLocalPath, suffixType);
     auto newFullPath = absoluteLocalPath.parent_path() / newName;
 
-    LocalMoveJob moveJob(absoluteLocalPath, newFullPath);
+    LocalMoveJob moveJob(syncRootPath, absoluteLocalPath, newFullPath);
     moveJob.runSynchronously();
 
     if (newPathPtr) {
