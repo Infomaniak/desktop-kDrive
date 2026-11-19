@@ -944,13 +944,9 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &newPar
         }
     }
 
-    // Propagate distribution channel change
+    // Propagate distribution channel change. Enabling automatic updates installs nothing at once: the next scheduled check
+    // does it.
     setDistributionChannel(updatedParameters.distributionChannel());
-
-    // Propagate automatic updates activation
-    if (!previousParameters.autoUpdates() && updatedParameters.autoUpdates() && !_noUpdate && _updateManager) {
-        _updateManager->onAutoUpdatesEnabled();
-    }
 
     return exitCode;
 }

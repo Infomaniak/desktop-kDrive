@@ -30,6 +30,8 @@ class TestLinuxUpdater final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testRecoveredDownloadRestarts);
         CPPUNIT_TEST(testRelaunchFailureCanBeRetried);
         CPPUNIT_TEST(testOutdatedUpdateDoesNotRestart);
+        CPPUNIT_TEST(testAutomaticInstallDefersRestart);
+        CPPUNIT_TEST(testChannelChangeDoesNotInstall);
         CPPUNIT_TEST_SUITE_END();
 
     private:
@@ -39,6 +41,8 @@ class TestLinuxUpdater final : public CppUnit::TestFixture, public TestBase {
         void testRecoveredDownloadRestarts();
         void testRelaunchFailureCanBeRetried();
         void testOutdatedUpdateDoesNotRestart();
+        void testAutomaticInstallDefersRestart();
+        void testChannelChangeDoesNotInstall();
 };
 
 } // namespace KDC

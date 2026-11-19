@@ -45,7 +45,8 @@ class AbstractUpdater {
         /**
          * @brief Start the installation.
          * On macOS, raise the Sparkle dialog.
-         * On Linux, prepare the AppImage update and restart the application once installed.
+         * On Linux, prepare the AppImage update and restart the application once installed, or restart the application on
+         * an update already installed.
          */
         virtual void startInstaller() = 0;
 
@@ -53,11 +54,14 @@ class AbstractUpdater {
          * @brief A new version is available on the server.
          * On macOS : start Sparkle
          * On Windows : download the installer package
-         * On Linux : prepare and apply the AppImage update when automatic updates are enabled
+         * On Linux : install the AppImage update when automatic updates are enabled; the restart is requested later
          */
         virtual void onUpdateFound() = 0;
-        /** Called when the user enables automatic updates: an update already found can be prepared right away. */
-        virtual void onAutoUpdatesEnabled() { /* Redefined in child class if necessary */ }
+        /**
+         * @brief A new version is found by the check that follows a change of distribution channel.
+         * Changing the channel is a setting, not an update request: on Linux, the update is not installed by itself.
+         */
+        virtual void onUpdateFoundAfterChannelChange() { onUpdateFound(); }
         virtual void setQuitCallback(const std::function<void()> & /*quitCallback*/) { /* Redefined in child class if necessary */
         }
         [[nodiscard]] virtual bool isUpdateSessionInProgress() const { return false; }

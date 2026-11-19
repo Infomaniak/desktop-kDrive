@@ -23,6 +23,9 @@
 
 #include <QTimer>
 
+#include <atomic>
+#include <cstdint>
+
 /**
  * @brief Schedule regular update checks.
  * @ingroup server
@@ -45,12 +48,12 @@ class UpdateManager final : public QObject {
         UpdateManager &operator=(UpdateManager &) = delete;
         UpdateManager &operator=(UpdateManager &&) = delete;
 
+        /** Applies a distribution channel chosen by the user, then checks for an update without installing it by itself. */
         void setDistributionChannel(DistributionChannel channel);
-        void onAutoUpdatesEnabled() const { _updater->onAutoUpdatesEnabled(); }
         [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
         [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 
-        void forceRefresh() const { slotTimerFired(); }
+        void forceRefresh() { slotTimerFired(); }
         void startInstaller() const;
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
         [[nodiscard]] bool isUpdateSessionInProgress() const { return _updater->isUpdateSessionInProgress(); }
@@ -65,10 +68,19 @@ class UpdateManager final : public QObject {
         void requireUpdate();
 
     private slots:
-        void slotTimerFired() const;
+        void slotTimerFired();
         void slotUpdateStateChanged(KDC::UpdateState newState);
 
     private:
+        /** What started the last update check: a check following a change of channel never installs by itself. */
+        enum class UpdateCheckOrigin : uint8_t {
+            Scheduled, // At startup, every hour, or when an update is required.
+            ChannelChange,
+        };
+
+        void applyDistributionChannel(DistributionChannel channel, UpdateCheckOrigin origin);
+        void checkUpdateAvailable(UpdateCheckOrigin origin);
+
         /**
          * @brief Initialize updater according to OS.
          */
@@ -78,6 +90,7 @@ class UpdateManager final : public QObject {
 
         std::unique_ptr<AbstractUpdater> _updater;
         DistributionChannel _currentChannel{DistributionChannel::Unknown};
+        std::atomic<UpdateCheckOrigin> _lastCheckOrigin{UpdateCheckOrigin::Scheduled};
         QTimer _updateCheckTimer; /** Timer for the regular update check. */
 };
 
