@@ -260,7 +260,7 @@ void SystemTrayController::handleUpdateStateChanged(const UpdateState state) {
         case UpdateState::NoUpdate:
             setNotificationActive(false);
             return;
-        // Once installed, the server restarts the application at once.
+        // Once installed, the update restarts the application without user action: there is nothing to announce.
         case UpdateState::Ready:
         case UpdateState::Downloading:
         case UpdateState::Checking:
