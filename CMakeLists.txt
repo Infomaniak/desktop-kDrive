@@ -180,7 +180,7 @@ endif()
 
 if(BUILD_CLIENT)
     if(APPLE)
-        find_package(Sparkle)
+        find_package(Sparkle MODULE REQUIRED)
     endif(APPLE)
 
     find_package(ZLIB REQUIRED)

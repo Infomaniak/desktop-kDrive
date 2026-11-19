@@ -1,8 +1,10 @@
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
-if(NOT WIN32)
-    # CppUnit (and libzip on macOS) is installed outside Conan. Search this
+if(APPLE)
+    find_package(cppunit CONFIG REQUIRED)
+elseif(NOT WIN32)
+    # CppUnit is installed outside Conan on Linux. Search this
     # fallback after Conan's system includes to avoid mixing dependency versions.
     add_compile_options("SHELL:-idirafter /usr/local/include")
 endif()

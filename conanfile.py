@@ -169,6 +169,9 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_OSX_DEPLOYMENT_TARGET"] = self.settings.os.version
+            tc.variables["SPARKLE_LIBRARY"] = os.path.join(
+                self.dependencies["sparkle"].package_folder, "lib", "Sparkle.framework"
+            )
 
         if self.settings.os == "Linux":
             self._set_linux_package_runpath("openssl")
@@ -230,6 +233,10 @@ class KDriveDesktop(ConanFile):
         self.requires("sentry/0.17.4", options={ "shared": True })
         self.requires("keychain/1.3.1", options={ "shared": False })
         self.requires("poco/1.15.4", options={ "shared": True })
+        if self.settings.os == "Macos":
+            self.requires("libzip/1.10.1", options={"shared": True, "crypto": "CommonCrypto"})
+            self.requires("sparkle/2.6.4")
+            self.test_requires("cppunit/1.15.1", options={"shared": False})
 
     def _append_conan_vars_normalization(self):
         """

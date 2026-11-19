@@ -6,6 +6,7 @@ matching test sub-directory that compiles into its own standalone binary. Tests 
 framework is used.
 
 Each test binary is built only when CMake is configured with `-DBUILD_UNIT_TESTS=ON`.
+On macOS, tests link the Conan-provided static `cppunit::cppunit` target; no system CppUnit installation is required.
 
 ## Test Binaries
 

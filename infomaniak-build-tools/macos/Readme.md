@@ -66,7 +66,17 @@ Local scripts still activate `.venv/bin/activate` when present; otherwise they u
 CMake >= 3.24 is required for `--fresh`.
 
 
-## CPPUnit
+## Native dependencies
+
+Conan now supplies **libzip 1.10.1**, **CppUnit 1.15.1** and **Sparkle 2.6.4** on macOS.
+libzip and CppUnit use ConanCenter recipes; Sparkle's local recipe packages its published
+universal framework and command-line tools using a SHA-256-verified download.
+Tests link CppUnit statically. No installation under `/usr/local` or `~/Library/Frameworks`
+is required. Linux and Windows retain their existing dependency setup.
+
+The manual installation instructions below are retained for legacy builds only.
+
+### CPPUnit (legacy)
 
 Download and build `CPPUnit`:
 
@@ -89,7 +99,7 @@ sudo make install
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
-## libzip
+### libzip (legacy)
 
 > :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well).
 
@@ -116,7 +126,7 @@ make
 sudo make install
 ```
 
-## Sparkle
+### Sparkle (legacy)
 
 Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.4) version `2.6.4` and copy the `Sparkle` directory in `~` and name it `Sparkle`.  
 Copy and paste `Sparkle.framework` in `~/Library/Frameworks` (create this directory if needed).
@@ -147,7 +157,7 @@ mise install
 mise exec -- ./infomaniak-build-tools/macos/build-release.sh
 ```
 
-Mise installs the CLI, not system libraries. macOS CI uses the repository's
+Mise installs the build tools; Conan supplies the native libraries. macOS CI uses the repository's
 `infomaniak-build-tools/conan/profiles/macos-ci` profile without relying on runner-installed profiles.
 Local builds still require the profile setup below.
 Existing local `.venv` installations remain supported:
@@ -262,7 +272,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help] 
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **libzip**, **SQLite**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** macOS dependencies, including **libzip**, **CppUnit** and **Sparkle**, are managed through Conan.
 
 ---
 # Build in Debug
