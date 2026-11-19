@@ -97,7 +97,7 @@ if(APPLE)
 elseif(UNIX)
     list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp ../test_utility/testhelpers_linux.cpp)
 elseif (WIN32)
-    list(APPEND testsyncengine_SRCS ../test_utility/testhelpers_win.cpp)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherwin.h update_detection/file_system_observer/testfolderwatcherwin.cpp ../test_utility/testhelpers_win.cpp)
 endif()
 
 if(WIN32)

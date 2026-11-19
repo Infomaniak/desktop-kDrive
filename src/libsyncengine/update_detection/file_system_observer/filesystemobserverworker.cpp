@@ -32,14 +32,17 @@ FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> sync
 
 
 void FileSystemObserverWorker::invalidateSnapshot() {
-    if (!_liveSnapshot.isValid()) return;
     // The synchronisation will restart.
     // The SyncPal reference is null when this worker is kept alive while the SyncPal is stopped (RemoteFileSystemObserverWorker).
     // In that case the restart flag is irrelevant (it is only meaningful while the SyncPal is running) and invalidating the live
     // snapshot is enough to force a full listing at the next start.
     if (_syncPal) _syncPal->setRestart(true);
 
-    _liveSnapshot.init();
+    {
+        const std::scoped_lock lock(_mutex);
+        _liveSnapshot.init();
+        _restartOngoingSnapshotGeneration.store(true);
+    }
     _invalidateCounter = 0;
     LOG_SYNCPAL_DEBUG(_logger, _liveSnapshot.side() << " snapshot invalidated.");
 }
@@ -87,6 +90,14 @@ bool FileSystemObserverWorker::updating() const {
 
 void FileSystemObserverWorker::setUpdateFlagValue(const bool value) {
     _updating.store(value);
+}
+
+bool FileSystemObserverWorker::publishSnapshotIfNotRestarted() {
+    const std::scoped_lock lock(_mutex);
+    if (_restartOngoingSnapshotGeneration.load()) return false;
+
+    _liveSnapshot.setValid(true);
+    return true;
 }
 
 } // namespace KDC
