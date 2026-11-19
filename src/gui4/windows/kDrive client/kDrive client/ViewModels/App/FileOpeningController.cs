@@ -205,6 +205,11 @@ namespace Infomaniak.kDrive.ViewModels
     {
         private readonly Dictionary<ulong, FileOpeningRequest> _requests = new();
 
+    /// Job identifiers that reached the Finished phase: the server delivers the signals through a concurrent
+    /// pool, so a progress update can be reordered after the Finished phase of the same request, and it must not
+    /// resurrect a dismissed request.
+    private readonly HashSet<ulong> _finishedJobIds = new();
+
         /// Requests currently tracked, i.e. reported by the server and not finished yet. Used to replay the
         /// pending requests to a presentation surface subscribing after the requests have started.
         public IEnumerable<FileOpeningRequest> ActiveRequests => _requests.Values;
@@ -222,12 +227,21 @@ namespace Infomaniak.kDrive.ViewModels
         {
             if (phase == FileOpeningPhase.Finished)
             {
-                // The request has been processed (successfully or not, or canceled): the pop-up window must be closed.
+                // The request has been processed (successfully or not, or canceled): the pop-up window must be
+                // closed. Remember the terminal phase, so that a progress update reordered after it is ignored.
+                _finishedJobIds.Add(jobId);
                 if (_requests.Remove(jobId, out var dismissedRequest))
                 {
                     DismissRequested?.Invoke(this, new FileOpeningStatusEventArgs(dismissedRequest));
                 }
 
+                return;
+            }
+
+            // Ignore a progress update delivered after the Finished phase of the same request: the request is
+            // already dismissed, and recreating it would leave a pop-up window open forever.
+            if (_finishedJobIds.Contains(jobId))
+            {
                 return;
             }
 
