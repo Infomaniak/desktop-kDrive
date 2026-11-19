@@ -79,14 +79,20 @@ QString channelLabel(const DistributionChannel channel) {
     }
 }
 
-// Styled text: the translation is escaped and only the version and build are set in bold.
+// Styled text: the translation is escaped, and the version, the build and the copyright line are set in bold.
 QString versionDetails(const QString &version, const uint64_t build) {
     const auto bold = [](const QString &text) { return u"<b>%1</b>"_s.arg(text.toHtmlEscaped()); };
 
-    return qtTrId("aboutAppVersionCopyrightMac")
-            .toHtmlEscaped()
-            .replace(u'\n', u"<br>"_s)
-            .arg(bold(version), bold(QString::number(build)), QString::number(QDate::currentDate().year()));
+    auto details = qtTrId("aboutAppVersionCopyrightMac").toHtmlEscaped();
+
+    // Every translation puts the copyright on the line after the version.
+    const auto copyrightStart = details.indexOf(u'\n');
+    if (copyrightStart >= 0) {
+        const auto copyright = details.mid(copyrightStart + 1).replace(u'\n', u"<br>"_s);
+        details = details.left(copyrightStart) + u"<br><b>"_s + copyright + u"</b>"_s;
+    }
+
+    return details.arg(bold(version), bold(QString::number(build)), QString::number(QDate::currentDate().year()));
 }
 
 // License notices of the bundled components, written next to the executable by the AppImage build.
