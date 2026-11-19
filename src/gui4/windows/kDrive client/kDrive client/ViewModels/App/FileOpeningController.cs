@@ -22,6 +22,7 @@ using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,17 +39,18 @@ namespace Infomaniak.kDrive.ViewModels
         private string _itemPath;
         private long _receivedBytes;
         private long _totalBytes;
+        private string _webUrl;
 
-        public FileOpeningRequest(ulong jobId, FileOpeningPhase phase, int percent, string itemName, string itemPath,
-                                  long receivedBytes, long totalBytes)
+        public FileOpeningRequest(FileOpeningStatusUpdate update)
         {
-            JobId = jobId;
-            _phase = phase;
-            _percent = percent;
-            _itemName = itemName;
-            _itemPath = itemPath;
-            _receivedBytes = receivedBytes;
-            _totalBytes = totalBytes;
+            JobId = update.JobId;
+            _phase = update.Phase;
+            _percent = update.Percent;
+            _itemName = update.ItemName;
+            _itemPath = update.ItemPath;
+            _receivedBytes = update.ReceivedBytes;
+            _totalBytes = update.TotalBytes;
+            _webUrl = update.WebUrl;
         }
 
         public ulong JobId { get; }
@@ -83,6 +85,24 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             }
         }
+
+        /// kDrive web application address of the item, from which it can be downloaded manually when the opening
+        /// failed. Empty while the request has not failed.
+        public string WebUrl
+        {
+            get => _webUrl;
+            private set
+            {
+                if (SetPropertyInUIThread(ref _webUrl, value))
+                {
+                    OnPropertyChangedInUIThread(nameof(IsFailed));
+                }
+            }
+        }
+
+        /// True once the request failed: the user interface must present the failure window instead of the progress
+        /// one.
+        public bool IsFailed => Phase == FileOpeningPhase.Failed;
 
         /// True while the gauge has no measurable progress to display: no byte downloaded yet and no percent reported.
         public bool IsIndeterminate => IsDownloading && TotalBytes <= 0 && Percent <= 0;
@@ -176,15 +196,26 @@ namespace Infomaniak.kDrive.ViewModels
         /// Title of the pop-up window while the item is being downloaded.
         public string TitleText => Localizer.Instance.GetString("fileOpeningDownloadTitle");
 
-        public void Update(FileOpeningPhase phase, int percent, string itemName, string itemPath, long receivedBytes,
-                           long totalBytes)
+        /// Updates the state of the request from the delivered signal. The identity of the item is kept when the
+        /// update does not carry it: the Failed phase is reported with an empty identity, and the failure window
+        /// must still show the card of the item.
+        public void Update(FileOpeningStatusUpdate update)
         {
-            Phase = phase;
-            Percent = percent;
-            ItemName = itemName;
-            ItemPath = itemPath;
-            ReceivedBytes = receivedBytes;
-            TotalBytes = totalBytes;
+            Phase = update.Phase;
+            Percent = update.Percent;
+            if (!string.IsNullOrEmpty(update.ItemName))
+            {
+                ItemName = update.ItemName;
+            }
+
+            if (!string.IsNullOrEmpty(update.ItemPath))
+            {
+                ItemPath = update.ItemPath;
+            }
+
+            ReceivedBytes = update.ReceivedBytes;
+            TotalBytes = update.TotalBytes;
+            WebUrl = update.WebUrl;
         }
     }
 
@@ -196,6 +227,22 @@ namespace Infomaniak.kDrive.ViewModels
         {
             Request = request;
         }
+    }
+
+    /// The state of a file opening request as reported by a FILE_OPENING_STATUS signal of the server.
+    public sealed class FileOpeningStatusUpdate
+    {
+        public ulong JobId { get; init; }
+        public FileOpeningPhase Phase { get; init; }
+        public int Percent { get; init; }
+        public string ItemName { get; init; } = "";
+        public string ItemPath { get; init; } = "";
+        public long ReceivedBytes { get; init; } = -1;
+        public long TotalBytes { get; init; } = -1;
+
+        /// kDrive web application address of the item, from which it can be downloaded manually when the opening
+        /// failed. Empty otherwise.
+        public string WebUrl { get; init; } = "";
     }
 
     /// Tracks the file opening requests reported by the server through FILE_OPENING_STATUS signals and drives the
@@ -212,25 +259,27 @@ namespace Infomaniak.kDrive.ViewModels
 
         /// Requests currently tracked, i.e. reported by the server and not finished yet. Used to replay the
         /// pending requests to a presentation surface subscribing after the requests have started.
-        public IEnumerable<FileOpeningRequest> ActiveRequests => _requests.Values;
+        public IEnumerable<FileOpeningRequest> ActiveRequests =>
+            _requests.Values.Where(request => !_finishedJobIds.Contains(request.JobId));
 
         /// Raised when a request was created or updated: the view must open its pop-up window for it, or refresh the
-        /// bindings of the already open one.
+        /// bindings of the already open one. The request phase tells a progress window from a failure window.
         public event EventHandler<FileOpeningStatusEventArgs>? ShowRequested;
 
         /// Raised when a request reached the Finished phase: the view must close its pop-up window, if it is open.
         public event EventHandler<FileOpeningStatusEventArgs>? DismissRequested;
 
         /// Called on the UI thread for every FILE_OPENING_STATUS signal received from the server.
-        public void OnFileOpeningStatus(ulong jobId, FileOpeningPhase phase, int percent, string itemName, string itemPath,
-                                        long receivedBytes, long totalBytes)
+        public void OnFileOpeningStatus(FileOpeningStatusUpdate update)
         {
-            if (phase == FileOpeningPhase.Finished)
+            if (update.Phase == FileOpeningPhase.Finished)
             {
                 // The request has been processed (successfully or not, or canceled): the pop-up window must be
                 // closed. Remember the terminal phase, so that a progress update reordered after it is ignored.
-                _finishedJobIds.Add(jobId);
-                if (_requests.Remove(jobId, out var dismissedRequest))
+                // The request is kept: the Failed phase follows the Finished one and feeds the failure window with
+                // the identity of the item.
+                _finishedJobIds.Add(update.JobId);
+                if (_requests.TryGetValue(update.JobId, out var dismissedRequest))
                 {
                     DismissRequested?.Invoke(this, new FileOpeningStatusEventArgs(dismissedRequest));
                 }
@@ -238,21 +287,22 @@ namespace Infomaniak.kDrive.ViewModels
                 return;
             }
 
-            // Ignore a progress update delivered after the Finished phase of the same request: the request is
-            // already dismissed, and recreating it would leave a pop-up window open forever.
-            if (_finishedJobIds.Contains(jobId))
+            // The Failed phase is reported after the Finished one and carries the web address of the item: process
+            // it even though the request has already been dismissed. Any other update for a dismissed request is
+            // ignored: recreating it would leave a pop-up window open forever.
+            if (update.Phase != FileOpeningPhase.Failed && _finishedJobIds.Contains(update.JobId))
             {
                 return;
             }
 
-            if (_requests.TryGetValue(jobId, out var request))
+            if (!_requests.TryGetValue(update.JobId, out var request))
             {
-                request.Update(phase, percent, itemName, itemPath, receivedBytes, totalBytes);
+                request = new FileOpeningRequest(update);
+                _requests[update.JobId] = request;
             }
             else
             {
-                request = new FileOpeningRequest(jobId, phase, percent, itemName, itemPath, receivedBytes, totalBytes);
-                _requests[jobId] = request;
+                request.Update(update);
             }
 
             ShowRequested?.Invoke(this, new FileOpeningStatusEventArgs(request));

@@ -32,6 +32,7 @@ namespace Infomaniak.kDrive.ViewModels
     {
         private readonly FileOpeningController _controller = App.ServiceProvider.GetRequiredService<AppModel>().FileOpeningController;
         private readonly Dictionary<ulong, FileOpeningWindow> _windowsByJobId = new();
+        private readonly Dictionary<ulong, FileOpeningFailureWindow> _failureWindowsByJobId = new();
 
         /// Subscribes to the controller and replays the requests it already tracks, so that pop-up windows
         /// appear for the requests reported by the server before this presenter was started. Must be called
@@ -49,6 +50,12 @@ namespace Infomaniak.kDrive.ViewModels
 
         private void OnShowRequested(object? sender, FileOpeningStatusEventArgs e)
         {
+            if (e.Request.IsFailed)
+            {
+                PresentFailureWindow(e.Request);
+                return;
+            }
+
             if (!_windowsByJobId.TryGetValue(e.Request.JobId, out var window))
             {
                 Logger.LogInfo($"Presenting the file opening progress window. JobId: {e.Request.JobId}");
@@ -59,6 +66,27 @@ namespace Infomaniak.kDrive.ViewModels
                 _windowsByJobId[e.Request.JobId] = window;
             }
 
+            window.Activate();
+        }
+
+        private void PresentFailureWindow(FileOpeningRequest request)
+        {
+            // The failure window replaces the progress window of the request, and is presented once: the failure is
+            // terminal, and the window stays open until the user closes it.
+            if (_windowsByJobId.Remove(request.JobId, out var progressWindow))
+            {
+                progressWindow.Close();
+            }
+
+            if (_failureWindowsByJobId.ContainsKey(request.JobId))
+            {
+                return;
+            }
+
+            Logger.LogInfo($"Presenting the file opening failure window. JobId: {request.JobId}");
+            var window = new FileOpeningFailureWindow(request);
+            window.Closed += (_, _) => _failureWindowsByJobId.Remove(request.JobId);
+            _failureWindowsByJobId[request.JobId] = window;
             window.Activate();
         }
 
