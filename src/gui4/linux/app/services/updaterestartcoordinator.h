@@ -27,21 +27,21 @@
 
 namespace KDC {
 
-class AppCache;
 class UpdateStatusService;
 
 /**
  * Restarts the application on an update the server installed by itself, once doing so cannot interrupt the user.
  *
  * The server installs automatic updates without restarting (state `Ready`). The restart is requested with the
- * installer request when no watched window is visible and no synchronization is running, after a quiet period. The
- * next launch uses the installed update anyway, so waiting never loses it.
+ * installer request when no watched window is visible, after a quiet period. Running synchronizations do not delay it:
+ * they resume after the restart, and a drive that is always busy must still receive the update. The next launch uses
+ * the installed update anyway, so waiting never loses it.
  */
 class UpdateRestartCoordinator final : public QObject {
         Q_OBJECT
 
     public:
-        UpdateRestartCoordinator(UpdateStatusService &updateStatusService, const AppCache &appCache, QObject *parent = nullptr);
+        explicit UpdateRestartCoordinator(UpdateStatusService &updateStatusService, QObject *parent = nullptr);
 
         /** The restart waits while `window` is visible. */
         void watchWindow(QWindow *window);
@@ -51,10 +51,8 @@ class UpdateRestartCoordinator final : public QObject {
         void restartIfQuiet();
         [[nodiscard]] bool canRestart() const;
         [[nodiscard]] bool anyWindowVisible() const;
-        [[nodiscard]] bool anySyncRunning() const;
 
         UpdateStatusService &_updateStatusService;
-        const AppCache &_appCache;
         std::vector<QPointer<QWindow>> _windows;
         QTimer _quietTimer;
         bool _restartRequested{false};
