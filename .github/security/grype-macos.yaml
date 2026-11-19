@@ -12,3 +12,15 @@ ignore:
       .recover command, not the SQLite library. The macOS Conan requirement sets
       build_executable=False and the app SBOM contains no sqlite3 executable.
       Review conditions are documented in .github/security/README.md.
+  - vulnerability: CVE-2025-5683
+    namespace: nvd:cpe
+    package:
+      name: qt
+      version: "6.8.3"
+      type: conan
+    reason: >-
+      Not affected: the vulnerable QICNSHandler belongs to the Qt Image Formats
+      ICNS plugin (libqicns.dylib), which is not installed or shipped in the macOS
+      app. The bundled Qt image readers do not support ICNS. The scan verifies
+      that the plugin is absent before applying this policy. Evidence and review
+      conditions are documented in .github/security/README.md.
