@@ -929,6 +929,9 @@ La sincronización se reanudará automáticamente una vez que se restablezca la 
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>No se puede abrir el archivo</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>No se ha encontrado el elemento solicitado.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Modo de sincronización de archivos</value>
   </data>

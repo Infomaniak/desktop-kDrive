@@ -815,6 +815,9 @@
 /* loco:6afebbdb99829c3b5d0dfa94 */
 "fileOpeningFailureTitle" = "Δεν είναι δυνατό να ανοίξει το αρχείο";
 
+/* loco:6afec9ed750a9c1b47035899 */
+"fileOpeningNotFoundMessage" = "Δεν ήταν δυνατή η εύρεση του στοιχείου που ζητήσατε.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Λειτουργία συγχρονισμού αρχείων";
 

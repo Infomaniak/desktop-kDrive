@@ -929,6 +929,9 @@ Synkroniseringen återuptas automatiskt när anslutningen har återställts.</va
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Det går inte att öppna filen</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>Det begärda objektet kunde inte hittas.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Filsynkroniseringsläge</value>
   </data>

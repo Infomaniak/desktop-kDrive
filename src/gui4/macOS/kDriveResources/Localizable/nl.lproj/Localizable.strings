@@ -815,6 +815,9 @@
 /* loco:6afebbdb99829c3b5d0dfa94 */
 "fileOpeningFailureTitle" = "Het bestand kan niet worden geopend";
 
+/* loco:6afec9ed750a9c1b47035899 */
+"fileOpeningNotFoundMessage" = "Het gevraagde item kon niet worden gevonden.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Bestandssynchronisatiemodus";
 

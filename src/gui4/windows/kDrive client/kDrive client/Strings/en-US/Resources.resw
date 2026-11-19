@@ -929,6 +929,9 @@ Sync will resume automatically once the connection is restored.</value>
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Cannot open the file</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>The requested item could not be found.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>File sync mode</value>
   </data>

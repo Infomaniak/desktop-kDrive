@@ -815,6 +815,9 @@
 /* loco:6afebbdb99829c3b5d0dfa94 */
 "fileOpeningFailureTitle" = "Impossible d’ouvrir le fichier";
 
+/* loco:6afec9ed750a9c1b47035899 */
+"fileOpeningNotFoundMessage" = "L’élément demandé est introuvable.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Mode de synchronisation des fichiers";
 

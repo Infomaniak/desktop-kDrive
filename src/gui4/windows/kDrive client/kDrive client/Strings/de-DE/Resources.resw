@@ -929,6 +929,9 @@ Die Synchronisierung wird automatisch fortgesetzt, sobald die Verbindung wiederh
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Die Datei kann nicht geöffnet werden</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>Der angeforderte Eintrag konnte nicht gefunden werden.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Dateisynchronisierungsmodus</value>
   </data>

@@ -929,6 +929,9 @@ Synchronizacja zostanie wznowiona automatycznie po przywróceniu połączenia.</
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Nie można otworzyć pliku</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>Nie znaleziono żądanego elementu.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Tryb synchronizacji plików</value>
   </data>

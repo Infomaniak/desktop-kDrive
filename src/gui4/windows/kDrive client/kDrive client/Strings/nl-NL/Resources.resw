@@ -929,6 +929,9 @@ De synchronisatie wordt automatisch hervat zodra de verbinding is hersteld.</val
   <data name="fileOpeningFailureTitle" xml:space="preserve">
     <value>Het bestand kan niet worden geopend</value>
   </data>
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve">
+    <value>Het gevraagde item kon niet worden gevonden.</value>
+  </data>
   <data name="fileSyncMode" xml:space="preserve">
     <value>Bestandssynchronisatiemodus</value>
   </data>
