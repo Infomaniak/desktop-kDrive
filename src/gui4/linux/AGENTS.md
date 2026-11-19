@@ -718,9 +718,15 @@
 - `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`,
   owns browser and clipboard side effects, and tracks concurrent actions without owning activity history.
 - `app/services/updatestatusservice.*`: process-wide updater state and announced version. The Update button sends
-  `UPDATER_START_INSTALLER`: the server downloads and installs the AppImage update, then restarts the application on it
-  without any client request. `Ready` therefore lasts only until that restart: Settings keep the in-progress button,
-  and neither the tray nor a notification announces it.
+  `UPDATER_START_INSTALLER`: the server downloads and installs the AppImage update, then restarts the application on it,
+  on the Settings window, without any client request. An automatic update (scheduled check, automatic updates enabled)
+  is installed without restart and stays `Ready`: Settings show Restart, and the same request restarts the application
+  on it in the background. A check that follows a change of channel never installs by itself, and enabling automatic
+  updates waits for the next scheduled check.
+- `app/services/updaterestartcoordinator.*`: requests the restart on an update in `Ready` once no window is visible
+  (main window, onboarding included, and Settings) and no synchronization is `Running` or `Starting`, after
+  `AppConstants::Updater::restartQuietDelayMs` without change. It sends one request per `Ready` period. If the
+  conditions never hold, the next launch uses the installed AppImage anyway.
 - `app/services/releasenotesservice.*`: downloads and parses the release notes of the announced version for the update
   details dialog. They are shown only when the client can apply the configured proxy itself.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed

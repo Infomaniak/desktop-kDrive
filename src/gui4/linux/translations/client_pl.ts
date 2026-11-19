@@ -516,6 +516,10 @@ Możesz je otwierać w dowolnym momencie, nawet bez połączenia z Internetem.</
             <source>Rename %1</source> 
             <translation>Zmień nazwę %1</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Uruchom ponownie</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Uruchom ponownie logowanie</translation> 

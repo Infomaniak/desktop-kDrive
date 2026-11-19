@@ -514,6 +514,10 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</translation>
             <source>Rename %1</source> 
             <translation>Omdøb %1</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Genstart</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Genstart login</translation> 

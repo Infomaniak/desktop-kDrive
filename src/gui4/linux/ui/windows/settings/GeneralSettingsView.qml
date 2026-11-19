@@ -56,17 +56,29 @@ ScrollView {
                 description: root.controller.updateText
                 IKModalButton {
                     readonly property bool manual: !root.controller.updateDownloading && !root.controller.updateInstallable
+                                                   && !root.controller.updateRestartable
 
                     visible: root.controller.updateAvailable
                     // Installable: the server downloads and installs the update, then restarts the application.
+                    // Restartable: an automatic update is installed and waits for the restart.
                     text: root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
-                                                            : root.controller.updateInstallable
-                                                              ? qsTrId("buttonUpdate")
-                                                              : qsTrId("buttonDownloadManually")
+                                                            : root.controller.updateRestartable
+                                                              ? qsTrId("buttonRestart")
+                                                              : root.controller.updateInstallable
+                                                                ? qsTrId("buttonUpdate")
+                                                                : qsTrId("buttonDownloadManually")
                     external: manual
                     actionEnabled: !root.controller.updateDownloading
                     implicitHeight: IKSettings.buttonHeight
-                    onClicked: manual ? root.controller.openDownload() : root.controller.installUpdate()
+                    onClicked: {
+                        if (manual) {
+                            root.controller.openDownload();
+                        } else if (root.controller.updateRestartable) {
+                            root.controller.restartUpdate();
+                        } else {
+                            root.controller.installUpdate();
+                        }
+                    }
                 }
                 SettingsInfoButton {
                     id: releaseInfo
