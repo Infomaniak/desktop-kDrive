@@ -172,6 +172,41 @@ ExitInfo SearchJob::getLocalProperties(const SyncName &itemPath, LocalProperties
         }
     }
 
+    ItemType destinationType;
+    if (!IoHelper::getItemType(absolutePath, destinationType) ||
+        (destinationType.ioError != IoError::Success && destinationType.ioError != IoError::NoSuchFileOrDirectory &&
+         destinationType.ioError != IoError::AccessDenied)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, destinationType.ioError));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return ExitCode::SystemError;
+    }
+    if (destinationType.ioError != IoError::Success || IoHelper::isLink(destinationType.linkType)) {
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return ExitCode::Ok;
+    }
+
+    // An item reached through a link located inside the sync root is not part of the synchronized tree. Links above the sync
+    // root (e.g. "/var" on macOS) are ignored: the closest link is returned first, so any link inside the sync root wins.
+    auto traversesLink = false;
+    SyncPath linkPath;
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, traversesLink, linkPath);
+        ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    if (const SyncPath syncRootPath = _syncRootPath.has_filename() ? _syncRootPath : _syncRootPath.parent_path();
+        traversesLink && CommonUtility::isStrictDescendant(linkPath, syncRootPath)) {
+        LOGW_WARN(_logger, L"Path " << Utility::formatSyncPath(absolutePath) << L" traverses the link "
+                                    << Utility::formatSyncPath(linkPath));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+    }
+
     return ExitCode::Ok;
 }
 
