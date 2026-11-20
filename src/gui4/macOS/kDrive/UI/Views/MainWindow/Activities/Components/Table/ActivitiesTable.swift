@@ -24,6 +24,12 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
+    /// Fits the direction and state icons, the option menu and the spacing of `ActivitiesTableStatusView`.
+    private static let statusColumnMinimumWidth = AppIconSize.iconSize12.width * 2
+        + AppIconSize.iconSize16.width
+        + AppPadding.padding8 * 2
+        + AppPadding.padding24
+
     let contexts: [UISynchroNodeContext]
 
     private var orderedNodes: [UISynchroNodeContext] {
@@ -83,7 +89,7 @@ struct ActivitiesTable: View {
             TableColumn(KDriveLocalizable.labelStatus) { context in
                 ActivitiesTableStatusView(context: context)
             }
-            .width(ideal: 30)
+            .width(min: Self.statusColumnMinimumWidth, ideal: Self.statusColumnMinimumWidth)
         }
     }
 
