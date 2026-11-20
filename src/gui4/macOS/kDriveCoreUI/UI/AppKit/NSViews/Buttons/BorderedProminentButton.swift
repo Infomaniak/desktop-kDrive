@@ -40,6 +40,11 @@ public final class BorderedProminentButton: NSButton {
     }
 
     private func setupColors() {
+        if #unavailable(macOS 14.0) {
+            // Code-created buttons default to `.automatic` (a push button) from macOS 14 only. Earlier systems use a
+            // style that ignores `bezelColor`, so the push style is set explicitly.
+            bezelStyle = .push
+        }
         bezelColor = backgroundColor
         setupTitleColor()
     }
