@@ -239,20 +239,6 @@ struct ActivitiesTableStatusView: View {
     }
 }
 
-private extension View {
-    /// On macOS 12, `Menu` ignores `.buttonStyle(.plain)` and renders as a full-width pop-up button with an indicator.
-    @ViewBuilder
-    func legacyBorderlessMenu() -> some View {
-        if #available(macOS 13.0, *) {
-            self
-        } else {
-            menuStyle(.borderlessButton)
-                .menuIndicator(.hidden)
-                .fixedSize()
-        }
-    }
-}
-
 #Preview {
     ActivitiesTableStatusView(context: PreviewHelper.synchroNodeContext)
         .padding()
