@@ -7,6 +7,12 @@ endif()
 find_package(Poco 1.15.2 REQUIRED Foundation Net NetSSL JSON Util)
 find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
 
+if(UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    # Use fallback library types for imported dependencies
+    set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
+endif()
+find_package(libzip 1.10.1 REQUIRED)
+
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
@@ -227,7 +233,8 @@ generate_export_header(${libsyncengine_NAME}
 if(WIN32)
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR})
+            ${CMAKE_CURRENT_BINARY_DIR}
+            "C:/Program Files (x86)/libzip/include")
 else()
     target_include_directories(${libsyncengine_NAME} PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
@@ -238,5 +245,6 @@ endif()
 target_link_libraries(${libsyncengine_NAME}
         ${libparms_NAME}
         Poco::Foundation Poco::Net Poco::NetSSL Poco::JSON Poco::Util
-        OpenSSL::SSL OpenSSL::Crypto)
+        OpenSSL::SSL OpenSSL::Crypto
+        libzip::zip)
 

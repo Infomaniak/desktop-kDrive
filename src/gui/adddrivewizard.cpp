@@ -142,32 +142,8 @@ void AddDriveWizard::startNextStep(bool backward) {
     } else if (_currentStep == ExtensionSetup) {
         setupDrive = true;
 
-        VirtualFileMode virtualFileMode;
-        ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCode::Ok) {
-            qCWarning(lcAddDriveWizard) << "Error in Requests::bestAvailableVfsMode";
-            return;
-        }
-
-        bool skipExtSetup = true;
-#ifdef Q_OS_MAC
-        if (virtualFileMode == VirtualFileMode::Mac && _liteSync) {
-            // Check LiteSync ext authorizations
-            std::string liteSyncExtErrorDescr;
-            bool liteSyncExtOk = CommonUtility::isLiteSyncExtEnabled() &&
-                                 CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
-            if (!liteSyncExtErrorDescr.empty()) {
-                qCWarning(lcAddDriveWizard) << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: "
-                                            << liteSyncExtErrorDescr.c_str();
-            }
-            skipExtSetup = liteSyncExtOk;
-        }
-#endif
-
-        if (skipExtSetup) {
-            // Skip Extension Setup step
-            _currentStep = (Step) (_currentStep + (backward ? -1 : 1));
-        }
+        // Skip Extension Setup step
+        _currentStep = (Step) (_currentStep + (backward ? -1 : 1));
     }
 
     // Init step

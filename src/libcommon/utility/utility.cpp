@@ -27,6 +27,7 @@
 #include <sys/types.h>
 
 #include <fstream>
+#include <memory>
 #include <random>
 #include <regex>
 #include <sstream>
@@ -40,9 +41,6 @@
 #include <QMimeType>
 #include <QStorageInfo>
 #include <QProcess>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QOperatingSystemVersion>
 
 #include <Poco/UnicodeConverter.h>
 #include <Poco/Base64Decoder.h>
@@ -1325,54 +1323,6 @@ bool CommonUtility::isLiteSyncExtEnabled() {
     QByteArray result = process.readAll();
 
     return result.trimmed().toInt() == 1;
-}
-
-bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("/Library/Application Support/com.apple.TCC/TCC.db");
-    if (db.open()) {
-        bool macOs13orLater = QSysInfo::productVersion().toDouble() >= 13.0;
-        QString serviceStr = macOs13orLater ? "kTCCServiceEndpointSecurityClient" : "kTCCServiceSystemPolicyAllFiles";
-        QSqlQuery query(db);
-        if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSBigSur) {
-            query.prepare(QString("SELECT allowed FROM access"
-                                  " WHERE service = \"%1\""
-                                  " and client = \"%2\""
-                                  " and client_type = 0")
-                                  .arg(serviceStr, liteSyncExtBundleIdStr.data()));
-        } else {
-            query.prepare(QString("SELECT auth_value FROM access"
-                                  " WHERE service = \"%1\""
-                                  " and client = \"%2\""
-                                  " and client_type = 0")
-                                  .arg(serviceStr, liteSyncExtBundleIdStr.data()));
-        }
-
-        query.exec();
-
-        bool found = false;
-        int value = 0;
-        if (query.first()) {
-            found = true;
-            value = query.value(0).toInt();
-        }
-
-        db.close();
-
-        if (found) {
-            if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSBigSur) {
-                return value == 1;
-            } else {
-                return value == 2;
-            }
-        } else {
-            errorDescr = "Unable to find Full Disk Access auth for Lite Sync Extension!";
-        }
-    } else {
-        errorDescr = "Cannot open TCC database!";
-    }
-
-    return false;
 }
 
 bool CommonUtility::isFullDiskAccessAuthOk() {
