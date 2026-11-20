@@ -37,8 +37,8 @@ struct AdvancedSynchroView: View {
     @State private var isShowingGenericError = false
 
     var body: some View {
-        Form {
-            Section {} header: {
+        IKForm {
+            IKSection {} header: {
                 VStack(alignment: .leading, spacing: AppPadding.padding4) {
                     Text(KDriveLocalizable.addAdvancedSyncDialogTitle)
                         .font(.Tokens.bodyEmphasized)
@@ -60,7 +60,7 @@ struct AdvancedSynchroView: View {
                 }
             }
 
-            Section {} header: {
+            IKSection {} header: {
                 Button(KDriveLocalizable.buttonAddAdvancedSync) {
                     @InjectService var matomo: MatomoUtils
                     matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "create")
@@ -70,7 +70,6 @@ struct AdvancedSynchroView: View {
                 .buttonStyle(.borderedProminent)
             }
         }
-        .groupedFormatStyle()
         .task {
             withAnimation { isLoading = true }
             await fetchSynchros()

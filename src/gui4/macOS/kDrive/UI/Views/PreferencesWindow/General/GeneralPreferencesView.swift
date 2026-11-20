@@ -28,12 +28,11 @@ struct GeneralPreferencesView: View {
     }
 
     var body: some View {
-        Form {
+        IKForm {
             GeneralPreferencesVersionSection(repository: repository, containsStaffUser: containsStaffUser)
             GeneralPreferencesMiscSection(repository: repository)
             GeneralPreferencesHelpSection()
         }
-        .groupedFormatStyle()
     }
 }
 

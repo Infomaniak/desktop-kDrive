@@ -29,8 +29,8 @@ struct SynchroConfigurationView: View {
     let configuration: SynchroConfiguration
 
     var body: some View {
-        Form {
-            Section {
+        IKForm {
+            IKSection {
                 HStack {
                     BadgeView(
                         image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
@@ -53,7 +53,6 @@ struct SynchroConfigurationView: View {
 
             LightSyncSelectionSection(configuration: configuration)
         }
-        .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isLoading, action: viewModel.saveConfiguration) {

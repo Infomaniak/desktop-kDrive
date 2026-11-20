@@ -29,7 +29,7 @@ struct AdvancedPreferencesDebugOptionsView: View {
     @ObservedObject var repository: PreferencesRepository
 
     var body: some View {
-        Section {
+        IKSection {
             ToggleView(
                 title: KDriveLocalizable.autoCleanupLogsSetting,
                 description: KDriveLocalizable.autoCleanupLogsDescription,
