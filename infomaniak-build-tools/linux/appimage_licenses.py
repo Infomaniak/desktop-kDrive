@@ -204,6 +204,17 @@ def match_build_id(file: Path, candidates: list):
     return None
 
 
+def unverified_candidate(file: Path, candidates: list):
+    """The only candidate, when build IDs cannot tell: the bundled file or that candidate has none."""
+    unique = list({candidate[1].resolve(): candidate for candidate in candidates}.values())
+    if len(unique) != 1:
+        return None
+    file_id = build_id(file)
+    if file_id is not None and build_id(unique[0][1]) is not None:
+        return None
+    return unique[0]
+
+
 def extra_component_for(name: str, package_name: str):
     for component in EXTRA_COMPONENTS:
         if component["package"] == package_name and any(fnmatch.fnmatch(name, p) for p in component["patterns"]):
@@ -264,7 +275,9 @@ class Collector:
             if relative.startswith(DOC_RELATIVE_DIR.relative_to("usr").as_posix()):
                 continue
             if relative.split("/", 1)[0] in QT_DATA_DIRS and relative in self.qt_files:
-                self.qt_component(*self.qt_files[relative]).note = "data files (translations, QML)"
+                component = self.qt_file_component(relative, *self.qt_files[relative])
+                if component is not None:
+                    component.note = "data files (translations, QML)"
             if is_elf(path):
                 self.classify(path, relative)
         if self.errors:
@@ -295,11 +308,12 @@ class Collector:
             ubuntu_candidates = dpkg_candidates(path.name)
             ubuntu_choice = match_build_id(path, ubuntu_candidates)
             if ubuntu_choice is None:
-                # Without a matching build ID, the origin is only certain when a single source has this file name.
+                # Without a matching build ID, the origin is only certain when a single file has this name and no build
+                # ID contradicts it.
                 if conan_candidates and not ubuntu_candidates:
-                    conan_choice = conan_candidates[0]
+                    conan_choice = unverified_candidate(path, conan_candidates)
                 elif ubuntu_candidates and not conan_candidates:
-                    ubuntu_choice = ubuntu_candidates[0]
+                    ubuntu_choice = unverified_candidate(path, ubuntu_candidates)
                 elif conan_candidates:
                     self.errors.append(f"{relative} (found in Conan and Ubuntu packages, build IDs do not match)")
                     return
@@ -371,18 +385,29 @@ class Collector:
     def classify_qt(self, path: Path, relative: str, package_file: Path):
         package_relative = package_file.resolve().relative_to(self.qt["package_folder"].resolve()).as_posix()
         if package_relative in self.qt_files:
-            self.qt_component(*self.qt_files[package_relative]).files.append(relative)
+            component = self.qt_file_component(relative, *self.qt_files[package_relative])
+            if component is not None:
+                component.files.append(relative)
             return
 
         extra = extra_component_for(path.name, "qt")
         if extra is None:
             self.errors.append(f"{relative} (Qt package file missing from the Qt SBOM)")
             return
-        bundled_major = re.search(r"\.so\.(\d+)", path.name)
-        if bundled_major and not extra["version"].startswith(bundled_major.group(1) + "."):
-            self.errors.append(f"{relative} (vendored {extra['name']} {extra['version']} notice is outdated)")
+        # The bundled copy keeps only the ABI major in its name; the package file it comes from has the full version.
+        package_version = re.search(r"\.so\.(\d+(?:\.\d+)+)$", package_file.resolve().name)
+        if package_version is None or package_version.group(1) != extra["version"]:
+            found = package_version.group(1) if package_version else "unknown"
+            self.errors.append(f"{relative} ({extra['name']} {found} bundled, vendored notice is for {extra['version']})")
             return
         self.add_extra(extra, relative, "Qt installer")
+
+    def qt_file_component(self, relative: str, module: str, license_expression):
+        """The Qt component of a bundled file, or None when the SBOM gives the file no usable license."""
+        if not license_ids(license_expression):
+            self.errors.append(f"{relative} (no license in the Qt SBOM)")
+            return None
+        return self.qt_component(module, license_expression)
 
     def qt_component(self, module: str, license_expression) -> Component:
         """The first file of a Qt module sets its license; the SBOM gives the license of every file."""
@@ -419,7 +444,8 @@ class Collector:
         missing = []
         for license_id in sorted(ids):
             if license_id.startswith("LicenseRef-"):
-                if license_id not in extracted:
+                # An empty extracted text would ship a blank license file.
+                if not (extracted.get(license_id) or "").strip():
                     missing.append(license_id)
                     continue
                 (target / f"{license_id}.txt").write_text(extracted[license_id] + "\n")
