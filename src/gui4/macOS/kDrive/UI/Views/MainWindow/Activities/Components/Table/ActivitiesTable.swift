@@ -24,9 +24,6 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
-    /// Fits the two-line name cell; only used on macOS 12, where rows don't size to their content.
-    private static let legacyRowHeight: CGFloat = 36
-
     let contexts: [UISynchroNodeContext]
 
     private var orderedNodes: [UISynchroNodeContext] {
@@ -42,28 +39,24 @@ struct ActivitiesTable: View {
         Table(orderedNodes) {
             TableColumn(KDriveLocalizable.labelName) { context in
                 Label {
-                    VStack(alignment: .leading) {
-                        Text(context.node.relevantPath, format: .node)
-                            .foregroundStyle(ColorToken.Text.primary.asColor)
-                        if context.node.status == .syncing {
-                            Text(KDriveLocalizable.labelSynchronisation)
-                                .font(.Tokens.callout)
-                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                        } else if let instruction = context.node.instruction {
-                            HStack(alignment: .center, spacing: AppPadding.padding2) {
-                                Text(instruction.label)
-                                    .font(.Tokens.callout)
-                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                                Text(context.node.syncDate, format: .friendlyRelative)
-                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                            }
+                    if #available(macOS 14.0, *) {
+                        VStack(alignment: .leading) {
+                            nameText(of: context)
+                            activityText(of: context)
                         }
+                    } else {
+                        // Table rows don't fit two lines of text before macOS 14: the activity follows the name.
+                        HStack(spacing: AppPadding.padding8) {
+                            nameText(of: context)
+                                .layoutPriority(1)
+                            activityText(of: context)
+                        }
+                        .lineLimit(1)
                     }
                 } icon: {
                     FileTypeView(fileTypeRepresentation: context.node.fileTypeRepresentation)
                         .frame(size: AppIconSize.iconSize16)
                 }
-                .legacyTableRowHeight(Self.legacyRowHeight)
             }
 
             TableColumn(KDriveLocalizable.labelFolder) { context in
@@ -91,6 +84,28 @@ struct ActivitiesTable: View {
                 ActivitiesTableStatusView(context: context)
             }
             .width(ideal: 30)
+        }
+    }
+
+    private func nameText(of context: UISynchroNodeContext) -> some View {
+        Text(context.node.relevantPath, format: .node)
+            .foregroundStyle(ColorToken.Text.primary.asColor)
+    }
+
+    @ViewBuilder
+    private func activityText(of context: UISynchroNodeContext) -> some View {
+        if context.node.status == .syncing {
+            Text(KDriveLocalizable.labelSynchronisation)
+                .font(.Tokens.callout)
+                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+        } else if let instruction = context.node.instruction {
+            HStack(alignment: .center, spacing: AppPadding.padding2) {
+                Text(instruction.label)
+                    .font(.Tokens.callout)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                Text(context.node.syncDate, format: .friendlyRelative)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+            }
         }
     }
 
