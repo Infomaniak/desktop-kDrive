@@ -20,7 +20,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 import kDrive.UI
 
 // Presents a drive or synchronization selector entry with independent selection, status, and interaction states.
@@ -122,17 +121,11 @@ Button {
                 driveColor: root.driveColor
             }
 
-            Image {
+            IKTintedIcon {
                 anchors.fill: parent
                 visible: root.advancedSync
                 source: "qrc:/assets/main/folder.svg"
-                sourceSize.width: width
-                sourceSize.height: height
-                layer.enabled: visible
-                layer.effect: MultiEffect {
-                    colorization: 1
-                    colorizationColor: root.driveColor
-                }
+                color: root.driveColor
             }
         }
 
@@ -178,18 +171,12 @@ Button {
             anchors.verticalCenter: parent.verticalCenter
             spacing: IKSpacing.s8
 
-            Image {
+            IKTintedIcon {
                 visible: root.warning
                 width: visible ? IKMainWindow.syncSelectorStatusIconSize : 0
                 height: IKMainWindow.syncSelectorStatusIconSize
                 source: "qrc:/assets/main/triangle-alert.svg"
-                sourceSize.width: width
-                sourceSize.height: height
-                layer.enabled: visible
-                layer.effect: MultiEffect {
-                    colorization: 1
-                    colorizationColor: IKColors.statusMediumWarning
-                }
+                color: IKColors.statusMediumWarning
             }
 
             IKBadge {
@@ -197,18 +184,12 @@ Button {
                 color: IKColors.statusMediumWarning
             }
 
-            Image {
+            IKTintedIcon {
                 visible: root.showChevron
                 width: visible ? IKIconSizes.small : 0
                 height: IKIconSizes.small
                 source: "qrc:/assets/main/chevron-down.svg"
-                sourceSize.width: width
-                sourceSize.height: height
-                layer.enabled: visible
-                layer.effect: MultiEffect {
-                    colorization: 1
-                    colorizationColor: IKColors.textSecondary
-                }
+                color: IKColors.textSecondary
             }
         }
     }

@@ -20,7 +20,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 import kDrive.UI
 
 // Reusable sidebar row supporting selection, disabled styling, notifications, and an optional trailing icon.
@@ -53,7 +52,7 @@ Button {
     }
 
     contentItem: Item {
-        Image {
+        IKTintedIcon {
             id: iconImage
 
             anchors.left: parent.left
@@ -62,13 +61,7 @@ Button {
             width: IKIconSizes.medium
             height: IKIconSizes.medium
             source: root.iconSource
-            sourceSize.width: width
-            sourceSize.height: height
-            layer.enabled: true
-            layer.effect: MultiEffect {
-                colorization: 1
-                colorizationColor: root.enabled ? IKColors.textSecondary : IKColors.actionDisabled
-            }
+            color: root.enabled ? IKColors.textSecondary : IKColors.actionDisabled
         }
 
         Text {
@@ -98,18 +91,12 @@ Button {
                 color: root.notificationColor
             }
 
-            Image {
+            IKTintedIcon {
                 visible: root.trailingIconSource.toString().length > 0
                 width: visible ? IKIconSizes.medium : 0
                 height: IKIconSizes.medium
                 source: root.trailingIconSource
-                sourceSize.width: width
-                sourceSize.height: height
-                layer.enabled: visible
-                layer.effect: MultiEffect {
-                    colorization: 1
-                    colorizationColor: root.enabled ? IKColors.textSecondary : IKColors.actionDisabled
-                }
+                color: root.enabled ? IKColors.textSecondary : IKColors.actionDisabled
             }
         }
     }

@@ -209,6 +209,7 @@
 - Keep `IKTintedIcon` rasterization at 2x logical size; Qt applies the window DPR. Use `SvgInfo` for the intrinsic
   aspect ratio, center the fitted glyph rectangle, and use `Image.Stretch` so `MultiEffect` can sample the image
   directly. Keep only one `sourceSize` dimension constrained and leave mipmapping disabled.
+- Render every tinted SVG icon through `IKTintedIcon`; do not colorize an `Image` with its own `MultiEffect`.
 - Wrap icons used as a `Control.contentItem` before assigning their intended size because the control owns the direct
   content item's geometry.
 - Close an Activities row action menu when its delegate moves vertically. A popup must not follow a row displaced by
