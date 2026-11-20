@@ -29,26 +29,69 @@ Item {
 
     readonly property string filterLabel: controller.filter === ActivityListModel.ThisComputerOnly ? qsTrId("activitiesTypeThisComputer") : qsTrId("activitiesTypeAllActivities")
 
-    implicitHeight: IKActivities.headerHeight
+    implicitHeight: titleColumn.implicitHeight
 
-    Text {
+    SyncProgressText {
+        id: progressText
+
+        progress: root.controller.syncProgress
+    }
+
+    Column {
+        id: titleColumn
+
         anchors.left: parent.left
         anchors.right: filterButton.left
         anchors.rightMargin: IKSpacing.s16
-        anchors.verticalCenter: parent.verticalCenter
-        text: root.controller.title
-        color: IKColors.textPrimary
-        font.pixelSize: IKFonts.title3Size
-        font.weight: IKFonts.emphasized
-        elide: Text.ElideRight
-        verticalAlignment: Text.AlignVCenter
+        anchors.top: parent.top
+        spacing: progressRow.visible ? IKSpacing.s4 : 0
+
+        Text {
+            width: parent.width
+            height: progressRow.visible ? IKActivities.headerProgressTitleHeight : IKActivities.headerHeight
+            text: root.controller.title
+            color: IKColors.textPrimary
+            font.pixelSize: IKFonts.title3Size
+            font.weight: IKFonts.emphasized
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        Row {
+            id: progressRow
+
+            width: parent.width
+            height: IKActivities.headerProgressHeight
+            spacing: IKActivities.headerProgressSpacing
+            visible: progressText.text.length > 0
+
+            IKLoadingSpinner {
+                id: progressSpinner
+
+                anchors.verticalCenter: parent.verticalCenter
+                width: IKActivities.headerProgressLoaderSize
+                height: IKActivities.headerProgressLoaderSize
+                strokeWidth: IKActivities.progressStrokeWidth
+                Accessible.ignored: true
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                width: progressRow.width - progressSpinner.width - progressRow.spacing
+                text: progressText.text
+                color: IKColors.textPrimary
+                font.pixelSize: IKFonts.bodySize
+                font.weight: IKFonts.medium
+                elide: Text.ElideRight
+            }
+        }
     }
 
     ToolButton {
         id: filterButton
 
         anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.top: parent.top
         height: IKActivities.filterButtonHeight
         width: filterContent.implicitWidth + IKSpacing.s16
         focusPolicy: Qt.StrongFocus
