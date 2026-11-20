@@ -320,12 +320,12 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1834"/>
+        <location filename="../src/server/appserver.cpp" line="1847"/>
         <source>Share link copied to clipboard</source>
         <translation>Delingslink kopieret til udklipsholderen</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3976"/>
+        <location filename="../src/server/appserver.cpp" line="3989"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet fjernet.</numerusform>
@@ -333,13 +333,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3978"/>
+        <location filename="../src/server/appserver.cpp" line="3991"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet fjernet.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3983"/>
+        <location filename="../src/server/appserver.cpp" line="3996"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet tilføjet.</numerusform>
@@ -347,13 +347,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3985"/>
+        <location filename="../src/server/appserver.cpp" line="3998"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet tilføjet.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3990"/>
+        <location filename="../src/server/appserver.cpp" line="4003"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 og %n anden fil er blevet opdateret.</numerusform>
@@ -361,13 +361,13 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3992"/>
+        <location filename="../src/server/appserver.cpp" line="4005"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er blevet opdateret.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3997"/>
+        <location filename="../src/server/appserver.cpp" line="4010"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 er blevet flyttet til %2 og %n anden fil er blevet flyttet.</numerusform>
@@ -375,12 +375,12 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4000"/>
+        <location filename="../src/server/appserver.cpp" line="4013"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 er blevet flyttet til %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4008"/>
+        <location filename="../src/server/appserver.cpp" line="4021"/>
         <source>Sync Activity</source>
         <translation>Synkroniseringsaktivitet</translation>
     </message>
@@ -2936,82 +2936,82 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
         <translation>Kan ikke gemme parametre!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1261"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1270"/>
         <source>Make available locally</source>
         <translation>Gør tilgængeligt lokalt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1265"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1274"/>
         <source>Free up local space</source>
         <translation>Frigør lokal plads</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1269"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
         <source>Cancel free up local space</source>
         <translation>Annuller frigørelse af lokal plads</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1273"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
         <source>Cancel make available locally</source>
         <translation>Annuller gør tilgængeligt lokalt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1277"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
         <source>Resharing this file is not allowed</source>
         <translation>Gendeling af denne fil er ikke tilladt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1287"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Gendeling af denne mappe er ikke tilladt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1291"/>
         <source>Copy public share link</source>
         <translation>Kopiér offentligt delingslink</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1295"/>
         <source>Copy private share link</source>
         <translation>Kopiér privat delingslink</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1290"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1299"/>
         <source>Open in browser</source>
         <translation>Åbn i browser</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2019"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2052"/>
         <source>No valid folder selected!</source>
         <translation>Ingen gyldig mappe valgt!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2030"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2063"/>
         <source>The selected path does not exist!</source>
         <translation>Den valgte sti eksisterer ikke!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2068"/>
         <source>The selected path is not a folder!</source>
         <translation>Den valgte sti er ikke en mappe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2073"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Du har ikke tilladelse til at skrive til den valgte mappe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2111"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 indeholder en mappe, der allerede er synkroniseret. Vælg venligst en anden!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2086"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2119"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 er indeholdt i en mappe, der allerede er synkroniseret. Vælg venligst en anden!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2094"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2127"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Den lokale mappe %1 er allerede synkroniseret. Vælg venligst en anden!</translation>
     </message>
@@ -3188,7 +3188,7 @@ Brug venligst følgende link til at sende loggene til support: &lt;a style=&quot
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="141"/>
+        <location filename="../src/server/appserver.cpp" line="154"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>kDrive-applikationen lukker på grund af en kritisk fejl.</translation>
     </message>
