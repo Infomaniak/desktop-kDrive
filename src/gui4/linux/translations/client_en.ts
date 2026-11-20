@@ -636,6 +636,10 @@ You can open them at any time, even without an internet connection.</translation
             <extracomment>Storage page, subscription card: link shown when the kDrive subscription storage is full, and tooltip and accessible name of the cart icon button otherwise. Opens the Infomaniak shop for the drive, admins only.</extracomment> 
             <translation>Upgrade my subscription</translation> 
         </message> 
+        <message id="buttonUpgradeSubscriptionShort"> 
+            <source>Upgrade</source> 
+            <translation>Upgrade</translation> 
+        </message> 
         <message id="buttonValidate"> 
             <source>Confirm</source> 
             <translation>Confirm</translation> 
@@ -1409,6 +1413,10 @@ It will open in your browser.</translation>
         <message id="kSuiteOfferUrl"> 
             <source>https://www.infomaniak.com/en/ksuite</source> 
             <translation>https://www.infomaniak.com/en/ksuite</translation> 
+        </message> 
+        <message id="ksuiteProBannerDescription"> 
+            <source>Create and collaborate without limits</source> 
+            <translation>Create and collaborate without limits</translation> 
         </message> 
         <message id="labelAccessRightsModified"> 
             <source>Access rights modified</source> 

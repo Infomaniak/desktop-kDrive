@@ -36,6 +36,20 @@ QtObject {
     readonly property real sidebarNotificationMinHeight: 40
     readonly property real sidebarNotificationIconSize: 14
     readonly property int sidebarNotificationDuration: 5000
+    readonly property real upsellCardRadius: 10
+    readonly property real upsellCardPadding: IKSpacing.s16
+    readonly property real upsellCardLogoSpacing: IKSpacing.s8
+    readonly property real upsellCardActionSpacing: IKSpacing.s16
+    readonly property real upsellCardBorderWidth: 1
+    readonly property real upsellLogoHeight: 24
+    // Narrower than the card content so the descriptions wrap as in the design.
+    readonly property real upsellDescriptionMaxWidth: 140
+    readonly property real upsellButtonHeight: 22
+    readonly property real upsellButtonBorderWidth: 1
+    readonly property real upsellButtonHorizontalPadding: IKSpacing.s8
+    readonly property real upsellButtonRadius: IKRadius.r6
+    // Blur of the kSuite Pro spheres, close to the 15.72 px Gaussian blur of the source design.
+    readonly property real upsellGradientBlurMax: 32
     // Information blocks: one action is 64 px high, an action with its dismiss button below is 80 px.
     readonly property real informationBlockMinHeight: 64
     readonly property real informationBlockActionButtonHeight: 24
