@@ -154,6 +154,10 @@ QtObject {
     readonly property color windowControlIconOnClose: _p.white
     readonly property color toolbarControlSurface: darkMode ? _p.neutralBlue700 : _p.gray50
     readonly property color toolbarControlHover: surfaceSecondary
+    readonly property color toolbarActionGroupSeparator: surfaceTertiary
+    readonly property color toolbarMenuSurface: surfaceSecondary
+    readonly property color toolbarMenuHover: surfaceTertiary
+    readonly property color toolbarMenuDivider: surfaceTertiary
 
     // Status — Strong
     readonly property color statusStrongWarning: darkMode ? _p.orange300 : _p.orange800
