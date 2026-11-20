@@ -43,7 +43,7 @@ extension Drive {
               notifications: false,
               size: 0,
               usedSize: 0,
-              packInfo: PackInfo(id: 0, name: "", displayName: "", isFree: false),
+              packInfo: PackInfo(id: 0, name: "", displayName: "", isFree: false, kSuiteId: 0, upsellTarget: .Unknown),
               synchros: synchros)
     }
 }
@@ -98,7 +98,9 @@ public enum ObservableData {
                                                          id: 1,
                                                          name: "solo",
                                                          displayName: "kDrive Solo",
-                                                         isFree: true
+                                                         isFree: true,
+                                                         kSuiteId: 0,
+                                                         upsellTarget: .StandAloneToMykSuitePlus
                                                      ))
 
     static let updatedDrive = Drive.some(driveDbId: expectedDriveDbId,

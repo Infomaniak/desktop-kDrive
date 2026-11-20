@@ -258,6 +258,8 @@ public enum KDriveLocalizable {
   public static let buttonUpdateSubscription = KDriveLocalizable.tr("Localizable", "buttonUpdateSubscription", fallback: "Update subscription")
   /// loco:6989da5609f5a74cc30826c2
   public static let buttonUpgradeOffer = KDriveLocalizable.tr("Localizable", "buttonUpgradeOffer", fallback: "Upgrade")
+  /// loco:6af2db6c55197681a509f7d2
+  public static let buttonUpgradeSubscriptionShort = KDriveLocalizable.tr("Localizable", "buttonUpgradeSubscriptionShort", fallback: "Upgrade")
   /// loco:69a69d71b2261fc281078712
   public static let buttonValidate = KDriveLocalizable.tr("Localizable", "buttonValidate", fallback: "Confirm")
   /// loco:69a69d809805f64236014d34
@@ -687,6 +689,8 @@ public enum KDriveLocalizable {
   public static let instructionOpenSystemSettingsLink = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettingsLink", fallback: "System Settings")
   /// loco:6a16da43bc4d91f15c0416e2
   public static let kSuiteOfferUrl = KDriveLocalizable.tr("Localizable", "kSuiteOfferUrl", fallback: "https://www.infomaniak.com/en/ksuite")
+  /// Create and collaborate without limits
+  public static let ksuiteProBannerDescription = KDriveLocalizable.tr("Localizable", "ksuiteProBannerDescription", fallback: "Create and collaborate without limits")
   /// loco:69a0079a3f0464f2af0a25d3
   public static let labelAccessRightsModified = KDriveLocalizable.tr("Localizable", "labelAccessRightsModified", fallback: "Access rights modified")
   /// loco:6989c851ba57b190ff0ebbf2
