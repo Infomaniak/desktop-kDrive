@@ -365,12 +365,12 @@
   each error kind maps to its own `errors` event.
 - `app/services/matomoservice.*`: owner of the single `MatomoQt::Tracker` (`src/3rdparty/matomo-sdk-qt`, static
   `MatomoQt::Core`), site `AppConstants::Matomo::siteId`, actions under `kdrive://<category>`. Requests carry the user
-  agent built by the SDK, the app language, the logical size of the primary screen at startup and the app version in
-  the visit custom dimension `AppConstants::Matomo::appVersionDimensionId`. Consent is the server-confirmed
-  `matomoEnabled` of `ParametersStore` (privacy mode `RequiresConsent`): nothing is sent before the parameters are
-  loaded or after an opt-out, which also forgets the visitor id, kept in `ClientSettings`, and aborts the requests still
-  in flight through the `QNetworkAccessManager` the service gives the tracker. Debug builds send like release builds
-  when consent is granted. Network failures are logged once per failure streak.
+  agent and the client hints (distribution version) built by the SDK, the app language, the logical size of the primary
+  screen at startup and the app version in the visit custom dimension `AppConstants::Matomo::appVersionDimensionId`.
+  Consent is the server-confirmed `matomoEnabled` of `ParametersStore` (privacy mode `RequiresConsent`): nothing is sent
+  before the parameters are loaded or after an opt-out, which also forgets the visitor id, kept in `ClientSettings`, and
+  aborts the requests still in flight through the `QNetworkAccessManager` the service gives the tracker. Debug builds
+  send like release builds when consent is granted. Network failures are logged once per failure streak.
 - `communicationlayer/ipcclient.*`: TLS-over-loopback JSON transport (`QSslSocket`), request/reply correlation,
   reconnect-before-first-connect logic, and pinned self-signed certificate verification. The pinned CA certificate is
   loaded once from the OS keychain via `CertReader` and set as the socket's only CA; the peer is verified against

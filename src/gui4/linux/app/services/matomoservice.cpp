@@ -63,8 +63,10 @@ MatomoQt::TrackerConfig trackerConfig() {
     config.actionUrlBase = QUrl{QString::fromLatin1(AppConstants::Matomo::actionUrlBase)};
     config.siteId = AppConstants::Matomo::siteId;
     config.privacyMode = MatomoQt::PrivacyMode::Value::RequiresConsent;
-    config.userAgent = MatomoQt::UserAgentBuilder::buildDesktopUserAgent(MatomoQt::UserAgentBuilder::currentDesktopInfo(
-            QString::fromLatin1(APPLICATION_NAME), QString::fromLatin1(KDRIVE_VERSION_STRING)));
+    const MatomoQt::UserAgentInfo desktopInfo = MatomoQt::UserAgentBuilder::currentDesktopInfo(
+            QString::fromLatin1(APPLICATION_NAME), QString::fromLatin1(KDRIVE_VERSION_STRING));
+    config.userAgent = MatomoQt::UserAgentBuilder::buildDesktopUserAgent(desktopInfo);
+    config.clientHints = MatomoQt::UserAgentBuilder::buildClientHints(desktopInfo);
     config.screenResolution = screenResolution();
     config.customDimensions[AppConstants::Matomo::appVersionDimensionId] = QString::fromLatin1(KDRIVE_STRINGIFY(KDRIVE_VERSION));
     return config;
