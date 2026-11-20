@@ -26,6 +26,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "version.h"
 
+#include <atomic>
 #include <fstream>
 
 namespace KDC {
@@ -41,7 +42,7 @@ class LinuxUpdaterMock final : public LinuxUpdater {
         VersionInfo announcedVersion;
         bool relaunchSucceeds{true};
         mutable SyncPath relaunchedPath;
-        mutable bool relaunchedOnSettings{false};
+        mutable std::atomic_bool relaunchedOnSettings{false};
         mutable uint32_t relaunchCount{0};
 
     private:
@@ -184,7 +185,7 @@ void TestLinuxUpdater::testAutomaticInstallDefersRestart() {
     std::ofstream(LinuxUpdater::partialDownloadPath(updater._appImagePath)) << "new AppImage";
 
     uint32_t quitCount = 0;
-    updater.setQuitCallback([&] { ++quitCount; });
+    updater.setQuitCallback([&quitCount] { ++quitCount; });
 
     // An automatic preparation installs the file without interrupting the user.
     updater.installUpdate(updater.announcedVersion);
