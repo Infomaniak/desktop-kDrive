@@ -133,6 +133,7 @@ struct ActivitiesTableStatusView: View {
                     .tint(ColorToken.Text.primary.asColor)
                 }
                 .buttonStyle(.plain)
+                .legacyBorderlessMenu()
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
@@ -235,6 +236,20 @@ struct ActivitiesTableStatusView: View {
         @InjectService var router: MainViewRouter
         router.setCurrentTab(.activities)
         router.append(.errors)
+    }
+}
+
+private extension View {
+    /// On macOS 12, `Menu` ignores `.buttonStyle(.plain)` and renders as a full-width pop-up button with an indicator.
+    @ViewBuilder
+    func legacyBorderlessMenu() -> some View {
+        if #available(macOS 13.0, *) {
+            self
+        } else {
+            menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+        }
     }
 }
 
