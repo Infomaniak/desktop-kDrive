@@ -68,18 +68,18 @@ log4cplus::Logger logger() {
 } // namespace
 
 void LinuxUpdater::onUpdateFound() {
-    handleUpdateFound(true);
+    handleUpdateFound(AutomaticInstall::Allowed);
 }
 
 void LinuxUpdater::onUpdateFoundAfterChannelChange() {
-    handleUpdateFound(false);
+    handleUpdateFound(AutomaticInstall::Disallowed);
 }
 
 /**
  * Installs the announced update when automatic updates are enabled and the check allows it. The application is not
  * restarted: the client requests the restart once it cannot interrupt the user.
  */
-void LinuxUpdater::handleUpdateFound(const bool automaticInstallAllowed) {
+void LinuxUpdater::handleUpdateFound(const AutomaticInstall automaticInstall) {
     const auto version = versionInfo().fullVersion();
     bool alreadyInstalled = false;
     {
@@ -103,12 +103,12 @@ void LinuxUpdater::handleUpdateFound(const bool automaticInstallAllowed) {
         return;
     }
 
-    if (!automaticInstallAllowed || !ParametersCache::instance()->parameters().autoUpdates()) {
+    if (automaticInstall == AutomaticInstall::Disallowed || !ParametersCache::instance()->parameters().autoUpdates()) {
         // The update stays Available until the user starts it from Settings, or until a scheduled check installs it.
         return;
     }
 
-    prepareAnnouncedUpdate(false);
+    prepareAnnouncedUpdate(RestartTiming::OnClientRequest);
 }
 
 /**
@@ -126,18 +126,18 @@ void LinuxUpdater::startInstaller() {
     }
 
     if (installedPath.empty()) {
-        prepareAnnouncedUpdate(true);
+        prepareAnnouncedUpdate(RestartTiming::WhenInstalled);
         return;
     }
 
-    restartApp(installedPath, false);
+    restartApp(installedPath, RelaunchWindow::None);
 }
 
 // The download completion and a GUI request can both reach this point while shutdown is being scheduled.
-void LinuxUpdater::restartApp(const SyncPath &installedPath, const bool showSettings) {
+void LinuxUpdater::restartApp(const SyncPath &installedPath, const RelaunchWindow relaunchWindow) {
     if (_restartInProgress.exchange(true)) return;
 
-    if (!launchRelauncher(installedPath, showSettings)) {
+    if (!launchRelauncher(installedPath, relaunchWindow)) {
         // The new version is in place and starts at the next launch.
         _restartInProgress = false;
         setState(UpdateState::UpdateError);
@@ -149,7 +149,7 @@ void LinuxUpdater::restartApp(const SyncPath &installedPath, const bool showSett
     }
 }
 
-void LinuxUpdater::prepareAnnouncedUpdate(const bool restartWhenInstalled) {
+void LinuxUpdater::prepareAnnouncedUpdate(const RestartTiming restartTiming) {
     if (state() != UpdateState::Available && state() != UpdateState::DownloadError && state() != UpdateState::UpdateError) {
         LOG_INFO(logger(), "No AppImage update to prepare in state " << state());
         return;
@@ -163,7 +163,7 @@ void LinuxUpdater::prepareAnnouncedUpdate(const bool restartWhenInstalled) {
     // The user's request (GUI job thread) and an automatic preparation (main thread) can race: only one starts. The user's
     // request raises the restart intent before the claim and only the end of the preparation lowers it, so an automatic
     // preparation never erases it.
-    if (restartWhenInstalled) {
+    if (restartTiming == RestartTiming::WhenInstalled) {
         _restartWhenInstalled = true;
     }
     if (_downloadInProgress.exchange(true)) {
@@ -479,7 +479,7 @@ void LinuxUpdater::installUpdate(const VersionInfo &info) {
         return;
     }
 
-    restartApp(targetPath, true);
+    restartApp(targetPath, RelaunchWindow::Settings);
 }
 
 // Points the autostart entry (when enabled) and the login URL scheme to the installed AppImage.
@@ -520,7 +520,7 @@ bool LinuxUpdater::verifyChecksum(const SyncPath &filepath, const VersionInfo &i
  * Starts a detached shell that waits for this server to exit, then launches the new AppImage. Variables set by the
  * AppImage runtime or pointing into its mount are removed so that the new AppImage starts with a clean environment.
  */
-bool LinuxUpdater::launchRelauncher(const SyncPath &targetPath, const bool showSettings) const {
+bool LinuxUpdater::launchRelauncher(const SyncPath &targetPath, const RelaunchWindow relaunchWindow) const {
     auto environment = QProcessEnvironment::systemEnvironment();
     const auto appDir = environment.value(QStringLiteral("APPDIR"));
     for (const auto &name: environment.keys()) {
@@ -535,7 +535,7 @@ bool LinuxUpdater::launchRelauncher(const SyncPath &targetPath, const bool showS
     QStringList arguments{
             QStringLiteral("/bin/sh"),           QStringLiteral("-c"),        QString::fromLatin1(relauncherScript),
             QStringLiteral("kdrive-relauncher"), QString::number(::getpid()), QString::fromStdString(targetPath.string())};
-    if (showSettings) {
+    if (relaunchWindow == RelaunchWindow::Settings) {
         arguments.append(QStringLiteral("--settings"));
     }
 

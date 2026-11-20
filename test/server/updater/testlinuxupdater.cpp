@@ -45,9 +45,9 @@ class LinuxUpdaterMock final : public LinuxUpdater {
         mutable uint32_t relaunchCount{0};
 
     private:
-        bool launchRelauncher(const SyncPath &targetPath, const bool showSettings) const override {
+        bool launchRelauncher(const SyncPath &targetPath, const RelaunchWindow relaunchWindow) const override {
             relaunchedPath = targetPath;
-            relaunchedOnSettings = showSettings;
+            relaunchedOnSettings = relaunchWindow == RelaunchWindow::Settings;
             ++relaunchCount;
             return relaunchSucceeds;
         }
