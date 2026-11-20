@@ -36,6 +36,7 @@ IKModal {
     signal fallbackFocusRequested
 
     title: qsTrId("labelConflictDialogTitle")
+    dialogId: "main.conflicts.versionDialog"
     escapeDismissible: true
     preferredWidth: IKActivities.errorsConflictWidth
     initialFocusItem: validateButton.enabled ? validateButton : closeButton
@@ -129,8 +130,14 @@ IKModal {
                 selected: root.controller.selection === ConflictVersionController.Online
                 mostRecent: root.controller.mostRecent === ConflictVersionController.Online
                 loading: root.controller.loading
-                onSelectRequested: root.controller.select(ConflictVersionController.Online)
-                onOpenRequested: root.controller.openVersion(ConflictVersionController.Online)
+                onSelectRequested: {
+                    UserActionLog.action(root.dialogId + ".select", { version: "online" });
+                    root.controller.select(ConflictVersionController.Online);
+                }
+                onOpenRequested: {
+                    UserActionLog.action(root.dialogId + ".open", { version: "online" });
+                    root.controller.openVersion(ConflictVersionController.Online);
+                }
             }
 
             ConflictVersionCard {
@@ -146,8 +153,14 @@ IKModal {
                 selected: root.controller.selection === ConflictVersionController.Local
                 mostRecent: root.controller.mostRecent === ConflictVersionController.Local
                 loading: root.controller.loading
-                onSelectRequested: root.controller.select(ConflictVersionController.Local)
-                onOpenRequested: root.controller.openVersion(ConflictVersionController.Local)
+                onSelectRequested: {
+                    UserActionLog.action(root.dialogId + ".select", { version: "local" });
+                    root.controller.select(ConflictVersionController.Local);
+                }
+                onOpenRequested: {
+                    UserActionLog.action(root.dialogId + ".open", { version: "local" });
+                    root.controller.openVersion(ConflictVersionController.Local);
+                }
             }
         }
 
@@ -171,6 +184,7 @@ IKModal {
 
             text: qsTrId("buttonClose")
             role: IKModalButton.Tonal
+            actionId: root.dialogId + ".close"
             onClicked: root.controller.close()
         },
         IKModalButton {
@@ -179,6 +193,8 @@ IKModal {
             text: root.controller.isLast ? qsTrId("buttonValidate") : qsTrId("buttonValidateAndGoNext")
             actionEnabled: root.controller.selection !== ConflictVersionController.None && !root.controller.loading
             busy: root.controller.resolutionPending
+            actionId: root.dialogId + ".validate"
+            actionDetails: ({ last: root.controller.isLast })
             onClicked: root.controller.validate()
         }
     ]

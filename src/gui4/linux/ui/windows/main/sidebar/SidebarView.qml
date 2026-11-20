@@ -25,6 +25,9 @@ import kDrive.UI
 Rectangle {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "main.sidebar"
+
     required property var appRouter
     required property var controller
     required property var storageController
@@ -55,6 +58,7 @@ Rectangle {
                 enabled: root.navigationEnabled
                 iconSource: "qrc:/assets/main/house.svg"
                 label: qsTrId("tabTitleHome")
+                actionId: root.actionIdPrefix + ".home"
                 selected: root.currentTab === root.tabHome
                 width: parent.width
 
@@ -64,6 +68,7 @@ Rectangle {
                 enabled: root.navigationEnabled && root.controller.hasCurrentSyncRoot
                 iconSource: "qrc:/assets/main/activities.svg"
                 label: qsTrId("tabTitleActivities")
+                actionId: root.actionIdPrefix + ".activities"
                 notificationColor: IKColors.statusMediumWarning
                 notificationDot: root.controller.currentErrorCount > 0
                 selected: root.currentTab === root.tabActivities
@@ -75,6 +80,7 @@ Rectangle {
                 enabled: root.navigationEnabled && root.controller.hasCurrentSyncRoot
                 iconSource: "qrc:/assets/main/storage.svg"
                 label: qsTrId("tabTitleStorage")
+                actionId: root.actionIdPrefix + ".storage"
                 notificationDot: root.storageController.storageWarning
                 selected: root.currentTab === root.tabStorage
                 width: parent.width
@@ -85,6 +91,7 @@ Rectangle {
                 enabled: root.controller.canOpenCurrentSyncFolder
                 iconSource: "qrc:/assets/main/folder.svg"
                 label: qsTrId("buttonOpenFolder")
+                actionId: root.actionIdPrefix + ".openSyncFolder"
                 width: parent.width
 
                 onTriggered: root.controller.openCurrentSyncFolder()

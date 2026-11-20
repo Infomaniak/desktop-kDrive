@@ -26,6 +26,8 @@ Item {
     required property string title
     property string subtitle
     property string actionText
+    // Id of the action in the user action log (see UserActionLog), used when an action is shown.
+    property string actionId: ""
 
     signal actionTriggered
 
@@ -72,6 +74,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             visible: root.actionText.length > 0
             text: root.actionText
+            actionId: root.actionId
             onClicked: root.actionTriggered()
         }
     }
