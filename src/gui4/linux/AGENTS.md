@@ -210,6 +210,8 @@
   aspect ratio, center the fitted glyph rectangle, and use `Image.Stretch` so `MultiEffect` can sample the image
   directly. Keep only one `sourceSize` dimension constrained and leave mipmapping disabled.
 - Render every tinted SVG icon through `IKTintedIcon`; do not colorize an `Image` with its own `MultiEffect`.
+- Register C++ types for QML in `AppClientLinux::setupQmlEngine`, never with `QML_ELEMENT` / `QML_SINGLETON`: those
+  registrations run only when `kDrive.UI` holds no type yet, so Qt skips them after the manual ones.
 - Wrap icons used as a `Control.contentItem` before assigning their intended size because the control owns the direct
   content item's geometry.
 - Close an Activities row action menu when its delegate moves vertically. A popup must not follow a row displaced by
