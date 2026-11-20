@@ -95,6 +95,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                             "ActivitiesNavigation is owned by AppRouter.");
     (void) qmlRegisterUncreatableType<SyncSelectorModel>(AppConstants::Qml::moduleUri, 1, 0, "SyncSelectorModel",
                                                          "SyncSelectorModel is owned by MainSidebarController.");
+    (void) qmlRegisterUncreatableType<MainSidebarController>(AppConstants::Qml::moduleUri, 1, 0, "MainSidebarController",
+                                                             "MainSidebarController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<HomeController>(AppConstants::Qml::moduleUri, 1, 0, "HomeController",
                                                       "HomeController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<BlockingErrorController>(AppConstants::Qml::moduleUri, 1, 0, "BlockingErrorController",
