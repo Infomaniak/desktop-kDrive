@@ -69,6 +69,11 @@ class SettingsWindowController final : public QObject {
             emit openRequested();
             emit fileExclusionsRequested();
         }
+        // Opens Settings on the update button, for an update notification.
+        void requestOpenUpdate() {
+            emit openRequested();
+            emit updateRequested();
+        }
         // Opens Settings on the synchronizations, where a new synchronization is created, for the errors page.
         void requestOpenAccounts() {
             emit openRequested();
@@ -96,6 +101,7 @@ class SettingsWindowController final : public QObject {
         void openRequested();
         void accountConnectionRequested();
         void fileExclusionsRequested();
+        void updateRequested();
         void accountsRequested();
         void targetPending();
         // Ids are qint64 at the QML boundary.
