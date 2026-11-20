@@ -753,12 +753,12 @@ Toutes vos données resteront accessibles en ligne sur kDrive.</translation>
         <message id="dialogSyncDeletionWarningContent"> 
             <source>The local folder will remain on your computer, but it will no longer be synced with kDrive.
 This action is permanent.
-To sync your drive again, you will need to reconnect it later.
+To sync your kDrive again, you will need to reconnect it later.
 
 Before continuing, make sure all your files are up to date and fully synced.</source> 
             <translation>Le dossier local restera sur votre ordinateur, mais il ne sera plus synchronisé avec kDrive.
 Cette action est permanente.
-Pour synchroniser à nouveau votre lecteur, vous devrez le reconnecter plus tard.
+Pour synchroniser à nouveau votre kDrive, vous devrez le reconnecter plus tard.
 
 Avant de continuer, assurez-vous que tous vos fichiers sont à jour et entièrement synchronisés.</translation> 
         </message> 
