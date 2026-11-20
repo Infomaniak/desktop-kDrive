@@ -160,16 +160,16 @@ void LinuxUpdater::prepareAnnouncedUpdate(const bool restartWhenInstalled) {
         return;
     }
 
-    // The user's request (GUI job thread) and an automatic preparation (main thread) can race: only one starts, and the
-    // user's request still restarts the application once the update is installed.
+    // The user's request (GUI job thread) and an automatic preparation (main thread) can race: only one starts. The user's
+    // request raises the restart intent before the claim and only the end of the preparation lowers it, so an automatic
+    // preparation never erases it.
+    if (restartWhenInstalled) {
+        _restartWhenInstalled = true;
+    }
     if (_downloadInProgress.exchange(true)) {
-        if (restartWhenInstalled) {
-            _restartWhenInstalled = true;
-        }
         LOG_INFO(logger(), "AppImage update already being prepared");
         return;
     }
-    _restartWhenInstalled = restartWhenInstalled;
 
     // The announced version and its URL are captured together: a check or a channel change during the preparation
     // replaces versionInfo().
@@ -408,8 +408,12 @@ void LinuxUpdater::downloadFinished(const UniqueId jobId, const VersionInfo &inf
     installUpdate(info);
 }
 
-// Ends the sidecar and AppImage downloads: a periodic check may start a new preparation from now on.
+// Ends the sidecar and AppImage downloads: a periodic check may start a new preparation from now on. A preparation that
+// does not install drops the restart intent; an installation consumes it in installUpdate.
 void LinuxUpdater::finishPreparation(const UpdateState state) {
+    if (state != UpdateState::Ready) {
+        _restartWhenInstalled = false;
+    }
     _downloadInProgress = false;
     setState(state);
 }
@@ -470,7 +474,7 @@ void LinuxUpdater::installUpdate(const VersionInfo &info) {
     }
     finishPreparation(UpdateState::Ready);
 
-    if (!_restartWhenInstalled) {
+    if (!_restartWhenInstalled.exchange(false)) {
         LOG_INFO(logger(), "Automatic update installed, waiting for the client to request the restart");
         return;
     }
