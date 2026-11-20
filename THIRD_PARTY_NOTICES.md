@@ -103,7 +103,7 @@ The exact set of redistributed binaries can vary by platform:
 
 ---
 
-## Packaged Dependencies Installed Outside Conan
+## Additional Packaged Dependencies
 
 ### libzip
 
@@ -111,7 +111,31 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** BSD-3-Clause
 - **Copyright:** Copyright (C) 1999-2024 Dieter Baron and Thomas Klausner
 - **Repository:** https://libzip.org/
-- **Note:** Used by `libcommon` and `libcommonserver`; redistributed by platform packaging scripts.
+- **Note:** Used by `libcommon` and `libcommonserver`; supplied through Conan on macOS and redistributed by platform packaging scripts.
+
+### Zstandard
+
+- **Version:** Resolved from `zstd/[~1.5]` by the macOS libzip recipe
+- **License:** BSD-3-Clause OR GPL-2.0-only
+- **Copyright:** Copyright (c) Meta Platforms, Inc. and affiliates
+- **Repository:** https://github.com/facebook/zstd
+- **Note:** Compression support linked into the Conan-managed macOS libzip library.
+
+### bzip2
+
+- **Version:** 1.0.8
+- **License:** bzip2-1.0.6
+- **Copyright:** Copyright (C) 1996-2019 Julian R Seward
+- **Repository:** https://sourceware.org/bzip2/
+- **Note:** Compression support linked into the Conan-managed macOS libzip library.
+
+### XZ Utils / liblzma
+
+- **Version:** Resolved from `xz_utils/[>=5.4.5 <6]` by the macOS libzip recipe
+- **License:** 0BSD (liblzma)
+- **Copyright:** The XZ Utils authors and contributors
+- **Repository:** https://tukaani.org/xz/
+- **Note:** The liblzma library provides compression support for Conan-managed macOS libzip; XZ command-line tools are not redistributed.
 
 ### Sparkle
 
@@ -119,7 +143,7 @@ The exact set of redistributed binaries can vary by platform:
 - **License:** MIT
 - **Copyright:** Copyright (c) Sparkle Project
 - **Repository:** https://github.com/sparkle-project/Sparkle
-- **Note:** macOS only. `Sparkle.framework` is bundled into the application when available.
+- **Note:** macOS only. A local Conan recipe packages the published framework and command-line tools. `Sparkle.framework` is bundled into the application.
 
 ### CodeArt.MatomoTracking
 

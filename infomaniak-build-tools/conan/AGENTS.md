@@ -169,6 +169,9 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   without expanding their values in traced commands. It mounts the persistent Qt account directory only
   outside CI, for local INI authentication.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
+- **macOS CI profile**: `build_dependencies.sh` uses the repository's `profiles/macos-ci` in CI, without modifying shared runner profiles. Local builds keep `default` or `infomaniak_release`.
+- **Isolated Conan homes**: dependency discovery must respect `CONAN_HOME`; do not assume cache paths contain `.conan2`. macOS extended tests use a job-local cache.
+- **macOS native libraries**: libzip and static CppUnit use ConanCenter recipes. Sparkle uses the local prebuilt-framework recipe; preserve its symlinks. Do not copy these dependencies from `/usr/local` or the operator's home directory.
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
 - **CI recipe updates**: Both dependency scripts enable global `conan install --update` in GitHub Actions or when
   `KDRIVE_TEST_CI_RUNNING_ON_CI=true`; PowerShell also enables it with `-CI`. The Linux Podman wrapper forwards

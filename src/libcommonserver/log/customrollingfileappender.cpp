@@ -331,10 +331,8 @@ void reduceLogFolderSizeIfNeeded(const int64_t maxLogFolderSize, const int64_t t
 void CustomRollingFileAppender::managePreviousSessionLogs() {
     _lastExpireCheck = std::chrono::system_clock::now();
     // Archive previous log files and delete expired files
-    SyncPath logDirPath;
-    if (const auto exitInfo = CommonUtility::logDirectoryPath(logDirPath); !exitInfo) {
-        return;
-    }
+    const SyncPath logFilePath = DirectoryEntry(filename).path();
+    const SyncPath logDirPath = logFilePath.has_parent_path() ? logFilePath.parent_path() : SyncPath(".");
 
     int64_t totalSize = 0;
     std::priority_queue<LogFileInfo> logFiles;

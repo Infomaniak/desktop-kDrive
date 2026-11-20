@@ -1,0 +1,4 @@
+[tools]
+cmake = { version = "3.30.5", os = ["macos"] }
+pipx = { version = "1.8.0", os = ["macos"] }
+"pipx:conan" = { version = "2.34.0", os = ["macos"] }

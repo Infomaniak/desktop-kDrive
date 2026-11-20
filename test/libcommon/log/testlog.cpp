@@ -17,6 +17,7 @@
  */
 
 #include "test_utility/testhelpers.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "testlog.h"
 
 #include "libcommon/utility/utility.h"
@@ -126,6 +127,27 @@ void TestLog::testExpiredLogFiles(void) {
 
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir)); // The fake log file SHOULD be deleted now.
     appender->setExpire(CommonUtility::logsPurgeRate * 24 * 3600);
+}
+
+void TestLog::testRetentionUsesAppenderDirectory() {
+    const LocalTemporaryDirectory logDirectory;
+    const LocalTemporaryDirectory unrelatedDirectory;
+    const auto currentLogPath = logDirectory.path() / "current.log";
+    const auto expiredLogPath = logDirectory.path() / (APPLICATION_NAME "_expired.log.gz");
+    const auto unrelatedLogPath = unrelatedDirectory.path() / expiredLogPath.filename();
+    for (const auto &path: {expiredLogPath, unrelatedLogPath}) {
+        testhelpers::generateOrEditTestFile(path);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+                             IoHelper::setFileDates(path, testhelpers::defaultTime - 60, testhelpers::defaultTime - 60, false));
+    }
+
+    CustomRollingFileAppender appender(Path2WStr(currentLogPath), 1024, 1, true, true);
+    appender.setExpire(1);
+    appender.managePreviousSessionLogs();
+
+    CPPUNIT_ASSERT(std::filesystem::exists(currentLogPath));
+    CPPUNIT_ASSERT(!std::filesystem::exists(expiredLogPath));
+    CPPUNIT_ASSERT(std::filesystem::exists(unrelatedLogPath));
 }
 
 void TestLog::testLargeLogFolder() {

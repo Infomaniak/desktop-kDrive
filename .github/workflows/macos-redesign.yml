@@ -15,15 +15,13 @@ defaults:
 jobs:
   release-warnings:
     name: Release build warnings
-    runs-on: [ self-hosted, macOS, desktop-kdrive ]
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
+    runs-on: [ self-hosted, iOS, Powerful ]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
-      - name: Show release toolchain
-        run: xcodebuild -version
+      - name: Set up Xcode 27
+        uses: ./.github/actions/setup_xcode
       - name: Setup Mise
         # jdx/mise-action@v3.6.1
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8

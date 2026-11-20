@@ -59,11 +59,26 @@ Once installed, run the following command :
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
 
-CI and release scripts use your `xcode-select` selection or explicit `DEVELOPER_DIR`.
-They activate `.venv/bin/activate` (install Conan there) and require CMake >= 3.24 for `--fresh`.
+Use Xcode 27 to build the UI and server. Local build scripts use your `xcode-select`
+selection or explicit `DEVELOPER_DIR`; CI selects Xcode 27 through the setup action.
+The macOS build action installs the Conan version pinned in the root `mise.toml`.
+Local scripts still activate `.venv/bin/activate` when present; otherwise they use Conan from `PATH`.
+CMake >= 3.24 is required for `--fresh`.
+GitHub validation builds use `ci.xcconfig` to disable Xcode code signing for the UI and
+extensions on shared runners. Distribution builds through `build-release.sh` keep signing enabled.
 
 
-## CPPUnit
+## Native dependencies
+
+Conan now supplies **libzip 1.10.1**, **CppUnit 1.15.1** and **Sparkle 2.6.4** on macOS.
+libzip and CppUnit use ConanCenter recipes; Sparkle's local recipe packages its published
+universal framework and command-line tools using a SHA-256-verified download.
+Tests link CppUnit statically. No installation under `/usr/local` or `~/Library/Frameworks`
+is required. Linux and Windows retain their existing dependency setup.
+
+The manual installation instructions below are retained for legacy builds only.
+
+### CPPUnit (legacy)
 
 Download and build `CPPUnit`:
 
@@ -86,7 +101,7 @@ sudo make install
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
 
-## libzip
+### libzip (legacy)
 
 > :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well).
 
@@ -113,7 +128,7 @@ make
 sudo make install
 ```
 
-## Sparkle
+### Sparkle (legacy)
 
 Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.4) version `2.6.4` and copy the `Sparkle` directory in `~` and name it `Sparkle`.  
 Copy and paste `Sparkle.framework` in `~/Library/Frameworks` (create this directory if needed).
@@ -134,6 +149,21 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 ---
 
 ## Conan
+The macOS build action uses Mise to install **Conan 2.34.0** in an isolated pipx environment.
+This version recognizes Apple Clang 21 from Xcode 27 without custom Conan settings.
+The root `mise.toml` pins Conan, pipx and CMake 3.30.5. To use them locally without a `.venv`:
+
+```bash
+mise trust
+mise install
+mise exec -- ./infomaniak-build-tools/macos/build-release.sh
+```
+
+Mise installs the build tools; Conan supplies the native libraries. macOS CI uses the repository's
+`infomaniak-build-tools/conan/profiles/macos-ci` profile without relying on runner-installed profiles.
+Local builds still require the profile setup below.
+Existing local `.venv` installations remain supported:
+
 The recommended way to install Conan is via **pip** within a Python virtual environment (Python 3.6 or newer). This approach ensures isolation and compatibility with your project’s dependencies.
 
 > **Tip:** Other installation methods (system packages, pipx, installer scripts, etc.) are also supported. See [Conan Downloads](https://conan.io/downloads) for the full list of options.
@@ -186,7 +216,7 @@ Conan version 2.x.x
    os.version=12.4
    arch=armv8|x86_64
    compiler=apple-clang
-   compiler.version=16
+   compiler.version=21
    compiler.cppstd=20
    compiler.libcxx=libc++
    build_type=Debug
@@ -233,7 +263,7 @@ The project requires additional CMake variables for a correct build. To inject t
     ```
    macOS v4 requires macOS 12.4 or later. CI and release builds use this profile.
    Match `compiler.version` to `xcrun clang --version`
-   on local machines and runners (Apple Clang 21 for Xcode 26.5).
+   on local machines and runners (Apple Clang 21 for Xcode 27.1).
 
 ---
 
@@ -244,7 +274,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help] 
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **Qt**, **OpenSSL**, **libzip**, **SQLite**, **Sentry** and **Poco** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** macOS dependencies, including **libzip**, **CppUnit** and **Sparkle**, are managed through Conan.
 
 ---
 # Build in Debug
