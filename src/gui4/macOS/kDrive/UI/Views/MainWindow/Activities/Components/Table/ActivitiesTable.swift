@@ -30,6 +30,14 @@ struct ActivitiesTable: View {
         + AppPadding.padding8 * 2
         + AppPadding.padding24
 
+    /// Before macOS 14, the fixed table row height clips the underline, which leaves stray pixels under the folder name.
+    private static var isFolderUnderlined: Bool {
+        if #available(macOS 14.0, *) {
+            return true
+        }
+        return false
+    }
+
     let contexts: [UISynchroNodeContext]
 
     private var orderedNodes: [UISynchroNodeContext] {
@@ -73,7 +81,7 @@ struct ActivitiesTable: View {
                         context.node.parentFolder,
                         format: .node(driveFolderName: context.synchro.localPath.lastPathComponent)
                     )
-                    .underline()
+                    .underline(Self.isFolderUnderlined)
                     .lineLimit(1)
                 }
                 .buttonStyle(.borderless)
