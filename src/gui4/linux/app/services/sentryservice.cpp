@@ -84,7 +84,13 @@ SentryService::SentryService(ParametersService &parametersService, AppCache &app
 }
 
 std::optional<bool> SentryService::readCachedConsent() {
-    const QSettings settings(ClientSettings::filePath(), QSettings::IniFormat);
+    const QString settingsPath = ClientSettings::filePath();
+    if (settingsPath.isEmpty()) {
+        qCWarning(lcSentryService) << "Failed to read Sentry cached consent | client settings path unavailable";
+        return std::nullopt;
+    }
+
+    const QSettings settings(settingsPath, QSettings::IniFormat);
     if (!settings.contains(sentryConsentKey)) {
         return std::nullopt;
     }
@@ -92,7 +98,14 @@ std::optional<bool> SentryService::readCachedConsent() {
 }
 
 void SentryService::writeCachedConsent(const bool enabled) {
-    QSettings settings(ClientSettings::filePath(), QSettings::IniFormat);
+    const QString settingsPath = ClientSettings::filePath();
+    if (settingsPath.isEmpty()) {
+        qCWarning(lcSentryService) << "Failed to persist Sentry cached consent | enabled:" << enabled
+                                   << "/ client settings path unavailable";
+        return;
+    }
+
+    QSettings settings(settingsPath, QSettings::IniFormat);
     if (settings.contains(sentryConsentKey) && settings.value(sentryConsentKey).toBool() == enabled) {
         return;
     }
