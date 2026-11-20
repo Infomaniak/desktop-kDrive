@@ -58,10 +58,11 @@ void User::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, userFirstNameKey, CommonUtility::str2CommString(firstName()));
     CommonUtility::writeValueToStruct(dstruct, userEmailKey, CommonUtility::str2CommString(_email));
 
+    CommBLOB avatarBLOB;
     if (_avatar) {
-        CommBLOB avatarBLOB(_avatar->begin(), _avatar->end());
-        CommonUtility::writeValueToStruct(dstruct, userAvatarKey, avatarBLOB);
+        avatarBLOB = CommBLOB(_avatar->begin(), _avatar->end());
     }
+    CommonUtility::writeValueToStruct(dstruct, userAvatarKey, avatarBLOB);
 
     CommonUtility::writeValueToStruct(dstruct, userConnectedKey, _connected);
     CommonUtility::writeValueToStruct(dstruct, userIsStaffKey, _isStaff);
@@ -87,7 +88,9 @@ void User::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     if (dstruct.contains(userAvatarKey)) {
         CommBLOB avatarBLOB;
         CommonUtility::readValueFromStruct(dstruct, userAvatarKey, avatarBLOB);
-        _avatar = std::make_shared<std::vector<char>>(avatarBLOB.begin(), avatarBLOB.end());
+        if (!avatarBLOB.empty()) {
+            _avatar = std::make_shared<std::vector<char>>(avatarBLOB.begin(), avatarBLOB.end());
+        }
     }
 
     CommonUtility::readValueFromStruct(dstruct, userConnectedKey, _connected);
