@@ -1793,7 +1793,7 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="753"/>
         <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
-        <translation type="unfinished"></translation>
+        <translation>Deze link is uitgesloten van synchronisatie omdat het doelpad niet aan de vereisten voldoet.&lt;br&gt; Doelpaden moeten relatief zijn. Ze mogen niet naar bovenliggende mappen verwijzen, d.w.z. onderdelen zoals &quot;..&quot; zijn niet toegestaan.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
