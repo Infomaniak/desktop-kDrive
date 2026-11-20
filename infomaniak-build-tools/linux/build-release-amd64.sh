@@ -175,12 +175,14 @@ package_release() {
   cd "$build_dir"
   appimage_linuxdeploy_deploy "$app_dir"
   appimage_strip_unneeded_symbols "$app_dir"
+  appimage_collect_licenses "$app_dir" "$build_dir/conan" "$src_dir"
   appimage_verify_bundle "$app_dir"
   appimage_package "$app_dir"
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   mkdir -p "$artifact_dir"
   mv kDrive*.AppImage "$artifact_dir/kDrive-${full_version}-amd64.AppImage"
+  appimage_check_runtime "$artifact_dir/kDrive-${full_version}-amd64.AppImage" "$src_dir"
 }
 
 package_recovery_updater() {

@@ -109,6 +109,10 @@
   loader centered in its row only when no available drive is cached yet.
 - Keep Settings information dialogs inside the Settings window and restore focus to their trigger. Closing Settings must
   not quit kDrive. Show the download action only while an update is available.
+- The About dialog carries the license notices: Qt use (required by the LGPL), license and sources. It shows no
+  absence-of-warranty sentence, which would worry users and is not required for our own code. "Third-party licenses"
+  opens the notices folder the AppImage build writes (`AppConstants::Settings::thirdPartyLicensesRelativePath`) and is
+  hidden when that folder is missing, as in a development build.
 - Let `TranslationService` own the English fallback and selected locale. Language changes retranslate QML and notify C++
   presentation models without resetting navigation or selections. New translated model properties must not be
   `CONSTANT`.

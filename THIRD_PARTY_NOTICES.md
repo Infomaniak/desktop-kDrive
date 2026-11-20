@@ -10,6 +10,9 @@ The exact set of redistributed binaries can vary by platform:
 - Vendored sources are stored in `src/3rdparty/`.
 - Build-only tools and local developer prerequisites are intentionally excluded when they are not redistributed with
   release artifacts.
+- The Linux AppImage also bundles libraries of the build system (Ubuntu packages, libzip, ICU). The release build
+  lists every bundled component with its license and source in `usr/share/doc/kDrive/` of the AppImage
+  (`infomaniak-build-tools/linux/appimage_licenses.py`).
 
 ---
 
@@ -51,12 +54,13 @@ The exact set of redistributed binaries can vary by platform:
 ### Qt 6
 
 - **Version:** 6.8.3 (macOS) / 6.12.0 (Linux & Windows)
-- **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
+- **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial. Qt Lottie Animation and Qt Quick Timeline, shipped on
+  Linux, are available under GPL-3.0 / Commercial only.
 - **Copyright:** Copyright (C) The Qt Company Ltd. and other contributors
 - **Repository:** https://www.qt.io/
 - **Note:** Declared in `conanfile.py`. The application is built against Qt 6.8.3 on macOS and Qt 6.12.0 on Linux and
   Windows. Qt is deployed with the application on supported platforms. Qt source packages are available from
-  https://download.qt.io/
+  https://download.qt.io/. The Qt installer also ships ICU 73.2 (Unicode-DFS-2016 and ICU licenses), bundled on Linux.
 
 ### Poco
 
