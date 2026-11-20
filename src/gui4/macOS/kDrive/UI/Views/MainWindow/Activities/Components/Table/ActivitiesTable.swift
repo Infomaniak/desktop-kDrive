@@ -24,11 +24,14 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
-    /// Fits the direction and state icons, the option menu and the spacing of `ActivitiesTableStatusView`.
-    private static let statusColumnMinimumWidth = AppIconSize.iconSize12.width * 2
-        + AppIconSize.iconSize16.width
-        + AppPadding.padding8 * 2
-        + AppPadding.padding24
+    /// Fixed width fitting both the icons of `ActivitiesTableStatusView` and the localized column title.
+    private static let statusColumnWidth: CGFloat = {
+        let iconsWidth = AppIconSize.iconSize12.width * 2 + AppIconSize.iconSize16.width + AppPadding.padding8 * 2
+        // Semibold system font: the widest style a table header title is drawn with.
+        let titleFont = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .semibold)
+        let titleWidth = (KDriveLocalizable.labelStatus as NSString).size(withAttributes: [.font: titleFont]).width
+        return max(iconsWidth + AppPadding.padding8, titleWidth + AppPadding.padding16).rounded(.up)
+    }()
 
     /// Before macOS 14, the fixed table row height clips the underline, which leaves stray pixels under the folder name.
     private static var isFolderUnderlined: Bool {
@@ -97,7 +100,7 @@ struct ActivitiesTable: View {
             TableColumn(KDriveLocalizable.labelStatus) { context in
                 ActivitiesTableStatusView(context: context)
             }
-            .width(min: Self.statusColumnMinimumWidth, ideal: Self.statusColumnMinimumWidth)
+            .width(Self.statusColumnWidth)
         }
     }
 
