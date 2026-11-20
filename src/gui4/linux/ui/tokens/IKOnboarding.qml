@@ -20,8 +20,15 @@ pragma Singleton
 import QtQuick
 
 QtObject {
+    // The layout follows the window size from the 900 x 600 mockup, up to 1.5 times its geometry. Text and controls
+    // keep their size: the scale applies to margins, widths, spacings and the illustration.
+    readonly property real designWidth: 900
+    readonly property real designHeight: 600
+    readonly property real maxLayoutScale: 1.5
+
     // Local primitives.
-    readonly property real contentMaxWidth: 378
+    readonly property real contentMaxWidth: 324
+    readonly property real contentVerticalMargin: 80
     readonly property real compactBreakpointWidth: 520
     readonly property real expandedContentLeftMargin: 80
     readonly property real compactButtonHeight: 24
@@ -36,7 +43,6 @@ QtObject {
     readonly property real primaryButtonMinWidth: 105
     readonly property real secondaryButtonMinWidth: 128
     readonly property real browserButtonMinWidth: 190
-    readonly property real loaderStrokeDisplayMaxSize: 260
     readonly property real loaderStrokeRenderScale: 2
     // Multisampling of the illustrations: the geometry renderer draws their paths without antialiasing.
     readonly property int illustrationAnimationSamples: 4
@@ -45,9 +51,8 @@ QtObject {
     readonly property real contentPanelWidthRatio: 0.63
     readonly property real illustrationPanelWidthRatio: 1 - contentPanelWidthRatio
 
-    // Leaves breathing room around the Lottie animation inside the illustration panel.
-    readonly property real illustrationAnimationMaxSize: loaderStrokeDisplayMaxSize
-    readonly property real illustrationAnimationFillRatio: 0.8
+    // Width of the illustration in the illustration panel of the mockup (197 of 330 px).
+    readonly property real illustrationWidthRatio: 197 / 330
 
     // Login screen layout.
     readonly property real loginCompactBreakpointWidth: compactBreakpointWidth
@@ -86,7 +91,8 @@ QtObject {
     readonly property real driveSelectionUserNameLineHeight: 20
     readonly property real driveSelectionListTitleLineHeight: 14
     readonly property real driveSelectionListWidth: 264
-    readonly property real driveSelectionListMaxHeight: 176
+    // Keeps the list scroll bar outside the drive cards.
+    readonly property real driveSelectionListScrollBarGutter: IKSpacing.s12
     readonly property real driveSelectionCellPadding: IKSpacing.s8
     readonly property real driveSelectionCellRadius: IKRadius.r8
     readonly property real driveSelectionCellSpacing: IKSpacing.s8

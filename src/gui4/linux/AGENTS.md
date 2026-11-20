@@ -269,6 +269,10 @@
   `deleteLater()`. Invalidate session-scoped asynchronous results before allowing a new session to consume them.
 - Keep `AppClientLinux` as an application composition root. Move multi-step feature workflows such as onboarding login
   into dedicated coordinators instead of accumulating workflow lambdas in `AppClientLinux`.
+- Onboarding follows the window size: `OnboardingWindow.layoutScale` is `min(width / 900, height / 600)` clamped to
+  [1, 1.5] and scales margins, widths and spacings of every step, while text and controls keep their size. The
+  illustration takes 197/330 of its panel width. The drive list takes the remaining height and an overflowing list
+  stops in the middle of a card, with its scroll bar outside the cards.
 - `Qt.labs.lottieqt` renders Lottie JSON assets, not `.lottie` zip containers.
 - For Qt 6.11+ Lottie assets, prefer generated QML from `lottietoqml` over PNG spritesheets when the generated output
   builds and visually matches the source animation.
