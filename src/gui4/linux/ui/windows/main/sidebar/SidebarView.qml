@@ -96,6 +96,15 @@ Rectangle {
             Layout.fillWidth: true
         }
 
+        SidebarUpsellCard {
+            // Hidden while the selected synchronization is blocked: the blocking screen carries its own action.
+            visible: root.navigationEnabled && root.controller.upsellOffer !== MainSidebarController.None
+            offer: root.controller.upsellOffer
+            Layout.fillWidth: true
+
+            onUpgradeRequested: root.controller.openUpsellPage()
+        }
+
         SidebarNotification {
             id: sidebarNotification
 

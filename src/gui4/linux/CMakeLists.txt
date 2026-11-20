@@ -378,6 +378,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/search/SearchStateView.qml
         ui/windows/main/sidebar/SidebarHeaderView.qml
         ui/windows/main/sidebar/SidebarNotification.qml
+        ui/windows/main/sidebar/SidebarUpsellCard.qml
         ui/windows/main/sidebar/SidebarView.qml
         ui/windows/main/sidebar/SyncSelectorView.qml
         ${GUI_GENERATED_QML_FILES}
@@ -489,6 +490,10 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/storage/computer.svg
         ui/assets/main/storage/unavailable.svg
         ui/assets/main/triangle-alert.svg
+        ui/assets/main/upsell/ksuite-plus-logo.svg
+        ui/assets/main/upsell/ksuite-plus-logo-dark.svg
+        ui/assets/main/upsell/ksuite-pro-logo.svg
+        ui/assets/main/upsell/upsell-gradient.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
         ui/assets/tray/black/error.svg
