@@ -945,7 +945,7 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
             traversesLink = true;
             LOGW_WARN(logger(),
                       L"Path " << Utility::formatSyncPath(path) << L" traverses the link " << Utility::formatSyncPath(linkPath));
-            return IoError::MoveThroughSymlink;
+            return IoError::PathContainsSymlink;
         }
     }
 
@@ -1376,7 +1376,7 @@ ExitInfo IoHelper::toExitInfo(const IoError ioError, const ExitInfo &defaultExit
             return {ExitCode::SystemError, ExitCause::DirExists};
         case IoError::FileExists:
             return {ExitCode::SystemError, ExitCause::FileExists};
-        case IoError::MoveThroughSymlink:
+        case IoError::PathContainsSymlink:
             return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
         case IoError::HardlinkNotSupported:
             return {ExitCode::SystemError, ExitCause::HardlinkNotSupported};
