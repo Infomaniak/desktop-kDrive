@@ -36,7 +36,7 @@ class LinuxUpdater : public AbstractUpdater {
         LinuxUpdater() = default;
 
         void onUpdateFound() override;
-        void onAutoUpdatesEnabled() override;
+        void onUpdateFoundAfterChannelChange() override;
         void startInstaller() override;
         void setQuitCallback(const std::function<void()> &quitCallback) override { _quitCallback = quitCallback; }
         bool checkMinOsVersion(const std::string &minOsVersion) const override;
@@ -59,9 +59,28 @@ class LinuxUpdater : public AbstractUpdater {
          */
         [[nodiscard]] static bool hasEnoughSpace(std::streamsize expectedSize, std::uintmax_t availableSpace);
 
+    protected:
+        /** Window the new version opens once relaunched. */
+        enum class RelaunchWindow : uint8_t {
+            None,
+            Settings
+        };
+
     private:
+        /** Whether an update found by a check is installed without a user request. */
+        enum class AutomaticInstall : uint8_t {
+            Allowed,
+            Disallowed
+        };
+        /** When the application restarts on a prepared update. */
+        enum class RestartTiming : uint8_t {
+            OnClientRequest,
+            WhenInstalled
+        };
+
         [[nodiscard]] bool canUpdateInPlace() const;
-        void prepareAnnouncedUpdate();
+        void handleUpdateFound(AutomaticInstall automaticInstall);
+        void prepareAnnouncedUpdate(RestartTiming restartTiming);
         void fetchChecksum(const VersionInfo &info);
         void checksumFetched(UniqueId jobId, const VersionInfo &info);
         void prepareUpdate(const VersionInfo &info);
@@ -71,14 +90,15 @@ class LinuxUpdater : public AbstractUpdater {
         void downloadFinished(UniqueId jobId, const VersionInfo &info);
         void finishPreparation(UpdateState state);
         void installUpdate(const VersionInfo &info);
-        void restartApp(const SyncPath &installedPath);
+        void restartApp(const SyncPath &installedPath, RelaunchWindow relaunchWindow);
         static void updateDesktopEntries(const SyncPath &targetPath);
         [[nodiscard]] std::string expectedChecksum(std::string_view version) const;
         [[nodiscard]] bool verifyChecksum(const SyncPath &filepath, const VersionInfo &info);
-        [[nodiscard]] virtual bool launchRelauncher(const SyncPath &targetPath) const;
+        [[nodiscard]] virtual bool launchRelauncher(const SyncPath &targetPath, RelaunchWindow relaunchWindow) const;
 
         SyncPath _appImagePath{CommonUtility::appImagePath()};
         std::atomic_bool _downloadInProgress{false};
+        std::atomic_bool _restartWhenInstalled{false}; // The user requested the update: restart once installed.
         std::atomic_bool _restartInProgress{false};
 
         mutable std::mutex _stateMutex;

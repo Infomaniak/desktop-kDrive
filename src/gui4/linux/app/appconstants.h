@@ -115,6 +115,14 @@ inline constexpr int32_t freeSpacePollIntervalMs = 60 * 1000;
 
 } // namespace KDC::AppConstants::Storage
 
+namespace KDC::AppConstants::Updater {
+
+// Quiet period without a visible window before restarting on an installed update: a window closed to be reopened right
+// away does not trigger the restart.
+inline constexpr int32_t restartQuietDelayMs = 30 * 1000;
+
+} // namespace KDC::AppConstants::Updater
+
 namespace KDC::AppConstants::Support {
 
 [[nodiscard]] inline QUrl helpUri() {
