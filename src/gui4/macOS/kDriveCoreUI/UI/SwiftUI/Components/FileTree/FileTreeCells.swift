@@ -37,6 +37,14 @@ private func setLoading(_ indicator: NSProgressIndicator, isLoading: Bool) {
 }
 
 final class FileTreeHeaderView: NSTableHeaderView {
+    /// Before macOS 14, a checkbox in a table header renders clipped and distorted, so it is hidden there.
+    private static var showsCheckbox: Bool {
+        if #available(macOS 14.0, *) {
+            return true
+        }
+        return false
+    }
+
     let checkbox = NSButton()
     private let loadingIndicator = NSProgressIndicator()
 
@@ -47,6 +55,7 @@ final class FileTreeHeaderView: NSTableHeaderView {
         checkbox.setButtonType(.switch)
         checkbox.allowsMixedState = true
         checkbox.title = ""
+        checkbox.isHidden = !Self.showsCheckbox
         addSubview(checkbox)
 
         configureLoadingIndicator(loadingIndicator)
@@ -63,15 +72,13 @@ final class FileTreeHeaderView: NSTableHeaderView {
         guard tableView != nil, checkboxColumnIndex >= 0 else { return }
 
         let columnRect = headerRect(ofColumn: checkboxColumnIndex)
-        // The intrinsic size describes the alignment rect. On macOS 12 a checkbox draws outside of it, so the frame is
-        // derived from the alignment rect to avoid clipping the checkbox, as Auto Layout does for the row checkboxes.
         let size = checkbox.intrinsicContentSize
-        checkbox.frame = checkbox.frame(forAlignmentRect: NSRect(
+        checkbox.frame = NSRect(
             x: columnRect.midX - size.width / 2,
             y: columnRect.midY - size.height / 2,
             width: size.width,
             height: size.height
-        ))
+        )
 
         let indicatorSide = AppIconSize.iconSize16.width
         loadingIndicator.frame = NSRect(
@@ -84,6 +91,7 @@ final class FileTreeHeaderView: NSTableHeaderView {
 
     /// Replaces the checkbox with a small loader while the checkbox state of the tree is unknown.
     func setCheckboxLoading(_ isLoading: Bool) {
+        guard Self.showsCheckbox else { return }
         checkbox.isHidden = isLoading
         setLoading(loadingIndicator, isLoading: isLoading)
     }
