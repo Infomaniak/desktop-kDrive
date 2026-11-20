@@ -24,7 +24,7 @@ import AppKit
 /// On those systems the item hosts a toolbar-styled button that draws the image at symbol size instead.
 /// macOS 14 and later keep the native image-based item.
 public final class ToolbarImageItem: NSToolbarItem {
-    private static let legacyImageSize = NSSize(width: 16, height: 16)
+    private nonisolated static let legacyImageSize = NSSize(width: 16, height: 16)
 
     private var legacyButton: NSButton?
 
@@ -86,7 +86,7 @@ public final class ToolbarImageItem: NSToolbarItem {
         self.label = label
     }
 
-    private static func resizedForLegacyToolbar(_ image: NSImage) -> NSImage {
+    private nonisolated static func resizedForLegacyToolbar(_ image: NSImage) -> NSImage {
         guard let resizedImage = image.copy() as? NSImage else { return image }
         resizedImage.size = legacyImageSize
         resizedImage.isTemplate = image.isTemplate
