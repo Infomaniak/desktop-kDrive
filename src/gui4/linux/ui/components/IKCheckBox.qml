@@ -29,6 +29,10 @@ AbstractButton {
     id: root
 
     property int checkState: Qt.Unchecked
+    // Stable, language-independent id of the action in the user action log (see UserActionLog).
+    required property string actionId
+    // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
+    property var actionDetails: ({})
 
     readonly property bool selected: checkState !== Qt.Unchecked
     readonly property color indicatorColor: {
@@ -60,6 +64,12 @@ AbstractButton {
     // The state belongs to the owner, so an assistive activation reports a click like the pointer and the keyboard do.
     Accessible.onPressAction: root.clicked()
     Accessible.onToggleAction: root.clicked()
+    // Logs the state before the click: the owner decides the next one.
+    onClicked: {
+        const from = checkState === Qt.Checked ? "checked"
+                                               : checkState === Qt.PartiallyChecked ? "partial" : "unchecked";
+        UserActionLog.action(actionId, Object.assign({}, actionDetails, { from: from }));
+    }
 
     // The control sizes background and contentItem itself, so neither is anchored here.
     background: Rectangle {
