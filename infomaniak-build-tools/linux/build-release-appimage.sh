@@ -176,7 +176,10 @@ function move_dependencies() {
 
   mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ 2>/dev/null || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
 
-  cp -P "$conan_dependencies_folder"/* ./usr/lib
+  if ! cp -P "$conan_dependencies_folder"/* ./usr/lib; then
+    echo "ERROR: Failed to copy Conan shared libraries from '$conan_dependencies_folder' into the AppDir." >&2
+    exit 1
+  fi
 
   # Copy nss if it exists (optional)
   if [ -d "/usr/lib/$arch-linux-gnu/nss" ]; then
