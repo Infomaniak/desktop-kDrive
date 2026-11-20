@@ -67,7 +67,7 @@ void UpdateRestartCoordinator::watchWindow(QWindow *const window) {
 
 // Starts the quiet period when every condition holds, and cancels it as soon as one no longer does.
 void UpdateRestartCoordinator::scheduleRestart() {
-    if (!canRestart()) {
+    if (!shouldRequestRestart()) {
         _quietTimer.stop();
         return;
     }
@@ -78,7 +78,7 @@ void UpdateRestartCoordinator::scheduleRestart() {
 }
 
 void UpdateRestartCoordinator::restartIfQuiet() {
-    if (!canRestart()) {
+    if (!shouldRequestRestart()) {
         return;
     }
 
@@ -87,7 +87,7 @@ void UpdateRestartCoordinator::restartIfQuiet() {
     _updateStatusService.restartOnInstalledUpdate();
 }
 
-bool UpdateRestartCoordinator::canRestart() const {
+bool UpdateRestartCoordinator::shouldRequestRestart() const {
     return _updateStatusService.installed() && !_restartRequested && !anyWindowVisible();
 }
 

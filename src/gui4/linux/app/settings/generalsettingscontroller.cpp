@@ -357,7 +357,7 @@ void GeneralSettingsController::openDownload() {
     openUrl(AppConstants::Settings::downloadUri());
 }
 
-void GeneralSettingsController::restartUpdate() const {
+void GeneralSettingsController::restartOnInstalledUpdate() const {
     _updateStatusService.restartOnInstalledUpdate();
 }
 
