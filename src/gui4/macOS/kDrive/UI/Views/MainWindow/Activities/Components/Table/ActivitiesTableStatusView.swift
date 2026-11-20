@@ -134,9 +134,13 @@ struct ActivitiesTableStatusView: View {
                 }
                 .buttonStyle(.plain)
                 .legacyBorderlessMenu()
-                .frame(maxWidth: .infinity, alignment: .trailing)
+            } else {
+                // Keeps the status icons aligned with rows that show the option menu.
+                Color.clear
+                    .frame(size: AppIconSize.iconSize16)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
     @ViewBuilder
