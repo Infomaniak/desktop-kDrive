@@ -86,8 +86,7 @@ QString versionDetails(const QString &version, const uint64_t build) {
     auto details = qtTrId("aboutAppVersionCopyrightMac").toHtmlEscaped();
 
     // Every translation puts the copyright on the line after the version.
-    const auto copyrightStart = details.indexOf(u'\n');
-    if (copyrightStart >= 0) {
+    if (const auto copyrightStart = details.indexOf(u'\n'); copyrightStart >= 0) {
         const auto copyright = details.mid(copyrightStart + 1).replace(u'\n', u"<br>"_s);
         details = details.left(copyrightStart) + u"<br><b>"_s + copyright + u"</b>"_s;
     }
