@@ -47,19 +47,29 @@ UpdateManager::UpdateManager(QObject *parent) :
     (void) connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
     // At startup, do a check in any case and setup distribution channel.
-    QTimer::singleShot(3000, this,
-                       [this]() { setDistributionChannel(ParametersCache::instance()->parameters().distributionChannel()); });
+    QTimer::singleShot(3000, this, [this]() {
+        applyDistributionChannel(ParametersCache::instance()->parameters().distributionChannel(), UpdateCheckOrigin::Scheduled);
+    });
 }
 
 void UpdateManager::setDistributionChannel(const DistributionChannel channel) {
+    applyDistributionChannel(channel, UpdateCheckOrigin::ChannelChange);
+}
+
+void UpdateManager::applyDistributionChannel(const DistributionChannel channel, const UpdateCheckOrigin origin) {
     if (_currentChannel == channel) {
         return;
     }
     _currentChannel = channel;
-    (void) _updater->checkUpdateAvailable(_currentChannel);
+    checkUpdateAvailable(origin);
     ParametersCache::instance()->parameters().setDistributionChannel(_currentChannel);
     ParametersCache::instance()->save();
     sentry::Handler::instance()->setDistributionChannel(_currentChannel);
+}
+
+void UpdateManager::checkUpdateAvailable(const UpdateCheckOrigin origin) {
+    _lastCheckOrigin = origin;
+    (void) _updater->checkUpdateAvailable(_currentChannel);
 }
 
 void UpdateManager::startInstaller() const {
@@ -71,8 +81,8 @@ void UpdateManager::startInstaller() const {
     _updater->startInstaller();
 }
 
-void UpdateManager::slotTimerFired() const {
-    (void) _updater->checkUpdateAvailable(_currentChannel);
+void UpdateManager::slotTimerFired() {
+    checkUpdateAvailable(UpdateCheckOrigin::Scheduled);
 }
 
 void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
@@ -91,12 +101,16 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
         }
         case UpdateState::Available: {
             // A new version has been found
-            _updater->onUpdateFound();
+            if (_lastCheckOrigin == UpdateCheckOrigin::ChannelChange) {
+                _updater->onUpdateFoundAfterChannelChange();
+            } else {
+                _updater->onUpdateFound();
+            }
             break;
         }
         case UpdateState::Ready: {
             if (AbstractUpdater::isVersionSkipped(_updater->versionInfo().fullVersion())) break;
-                // The new version is ready to be installed
+            // The new version is ready to be installed
 #if defined(KD_WINDOWS)
             emit showUpdateDialog();
 #endif

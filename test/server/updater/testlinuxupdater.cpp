@@ -19,9 +19,14 @@
 #include "testlinuxupdater.h"
 
 #include "server/updater/linuxupdater.h"
+#include "db/parmsdb.h"
 #include "libcommonserver/utility/checksumverifier.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+#include "requests/parameterscache.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "version.h"
 
+#include <atomic>
 #include <fstream>
 
 namespace KDC {
@@ -32,15 +37,18 @@ class LinuxUpdaterMock final : public LinuxUpdater {
     public:
         const VersionInfo &versionInfo() const override { return announcedVersion; }
         void setDownloading() { setState(UpdateState::Downloading); }
+        void setAvailable() { setState(UpdateState::Available); }
 
         VersionInfo announcedVersion;
         bool relaunchSucceeds{true};
         mutable SyncPath relaunchedPath;
+        mutable std::atomic_bool relaunchedOnSettings{false};
         mutable uint32_t relaunchCount{0};
 
     private:
-        bool launchRelauncher(const SyncPath &targetPath) const override {
+        bool launchRelauncher(const SyncPath &targetPath, const RelaunchWindow relaunchWindow) const override {
             relaunchedPath = targetPath;
+            relaunchedOnSettings = relaunchWindow == RelaunchWindow::Settings;
             ++relaunchCount;
             return relaunchSucceeds;
         }
@@ -89,7 +97,9 @@ void TestLinuxUpdater::testInstallUpdateRestarts() {
     std::ofstream(partPath) << "new AppImage";
     constexpr auto initialPermissions = std::filesystem::perms::owner_read | std::filesystem::perms::group_read;
     std::filesystem::permissions(partPath, initialPermissions);
+    // The user started the preparation from Settings.
     updater._downloadInProgress = true;
+    updater._restartWhenInstalled = true;
 
     uint32_t quitCount = 0;
     updater.setQuitCallback([&] {
@@ -105,11 +115,12 @@ void TestLinuxUpdater::testInstallUpdateRestarts() {
     CPPUNIT_ASSERT_EQUAL(uint32_t{0}, updater.relaunchCount);
     CPPUNIT_ASSERT_EQUAL(uint32_t{0}, quitCount);
 
-    // The download completion installs the file and requests the restart without another GUI request.
+    // The download completion installs the file and restarts on the Settings window without another GUI request.
     updater.installUpdate(updater.announcedVersion);
     CPPUNIT_ASSERT_EQUAL(UpdateState::Ready, updater.state());
     CPPUNIT_ASSERT(!updater._downloadInProgress);
     CPPUNIT_ASSERT_EQUAL(updater._appImagePath, updater.relaunchedPath);
+    CPPUNIT_ASSERT(updater.relaunchedOnSettings);
     CPPUNIT_ASSERT_EQUAL(uint32_t{1}, quitCount);
 
     // A second request during shutdown must not launch another instance.
@@ -132,6 +143,7 @@ void TestLinuxUpdater::testRecoveredDownloadRestarts() {
 
     bool quitRequested = false;
     updater.setQuitCallback([&] { quitRequested = true; });
+    updater._restartWhenInstalled = true;
     updater.prepareUpdate(updater.announcedVersion);
 
     CPPUNIT_ASSERT(quitRequested);
@@ -148,6 +160,7 @@ void TestLinuxUpdater::testRelaunchFailureCanBeRetried() {
     updater._appImagePath = directory.path() / "kDrive.AppImage";
     std::ofstream(LinuxUpdater::partialDownloadPath(updater._appImagePath)) << "new AppImage";
     updater.relaunchSucceeds = false;
+    updater._restartWhenInstalled = true;
 
     bool quitRequested = false;
     updater.setQuitCallback([&] { quitRequested = true; });
@@ -156,10 +169,68 @@ void TestLinuxUpdater::testRelaunchFailureCanBeRetried() {
     CPPUNIT_ASSERT(!quitRequested);
     CPPUNIT_ASSERT(std::filesystem::exists(updater._appImagePath));
 
+    // The retry is the restart the client requests on the update already installed.
     updater.relaunchSucceeds = true;
     updater.startInstaller();
     CPPUNIT_ASSERT(quitRequested);
     CPPUNIT_ASSERT_EQUAL(uint32_t{2}, updater.relaunchCount);
+    CPPUNIT_ASSERT(!updater.relaunchedOnSettings);
+}
+
+void TestLinuxUpdater::testAutomaticInstallDefersRestart() {
+    const LocalTemporaryDirectory directory("TestLinuxUpdater");
+    LinuxUpdaterMock updater;
+    updater.announcedVersion.tag = "4.0.0";
+    updater._appImagePath = directory.path() / "kDrive.AppImage";
+    std::ofstream(LinuxUpdater::partialDownloadPath(updater._appImagePath)) << "new AppImage";
+
+    uint32_t quitCount = 0;
+    updater.setQuitCallback([&quitCount] { ++quitCount; });
+
+    // An automatic preparation installs the file without interrupting the user.
+    updater.installUpdate(updater.announcedVersion);
+    CPPUNIT_ASSERT_EQUAL(UpdateState::Ready, updater.state());
+    CPPUNIT_ASSERT(std::filesystem::exists(updater._appImagePath));
+    CPPUNIT_ASSERT_EQUAL(uint32_t{0}, updater.relaunchCount);
+    CPPUNIT_ASSERT_EQUAL(uint32_t{0}, quitCount);
+
+    // A later check finding the same version keeps waiting for the restart request.
+    updater.onUpdateFound();
+    CPPUNIT_ASSERT_EQUAL(UpdateState::Ready, updater.state());
+    CPPUNIT_ASSERT_EQUAL(uint32_t{0}, updater.relaunchCount);
+
+    // The client's request restarts in the background, without opening Settings.
+    updater.startInstaller();
+    CPPUNIT_ASSERT_EQUAL(uint32_t{1}, updater.relaunchCount);
+    CPPUNIT_ASSERT(!updater.relaunchedOnSettings);
+    CPPUNIT_ASSERT_EQUAL(uint32_t{1}, quitCount);
+}
+
+void TestLinuxUpdater::testChannelChangeDoesNotInstall() {
+    const LocalTemporaryDirectory directory("TestLinuxUpdater");
+    bool alreadyExists = false;
+    (void) ParmsDb::instance(MockDb::makeDbName(alreadyExists), KDRIVE_VERSION_STRING, true, true);
+    (void) ParametersCache::instance(true);
+    ParametersCache::instance()->parameters().setAutoUpdates(true);
+    const auto previousAppImagePath = CommonUtility::appImagePath();
+    const auto appImagePath = directory.path() / "kDrive.AppImage";
+    CommonUtility::setAppImagePath(appImagePath);
+
+    LinuxUpdaterMock updater;
+    updater.announcedVersion.tag = "4.0.0";
+    updater._appImagePath = appImagePath;
+    updater.setAvailable();
+
+    // Changing the channel is a setting: the update stays available for the user to start it.
+    updater.onUpdateFoundAfterChannelChange();
+    CPPUNIT_ASSERT_EQUAL(UpdateState::Available, updater.state());
+    CPPUNIT_ASSERT(!updater._downloadInProgress);
+    CPPUNIT_ASSERT_EQUAL(uint32_t{0}, updater.relaunchCount);
+
+    CommonUtility::setAppImagePath(previousAppImagePath);
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+    ParametersCache::reset();
 }
 
 void TestLinuxUpdater::testOutdatedUpdateDoesNotRestart() {

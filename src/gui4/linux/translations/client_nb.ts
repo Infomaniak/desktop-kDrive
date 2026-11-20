@@ -514,6 +514,10 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</translation>
             <source>Rename %1</source> 
             <translation>Gi nytt navn til %1</translation> 
         </message> 
+        <message id="buttonRestart"> 
+            <source>Restart</source> 
+            <translation>Start på nytt</translation> 
+        </message> 
         <message id="buttonRestartSignIn"> 
             <source>Restart sign-in</source> 
             <translation>Start innlogging på nytt</translation> 
