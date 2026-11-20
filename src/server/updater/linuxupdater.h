@@ -80,7 +80,7 @@ class LinuxUpdater : public AbstractUpdater {
 
         SyncPath _appImagePath{CommonUtility::appImagePath()};
         std::atomic_bool _downloadInProgress{false};
-        std::atomic_bool _restartWhenInstalled{false}; // The user started the preparation: restart once installed.
+        std::atomic_bool _restartWhenInstalled{false}; // The user requested the update: restart once installed.
         std::atomic_bool _restartInProgress{false};
 
         mutable std::mutex _stateMutex;
