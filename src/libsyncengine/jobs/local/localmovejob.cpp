@@ -27,7 +27,8 @@
 
 namespace KDC {
 
-LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest) :
+LocalMoveJob::LocalMoveJob(const SyncPath &syncRootPath, const SyncPath &source, const SyncPath &dest) :
+    _syncRootPath(syncRootPath),
     _source(source),
     _dest(dest) {}
 

@@ -22,8 +22,10 @@
 
 namespace KDC {
 
-GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath absoluteLocalPath, const std::shared_ptr<CacheDirectory> cacheDirectory,
+GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath syncRootPath, SyncPath absoluteLocalPath,
+                                             const std::shared_ptr<CacheDirectory> cacheDirectory,
                                              ForceHardDelete forceHardDelete /*= ForceHardDelete::No*/) :
+    _syncRootPath(std::move(syncRootPath)),
     _absoluteLocalPath(std::move(absoluteLocalPath)),
     _cacheDirectory(cacheDirectory),
     _forceHardDelete(forceHardDelete == ForceHardDelete::Yes) {}
@@ -35,7 +37,7 @@ ExitInfo GenericLocalDeleteJob::runJob() {
 }
 
 ExitInfo GenericLocalDeleteJob::moveToTrashOrHardDeleteIfNeeded(const SyncPath &path) {
-    if (const bool moveToTrashSuccess = IoHelper::moveItemToTrash(path); !moveToTrashSuccess) {
+    if (const bool moveToTrashSuccess = IoHelper::moveItemToTrash(path, _syncRootPath); !moveToTrashSuccess) {
         LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(path) << L" to trash. Trying hard delete.");
         return hardDelete(path);
     }
@@ -50,7 +52,7 @@ ExitInfo GenericLocalDeleteJob::moveToTrashOrHardDeleteIfNeeded(const SyncPath &
 ExitInfo GenericLocalDeleteJob::hardDelete(const SyncPath &path) {
     LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
-    if (const auto exitInfo = IoHelper::deleteItemAtomically(path, _cacheDirectory); !exitInfo) {
+    if (const auto exitInfo = IoHelper::deleteItemAtomically(path, _cacheDirectory, _syncRootPath); !exitInfo) {
         LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatExitInfo(path, exitInfo));
 
         return exitInfo;
