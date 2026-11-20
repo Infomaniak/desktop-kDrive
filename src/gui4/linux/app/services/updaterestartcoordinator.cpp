@@ -53,13 +53,11 @@ void UpdateRestartCoordinator::watchWindow(QWindow *const window) {
         return;
     }
 
-    const bool alreadyWatched =
-            std::ranges::any_of(_windows, [window](const QPointer<QWindow> &watched) { return watched == window; });
-    if (alreadyWatched) {
+    if (std::ranges::any_of(_windows, [window](const QPointer<QWindow> &watched) { return watched == window; })) {
         return;
     }
 
-    _windows.emplace_back(window);
+    (void) _windows.emplace_back(window);
     (void) connect(window, &QWindow::visibleChanged, this, &UpdateRestartCoordinator::scheduleRestart);
     (void) connect(window, &QObject::destroyed, this, &UpdateRestartCoordinator::scheduleRestart);
     scheduleRestart();
