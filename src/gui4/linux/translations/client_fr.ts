@@ -2429,6 +2429,11 @@ déverrouillé et accessible depuis votre ordinateur.</translation>
             <source>kDrive files stored online</source> 
             <translation>Fichiers kDrive stockés en ligne</translation> 
         </message> 
+        <message id="storageSubscriptionLabel"> 
+            <source>Subscription</source> 
+            <extracomment>Storage page: title of the subscription card, followed by the product logo (kDrive, my kSuite, kSuite).</extracomment> 
+            <translation>Abonnement</translation> 
+        </message> 
         <message id="storageSubscriptionTitle"> 
             <source>%1 subscription</source> 
             <extracomment>Storage page: title of the subscription card. %@ is the offer name of the drive, e.g. "kDrive Team" or "kSuite Business". labelMySubscription is shown instead when the offer is unknown.</extracomment> 
