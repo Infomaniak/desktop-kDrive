@@ -20,6 +20,7 @@
 
 #include "app/cache/appcache.h"
 #include "app/cache/parametersstore.h"
+#include "app/clientsettings.h"
 #include "app/services/commservice.h"
 #include "app/services/parametersservice.h"
 #include "config.h"
@@ -41,8 +42,6 @@ namespace {
 
 Q_LOGGING_CATEGORY(lcSentryService, "gui.v4.sentry", QtInfoMsg)
 
-constexpr char settingsOrganization[] = "Infomaniak";
-constexpr char settingsApplication[] = APPLICATION_NAME;
 constexpr char sentryConsentKey[] = "sentry/enabled";
 
 QString normalizedDisplayServer(const QString &platformPlugin) {
@@ -85,7 +84,13 @@ SentryService::SentryService(ParametersService &parametersService, AppCache &app
 }
 
 std::optional<bool> SentryService::readCachedConsent() {
-    const QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
+    const QString settingsPath = ClientSettings::filePath();
+    if (settingsPath.isEmpty()) {
+        qCWarning(lcSentryService) << "Failed to read Sentry cached consent | client settings path unavailable";
+        return std::nullopt;
+    }
+
+    const QSettings settings(settingsPath, QSettings::IniFormat);
     if (!settings.contains(sentryConsentKey)) {
         return std::nullopt;
     }
@@ -93,7 +98,14 @@ std::optional<bool> SentryService::readCachedConsent() {
 }
 
 void SentryService::writeCachedConsent(const bool enabled) {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
+    const QString settingsPath = ClientSettings::filePath();
+    if (settingsPath.isEmpty()) {
+        qCWarning(lcSentryService) << "Failed to persist Sentry cached consent | enabled:" << enabled
+                                   << "/ client settings path unavailable";
+        return;
+    }
+
+    QSettings settings(settingsPath, QSettings::IniFormat);
     if (settings.contains(sentryConsentKey) && settings.value(sentryConsentKey).toBool() == enabled) {
         return;
     }
