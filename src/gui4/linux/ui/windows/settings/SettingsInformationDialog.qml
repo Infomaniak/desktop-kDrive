@@ -66,37 +66,35 @@ IKModal {
             id: bodyColumn
             width: bodyScroll.availableWidth
             spacing: IKSpacing.s16
-            Image {
-                width: IKSettings.logoSize
-                height: width
-                source: "qrc:/assets/taskbar/logo_kdrive.svg"
-                fillMode: Image.PreserveAspectFit
-                sourceSize.width: width * 3
+            // The logo sits beside the version so that the links still fit in a Settings window of minimum height.
+            Row {
+                id: versionRow
+                width: parent.width
+                spacing: IKSpacing.s12
+                Image {
+                    id: logo
+                    width: IKSettings.logoSize
+                    height: width
+                    source: "qrc:/assets/taskbar/logo_kdrive.svg"
+                    fillMode: Image.PreserveAspectFit
+                    sourceSize.width: width * 3
+                }
+                Text {
+                    anchors.verticalCenter: logo.verticalCenter
+                    width: versionRow.width - logo.width - versionRow.spacing
+                    text: root.about ? root.controller.installedDetails : root.controller.releaseDetails
+                    // Escaped by the controller, which sets the version and build in bold.
+                    textFormat: Text.StyledText
+                    color: IKColors.textSecondary
+                    font.pixelSize: IKFonts.bodySize
+                    wrapMode: Text.WordWrap
+                }
             }
             Text {
                 width: parent.width
                 visible: root.about
                 text: qsTrId("aboutKDriveDescription")
                 color: IKColors.textPrimary
-                font.pixelSize: IKFonts.bodySize
-                wrapMode: Text.WordWrap
-            }
-            Text {
-                width: parent.width
-                text: root.about ? root.controller.installedDetails : root.controller.releaseDetails
-                // Escaped by the controller, which sets the version and build in bold.
-                textFormat: Text.StyledText
-                color: IKColors.textSecondary
-                font.pixelSize: IKFonts.bodySize
-                wrapMode: Text.WordWrap
-            }
-            // The LGPL asks for a visible notice of the Qt use.
-            Text {
-                width: parent.width
-                visible: root.about
-                text: qsTrId("aboutQtNotice").arg(root.controller.qtVersion)
-                textFormat: Text.PlainText
-                color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
             }
@@ -148,25 +146,38 @@ IKModal {
                 wrapMode: Text.WordWrap
                 Accessible.role: Accessible.AlertMessage
             }
-            Flow {
+            // License notices: the Qt use (required by the LGPL), then the license, sources and third-party licenses.
+            Column {
                 width: parent.width
                 visible: root.about
-                spacing: IKSpacing.s12
-                IKLinkButton {
-                    text: "GPL v3"
-                    external: true
-                    onClicked: root.controller.openLicense()
+                spacing: IKSpacing.s8
+                Text {
+                    width: parent.width
+                    text: qsTrId("aboutQtNotice").arg(root.controller.qtVersion)
+                    textFormat: Text.PlainText
+                    color: IKColors.textSecondary
+                    font.pixelSize: IKFonts.bodySize
+                    wrapMode: Text.WordWrap
                 }
-                IKLinkButton {
-                    text: qsTrId("viewSourceCode")
-                    external: true
-                    onClicked: root.controller.openSources()
-                }
-                // Opens the notices folder of the AppImage in the file manager, not the browser.
-                IKLinkButton {
-                    visible: root.controller.thirdPartyLicensesAvailable
-                    text: qsTrId("viewThirdPartyLicenses")
-                    onClicked: root.controller.openThirdPartyLicenses()
+                Flow {
+                    width: parent.width
+                    spacing: IKSpacing.s12
+                    IKLinkButton {
+                        text: "GPL v3"
+                        external: true
+                        onClicked: root.controller.openLicense()
+                    }
+                    IKLinkButton {
+                        text: qsTrId("viewSourceCode")
+                        external: true
+                        onClicked: root.controller.openSources()
+                    }
+                    // Opens the notices folder of the AppImage in the file manager, not the browser.
+                    IKLinkButton {
+                        visible: root.controller.thirdPartyLicensesAvailable
+                        text: qsTrId("viewThirdPartyLicenses")
+                        onClicked: root.controller.openThirdPartyLicenses()
+                    }
                 }
             }
         }
