@@ -28,7 +28,7 @@ ListView {
     required property var drivesModel
     // Height the list may take; beyond it, the list scrolls.
     property real maximumHeight: contentHeight
-    // Distance between two cards, assuming cards of the same height.
+    // Distance between two cards, which all have the same height (`driveSelectionCellMinHeight`).
     readonly property real cellPitch: count > 0 ? (contentHeight + spacing) / count : 0
 
     // An overflowing list stops in the middle of a card, so that the cut card shows that the list scrolls.

@@ -49,8 +49,11 @@ AbstractButton {
     }
 
     implicitWidth: IKOnboarding.driveSelectionListWidth
+    // Sized for both lines even without the account subtitle, so that every card of a list has the same height and an
+    // overflowing list stops in the middle of one.
     implicitHeight: Math.max(IKOnboarding.driveSelectionCellMinHeight,
-                             contentRow.implicitHeight + IKOnboarding.driveSelectionCellPadding * 2)
+                             Math.max(contentRow.implicitHeight, twoLineSizer.implicitHeight)
+                             + IKOnboarding.driveSelectionCellPadding * 2)
 
     focusPolicy: root.cellEnabled ? Qt.StrongFocus : Qt.NoFocus
     onClicked: root.requestToggle()
@@ -63,6 +66,29 @@ AbstractButton {
     // Assistive technologies invoke either action depending on how they read the cell, so both reach the model.
     Accessible.onPressAction: root.requestToggle()
     Accessible.onToggleAction: root.requestToggle()
+
+    // Measures the drive name and account lines with their real fonts. Transparent rather than hidden: a hidden column
+    // lays out no child and would measure nothing.
+    Column {
+        id: twoLineSizer
+
+        opacity: 0
+        enabled: false
+
+        Text {
+            text: " "
+            font.pixelSize: IKFonts.bodySize
+            lineHeightMode: Text.FixedHeight
+            lineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
+        }
+
+        Text {
+            text: " "
+            font.pixelSize: IKFonts.subheadlineSize
+            lineHeightMode: Text.FixedHeight
+            lineHeight: IKOnboarding.driveSelectionAccountLineHeight
+        }
+    }
 
     HoverHandler {
         id: cellHover
