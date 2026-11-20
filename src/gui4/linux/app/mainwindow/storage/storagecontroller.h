@@ -80,6 +80,7 @@ class StorageController final : public QObject {
         Q_PROPERTY(bool canUpgradeSubscription READ canUpgradeSubscription NOTIFY quotaChanged)
         Q_PROPERTY(QString driveName READ driveName NOTIFY quotaChanged)
         Q_PROPERTY(QString subscriptionName READ subscriptionName NOTIFY quotaChanged)
+        Q_PROPERTY(SubscriptionProduct subscriptionProduct READ subscriptionProduct NOTIFY quotaChanged)
         Q_PROPERTY(bool storageWarning READ storageWarning NOTIFY storageWarningChanged)
 
     public:
@@ -89,6 +90,16 @@ class StorageController final : public QObject {
             Unavailable,
         };
         Q_ENUM(State)
+
+        /** Product whose logo follows the subscription card title. */
+        enum class SubscriptionProduct : uint8_t {
+            Unknown = 0,
+            KDrive,
+            MykSuite,
+            MykSuitePlus,
+            KSuitePro,
+        };
+        Q_ENUM(SubscriptionProduct)
 
         StorageController(AppCache &appCache, MainSelectionStore &selectionStore, CommService &commService,
                           QObject *parent = nullptr);
@@ -124,6 +135,8 @@ class StorageController final : public QObject {
         [[nodiscard]] QString driveName() const;
         /** Offer name of the drive, e.g. "kDrive Team" or "kSuite Business"; empty while the pack is unknown. */
         [[nodiscard]] QString subscriptionName() const;
+        /** Product of the drive's pack; `Unknown` while the pack is unknown or for a pack without a logo. */
+        [[nodiscard]] SubscriptionProduct subscriptionProduct() const;
         [[nodiscard]] bool storageWarning() const;
 
         Q_INVOKABLE void setViewActive(bool active);
