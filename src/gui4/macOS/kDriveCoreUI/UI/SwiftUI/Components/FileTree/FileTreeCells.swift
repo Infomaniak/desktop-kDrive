@@ -63,13 +63,15 @@ final class FileTreeHeaderView: NSTableHeaderView {
         guard tableView != nil, checkboxColumnIndex >= 0 else { return }
 
         let columnRect = headerRect(ofColumn: checkboxColumnIndex)
+        // The intrinsic size describes the alignment rect. On macOS 12 a checkbox draws outside of it, so the frame is
+        // derived from the alignment rect to avoid clipping the checkbox, as Auto Layout does for the row checkboxes.
         let size = checkbox.intrinsicContentSize
-        checkbox.frame = NSRect(
+        checkbox.frame = checkbox.frame(forAlignmentRect: NSRect(
             x: columnRect.midX - size.width / 2,
             y: columnRect.midY - size.height / 2,
             width: size.width,
             height: size.height
-        )
+        ))
 
         let indicatorSide = AppIconSize.iconSize16.width
         loadingIndicator.frame = NSRect(
