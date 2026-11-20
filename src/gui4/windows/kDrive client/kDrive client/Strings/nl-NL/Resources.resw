@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: nl, Dutch; Flemish
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
+  Exported by: Luc Guyot
+  Exported at: Fri, 20 Nov 2026 15:21:33 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -922,6 +922,24 @@ De synchronisatie wordt automatisch hervat zodra de verbinding is hersteld.</val
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Bestand bestaat al</value> 
   </data> 
+  <data name="fileOpeningDownloadButton" xml:space="preserve"> 
+    <value>Downloaden via kDrive</value> 
+  </data> 
+  <data name="fileOpeningDownloadProgress" xml:space="preserve"> 
+    <value>%@ van %@</value> 
+  </data> 
+  <data name="fileOpeningDownloadTitle" xml:space="preserve"> 
+    <value>Downloaden</value> 
+  </data> 
+  <data name="fileOpeningFailureExplanation" xml:space="preserve"> 
+    <value>Je kunt het zelf downloaden via kDrive in je browser.</value> 
+  </data> 
+  <data name="fileOpeningFailureTitle" xml:space="preserve"> 
+    <value>Het bestand kan niet worden geopend</value> 
+  </data> 
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve"> 
+    <value>Het gevraagde item kon niet worden gevonden.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Bestandssynchronisatiemodus</value> 
   </data> 
@@ -1270,7 +1288,7 @@ Om het uploaden te versnellen, raden we aan alleen de laatste kDrive-sessie te v
     <value>Link gekopieerd naar klembord</value> 
   </data> 
   <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
-    <value>Incompatibele schijf of map direct in de root van de schijf (bijv.: kies een map zoals D:/Mijn drive in plaats van D:/)</value> 
+    <value>Een onverenigbare schijf of map die zich direct in de hoofdmap van de schijf bevindt (kies bijvoorbeeld een map zoals "D:/Mijn schijf" in plaats van "D:/")</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Locatie op computer</value> 
@@ -1661,16 +1679,16 @@ Een internetverbinding is vereist om ze te openen.</value>
     <value>Synchronisatie is bezig</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Zoeken naar wijzigingen…</value> 
+    <value>Zoeken naar wijzigingen</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Te synchroniseren bestanden doorzoeken…</value> 
+    <value>Pad naar de te synchroniseren bestanden (%@)</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ van %@ elementen gesynchroniseerd…</value> 
+    <value>%@ item gesynchroniseerd uit %@</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ van %@ elementen gesynchroniseerd…</value> 
+    <value>%@ items gesynchroniseerd van de %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Gesynchroniseerd</value> 

@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: sv, Swedish
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
+  Exported by: Luc Guyot
+  Exported at: Fri, 20 Nov 2026 15:21:33 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -922,6 +922,24 @@ Synkroniseringen återuptas automatiskt när anslutningen har återställts.</va
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Filen finns redan</value> 
   </data> 
+  <data name="fileOpeningDownloadButton" xml:space="preserve"> 
+    <value>Ladda ner från kDrive</value> 
+  </data> 
+  <data name="fileOpeningDownloadProgress" xml:space="preserve"> 
+    <value>%@ av %@</value> 
+  </data> 
+  <data name="fileOpeningDownloadTitle" xml:space="preserve"> 
+    <value>Ladda ner</value> 
+  </data> 
+  <data name="fileOpeningFailureExplanation" xml:space="preserve"> 
+    <value>Du kan ladda ner den själv från kDrive i din webbläsare.</value> 
+  </data> 
+  <data name="fileOpeningFailureTitle" xml:space="preserve"> 
+    <value>Det går inte att öppna filen</value> 
+  </data> 
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve"> 
+    <value>Det begärda objektet kunde inte hittas.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Filsynkroniseringsläge</value> 
   </data> 
@@ -1270,7 +1288,7 @@ För att påskynda uppladdningen rekommenderar vi att du bara skickar den senast
     <value>Länk kopierad till urklipp</value> 
   </data> 
   <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
-    <value>Inkompatibel enhet eller mapp direkt i roten av enheten (t.ex. välj en mapp som D:/Min enhet istället för D:/)</value> 
+    <value>En enhet som inte är kompatibel eller en mapp som ligger direkt i enhetens rotkatalog (välj t.ex. en mapp som ”D:/Min enhet” istället för ”D:/”)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Plats på dator</value> 
@@ -1661,16 +1679,16 @@ Internetanslutning krävs för att komma åt dem.</value>
     <value>Synkronisering pågår</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Söker efter ändringar…</value> 
+    <value>Sök efter ändringar</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Genomsöker filer att synkronisera…</value> 
+    <value>Sökväg till filer som ska synkroniseras (%@)</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ av %@ element synkroniserat…</value> 
+    <value>%@ objekt har synkroniserats bort från %@</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ av %@ element synkroniserade…</value> 
+    <value>%@ objekt har synkroniserats av totalt %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkroniserad</value> 

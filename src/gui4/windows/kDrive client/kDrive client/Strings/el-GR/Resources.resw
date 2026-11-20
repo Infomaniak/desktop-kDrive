@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: el, Greek
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
+  Exported by: Luc Guyot
+  Exported at: Fri, 20 Nov 2026 15:21:33 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -922,6 +922,24 @@
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Το αρχείο υπάρχει ήδη</value> 
   </data> 
+  <data name="fileOpeningDownloadButton" xml:space="preserve"> 
+    <value>Λήψη από το kDrive</value> 
+  </data> 
+  <data name="fileOpeningDownloadProgress" xml:space="preserve"> 
+    <value>%@ πάνω από %@</value> 
+  </data> 
+  <data name="fileOpeningDownloadTitle" xml:space="preserve"> 
+    <value>Λήψη</value> 
+  </data> 
+  <data name="fileOpeningFailureExplanation" xml:space="preserve"> 
+    <value>Μπορείτε να το κατεβάσετε μόνοι σας από το kDrive μέσω του προγράμματος περιήγησής σας.</value> 
+  </data> 
+  <data name="fileOpeningFailureTitle" xml:space="preserve"> 
+    <value>Δεν είναι δυνατό να ανοίξει το αρχείο</value> 
+  </data> 
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve"> 
+    <value>Δεν ήταν δυνατή η εύρεση του στοιχείου που ζητήσατε.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Λειτουργία συγχρονισμού αρχείων</value> 
   </data> 
@@ -1270,7 +1288,7 @@
     <value>Ο σύνδεσμος αντιγράφηκε στο πρόχειρο</value> 
   </data> 
   <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
-    <value>Μη συμβατή μονάδα δίσκου ή φάκελος απευθείας στη ρίζα της μονάδας (π.χ. επιλέξτε έναν φάκελο όπως D:/Η μονάδα μου αντί για D:/)</value> 
+    <value>Μη συμβατός δίσκος ή φάκελος που βρίσκεται απευθείας στη ρίζα του δίσκου (π.χ., επιλέξτε έναν φάκελο όπως «D:/My drive» αντί για «D:/»)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Τοποθεσία στον υπολογιστή</value> 
@@ -1661,16 +1679,16 @@
     <value>Ο συγχρονισμός βρίσκεται σε εξέλιξη</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Αναζήτηση αλλαγών…</value> 
+    <value>Αναζήτηση αλλαγών</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Σάρωση των αρχείων προς συγχρονισμό…</value> 
+    <value>Διαδρομή των αρχείων προς συγχρονισμό (%@)</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ από %@ στοιχεία συγχρονίστηκε…</value> 
+    <value>%@ στοιχείο συγχρονίστηκε από τα %@</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ από %@ στοιχεία συγχρονίστηκαν…</value> 
+    <value>%@ στοιχεία συγχρονίστηκαν από τα %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Συγχρονίστηκε</value> 

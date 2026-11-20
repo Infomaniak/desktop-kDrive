@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: pl, Polish
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
+  Exported by: Luc Guyot
+  Exported at: Fri, 20 Nov 2026 15:21:33 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -922,6 +922,24 @@ Synchronizacja zostanie wznowiona automatycznie po przywróceniu połączenia.</
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Plik już istnieje</value> 
   </data> 
+  <data name="fileOpeningDownloadButton" xml:space="preserve"> 
+    <value>Pobierz z serwisu kDrive</value> 
+  </data> 
+  <data name="fileOpeningDownloadProgress" xml:space="preserve"> 
+    <value>%@ z %@</value> 
+  </data> 
+  <data name="fileOpeningDownloadTitle" xml:space="preserve"> 
+    <value>Pobierz</value> 
+  </data> 
+  <data name="fileOpeningFailureExplanation" xml:space="preserve"> 
+    <value>Możesz pobrać go samodzielnie z serwisu kDrive w przeglądarce.</value> 
+  </data> 
+  <data name="fileOpeningFailureTitle" xml:space="preserve"> 
+    <value>Nie można otworzyć pliku</value> 
+  </data> 
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve"> 
+    <value>Nie znaleziono żądanego elementu.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Tryb synchronizacji plików</value> 
   </data> 
@@ -1270,7 +1288,7 @@ Aby przyspieszyć przesyłanie, zalecamy wysłanie tylko ostatniej sesji kDrive.
     <value>Łącze skopiowane do schowka</value> 
   </data> 
   <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
-    <value>Niezgodny dysk lub folder bezpośrednio w katalogu głównym dysku (np. wybierz folder taki jak D:/Mój dysk zamiast D:/)</value> 
+    <value>Niezgodny dysk lub folder znajdujący się bezpośrednio w katalogu głównym dysku (np. wybierz folder typu „D:/Mój dysk” zamiast „D:/”)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Lokalizacja na komputerze</value> 
@@ -1661,16 +1679,16 @@ Do ich dostępu wymagane jest połączenie z Internetem.</value>
     <value>Synchronizacja jest w toku</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Wyszukiwanie zmian…</value> 
+    <value>Wyszukiwanie zmian</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Przeglądanie plików do synchronizacji…</value> 
+    <value>Ścieżka do plików do synchronizacji (%@)</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ element zsynchronizowany z %@…</value> 
+    <value>%@ pozycji zsynchronizowano z %@</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ elementów zsynchronizowanych z %@…</value> 
+    <value>%@ elementów zsynchronizowano z %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Zsynchronizowano</value> 

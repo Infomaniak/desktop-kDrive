@@ -355,6 +355,9 @@
 /* loco:6989da5609f5a74cc30826c2 */
 "buttonUpgradeOffer" = "Passa a un’offerta superiore";
 
+/* loco:6af2db6c55197681a509f7d2 */
+"buttonUpgradeSubscriptionShort" = "Far progredire";
+
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Conferma";
 
@@ -797,6 +800,24 @@
 /* loco:699c56142c8d937001054c82 */
 "fileExistsErrorTitle" = "Il file esiste già";
 
+/* loco:6afec1ed259fa742710c2c6c */
+"fileOpeningDownloadButton" = "Scarica da kDrive";
+
+/* loco:6afdd20a9ee4cf55660ee934 */
+"fileOpeningDownloadProgress" = "%@ su %@";
+
+/* loco:6afdd1cddf6d796ad70d8a52 */
+"fileOpeningDownloadTitle" = "Scarica";
+
+/* loco:6afec1b2af0fa7297e057c14 */
+"fileOpeningFailureExplanation" = "Puoi scaricarlo direttamente da kDrive nel tuo browser.";
+
+/* loco:6afebbdb99829c3b5d0dfa94 */
+"fileOpeningFailureTitle" = "Impossibile aprire il file";
+
+/* loco:6afec9ed750a9c1b47035899 */
+"fileOpeningNotFoundMessage" = "Impossibile trovare l’elemento richiesto.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Modalità di sincronizzazione file";
 
@@ -913,6 +934,12 @@
 
 /* loco:6a16da43bc4d91f15c0416e2 */
 "kSuiteOfferUrl" = "https://www.infomaniak.com/it/ksuite";
+
+/* loco:6af2de156f5399601207f4c2 */
+"kSuiteProUpsellLink" = "https://www.infomaniak.com/it/ksuite/ksuite-pro";
+
+/* loco:6af2da3aae641c5af1064a12 */
+"ksuiteProBannerDescription" = "Creare e collaborare senza limiti";
 
 /* loco:69a0079a3f0464f2af0a25d3 */
 "labelAccessRightsModified" = "Diritti di accesso modificati";
@@ -1160,6 +1187,7 @@
 /* loco:6a6c9c3be4819f7c890366e2 */
 "manyDeleteDialogHardLimitSecondary" = "Eliminare anche online";
 
+/* loco:6aa7c1de7938f04545000332 */
 "manyDeleteDialogOtherPlaceholder" = "e %@ altri elementi";
 
 /* loco:6a6c9cb7e46a51ff3e04e779 */
@@ -1261,8 +1289,11 @@
 /* loco:698b1273e77c157c0d065892 */
 "moveDeletedFilesToRecycleBinWarning" = "Alcuni elementi potrebbero non poter essere spostati.";
 
+/* loco:6af2ddeb8916851c60091943 */
+"mykSuiteUpsellLink" = "https://www.infomaniak.com/it/ksuite/myksuite";
+
 /* loco:6989d5a219b60c091f06e662 */
-"myksuitePlusBannerDescription" = "Più spazio, più funzionalità con my kSuite+";
+"myksuitePlusBannerDescription" = "Più spazio di archiviazione, più funzionalità con my kSuite+";
 
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Hai bisogno di aiuto?";
@@ -1562,6 +1593,12 @@
 
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "La sincronizzazione è in corso";
+
+/* loco:6ad232f65d64577ad6084542 */
+"syncStatusAnalysing" = "Ricerca delle modifiche";
+
+/* loco:6ad232ecab975477a3093ee2 */
+"syncStatusExploring" = "Percorso dei file da sincronizzare (%@)";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Sincronizzato";

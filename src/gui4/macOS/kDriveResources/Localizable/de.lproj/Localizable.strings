@@ -355,6 +355,9 @@
 /* loco:6989da5609f5a74cc30826c2 */
 "buttonUpgradeOffer" = "Upgraden";
 
+/* loco:6af2db6c55197681a509f7d2 */
+"buttonUpgradeSubscriptionShort" = "Weiterentwickeln";
+
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Bestätigen";
 
@@ -797,6 +800,24 @@
 /* loco:699c56142c8d937001054c82 */
 "fileExistsErrorTitle" = "Datei existiert bereits";
 
+/* loco:6afec1ed259fa742710c2c6c */
+"fileOpeningDownloadButton" = "Von kDrive herunterladen";
+
+/* loco:6afdd20a9ee4cf55660ee934 */
+"fileOpeningDownloadProgress" = "%@ von %@";
+
+/* loco:6afdd1cddf6d796ad70d8a52 */
+"fileOpeningDownloadTitle" = "Herunterladen";
+
+/* loco:6afec1b2af0fa7297e057c14 */
+"fileOpeningFailureExplanation" = "Sie können es selbst über kDrive in Ihrem Browser herunterladen.";
+
+/* loco:6afebbdb99829c3b5d0dfa94 */
+"fileOpeningFailureTitle" = "Die Datei kann nicht geöffnet werden";
+
+/* loco:6afec9ed750a9c1b47035899 */
+"fileOpeningNotFoundMessage" = "Der angeforderte Eintrag konnte nicht gefunden werden.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Dateisynchronisierungsmodus";
 
@@ -913,6 +934,12 @@
 
 /* loco:6a16da43bc4d91f15c0416e2 */
 "kSuiteOfferUrl" = "https://www.infomaniak.com/de/ksuite";
+
+/* loco:6af2de156f5399601207f4c2 */
+"kSuiteProUpsellLink" = "https://www.infomaniak.com/de/ksuite/ksuite-pro";
+
+/* loco:6af2da3aae641c5af1064a12 */
+"ksuiteProBannerDescription" = "Uneingeschränkt gestalten und zusammenarbeiten";
 
 /* loco:69a0079a3f0464f2af0a25d3 */
 "labelAccessRightsModified" = "Zugriffsrechte geändert";
@@ -1160,6 +1187,7 @@
 /* loco:6a6c9c3be4819f7c890366e2 */
 "manyDeleteDialogHardLimitSecondary" = "Auch online löschen";
 
+/* loco:6aa7c1de7938f04545000332 */
 "manyDeleteDialogOtherPlaceholder" = "und %@ weitere Elemente";
 
 /* loco:6a6c9cb7e46a51ff3e04e779 */
@@ -1260,6 +1288,9 @@
 
 /* loco:698b1273e77c157c0d065892 */
 "moveDeletedFilesToRecycleBinWarning" = "Einige Elemente können möglicherweise nicht verschoben werden.";
+
+/* loco:6af2ddeb8916851c60091943 */
+"mykSuiteUpsellLink" = "https://www.infomaniak.com/de/ksuite/myksuite";
 
 /* loco:6989d5a219b60c091f06e662 */
 "myksuitePlusBannerDescription" = "Mehr Speicherplatz, mehr Funktionen mit my kSuite+";
@@ -1563,6 +1594,12 @@
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "Die Synchronisierung läuft";
 
+/* loco:6ad232f65d64577ad6084542 */
+"syncStatusAnalysing" = "Suche nach Änderungen";
+
+/* loco:6ad232ecab975477a3093ee2 */
+"syncStatusExploring" = "Pfad zu den zu synchronisierenden Dateien (%@)";
+
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Synchronisiert";
 
@@ -1597,7 +1634,7 @@
 "synchroStatusPausedDescription" = "Die Synchronisierung wurde vorübergehend gestoppt.";
 
 /* loco:6960f0b8ef5d3700b0018933 */
-"synchroStatusPausedTitle" = "Synchronisierung während der Pause";
+"synchroStatusPausedTitle" = "Synchronisierung pausiert";
 
 /* loco:6960efeed6dfdcb3af05e2d2 */
 "synchroStatusUpToDateDescription" = "Ihre Dateien sind zugänglich und synchronisiert.";
