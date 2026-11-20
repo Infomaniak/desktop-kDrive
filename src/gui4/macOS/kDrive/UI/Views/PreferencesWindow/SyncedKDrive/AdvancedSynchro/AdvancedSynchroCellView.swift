@@ -84,6 +84,7 @@ struct AdvancedSynchroCellView: View {
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
+                .legacyBorderlessMenu()
             }
             .task {
                 await fetchBlacklistedNodes()
