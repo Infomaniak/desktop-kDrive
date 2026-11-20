@@ -283,16 +283,10 @@ struct StorageView: View {
             return
         }
 
-        var name = KDriveLocalizable.labelMySubscription + " "
-        if isStandaloneDrivePack(drive.packInfo.name) {
-            name.append("kDrive ")
-        }
-        name.append(drive.packInfo.displayName)
-
         withAnimation {
             driveStorageInfo = DriveStorageInfo(
                 driveDbId: Int(drive.driveDbId),
-                name: name,
+                name: KDriveLocalizable.labelMySubscription + " " + drive.packInfo.displayName,
                 size: drive.size,
                 usedSize: drive.usedSize
             )

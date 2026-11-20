@@ -27,6 +27,7 @@
 
     <UserControl.Resources>
         <converters:NumberToGridLengthConverter  x:Key="DoubleToGridLengthConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter  x:Key="IsNullToBoolOrVisibilityConverter" />
     </UserControl.Resources>
     <Border Height="16"
             Background="LightGray"
@@ -34,19 +35,34 @@
 
         <Grid x:Name="SizeBarGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="{x:Bind Value1, Mode=OneWay, Converter={StaticResource DoubleToGridLengthConverter}}" />
-                <ColumnDefinition Width="{x:Bind Value2, Mode=OneWay, Converter={StaticResource DoubleToGridLengthConverter}}" />
-                <ColumnDefinition Width="{x:Bind Value3, Mode=OneWay, Converter={StaticResource DoubleToGridLengthConverter}}" />
+                <ColumnDefinition Width="{x:Bind GetSectionWidth(Visibility1, Color1, Value1, Value1, Value2, Value3, Value4), Mode=OneWay}" />
+                <ColumnDefinition Width="{x:Bind GetSectionWidth(Visibility2, Color2, Value2, Value1, Value2, Value3, Value4), Mode=OneWay}" />
+                <ColumnDefinition Width="{x:Bind GetSectionWidth(Visibility3, Color3, Value3, Value1, Value2, Value3, Value4), Mode=OneWay}" />
+                <ColumnDefinition Width="{x:Bind GetSectionWidth(Visibility4, Color4, Value4, Value1, Value2, Value3, Value4), Mode=OneWay}" />
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0"
                     Background="{x:Bind Color1, Mode=OneWay}"
-                    HorizontalAlignment="Stretch" />
+                    Visibility="{x:Bind Visibility1, Mode=OneWay}"
+                    local:PulseAnimation.IsPulsing="{x:Bind IsLoading1, Mode=OneWay}"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,1,0"/>
             <Border Grid.Column="1"
                     Background="{x:Bind Color2, Mode=OneWay}"
-                    HorizontalAlignment="Stretch" />
+                    Visibility="{x:Bind Visibility2, Mode=OneWay}"
+                    local:PulseAnimation.IsPulsing="{x:Bind IsLoading2, Mode=OneWay}"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,1,0" />
             <Border Grid.Column="2"
                     Background="{x:Bind Color3, Mode=OneWay}"
+                    Visibility="{x:Bind Visibility3, Mode=OneWay}"
+                    local:PulseAnimation.IsPulsing="{x:Bind IsLoading3, Mode=OneWay}"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,1,0" />
+            <Border Grid.Column="3"
+                    Background="{x:Bind Color4, Mode=OneWay}"
+                    Visibility="{x:Bind Visibility4, Mode=OneWay}"
+                    local:PulseAnimation.IsPulsing="{x:Bind IsLoading4, Mode=OneWay}"
                     HorizontalAlignment="Stretch" />
         </Grid>
     </Border>

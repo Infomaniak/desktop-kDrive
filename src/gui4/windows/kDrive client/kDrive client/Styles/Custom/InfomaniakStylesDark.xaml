@@ -19,10 +19,11 @@
 
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+
     <!-- Images -->
     <x:String x:Key="Infomaniak.Custom.Images.kDrive-folder">ms-appx:///Assets/Custom/Images/kDrive-folder-dark.svg</x:String>
-    <x:String x:Key="Infomaniak.Custom.Images.kDrive-folder-sync-warning">ms-appx:///Assets/Custom/Images/kDrive-folder-sync-warning-light.svg</x:String> <!-- TODO: Replace with dark version when available -->
+    <x:String x:Key="Infomaniak.Custom.Images.kDrive-folder-sync-warning">ms-appx:///Assets/Custom/Images/kDrive-folder-sync-warning-light.svg</x:String>
+    <!-- TODO: Replace with dark version when available -->
     <x:String x:Key="Infomaniak.Custom.Icons.logo-myksuiteplus">ms-appx:///Assets/Custom/Icons/logo-myksuiteplus-dark.svg</x:String>
 
     <!-- Icons -->
@@ -31,7 +32,11 @@
 
     <!--  colors  -->
     <Color x:Key="Infomaniak.Custom.colors.storage.other">#F19DFF</Color>
-    <SolidColorBrush x:Key="Infomaniak.Custom.colors.storage.otherBrush" Color="{StaticResource Infomaniak.Custom.colors.storage.other}" />
+    <Color x:Key="Infomaniak.Custom.colors.storage.otherSyncs">#FFB74D</Color>
+    <SolidColorBrush x:Key="Infomaniak.Custom.colors.storage.otherBrush"
+                     Color="{StaticResource Infomaniak.Custom.colors.storage.other}" />
+    <SolidColorBrush x:Key="Infomaniak.Custom.colors.storage.otherSyncsBrush"
+                     Color="{StaticResource Infomaniak.Custom.colors.storage.otherSyncs}" />
 
     <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_FFFFFF">#0d0f13</Color>
     <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_F5F7FB">#1f242e</Color>

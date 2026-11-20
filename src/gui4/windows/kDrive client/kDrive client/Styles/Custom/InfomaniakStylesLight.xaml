@@ -30,7 +30,11 @@
 
     <!--  colors  -->
     <Color x:Key="Infomaniak.Custom.colors.storage.other">#BA68C8</Color>
-    <SolidColorBrush x:Key="Infomaniak.Custom.colors.storage.otherBrush" Color="{StaticResource Infomaniak.Custom.colors.storage.other}" />
+    <Color x:Key="Infomaniak.Custom.colors.storage.otherSyncs">#FF9802</Color>
+    <SolidColorBrush x:Key="Infomaniak.Custom.colors.storage.otherBrush"
+                     Color="{StaticResource Infomaniak.Custom.colors.storage.other}" />
+    <SolidColorBrush x:Key="Infomaniak.Custom.colors.storage.otherSyncsBrush"
+                     Color="{StaticResource Infomaniak.Custom.colors.storage.otherSyncs}" />
 
     <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_FFFFFF">#FFFFFF</Color>
     <Color x:Key="Infomaniak.Custom.Colors.Animations.KDrive_SyncroFile.Overrides.Color_F5F7FB">#F5F7FB</Color>

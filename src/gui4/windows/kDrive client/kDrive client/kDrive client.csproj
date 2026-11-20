@@ -261,6 +261,9 @@
     <Page Update="CustomControls\HomeErrorInfoBar.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\DrivePackBadge.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\UpdateRequiredControl.xaml">
       <SubType>Designer</SubType>
     </Page>
