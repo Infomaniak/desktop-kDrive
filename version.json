@@ -3,8 +3,8 @@
     "Linux": {
       "major": 3,
       "minor": 8,
-      "patch": 8,
-      "build": 2,
+      "patch": 9,
+      "build": 1,
       "year": 2026
     },
     "macOS": {
