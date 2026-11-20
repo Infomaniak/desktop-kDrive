@@ -24,6 +24,9 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
+    /// Fits the two-line name cell; only used on macOS 12, where rows don't size to their content.
+    private static let legacyRowHeight: CGFloat = 36
+
     let contexts: [UISynchroNodeContext]
 
     private var orderedNodes: [UISynchroNodeContext] {
@@ -60,6 +63,7 @@ struct ActivitiesTable: View {
                     FileTypeView(fileTypeRepresentation: context.node.fileTypeRepresentation)
                         .frame(size: AppIconSize.iconSize16)
                 }
+                .legacyTableRowHeight(Self.legacyRowHeight)
             }
 
             TableColumn(KDriveLocalizable.labelFolder) { context in
