@@ -537,7 +537,7 @@
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
   It also exposes the `upsellOffer` of the selected drive: only an admin of a drive with a free pack gets one, my kSuite+
-  for the standalone and my kSuite packs, kSuite Pro for the kSuite packs (same rule as Windows and macOS).
+  for the standalone and my kSuite packs, kSuite Pro for the kSuite packs.
   `openUpsellPage()` opens `AppConstants::Drive::upsellUri`. `SidebarUpsellCard` shows the offer above the sidebar
   notification and is hidden while the selected synchronization is blocked (`SidebarView.navigationEnabled`).
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
