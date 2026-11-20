@@ -33,6 +33,21 @@ Item {
 
     readonly property bool diskUnavailable: controller.state === StorageController.Unavailable
     readonly property bool diskLoading: controller.state === StorageController.Loading
+    // Name of the product logo asset that follows the subscription title; empty for an unknown pack.
+    readonly property string subscriptionLogoName: {
+        switch (controller.subscriptionProduct) {
+        case StorageController.KDrive:
+            return "kdrive";
+        case StorageController.MykSuite:
+            return "myksuite";
+        case StorageController.MykSuitePlus:
+            return "myksuite-plus";
+        case StorageController.KSuitePro:
+            return "ksuite-pro";
+        default:
+            return "";
+        }
+    }
 
     Component.onCompleted: controller.setViewActive(true)
     Component.onDestruction: controller.setViewActive(false)
@@ -141,11 +156,17 @@ Item {
                 // The upgrade link replaces the usage once the subscription is full.
                 readonly property bool showsUpgradeLink: root.controller.quotaFull && root.controller.canUpgradeSubscription
 
+                readonly property string subscriptionTitle: root.controller.subscriptionName.length > 0
+                                                            ? qsTrId("storageSubscriptionTitle").arg(root.controller.subscriptionName)
+                                                            : qsTrId("labelMySubscription")
+                readonly property bool showsProductLogo: root.subscriptionLogoName.length > 0
+
                 width: parent.width
                 visible: root.controller.quotaAvailable
-                title: root.controller.subscriptionName.length > 0
-                       ? qsTrId("storageSubscriptionTitle").arg(root.controller.subscriptionName)
-                       : qsTrId("labelMySubscription")
+                // The logo names the product: the title keeps the full offer name for screen readers.
+                title: showsProductLogo ? qsTrId("storageSubscriptionLabel") : subscriptionTitle
+                titleAccessibleName: subscriptionTitle
+                titleAccessory: showsProductLogo ? subscriptionLogoComponent : null
                 usageText: showsUpgradeLink
                            ? ""
                            : qsTrId("storageUsageLabel").arg(root.controller.quotaUsedSizeText)
@@ -179,6 +200,16 @@ Item {
 
                 onManageRequested: root.controller.manageSynchronization()
             }
+        }
+    }
+
+    Component {
+        id: subscriptionLogoComponent
+
+        Image {
+            Accessible.ignored: true
+            source: "qrc:/assets/main/storage/subscription-" + root.subscriptionLogoName
+                    + (ThemeMode.isDark ? "-dark" : "") + ".svg"
         }
     }
 

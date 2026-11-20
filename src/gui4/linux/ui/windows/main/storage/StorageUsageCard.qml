@@ -26,6 +26,10 @@ Rectangle {
     id: root
 
     required property string title
+    // Read by screen readers instead of the title, when an accessory such as a logo carries part of its meaning.
+    property string titleAccessibleName: title
+    // Optional item right after the title, such as the subscription logo.
+    property Component titleAccessory: null
     property string usageText
     property bool loading: false
     // Animates segment widths; values restored from a cache or a first presentation appear at once.
@@ -54,19 +58,42 @@ Rectangle {
         anchors.top: parent.top
         height: IKStorage.headerHeight
 
-        Text {
+        Row {
+            id: headerLeading
+
+            readonly property real availableWidth: headerTrailing.x - IKSpacing.s16 - x
+
             anchors.left: parent.left
             anchors.leftMargin: IKStorage.cardHorizontalPadding
-            anchors.right: headerTrailing.left
-            anchors.rightMargin: IKSpacing.s16
             y: IKStorage.headerTopPadding
-            color: IKColors.textPrimary
-            elide: Text.ElideRight
-            font.pixelSize: IKFonts.bodySize
-            font.weight: IKFonts.medium
-            text: root.title
-            textFormat: Text.PlainText
+            height: titleText.implicitHeight
+            spacing: IKStorage.titleAccessorySpacing
             visible: !root.loading
+
+            Text {
+                id: titleText
+
+                // The accessory keeps its width: only the title elides.
+                width: Math.max(0, Math.min(implicitWidth, headerLeading.availableWidth
+                                            - (titleAccessoryLoader.item ? titleAccessoryLoader.width + headerLeading.spacing : 0)))
+                Accessible.name: root.titleAccessibleName
+                color: IKColors.textPrimary
+                elide: Text.ElideRight
+                font.pixelSize: IKFonts.bodySize
+                font.weight: IKFonts.medium
+                text: root.title
+                textFormat: Text.PlainText
+            }
+
+            // Hidden without an item so the row adds no spacing for an absent accessory.
+            Loader {
+                id: titleAccessoryLoader
+
+                anchors.verticalCenter: parent.verticalCenter
+                active: !!root.titleAccessory
+                visible: item !== null
+                sourceComponent: root.titleAccessory
+            }
         }
 
         Row {
