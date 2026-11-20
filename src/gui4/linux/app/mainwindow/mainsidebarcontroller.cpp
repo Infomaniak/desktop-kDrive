@@ -153,6 +153,12 @@ void MainSidebarController::openUpsellPage() const {
         return;
     }
 
+    if (upsellOfferFor(context->drive) == UpsellOffer::None) {
+        qCWarning(lcMainSidebarController) << "Upgrade page ignored: no offer for the drive | driveId:"
+                                           << context->drive.driveId();
+        return;
+    }
+
     const QUrl url = AppConstants::Drive::upsellUri(context->drive);
     qCInfo(lcMainSidebarController) << "Opening the upgrade page | driveId:" << context->drive.driveId() << "| url:" << url;
     if (!QDesktopServices::openUrl(url)) {
