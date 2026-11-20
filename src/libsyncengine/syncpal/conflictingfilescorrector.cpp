@@ -166,7 +166,8 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     if (const auto exitInfo = deleteJob.runSynchronously(); !exitInfo) return false;
 
     // Rename the local version
-    LocalMoveJob renameJob(canonicalPaths.sourcePath, canonicalPaths.destinationPath);
+    // Rename the local version
+    LocalMoveJob renameJob(_syncPal->localPath(), canonicalPaths.sourcePath, canonicalPaths.destinationPath);
     if (const auto exitInfo = renameJob.runSynchronously(); !exitInfo) return false;
 
     // Set the local modification time to now

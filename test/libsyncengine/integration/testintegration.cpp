@@ -566,7 +566,7 @@ void TestIntegration::testParentRename() {
 
     _syncPal->pause();
     // Rename A to A2
-    (void) RenameJob( _driveDbId, nodeIdA, "A2").runSynchronously();
+    (void) RenameJob(_driveDbId, nodeIdA, "A2").runSynchronously();
     // Delete A/AA/AAA
     DeleteJob deleteJob(_driveDbId, nodeIdAAA);
     deleteJob.setBypassCheck(true);
@@ -875,7 +875,8 @@ void TestIntegration::testMoveDeleteRename() {
         (void) LocalMoveJob(moveSourcePath, moveDestPath).runSynchronously();
         // Delete a
         const auto deletedPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
-        (void) GenericLocalDeleteJob(deletedPath, _syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes)
+        (void) GenericLocalDeleteJob(_syncPal->localPath(), deletedPath, _syncPal->cacheDirectory(),
+                                     GenericLocalDeleteJob::ForceHardDelete::Yes)
                 .runSynchronously();
         // Rename b
         const auto renameSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "B";

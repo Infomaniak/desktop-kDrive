@@ -31,7 +31,10 @@ class GenericLocalDeleteJob : public SyncJob {
             Yes,
             No
         };
-        explicit GenericLocalDeleteJob(SyncPath absolutePath, const std::shared_ptr<CacheDirectory> cacheDirectory,
+        //! \param syncRootPath is the path of the sync root containing the altered items. Links located strictly below it are
+        //! never followed when altering the file system (see IoHelper::checkIfPathTraversesLink).
+        explicit GenericLocalDeleteJob(SyncPath syncRootPath, SyncPath absolutePath,
+                                       const std::shared_ptr<CacheDirectory> cacheDirectory = nullptr,
                                        ForceHardDelete forceHardDelete = ForceHardDelete::No);
 
         [[nodiscard]] const SyncPath &absoluteLocalPath() const { return _absoluteLocalPath; }
@@ -42,6 +45,7 @@ class GenericLocalDeleteJob : public SyncJob {
         ExitInfo hardDelete(const SyncPath &path);
 
     private:
+        SyncPath _syncRootPath;
         SyncPath _absoluteLocalPath;
         std::shared_ptr<CacheDirectory> _cacheDirectory{nullptr};
         bool _forceHardDelete{false};
