@@ -100,7 +100,7 @@ class GeneralSettingsController final : public QObject {
         Q_INVOKABLE void openDownload();
         Q_INVOKABLE void installUpdate() const;
         /** Restarts the application on the update already installed. */
-        Q_INVOKABLE void restartUpdate() const;
+        Q_INVOKABLE void restartOnInstalledUpdate() const;
         Q_INVOKABLE void loadReleaseNotes();
         Q_INVOKABLE void openTrashHelp();
         Q_INVOKABLE void openSupport();

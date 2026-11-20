@@ -177,7 +177,7 @@ IKModal {
                 if (manual) {
                     root.controller.openDownload();
                 } else if (root.controller.updateRestartable) {
-                    root.controller.restartUpdate();
+                    root.controller.restartOnInstalledUpdate();
                 } else {
                     root.controller.installUpdate();
                 }

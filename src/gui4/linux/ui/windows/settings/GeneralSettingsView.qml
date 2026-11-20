@@ -61,12 +61,18 @@ ScrollView {
                     visible: root.controller.updateAvailable
                     // Installable: the server downloads and installs the update, then restarts the application.
                     // Restartable: an automatic update is installed and waits for the restart.
-                    text: root.controller.updateDownloading ? qsTrId("buttonDownloadInProgress")
-                                                            : root.controller.updateRestartable
-                                                              ? qsTrId("buttonRestart")
-                                                              : root.controller.updateInstallable
-                                                                ? qsTrId("buttonUpdate")
-                                                                : qsTrId("buttonDownloadManually")
+                    text: {
+                        if (root.controller.updateDownloading) {
+                            return qsTrId("buttonDownloadInProgress");
+                        }
+                        if (root.controller.updateRestartable) {
+                            return qsTrId("buttonRestart");
+                        }
+                        if (root.controller.updateInstallable) {
+                            return qsTrId("buttonUpdate");
+                        }
+                        return qsTrId("buttonDownloadManually");
+                    }
                     external: manual
                     actionEnabled: !root.controller.updateDownloading
                     implicitHeight: IKSettings.buttonHeight
@@ -74,7 +80,7 @@ ScrollView {
                         if (manual) {
                             root.controller.openDownload();
                         } else if (root.controller.updateRestartable) {
-                            root.controller.restartUpdate();
+                            root.controller.restartOnInstalledUpdate();
                         } else {
                             root.controller.installUpdate();
                         }

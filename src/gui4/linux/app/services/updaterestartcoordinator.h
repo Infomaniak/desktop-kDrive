@@ -30,7 +30,7 @@ namespace KDC {
 class UpdateStatusService;
 
 /**
- * Restarts the application on an update the server installed by itself, once doing so cannot interrupt the user.
+ * Restarts the application after an automatic server update, once doing so will not interrupt the user.
  *
  * The server installs automatic updates without restarting (state `Ready`). The restart is requested with the
  * installer request when no watched window is visible, after a quiet period. Running synchronizations do not delay it:
@@ -49,7 +49,7 @@ class UpdateRestartCoordinator final : public QObject {
     private:
         void scheduleRestart();
         void restartIfQuiet();
-        [[nodiscard]] bool canRestart() const;
+        [[nodiscard]] bool shouldRequestRestart() const;
         [[nodiscard]] bool anyWindowVisible() const;
 
         UpdateStatusService &_updateStatusService;
