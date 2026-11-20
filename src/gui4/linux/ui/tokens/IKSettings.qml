@@ -52,7 +52,7 @@ QtObject {
     readonly property real informationDialogWidth: 454
     readonly property real releaseNotesDialogWidth: 560
     readonly property real dialogChromeHeight: 180
-    readonly property real logoSize: 64
+    readonly property real logoSize: 48
     readonly property real userCardPadding: 10
     readonly property real userHeaderHeight: 52
     readonly property real userAvatarSize: 36
