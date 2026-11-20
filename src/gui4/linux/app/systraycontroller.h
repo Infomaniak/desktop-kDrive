@@ -33,6 +33,7 @@ namespace KDC {
 
 class AppCache;
 class SyncErrorsProjection;
+class UserActionLog;
 enum class UpdateState;
 
 enum class TrayIconState {
@@ -60,7 +61,7 @@ class SystemTrayController final : public QObject {
         Q_PROPERTY(bool trayModeActive READ trayModeActive NOTIFY trayModeActiveChanged)
 
     public:
-        explicit SystemTrayController(QObject *const parent = nullptr);
+        explicit SystemTrayController(UserActionLog &userActionLog, QObject *const parent = nullptr);
 
         void initialize();
         void observe(AppCache &appCache, const SyncErrorsProjection &syncErrorsProjection);
@@ -99,6 +100,7 @@ class SystemTrayController final : public QObject {
         void updateAutomaticIconVariant();
         void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
+        UserActionLog &_userActionLog;
         AppCache *_appCache = nullptr;
         const SyncErrorsProjection *_syncErrorsProjection = nullptr;
         QPointer<QWindow> _mainWindow;

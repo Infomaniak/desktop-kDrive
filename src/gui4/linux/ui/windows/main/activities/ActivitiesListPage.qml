@@ -59,6 +59,7 @@ FocusScope {
             Layout.preferredHeight: visible ? implicitHeight : 0
             errorCount: root.controller.errorCount
             visible: root.controller.hasErrors
+            actionId: "main.activities.errorBanner.fixAll"
             onActionTriggered: root.controller.requestFixAllErrors()
         }
 

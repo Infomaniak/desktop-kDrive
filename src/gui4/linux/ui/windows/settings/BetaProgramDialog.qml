@@ -45,6 +45,7 @@ IKModal {
     }
 
     title: qsTrId("betaProgramTitle")
+    dialogId: "settings.general.betaProgramDialog"
     initialFocusItem: channelCombo
     onDismissRequested: close()
     onClosed: {
@@ -66,6 +67,7 @@ IKModal {
 
             width: parent.width
             accessibleName: qsTrId("accessibilityBetaProgramPicker")
+            actionId: root.dialogId + ".channel"
             model: root.controller.distributionChannels
             textRole: "label"
             valueRole: "value"
@@ -76,12 +78,14 @@ IKModal {
         IKModalButton {
             Layout.fillWidth: root.actionsStacked
             text: qsTrId("buttonClose")
+            actionId: root.dialogId + ".close"
             role: IKModalButton.Secondary
             onClicked: root.close()
         },
         IKModalButton {
             Layout.fillWidth: root.actionsStacked
             text: qsTrId("buttonValidate")
+            actionId: root.dialogId + ".validate"
             actionEnabled: root.controller.ready && !root.controller.saving
             onClicked: {
                 root.controller.setDistributionChannel(channelCombo.currentValue);

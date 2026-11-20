@@ -23,6 +23,9 @@ import kDrive.UI
 Item {
     id: root
 
+    // Prefix of the user action log ids of this file (see UserActionLog).
+    readonly property string actionIdPrefix: "onboarding.driveSelection"
+
     required property var selectionController
     required property var drivesModel
 
@@ -106,7 +109,10 @@ Item {
 
                 height: IKOnboarding.driveSelectionButtonHeight
                 text: qsTrId("buttonRetry")
-                onClicked: root.selectionController.reload()
+                onClicked: {
+                    UserActionLog.action(root.actionIdPrefix + ".retry");
+                    root.selectionController.reload();
+                }
 
                 contentItem: Text {
                     text: retryButton.text
@@ -165,7 +171,10 @@ Item {
                     hoverEnabled: true
                     height: IKOnboarding.driveSelectionButtonHeight
                     text: qsTrId("buttonAdvancedParameters")
-                    onClicked: root.selectionController.requestAdvancedSettings()
+                    onClicked: {
+                        UserActionLog.action(root.actionIdPrefix + ".advancedSettings");
+                        root.selectionController.requestAdvancedSettings();
+                    }
 
                     contentItem: Text {
                         text: advancedButton.text
@@ -198,7 +207,10 @@ Item {
                     enabled: root.selectionController.canContinue
                     height: IKOnboarding.driveSelectionButtonHeight
                     text: qsTrId("buttonContinue")
-                    onClicked: root.selectionController.continueOnboarding()
+                    onClicked: {
+                        UserActionLog.action(root.actionIdPrefix + ".continue");
+                        root.selectionController.continueOnboarding();
+                    }
 
                     contentItem: Text {
                         text: continueButton.text
