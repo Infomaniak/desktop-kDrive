@@ -130,7 +130,6 @@ class StorageController final : public QObject {
         Q_INVOKABLE void retry();
         /** Rescans while keeping the current presentation; acts as retry when Storage is unavailable. */
         Q_INVOKABLE void refresh();
-        Q_INVOKABLE void openDiskManagement() const;
         Q_INVOKABLE void openSubscriptionUpgrade() const;
         /** Asks Settings to open the "Manage synchronization" page of the selected synchronization. */
         Q_INVOKABLE void manageSynchronization();

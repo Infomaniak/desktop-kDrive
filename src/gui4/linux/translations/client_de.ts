@@ -1289,6 +1289,14 @@ open macOS Preferences to enable them.</source>
             <source>Infomaniak Support</source> 
             <translation>Infomaniak Support</translation> 
         </message> 
+        <message id="informationBlockBackErrorSubtitle"> 
+            <source>Synchronization is temporarily interrupted. It will resume automatically as soon as possible.</source> 
+            <translation>Die Synchronisierung ist vorübergehend unterbrochen. Sie wird so bald wie möglich automatisch fortgesetzt.</translation> 
+        </message> 
+        <message id="informationBlockBackErrorTitle"> 
+            <source>An error occurred</source> 
+            <translation>Ein Fehler ist aufgetreten</translation> 
+        </message> 
         <message id="informationBlockKDriveFullSubtitle"> 
             <source>Free up space or upgrade your plan to continue syncing your files.</source> 
             <translation>Geben Sie Speicherplatz frei oder upgraden Sie Ihren Plan, um Ihre Dateien weiterhin zu synchronisieren.</translation> 
@@ -2370,11 +2378,6 @@ Diese Daten ermöglichen es unserem Team, die Anwendung schnell zu beheben und z
         <message id="storageDeviceNameMac"> 
             <source>Macintosh</source> 
             <translation>Macintosh</translation> 
-        </message> 
-        <message id="storageDiskAlmostFullDescription"> 
-            <source>Your disk is almost full. Delete or move personal files from this disk to keep syncing your data.</source> 
-            <extracomment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</extracomment> 
-            <translation>Ihr Datenträger ist fast voll. Löschen oder verschieben Sie persönliche Dateien von diesem Datenträger, um Ihre Daten weiterhin zu synchronisieren.</translation> 
         </message> 
         <message id="storageLoadingHint"> 
             <source>Loading space usage…</source> 

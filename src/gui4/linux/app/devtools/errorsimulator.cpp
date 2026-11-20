@@ -50,7 +50,8 @@ Q_LOGGING_CATEGORY(lcErrorSimulator, "gui.v4.errorsimulator", QtInfoMsg)
 
 constexpr char simulatorName[] = "ErrorSimulator";
 constexpr char acceptedScenarios[] =
-        "all, inotify, asleep, wakingup, maintenance, notrenew, accessdenied, loggedout, update-required";
+        "all, inotify, drivefull, servererror, asleep, wakingup, maintenance, notrenew, accessdenied, "
+        "loggedout, update-required";
 
 // Longer than the 255-byte file name limit of common Linux filesystems.
 constexpr size_t tooLongNameLength = 260;
@@ -174,7 +175,20 @@ std::vector<Fixture> fixtures() {
             {Unknown, syncPalError(ExitCode::SystemError, ExitCause::UnableToStartVfs)},
             // Rare and caused by the user changing the rights of the cache folder: shown as an unexpected error.
             {Unknown, syncPalError(ExitCode::SystemError, ExitCause::TmpDirAccessError)},
+            // A server error without a dedicated kind: the Home shows its server error banner.
+            {Unknown, syncPalError(ExitCode::BackError, ExitCause::Http5xx)},
     };
+}
+
+// The error alone behind each Home error banner, since `all` only shows the most urgent one.
+std::optional<Error> homeBannerScenarioError(const std::string_view scenario) {
+    if (scenario == "drivefull") {
+        return nodeExitError("Simulated/Archive.zip", ExitCode::BackError, ExitCause::QuotaExceeded);
+    }
+    if (scenario == "servererror") {
+        return syncPalError(ExitCode::BackError, ExitCause::Http5xx);
+    }
+    return std::nullopt;
 }
 
 // A new kind without fixture, or a classifier change that the fixtures do not follow, fails here.
@@ -210,6 +224,10 @@ std::optional<std::vector<Error>> scenarioErrors(const std::string_view scenario
         const auto fixture = std::ranges::find(allFixtures, SyncErrorKind::NotEnoughINotifyWatches, &Fixture::kind);
         assert(fixture != allFixtures.end() && "No simulated inotify watches error");
         return std::vector<Error>{fixture->error};
+    }
+
+    if (const auto bannerError = homeBannerScenarioError(scenario); bannerError.has_value()) {
+        return std::vector<Error>{*bannerError};
     }
 
     if (scenario == "update-required") {

@@ -237,8 +237,9 @@
 - Keep measured Storage segments visible with a nominal 1% minimum, but let free space and empty segments reach a true
   zero width; an unmeasured kDrive segment takes no width, the other-syncs row is hidden once they measure 0 bytes, and the other-files segment is the used space not yet attributed, so
   measures take their share from it. Normalize the displayed widths inside the single rounded graph mask.
-- Order the Storage cards as disk, insufficient disk space (below `AppConstants::Storage::diskAlmostFullThresholdBytes`),
-  subscription (hidden while the quota is unknown), synchronization. An unreadable disk replaces only the disk card. The
+- Order the Storage cards as disk, subscription (hidden while the quota is unknown), synchronization. Below
+  `AppConstants::Storage::diskAlmostFullThresholdBytes`, the disk card shows the used space only and the sidebar shows
+  the storage warning; there is no insufficient disk space card. An unreadable disk replaces only the disk card. The
   "Optimize computer space" card of the Figma relies on LiteSync and is not shown on Linux. Only drive admins get the
   subscription upgrade action.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
@@ -314,8 +315,9 @@
   semantic document-icon asset names consumed by QML views.
 - `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
   enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), `inotify` (the inotify
-  watches error alone), one blocking error (`asleep`, `wakingup`, `maintenance`, `notrenew`, `accessdenied`,
-  `loggedout`) or `update-required`. Once the cache is populated,
+  watches error alone), the error alone behind one Home banner (`drivefull`, `servererror`), one
+  blocking error (`asleep`, `wakingup`, `maintenance`, `notrenew`, `accessdenied`, `loggedout`) or `update-required`.
+  Once the cache is populated,
   it dispatches fake `UTILITY_ERROR_ADDED` signals through `SignalDispatcher` on the selected sync, with negative
   `ErrorDbId` values (real ones are SQLite rowids, always positive). Its fixtures assert that each kind is covered and
   classified as expected. Requests on fake errors reach the server and fail; a cache reconciliation removes them.
@@ -585,10 +587,15 @@
   kDrive online opens the remote folder of an advanced synchronization (`itemRedirectUri`), the drive root otherwise;
   the other web shortcuts stay at the drive level. The Home avatar opens the user's card in Settings, its badge the
   drive management page, or the advanced synchronizations page focused on the selected advanced synchronization.
+  Home shows one banner at a time (`banner`), so two cannot push the shortcuts card out of a minimum-size window. From
+  the errors of the selected synchronization (`SyncErrorsProjection`), the most urgent first: kDrive full (a
+  `QuotaExceeded` error; "Add storage" opens `upsellUri` for admins, "Close" hides it until that synchronization has no
+  quota error left or another one is selected), server error (a synchronization `BackError` without a dedicated kind,
+  which the server forwards for `Http5xx` and `ApiErr` only; the drive states have the blocking screen) with Retry
+  restarting the synchronization (`SYNC_START` also clears its errors), then the errors banner, then "new kDrive app".
   It reads `AppStateKey::ShowV4Onboarding` once on `ipcConnected`: the server sets it to `"1"` only when the database
-  comes from a version before 4. The "new kDrive app" banner shows while it is `"1"`, the Home is neither loading nor
-  unconfigured, and the errors banner is hidden: Home shows one banner at a time, so both cannot push the shortcuts card
-  out of a minimum-size window. Closing it hides it at once and writes `"0"`.
+  comes from a version before 4. The "new kDrive app" banner shows while it is `"1"` and the Home is neither loading nor
+  unconfigured. Closing it hides it at once and writes `"0"`.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
   `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
@@ -823,7 +830,8 @@
       prompts so consumers only provide copy, busy state, an optional retryable `errorText`, and the confirmed/dismissed
       workflows. `IKLinkButton` is the
       inline textual action for rows and cards that must not carry a button surface of their own. `IKInformationBlock`
-      is the main-window information block: optional icon tile, title, subtitle, primary action (with the external-link
+      is the main-window information block: optional icon tile, title, subtitle (one eliding line, or wrapped up to
+      `subtitleMaximumLineCount` lines, which then sets the height), primary action (with the external-link
       marker when it opens the browser) and optional dismiss button below it; `IKErrorBanner` is its synchronization
       errors variant, so both banners share one geometry. `IKCheckBox` is the renders the state it is given and only 
       reports clicks, so a model owning the selection stays authoritative.

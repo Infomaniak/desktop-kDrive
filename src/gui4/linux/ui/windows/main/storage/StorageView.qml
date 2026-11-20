@@ -122,17 +122,6 @@ Item {
                 }
             }
 
-            StorageActionCard {
-                width: parent.width
-                visible: root.controller.diskAlmostFull && !root.diskUnavailable
-                iconSource: "qrc:/assets/main/storage/computer.svg"
-                title: qsTrId("errNotEnoughDiskSpaceTitle")
-                description: qsTrId("storageDiskAlmostFullDescription")
-                actionText: qsTrId("buttonManageDiskSpace")
-
-                onActionTriggered: root.controller.openDiskManagement()
-            }
-
             StorageUsageCard {
                 // The upgrade link replaces the usage once the subscription is full.
                 readonly property bool showsUpgradeLink: root.controller.quotaFull && root.controller.canUpgradeSubscription
