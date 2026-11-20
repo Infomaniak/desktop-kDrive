@@ -320,12 +320,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1834"/>
+        <location filename="../src/server/appserver.cpp" line="1847"/>
         <source>Share link copied to clipboard</source>
         <translation>Delningslänken har kopierats till urklipp</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3976"/>
+        <location filename="../src/server/appserver.cpp" line="3989"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 och %n annan fil har tagits bort.</numerusform>
@@ -333,13 +333,13 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3978"/>
+        <location filename="../src/server/appserver.cpp" line="3991"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 har tagits bort.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3983"/>
+        <location filename="../src/server/appserver.cpp" line="3996"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 och %n annan fil har lagts till.</numerusform>
@@ -347,13 +347,13 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3985"/>
+        <location filename="../src/server/appserver.cpp" line="3998"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 har lagts till.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3990"/>
+        <location filename="../src/server/appserver.cpp" line="4003"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 och %n annan fil har uppdaterats.</numerusform>
@@ -361,13 +361,13 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3992"/>
+        <location filename="../src/server/appserver.cpp" line="4005"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 har uppdaterats.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3997"/>
+        <location filename="../src/server/appserver.cpp" line="4010"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 har flyttats till %2 och %n annan fil har flyttats.</numerusform>
@@ -375,12 +375,12 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4000"/>
+        <location filename="../src/server/appserver.cpp" line="4013"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 har flyttats till %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4008"/>
+        <location filename="../src/server/appserver.cpp" line="4021"/>
         <source>Sync Activity</source>
         <translation>Synkroniseringsaktivitet</translation>
     </message>
@@ -2918,37 +2918,37 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Det går inte att spara parametrarna!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2019"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2052"/>
         <source>No valid folder selected!</source>
         <translation>Ingen giltig mapp har valts!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2030"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2063"/>
         <source>The selected path does not exist!</source>
         <translation>Den valda sökvägen finns inte!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2068"/>
         <source>The selected path is not a folder!</source>
         <translation>Den valda sökvägen är ingen mapp!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2073"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Du har inte behörighet att skriva till den valda mappen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2111"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 innehåller en mapp som redan är synkroniserad. Välj en annan!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2086"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2119"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 finns i en mapp som redan är synkroniserad. Välj en annan mapp!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2094"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2127"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 är redan synkroniserad. Välj en annan!</translation>
     </message>
@@ -2973,47 +2973,47 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Lite sync är inaktiverat. kDrive-filerna använder lagringsutrymmet på din dator.</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1261"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1270"/>
         <source>Make available locally</source>
         <translation>Gör tillgängligt lokalt</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1265"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1274"/>
         <source>Free up local space</source>
         <translation>Frigör lokalt lagringsutrymme</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1269"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
         <source>Cancel free up local space</source>
         <translation>Avbryt för att frigöra lokalt utrymme</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1273"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
         <source>Cancel make available locally</source>
         <translation>Avbryt lokal tillgängliggöring</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1277"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
         <source>Resharing this file is not allowed</source>
         <translation>Det är inte tillåtet att vidarebefordra den här filen</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1287"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Det är inte tillåtet att dela den här mappen vidare</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1291"/>
         <source>Copy public share link</source>
         <translation>Kopiera länken till den offentliga delningen</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1295"/>
         <source>Copy private share link</source>
         <translation>Kopiera länken till den privata delningen</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1290"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1299"/>
         <source>Open in browser</source>
         <translation>Öppna i webbläsaren</translation>
     </message>
@@ -3190,7 +3190,7 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="141"/>
+        <location filename="../src/server/appserver.cpp" line="154"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>kDrive-programmet kommer att stängas på grund av ett allvarligt fel.</translation>
     </message>

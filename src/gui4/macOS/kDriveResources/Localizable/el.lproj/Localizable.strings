@@ -355,6 +355,9 @@
 /* loco:6989da5609f5a74cc30826c2 */
 "buttonUpgradeOffer" = "Αναβάθμιση";
 
+/* loco:6af2db6c55197681a509f7d2 */
+"buttonUpgradeSubscriptionShort" = "Να εξελιχθεί";
+
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Επιβεβαίωση";
 
@@ -797,6 +800,24 @@
 /* loco:699c56142c8d937001054c82 */
 "fileExistsErrorTitle" = "Το αρχείο υπάρχει ήδη";
 
+/* loco:6afec1ed259fa742710c2c6c */
+"fileOpeningDownloadButton" = "Λήψη από το kDrive";
+
+/* loco:6afdd20a9ee4cf55660ee934 */
+"fileOpeningDownloadProgress" = "%@ πάνω από %@";
+
+/* loco:6afdd1cddf6d796ad70d8a52 */
+"fileOpeningDownloadTitle" = "Λήψη";
+
+/* loco:6afec1b2af0fa7297e057c14 */
+"fileOpeningFailureExplanation" = "Μπορείτε να το κατεβάσετε μόνοι σας από το kDrive μέσω του προγράμματος περιήγησής σας.";
+
+/* loco:6afebbdb99829c3b5d0dfa94 */
+"fileOpeningFailureTitle" = "Δεν είναι δυνατό να ανοίξει το αρχείο";
+
+/* loco:6afec9ed750a9c1b47035899 */
+"fileOpeningNotFoundMessage" = "Δεν ήταν δυνατή η εύρεση του στοιχείου που ζητήσατε.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "Λειτουργία συγχρονισμού αρχείων";
 
@@ -913,6 +934,12 @@
 
 /* loco:6a16da43bc4d91f15c0416e2 */
 "kSuiteOfferUrl" = "https://www.infomaniak.com/en/ksuite";
+
+/* loco:6af2de156f5399601207f4c2 */
+"kSuiteProUpsellLink" = "https://www.infomaniak.com/en/ksuite/ksuite-pro";
+
+/* loco:6af2da3aae641c5af1064a12 */
+"ksuiteProBannerDescription" = "Δημιουργία και συνεργασία χωρίς όρια";
 
 /* loco:69a0079a3f0464f2af0a25d3 */
 "labelAccessRightsModified" = "Τα δικαιώματα πρόσβασης τροποποιήθηκαν";
@@ -1160,6 +1187,7 @@
 /* loco:6a6c9c3be4819f7c890366e2 */
 "manyDeleteDialogHardLimitSecondary" = "Διαγραφή και από το διαδίκτυο";
 
+/* loco:6aa7c1de7938f04545000332 */
 "manyDeleteDialogOtherPlaceholder" = "και %@ άλλα στοιχεία";
 
 /* loco:6a6c9cb7e46a51ff3e04e779 */
@@ -1261,8 +1289,11 @@
 /* loco:698b1273e77c157c0d065892 */
 "moveDeletedFilesToRecycleBinWarning" = "Ορισμένα στοιχεία μπορεί να μην είναι δυνατό να μεταφερθούν.";
 
+/* loco:6af2ddeb8916851c60091943 */
+"mykSuiteUpsellLink" = "https://www.infomaniak.com/en/ksuite/myksuite";
+
 /* loco:6989d5a219b60c091f06e662 */
-"myksuitePlusBannerDescription" = "Περισσότερος αποθηκευτικός χώρος, περισσότερες λειτουργίες με τη my kSuite+";
+"myksuitePlusBannerDescription" = "Περισσότερος χώρος αποθήκευσης, περισσότερες λειτουργίες με το my kSuite+";
 
 /* loco:6992e9f20953b626df05ffc2 */
 "needHelpSetting" = "Χρειάζεστε βοήθεια;";
@@ -1562,6 +1593,12 @@
 
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "Ο συγχρονισμός βρίσκεται σε εξέλιξη";
+
+/* loco:6ad232f65d64577ad6084542 */
+"syncStatusAnalysing" = "Αναζήτηση αλλαγών";
+
+/* loco:6ad232ecab975477a3093ee2 */
+"syncStatusExploring" = "Διαδρομή των αρχείων προς συγχρονισμό (%@)";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Συγχρονίστηκε";

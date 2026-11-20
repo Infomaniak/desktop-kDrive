@@ -355,6 +355,9 @@
 /* loco:6989da5609f5a74cc30826c2 */
 "buttonUpgradeOffer" = "Upgrade";
 
+/* loco:6af2db6c55197681a509f7d2 */
+"buttonUpgradeSubscriptionShort" = "Upgrade";
+
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Confirm";
 
@@ -797,6 +800,24 @@
 /* loco:699c56142c8d937001054c82 */
 "fileExistsErrorTitle" = "File already exists";
 
+/* loco:6afec1ed259fa742710c2c6c */
+"fileOpeningDownloadButton" = "Download from kDrive";
+
+/* loco:6afdd20a9ee4cf55660ee934 */
+"fileOpeningDownloadProgress" = "%@ over %@";
+
+/* loco:6afdd1cddf6d796ad70d8a52 */
+"fileOpeningDownloadTitle" = "Download";
+
+/* loco:6afec1b2af0fa7297e057c14 */
+"fileOpeningFailureExplanation" = "You can download it yourself from kDrive in your browser.";
+
+/* loco:6afebbdb99829c3b5d0dfa94 */
+"fileOpeningFailureTitle" = "Cannot open the file";
+
+/* loco:6afec9ed750a9c1b47035899 */
+"fileOpeningNotFoundMessage" = "The requested item could not be found.";
+
 /* loco:698b05aa9eefd9ba070ce4a2 */
 "fileSyncMode" = "File sync mode";
 
@@ -913,6 +934,12 @@
 
 /* loco:6a16da43bc4d91f15c0416e2 */
 "kSuiteOfferUrl" = "https://www.infomaniak.com/en/ksuite";
+
+/* loco:6af2de156f5399601207f4c2 */
+"kSuiteProUpsellLink" = "https://www.infomaniak.com/en/ksuite/ksuite-pro";
+
+/* loco:6af2da3aae641c5af1064a12 */
+"ksuiteProBannerDescription" = "Create and collaborate without limits";
 
 /* loco:69a0079a3f0464f2af0a25d3 */
 "labelAccessRightsModified" = "Access rights modified";
@@ -1160,6 +1187,7 @@
 /* loco:6a6c9c3be4819f7c890366e2 */
 "manyDeleteDialogHardLimitSecondary" = "Delete online as well";
 
+/* loco:6aa7c1de7938f04545000332 */
 "manyDeleteDialogOtherPlaceholder" = "and %@ other items";
 
 /* loco:6a6c9cb7e46a51ff3e04e779 */
@@ -1260,6 +1288,9 @@
 
 /* loco:698b1273e77c157c0d065892 */
 "moveDeletedFilesToRecycleBinWarning" = "Some items may not be able to be moved.";
+
+/* loco:6af2ddeb8916851c60091943 */
+"mykSuiteUpsellLink" = "https://www.infomaniak.com/en/ksuite/myksuite";
 
 /* loco:6989d5a219b60c091f06e662 */
 "myksuitePlusBannerDescription" = "More storage, more features with my kSuite+";
@@ -1562,6 +1593,12 @@
 
 /* loco:69ca84494136086fe60cebf2 */
 "syncShortStatusRunning" = "Sync is running";
+
+/* loco:6ad232f65d64577ad6084542 */
+"syncStatusAnalysing" = "Search for Changes";
+
+/* loco:6ad232ecab975477a3093ee2 */
+"syncStatusExploring" = "Path to the files to be synchronized (%@)";
 
 /* loco:698a08137065b2ad54014e72 */
 "syncSuccessTooltip" = "Synced";

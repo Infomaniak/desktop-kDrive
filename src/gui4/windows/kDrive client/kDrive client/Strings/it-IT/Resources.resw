@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: it, Italian
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
+  Exported by: Luc Guyot
+  Exported at: Fri, 20 Nov 2026 15:21:33 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -922,6 +922,24 @@ La sincronizzazione riprenderà automaticamente una volta ripristinata la connes
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Il file esiste già</value> 
   </data> 
+  <data name="fileOpeningDownloadButton" xml:space="preserve"> 
+    <value>Scarica da kDrive</value> 
+  </data> 
+  <data name="fileOpeningDownloadProgress" xml:space="preserve"> 
+    <value>%@ su %@</value> 
+  </data> 
+  <data name="fileOpeningDownloadTitle" xml:space="preserve"> 
+    <value>Scarica</value> 
+  </data> 
+  <data name="fileOpeningFailureExplanation" xml:space="preserve"> 
+    <value>Puoi scaricarlo direttamente da kDrive nel tuo browser.</value> 
+  </data> 
+  <data name="fileOpeningFailureTitle" xml:space="preserve"> 
+    <value>Impossibile aprire il file</value> 
+  </data> 
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve"> 
+    <value>Impossibile trovare l’elemento richiesto.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Modalità di sincronizzazione file</value> 
   </data> 
@@ -1270,7 +1288,7 @@ Per velocizzare il caricamento, ti consigliamo di inviare solo l’ultima sessio
     <value>Link copiato negli appunti</value> 
   </data> 
   <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
-    <value>Disco incompatibile o cartella direttamente nella radice del disco (es: scegli una cartella come D:/Mon drive invece di D:/)</value> 
+    <value>Un’unità incompatibile o una cartella situata direttamente nella directory principale dell’unità (ad esempio, scegliere una cartella come "D:/La mia unità" anziché "D:/")</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Posizione sul computer</value> 
@@ -1661,16 +1679,16 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
     <value>La sincronizzazione è in corso</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Ricerca delle modifiche…</value> 
+    <value>Ricerca delle modifiche</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Scansione dei file da sincronizzare…</value> 
+    <value>Percorso dei file da sincronizzare (%@)</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ elemento sincronizzato su %@…</value> 
+    <value>%@ elemento sincronizzato su %@</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ elementi sincronizzati su %@…</value> 
+    <value>%@ elementi sincronizzati su %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Sincronizzato</value> 

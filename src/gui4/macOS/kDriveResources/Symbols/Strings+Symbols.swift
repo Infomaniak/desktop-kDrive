@@ -258,6 +258,8 @@ public enum KDriveLocalizable {
   public static let buttonUpdateSubscription = KDriveLocalizable.tr("Localizable", "buttonUpdateSubscription", fallback: "Update subscription")
   /// loco:6989da5609f5a74cc30826c2
   public static let buttonUpgradeOffer = KDriveLocalizable.tr("Localizable", "buttonUpgradeOffer", fallback: "Upgrade")
+  /// loco:6af2db6c55197681a509f7d2
+  public static let buttonUpgradeSubscriptionShort = KDriveLocalizable.tr("Localizable", "buttonUpgradeSubscriptionShort", fallback: "Upgrade")
   /// loco:69a69d71b2261fc281078712
   public static let buttonValidate = KDriveLocalizable.tr("Localizable", "buttonValidate", fallback: "Confirm")
   /// loco:69a69d809805f64236014d34
@@ -601,6 +603,20 @@ public enum KDriveLocalizable {
   public static let fileExclusionNotificationWarning = KDriveLocalizable.tr("Localizable", "fileExclusionNotificationWarning", fallback: "A notification informs you when a file is excluded by this rule.")
   /// loco:699c56142c8d937001054c82
   public static let fileExistsErrorTitle = KDriveLocalizable.tr("Localizable", "fileExistsErrorTitle", fallback: "File already exists")
+  /// loco:6afec1ed259fa742710c2c6c
+  public static let fileOpeningDownloadButton = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadButton", fallback: "Download from kDrive")
+  /// loco:6afdd20a9ee4cf55660ee934
+  public static func fileOpeningDownloadProgress(_ p1: Any, _ p2: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "fileOpeningDownloadProgress", String(describing: p1), String(describing: p2), fallback: "%@ over %@")
+  }
+  /// loco:6afdd1cddf6d796ad70d8a52
+  public static let fileOpeningDownloadTitle = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadTitle", fallback: "Download")
+  /// loco:6afec1b2af0fa7297e057c14
+  public static let fileOpeningFailureExplanation = KDriveLocalizable.tr("Localizable", "fileOpeningFailureExplanation", fallback: "You can download it yourself from kDrive in your browser.")
+  /// loco:6afebbdb99829c3b5d0dfa94
+  public static let fileOpeningFailureTitle = KDriveLocalizable.tr("Localizable", "fileOpeningFailureTitle", fallback: "Cannot open the file")
+  /// loco:6afec9ed750a9c1b47035899
+  public static let fileOpeningNotFoundMessage = KDriveLocalizable.tr("Localizable", "fileOpeningNotFoundMessage", fallback: "The requested item could not be found.")
   /// loco:698b00c7f04008f614070e52
   public static let filesToExclude = KDriveLocalizable.tr("Localizable", "filesToExclude", fallback: "Files to exclude")
   /// loco:698b05aa9eefd9ba070ce4a2
@@ -687,6 +703,10 @@ public enum KDriveLocalizable {
   public static let instructionOpenSystemSettingsLink = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettingsLink", fallback: "System Settings")
   /// loco:6a16da43bc4d91f15c0416e2
   public static let kSuiteOfferUrl = KDriveLocalizable.tr("Localizable", "kSuiteOfferUrl", fallback: "https://www.infomaniak.com/en/ksuite")
+  /// loco:6af2da3aae641c5af1064a12
+  public static let ksuiteProBannerDescription = KDriveLocalizable.tr("Localizable", "ksuiteProBannerDescription", fallback: "Create and collaborate without limits")
+  /// loco:6af2de156f5399601207f4c2
+  public static let kSuiteProUpsellLink = KDriveLocalizable.tr("Localizable", "kSuiteProUpsellLink", fallback: "https://www.infomaniak.com/en/ksuite/ksuite-pro")
   /// loco:69a0079a3f0464f2af0a25d3
   public static let labelAccessRightsModified = KDriveLocalizable.tr("Localizable", "labelAccessRightsModified", fallback: "Access rights modified")
   /// loco:6989c851ba57b190ff0ebbf2
@@ -867,6 +887,7 @@ public enum KDriveLocalizable {
   public static let manyDeleteDialogHardLimitPrimary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitPrimary", fallback: "Restore the files")
   /// loco:6a6c9c3be4819f7c890366e2
   public static let manyDeleteDialogHardLimitSecondary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitSecondary", fallback: "Delete online as well")
+  /// loco:6aa7c1de7938f04545000332
   public static func manyDeleteDialogOtherPlaceholder(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "manyDeleteDialogOtherPlaceholder", String(describing: p1), fallback: "and %@ other items")
   }
@@ -946,6 +967,8 @@ public enum KDriveLocalizable {
   public static let moveDeletedFilesToRecycleBinWarning = KDriveLocalizable.tr("Localizable", "moveDeletedFilesToRecycleBinWarning", fallback: "Some items may not be able to be moved.")
   /// loco:6989d5a219b60c091f06e662
   public static let myksuitePlusBannerDescription = KDriveLocalizable.tr("Localizable", "myksuitePlusBannerDescription", fallback: "More storage, more features with my kSuite+")
+  /// loco:6af2ddeb8916851c60091943
+  public static let mykSuiteUpsellLink = KDriveLocalizable.tr("Localizable", "mykSuiteUpsellLink", fallback: "https://www.infomaniak.com/en/ksuite/myksuite")
   /// loco:6992e9f20953b626df05ffc2
   public static let needHelpSetting = KDriveLocalizable.tr("Localizable", "needHelpSetting", fallback: "Need help?")
   /// loco:69ce15f8ac7c0ee6d7099c02
@@ -1183,6 +1206,12 @@ public enum KDriveLocalizable {
   public static let syncShortStatusPaused = KDriveLocalizable.tr("Localizable", "syncShortStatusPaused", fallback: "Sync is paused")
   /// loco:69ca84494136086fe60cebf2
   public static let syncShortStatusRunning = KDriveLocalizable.tr("Localizable", "syncShortStatusRunning", fallback: "Sync is running")
+  /// loco:6ad232f65d64577ad6084542
+  public static let syncStatusAnalysing = KDriveLocalizable.tr("Localizable", "syncStatusAnalysing", fallback: "Search for Changes")
+  /// loco:6ad232ecab975477a3093ee2
+  public static func syncStatusExploring(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "syncStatusExploring", String(describing: p1), fallback: "Path to the files to be synchronized (%@)")
+  }
   /// loco:698a08137065b2ad54014e72
   public static let syncSuccessTooltip = KDriveLocalizable.tr("Localizable", "syncSuccessTooltip", fallback: "Synced")
   /// loco:699db0830c3ab713a500b433

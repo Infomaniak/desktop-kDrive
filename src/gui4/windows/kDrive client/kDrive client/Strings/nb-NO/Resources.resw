@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: nb, Norwegian Bokmål
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
+  Exported by: Luc Guyot
+  Exported at: Fri, 20 Nov 2026 15:21:33 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -922,6 +922,24 @@ Synkroniseringen gjenopptas automatisk når tilkoblingen er gjenopprettet.</valu
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Filen finnes allerede</value> 
   </data> 
+  <data name="fileOpeningDownloadButton" xml:space="preserve"> 
+    <value>Last ned fra kDrive</value> 
+  </data> 
+  <data name="fileOpeningDownloadProgress" xml:space="preserve"> 
+    <value>%@ av %@</value> 
+  </data> 
+  <data name="fileOpeningDownloadTitle" xml:space="preserve"> 
+    <value>Last ned</value> 
+  </data> 
+  <data name="fileOpeningFailureExplanation" xml:space="preserve"> 
+    <value>Du kan laste den ned selv fra kDrive i nettleseren din.</value> 
+  </data> 
+  <data name="fileOpeningFailureTitle" xml:space="preserve"> 
+    <value>Kan ikke åpne filen</value> 
+  </data> 
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve"> 
+    <value>Det forespurte elementet ble ikke funnet.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Filsynkroniseringsmodus</value> 
   </data> 
@@ -1270,7 +1288,7 @@ For å fremskynde opplastingen anbefaler vi å sende bare den siste kDrive-sesjo
     <value>Lenke kopiert til utklippstavle</value> 
   </data> 
   <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
-    <value>Inkompatibel stasjon eller mappe direkte i roten av stasjonen (f.eks. velg en mappe som D:/Min stasjon i stedet for D:/)</value> 
+    <value>Uforenlig stasjon eller mappe som ligger direkte i rotkatalogen på stasjonen (velg for eksempel en mappe som «D:/Min stasjon» i stedet for «D:/»)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Plassering på datamaskinen</value> 
@@ -1661,16 +1679,16 @@ Internettforbindelse kreves for å åpne dem.</value>
     <value>Synkronisering pågår</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Søk etter endringer…</value> 
+    <value>Søk etter endringer</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Går gjennom filer som skal synkroniseres…</value> 
+    <value>Søkevei til filene som skal synkroniseres (%@)</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ av %@ elementer synkronisert…</value> 
+    <value>%@ elementer synkronisert av %@</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ av %@ elementer synkronisert…</value> 
+    <value>%@ elementer synkronisert av totalt %@</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkronisert</value> 

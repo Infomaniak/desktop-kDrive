@@ -320,12 +320,12 @@ Wybierz inny folder. Jeśli kontynuujesz, funkcja Lite Sync zostanie wyłączona
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1834"/>
+        <location filename="../src/server/appserver.cpp" line="1847"/>
         <source>Share link copied to clipboard</source>
         <translation>Link do udostępnienia skopiowano do schowka</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3976"/>
+        <location filename="../src/server/appserver.cpp" line="3989"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 oraz %n inny plik zostały usunięte.</numerusform>
@@ -334,13 +334,13 @@ Wybierz inny folder. Jeśli kontynuujesz, funkcja Lite Sync zostanie wyłączona
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3978"/>
+        <location filename="../src/server/appserver.cpp" line="3991"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 został usunięty.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3983"/>
+        <location filename="../src/server/appserver.cpp" line="3996"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 oraz %n inny plik zostały dodane.</numerusform>
@@ -349,13 +349,13 @@ Wybierz inny folder. Jeśli kontynuujesz, funkcja Lite Sync zostanie wyłączona
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3985"/>
+        <location filename="../src/server/appserver.cpp" line="3998"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>Dodano %1.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3990"/>
+        <location filename="../src/server/appserver.cpp" line="4003"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 oraz %n inny plik zostały zaktualizowane.</numerusform>
@@ -364,13 +364,13 @@ Wybierz inny folder. Jeśli kontynuujesz, funkcja Lite Sync zostanie wyłączona
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3992"/>
+        <location filename="../src/server/appserver.cpp" line="4005"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 zostało zaktualizowane.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3997"/>
+        <location filename="../src/server/appserver.cpp" line="4010"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 został przeniesiony do %2, a %n inny plik został przeniesiony.</numerusform>
@@ -379,12 +379,12 @@ Wybierz inny folder. Jeśli kontynuujesz, funkcja Lite Sync zostanie wyłączona
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4000"/>
+        <location filename="../src/server/appserver.cpp" line="4013"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 zostało przeniesione do %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4008"/>
+        <location filename="../src/server/appserver.cpp" line="4021"/>
         <source>Sync Activity</source>
         <translation>Synchronizacja działań</translation>
     </message>
@@ -2923,37 +2923,37 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <translation>Nie można zapisać parametrów!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2019"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2052"/>
         <source>No valid folder selected!</source>
         <translation>Nie wybrano żadnego prawidłowego folderu!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2030"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2063"/>
         <source>The selected path does not exist!</source>
         <translation>Wybrana ścieżka nie istnieje!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2068"/>
         <source>The selected path is not a folder!</source>
         <translation>Wybrana ścieżka nie jest folderem!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2073"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Nie masz uprawnień do zapisu w wybranym folderze!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2111"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Folder lokalny %1 zawiera folder, który został już zsynchronizowany. Wybierz inny!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2086"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2119"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Folder lokalny %1 znajduje się w folderze, który został już zsynchronizowany. Wybierz inny!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2094"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2127"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Lokalny folder %1 został już zsynchronizowany. Wybierz inny!</translation>
     </message>
@@ -2978,47 +2978,47 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <translation>Funkcja Lite Sync jest wyłączona. Pliki kDrive zajmują miejsce na dysku komputera.</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1261"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1270"/>
         <source>Make available locally</source>
         <translation>Udostępnij lokalnie</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1265"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1274"/>
         <source>Free up local space</source>
         <translation>Zwolnij miejsce na dysku lokalnym</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1269"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
         <source>Cancel free up local space</source>
         <translation>Anuluj, aby zwolnić miejsce na dysku</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1273"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
         <source>Cancel make available locally</source>
         <translation>Anuluj udostępnianie lokalne</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1277"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
         <source>Resharing this file is not allowed</source>
         <translation>Ponowne udostępnianie tego pliku jest zabronione</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1287"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Ponowne udostępnianie tego folderu jest zabronione</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1291"/>
         <source>Copy public share link</source>
         <translation>Skopiuj link do publicznego udostępnienia</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1295"/>
         <source>Copy private share link</source>
         <translation>Skopiuj prywatny link do udostępnienia</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1290"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1299"/>
         <source>Open in browser</source>
         <translation>Otwórz w przeglądarce</translation>
     </message>
@@ -3195,7 +3195,7 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="141"/>
+        <location filename="../src/server/appserver.cpp" line="154"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>Aplikacja kDrive zostanie zamknięta z powodu poważnego błędu.</translation>
     </message>

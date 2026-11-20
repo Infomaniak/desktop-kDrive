@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: de, German
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
+  Exported by: Luc Guyot
+  Exported at: Fri, 20 Nov 2026 15:21:33 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -922,6 +922,24 @@ Die Synchronisierung wird automatisch fortgesetzt, sobald die Verbindung wiederh
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Datei existiert bereits</value> 
   </data> 
+  <data name="fileOpeningDownloadButton" xml:space="preserve"> 
+    <value>Von kDrive herunterladen</value> 
+  </data> 
+  <data name="fileOpeningDownloadProgress" xml:space="preserve"> 
+    <value>%@ von %@</value> 
+  </data> 
+  <data name="fileOpeningDownloadTitle" xml:space="preserve"> 
+    <value>Herunterladen</value> 
+  </data> 
+  <data name="fileOpeningFailureExplanation" xml:space="preserve"> 
+    <value>Sie können es selbst über kDrive in Ihrem Browser herunterladen.</value> 
+  </data> 
+  <data name="fileOpeningFailureTitle" xml:space="preserve"> 
+    <value>Die Datei kann nicht geöffnet werden</value> 
+  </data> 
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve"> 
+    <value>Der angeforderte Eintrag konnte nicht gefunden werden.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Dateisynchronisierungsmodus</value> 
   </data> 
@@ -1270,7 +1288,7 @@ Um den Upload zu beschleunigen, empfehlen wir, nur die letzte kDrive-Sitzung zu 
     <value>Link in die Zwischenablage kopiert</value> 
   </data> 
   <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
-    <value>Inkompatibles Laufwerk oder Ordner direkt im Stammverzeichnis des Laufwerks (z. B. wählen Sie einen Ordner wie D:/Mon drive statt D:/)</value> 
+    <value>Inkompatibles Laufwerk oder Ordner direkt im Stammverzeichnis des Laufwerks (wählen Sie beispielsweise einen Ordner wie „D:/Mein Laufwerk“ anstelle von „D:/“)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Standort auf dem Computer</value> 
@@ -1660,16 +1678,16 @@ Für den Zugriff ist eine Internetverbindung erforderlich.</value>
     <value>Die Synchronisierung läuft</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Suche nach Änderungen…</value> 
+    <value>Suche nach Änderungen</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Zu synchronisierende Dateien werden durchsucht…</value> 
+    <value>Pfad zu den zu synchronisierenden Dateien (%@)</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@ von %@ Elementen synchronisiert…</value> 
+    <value>%@ Artikel wurde aus %@ synchronisiert</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@ von %@ Elementen synchronisiert…</value> 
+    <value>%@ Elemente von %@ synchronisiert</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synchronisiert</value> 
@@ -1706,7 +1724,7 @@ Die Synchronisierung wird automatisch fortgesetzt, sobald Sie wieder verbunden s
     <value>Die Synchronisierung wurde vorübergehend gestoppt.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Synchronisierung während der Pause</value> 
+    <value>Synchronisierung pausiert</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Ihre Dateien sind zugänglich und synchronisiert.</value> 

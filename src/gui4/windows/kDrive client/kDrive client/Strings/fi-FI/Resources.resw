@@ -5,8 +5,8 @@
   Project: kDrive Desktop
   Locale: fi, Finnish
   Tagged: windows
-  Exported by: Herve Eruam
-  Exported at: Tue, 17 Nov 2026 12:10:16 +0100 
+  Exported by: Luc Guyot
+  Exported at: Fri, 20 Nov 2026 15:21:33 +0100 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -922,6 +922,24 @@ Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value>
   <data name="fileExistsErrorTitle" xml:space="preserve"> 
     <value>Tiedosto on jo olemassa</value> 
   </data> 
+  <data name="fileOpeningDownloadButton" xml:space="preserve"> 
+    <value>Lataa kDrive-palvelusta</value> 
+  </data> 
+  <data name="fileOpeningDownloadProgress" xml:space="preserve"> 
+    <value>%@ / %@</value> 
+  </data> 
+  <data name="fileOpeningDownloadTitle" xml:space="preserve"> 
+    <value>Lataa</value> 
+  </data> 
+  <data name="fileOpeningFailureExplanation" xml:space="preserve"> 
+    <value>Voit ladata sen itse selaimesi kDrive-palvelusta.</value> 
+  </data> 
+  <data name="fileOpeningFailureTitle" xml:space="preserve"> 
+    <value>Tiedostoa ei voi avata</value> 
+  </data> 
+  <data name="fileOpeningNotFoundMessage" xml:space="preserve"> 
+    <value>Pyydettyä kohdetta ei löytynyt.</value> 
+  </data> 
   <data name="fileSyncMode" xml:space="preserve"> 
     <value>Tiedostojen synkronointitila</value> 
   </data> 
@@ -1270,7 +1288,7 @@ Lähetyksen nopeuttamiseksi suosittelemme lähettämään vain viimeisen kDrive-
     <value>Linkki kopioitu leikepöydälle</value> 
   </data> 
   <data name="liteSyncUnavailableDescriptionWin" xml:space="preserve"> 
-    <value>Yhteensopimaton asema tai kansio suoraan aseman juuressa (esim.: valitse kansio kuten D:/Oma asema D:/:n sijaan)</value> 
+    <value>Yhteensopimaton asema tai kansio suoraan aseman juurikansiossa (valitse esimerkiksi kansio ”D:/My drive” sen sijaan, että valitsisit ”D:/”)</value> 
   </data> 
   <data name="localLocation" xml:space="preserve"> 
     <value>Sijainti tietokoneella</value> 
@@ -1661,16 +1679,16 @@ Internet-yhteys vaaditaan niiden käyttämiseen.</value>
     <value>Synkronointi on käynnissä</value> 
   </data> 
   <data name="syncStatusAnalysing" xml:space="preserve"> 
-    <value>Muutosten haku…</value> 
+    <value>Muutosten haku</value> 
   </data> 
   <data name="syncStatusExploring" xml:space="preserve"> 
-    <value>Käydään läpi synkronoitavia tiedostoja…</value> 
+    <value>Synkronoitavien tiedostojen polku (%@)</value> 
   </data> 
   <data name="syncStatusPropagating" xml:space="preserve"> 
-    <value>%@/%@ kohdetta synkronoitu…</value> 
+    <value>%@ kohdetta synkronoitu %@:sta</value> 
   </data> 
   <data name="syncStatusPropagating-plural" xml:space="preserve"> 
-    <value>%@/%@ kohdetta synkronoitu…</value> 
+    <value>%@ kohdetta synkronoitu %@:sta</value> 
   </data> 
   <data name="syncSuccessTooltip" xml:space="preserve"> 
     <value>Synkronoitu</value> 
