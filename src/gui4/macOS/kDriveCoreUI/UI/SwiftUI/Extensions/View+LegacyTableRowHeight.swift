@@ -81,5 +81,7 @@ private final class TableRowHeightSetterView: NSView {
 
         guard let tableView = ancestor as? NSTableView, tableView.rowHeight != rowHeight else { return }
         tableView.rowHeight = rowHeight
+        // Rows already laid out keep their cached height until the table is told it changed.
+        tableView.noteHeightOfRows(withIndexesChanged: IndexSet(integersIn: 0 ..< tableView.numberOfRows))
     }
 }
