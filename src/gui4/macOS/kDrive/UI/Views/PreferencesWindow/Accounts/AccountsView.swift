@@ -26,7 +26,7 @@ struct AccountsView: View {
     @ObservedObject var viewModel: PreferencesViewModel
 
     var body: some View {
-        Form {
+        IKForm {
             if viewModel.users.isEmpty {
                 AccountsPreferencesAddAccountView()
             } else {
@@ -38,7 +38,7 @@ struct AccountsView: View {
                     )
                 }
 
-                Section {
+                IKSection {
                     Button(KDriveLocalizable.buttonConnectAccount) {
                         (NSApp.delegate as? AppDelegate)?.openOnboardingWindow()
                         @InjectService var matomo: MatomoUtils
@@ -49,7 +49,6 @@ struct AccountsView: View {
                 }
             }
         }
-        .groupedFormatStyle()
         .task {
             await viewModel.refreshData()
         }

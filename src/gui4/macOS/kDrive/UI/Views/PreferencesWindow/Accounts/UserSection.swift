@@ -47,7 +47,7 @@ struct UserSection: View {
     }
 
     var body: some View {
-        Section {
+        IKSection {
             UserHeaderCellView(avatar: user.avatar, name: user.name, email: user.email)
 
             ForEach(synchronizedDrives) { driveContext in

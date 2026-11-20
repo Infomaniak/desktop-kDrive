@@ -30,7 +30,7 @@ struct GeneralPreferencesMiscSection: View {
     @State private var moveDeletedFilesToTrash = true
 
     var body: some View {
-        Section {
+        IKSection {
             Toggle(KDriveLocalizable.labelNotifications, isOn: $areNotificationsEnabled)
                 .onChange(of: areNotificationsEnabled) { newValue in
                     updateNotificationsState(areNotificationsEnabled: newValue)
