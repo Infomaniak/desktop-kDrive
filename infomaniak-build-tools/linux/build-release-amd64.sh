@@ -182,6 +182,7 @@ package_release() {
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   mkdir -p "$artifact_dir"
   mv kDrive*.AppImage "$artifact_dir/kDrive-${full_version}-amd64.AppImage"
+  appimage_check_runtime "$artifact_dir/kDrive-${full_version}-amd64.AppImage" "$src_dir"
 }
 
 package_recovery_updater() {

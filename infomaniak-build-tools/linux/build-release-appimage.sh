@@ -158,6 +158,7 @@ function build_app_image() {
   run_appimage_step appimage_package /app || return 1
 
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
+  run_appimage_step appimage_check_runtime "/install/kDrive-$architecture.AppImage" /src || return 1
 }
 
 function build_recovery_updater_image() {

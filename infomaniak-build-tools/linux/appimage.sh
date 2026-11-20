@@ -540,3 +540,13 @@ function appimage_package() (
 
     env -u LD_LIBRARY_PATH NO_STRIP=1 linuxdeploy --appdir "$1" --output appimage -v1
 )
+
+# linuxdeploy downloads the AppImage runtime: fails when it is not the one the shipped notices describe.
+function appimage_check_runtime() (
+    set -eo pipefail
+    local appimage="$1"
+    local src_dir="$2"
+
+    env -u LD_LIBRARY_PATH python3 "$src_dir/infomaniak-build-tools/linux/appimage_licenses.py" \
+        --check-runtime "$appimage"
+)

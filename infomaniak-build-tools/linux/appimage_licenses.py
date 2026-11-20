@@ -74,13 +74,16 @@ EXTRA_COMPONENTS = [
 ]
 LOCAL_LIB_DIR = Path("/usr/local/lib")
 
+# Runtime that linuxdeploy writes at the start of the AppImage file, downloaded at build time. Update the vendored notices
+# and the commit together: --check-runtime fails the build when the AppImage carries another runtime.
 APPIMAGE_RUNTIME = {
     "name": "AppImage type 2 runtime",
-    "license": "MIT; statically links squashfuse (BSD-2-Clause), zstd (BSD-3-Clause), zlib (Zlib), "
-    "libfuse 3 (LGPL-2.1-only), mimalloc (MIT) and musl (MIT)",
+    "commit": "fedfad51acc2860b2916a1eef32ba4a500ff31ef",
+    "license": "MIT; statically links musl 1.2.5 (MIT), libfuse 3.15.0 (LGPL-2.1-only), squashfuse 0.5.2 "
+    "(BSD-2-Clause), zstd 1.5.6 (BSD-3-Clause), zlib 1.3.2 (Zlib) and mimalloc 2.1.7 (MIT)",
     "license_dir": "components/appimage-runtime",
     "license_ids": ["MIT", "BSD-2-Clause", "BSD-3-Clause", "Zlib", "LGPL-2.1-only"],
-    "source": "https://github.com/AppImage/type2-runtime (the commit is printed by `--appimage-version`)",
+    "source": "https://github.com/AppImage/type2-runtime/tree/fedfad51acc2860b2916a1eef32ba4a500ff31ef",
 }
 
 
@@ -570,14 +573,42 @@ class Collector:
         (self.doc_dir / "SOURCES.md").write_text("\n".join(lines))
 
 
+def check_runtime(appimage: Path):
+    """Fails when the runtime of the AppImage file is not the one the vendored notices describe."""
+    with appimage.open("rb") as file:
+        header = file.read(64)
+        if header[:4] != b"\x7fELF" or header[4] != 2:
+            raise LicenseError(f"'{appimage}' does not start with a 64-bit ELF runtime")
+        # The runtime ends with its section header table; the SquashFS image follows.
+        section_offset = int.from_bytes(header[0x28:0x30], "little")
+        section_size = int.from_bytes(header[0x3A:0x3C], "little") * int.from_bytes(header[0x3C:0x3E], "little")
+        file.seek(0)
+        runtime = file.read(section_offset + section_size)
+    match = re.search(rb"github\.com/AppImage/type2-runtime/commit/([0-9a-f]{7,40})", runtime)
+    expected = APPIMAGE_RUNTIME["commit"]
+    if match is None or not expected.startswith(match.group(1).decode()):
+        found = match.group(1).decode() if match else "unknown"
+        raise LicenseError(
+            f"'{appimage}' carries the AppImage runtime {found}, the vendored notices are for {expected[:7]}: update"
+            f" APPIMAGE_RUNTIME and infomaniak-build-tools/linux/licenses/{APPIMAGE_RUNTIME['license_dir']}"
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
-    parser.add_argument("--app-dir", required=True, type=Path)
-    parser.add_argument("--manifest", required=True, type=Path, help="kdrive_third_party.json written by Conan")
-    parser.add_argument("--source-dir", required=True, type=Path)
+    parser.add_argument("--app-dir", type=Path)
+    parser.add_argument("--manifest", type=Path, help="kdrive_third_party.json written by Conan")
+    parser.add_argument("--source-dir", type=Path)
+    parser.add_argument("--check-runtime", type=Path, metavar="APPIMAGE", help="only check the runtime of an AppImage")
     arguments = parser.parse_args()
+    if arguments.check_runtime is None and None in (arguments.app_dir, arguments.manifest, arguments.source_dir):
+        parser.error("--app-dir, --manifest and --source-dir are required")
 
     try:
+        if arguments.check_runtime is not None:
+            check_runtime(arguments.check_runtime)
+            print(f"AppImage runtime of '{arguments.check_runtime}' matches the vendored notices.")
+            return 0
         collector = Collector(arguments.app_dir, arguments.manifest, arguments.source_dir)
         collector.run()
     except LicenseError as error:
