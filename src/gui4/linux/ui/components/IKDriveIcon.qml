@@ -19,7 +19,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Effects
 import kDrive.UI
 
 // Renders the kDrive glyph tinted with the owning drive's color, without a background tile.
@@ -31,17 +30,9 @@ Item {
     implicitWidth: IKMainWindow.syncSelectorIconSize
     implicitHeight: IKMainWindow.syncSelectorIconSize
 
-    Image {
+    IKTintedIcon {
         anchors.fill: parent
         source: "qrc:/assets/onboarding/drive-icon-glyph.svg"
-        // The glyph has no intrinsic size (12 px view box): rasterize it at 3x at least, or it is blurred once scaled.
-        sourceSize.width: Math.ceil(width * Math.max(3, Screen.devicePixelRatio))
-        fillMode: Image.Stretch
-        smooth: true
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            colorization: 1
-            colorizationColor: root.driveColor
-        }
+        color: root.driveColor
     }
 }

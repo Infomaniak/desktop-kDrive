@@ -30,6 +30,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/fileformat.h
         app/fileiconresolver.cpp
         app/fileiconresolver.h
+        app/svginfo.cpp
+        app/svginfo.h
         app/cache/activitystore.cpp
         app/cache/activitystore.h
         app/cache/appcache.cpp
