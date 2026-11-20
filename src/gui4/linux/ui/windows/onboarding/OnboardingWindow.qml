@@ -34,6 +34,10 @@ Item {
     readonly property var driveSelectionController: session.driveSelectionController
     readonly property var drivesModel: session.availableDrivesModel
     readonly property var syncConfigurationController: session.syncConfigurationController
+    // Geometry scale of the mockup, from 1 at its 900 x 600 size up to its maximum.
+    readonly property real layoutScale: Math.max(1, Math.min(IKOnboarding.maxLayoutScale,
+                                                             width / IKOnboarding.designWidth,
+                                                             height / IKOnboarding.designHeight))
     readonly property var onboardingStepComponents: [
         loginComponent,
         driveSelectionComponent,
@@ -96,8 +100,9 @@ Item {
 
             OnboardingAnimationsView {
                 anchors.centerIn: parent
-                width: Math.min(IKOnboarding.illustrationAnimationMaxSize,
-                                parent.width * IKOnboarding.illustrationAnimationFillRatio)
+                // The mockup width ratio, reduced when the panel is too low for the animation height.
+                width: Math.min(parent.width * IKOnboarding.illustrationWidthRatio,
+                                parent.height * IKOnboarding.illustrationWidthRatio / contentHeightRatio)
                 height: width * contentHeightRatio
                 onboardingFlowController: root.onboardingFlowController
             }
@@ -109,6 +114,7 @@ Item {
 
         LoginView {
             onboardingFlowController: root.onboardingFlowController
+            layoutScale: root.layoutScale
         }
     }
 
@@ -117,6 +123,7 @@ Item {
 
         DriveSelectionView {
             selectionController: root.driveSelectionController
+            layoutScale: root.layoutScale
             drivesModel: root.drivesModel
         }
     }
@@ -126,6 +133,7 @@ Item {
 
         SynchronizationView {
             onboardingFlowController: root.onboardingFlowController
+            layoutScale: root.layoutScale
         }
     }
 
@@ -134,6 +142,7 @@ Item {
 
         ReadyView {
             onboardingFlowController: root.onboardingFlowController
+            layoutScale: root.layoutScale
         }
     }
 }

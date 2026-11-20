@@ -42,9 +42,12 @@ Popup {
         }
     ]
 
-    // Sized on its widest option, so no translated label is elided.
-    readonly property real widestOptionWidth: Math.max(
-        ...root.filterOptions.map(option => optionFontMetrics.advanceWidth(option.label)))
+    // Sized on its widest option, so no translated label is elided. advanceWidth() is a call the binding does not track:
+    // reading the font makes it measure again once the font is set, instead of keeping the default font measure.
+    readonly property real widestOptionWidth: {
+        void optionFontMetrics.font;
+        return Math.max(...root.filterOptions.map(option => optionFontMetrics.advanceWidth(option.label)));
+    }
 
     width: Math.ceil(widestOptionWidth) + IKActivities.filterIconSize + IKSpacing.s8 + IKActivities.filterMenuOptionPadding * 2
            + leftPadding + rightPadding

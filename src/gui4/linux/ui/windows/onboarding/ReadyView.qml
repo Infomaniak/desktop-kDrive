@@ -29,19 +29,21 @@ Item {
     })
 
     required property var onboardingFlowController
+    // Geometry scale of the mockup: margins, widths and spacings follow it, text and buttons keep their size.
+    required property real layoutScale
 
     readonly property bool compact: width < IKOnboarding.completionCompactBreakpointWidth
 
     Column {
-        width: Math.min(IKOnboarding.completionContentMaxWidth, root.width - IKSpacing.s64)
+        width: Math.min(IKOnboarding.completionContentMaxWidth * root.layoutScale, root.width - IKSpacing.s64)
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
-        anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.completionContentExpandedLeftMargin
-        spacing: IKOnboarding.completionReadySpacing
+        anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.completionContentExpandedLeftMargin * root.layoutScale
+        spacing: IKOnboarding.completionReadySpacing * root.layoutScale
 
         Column {
             width: parent.width
-            spacing: IKOnboarding.completionTextSpacing
+            spacing: IKOnboarding.completionTextSpacing * root.layoutScale
 
             Text {
                 width: parent.width

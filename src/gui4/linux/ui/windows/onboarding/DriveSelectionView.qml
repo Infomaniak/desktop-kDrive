@@ -25,17 +25,27 @@ Item {
 
     required property var selectionController
     required property var drivesModel
+    // Geometry scale of the mockup: margins, widths and spacings follow it, text and controls keep their size.
+    required property real layoutScale
 
     readonly property bool compact: width < IKOnboarding.driveSelectionCompactBreakpointWidth
+    readonly property real sectionSpacing: IKOnboarding.driveSelectionSectionSpacing * layoutScale
+    readonly property real listSpacing: IKSpacing.s8 * layoutScale
+    // Height left to the drive list once the rest of the step and the vertical margins are laid out.
+    readonly property real availableListHeight: height - 2 * IKOnboarding.contentVerticalMargin * layoutScale
+                                                - titleText.height - userBadge.height - 2 * sectionSpacing
+                                                - listTitle.height - actionsRow.height - 2 * listSpacing
 
     Column {
-        width: Math.min(IKOnboarding.driveSelectionContentMaxWidth, root.width - IKSpacing.s64)
+        width: Math.min(IKOnboarding.driveSelectionContentMaxWidth * root.layoutScale, root.width - IKSpacing.s64)
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
-        anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.driveSelectionContentExpandedLeftMargin
-        spacing: IKOnboarding.driveSelectionSectionSpacing
+        anchors.leftMargin: root.compact ? IKSpacing.s32 : IKOnboarding.driveSelectionContentExpandedLeftMargin * root.layoutScale
+        spacing: root.sectionSpacing
 
         Text {
+            id: titleText
+
             width: parent.width
             text: qsTrId("onboardingDriveSelectionTitle")
             color: IKColors.textPrimary
@@ -47,6 +57,8 @@ Item {
         }
 
         Rectangle {
+            id: userBadge
+
             width: Math.min(IKOnboarding.driveSelectionUserBadgeMaxWidth, parent.width)
             height: IKOnboarding.driveSelectionUserBadgeHeight
             radius: IKOnboarding.driveSelectionUserBadgeRadius
@@ -136,11 +148,13 @@ Item {
 
         Column {
             width: parent.width
-            spacing: IKSpacing.s8
+            spacing: root.listSpacing
             visible: !root.selectionController.empty && !root.selectionController.loadFailed && !root.selectionController.loading
 
             Text {
-                width: IKOnboarding.driveSelectionListWidth
+                id: listTitle
+
+                width: IKOnboarding.driveSelectionListWidth * root.layoutScale
                 text: qsTrId("onboardingDriveSelectionSelectTitle")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.subheadlineSize
@@ -152,10 +166,13 @@ Item {
 
             DrivesListView {
                 drivesModel: root.drivesModel
-                width: IKOnboarding.driveSelectionListWidth
+                width: IKOnboarding.driveSelectionListWidth * root.layoutScale + IKOnboarding.driveSelectionListScrollBarGutter
+                maximumHeight: root.availableListHeight
             }
 
             Row {
+                id: actionsRow
+
                 spacing: IKSpacing.s8
 
                 Button {

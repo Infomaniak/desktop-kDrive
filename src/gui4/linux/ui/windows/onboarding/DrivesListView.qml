@@ -19,16 +19,32 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls
 import kDrive.UI
 
 ListView {
     id: root
 
     required property var drivesModel
+    // Height the list may take; beyond it, the list scrolls.
+    property real maximumHeight: contentHeight
+    // Distance between two cards, which all have the same height (`driveSelectionCellMinHeight`).
+    readonly property real cellPitch: count > 0 ? (contentHeight + spacing) / count : 0
 
-    implicitWidth: IKOnboarding.driveSelectionListWidth
-    implicitHeight: Math.min(contentHeight, IKOnboarding.driveSelectionListMaxHeight)
-    width: IKOnboarding.driveSelectionListWidth
+    // An overflowing list stops in the middle of a card, so that the cut card shows that the list scrolls.
+    function fittedHeight(): real {
+        if (contentHeight <= maximumHeight || cellPitch <= 0) {
+            return contentHeight;
+        }
+
+        const halfCell = (cellPitch - spacing) / 2;
+        const fullCells = Math.max(0, Math.floor((maximumHeight - halfCell) / cellPitch));
+        return fullCells * cellPitch + halfCell;
+    }
+
+    implicitWidth: IKOnboarding.driveSelectionListWidth + IKOnboarding.driveSelectionListScrollBarGutter
+    implicitHeight: fittedHeight()
+    height: implicitHeight
     spacing: IKSpacing.s8
     clip: true
     boundsBehavior: Flickable.StopAtBounds
@@ -36,14 +52,20 @@ ListView {
 
     model: root.drivesModel
 
+    // In the gutter on the right of the cards, never over them.
+    ScrollBar.vertical: ScrollBar {
+        policy: root.contentHeight > root.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+    }
+
     delegate: DriveCellView {
         required property int index
         required property var model
 
-        width: root.width
+        width: root.width - IKOnboarding.driveSelectionListScrollBarGutter
         row: index
         driveName: model.name
-        accountName: model.accountName
+        // The account is shown only when it tells something the drive name does not.
+        accountName: model.accountName !== model.name ? model.accountName : ""
         driveColor: model.color
         checked: model.selected
         cellEnabled: model.enabled
