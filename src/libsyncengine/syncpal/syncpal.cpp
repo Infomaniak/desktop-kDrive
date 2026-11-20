@@ -1045,6 +1045,16 @@ const LiveSnapshot &SyncPal::liveSnapshot(ReplicaSide side) const {
     return (side == ReplicaSide::Local ? _localFSObserverWorker->liveSnapshot() : _remoteFSObserverWorker->liveSnapshot());
 }
 
+uint64_t SyncPal::nbManagedItems() const {
+    const auto lfso = _localFSObserverWorker;
+    const auto rfso = _remoteFSObserverWorker;
+    if (!lfso || !rfso) return -1;
+    if (lfso->initializing())
+        return lfso->liveSnapshot()
+                .nbItems(); // lfso is always slower than rfso, so if it is still initializing, we return its count
+    return std::max(lfso->liveSnapshot().nbItems(), rfso->liveSnapshot().nbItems());
+}
+
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) const {
     if (side == ReplicaSide::Unknown) {
         LOG_ERROR(_logger, "Call to SyncPal::operationSet with 'ReplicaSide::Unknown').");

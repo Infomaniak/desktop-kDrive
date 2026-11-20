@@ -26,7 +26,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -44,8 +43,10 @@ namespace Infomaniak.kDrive.ViewModels
         private NodeId _remoteNodeId = "";
         private bool _supportOnlineMode = true;
         private SyncStatus _syncStatus = SyncStatus.Paused;
+        private SyncStep _syncStep = SyncStep.None;
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
+        private ulong _nbItems = 0;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
@@ -59,6 +60,18 @@ namespace Infomaniak.kDrive.ViewModels
         private Task<HydratedFileSizeResult>? _hydratedFileSizeTask = null;
         private readonly object _hydratedFileSizeLock = new();
 
+        public SyncProgress SyncProgress { get; } = new SyncProgress();
+
+        public SyncStep SyncStep
+        {
+            get => _syncStep;
+            set => SetPropertyInUIThread(ref _syncStep, value);
+        }
+        public ulong NbItems
+        {
+            get => _nbItems;
+            set => SetPropertyInUIThread(ref _nbItems, value);
+        }
 
         public SyncStatus SyncStatus
         {
@@ -450,5 +463,20 @@ namespace Infomaniak.kDrive.ViewModels
             bool isVisible = selectedSync is not null && errors.Any() && selectedSync != this;
             return isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
+    }
+
+    public class SyncProgress : UISafeObservableObject
+    {
+        private Int64 _completedSize = 0;
+        private Int64 _currentFile = 0;
+        private Int64 _estimatedRemainingTime = 0;
+        private Int64 _totalFiles = 0;
+        private Int64 _totalSize = 0;
+
+        public Int64 CompletedSize { get => _completedSize; set => SetPropertyInUIThread(ref _completedSize, value); }
+        public Int64 CurrentFile { get => _currentFile; set => SetPropertyInUIThread(ref _currentFile, value); }
+        public Int64 EstimatedRemainingTime { get => _estimatedRemainingTime; set => SetPropertyInUIThread(ref _estimatedRemainingTime, value); }
+        public Int64 TotalFiles { get => _totalFiles; set => SetPropertyInUIThread(ref _totalFiles, value); }
+        public Int64 TotalSize { get => _totalSize; set => SetPropertyInUIThread(ref _totalSize, value); }
     }
 }

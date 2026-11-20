@@ -369,6 +369,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             (void) _localOperationSet->removeOp(localNodeId, operationType);
         }
 
+        uint64_t nbManagedItems() const;
+
         // Local delete operations monitoring
         Count nbOfPropagatedLocalDeleteOps() const { return _nbOfPropagatedLocalDeleteOps; }
         void incrementNbOfPropagatedLocalDeleteOps() { _nbOfPropagatedLocalDeleteOps++; }
