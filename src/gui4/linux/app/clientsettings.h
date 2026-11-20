@@ -30,7 +30,7 @@ namespace KDC::ClientSettings {
 
 /**
  * INI file of the client settings, `kdrive-client.ini` in the application directory (`~/.config/kDrive`), next to the
- * client lock file. Empty when that directory cannot be created; a `QSettings` on it then reads nothing and writes nothing.
+ * client lock file. Empty when that directory cannot be created; callers must check it before opening a `QSettings`.
  */
 [[nodiscard]] QString filePath();
 
