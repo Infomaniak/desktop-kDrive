@@ -96,26 +96,27 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     _commManager(commManager),
     _commandLineStr(commandLineStr),
     _channels(channels) {
-    _commands = {{"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
-                 {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
-                 {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
-                 {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
-                 {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
-                 {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
-                 {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
-                 {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
-                 {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
-                 {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
+    _commands = {
+        {"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
+        {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
+        {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
+        {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
+        {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
+        {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
+        {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
+        {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
+        {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
+        {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
 #if defined(KD_WINDOWS)
-                 {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
-                 {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
+        {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
+        {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
 #endif
 #if defined(KD_MACOS)
-                 {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
-                 {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
-                 {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
-                 {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
-                 {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
+        {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
+        {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
+        {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
+        {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
+        {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
 #endif
     };
 }
@@ -289,9 +290,32 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
     for (const auto &filePathStr: fileList) {
         SyncPath filePath(filePathStr);
 #endif
-        auto fileData = FileData::get(filePath);
+        const auto fileData = FileData::get(filePath);
         if (!fileData.isValid()) {
             LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
+            continue;
+        }
+
+        std::shared_ptr<SyncPal> syncPal;
+        {
+            const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+            const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+            if (syncPalMapIt != _commManager->appServer().syncPalMap.end()) {
+                syncPal = syncPalMapIt->second;
+            }
+        }
+
+        if (!syncPal) {
+            // The engine of the sync is not running: the item cannot be hydrated. Fail the VFS fetch request,
+            // otherwise the user-initiated hydration stays pending although no download will start. The VFS is
+            // used without holding syncPalMapMutex, so no map lock order is involved.
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Sync engine not running - releasing the VFS hydration request - " << Utility::formatSyncPath(filePath));
+            if (const auto exitInfo = cancelHydrate(fileData, PinState::OnlineOnly, {ExitCode::SyncPaused}); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::cancelHydrate - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+            }
+
             continue;
         }
 
@@ -984,22 +1008,6 @@ ExitInfo ExtensionJob::cancelHydrate(const FileData &fileData, PinState pinState
     return ExitCode::Ok;
 }
 
-ExitInfo ExtensionJob::cancelDehydrate(const FileData &fileData, PinState pinState) {
-    if (pinState != PinState::Unknown) return setPinState(fileData, pinState);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
-    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
-
-    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
-    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
-
-    return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
-}
-
 ExitInfo ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
     if (!fileData.syncDbId) {
         return ExitCode::LogicError;
@@ -1020,6 +1028,22 @@ ExitInfo ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &
     }
 
     return ExitCode::Ok;
+}
+
+ExitInfo ExtensionJob::cancelDehydrate(const FileData &fileData, PinState pinState) {
+    if (pinState != PinState::Unknown) return setPinState(fileData, pinState);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
+    if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
+
+    return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
 }
 
 #if defined(KD_MACOS)

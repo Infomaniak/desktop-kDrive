@@ -83,6 +83,7 @@ enum class RequestNum {
     SYNC_TRIGGER_PROGRESS_UPDATE,
     SYNC_SETSUPPORTSVIRTUALFILES,
     SYNC_ACKNOWLEDGE_MANY_DELETES,
+    FILE_OPENING_CANCEL,
     BLACKLISTED_NODE_LIST,
     BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
@@ -192,6 +193,8 @@ inline std::string toString(RequestNum e) {
             return "SYNC_SETSUPPORTSVIRTUALFILES";
         case RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES:
             return "SYNC_ACKNOWLEDGE_MANY_DELETES";
+        case RequestNum::FILE_OPENING_CANCEL:
+            return "FILE_OPENING_CANCEL";
         case RequestNum::BLACKLISTED_NODE_LIST:
             return "BLACKLISTED_NODE_LIST";
         case RequestNum::BLACKLISTED_NODE_SETLIST:
@@ -349,6 +352,7 @@ enum class SignalNum {
     UTILITY_SHOW_SYNTHESIS,
     UTILITY_LOG_UPLOAD_STATUS_UPDATED,
     UTILITY_QUIT,
+    FILE_OPENING_STATUS,
     EnumEnd
 };
 
@@ -422,6 +426,8 @@ inline std::string toString(SignalNum e) {
             return "UTILITY_LOG_UPLOAD_STATUS_UPDATED";
         case SignalNum::UTILITY_QUIT:
             return "UTILITY_QUIT";
+        case SignalNum::FILE_OPENING_STATUS:
+            return "FILE_OPENING_STATUS";
         default:
             return "No conversion to string available";
     }

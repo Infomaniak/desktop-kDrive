@@ -80,6 +80,8 @@ class AppClient : public SharedTools::QtSingleApplication {
         void vfsConversionCompleted(SyncDbId syncDbId);
         void syncDeletionFailed(SyncDbId syncDbId);
         void tooManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles);
+        // File opening
+        void fileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent, const QString &itemName);
         // Node signals
         void folderSizeCompleted(QString nodeId, qint64 size);
         void fixConflictingFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);

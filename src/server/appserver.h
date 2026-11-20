@@ -28,6 +28,7 @@
 #endif
 #include "config.h"
 #include "version.h"
+#include "fileopeninghandler.h"
 #include "requests/serverrequests.h"
 #include "comm/oldcommserver.h"
 #include "comm/commmanager.h"
@@ -57,12 +58,14 @@ class Theme;
  * @ingroup gui
  */
 
-class AuthorizationCodeEventFilter : public QObject {
-        // On macOS, the authorization code is retrieved by catching the `QEvent::FileOpen` and extracting its URL.
+class UrlSchemeEventFilter : public QObject {
+        // On macOS, kdrive:// URLs (OAuth authorization code, file opening request) are retrieved by catching the
+        // `QEvent::FileOpen` and extracting its URL.
         Q_OBJECT
 
     signals:
         void authorizationCodeReceived(const QString &code, const QString &state);
+        void openFileUrlReceived(const QString &url);
 
     private:
         bool eventFilter(QObject *obj, QEvent *event) override {
@@ -82,10 +85,19 @@ class AuthorizationCodeEventFilter : public QObject {
                     }
                     return true;
                 }
+
+                const auto urlStr = url.toString().toStdString();
+
+                if (FileOpeningHandler::isFileOpeningDeeplink(urlStr)) {
+                    emit openFileUrlReceived(QString::fromStdString(urlStr));
+                    return true;
+                }
             }
             return QObject::eventFilter(obj, event);
         }
 };
+
+class FileOpeningHandler;
 
 class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
@@ -131,6 +143,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool synthesisAsked() { return _synthesisAsked; }
         inline void clearSynthesisAsked() { _synthesisAsked = false; }
         inline bool authorizationCodeReceived() { return !_authorizationCodeStr.isEmpty(); }
+        inline bool openFileUrlAsked() { return !_openFileUrlStr.isEmpty(); }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
         inline qint64 runningServerPid() const { return _runningServerPid; }
 
@@ -141,6 +154,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendShowSynthesisMsg(qint64 pid = -1);
         void sendRestartClientMsg(qint64 pid = -1);
         void sendAuthorizationCode(qint64 pid = -1);
+        void sendOpenFileUrlMsg(qint64 pid = -1);
         void handleClientDisconnection() { onClientDisconnectedReceived(); }
 
         void clearKeychainKeys();
@@ -252,6 +266,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 
         [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
+        //! Cancels the file opening job identified by `jobId`, upon user request in the client interface.
+        [[nodiscard]] ExitInfo cancelFileOpeningJob(UniqueId jobId);
 
 #if defined(KD_MACOS)
         //! Install the Vfs Mac extension.
@@ -274,7 +290,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                                  bool &updated, bool &quotaUpdated)>(&ServerRequests::loadDriveInfo);
 
     private:
-        AuthorizationCodeEventFilter _eventFilter;
+        UrlSchemeEventFilter _eventFilter;
 
         QStringList _arguments;
         log4cplus::Logger _logger;
@@ -288,6 +304,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _settingsAsked{false};
         bool _synthesisAsked{false};
         QString _authorizationCodeStr;
+        QString _openFileUrlStr;
         qint64 _runningServerPid{-1};
         bool _clearKeychainKeysAsked{false};
         bool _vfsInstallationDone{false};
@@ -307,6 +324,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<SyncDbId, SyncCache> _syncCacheMap;
         std::unordered_map<int, NodeSet> _undecidedListCacheMap;
         QProcess *_clientProcess = nullptr;
+        mutable std::mutex _fileOpeningJobsMutex;
+        std::unordered_map<UniqueId, FileOpeningHandler *> _fileOpeningJobs;
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
@@ -401,6 +420,14 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode sendShowFileNotification(SyncDbId syncDbId, const QString &filename, const QString &renameTarget,
                                           SyncFileInstruction status, int count) const;
         void sendShowNotification(const QString &title, const QString &message) const;
+        //! Reports the state of a file opening request, and the name of the item being opened, to the client interface.
+        virtual void sendFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent,
+                                           const CommString &itemName) const;
+        void registerFileOpeningJob(UniqueId jobId, FileOpeningHandler *handler);
+        void unregisterFileOpeningJob(UniqueId jobId);
+        //! Returns the number of file-opening flows currently active: their job is queued or running and their
+        //! outcome has not been reported yet.
+        [[nodiscard]] Count fileOpeningJobCount() const;
 
         void showSettings();
         void showSynthesis();
@@ -419,6 +446,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void crash() const;
 
 
+        friend class FileOpeningHandler;
         friend class TestAppServer;
 
     private slots:
@@ -436,5 +464,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
         void onAuthorizationCodeReceived(const QString &code, const QString &state);
+        void onOpenFileDeeplinkReceived(const QString &urlStr);
 };
 } // namespace KDC

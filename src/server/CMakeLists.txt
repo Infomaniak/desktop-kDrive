@@ -42,6 +42,7 @@ endif()
 
 set(server_SRCS
     appserver.h appserver.cpp
+    fileopeninghandler.h fileopeninghandler.cpp
     comm/oldcommserver.h comm/oldcommserver.cpp
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/abstractcommserver.h
@@ -78,6 +79,7 @@ set(server_SRCS
     comm/guijobs/synctriggerprogressupdatejob.h comm/guijobs/synctriggerprogressupdatejob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     comm/guijobs/syncacknowledgemanydeletesjob.h comm/guijobs/syncacknowledgemanydeletesjob.cpp
+    comm/guijobs/fileopeningcanceljob.h comm/guijobs/fileopeningcanceljob.cpp
 
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
@@ -135,6 +137,7 @@ set(server_SRCS
     comm/guijobs/signalsynccompleteditemjob.h comm/guijobs/signalsynccompleteditemjob.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
     comm/guijobs/signalsyncnotifymanydeletesjob.h comm/guijobs/signalsyncnotifymanydeletesjob.cpp
+    comm/guijobs/signalfileopeningstatusjob.h comm/guijobs/signalfileopeningstatusjob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     comm/guijobs/signalupdatershowdialogjob.h comm/guijobs/signalupdatershowdialogjob.cpp
@@ -315,6 +318,14 @@ if(APPLE)
         RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
         MACOSX_BUNDLE TRUE
         INSTALL_RPATH "@executable_path/../Frameworks"
+    )
+elseif(UNIX)
+    # Linux: the application is the handler of the "kdrive" URL scheme, so the desktop environment
+    # may launch it without any development environment. The installed layout must therefore resolve
+    # its shared libraries on its own (e.g. an AppImage usr/lib directory).
+    set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib"
     )
 else()
     set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
