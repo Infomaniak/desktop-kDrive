@@ -76,8 +76,7 @@ ExitInfo FileRescuer::moveToRescueFolder(const SyncPath &relativeOriginPath, Syn
     uint16_t counter = 0;
     do {
         relativeDestinationPath = getDestinationPath(relativeOriginPath, counter++);
-        LocalMoveJob rescueJob(_syncPal->localPath(), _syncPal->localPath() / relativeOriginPath,
-                               _syncPal->localPath() / relativeDestinationPath);
+        LocalMoveJob rescueJob(_syncPal->localPath() / relativeOriginPath, _syncPal->localPath() / relativeDestinationPath);
         exitInfo = rescueJob.runSynchronously();
     } while (!exitInfo && exitInfo.cause() == ExitCause::FileExists);
     return exitInfo;

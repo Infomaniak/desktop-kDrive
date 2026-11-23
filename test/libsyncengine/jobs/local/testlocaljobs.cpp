@@ -142,7 +142,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_picture.jpg"));
 
     // Move
-    LocalMoveJob moveJob(_localTempDir.path(), testDirPath, copyDirPath / testDirName);
+    LocalMoveJob moveJob(testDirPath, copyDirPath / testDirName);
     moveJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName));
@@ -219,7 +219,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
     // A move whose source path traverses the symbolic link is forbidden.
     {
         const SyncPath destPath = temporaryDirectory.path() / "moved_file.txt";
-        LocalMoveJob moveJob(temporaryDirectory.path(), linkPath / "tmp_file.txt", destPath);
+        LocalMoveJob moveJob(linkPath / "tmp_file.txt", destPath);
         moveJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
@@ -229,7 +229,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 
     // A move whose destination path traverses the symbolic link is forbidden.
     {
-        LocalMoveJob moveJob(temporaryDirectory.path(), filePath, linkPath / "moved_file.txt");
+        LocalMoveJob moveJob(filePath, linkPath / "moved_file.txt");
         moveJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
@@ -239,7 +239,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 
     // The interdiction is not bypassable with bypassCheck().
     {
-        LocalMoveJob moveJob(temporaryDirectory.path(), linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt");
+        LocalMoveJob moveJob(linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt");
         moveJob.setBypassCheck(true);
         moveJob.runSynchronously();
 
@@ -441,7 +441,8 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
     // A regular file is first atomically moved to the cache directory by the delete job and is then deleted from it.
     const SyncPath filePath = temporaryDirectory.path() / "test_file.txt";
     { std::ofstream ofs(filePath); }
-    GenericLocalDeleteJob deleteJob(filePath, _syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes);
+    GenericLocalDeleteJob deleteJob(_syncPal->localPath(), filePath, _syncPal->cacheDirectory(),
+                                    GenericLocalDeleteJob::ForceHardDelete::Yes);
     deleteJob.runSynchronously();
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, deleteJob.exitInfo().code());
@@ -450,7 +451,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 
     // Non-existing items do not raise deletion errors.
     const SyncPath nonExistingPath = temporaryDirectory.path() / "non-existing-item.txt";
-    GenericLocalDeleteJob nonExistingItemDeleteJob(nonExistingPath, _syncPal->cacheDirectory(),
+    GenericLocalDeleteJob nonExistingItemDeleteJob(_syncPal->localPath(), nonExistingPath, _syncPal->cacheDirectory(),
                                                    GenericLocalDeleteJob::ForceHardDelete::Yes);
     nonExistingItemDeleteJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), nonExistingItemDeleteJob.exitInfo());
@@ -459,7 +460,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
     ParametersCache::instance()->parameters().setMoveToTrash(false);
     const SyncPath anotherFilePath = temporaryDirectory.path() / "another_test_file.txt";
     { std::ofstream ofs(anotherFilePath); }
-    GenericLocalDeleteJob moveToTrashDisabledDeleteJob(anotherFilePath, _syncPal->cacheDirectory());
+    GenericLocalDeleteJob moveToTrashDisabledDeleteJob(_syncPal->localPath(), anotherFilePath, _syncPal->cacheDirectory());
     moveToTrashDisabledDeleteJob.runSynchronously();
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, moveToTrashDisabledDeleteJob.exitInfo().code());
@@ -474,7 +475,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
     auto rightsError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, rightSet.read, rightSet.write, rightSet.execute, rightsError));
 
-    GenericLocalDeleteJob permissionLessDeleteJob(filePathInSubdir, _syncPal->cacheDirectory(),
+    GenericLocalDeleteJob permissionLessDeleteJob(_syncPal->localPath(), filePathInSubdir, _syncPal->cacheDirectory(),
                                                   GenericLocalDeleteJob::ForceHardDelete::Yes);
     permissionLessDeleteJob.runSynchronously();
 

@@ -89,7 +89,7 @@ void TestIntegration::testLocalChanges() {
     const SyncName newName = Str("testFileLocal_renamed");
     const std::filesystem::path destinationPath = subDirPath / newName;
     {
-        LocalMoveJob job(_syncPal->localPath(), filePath, destinationPath);
+        LocalMoveJob job(filePath, destinationPath);
         (void) job.runSynchronously();
     }
     waitForSyncToBeIdle(std::source_location::current());

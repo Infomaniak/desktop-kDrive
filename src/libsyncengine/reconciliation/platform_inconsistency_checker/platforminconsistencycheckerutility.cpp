@@ -90,7 +90,7 @@ ExitInfo PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &sy
     const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(absoluteLocalPath, suffixType);
     auto newFullPath = absoluteLocalPath.parent_path() / newName;
 
-    LocalMoveJob moveJob(syncRootPath, absoluteLocalPath, newFullPath);
+    LocalMoveJob moveJob(absoluteLocalPath, newFullPath);
     moveJob.runSynchronously();
 
     if (newPathPtr) {

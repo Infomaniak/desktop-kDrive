@@ -286,7 +286,7 @@ void OperationsExecutor::checkExitInfo(const ExitInfo &exitInfo, const std::stri
 void OperationsExecutor::applyLocalCreate(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
     if (desc.itemType == NodeType::Directory) {
-        auto job = std::make_shared<LocalCreateDirJob>(fullPath);
+        auto job = std::make_shared<LocalCreateDirJob>(_syncPal->localPath(), fullPath);
         checkExitInfo(job->runSynchronously(), "Create operation (directory)");
         return;
     }
@@ -303,7 +303,7 @@ void OperationsExecutor::applyLocalEdit(const OperationDesc &desc) const {
 
 void OperationsExecutor::applyLocalDelete(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
-    GenericLocalDeleteJob deleteJob(fullPath, _syncPal->cacheDirectory());
+    GenericLocalDeleteJob deleteJob(_syncPal->localPath(), fullPath, _syncPal->cacheDirectory());
     checkExitInfo(deleteJob.runSynchronously(), "Delete operation");
 }
 
