@@ -34,6 +34,10 @@
             <source>Developed and hosted exclusively in Switzerland, kDrive ensures total protection of your data, with no reselling or spying, in ISO-certified data centers, with encryption and backup on multiple media.</source> 
             <translation>Sviluppato e ospitato esclusivamente in Svizzera, kDrive garantisce la totale protezione dei tuoi dati, senza rivendita né sorveglianza, in data center certificati ISO, con crittografia e backup su più supporti.</translation> 
         </message> 
+        <message id="aboutQtNotice"> 
+            <source>kDrive uses Qt %1 under the LGPL v3 and GPL v3 licenses.</source> 
+            <translation>kDrive utilizza Qt %1 con le licenze LGPL v3 e GPL v3.</translation> 
+        </message> 
         <message id="accessibilityActivityTypePicker"> 
             <source>Visible activities</source> 
             <translation>Attività visibili</translation> 
@@ -2745,6 +2749,10 @@ Aggiorna l’applicazione per accedere ai tuoi file e riprendere la sincronizzaz
         <message id="viewSourceCode"> 
             <source>View source code</source> 
             <translation>Visualizza codice sorgente</translation> 
+        </message> 
+        <message id="viewThirdPartyLicenses"> 
+            <source>Third-party licenses</source> 
+            <translation>Licenze di terze parti</translation> 
         </message> 
         <message id="winInformationBlockSynchroErrorTitle"> 
             <source>You have a sync error</source> 

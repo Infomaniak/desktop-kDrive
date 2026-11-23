@@ -8,6 +8,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMakeToolchain, cmake_layout
 from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
+from conan.tools.files import save
 
 
 class KDriveDesktop(ConanFile):
@@ -174,11 +175,35 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Linux":
             self._set_linux_package_runpath("openssl")
             self._set_linux_package_runpath("poco")
+            self._write_third_party_manifest()
 
         tc.generate()
 
         # Post-process: Append normalization code to the generated toolchain
         self._append_conan_vars_normalization()
+
+    def _write_third_party_manifest(self):
+        """
+        List the host dependencies with their license and package folder in `kdrive_third_party.json`.
+        The AppImage packaging (infomaniak-build-tools/linux/appimage_licenses.py) ships the license of each of them.
+        """
+        dependencies = []
+        for require, dependency in self.dependencies.host.items():
+            if require.test:
+                continue
+            license_value = dependency.license
+            if isinstance(license_value, (list, tuple)):
+                license_value = " AND ".join(license_value)
+            dependencies.append({
+                "name": dependency.ref.name,
+                "version": str(dependency.ref.version),
+                "license": license_value,
+                "homepage": dependency.homepage,
+                "url": dependency.url,
+                "package_folder": dependency.package_folder,
+            })
+        dependencies.sort(key=lambda entry: entry["name"])
+        save(self, os.path.join(self.generators_folder, "kdrive_third_party.json"), json.dumps(dependencies, indent=2))
 
     def layout(self):
         cmake_layout(self)
