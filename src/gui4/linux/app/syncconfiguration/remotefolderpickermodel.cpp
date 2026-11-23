@@ -481,10 +481,7 @@ void RemoteFolderPickerModel::handleChildrenResult(TreeNode *const node, const u
         sortedChildren.push_back(std::move(child));
     }
 
-    const RemoteFolders::SiblingOrder siblingOrder;
-    (void) std::ranges::sort(sortedChildren, [&siblingOrder](const auto &lhs, const auto &rhs) {
-        return siblingOrder.lessThan(lhs->kind, lhs->name, rhs->kind, rhs->name);
-    });
+    RemoteFolders::sortSiblings(sortedChildren);
 
     const QModelIndex parentIndex = indexForNode(node);
     if (!sortedChildren.empty()) {

@@ -20,8 +20,6 @@
 
 #include "app/services/commservice.h"
 
-#include <QLocale>
-
 namespace KDC {
 
 namespace RemoteFolders {
@@ -48,8 +46,7 @@ FolderKind folderKind(const QString &drivePath) {
 
 // Folder names are user data rather than translated UI text: their order follows the system locale, so a runtime
 // application-language change cannot give already loaded and newly loaded branches different collations.
-SiblingOrder::SiblingOrder() :
-    _collator(QLocale::system()) {
+SiblingOrder::SiblingOrder() {
     // Numbers compare by value, as in file managers: "2" comes before "10".
     _collator.setNumericMode(true);
 }
