@@ -22,11 +22,14 @@
 #include "libcommon/utility/types.h"
 
 #include <QCollator>
+#include <QLocale>
 #include <QObject>
 #include <QString>
 
+#include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <vector>
 
 namespace KDC {
@@ -64,8 +67,17 @@ class SiblingOrder {
         [[nodiscard]] bool lessThan(FolderKind lhsKind, const QString &lhsName, FolderKind rhsKind, const QString &rhsName) const;
 
     private:
-        QCollator _collator;
+        QCollator _collator{QLocale::system()};
 };
+
+/** Sorts sibling tree nodes, which have `kind` and `name` members, in display order. */
+template<typename Node>
+void sortSiblings(std::vector<std::unique_ptr<Node>> &nodes) {
+    const SiblingOrder siblingOrder;
+    (void) std::ranges::sort(nodes, [&siblingOrder](const std::unique_ptr<Node> &lhs, const std::unique_ptr<Node> &rhs) {
+        return siblingOrder.lessThan(lhs->kind, lhs->name, rhs->kind, rhs->name);
+    });
+}
 
 } // namespace RemoteFolders
 
