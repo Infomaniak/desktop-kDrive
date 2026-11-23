@@ -25,7 +25,7 @@
 #endif
 #include "app/navigation/mainwindowactivationdecision.h"
 #include "app/onboarding/onboardingsyncconfigurationcontroller.h"
-#include "app/syncconfiguration/remotefolderprovider.h"
+#include "app/syncconfiguration/remotefolderorder.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/logger.h"
 

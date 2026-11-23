@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "app/syncconfiguration/remotefolderprovider.h"
+#include "app/syncconfiguration/remotefolderorder.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/utility/types.h"
 
@@ -32,6 +32,8 @@
 #include <vector>
 
 namespace KDC {
+
+class AbstractRemoteFolderProvider;
 
 /**
  * Reusable remote-folder tree for selective synchronization.
