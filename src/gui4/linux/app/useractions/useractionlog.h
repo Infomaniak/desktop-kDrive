@@ -29,11 +29,13 @@
 
 namespace KDC {
 
+class MatomoService;
+
 /**
  * Single entry point for user interactions, called from QML and from the system tray menu.
  *
  * Role: write one stable, greppable and language-independent line per interaction in the `gui.v4.useraction` category
- * (also a Sentry breadcrumb).
+ * (also a Sentry breadcrumb), then send the matching Matomo page view or event when `AnalyticsCatalog` maps the id.
  * Ids are technical (`settings.general.autoStart`); details carry ids, booleans and enum values only, never displayed or
  * typed text, local paths, exclusion patterns or proxy settings.
  *
@@ -50,7 +52,7 @@ class UserActionLog final : public QObject {
         /** Ordered `key: value` context of a line. */
         using Details = QList<std::pair<QString, QVariant>>;
 
-        explicit UserActionLog(QObject *parent = nullptr);
+        explicit UserActionLog(MatomoService &matomoService, QObject *parent = nullptr);
 
         /** `details` is a JavaScript object whose properties are logged sorted by name. */
         Q_INVOKABLE void action(const QString &actionId, const QJSValue &details = QJSValue()) const;
@@ -64,6 +66,8 @@ class UserActionLog final : public QObject {
     private:
         void recordScreen(const QString &screenId, const Details &details) const;
         void write(const QString &event, const QString &id, const Details &details) const;
+
+        MatomoService &_matomoService;
 };
 
 } // namespace KDC
