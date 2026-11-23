@@ -1032,8 +1032,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Use `QLoggingCategory` + `qCDebug/qCInfo/qCWarning/qCCritical`; no `std::cout`.
 - Log every user interaction from QML through `UserActionLog` (`action`, `screen`, `dialog`, `window`), never with a
   direct `console.*` call. Ids are stable lowerCamel segments (`<surface>.<zone>.<control>`, surfaces `main`, `dialog`,
-  `onboarding`, `syncConfig`, `settings`, `window`, `shortcut`, `tray`); a dialog's controls derive their ids from its
-  `dialogId` (`<dialogId>.cancel`), and a keyboard shortcut logs `shortcut.<name>`.
+  `onboarding`, `syncConfig`, `settings`, `window`, `shortcut`, `tray`, `notification`); a dialog's controls derive
+  their ids from its `dialogId` (`<dialogId>.cancel`), and a keyboard shortcut logs `shortcut.<name>`.
 - Write an id prefix used more than once in a file only once: a page builds its ids from its `screenId`, a dialog from
   its `dialogId`, any other file from a `readonly property string actionIdPrefix` declared at its root
   (`root.actionIdPrefix + ".options"`). A file with a single id keeps it whole. To find the code of a log line, search

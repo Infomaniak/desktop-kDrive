@@ -533,6 +533,7 @@ void AppClientLinux::openMainWindow() {
 void AppClientLinux::handleNotificationAction(const NotificationService::Action action) {
     switch (action) {
         case NotificationService::Action::OpenActivities:
+            _userActionLog.recordAction(QStringLiteral("notification.openActivities"));
             openMainWindow();
             if (_bootstrapCompleted && hasConfiguredSyncs()) {
                 _appRouter.activitiesNavigation()->reset();
@@ -540,6 +541,7 @@ void AppClientLinux::handleNotificationAction(const NotificationService::Action 
             }
             return;
         case NotificationService::Action::OpenUpdate:
+            _userActionLog.recordAction(QStringLiteral("notification.openUpdate"));
             _settingsWindowController.requestOpenUpdate();
             return;
     }
