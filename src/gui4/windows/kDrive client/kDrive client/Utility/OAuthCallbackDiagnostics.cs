@@ -68,8 +68,10 @@ namespace Infomaniak.kDrive
         /// </summary>
         public static string DescribeUnparseable(string callbackArg, Exception parseError)
         {
-            string prefix = callbackArg.Length > 0 ? callbackArg.Split('?')[0] : "<empty>";
-            return $"length={callbackArg.Length}, prefix='{prefix}', parse error: {parseError.Message}";
+            string prefix = callbackArg.Length == 0 ? "<empty>"
+                : callbackArg.StartsWith("kdrive://auth-desktop", StringComparison.OrdinalIgnoreCase)
+                    ? "kdrive://auth-desktop" : "<unrecognized>";
+            return $"length={callbackArg.Length}, prefix='{prefix}', parse error: {parseError.GetType().Name}";
         }
 
         /// <summary>
