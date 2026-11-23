@@ -50,6 +50,7 @@ Popup {
         if (root.selectedActionVisible) {
             result.push({
                 action: SyncControlMenu.ToggleSelected,
+                logName: root.selectedShowsResume ? "resumeSync" : "pauseSync",
                 label: root.selectedShowsResume ? qsTrId("menuSyncResume") : qsTrId("menuSyncPause"),
                 icon: root.selectedShowsResume ? "qrc:/assets/main/home/play.svg" : "qrc:/assets/main/home/pause.svg",
                 count: -1,
@@ -61,6 +62,7 @@ Popup {
         if (root.syncControl.pauseAllCount > 0) {
             result.push({
                 action: SyncControlMenu.PauseAll,
+                logName: "pauseAll",
                 label: qsTrId("menuSyncPauseAll"),
                 icon: "qrc:/assets/main/home/pause.svg",
                 count: root.syncControl.pauseAllCount,
@@ -71,6 +73,7 @@ Popup {
         if (root.syncControl.resumeAllCount > 0) {
             result.push({
                 action: SyncControlMenu.ResumeAll,
+                logName: "resumeAll",
                 label: qsTrId("menuSyncResumeAll"),
                 icon: "qrc:/assets/main/home/play.svg",
                 count: root.syncControl.resumeAllCount,
@@ -80,9 +83,10 @@ Popup {
         return result;
     }
 
-    function triggerAction(action) {
+    function triggerAction(entry) {
+        UserActionLog.action("main.toolbar.syncMenu." + entry.logName);
         root.close();
-        switch (action) {
+        switch (entry.action) {
         case SyncControlMenu.ToggleSelected:
             root.syncControl.toggleSelected();
             break;
@@ -218,7 +222,7 @@ Popup {
                 bottomPadding: 0
                 focusPolicy: Qt.StrongFocus
                 hoverEnabled: true
-                onClicked: root.triggerAction(modelData.action)
+                onClicked: root.triggerAction(modelData)
                 onActiveFocusChanged: {
                     if (activeFocus) {
                         root.focusedAction = modelData.action;

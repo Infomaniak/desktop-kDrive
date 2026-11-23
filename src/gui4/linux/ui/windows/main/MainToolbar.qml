@@ -157,7 +157,10 @@ Rectangle {
                         enabled: root.syncControl.available
                         menuOpened: syncControlMenu.opened
                         text: qsTrId("buttonShowOption")
-                        onClicked: root.openSyncControlMenu()
+                        onClicked: {
+                            UserActionLog.action(root.actionIdPrefix + ".syncMenu");
+                            root.openSyncControlMenu();
+                        }
                     }
                 }
 
