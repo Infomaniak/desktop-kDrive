@@ -21,67 +21,12 @@
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/utility/types.h"
 
-#include <QCollator>
-#include <QLocale>
-#include <QObject>
-#include <QString>
-
-#include <algorithm>
-#include <cstdint>
 #include <functional>
-#include <memory>
 #include <vector>
 
 namespace KDC {
 
 class CommService;
-
-// Dedicated namespace so that Q_NAMESPACE does not cover the whole KDC namespace: QML reads these values as
-// `RemoteFolders.CommonDocuments`, ... (registered in AppClientLinux::setupQmlEngine).
-namespace RemoteFolders {
-Q_NAMESPACE
-
-/** Kind of a remote folder. The order of the values is the display order of siblings: special folders come first. */
-enum class FolderKind : uint8_t {
-    CommonDocuments = 0,
-    Shared,
-    Regular,
-};
-Q_ENUM_NS(FolderKind)
-
-/**
- * Kind of the folder at the given drive path, as the server returns it ("/Common documents").
- *
- * Only the folders at the root of the drive are special, so a tree rooted in a sub-folder has none.
- */
-[[nodiscard]] FolderKind folderKind(const QString &drivePath);
-
-/**
- * Display order of sibling folders in the remote folder trees: special folders first, then the names in the system
- * locale, with numbers compared by value.
- */
-class SiblingOrder {
-    public:
-        SiblingOrder();
-
-        [[nodiscard]] bool lessThan(FolderKind lhsKind, const QString &lhsName, FolderKind rhsKind, const QString &rhsName) const;
-
-    private:
-        QCollator _collator{QLocale::system()};
-};
-
-/** Sorts sibling tree nodes, which have `kind` and `name` members, in display order. */
-template<typename Node>
-void sortSiblings(std::vector<std::unique_ptr<Node>> &nodes) {
-    const SiblingOrder siblingOrder;
-    (void) std::ranges::sort(nodes, [&siblingOrder](const std::unique_ptr<Node> &lhs, const std::unique_ptr<Node> &rhs) {
-        return siblingOrder.lessThan(lhs->kind, lhs->name, rhs->kind, rhs->name);
-    });
-}
-
-} // namespace RemoteFolders
-
-using RemoteFolders::FolderKind;
 
 /** Asynchronous remote-folder data boundary shared by onboarding today and synchronization settings in the future. */
 class AbstractRemoteFolderProvider {
