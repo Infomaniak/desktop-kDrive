@@ -22,8 +22,6 @@
 #include "app/syncconfiguration/remotefolderprovider.h"
 #include "libcommon/utility/utility.h"
 
-#include <QCollator>
-#include <QLocale>
 #include <QLoggingCategory>
 #include <QPointer>
 
@@ -121,6 +119,8 @@ QVariant RemoteFolderPickerModel::data(const QModelIndex &index, const int role)
             return node->childrenState == LoadState::Failed;
         case EditingRole:
             return node->editing;
+        case FolderKindRole:
+            return QVariant::fromValue(node->kind);
         default:
             return {};
     }
@@ -137,7 +137,8 @@ QHash<int, QByteArray> RemoteFolderPickerModel::roleNames() const {
             {SelectedRole, "folderSelected"},
             {ChildrenLoadingRole, "childrenLoading"},
             {ChildrenLoadFailedRole, "childrenLoadFailed"},
-            {EditingRole, "nameEditing"}};
+            {EditingRole, "nameEditing"},
+            {FolderKindRole, "folderKind"}};
 }
 
 bool RemoteFolderPickerModel::hasChildren(const QModelIndex &parentIndex) const {
@@ -258,11 +259,12 @@ void RemoteFolderPickerModel::insertCreatedFolder(const NodeInfo &info) {
         child->nodeId = info.nodeId();
         child->name = info.name();
         child->path = info.path();
+        child->kind = RemoteFolders::folderKind(child->path);
         child->parent = parentNode;
         // A folder that was just created has no sub-folder yet.
         child->childrenState = LoadState::Loaded;
 
-        const std::size_t row = sortedInsertionRow(parentNode, child->name);
+        const std::size_t row = sortedInsertionRow(parentNode, *child);
         beginInsertRows(indexForNode(parentNode), static_cast<int>(row), static_cast<int>(row));
         (void) _nodesById.insert(child->nodeId, child.get());
         (void) parentNode->children.insert(parentNode->children.begin() + static_cast<std::ptrdiff_t>(row), std::move(child));
@@ -466,27 +468,26 @@ void RemoteFolderPickerModel::handleChildrenResult(TreeNode *const node, const u
         return;
     }
 
-    std::vector<NodeInfo> sortedChildren = children;
-    // Folder names are user data rather than translated UI text: keep their ordering tied to the system locale, as the
-    // selective synchronization tree does.
-    // Numbers compare by value, as in file managers: "2" comes before "10".
-    QCollator systemCollator(QLocale::system());
-    systemCollator.setNumericMode(true);
-    (void) std::ranges::sort(sortedChildren, [&systemCollator](const NodeInfo &lhs, const NodeInfo &rhs) {
-        return systemCollator.compare(lhs.name(), rhs.name()) < 0;
-    });
+    std::vector<std::unique_ptr<TreeNode>> sortedChildren;
+    sortedChildren.reserve(children.size());
+    for (const auto &info: children) {
+        auto child = std::make_unique<TreeNode>();
+        child->nodeId = info.nodeId();
+        child->name = info.name();
+        child->path = info.path();
+        child->kind = RemoteFolders::folderKind(child->path);
+        child->parent = node;
+        child->accessDenied = info.accessDenied();
+        sortedChildren.push_back(std::move(child));
+    }
+
+    RemoteFolders::sortSiblings(sortedChildren);
 
     const QModelIndex parentIndex = indexForNode(node);
     if (!sortedChildren.empty()) {
         const auto firstRow = static_cast<int>(node->children.size());
         beginInsertRows(parentIndex, firstRow, firstRow + static_cast<int>(sortedChildren.size()) - 1);
-        for (const auto &info: sortedChildren) {
-            auto child = std::make_unique<TreeNode>();
-            child->nodeId = info.nodeId();
-            child->name = info.name();
-            child->path = info.path();
-            child->parent = node;
-            child->accessDenied = info.accessDenied();
+        for (auto &child: sortedChildren) {
             (void) _nodesById.insert(child->nodeId, child.get());
             node->children.push_back(std::move(child));
         }
@@ -545,13 +546,12 @@ void RemoteFolderPickerModel::removeEditingRow() {
     endRemoveRows();
 }
 
-std::size_t RemoteFolderPickerModel::sortedInsertionRow(const TreeNode *const parentNode, const QString &name) const {
+std::size_t RemoteFolderPickerModel::sortedInsertionRow(const TreeNode *const parentNode, const TreeNode &node) const {
     // Same order as the loaded children: a created folder lands where a reload would put it.
-    QCollator systemCollator(QLocale::system());
-    systemCollator.setNumericMode(true);
+    const RemoteFolders::SiblingOrder siblingOrder;
     const auto &siblings = parentNode->children;
-    const auto it = std::ranges::find_if(siblings, [&systemCollator, &name](const auto &sibling) {
-        return !sibling->editing && systemCollator.compare(name, sibling->name) < 0;
+    const auto it = std::ranges::find_if(siblings, [&siblingOrder, &node](const auto &sibling) {
+        return !sibling->editing && siblingOrder.lessThan(node.kind, node.name, sibling->kind, sibling->name);
     });
 
     return static_cast<std::size_t>(std::distance(siblings.begin(), it));
