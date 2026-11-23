@@ -23,6 +23,7 @@
 #include <mutex>
 #include <vector>
 #include <unistd.h>
+#include <gnu/libc-version.h>
 #include <sys/types.h>
 #include <sys/vfs.h>
 #include <pwd.h>
@@ -145,6 +146,12 @@ std::string extractOsInfo(const std::string &key) {
 std::string CommonUtility::osVersion() {
     static const std::string osVersion = extractOsInfo("VERSION_ID");
     return osVersion;
+}
+
+// Version of the glibc loaded by the process (e.g. "2.39"). The AppImage uses the system glibc.
+std::string CommonUtility::glibcVersion() {
+    static const std::string glibcVersion = gnu_get_libc_version();
+    return glibcVersion;
 }
 
 std::string CommonUtility::distributionName() {

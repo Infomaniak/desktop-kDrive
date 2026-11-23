@@ -174,7 +174,12 @@ bool HttpDownloader::fetchAppVersion(DistributionChannel channel, const std::str
         uri.addQueryParameter("appId", appId);
         uri.addQueryParameter("channel", toString(channel));
         uri.addQueryParameter("platform", toString(CommonUtility::platform()));
+#if defined(KD_LINUX)
+        // Linux builds are published with the minimum glibc version they require, whatever the distribution.
+        uri.addQueryParameter("os_version", CommonUtility::glibcVersion());
+#else
         uri.addQueryParameter("os_version", CommonUtility::osVersion());
+#endif
         uri.addQueryParameter("store", "kStore");
         uri.addQueryParameter("name", "com.infomaniak.drive");
 

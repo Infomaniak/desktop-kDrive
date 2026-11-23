@@ -20,6 +20,7 @@
 
 #include "server/updater/linuxupdater.h"
 #include "db/parmsdb.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/checksumverifier.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "requests/parameterscache.h"
@@ -85,6 +86,17 @@ void TestLinuxUpdater::testHasEnoughSpace() {
 
     // A size the server did not announce does not block the download.
     CPPUNIT_ASSERT(LinuxUpdater::hasEnoughSpace(-1, 0));
+}
+
+void TestLinuxUpdater::testCheckMinOsVersion() {
+    const LinuxUpdaterMock updater;
+
+    // The minimum version is compared to the glibc version, on every distribution.
+    CPPUNIT_ASSERT(updater.checkMinOsVersion(CommonUtility::glibcVersion()));
+    CPPUNIT_ASSERT(updater.checkMinOsVersion("2.0"));
+    CPPUNIT_ASSERT(updater.checkMinOsVersion(""));
+    // An Ubuntu version is not a glibc version.
+    CPPUNIT_ASSERT(!updater.checkMinOsVersion("22.04"));
 }
 
 void TestLinuxUpdater::testInstallUpdateRestarts() {

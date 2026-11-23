@@ -57,7 +57,12 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("appId", _appId);
     uri.addQueryParameter("channel", toString(_currentChannel));
     uri.addQueryParameter("platform", toString(CommonUtility::platform()));
+#if defined(KD_LINUX)
+    // Linux builds are published with the minimum glibc version they require, whatever the distribution.
+    uri.addQueryParameter("os_version", CommonUtility::glibcVersion());
+#else
     uri.addQueryParameter("os_version", CommonUtility::osVersion());
+#endif
     uri.addQueryParameter("store", "kStore");
     uri.addQueryParameter("name", "com.infomaniak.drive");
     uri.addQueryParameter("app_version", KDRIVE_VERSION_STRING);
