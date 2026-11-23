@@ -171,7 +171,7 @@ namespace Infomaniak.kDrive.ViewModels
             catch (OperationCanceledException)
             {
                 CurrentOAuth2State = OAuth2State.Error;
-                Logger.LogWarning("Authentication process canceled by user.");
+                Logger.LogWarning("Authentication process canceled (restart requested or timeout reached).");
             }
             catch (Exception ex)
             {
