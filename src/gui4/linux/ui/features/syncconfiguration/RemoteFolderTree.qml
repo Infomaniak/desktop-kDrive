@@ -273,6 +273,7 @@ Rectangle {
                 required property string sizeText
                 required property bool childrenLoading
                 required property bool childrenLoadFailed
+                required property int folderKind
                 required property bool current
 
                 readonly property bool disclosureVisible: folderRow.isTreeNode && folderRow.hasChildren
@@ -446,7 +447,7 @@ Rectangle {
                     }
                 }
 
-                IKTintedIcon {
+                RemoteFolderIcon {
                     id: folderIcon
 
                     anchors.left: disclosure.right
@@ -454,7 +455,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: IKSyncConfiguration.treeRowIconSize
                     height: width
-                    source: "qrc:/assets/main/folder.svg"
+                    folderKind: folderRow.folderKind
                     color: folderRow.accessDenied ? IKColors.actionDisabled : IKColors.syncConfigurationFolderIcon
                 }
 
