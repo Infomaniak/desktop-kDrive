@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/syncconfiguration/remotefolderprovider.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/utility/types.h"
 
@@ -31,8 +32,6 @@
 #include <vector>
 
 namespace KDC {
-
-class AbstractRemoteFolderProvider;
 
 /**
  * Reusable remote-folder tree for selective synchronization.
@@ -56,6 +55,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
             SizeTextRole,
             ChildrenLoadingRole,
             ChildrenLoadFailedRole,
+            FolderKindRole,
         };
         Q_ENUM(Role)
 
@@ -144,6 +144,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
                 LoadState childrenState{LoadState::NotLoaded};
                 SizeState sizeState{SizeState::NotRequested};
                 qint64 size{0};
+                FolderKind kind{FolderKind::Regular};
                 bool accessDenied{false};
         };
 
