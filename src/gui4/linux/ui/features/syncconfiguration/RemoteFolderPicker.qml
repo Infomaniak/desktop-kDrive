@@ -268,6 +268,7 @@ Rectangle {
             required property bool childrenLoading
             required property bool childrenLoadFailed
             required property bool nameEditing
+            required property int folderKind
             readonly property bool isCursor: folderRow.nodeId !== "" && folderRow.nodeId === root.cursorNodeId
 
             readonly property bool dimmed: folderRow.unavailable || folderRow.accessDenied
@@ -463,10 +464,10 @@ Rectangle {
                     iconColor: root.driveColor
                 }
 
-                IKTintedIcon {
+                RemoteFolderIcon {
                     anchors.fill: parent
                     visible: !folderRow.driveRoot
-                    source: "qrc:/assets/main/folder.svg"
+                    folderKind: folderRow.folderKind
                     color: folderRow.dimmed ? IKColors.actionDisabled : IKColors.syncConfigurationFolderIcon
                 }
             }

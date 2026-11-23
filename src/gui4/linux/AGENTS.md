@@ -703,6 +703,11 @@
 - `app/syncconfiguration/remotefolderprovider.*`: injectable asynchronous boundary for remote folder metadata,
   children, and sizes. The production adapter uses `CommService`; tests and future settings integration can provide the
   same contract without onboarding dependencies.
+- `app/syncconfiguration/remotefolderorder.*`: `RemoteFolders` namespace holding the sibling order of both remote
+  folder trees: "Common documents" then "Shared" are pinned first, recognized by their drive path (`/Common documents`,
+  `/Shared`, in English whatever the drive language, as in `ApiTranslator::v3SpecialFolderNames`), so a tree rooted in
+  a sub-folder pins nothing; other folders follow in the system locale, numbers by value. `RemoteFolders.FolderKind` is
+  exposed to QML, and the `folderKind` role of each tree model picks the glyph in `RemoteFolderIcon.qml`.
 - `app/syncconfiguration/localpaths.*`: local synchronization-folder rules shared by onboarding and future settings
   work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, the free-folder
   derivation that appends the attempt count without a separator, as the server does, and

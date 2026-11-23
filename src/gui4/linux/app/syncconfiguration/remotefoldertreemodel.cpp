@@ -22,7 +22,6 @@
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/utility/utility.h"
 
-#include <QCollator>
 #include <QLocale>
 #include <QLoggingCategory>
 #include <QPointer>
@@ -99,6 +98,8 @@ QVariant RemoteFolderTreeModel::data(const QModelIndex &index, const int role) c
             return node->childrenState == LoadState::Loading;
         case ChildrenLoadFailedRole:
             return node->childrenState == LoadState::Failed;
+        case FolderKindRole:
+            return QVariant::fromValue(node->kind);
         default:
             return {};
     }
@@ -111,7 +112,8 @@ QHash<int, QByteArray> RemoteFolderTreeModel::roleNames() const {
             {AccessDeniedRole, "accessDenied"},
             {SizeTextRole, "sizeText"},
             {ChildrenLoadingRole, "childrenLoading"},
-            {ChildrenLoadFailedRole, "childrenLoadFailed"}};
+            {ChildrenLoadFailedRole, "childrenLoadFailed"},
+            {FolderKindRole, "folderKind"}};
 }
 
 bool RemoteFolderTreeModel::hasChildren(const QModelIndex &parentIndex) const {
@@ -416,24 +418,24 @@ void RemoteFolderTreeModel::handleChildrenResult(TreeNode *const node, const uin
         return;
     }
 
-    std::vector<NodeInfo> sortedChildren = children;
-    // Folder names are user data rather than translated UI text. Keep their ordering tied to the system locale so a
-    // runtime application-language change cannot give already loaded and newly loaded branches different collations.
-    // Numbers compare by value, as in file managers: "2" comes before "10".
-    QCollator systemCollator(QLocale::system());
-    systemCollator.setNumericMode(true);
-    (void) std::ranges::sort(sortedChildren, [&systemCollator](const NodeInfo &lhs, const NodeInfo &rhs) {
-        return systemCollator.compare(lhs.name(), rhs.name()) < 0;
-    });
-    const QModelIndex parentIndex = indexForNode(node);
-    if (!sortedChildren.empty()) beginInsertRows(parentIndex, 0, static_cast<int>(sortedChildren.size()) - 1);
-    for (const auto &info: sortedChildren) {
+    std::vector<std::unique_ptr<TreeNode>> sortedChildren;
+    sortedChildren.reserve(children.size());
+    for (const auto &info: children) {
         auto child = std::make_unique<TreeNode>();
         child->nodeId = info.nodeId();
         child->name = info.name();
         child->path = effectivePath(info, node);
+        child->kind = RemoteFolders::folderKind(child->path);
         child->parent = node;
         child->accessDenied = info.accessDenied();
+        sortedChildren.push_back(std::move(child));
+    }
+
+    RemoteFolders::sortSiblings(sortedChildren);
+
+    const QModelIndex parentIndex = indexForNode(node);
+    if (!sortedChildren.empty()) beginInsertRows(parentIndex, 0, static_cast<int>(sortedChildren.size()) - 1);
+    for (auto &child: sortedChildren) {
         if (_excludedNodeIds.contains(child->nodeId)) (void) _excludedPaths.insert(child->nodeId, child->path);
         (void) _nodesById.insert(child->nodeId, child.get());
         node->children.push_back(std::move(child));

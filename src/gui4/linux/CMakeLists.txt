@@ -139,6 +139,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/syncconfiguration/remotefolderpickermodel.h
         app/syncconfiguration/remotefolderprovider.cpp
         app/syncconfiguration/remotefolderprovider.h
+        app/syncconfiguration/remotefolderorder.cpp
+        app/syncconfiguration/remotefolderorder.h
         communicationlayer/ipcclient.cpp
         communicationlayer/ipcclient.h
         communicationlayer/serversignalsequencer.cpp
@@ -320,6 +322,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKInformationBlock.qml
         ui/features/syncconfiguration/RemoteFolderTree.qml
         ui/features/syncconfiguration/RemoteFolderPicker.qml
+        ui/features/syncconfiguration/RemoteFolderIcon.qml
         ui/features/syncconfiguration/SyncConfigurationDialog.qml
         ui/features/syncconfiguration/SyncConfigurationDrivePage.qml
         ui/features/syncconfiguration/SyncConfigurationErrorBlock.qml
@@ -477,6 +480,8 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/errors/computer.svg
         ui/assets/main/errors/eye.svg
         ui/assets/main/folder.svg
+        ui/assets/main/folder-shared.svg
+        ui/assets/main/folder-users.svg
         ui/assets/main/house.svg
         ui/assets/main/home/cog.svg
         ui/assets/common/external-link.svg
