@@ -1063,8 +1063,12 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     }
 
     const SyncPath destPath = cacheDirectoryPath / CacheDirectory::createTmpFileName();
+    // Refuse to move an item that is not located under the sync directory or whose path traverses a symbolic link: the
+    // rename operation would otherwise follow the link and move an item located outside of the sync directory into the
+    // cache directory, where it would be permanently deleted.
+    const SyncPath &syncRootPath = cacheDirectory->syncDirectoryPath();
     auto ioError = IoError::Success;
-    (void) IoHelper::renameItem(path, destPath, ioError);
+    (void) IoHelper::renameItem(path, destPath, ioError, syncRootPath);
 
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(logger(), L"Error in IoHelper::renameItem: source " << Utility::formatSyncPath(path) << L", destination "
@@ -1091,7 +1095,7 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     }
 
     if (ioError == IoError::Success) {
-        if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
+        if (!deleteItem(destPath, ioError, syncRootPath) || ioError != IoError::Success) {
             LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
                                          << Utility::formatIoError(destPath, ioError)
                                          << L". The item will be deleted later by the cache directory cleanup process.");

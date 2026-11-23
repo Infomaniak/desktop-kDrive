@@ -107,4 +107,57 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
 #endif
 }
 
+void TestDeleteItemAtomically::testDeleteThroughLinkPointingOutsideSyncDir() {
+    const LocalTemporaryDirectory temporaryDirectory("testDeleteItemAtomically_linkOutsideSyncDir");
+    const auto cacheDirectory = std::make_shared<CacheDirectory>(temporaryDirectory.path());
+    SyncPath cacheDirectoryPath;
+    CPPUNIT_ASSERT(cacheDirectory->path(cacheDirectoryPath));
+
+    // A directory link located inside the sync directory points to an item outside of it.
+    const LocalTemporaryDirectory outsideDirectory("testDeleteItemAtomically_linkOutsideSyncDir_outside");
+    const SyncPath victimFilePath = outsideDirectory.path() / "test_file.txt";
+    { std::ofstream ofs(victimFilePath); }
+
+    IoError ioError = IoError::Success;
+    const SyncPath linkPath = temporaryDirectory.path() / "test_link";
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(outsideDirectory.path(), linkPath, true, ioError));
+
+    // Deleting an item reached through the link must be rejected: the rename operation would otherwise move the item
+    // located outside of the sync directory into the cache directory, where it would be permanently deleted.
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown),
+                         IoHelper::deleteItemAtomically(linkPath / "test_file.txt", cacheDirectory));
+
+    // The item located outside of the sync directory is left unmodified, and the cache directory as well.
+    CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
+}
+
+void TestDeleteItemAtomically::testDeleteThroughInternalLink() {
+    const LocalTemporaryDirectory temporaryDirectory("testDeleteItemAtomically_internalLink");
+    const auto cacheDirectory = std::make_shared<CacheDirectory>(temporaryDirectory.path());
+    SyncPath cacheDirectoryPath;
+    CPPUNIT_ASSERT(cacheDirectory->path(cacheDirectoryPath));
+
+    // A directory link located inside the sync directory points to a directory of the sync directory.
+    const SyncPath realDirPath = temporaryDirectory.path() / "test_dir";
+    CPPUNIT_ASSERT(std::filesystem::create_directory(realDirPath));
+    const SyncPath victimFilePath = realDirPath / "test_file.txt";
+    { std::ofstream ofs(victimFilePath); }
+
+    IoError ioError = IoError::Success;
+    const SyncPath linkPath = temporaryDirectory.path() / "test_link";
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(realDirPath, linkPath, true, ioError));
+
+    // Deleting an item reached through the link must be rejected, whatever the location of the link target.
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink),
+                         IoHelper::deleteItemAtomically(linkPath / "test_file.txt", cacheDirectory));
+    CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
+
+    // Deleting the link itself is still allowed.
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(linkPath, cacheDirectory));
+    CPPUNIT_ASSERT(!std::filesystem::exists(linkPath));
+    CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+}
+
 } // namespace KDC

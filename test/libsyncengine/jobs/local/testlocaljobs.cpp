@@ -409,7 +409,9 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     };
 
     _syncPal->_syncInfo.targetPath = SyncPath{}; // Standard synchronisation.
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
+    // The deleted items must be located under the sync directory, as in production, so that the cache directory guards
+    // accept them.
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob", _localTempDir.path());
     const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
 
     _syncPal->setLocalPath(temporaryDirectory.path());
@@ -434,7 +436,9 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
 #endif
 
 void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testGenericLocalDeleteJobHardDelete");
+    // The deleted items must be located under the sync directory, as in production, so that the cache directory guards
+    // accept them.
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testGenericLocalDeleteJobHardDelete", _localTempDir.path());
     SyncPath cacheDirectoryPath;
     CPPUNIT_ASSERT(_syncPal->cacheDirectory()->path(cacheDirectoryPath));
 
@@ -493,6 +497,53 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
 #endif
+}
+
+void KDC::TestLocalJobs::testGenericLocalDeleteJobWithLinkedParent() {
+    // The item to delete is reached through a directory link located inside the sync directory and pointing outside of
+    // it. Whatever the deletion mode, the job must refuse the deletion instead of moving the item located outside of
+    // the sync directory into the cache directory and permanently deleting it.
+    const LocalTemporaryDirectory outsideDirectory("testLocalJobs_linkedParent_outsideDirectory");
+    const SyncPath victimFilePath = outsideDirectory.path() / "test_file.txt";
+    { std::ofstream ofs(victimFilePath); }
+
+    const LocalTemporaryDirectory temporaryDirectorySync("testLocalJobs_linkedParent_syncDir", _localTempDir.path());
+    IoError ioError = IoError::Success;
+    const SyncPath linkPath = temporaryDirectorySync.path() / "link";
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(outsideDirectory.path(), linkPath, true, ioError));
+    const SyncPath linkedFilePath = linkPath / "test_file.txt";
+
+    // With the "move to trash" parameter enabled, the trash operation is rejected and the fallback to hard delete is
+    // guarded as well.
+    ParametersCache::instance()->parameters().setMoveToTrash(true);
+    {
+        GenericLocalDeleteJob deleteJob(temporaryDirectorySync.path(), linkedFilePath, _syncPal->cacheDirectory());
+        deleteJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), deleteJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+    }
+
+    // Forced hard deletion is guarded as well.
+    {
+        GenericLocalDeleteJob deleteJob(temporaryDirectorySync.path(), linkedFilePath, _syncPal->cacheDirectory(),
+                                        GenericLocalDeleteJob::ForceHardDelete::Yes);
+        deleteJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), deleteJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+    }
+
+    // With the "move to trash" parameter disabled, the deletion also relies on GenericLocalDeleteJob::hardDelete and is
+    // guarded as well.
+    ParametersCache::instance()->parameters().setMoveToTrash(false);
+    {
+        GenericLocalDeleteJob deleteJob(temporaryDirectorySync.path(), linkedFilePath, _syncPal->cacheDirectory());
+        deleteJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), deleteJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+    }
 }
 
 } // namespace KDC
