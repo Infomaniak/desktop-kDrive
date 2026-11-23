@@ -87,19 +87,20 @@ struct FileOpeningFailureView: View {
         case idle
         /// The item is being downloaded: the window shows the progress of the download.
         case downloading
-        /// The download failed: the button falls back to the kDrive web application page of the item.
+        /// The download failed: the button downloads the item into the download folder of the user again.
         case failed
     }
 
     let itemName: String
     let itemPath: String
     let isNotFound: Bool
-    let webUrl: String
+    /// True when the identity of the item is known: the button can then trigger its download into the download
+    /// folder of the user.
+    let canDownload: Bool
     var downloadPhase: DownloadPhase = .idle
     var receivedBytes: Int64 = -1
     var totalBytes: Int64 = -1
     let onDownload: () -> Void
-    let onOpenWebPage: () -> Void
     let onClose: () -> Void
 
     var body: some View {
@@ -125,29 +126,22 @@ struct FileOpeningFailureView: View {
                     FileOpeningItemCard(itemName: itemName, itemPath: itemPath)
                 }
 
-                if !isNotFound {
+                if !isNotFound && canDownload {
                     switch downloadPhase {
-                    case .idle:
-                        if !webUrl.isEmpty {
-                            actionButton(KDriveLocalizable.fileOpeningDownloadButton,
-                                         background: ColorToken.Action.primary.asColor,
-                                         foreground: ColorToken.Action.onPrimary.asColor,
-                                         action: onDownload)
-                        }
+                    case .idle, .failed:
+                        actionButton(KDriveLocalizable.fileOpeningDownloadButton,
+                                     background: ColorToken.Action.primary.asColor,
+                                     foreground: ColorToken.Action.onPrimary.asColor,
+                                     action: onDownload)
                     case .downloading:
                         downloadProgress
-                    case .failed:
-                        Text(KDriveLocalizable.fileOpeningDownloadFailureMessage)
-                            .font(.subheadline)
-                            .foregroundStyle(ColorToken.Text.primary.asColor)
-
-                        if !webUrl.isEmpty {
-                            actionButton(KDriveLocalizable.fileOpeningDownloadButton,
-                                         background: ColorToken.Action.primary.asColor,
-                                         foreground: ColorToken.Action.onPrimary.asColor,
-                                         action: onOpenWebPage)
-                        }
                     }
+                }
+
+                if !isNotFound && downloadPhase == .failed {
+                    Text(KDriveLocalizable.fileOpeningDownloadFailureMessage)
+                        .font(.subheadline)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
                 }
 
                 actionButton(KDriveLocalizable.buttonClose,

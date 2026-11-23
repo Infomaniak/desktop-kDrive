@@ -803,6 +803,9 @@
 /* loco:6afec1ed259fa742710c2c6c */
 "fileOpeningDownloadButton" = "Pobierz z serwisu kDrive";
 
+/* loco:6b0069129480734da304b7f3 */
+"fileOpeningDownloadFailureMessage" = "Pobieranie pliku nie powiodło się. Spróbuj ponownie.";
+
 /* loco:6afdd20a9ee4cf55660ee934 */
 "fileOpeningDownloadProgress" = "%@ z %@";
 

@@ -43,7 +43,9 @@ final class FileOpeningModalPresenter {
         let phase: FileOpeningStatusPhase
         let itemName: String
         let itemPath: String
-        let webUrl: String
+        /// True when the identity of the item is known: the window can then offer its download into the download
+        /// folder of the user.
+        let canDownload: Bool
         let driveDbId: Int64
         let remoteNodeId: String
         /// Id of the download of the item into the download folder of the user, once it has been started.
@@ -146,14 +148,13 @@ final class FileOpeningModalPresenter {
 
         let itemName = lastKnownStatus?.itemName ?? ""
         let itemPath = lastKnownStatus?.itemPath ?? ""
+        let canDownload = status.driveDbId != 0 && !status.remoteNodeId.isEmpty
 
         IKLogger.general.info("[KD] Presenting the file opening failure window jobId=\(jobId)")
         let hostingController = NSHostingController(
             rootView: FileOpeningFailureView(itemName: itemName, itemPath: itemPath, isNotFound: status.phase == .notFound,
-                                             webUrl: status.webUrl, onDownload: { [weak self] in
+                                             canDownload: canDownload, onDownload: { [weak self] in
                                                  self?.startDownload(for: jobId)
-                                             }, onOpenWebPage: { [weak self] in
-                                                 self?.openWebPage(status.webUrl)
                                              }, onClose: { [weak self] in
                                                  self?.closeFailureWindow(for: jobId)
                                              })
@@ -163,7 +164,7 @@ final class FileOpeningModalPresenter {
 
         let entry = FailureWindowEntry(window: window, hostingController: hostingController, jobId: jobId,
                                        phase: status.phase, itemName: itemName, itemPath: itemPath,
-                                       webUrl: status.webUrl, driveDbId: status.driveDbId,
+                                       canDownload: canDownload, driveDbId: status.driveDbId,
                                        remoteNodeId: status.remoteNodeId, downloadId: nil)
         failureWindowEntriesByJobId[jobId] = entry
         window.makeKeyAndOrderFront(nil)
@@ -186,12 +187,10 @@ final class FileOpeningModalPresenter {
 
     /// Starts the download of the item of the failure window into the download folder of the user. The identity of
     /// the item is required: when it is unknown, the kDrive web application page of the item is opened instead.
+    /// Starts the download of the item of the failure window into the download folder of the user. The window is
+    /// presented with the download button only when the identity of the item is known.
     private func startDownload(for jobId: Int64) {
-        guard let entry = failureWindowEntriesByJobId[jobId] else { return }
-        guard entry.driveDbId != 0, !entry.remoteNodeId.isEmpty else {
-            openWebPage(entry.webUrl)
-            return
-        }
+        guard let entry = failureWindowEntriesByJobId[jobId], entry.canDownload else { return }
 
         IKLogger.general.info("[KD] Downloading the item of the file opening jobId=\(jobId) into the download folder")
         Task {
@@ -245,11 +244,9 @@ final class FileOpeningModalPresenter {
         entry.downloadId = downloadId
         entry.hostingController.rootView = FileOpeningFailureView(
             itemName: entry.itemName, itemPath: entry.itemPath, isNotFound: entry.phase == .notFound,
-            webUrl: entry.webUrl, downloadPhase: phase, receivedBytes: receivedBytes, totalBytes: totalBytes,
+            canDownload: entry.canDownload, downloadPhase: phase, receivedBytes: receivedBytes, totalBytes: totalBytes,
             onDownload: { [weak self] in
                 self?.startDownload(for: jobId)
-            }, onOpenWebPage: { [weak self] in
-                self?.openWebPage(entry.webUrl)
             }, onClose: { [weak self] in
                 self?.closeFailureWindow(for: jobId)
             }
@@ -266,16 +263,6 @@ final class FileOpeningModalPresenter {
             failureWindowJobIdsByDownloadId.removeValue(forKey: downloadId)
         }
         entry.window.orderOut(nil)
-    }
-
-    private func openWebPage(_ webUrl: String) {
-        guard let url = URL(string: webUrl) else {
-            IKLogger.general.error("[KD] Invalid file opening web page url: \(webUrl)")
-            SentrySDK.capture(message: "Invalid file opening web page url")
-            return
-        }
-
-        NSWorkspace.shared.open(url)
     }
 
     // MARK: - Window management

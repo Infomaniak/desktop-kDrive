@@ -14,12 +14,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-using Infomaniak.kDrive.ViewModels;
+ */using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -28,7 +26,7 @@ namespace Infomaniak.kDrive.CustomControls
     /// pop-up window of the request when the server reports a failure phase. When the item does not exist on the
     /// remote side (NotFound), there is nothing to download: the window shows a dedicated message and offers no
     /// download. While the download triggered from this window runs, it shows its progress; when it fails, the
-    /// window shows an error and the download button falls back to the kDrive web application page of the item.
+    /// window shows an error and the download button downloads the item again.
     public sealed partial class FileOpeningFailureWindow : Window
     {
         // Effective pixels: the window carries a failure title, an explanation that wraps on two lines, the item
@@ -58,6 +56,9 @@ namespace Infomaniak.kDrive.CustomControls
                 FailureTitleTextBlock.Text = Localizer.Instance.GetString("fileOpeningFailureTitle");
                 FailureExplanationTextBlock.Text = Localizer.Instance.GetString("fileOpeningFailureExplanation");
                 DownloadButton.Content = Localizer.Instance.GetString("fileOpeningDownloadButton");
+                // The download of the item into the download folder of the user requires its identity, reported by
+                // the failure signal: hide the button when it is unknown.
+                DownloadButton.Visibility = request.HasItemIdentity ? Visibility.Visible : Visibility.Collapsed;
             }
 
             CloseButton.Content = Localizer.Instance.GetString("buttonCancel");
@@ -113,35 +114,14 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void OnDownloadClicked(object sender, RoutedEventArgs e)
         {
-            if (_request.IsItemDownloadFailed)
-            {
-                // The download of the item into the download folder of the user failed: fall back to the kDrive web
-                // application page of the item, from which the user can download it manually.
-                await OpenWebPage();
-                return;
-            }
-
             // Download the item into the download folder of the user: the window shows the progress of the download,
-            // and closes once the item has been downloaded.
+            // and closes once the item has been downloaded. On a failure, the button downloads the item again.
             var fileOpeningController = App.ServiceProvider.GetRequiredService<AppModel>().FileOpeningController;
             if (!await fileOpeningController.DownloadRequestItemAsync(_request.JobId))
             {
                 Logger.LogError($"Failed to start the download of the item of the file opening request. JobId: {_request.JobId}",
                     "FileOpeningFailureWindow: Failed to start the item download");
             }
-        }
-
-        private async Task OpenWebPage()
-        {
-            // Open the kDrive web application page of the item in a browser, from which the user can download it
-            // manually.
-            if (!Uri.TryCreate(_request.WebUrl, UriKind.Absolute, out var uri))
-            {
-                Logger.LogError($"Invalid file opening web page url: {_request.WebUrl}", "FileOpeningFailureWindow: Invalid web page url");
-                return;
-            }
-
-            await Windows.System.Launcher.LaunchUriAsync(uri);
         }
 
         private void OnCloseClicked(object sender, RoutedEventArgs e)
