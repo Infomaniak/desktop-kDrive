@@ -222,7 +222,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
         LocalMoveJob moveJob(temporaryDirectory.path(), linkPath / "tmp_file.txt", destPath);
         moveJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
         CPPUNIT_ASSERT(!std::filesystem::exists(destPath));
     }
@@ -232,7 +232,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
         LocalMoveJob moveJob(temporaryDirectory.path(), filePath, linkPath / "moved_file.txt");
         moveJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
         CPPUNIT_ASSERT(!std::filesystem::exists(realDirPath / "moved_file.txt"));
     }
@@ -243,7 +243,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
         moveJob.setBypassCheck(true);
         moveJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
     }
 }

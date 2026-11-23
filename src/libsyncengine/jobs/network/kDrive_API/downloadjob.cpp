@@ -603,7 +603,7 @@ ExitInfo DownloadJob::moveTmpFile() {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
 #endif
             } else if (ioError == IoError::PathContainsSymlink) {
-                return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
+                return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
             } else {
                 bool exists = false;
                 if (!IoHelper::checkIfPathExists(_fileDownloadInfo.localPath.parent_path(), exists, ioError,

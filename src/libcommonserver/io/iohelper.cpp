@@ -1352,7 +1352,7 @@ ExitInfo IoHelper::toExitInfo(const IoError ioError, const ExitInfo &defaultExit
         case IoError::FileExists:
             return {ExitCode::SystemError, ExitCause::FileExists};
         case IoError::PathContainsSymlink:
-            return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
+            return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
         case IoError::HardlinkNotSupported:
             return {ExitCode::SystemError, ExitCause::HardlinkNotSupported};
         case IoError::DiskFull:

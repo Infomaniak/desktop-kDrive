@@ -251,8 +251,8 @@ std::string toString(const ExitCause e) {
             return "SyncDeletionFailed";
         case ExitCause::InvalidLinkTarget:
             return "InvalidLinkTarget";
-        case ExitCause::MoveThroughSymlink:
-            return "MoveThroughSymlink";
+        case ExitCause::PathContainsSymlink:
+            return "PathContainsSymlink";
         case ExitCause::FileNameTooLong:
             return "FileNameTooLong";
         case ExitCause::HardlinkNotSupported:
