@@ -333,10 +333,6 @@ void TestUpdateTreeWorker::setUpUpdateTree(ReplicaSide side) {
                                               testhelpers::defaultTime, testhelpers::defaultFileSize);
     CPPUNIT_ASSERT(node8->moveTo(updateTree->rootNode()));
 
-    const auto node8 = std::make_shared<Node>(_dbnodeIdDir8, updateTree->side(), Str("Dir 8") + testhelpers::makeNfcSyncName(),
-                                              NodeType::Directory, OperationType::None, "id8", testhelpers::defaultTime,
-                                              testhelpers::defaultTime, testhelpers::defaultFileSize, updateTree->rootNode());
-
     updateTree->init();
 
     updateTree->insertNode(node1111);

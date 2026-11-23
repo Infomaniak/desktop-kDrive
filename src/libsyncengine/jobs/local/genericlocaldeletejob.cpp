@@ -25,7 +25,6 @@ namespace KDC {
 GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath syncRootPath, SyncPath absoluteLocalPath,
                                              const std::shared_ptr<CacheDirectory> cacheDirectory,
                                              ForceHardDelete forceHardDelete /*= ForceHardDelete::No*/) :
-                                             ForceHardDelete forceHardDelete /*= ForceHardDelete::No*/) :
     _syncRootPath(std::move(syncRootPath)),
     _absoluteLocalPath(std::move(absoluteLocalPath)),
     _cacheDirectory(cacheDirectory),
