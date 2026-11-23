@@ -56,6 +56,8 @@ class GeneralSettingsController final : public QObject {
         Q_PROPERTY(QString releaseVersion READ releaseVersion NOTIFY changed)
         Q_PROPERTY(QString releaseDetails READ releaseDetails NOTIFY changed)
         Q_PROPERTY(QString installedDetails READ installedDetails NOTIFY changed)
+        Q_PROPERTY(bool thirdPartyLicensesAvailable READ thirdPartyLicensesAvailable CONSTANT)
+        Q_PROPERTY(QString qtVersion READ qtVersion CONSTANT)
         Q_PROPERTY(QVariantList releaseNotes READ releaseNotes NOTIFY releaseNotesChanged)
 
     public:
@@ -88,6 +90,9 @@ class GeneralSettingsController final : public QObject {
         [[nodiscard]] QString releaseVersion() const;
         [[nodiscard]] QString releaseDetails() const;
         [[nodiscard]] static QString installedDetails();
+        /** The AppImage ships the license notices of its components; a development build does not. */
+        [[nodiscard]] static bool thirdPartyLicensesAvailable();
+        [[nodiscard]] static QString qtVersion();
         [[nodiscard]] const QVariantList &releaseNotes() const { return _releaseNotes.sections(); }
 
         Q_INVOKABLE void setAutoStart(bool enabled);
@@ -107,6 +112,8 @@ class GeneralSettingsController final : public QObject {
         Q_INVOKABLE void openFeedback();
         Q_INVOKABLE void openLicense();
         Q_INVOKABLE void openSources();
+        /** Opens the folder of the bundled license notices in the file manager. */
+        Q_INVOKABLE void openThirdPartyLicenses();
 
         void refreshUpdates() const;
 
