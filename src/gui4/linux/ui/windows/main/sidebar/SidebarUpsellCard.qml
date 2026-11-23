@@ -30,6 +30,7 @@ Item {
     required property int offer
     readonly property bool kSuitePro: offer === MainSidebarController.KSuitePro
     readonly property color foregroundColor: kSuitePro ? IKColors.upsellKSuiteProText : IKColors.upsellMyKSuiteText
+    readonly property string actionIdPrefix: "main.sidebar.upsell"
 
     signal upgradeRequested
 
@@ -187,7 +188,10 @@ Item {
             // "Upgrade" alone does not name the offer.
             Accessible.description: description.text
 
-            onClicked: root.upgradeRequested()
+            onClicked: {
+                UserActionLog.action(root.kSuitePro ? root.actionIdPrefix + ".kSuitePro" : root.actionIdPrefix + ".myKsuitePlus");
+                root.upgradeRequested();
+            }
 
             contentItem: Item {
                 id: upgradeContent
