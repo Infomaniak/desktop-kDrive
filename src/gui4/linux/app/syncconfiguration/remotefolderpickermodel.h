@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/syncconfiguration/remotefolderprovider.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/utility/types.h"
 
@@ -30,8 +31,6 @@
 #include <vector>
 
 namespace KDC {
-
-class AbstractRemoteFolderProvider;
 
 /**
  * Lazy remote-folder tree used to choose one destination folder on a drive.
@@ -68,6 +67,7 @@ class RemoteFolderPickerModel final : public QAbstractItemModel {
             ChildrenLoadingRole,
             ChildrenLoadFailedRole,
             EditingRole,
+            FolderKindRole,
         };
         Q_ENUM(Role)
 
@@ -175,6 +175,7 @@ class RemoteFolderPickerModel final : public QAbstractItemModel {
                 TreeNode *parent{nullptr};
                 std::vector<std::unique_ptr<TreeNode>> children;
                 LoadState childrenState{LoadState::NotLoaded};
+                FolderKind kind{FolderKind::Regular};
                 bool accessDenied{false};
                 bool driveRoot{false};
                 bool editing{false};
@@ -193,7 +194,7 @@ class RemoteFolderPickerModel final : public QAbstractItemModel {
         void notifyChildrenState(const TreeNode *node);
         void insertEditingRow(TreeNode *parentNode);
         void removeEditingRow();
-        [[nodiscard]] std::size_t sortedInsertionRow(const TreeNode *parentNode, const QString &name) const;
+        [[nodiscard]] std::size_t sortedInsertionRow(const TreeNode *parentNode, const TreeNode &node) const;
         void setSelection(const QString &nodeId, const QString &name, const QString &path);
         void notifySelectedRow(const QString &nodeId);
 
