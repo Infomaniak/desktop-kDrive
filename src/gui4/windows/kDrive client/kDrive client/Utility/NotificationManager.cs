@@ -69,9 +69,21 @@ namespace Infomaniak.kDrive
                 Logger.LogInfo("Registering for notifications");
                 AppNotificationManager notificationManager = AppNotificationManager.Default;
                 notificationManager.NotificationInvoked += OnNotificationInvoked;
-                notificationManager.Register();
-                m_isRegistered = true;
-
+                try
+                {
+                    // Notifications are non-critical: Register() can hang or throw on systems
+                    // with a broken notification platform and must not abort the startup.
+                    Logger.LogInfo("Registering AppNotificationManager");
+                    notificationManager.Register();
+                    m_isRegistered = true;
+                    Logger.LogInfo("AppNotificationManager registered");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"AppNotificationManager.Register() failed: {ex}",
+                        "NotificationManager: AppNotificationManager.Register() failed");
+                    notificationManager.NotificationInvoked -= OnNotificationInvoked;
+                }
             }
             else
             {

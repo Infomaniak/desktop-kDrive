@@ -99,6 +99,22 @@ namespace Infomaniak.kDrive
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+            // async void swallows exceptions: any failure during launch must be caught here,
+            // otherwise the client dies silently before its first loggable step.
+            try
+            {
+                await LaunchAsync(args);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogFatal($"Unhandled exception during launch: {ex}", "App: Unhandled exception during launch");
+                ExitApplication();
+            }
+        }
+
+        private async Task LaunchAsync(LaunchActivatedEventArgs args)
+        {
+            Logger.LogInfo("Launching main instance startup sequence.");
             var isMainInstance = _mainInstance == AppInstance.GetCurrent();
 
             string[] arguments = Environment.GetCommandLineArgs();
@@ -150,23 +166,30 @@ namespace Infomaniak.kDrive
 
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
+            Logger.LogInfo("OAuth protocol handler registered");
 
             // Initialize notifications
+            Logger.LogInfo("Initializing notification manager");
             ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
 
+            Logger.LogInfo("Connecting to server daemon");
             var serverCommService = ServiceProvider.GetRequiredService<IServerCommService>();
             using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
             {
                 if (!await serverCommService.Init(cts.Token))
                 {
+                    Logger.LogFatal("Failed to connect to the server daemon, exiting.");
                     ExitApplication();
                     return;
                 }
             }
+            Logger.LogInfo("Connected to server daemon");
 
+            Logger.LogInfo("Initializing tray icon");
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
+            Logger.LogInfo("Initializing application model");
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             if (!await appModel.InitializeAsync())
             {
