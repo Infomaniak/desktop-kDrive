@@ -764,7 +764,7 @@ QString applicationTrPath() {
 #endif
 
 #else
-    return CommonUtility::applicationDirPath() + QString::fromLatin1("/../" SHAREDIR "/" APPLICATION_CLIENT_EXECUTABLE "/i18n/");
+    return CommonUtility::applicationDirPath() + QString::fromLatin1("/../" SHAREDIR "/" APPLICATION_EXECUTABLE "_server/i18n/");
 #endif
 }
 
