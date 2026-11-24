@@ -29,6 +29,30 @@ Q_LOGGING_CATEGORY(lcMainSidebarController, "gui.v4.mainsidebarcontroller", QtIn
 
 namespace KDC {
 
+namespace {
+
+// Only the administrators of a drive with a free pack are offered an upgrade.
+MainSidebarController::UpsellOffer upsellOfferFor(const Drive &drive) {
+    if (!drive.admin() || !drive.packInfo().isFree()) {
+        return MainSidebarController::UpsellOffer::None;
+    }
+
+    switch (drive.packInfo().upsellTarget()) {
+        case UpsellTarget::StandAloneToMykSuitePlus:
+        case UpsellTarget::MykSuiteToMykSuitePlus:
+            return MainSidebarController::UpsellOffer::MyKSuitePlus;
+        case UpsellTarget::StandAloneTokSuitePro:
+        case UpsellTarget::kSuiteUpgrade:
+            return MainSidebarController::UpsellOffer::KSuitePro;
+        case UpsellTarget::Unknown:
+        case UpsellTarget::EnumEnd:
+            break;
+    }
+    return MainSidebarController::UpsellOffer::None;
+}
+
+} // namespace
+
 MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectionStore &selectionStore, QObject *const parent) :
     QObject(parent),
     _selectionStore(selectionStore),
@@ -40,6 +64,10 @@ MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectio
                    &MainSidebarController::currentContextChanged);
     (void) connect(&_syncSelectorModel, &SyncSelectorModel::unselectedErrorCountChanged, this,
                    &MainSidebarController::unselectedErrorCountChanged);
+    (void) connect(&_selectionStore, &MainSelectionStore::currentContextChanged, this,
+                   &MainSidebarController::refreshUpsellOffer);
+
+    refreshUpsellOffer();
 }
 
 qint32 MainSidebarController::entryCount() const {
@@ -116,6 +144,37 @@ bool MainSidebarController::openCurrentSyncFolder() const {
         return false;
     }
     return true;
+}
+
+void MainSidebarController::openUpsellPage() const {
+    const auto context = _selectionStore.currentSyncContext();
+    if (!context.has_value()) {
+        qCWarning(lcMainSidebarController) << "Cannot open the upgrade page without a current synchronization";
+        return;
+    }
+
+    if (upsellOfferFor(context->drive) == UpsellOffer::None) {
+        qCWarning(lcMainSidebarController) << "Upgrade page ignored: no offer for the drive | driveId:"
+                                           << context->drive.driveId();
+        return;
+    }
+
+    const QUrl url = AppConstants::Drive::upsellUri(context->drive);
+    qCInfo(lcMainSidebarController) << "Opening the upgrade page | driveId:" << context->drive.driveId() << "| url:" << url;
+    if (!QDesktopServices::openUrl(url)) {
+        qCWarning(lcMainSidebarController) << "Desktop service failed to open the upgrade page | url:" << url;
+    }
+}
+
+void MainSidebarController::refreshUpsellOffer() {
+    const auto context = _selectionStore.currentSyncContext();
+    const UpsellOffer offer = context.has_value() ? upsellOfferFor(context->drive) : UpsellOffer::None;
+    if (offer == _upsellOffer) {
+        return;
+    }
+
+    _upsellOffer = offer;
+    emit upsellOfferChanged();
 }
 
 QVariant MainSidebarController::selectedData(const SyncSelectorModel::Role role) const {

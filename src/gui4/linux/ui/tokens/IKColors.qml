@@ -102,6 +102,15 @@ QtObject {
         readonly property color kDrive600: "#446FDD"
         readonly property color kDriveDark: "#0E3A5D"
         readonly property color kDriveLight: "#84A9F9"
+
+        // kSuite
+        readonly property color kSuiteLightBlue: "#1DDDFD"
+        readonly property color kSuiteDarkBlue: "#337CFF"
+        readonly property color kSuitePurple: "#A055FC"
+        readonly property color kSuitePink: "#F34BBB"
+        readonly property color kSuiteOrange: "#FD8C3D"
+        readonly property color kSuiteProSurface: "#222633"
+        readonly property color kSuiteProAction: "#1384FF"
     }
 
     readonly property Primitives _p: Primitives {}
@@ -256,6 +265,18 @@ QtObject {
     readonly property color blockingErrorDriveLabelBorder: surfaceTertiary
     readonly property color sidebarNotificationSurface: surfacePrimary
     readonly property color sidebarNotificationBorder: surfaceTertiary
+    // Sidebar upsell card: my kSuite+ follows the theme, kSuite Pro is always dark.
+    readonly property color upsellGradientLightBlue: _p.kSuiteLightBlue
+    readonly property color upsellGradientDarkBlue: _p.kSuiteDarkBlue
+    readonly property color upsellGradientPurple: _p.kSuitePurple
+    readonly property color upsellGradientPink: _p.kSuitePink
+    readonly property color upsellGradientOrange: _p.kSuiteOrange
+    readonly property color upsellMyKSuiteText: textPrimary
+    readonly property color upsellMyKSuiteButtonSurface: darkMode ? surfaceTertiary : _p.white
+    readonly property color upsellMyKSuiteButtonBorder: darkMode ? surfaceTertiary : _p.gray200
+    readonly property color upsellKSuiteProSurface: _p.kSuiteProSurface
+    readonly property color upsellKSuiteProText: _p.white
+    readonly property color upsellKSuiteProButtonSurface: _p.kSuiteProAction
     readonly property color modalSurface: onboardingSurfacePrimary
     readonly property color modalBorder: surfaceTertiary
     readonly property color modalScrim: _p.neutralBlack35
