@@ -34,6 +34,7 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public T
         CPPUNIT_TEST(testCheckSnapshotIntegrity);
         CPPUNIT_TEST(testInsertItemsFromCorruptedCsvReply);
         CPPUNIT_TEST(testInsertItemWithUnsafeName);
+        CPPUNIT_TEST(testProcessPathlessTrashAction);
         CPPUNIT_TEST(testExtractActionInfo);
         CPPUNIT_TEST_SUITE_END();
 
@@ -47,6 +48,7 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public T
         void testCheckSnapshotIntegrity();
         void testInsertItemsFromCorruptedCsvReply();
         void testInsertItemWithUnsafeName();
+        void testProcessPathlessTrashAction();
         void testExtractActionInfo();
 
     private:

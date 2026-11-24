@@ -890,6 +890,22 @@ bool shouldContainPath(const ActionCode actionCode) {
             return true;
     }
 }
+
+bool isRemovalAction(const ActionCode actionCode) {
+    // These actions only remove the item from the snapshot by its ID: the item name is not used and may be empty (see
+    // `shouldContainPath`).
+    switch (actionCode) {
+        case ActionCode::ActionCodeTrash:
+        case ActionCode::ActionCodeAccessRightRemove:
+        case ActionCode::ActionCodeAccessRightUserRemove:
+        case ActionCode::ActionCodeAccessRightTeamRemove:
+        case ActionCode::ActionCodeAccessRightMainUsersRemove:
+        case ActionCode::ActionCodeRestoreFileShareDelete:
+            return true;
+        default:
+            return false;
+    }
+}
 } // namespace
 
 
@@ -1026,11 +1042,13 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
 
     // Filter out items
     // - whose actions should be ignored, or
-    // - whose names contain unsupported characters.
+    // - whose names contain unsupported characters, unless the action only removes the item.
     for (auto it = actionInfoList.begin(); it != actionInfoList.end();) {
         const auto &actionInfo = *it;
         if (shouldBeIgnored(actionInfo.actionCode)) {
             it = actionInfoList.erase(it);
+        } else if (isRemovalAction(actionInfo.actionCode)) {
+            ++it;
         } else if (const auto exitInfo = checkForUnsupportedCharacters(
                            actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type());
                    !exitInfo) {

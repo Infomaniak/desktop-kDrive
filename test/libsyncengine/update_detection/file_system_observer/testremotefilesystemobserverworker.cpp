@@ -500,6 +500,42 @@ void TestRemoteFileSystemObserverWorker::testInsertItemWithUnsafeName() {
     _syncPal->setAddErrorCallback(nullptr);
 }
 
+void TestRemoteFileSystemObserverWorker::testProcessPathlessTrashAction() {
+    // This test does not require any remote drive access.
+    const auto remoteFSObserverWorker =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(remoteFSObserverWorker);
+
+    LiveSnapshot &liveSnapshot = remoteFSObserverWorker->_liveSnapshot;
+    const NodeId rootId = liveSnapshot.rootFolderId();
+    CPPUNIT_ASSERT(!rootId.empty());
+    if (rootId != NodeId("1")) {
+        const SnapshotItem driveRootItem("1", rootId, Str("kDrive"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                         NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
+        CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
+    }
+
+    const SnapshotItem trashedItem("4242", "1", Str("trashed_dir"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                   NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(trashedItem));
+    CPPUNIT_ASSERT(liveSnapshot.exists("4242"));
+
+    // The API drops the path of some trash actions (e.g. for folders located at the root of `Common documents`), so the
+    // extracted item name is empty. The action must still remove the item from the snapshot.
+    Poco::JSON::Object::Ptr actionObject = new Poco::JSON::Object();
+    (void) actionObject->set(actionKey, "file_trash");
+    (void) actionObject->set(fileIdKey, 4242);
+    (void) actionObject->set(parentIdKey, 1);
+    (void) actionObject->set(pathKey, "");
+
+    Poco::JSON::Array::Ptr actionArray = new Poco::JSON::Array();
+    actionArray->add(actionObject);
+    const Poco::JSON::Array::Ptr actionsFilesArray = new Poco::JSON::Array();
+
+    CPPUNIT_ASSERT(remoteFSObserverWorker->processActions(actionArray, actionsFilesArray));
+    CPPUNIT_ASSERT(!liveSnapshot.exists("4242"));
+}
+
 void TestRemoteFileSystemObserverWorker::testExtractActionInfo() {
     Poco::JSON::Object::Ptr actionObject = new Poco::JSON::Object();
 
