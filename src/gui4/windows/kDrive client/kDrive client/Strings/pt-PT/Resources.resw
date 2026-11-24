@@ -917,6 +917,9 @@ A sincronização será retomada automaticamente quando a ligação for restabel
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Descarregar do kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>O download do item falhou. Por favor, tente novamente.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ de %@</value>
   </data>

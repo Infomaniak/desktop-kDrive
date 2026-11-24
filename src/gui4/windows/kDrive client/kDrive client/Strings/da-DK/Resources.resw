@@ -917,6 +917,9 @@ Synkronisering genoptages automatisk, når forbindelsen er genoprettet.</value>
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Download fra kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>Det lykkedes ikke at downloade emnet. Prøv igen.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ ud af %@</value>
   </data>

@@ -917,6 +917,9 @@ Die Synchronisierung wird automatisch fortgesetzt, sobald die Verbindung wiederh
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Von kDrive herunterladen</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>Der Download des Artikels ist fehlgeschlagen. Bitte versuchen Sie es erneut.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ von %@</value>
   </data>

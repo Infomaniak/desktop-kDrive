@@ -917,6 +917,9 @@ Synchronizacja zostanie wznowiona automatycznie po przywróceniu połączenia.</
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Pobierz z serwisu kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>Pobieranie pliku nie powiodło się. Spróbuj ponownie.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ z %@</value>
   </data>

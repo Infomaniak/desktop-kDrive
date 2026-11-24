@@ -917,6 +917,9 @@
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Λήψη από το kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>Η λήψη του στοιχείου απέτυχε. Παρακαλώ δοκιμάστε ξανά.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ πάνω από %@</value>
   </data>

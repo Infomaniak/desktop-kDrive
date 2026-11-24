@@ -917,6 +917,9 @@ Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value>
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Lataa kDrive-palvelusta</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>Kohteen lataaminen epäonnistui. Yritä uudelleen.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ / %@</value>
   </data>

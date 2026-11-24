@@ -605,7 +605,7 @@ public enum KDriveLocalizable {
   public static let fileExistsErrorTitle = KDriveLocalizable.tr("Localizable", "fileExistsErrorTitle", fallback: "File already exists")
   /// loco:6afec1ed259fa742710c2c6c
   public static let fileOpeningDownloadButton = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadButton", fallback: "Download from kDrive")
-  /// The download of the item failed. Please try again.
+  /// loco:6b0069129480734da304b7f3
   public static let fileOpeningDownloadFailureMessage = KDriveLocalizable.tr("Localizable", "fileOpeningDownloadFailureMessage", fallback: "The download of the item failed. Please try again.")
   /// Downloading %@…
   public static func fileOpeningDownloadingMessage(_ p1: Any) -> String {
@@ -624,7 +624,7 @@ public enum KDriveLocalizable {
   /// Downloading the item…
   public static let fileOpeningHydratingMessage = KDriveLocalizable.tr("Localizable", "fileOpeningHydratingMessage", fallback: "Downloading the item…")
   /// loco:6afec9ed750a9c1b47035899
-  public static let fileOpeningNotFoundMessage = KDriveLocalizable.tr("Localizable", "fileOpeningNotFoundMessage", fallback: "The requested item was not found on your drive")
+  public static let fileOpeningNotFoundMessage = KDriveLocalizable.tr("Localizable", "fileOpeningNotFoundMessage", fallback: "The requested item could not be found.")
   /// This item is not synchronized yet. Synchronizing it may take some time.
   public static let fileOpeningWaitingSyncMessage = KDriveLocalizable.tr("Localizable", "fileOpeningWaitingSyncMessage", fallback: "This item is not synchronized yet. Synchronizing it may take some time.")
   /// kDrive

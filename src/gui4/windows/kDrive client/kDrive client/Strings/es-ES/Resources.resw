@@ -917,6 +917,9 @@ La sincronización se reanudará automáticamente una vez que se restablezca la 
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Descargar desde kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>La descarga del elemento ha fallado. Inténtalo de nuevo.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ de %@</value>
   </data>

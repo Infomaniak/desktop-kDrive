@@ -917,6 +917,9 @@ Sync will resume automatically once the connection is restored.</value>
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Download from kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>The download of the item failed. Please try again.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ over %@</value>
   </data>

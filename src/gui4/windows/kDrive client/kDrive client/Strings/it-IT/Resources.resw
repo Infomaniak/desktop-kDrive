@@ -917,6 +917,9 @@ La sincronizzazione riprenderà automaticamente una volta ripristinata la connes
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Scarica da kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>Il download dell’elemento non è andato a buon fine. Riprovare.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ su %@</value>
   </data>

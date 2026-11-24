@@ -917,6 +917,9 @@ De synchronisatie wordt automatisch hervat zodra de verbinding is hersteld.</val
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Downloaden via kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>Het downloaden van het item is mislukt. Probeer het nog eens.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ van %@</value>
   </data>

@@ -917,6 +917,9 @@ Synkroniseringen återuptas automatiskt när anslutningen har återställts.</va
   <data name="fileOpeningDownloadButton" xml:space="preserve">
     <value>Ladda ner från kDrive</value>
   </data>
+  <data name="fileOpeningDownloadFailureMessage" xml:space="preserve">
+    <value>Nedladdningen av objektet misslyckades. Försök igen.</value>
+  </data>
   <data name="fileOpeningDownloadProgress" xml:space="preserve">
     <value>%@ av %@</value>
   </data>
