@@ -953,6 +953,15 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
 bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoError &ioError,
                                const SyncPath &syncRootPath /*= {}*/) noexcept {
     if (!syncRootPath.empty()) {
+        // Validate the whole path before shortening it to its first missing component: parent references (..) located below
+        // a missing ancestor would otherwise escape the check, as the shortening discards them, while create_directories
+        // still receives the whole path and resolves them once the missing ancestors have been created.
+        ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
+        if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
+            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
+            return false;
+        }
+
         // Some ancestors of `path` may not exist yet (e.g. recursive creation). Only the deepest existing ancestor and its own
         // ancestors can be links, so the check is done on the first missing component of `path` (or on `path` itself).
         SyncPath firstMissingPath = path;
