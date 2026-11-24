@@ -189,6 +189,7 @@ class CommService : public QObject {
                                                const VoidCallback &callback) const;
 
         // --- Node ---
+        // The returned path starts with a separator, like the paths of folder listings.
         void requestNodeInfo(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, bool withPath,
                              const NodeInfoCallback &callback) const;
         void requestNodeConflictInfo(SyncDbId syncDbId, const SyncPath &relativePath, ReplicaSide replicaSide,

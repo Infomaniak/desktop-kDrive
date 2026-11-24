@@ -639,6 +639,11 @@ void CommService::requestNodeInfo(const UserDbId userDbId, const DriveId driveId
                                NodeInfo info;
                                if (exitInfo) {
                                    info.fromDynamicStruct(result[msgParamNodeInfo].extract<Poco::DynamicStruct>());
+                                   // The server returns a path relative to the drive root, without the leading separator
+                                   // of the paths of folder listings: callers compare and store both forms together.
+                                   if (!info.path().isEmpty() && !info.path().startsWith(u'/')) {
+                                       info.setPath(u'/' + info.path());
+                                   }
                                }
                                callback(exitInfo, info);
                            });
