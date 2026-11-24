@@ -4,7 +4,7 @@ else()
     project(server LANGUAGES C CXX)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Network Svg)
+find_package(Qt6 REQUIRED COMPONENTS Network Svg Widgets)
 find_package(Poco 1.15.2 REQUIRED XML Net NetSSL Crypto)
 find_package(sentry REQUIRED)
 
@@ -341,6 +341,7 @@ target_link_libraries(updater
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
     Qt6::Svg
+    Qt6::Widgets
     Poco::Net
     Poco::NetSSL
     Poco::Crypto

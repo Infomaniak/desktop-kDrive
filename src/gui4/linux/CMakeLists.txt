@@ -596,7 +596,7 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::QuickControls2
         Qt6::QuickEffects
         Qt6::Sql     # Added because libcommon depends on it; Qt will warn if it's not linked.
-        Qt6::Widgets # Added because libcommon depends on it; Qt will warn if it's not linked.
+        Qt6::Widgets
         ${libcommon_NAME}
         keychain::keychain
         MatomoQt::Core

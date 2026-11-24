@@ -4,7 +4,7 @@ else()
     project(testserver LANGUAGES C CXX)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Network Svg)
+find_package(Qt6 REQUIRED COMPONENTS Network Svg Widgets)
 find_package(Poco 1.15.2 REQUIRED XML Net NetSSL Crypto)
 
 set(CMAKE_AUTOMOC ON)
@@ -290,6 +290,7 @@ target_include_directories(${testserver_NAME} PRIVATE
 # Link
 target_link_libraries(${testserver_NAME}
     updater
+    Qt6::Widgets
 )
 
 if(APPLE)

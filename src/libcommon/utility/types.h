@@ -18,9 +18,8 @@
 #pragma once
 
 #ifdef __GNUC__
-// /!\ moc issue => filesystem must be included after QApplication
-// https://bugreports.qt.io/browse/QTBUG-73263
-#include <QApplication>
+// moc issue: <filesystem> must come after another header (QTBUG-73263)
+#include <QCoreApplication>
 #endif
 
 #include "cstypes.h"
