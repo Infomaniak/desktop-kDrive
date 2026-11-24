@@ -582,6 +582,12 @@ struct IoHelper {
          * @brief Set the dates using native API.
          * - macOS: If creation date > modification date, creation date is set to modification date
          * - Linux: The creation date cannot be set
+         * The valid date range depends on the file system, a date outside the range is adjusted to the value of the nearest
+         * boundary.
+         * - APFS: ≈292 years (int64_t ns) around 1970-01-01, i.e. [≈1677, ≈2262]
+         * - HFS+: ≈136 years (uint32 sec) from 1904-01-01, i.e. [1904-01-01, ≈2040]
+         * - NTFS: ≈29227 years (int64_t intervals of 100 ns) from 1601-01-01, i.e. [1601-01-01, ≈30828]
+         * - FAT/exFAT: 128 years (2^7 year) from 1980-01-01, i.e. [1980-01-01, 2107-12-31]
          * @param filePath The absolute path to the file to be modified.
          * @param creationDate The creation date to be set.
          * @param modificationDate The modification date to be set.

@@ -62,7 +62,7 @@ bool ComputeFSOperationWorker::checkAndFixLocalTimestamp(const NodeType nodeType
 
     const auto currentTime = CommonUtility::getCurrentSyncTime();
     if (const SyncTime currentTimePlusOneYear = CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1));
-        modificationTime > currentTimePlusOneYear || modificationTime < 0) {
+        modificationTime > currentTimePlusOneYear) {
         LOGW_WARN(_logger, L"Modification time of item with "
                                    << Utility::formatSyncPath(absolutePath)
                                    << L" is either negative or more than 1 year into the future. Setting it with current time.");

@@ -299,6 +299,45 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(timestamp, filestat.creationTime);
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), filestat.modificationTime);
 #endif
+
+        // Test with out of bounds creation date & modification date.
+        filepath = tempDir.path() / "test5.txt";
+        testhelpers::generateOrEditTestFile(filepath);
+
+#if defined(KD_MACOS)
+        // APFS limits: [≈1677, ≈2262]
+        const SyncTime macOSMinDate = -9223372037LL; // Sep 21, 1677
+        ioError = IoHelper::setFileDates(filepath, macOSMinDate, macOSMinDate, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
+        CPPUNIT_ASSERT_EQUAL(macOSMinDate, filestat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(macOSMinDate, filestat.modificationTime);
+
+        const SyncTime macOSOutOfBoundsDate = macOSMinDate - 1;
+        ioError = IoHelper::setFileDates(filepath, macOSOutOfBoundsDate, macOSOutOfBoundsDate, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
+        CPPUNIT_ASSERT_EQUAL(macOSMinDate, filestat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(macOSMinDate, filestat.modificationTime);
+#elif defined(KD_WINDOWS)
+        // NTFS limits: [1601-01-01, ≈30828]
+        const SyncTime windowsMinDate = -11644473600LL; // January 1, 1601
+        ioError = IoHelper::setFileDates(filepath, windowsMinDate, windowsMinDate, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
+        CPPUNIT_ASSERT_EQUAL(windowsMinDate, filestat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(windowsMinDate, filestat.modificationTime);
+
+        const SyncTime windowsOutOfBoundsDate = windowsMinDate - 1;
+        ioError = IoHelper::setFileDates(filepath, windowsOutOfBoundsDate, windowsMinDate, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+
+        ioError = IoHelper::setFileDates(filepath, windowsMinDate, windowsOutOfBoundsDate, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+#endif
     }
 
     // Test on a non-existing file.

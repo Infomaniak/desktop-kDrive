@@ -327,6 +327,11 @@ void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
 
 IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
+    // NSDate stores an NSTimeInterval (Double) in seconds relative to the reference date: January 1, 2001, 00:00:00 UTC
+    // => NSDate can represent a date in ≈ [2001-01-01 - 1,8×10^308 sec, 2001-01-01 + 1,8×10^308 sec]
+    // SyncTime stores a int64_t number in seconds relative to the reference date: January 1, 1970, 00:00:00 UTC
+    // => SyncTime can represent a date in [1970-01-01 - 2^63 sec, 1970-01-01 + 2^63 - 1 sec], interval included within that of
+    // NSDate
     NSDate *_Nonnull cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
     NSDate *_Nonnull mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
     NSString *_Nonnull filePathStr = (NSString *_Nonnull) [NSString stringWithUTF8String:filePath.native().c_str()];

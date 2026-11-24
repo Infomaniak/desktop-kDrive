@@ -969,31 +969,42 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     return success;
 }
 
-#define CSYNC_SECONDS_SINCE_1601 11644473600LL
-#define CSYNC_USEC_IN_SEC 1000000LL
+// Number of seconds between Windows FILETIME (January 1, 1601) and the Unix epoch (January 1, 1970).
+static constexpr auto secondsBetween1601And1970 = 11644473600LL;
+static constexpr auto usecPerSec = 1000000LL;
 
-static void UnixTimevalToFileTime(timeval t, LPFILETIME pft) {
-    LONGLONG ll;
-    ll = Int32x32To64(t.tv_sec, CSYNC_USEC_IN_SEC * 10) + t.tv_usec * 10 + CSYNC_SECONDS_SINCE_1601 * CSYNC_USEC_IN_SEC * 10;
+static void unixTimevalToWindowsFileTime(timeval t, LPFILETIME pft) {
+    pft->dwLowDateTime = 0;
+    pft->dwHighDateTime = 0;
+
+    // timeval.tv_sec (long): number of seconds since January 1, 1970.
+    // timeval.tv_usec (long): fraction of a second expressed in microseconds (0 to 999999).
+    // FILETIME: 64-bit integer representing the number of 100-nsec intervals since January 1, 1601.
+    LONGLONG ll = ((secondsBetween1601And1970 + static_cast<LONGLONG>(t.tv_sec)) * usecPerSec + t.tv_usec) *
+                  10; // *10 to convert usec to 100-nsec intervals.
+    if (ll < 0) {
+        // Out of bounds.
+        ll = std::numeric_limits<LONGLONG>::max();
+    }
+
     pft->dwLowDateTime = (DWORD) ll;
     pft->dwHighDateTime = ll >> 32;
 }
 
 IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate, const SyncTime modificationDate,
                                const bool) noexcept {
-    FILETIME creationTime;
-
     // Set creation time
     timeval times[1];
     times[0].tv_sec = creationDate;
     times[0].tv_usec = 0;
-    UnixTimevalToFileTime(times[0], &creationTime);
+    FILETIME creationTime;
+    unixTimevalToWindowsFileTime(times[0], &creationTime);
 
-    FILETIME modificationTime;
     // Set modification time
     times[0].tv_sec = modificationDate;
     times[0].tv_usec = 0;
-    UnixTimevalToFileTime(times[0], &modificationTime);
+    FILETIME modificationTime;
+    unixTimevalToWindowsFileTime(times[0], &modificationTime);
 
     HANDLE hFile = INVALID_HANDLE_VALUE;
     for (bool isDirectory: {false, true}) {
@@ -1023,6 +1034,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
         return IoError::Unknown;
     }
 
+    // !!! If the date falls outside the file system's limits, it will be adjusted to the value of the nearest boundary.
     if (!SetFileTime(hFile, &creationTime, nullptr, &modificationTime)) {
         auto ioError = IoError::Unknown;
         DWORD dwError = GetLastError();
