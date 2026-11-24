@@ -27,6 +27,8 @@ IKInformationBlock {
     id: root
 
     required property int errorCount
+    // Errors already announced to screen readers: new ones are announced while the window is in use.
+    property int announcedErrorCount: 0
 
     signal actionTriggered
 
@@ -35,10 +37,19 @@ IKInformationBlock {
         root.focusPrimaryAction();
     }
 
+    function announceNewErrors() {
+        if (root.visible && root.errorCount > root.announcedErrorCount && root.Window.active) {
+            root.Accessible.announce(root.plainTitle);
+        }
+        root.announcedErrorCount = root.visible ? root.errorCount : 0;
+    }
+
     title: qsTrId("informationBlockSynchroErrorTitle", root.errorCount)
     titleTextFormat: Text.StyledText
     subtitle: qsTrId("informationBlockSynchroErrorSubtitle")
     surfaceColor: IKColors.errorBannerSurface
     primaryActionText: qsTrId("buttonFixErrors")
     onPrimaryActionTriggered: root.actionTriggered()
+    onErrorCountChanged: root.announceNewErrors()
+    onVisibleChanged: root.announceNewErrors()
 }
