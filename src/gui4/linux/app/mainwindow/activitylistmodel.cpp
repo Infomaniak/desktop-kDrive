@@ -399,7 +399,7 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.syncDbId = syncDbId;
     row.name = itemName(relativePath);
     row.fileIconName = _fileIconResolver.iconName(row.name, activity.nodeType);
-    row.subtitleKind = subtitleKind(activity);
+    row.subtitleKind = subtitleKind(activity, status);
     row.subtitleText = formatSubtitle(row.subtitleKind, activity.receivedAtUtc);
     row.exactTimeText = formatExactTime(activity.receivedAtUtc);
     row.changeText = formatChange(activity);
@@ -457,7 +457,11 @@ bool ActivityListModel::isPinnedTransfer(const Row &row) {
     return row.status == Status::InProgress && row.size >= minPinnedTransferSize;
 }
 
-ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEntry &activity) {
+ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEntry &activity, const Status status) {
+    if (status == Status::InProgress) {
+        return SubtitleKind::Syncing;
+    }
+
     switch (activity.instruction) {
         using enum SyncFileInstruction;
 
@@ -476,8 +480,8 @@ ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEn
                 return SubtitleKind::Renamed;
             }
             return SubtitleKind::Moved;
+        // A file arriving from the drive and a file sent to it both read "Added" once done.
         case Get:
-            return SubtitleKind::Imported;
         case Put:
             return SubtitleKind::Added;
     }
@@ -485,6 +489,10 @@ ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEn
 }
 
 QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTime &timestampUtc, const QDateTime &nowUtc) {
+    if (kind == SubtitleKind::Syncing) {
+        return qtTrId("labelSynchronisation");
+    }
+
     const QString relativeTime = formatRelativeTime(timestampUtc, nowUtc);
     if (relativeTime.isEmpty()) {
         return {};
@@ -504,11 +512,10 @@ QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTi
         case SubtitleKind::Moved:
             translationId = "activityInstructionMoveWithTimeLabel";
             break;
-        case SubtitleKind::Imported:
-            translationId = "activityInstructionGetWithTimeLabel";
-            break;
         case SubtitleKind::Added:
             translationId = "activityInstructionPutWithTimeLabel";
+            break;
+        case SubtitleKind::Syncing:
             break;
     }
     if (translationId == nullptr) {

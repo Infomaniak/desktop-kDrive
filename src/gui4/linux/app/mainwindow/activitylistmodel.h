@@ -144,8 +144,9 @@ class ActivityListModel final : public QAbstractListModel {
             Removed,
             Renamed,
             Moved,
-            Imported,
             Added,
+            // A transfer in progress, whatever its direction: the time only comes once it is done.
+            Syncing,
         };
 
         static constexpr MatchScore noMatchScore = 0;
@@ -192,7 +193,7 @@ class ActivityListModel final : public QAbstractListModel {
         [[nodiscard]] static MatchScore errorMatchScore(const Row &row, const Error &error);
         [[nodiscard]] static AvailableActions availableActions(const Row &row);
         [[nodiscard]] static bool isPinnedTransfer(const Row &row);
-        [[nodiscard]] static SubtitleKind subtitleKind(const ActivityEntry &activity);
+        [[nodiscard]] static SubtitleKind subtitleKind(const ActivityEntry &activity, Status status);
         [[nodiscard]] static QString formatSubtitle(SubtitleKind kind, const QDateTime &timestampUtc,
                                                     const QDateTime &nowUtc = QDateTime::currentDateTimeUtc());
         void finalizeProjection(std::vector<Row> &rows) const;
