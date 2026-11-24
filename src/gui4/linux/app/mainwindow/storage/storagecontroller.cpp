@@ -34,8 +34,6 @@
 #include <unordered_set>
 #include <utility>
 
-using namespace Qt::StringLiterals;
-
 namespace KDC {
 
 namespace {
@@ -202,8 +200,8 @@ QString StorageController::subscriptionName() const {
         return {};
     }
 
-    const QString displayName = QString::fromStdString(drive->packInfo().displayName());
-    return AppConstants::Drive::isStandaloneDrivePack(drive->packInfo().name()) ? u"kDrive %1"_s.arg(displayName) : displayName;
+    // The pack info already names the product ("kDrive Solo", "kSuite Pro").
+    return QString::fromStdString(drive->packInfo().displayName());
 }
 
 bool StorageController::storageWarning() const {

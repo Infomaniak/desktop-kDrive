@@ -49,12 +49,6 @@ namespace KDC::AppConstants::Drive {
     return QColor{QStringLiteral("#0098FF")};
 }
 
-// Standalone kDrive offers, as opposed to kSuite and my kSuite ones. The API names them without the product ("Team").
-[[nodiscard]] inline bool isStandaloneDrivePack(const std::string_view packName) {
-    constexpr std::array<std::string_view, 4> standaloneDrivePacks{"free", "solo", "team", "pro"};
-    return std::ranges::find(standaloneDrivePacks, packName) != standaloneDrivePacks.end();
-}
-
 // Language of the Infomaniak shop pages: the application language when the site offers it, English otherwise.
 [[nodiscard]] inline QString shopLanguageCode() {
     constexpr std::array<std::string_view, 7> shopLanguages{"en", "fr", "de", "es", "it", "pt", "nl"};
