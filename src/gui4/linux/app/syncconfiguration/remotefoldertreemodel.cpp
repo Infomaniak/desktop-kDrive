@@ -356,7 +356,11 @@ void RemoteFolderTreeModel::handleInitialExclusionPathResult(const QString &node
     if (_pendingInitialPathRequests > 0) --_pendingInitialPathRequests;
 
     if (exitInfo && !info.path().isEmpty()) {
-        (void) _excludedPaths.insert(nodeId, info.path().normalized(QString::NormalizationForm_C));
+        // The node info path has no leading separator, unlike the listed paths it is compared with: without it, the
+        // ancestors of an excluded folder only show their partial state once that folder is listed.
+        QString path = info.path().normalized(QString::NormalizationForm_C);
+        if (!path.startsWith(u'/')) path.prepend(u'/');
+        (void) _excludedPaths.insert(nodeId, path);
     } else if (!exitInfo && exitInfo.cause() == ExitCause::NotFound) {
         // The folder was deleted remotely since it was blacklisted: dropping it keeps the blacklist canonical.
         (void) _excludedNodeIds.remove(nodeId);
