@@ -91,6 +91,7 @@ Rectangle {
                 enabled: root.controller.canOpenCurrentSyncFolder
                 iconSource: "qrc:/assets/main/folder.svg"
                 label: qsTrId("buttonOpenFolder")
+                selectable: false
                 actionId: root.actionIdPrefix + ".openSyncFolder"
                 width: parent.width
 

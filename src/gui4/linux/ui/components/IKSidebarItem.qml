@@ -29,6 +29,8 @@ Button {
     property url iconSource
     property string label: ""
     property bool selected: false
+    // A navigation entry, whose selection screen readers announce; false for a row that runs an action.
+    property bool selectable: true
     property int badgeCount: 0
     property bool notificationDot: false
     property color notificationColor: IKColors.actionPrimary
@@ -44,6 +46,9 @@ Button {
     focusPolicy: enabled ? Qt.StrongFocus : Qt.NoFocus
     hoverEnabled: enabled
     text: label
+    Accessible.role: root.selectable ? Accessible.PageTab : Accessible.Button
+    Accessible.selectable: root.selectable
+    Accessible.selected: root.selectable && root.selected
     onClicked: {
         UserActionLog.action(actionId, actionDetails);
         triggered();
