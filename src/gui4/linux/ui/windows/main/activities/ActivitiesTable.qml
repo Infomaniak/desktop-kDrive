@@ -133,6 +133,12 @@ Item {
                 listView.moveCurrentTo(Math.max(0, listView.currentIndex));
             }
         }
+        // A row replaced under the cursor (filter change, incoming activities) hands the focus to the new current row.
+        onCurrentItemChanged: {
+            if (listView.activeFocus && listView.currentItem && !listView.currentItem.activeFocus) {
+                listView.currentItem.forceActiveFocus();
+            }
+        }
         Keys.onUpPressed: listView.moveCurrentTo(listView.currentIndex - 1)
         Keys.onDownPressed: listView.moveCurrentTo(listView.currentIndex + 1)
         Keys.onPressed: event => {

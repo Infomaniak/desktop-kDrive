@@ -49,6 +49,8 @@ Button {
     Accessible.role: root.selectable ? Accessible.PageTab : Accessible.Button
     Accessible.selectable: root.selectable
     Accessible.selected: root.selectable && root.selected
+    // Qt gives the press action to buttons only: a page tab keeps it through this handler.
+    Accessible.onPressAction: root.clicked()
     onClicked: {
         UserActionLog.action(actionId, actionDetails);
         triggered();

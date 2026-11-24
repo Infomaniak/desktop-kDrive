@@ -202,7 +202,7 @@ Rectangle {
                 focusPolicy: Qt.StrongFocus
                 hoverEnabled: true
                 // "Close" alone does not say what is closed: the title tells screen reader users.
-                Accessible.description: root.title
+                Accessible.description: root.plainTitle
                 onClicked: {
                     UserActionLog.action(root.actionId + ".dismiss");
                     root.dismissRequested();
