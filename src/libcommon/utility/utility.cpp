@@ -557,6 +557,17 @@ bool CommonUtility::isStrictDescendant(const SyncPath &potentialDescendant, cons
     return isDescendantOrEqual(potentialDescendant, path);
 }
 
+bool CommonUtility::isSafeItemName(const SyncName &name) {
+    if (name.empty() || name == Str(".") || name == Str("..")) return false;
+    for (const SyncChar c: name) {
+        if (c == SyncChar('\0') || c == SyncChar('/')) return false;
+#if defined(KD_WINDOWS)
+        if (c == SyncChar('\\')) return false;
+#endif
+    }
+    return true;
+}
+
 std::string CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:

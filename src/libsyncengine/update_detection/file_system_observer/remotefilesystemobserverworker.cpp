@@ -1346,9 +1346,18 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_unused]] const SyncName &name,
-                                                                       [[maybe_unused]] const NodeId &remoteNodeId,
-                                                                       [[maybe_unused]] const NodeType type) {
+ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const SyncName &name, const NodeId &remoteNodeId,
+                                                                       const NodeType type) {
+    // Remote names are untrusted: reject, on all platforms, any name that cannot be safely appended to a local path
+    // (e.g. "..\0x" is truncated at the NUL character by native APIs and resolves to the parent directory).
+    if (!CommonUtility::isSafeItemName(name)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unsafe remote item name: " << Utility::formatSyncName(name) << L", nodeId="
+                                                                << CommonUtility::s2ws(remoteNodeId) << L". Item is ignored.");
+        _syncPal->addError(
+                Error(_syncPal->syncDbId(), "", remoteNodeId, type, name, ConflictType::None, InconsistencyType::ForbiddenChar));
+        return {ExitCode::SystemError, ExitCause::InvalidName};
+    }
+
     ExitInfo exitInfo = ExitCode::Ok;
 
 #if defined(KD_MACOS)

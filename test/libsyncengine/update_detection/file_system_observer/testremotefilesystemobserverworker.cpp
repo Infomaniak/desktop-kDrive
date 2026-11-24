@@ -448,6 +448,58 @@ Z",file,4,1789735691,1789735698,1,)csv";
     _syncPal->setAddErrorCallback(nullptr);
 }
 
+void TestRemoteFileSystemObserverWorker::testInsertItemWithUnsafeName() {
+    // This test does not require any remote drive access.
+    const auto remoteFSObserverWorker =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(remoteFSObserverWorker);
+
+    LiveSnapshot &liveSnapshot = remoteFSObserverWorker->_liveSnapshot;
+    const NodeId rootId = liveSnapshot.rootFolderId();
+    CPPUNIT_ASSERT(!rootId.empty());
+    if (rootId != NodeId("1")) {
+        const SnapshotItem driveRootItem("1", rootId, Str("kDrive"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                         NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
+        CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
+    }
+
+    int nbErrors = 0;
+    _syncPal->setAddErrorCallback([&nbErrors](const Error &reportedError) {
+        ++nbErrors;
+        CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, reportedError.inconsistencyType());
+    });
+
+    // The kDrive API accepts and returns names with an embedded NUL character. Native APIs truncate "..\0x" to "..", which
+    // would make the sync engine act on the parent of the target directory (e.g. the sync root itself).
+    const std::string unsafeLines = std::string("18,1,..") + '\0' + "x,dir,,1789735691,1789735698,1,\n" + "19,1,Documents" +
+                                    '\0' + ",file,4,1789735691,1789735698,1,\n";
+    std::stringstream ss;
+    ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+       << unsafeLines << "20,1,safe.txt,file,4,1789735691,1789735698,1,\n"
+       << endOfFileDelimiter;
+
+    RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
+    RemoteSnapshotItem item;
+    bool error = false;
+    bool ignore = false;
+    bool eof = false;
+    SyncNameSet existingFiles;
+    while (handler.getItem(item, ss, error, ignore, eof)) {
+        if (ignore) continue;
+        if (eof) break;
+        CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInRemoteSnapshot(item, existingFiles));
+    }
+    CPPUNIT_ASSERT(!error);
+    CPPUNIT_ASSERT(eof);
+
+    CPPUNIT_ASSERT_EQUAL(2, nbErrors);
+    CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("18"));
+    CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("19"));
+    CPPUNIT_ASSERT(liveSnapshot.exists("20"));
+
+    _syncPal->setAddErrorCallback(nullptr);
+}
+
 void TestRemoteFileSystemObserverWorker::testExtractActionInfo() {
     Poco::JSON::Object::Ptr actionObject = new Poco::JSON::Object();
 

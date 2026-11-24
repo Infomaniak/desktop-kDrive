@@ -549,6 +549,31 @@ void TestUtility::testTryCreateTmpFile() {
     }
 }
 
+void TestUtility::testTryCreateTmpItemWithUnsafeName() {
+    // A remote name such as "..\0x" is truncated at the NUL character by native APIs and would resolve to the sync root.
+    const LocalTemporaryDirectory syncDir;
+    const auto cacheDirectory = std::make_shared<CacheDirectory>(syncDir.path());
+    const SyncPath canaryPath = syncDir.path() / Str("canary.txt");
+    testhelpers::generateTestFile(canaryPath);
+
+    const std::vector<SyncName> unsafeNames = {SyncName(Str("..\0x"), 4),
+                                               SyncName(Str("..\0"), 3),
+                                               SyncName(Str(".\0x"), 3),
+                                               SyncName(Str("a\0b"), 3),
+                                               Str(".."),
+                                               Str("."),
+                                               Str("../x")};
+    for (const auto &name: unsafeNames) {
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::InvalidName),
+                             Utility::tryCreateTmpFile(cacheDirectory, name));
+#if defined(KD_MACOS)
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::InvalidName),
+                             Utility::tryCreateTmpDir(cacheDirectory, name));
+#endif
+        CPPUNIT_ASSERT(std::filesystem::exists(canaryPath));
+    }
+}
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
 void TestUtility::testEscapePath() {
     // Test simple path without special characters

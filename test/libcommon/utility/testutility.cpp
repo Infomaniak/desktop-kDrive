@@ -179,12 +179,12 @@ void TestUtility::testStringToAppStateValue() {
     value = int(0);
     CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("50", value));
     CPPUNIT_ASSERT(std::holds_alternative<int>(value));
-    CPPUNIT_ASSERT_EQUAL(50, std ::get<int>(value));
+    CPPUNIT_ASSERT_EQUAL(50, std::get<int>(value));
 
     value = bool(false);
     CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("1", value));
     CPPUNIT_ASSERT(std::holds_alternative<bool>(value));
-    CPPUNIT_ASSERT_EQUAL(true, std ::get<bool>(value));
+    CPPUNIT_ASSERT_EQUAL(true, std::get<bool>(value));
 
     value = LogUploadState::None;
     CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("1", value));
@@ -941,6 +941,26 @@ void TestUtility::testToLower() {
 
     CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
                          CommonUtility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+}
+
+void TestUtility::testIsSafeItemName() {
+    CPPUNIT_ASSERT(CommonUtility::isSafeItemName(Str("file.txt")));
+    CPPUNIT_ASSERT(CommonUtility::isSafeItemName(Str("...")));
+    CPPUNIT_ASSERT(CommonUtility::isSafeItemName(Str("..a")));
+    CPPUNIT_ASSERT(CommonUtility::isSafeItemName(Str(" ")));
+
+    CPPUNIT_ASSERT(!CommonUtility::isSafeItemName(Str("")));
+    CPPUNIT_ASSERT(!CommonUtility::isSafeItemName(Str(".")));
+    CPPUNIT_ASSERT(!CommonUtility::isSafeItemName(Str("..")));
+    CPPUNIT_ASSERT(!CommonUtility::isSafeItemName(Str("a/b")));
+    // Native APIs truncate at the NUL character: "..\0x" would resolve to the parent directory.
+    CPPUNIT_ASSERT(!CommonUtility::isSafeItemName(SyncName(Str("..\0x"), 4)));
+    CPPUNIT_ASSERT(!CommonUtility::isSafeItemName(SyncName(Str("a\0"), 2)));
+#if defined(KD_WINDOWS)
+    CPPUNIT_ASSERT(!CommonUtility::isSafeItemName(Str("a\\b")));
+#else
+    CPPUNIT_ASSERT(CommonUtility::isSafeItemName(Str("a\\b")));
+#endif
 }
 
 void TestUtility::testIsSameOrParentPath() {

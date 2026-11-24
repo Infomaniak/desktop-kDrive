@@ -517,6 +517,11 @@ static constexpr uint64_t maxNbCreationTmpFolderRetries = 3;
 ExitInfo Utility::tryCreateTmpDir([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
                                   const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
+    if (!CommonUtility::isSafeItemName(name)) {
+        LOGW_WARN(logger(), L"Unsafe name for a tmp directory: " << Utility::formatSyncName(name));
+        return {ExitCode::SystemError, ExitCause::InvalidName};
+    }
+
     if (!cacheDirectory) {
         LOG_WARN(logger(), "Cache directory not provided!");
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
@@ -548,6 +553,12 @@ ExitInfo Utility::tryCreateTmpDir([[maybe_unused]] const std::shared_ptr<CacheDi
                 IoHelper::stdError2ioError(ec) == IoError::AccessDenied ? ExitCause::TmpDirAccessError : ExitCause::Unknown};
     }
 
+    if (!directoryCreated) {
+        // Never delete a directory that this function did not create.
+        LOGW_WARN(logger(), L"Failed to create a tmp directory with " << Utility::formatSyncName(name));
+        return {ExitCode::SystemError, ExitCause::InvalidName};
+    }
+
     auto ioError = IoError::Unknown;
     (void) IoHelper::deleteItem(tmpPath, ioError);
 #else
@@ -573,6 +584,11 @@ ExitInfo checkTmpDirectoryRights(const SyncPath &path) {
 
 ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDirectory,
                                    const SyncName &name /*= Str("testFile")*/) {
+    if (!CommonUtility::isSafeItemName(name)) {
+        LOGW_WARN(logger(), L"Unsafe name for a tmp file: " << Utility::formatSyncName(name));
+        return {ExitCode::SystemError, ExitCause::InvalidName};
+    }
+
     if (!cacheDirectory) {
         LOG_WARN(logger(), "Cache directory not provided!");
         return {ExitCode::SystemError, ExitCause::InvalidArgument};

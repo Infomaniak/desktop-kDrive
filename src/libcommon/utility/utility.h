@@ -276,6 +276,12 @@ struct COMMON_EXPORT CommonUtility {
 
         static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
         static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
+        /**
+         * @brief Check that a single item name can be safely appended to a directory path.
+         * Native APIs truncate paths at the first NUL character, so a name such as "..\0x" would resolve to the parent directory.
+         * @return false if the name is empty, "." or "..", or contains a NUL character or a path separator.
+         */
+        static bool isSafeItemName(const SyncName &name);
 
 
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
