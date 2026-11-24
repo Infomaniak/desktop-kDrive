@@ -844,23 +844,22 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
 
     if (syncRootPath.empty()) return IoError::Success;
 
-    std::error_code ec;
-    const auto canonicalPath = std::filesystem::weakly_canonical(path, ec);
-    if (ec.value()) {
-        LOGW_WARN(logger(), L"Failed to get canonical path for " << Utility::formatStdError(path, ec));
-        return stdError2ioError(ec);
-    }
-
-    const auto canonicalRootPath = std::filesystem::weakly_canonical(syncRootPath, ec);
-    if (ec.value()) {
-        LOGW_WARN(logger(), L"Failed to get canonical path for " << Utility::formatStdError(syncRootPath, ec));
-        return stdError2ioError(ec);
-    }
-
-    if (!CommonUtility::isDescendantOrEqual(canonicalPath, canonicalRootPath)) {
+    if (!CommonUtility::isDescendantOrEqual(path, syncRootPath)) {
         LOGW_WARN(logger(), L"Path " << Utility::formatSyncPath(path) << L" is not located under the sync root "
                                      << Utility::formatSyncPath(syncRootPath));
         return IoError::InvalidArgument;
+    }
+
+    // Reject parent references below the sync root, e.g. "/sync_root/../outside". The path is intentionally not normalized,
+    // since lexical normalization could hide the traversal of a link (e.g. "/sync_root/link/..").
+    auto componentIt = path.begin();
+    const SyncPath rootPath = CommonUtility::trimTrailingSeparator(syncRootPath);
+    std::advance(componentIt, std::distance(rootPath.begin(), rootPath.end()));
+    for (; componentIt != path.end(); ++componentIt) {
+        if (*componentIt == Str("..")) {
+            LOGW_WARN(logger(), L"Path " << Utility::formatSyncPath(path) << L" contains a parent reference");
+            return IoError::InvalidArgument;
+        }
     }
 
     // Check each ancestor directory of `path` located strictly below the sync root, from the closest to the farthest. The final

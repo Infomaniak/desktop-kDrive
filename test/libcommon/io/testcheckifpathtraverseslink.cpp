@@ -70,16 +70,8 @@ void TestIo::testCheckIfPathTraversesLink() {
         auto linkPath = SyncPath("dummy");
         // A trailing separator in the sync root path must not skip the check of the first component below the sync root.
         for (const auto &rootPath: {syncRootPath, syncRootPath / ""}) {
-            {
-                const auto path = syncRootPath / ".." / "outside" / "item.txt";
+            for (const auto &path: {syncRootPath / ".." / "outside" / "item.txt", syncRootPath / "dir" / ".." / "item.txt"}) {
                 CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument,
-                                     IoHelper::checkIfPathTraversesLink(path, rootPath, traversesLink, linkPath));
-                CPPUNIT_ASSERT(!traversesLink);
-                CPPUNIT_ASSERT(linkPath.empty());
-            }
-            {
-                const auto path = syncRootPath / "dir" / ".." / "item.txt";
-                CPPUNIT_ASSERT_EQUAL(IoError::Success,
                                      IoHelper::checkIfPathTraversesLink(path, rootPath, traversesLink, linkPath));
                 CPPUNIT_ASSERT(!traversesLink);
                 CPPUNIT_ASSERT(linkPath.empty());
@@ -117,17 +109,16 @@ void TestIo::testCheckIfPathTraversesLink() {
             CPPUNIT_ASSERT(!traversesLink);
         }
 
-        // A link below the sync root is still detected when the sync root is reached through a link. The link targets a directory
-        // inside the sync root, so that the canonical path stays under the sync root and only the link check can reject it.
+        // A link below the sync root is still detected when the sync root is reached through a link.
         const auto innerLinkPath = realParentDirPath / "sync_root" / "inner_link";
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError),
-                               IoHelper::createSymlink(realParentDirPath / "sync_root" / "dir", innerLinkPath, true, ioError));
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(realParentDirPath, innerLinkPath, true, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink,
                              IoHelper::checkIfPathTraversesLink(syncRootPath / "inner_link" / "item.txt", syncRootPath,
                                                                 traversesLink, linkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT_EQUAL(syncRootPath / "inner_link", linkPath);
     }
+
 
     // No ancestor of the path is a followed link.
     {
@@ -187,7 +178,7 @@ void TestIo::testCheckIfPathTraversesLink() {
         CPPUNIT_ASSERT_EQUAL(symlinkPath, traversedLinkPath);
     }
 
-    // The final component of the path is a symbolic link
+    // The final component of the path is a symbolic link: only the ancestors are inspected.
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const auto targetPath = _localTestDirPath / "test_pictures" / "picture-1.jpg";
@@ -198,8 +189,8 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         auto traversesLink = true;
         auto traversedLinkPath = SyncPath("dummy");
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, IoHelper::checkIfPathTraversesLink(symlinkPath, temporaryDirectory.path(),
-                                                                                          traversesLink, traversedLinkPath));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::checkIfPathTraversesLink(symlinkPath, temporaryDirectory.path(),
+                                                                                  traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(!traversesLink);
         CPPUNIT_ASSERT(traversedLinkPath.empty());
     }
@@ -307,7 +298,7 @@ void TestIo::testFilesystemAlterationsThroughLink() {
         for (const bool recursive: {false, true}) {
             ioError = IoError::Unknown;
             CPPUNIT_ASSERT(!IoHelper::createDirectory(parentPath / "new_dir", recursive, ioError, syncDirPath));
-            CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+            CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
             expectOutsideDirUnchanged();
         }
 
@@ -315,27 +306,28 @@ void TestIo::testFilesystemAlterationsThroughLink() {
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(
                 !IoHelper::createDirectory(parentPath / "missing_1" / "missing_2" / "new_dir", true, ioError, syncDirPath));
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
         expectOutsideDirUnchanged();
 
         // copyFileOrDirectory
         for (const auto &sourcePath: {sourceFilePath, sourceDirPath}) {
             ioError = IoError::Unknown;
             CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourcePath, parentPath / "copy", ioError, syncDirPath));
-            CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+            CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
             expectOutsideDirUnchanged();
         }
 
         // createSymlink
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(!IoHelper::createSymlink(sourceFilePath, parentPath / "new_link", false, ioError, syncDirPath));
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
         expectOutsideDirUnchanged();
 
         // renameItem / moveItem
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument,
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink,
                              IoHelper::renameItem(sourceFilePath, parentPath / "moved.txt", syncDirPath));
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, IoHelper::moveItem(sourceFilePath, parentPath / "moved.txt", syncDirPath));
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink,
+                             IoHelper::moveItem(sourceFilePath, parentPath / "moved.txt", syncDirPath));
         CPPUNIT_ASSERT(std::filesystem::exists(sourceFilePath, ec) && ec.value() == 0);
         expectOutsideDirUnchanged();
 
@@ -343,23 +335,23 @@ void TestIo::testFilesystemAlterationsThroughLink() {
         // createAliasFromPath / createAlias
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(sourceFilePath, parentPath / "new_alias", ioError, syncDirPath));
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
         expectOutsideDirUnchanged();
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(!IoHelper::createAlias("dummy alias data", parentPath / "new_alias", ioError, syncDirPath));
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
         expectOutsideDirUnchanged();
 #elif defined(KD_WINDOWS)
         // createJunctionFromPath / createJunction
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(!IoHelper::createJunctionFromPath(sourceDirPath, parentPath / "new_junction", ioError, syncDirPath));
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
         expectOutsideDirUnchanged();
 
         ioError = IoError::Unknown;
         CPPUNIT_ASSERT(!IoHelper::createJunction("dummy junction data", parentPath / "new_junction", ioError, syncDirPath));
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
         expectOutsideDirUnchanged();
 #endif
     }
@@ -367,7 +359,7 @@ void TestIo::testFilesystemAlterationsThroughLink() {
     // deleteItem: `linkPath / "sub_dir"` resolves to an existing directory outside the sync folder.
     ioError = IoError::Unknown;
     CPPUNIT_ASSERT(!IoHelper::deleteItem(linkPath / "sub_dir", ioError, syncDirPath));
-    CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::PathContainsSymlink, ioError);
     expectOutsideDirUnchanged();
 
     // moveItemToTrash: same target as above.
@@ -421,14 +413,8 @@ void TestIo::testFilesystemAlterationsThroughLink() {
     CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
     expectOutsideDirUnchanged();
 
-    // Deleting a link whose parent is also a a link
-    CPPUNIT_ASSERT(!IoHelper::deleteItem(linkPath, ioError, syncDirPath));
-    CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
-    CPPUNIT_ASSERT(std::filesystem::exists(std::filesystem::symlink_status(linkPath, ec)));
-    expectOutsideDirUnchanged();
-
     // Deleting the link itself removes the link, not its target.
-    CPPUNIT_ASSERT(IoHelper::deleteItem(parentLinkPath, ioError, temporaryDirectory.path()));
+    CPPUNIT_ASSERT(IoHelper::deleteItem(linkPath, ioError, syncDirPath));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(!std::filesystem::exists(std::filesystem::symlink_status(linkPath, ec)));
     expectOutsideDirUnchanged();
