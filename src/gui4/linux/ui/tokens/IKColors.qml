@@ -203,6 +203,7 @@ QtObject {
     readonly property color homeSyncBadgeSurface: surfacePrimary
     readonly property color activitiesFilterSurface: surfaceSecondary
     readonly property color activitiesRowAlternateSurface: surfaceSecondary
+    readonly property color activitiesRowCurrent: surfaceTertiary
     readonly property color activitiesDivider: surfaceTertiary
     readonly property color activitiesFileIcon: textTertiary
     readonly property color activitiesSourceIcon: textTertiary
