@@ -122,9 +122,10 @@ void TestDeleteItemAtomically::testDeleteThroughLinkPointingOutsideSyncDir() {
     const SyncPath linkPath = temporaryDirectory.path() / "test_link";
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(outsideDirectory.path(), linkPath, true, ioError));
 
-    // Deleting an item reached through the link must be rejected: the rename operation would otherwise move the item
-    // located outside of the sync directory into the cache directory, where it would be permanently deleted.
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown),
+    // Deleting an item reached through the link must be rejected, whatever the location of the link target: the rename
+    // operation would otherwise move the item located outside of the sync directory into the cache directory, where it
+    // would be permanently deleted.
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink),
                          IoHelper::deleteItemAtomically(linkPath / "test_file.txt", cacheDirectory));
 
     // The item located outside of the sync directory is left unmodified, and the cache directory as well.
