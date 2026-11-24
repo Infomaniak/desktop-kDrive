@@ -150,6 +150,17 @@ ExitInfo DownloadJob::resolveDownloadNeed() {
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
+    // Refuse to process an item that is not located under the sync directory or whose path traverses a symbolic link:
+    // dates or virtual file metadata updates, as well as content replacement, could otherwise be applied to an item
+    // located outside of the sync directory.
+    if (const auto checkIfPathTraversesLinkError =
+                IoHelper::checkIfPathTraversesLink(_fileDownloadInfo.localPath, _cacheDirectory->syncDirectoryPath());
+        checkIfPathTraversesLinkError != IoError::Success && checkIfPathTraversesLinkError != IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: "
+                                   << Utility::formatIoError(_fileDownloadInfo.localPath, checkIfPathTraversesLinkError));
+        return IoHelper::toExitInfo(checkIfPathTraversesLinkError, {ExitCode::SystemError, ExitCause::PathContainsSymlink});
+    }
+
     if (_fileDownloadInfo.isCreate) return AbstractTokenNetworkJob::runJob();
 
     computeHydrationStatus();
