@@ -70,6 +70,8 @@ Item {
                 font.pixelSize: IKFonts.headlineSize
                 font.weight: IKFonts.emphasized
                 wrapMode: Text.WordWrap
+                Accessible.role: Accessible.StaticText
+                Accessible.name: text
             }
 
             Text {
@@ -79,6 +81,8 @@ Item {
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
+                Accessible.role: Accessible.StaticText
+                Accessible.name: text
             }
 
             Button {

@@ -25,6 +25,21 @@ Rectangle {
     id: root
 
     required property var controller
+    // Status of the state shown before: the first state after loading is not announced, the window is read then.
+    property int previousStatus: HomeController.Loading
+
+    // Announces to screen readers the end of a synchronization, a pause or the loss of the connection, while the window
+    // is in use. Entering a synchronization is not announced: it would repeat with every change.
+    function announceStatus() {
+        const status = root.controller.status;
+        const announced = status === HomeController.UpToDate || status === HomeController.Paused
+                          || status === HomeController.Offline;
+        const state = stateLoader.item as HomeStateContent;
+        if (announced && root.previousStatus !== HomeController.Loading && root.Window.active && state) {
+            root.Accessible.announce(state.title);
+        }
+        root.previousStatus = status;
+    }
 
     radius: IKRadius.r16
     clip: true
@@ -55,8 +70,11 @@ Rectangle {
     }
 
     Loader {
+        id: stateLoader
+
         anchors.fill: parent
         anchors.margins: IKSpacing.s16
+        onLoaded: root.announceStatus()
         sourceComponent: {
             switch (root.controller.status) {
             case HomeController.UpToDate:

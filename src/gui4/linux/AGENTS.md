@@ -1054,6 +1054,10 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   not override go through `Accessible` directly: `expandable`/`expanded`, `selectable`/`selected`.
 - A modal derives from `T.Dialog` (`IKModal`, `SearchDialog`): screen readers read its `title` as the name of the
   dialog. Never attach `Accessible` to a `Popup` (Qt logs a warning) nor give its content a second `Dialog` role.
+- Qt never exposes a `Text` to screen readers: one that carries information declares `Accessible.role:
+  Accessible.StaticText` and an `Accessible.name` in plain text, without the markup of a styled text. The texts of one
+  row form a single name on the row. Announce important state changes with `Accessible.announce`, only while the
+  window is active (`Window.active`), and never for a state that changes continuously.
 - Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.

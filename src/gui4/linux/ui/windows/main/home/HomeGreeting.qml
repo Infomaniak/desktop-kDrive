@@ -51,6 +51,9 @@ Text {
               .arg(root.escaped(controller.firstName))
               .arg("<b>" + root.escaped(root.statusLabel()) + "</b>")
     textFormat: Text.StyledText
+    // The same sentence without the markup that sets the status in bold.
+    Accessible.role: Accessible.StaticText
+    Accessible.name: qsTrId("greetingLabel").arg(controller.firstName).arg(root.statusLabel())
     color: IKColors.textPrimary
     font.pixelSize: IKFonts.title3Size
     lineHeightMode: Text.FixedHeight
