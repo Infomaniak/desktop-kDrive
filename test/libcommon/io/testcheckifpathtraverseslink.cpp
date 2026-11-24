@@ -413,6 +413,19 @@ void TestIo::testFilesystemAlterationsThroughLink() {
     CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
     expectOutsideDirUnchanged();
 
+    // Renaming the link itself renames the link, not its target, even though the link points outside the sync folder.
+    {
+        const auto renamedLinkPath = syncDirPath / "renamed_link";
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::renameItem(linkPath, renamedLinkPath, syncDirPath));
+        CPPUNIT_ASSERT(!std::filesystem::exists(std::filesystem::symlink_status(linkPath, ec)));
+        CPPUNIT_ASSERT(std::filesystem::is_symlink(renamedLinkPath, ec) && ec.value() == 0);
+        CPPUNIT_ASSERT_EQUAL(outsideDirPath, std::filesystem::read_symlink(renamedLinkPath, ec));
+        CPPUNIT_ASSERT_EQUAL(0, ec.value());
+        expectOutsideDirUnchanged();
+
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::renameItem(renamedLinkPath, linkPath, syncDirPath));
+    }
+
     // Deleting the link itself removes the link, not its target.
     CPPUNIT_ASSERT(IoHelper::deleteItem(linkPath, ioError, syncDirPath));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
