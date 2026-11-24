@@ -1052,6 +1052,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   binds `checkState` and returns it from `nextCheckState`, so a click changes nothing by itself; keep `Accessible.checked`
   bound too, since a check state change does not update it (`IKCheckBox`, `IKSwitch`). Other states that buttons do
   not override go through `Accessible` directly: `expandable`/`expanded`, `selectable`/`selected`.
+- A modal derives from `T.Dialog` (`IKModal`, `SearchDialog`): screen readers read its `title` as the name of the
+  dialog. Never attach `Accessible` to a `Popup` (Qt logs a warning) nor give its content a second `Dialog` role.
 - Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.

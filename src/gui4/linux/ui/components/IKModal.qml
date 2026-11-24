@@ -21,14 +21,16 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Templates as T
 import kDrive.UI
 
 // Reusable in-app modal surface. It deliberately owns presentation and focus only; feature state and actions stay in
-// the dialog that supplies bodyData and footerData.
-Popup {
+// the dialog that supplies bodyData and footerData. A dialog template rather than a popup: screen readers read its
+// title as the name of the dialog.
+T.Dialog {
     id: root
 
-    required property string title
+    required title
     // Stable, language-independent id of the dialog in the user action log (see UserActionLog). Its opening and closing
     // are logged, Escape logs `<dialogId>.escape`, and its buttons derive their action ids from it.
     required property string dialogId
@@ -135,8 +137,6 @@ Popup {
         id: modalContent
 
         spacing: IKModalTokens.contentSpacing
-        Accessible.role: Accessible.Dialog
-        Accessible.name: root.title
 
         Item {
             width: parent.width

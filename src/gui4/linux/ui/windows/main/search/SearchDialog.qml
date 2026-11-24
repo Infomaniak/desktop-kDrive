@@ -20,11 +20,13 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Templates as T
 import kDrive.UI
 
 // Search dialog of the main window, copied from the macOS search sheet. It follows the IKModal conventions (overlay
-// parent, inset scrim, transitions) without its title and footer.
-Popup {
+// parent, inset scrim, transitions) without its visible title and footer. Like IKModal, it is a dialog template so that
+// screen readers read its title as the name of the dialog.
+T.Dialog {
     id: root
 
     // Prefix of the user action log ids of this file (see UserActionLog).
@@ -56,6 +58,7 @@ Popup {
     dim: true
     focus: true
     closePolicy: Popup.CloseOnPressOutside
+    title: qsTrId("accessibilitySearchSheetLabel")
 
     onAboutToShow: root.controller.open()
     onOpened: {
@@ -148,9 +151,6 @@ Popup {
     }
 
     contentItem: Item {
-        Accessible.role: Accessible.Dialog
-        Accessible.name: qsTrId("accessibilitySearchSheetLabel")
-
         SearchField {
             id: searchField
 
