@@ -562,7 +562,7 @@ bool CommonUtility::isSafeItemName(const SyncName &name) {
     for (const SyncChar c: name) {
         if (c == SyncChar('\0') || c == SyncChar('/')) return false;
 #if defined(KD_WINDOWS)
-        if (c == SyncChar('\\')) return false;
+        if (c == SyncChar('\\') || c == SyncChar(':')) return false;
 #endif
     }
     return true;
