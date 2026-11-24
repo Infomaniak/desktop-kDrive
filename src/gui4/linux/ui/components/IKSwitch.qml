@@ -18,10 +18,10 @@
 
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Controls.Basic
+import QtQuick.Templates as T
 import kDrive.UI
 
-AbstractButton {
+T.CheckBox {
     id: root
     required text
     property bool value: false
@@ -34,9 +34,14 @@ AbstractButton {
     implicitHeight: IKSettings.buttonHeight
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
+    // Screen readers read the state of the checkbox itself, which Accessible.checked cannot override on a button. It stays
+    // driven by `value`: a click keeps it, the owner sets the next one.
+    checkState: root.value ? Qt.Checked : Qt.Unchecked
+    nextCheckState: () => root.checkState
     Accessible.role: Accessible.CheckBox
-    Accessible.checkable: true
-    Accessible.checked: value
+    // Buttons copy their checked state into Accessible only when it is set through setChecked, which a check state
+    // change bypasses: the binding keeps screen readers in sync.
+    Accessible.checked: root.value
     Accessible.name: text
     Accessible.onPressAction: root.clicked()
     Accessible.onToggleAction: root.clicked()

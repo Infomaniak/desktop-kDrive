@@ -1047,6 +1047,11 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   logged once in `IKShadowedWindow.onClosing` (`window.close`), whatever closed the window.
 - Give a new Matomo event or page view an entry in `AnalyticsCatalog` with a category and event name of the kDrive v4
   taxonomy; never derive them from the log id.
+- Screen readers read the checked state of a button from the control itself: Qt overrides `Accessible.checkable` and
+  `Accessible.checked` on buttons. A checkbox or switch whose state belongs to its owner derives from `T.CheckBox`,
+  binds `checkState` and returns it from `nextCheckState`, so a click changes nothing by itself; keep `Accessible.checked`
+  bound too, since a check state change does not update it (`IKCheckBox`, `IKSwitch`). Other states that buttons do
+  not override go through `Accessible` directly: `expandable`/`expanded`, `selectable`/`selected`.
 - Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
