@@ -638,13 +638,12 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
             return ExitCode::BackError;
         }
 
-
 #if defined(KD_WINDOWS)
         pathStr = Utility::fixNameWithBackslash(pathStr);
 #endif
         // Use the QString overload of the translation: NodeInfo paths keep their leading separator, so that the
         // consumers can concatenate them directly onto the sync root.
-        QString path = QString::fromStdString(tmp);
+        QString path = SyncName2QStr(pathStr);
         ApiTranslator::translateV3ToV2(path);
         nodeInfo.setPath(path);
     }

@@ -99,6 +99,18 @@ void TestServerRequests::testGetPublicLink() {
     CPPUNIT_ASSERT(!url.empty());
 }
 
+// The node info carries the path of the node itself, translated and with its leading separator: GUIs compare it with
+// the paths of folder listings and append it to the local sync root.
+void TestServerRequests::testGetRemoteNodeInfoWithPath() {
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, "1", "testGetRemoteNodeInfoWithPath");
+
+    NodeInfo nodeInfo;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         ServerRequests::getRemoteNodeInfo(UserDbId{1}, _driveId, remoteTmpDir.id(), nodeInfo, true));
+    CPPUNIT_ASSERT_EQUAL(std::string("1"), nodeInfo.parentNodeId().toStdString());
+    CPPUNIT_ASSERT_EQUAL("/" + SyncName2Str(remoteTmpDir.name()), nodeInfo.path().toStdString());
+}
+
 void TestServerRequests::testFindGoodPathForNewSync() {
     SyncPath homePath;
     (void) CommonUtility::homeDirectoryPath(homePath);
