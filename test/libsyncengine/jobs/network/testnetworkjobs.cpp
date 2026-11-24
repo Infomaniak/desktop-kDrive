@@ -774,6 +774,7 @@ void TestNetworkJobs::testSearch() {
 
 void TestNetworkJobs::testDownloadAborted() {
     const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted", _localTempDir.path());
+    _cacheDirectory = std::make_shared<CacheDirectory>(temporaryDirectory.path());
     const SyncPath localDestFilePath = temporaryDirectory.path() / "test_download";
     auto job = std::make_shared<DownloadJob>(
             nullptr, _cacheDirectory,
