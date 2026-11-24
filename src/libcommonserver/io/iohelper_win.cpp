@@ -973,7 +973,7 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
 static constexpr auto secondsBetween1601And1970 = 11644473600LL;
 static constexpr auto usecPerSec = 1000000LL;
 
-static void unixTimevalToWindowsFileTime(timeval t, LPFILETIME pft) {
+static void unixTimevalToWindowsFileTime(const timeval t, const LPFILETIME pft) {
     pft->dwLowDateTime = 0;
     pft->dwHighDateTime = 0;
 
