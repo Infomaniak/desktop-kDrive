@@ -109,7 +109,6 @@ function build_client_via_cmake() {
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
       -DBUILD_UNIT_TESTS=0 \
       -DBUILD_GUI=ON \
-      -DBUILD_GUI_LEGACY=OFF \
       -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
       -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \

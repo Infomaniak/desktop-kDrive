@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "comm/guijobs/excltemplgetexcludedjob.h"
 #include "comm/guijobs/excltemplgetlistjob.h"
 #include "comm/guijobs/excltemplsetlistjob.h"
 
@@ -26,51 +25,6 @@
 namespace KDC {
 
 using namespace testcommhelpers;
-
-void TestGuiCommChannel::testExclTemplGetExcludedJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_GETEXCLUDED));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("name", toBase64(Str("templateName")));
-    (void) queryObj.set("params", queryParamsObj);
-
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("isExcluded", true);
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_GETEXCLUDED));
-    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
-
-    // Job expected answer
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-
-    auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
-        const auto exclTemplGetExcludedJob = std::dynamic_pointer_cast<ExclTemplGetExcludedJob>(job);
-        CPPUNIT_ASSERT(exclTemplGetExcludedJob);
-        CPPUNIT_ASSERT(CommString{Str("templateName")} == exclTemplGetExcludedJob->_name);
-
-        exclTemplGetExcludedJob->_isExcluded = true;
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
 
 void TestGuiCommChannel::testExclTemplGetListJob() {
     Poco::JSON::Object queryObj;

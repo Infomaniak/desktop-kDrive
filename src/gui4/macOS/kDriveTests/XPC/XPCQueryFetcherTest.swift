@@ -124,8 +124,6 @@ struct XPCQueryFetcherTests {
     static let allResponseTypes: [any SendableCodable.Type] = [
         // UtilityJobs responses
         CallbackMessage<UtilityGetAppStateResponse>.self,
-        CallbackMessage<UtilityHasLaunchOnStartupResponse>.self,
-        CallbackMessage<UtilityHasSystemLaunchOnStartupResponse>.self,
         CallbackMessage<EmptyResponse>.self,
         CallbackMessage<UtilityIsPathValidForNewSyncResponse>.self,
         CallbackMessage<UtilityGoodPathNewSyncResponse>.self,
@@ -142,10 +140,8 @@ struct XPCQueryFetcherTests {
         CallbackMessage<DriveInfoListResponse>.self,
         CallbackMessage<DriveListResponse>.self,
         // UserJobs responses
-        CallbackMessage<UserDbIdsListResponse>.self,
         CallbackMessage<UserInfoListResponse>.self,
         // NodeJobs responses
-        CallbackMessage<NodePathResponse>.self,
         CallbackMessage<NodeInfoResponse>.self,
         CallbackMessage<NodeSubfoldersResponse>.self,
         CallbackMessage<NodeSizeResponse>.self,

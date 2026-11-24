@@ -21,7 +21,6 @@
 
 #include "comm/guijobs/abstractguijob.h"
 #include "comm/guijobs/loginrequesttokenjob.h"
-#include "comm/guijobs/userdbidlistjob.h"
 #include "comm/guijobs/userinfolistjob.h"
 #include "comm/guijobs/useravailabledrivesjob.h"
 #include "comm/guijobs/accountinfolistjob.h"
@@ -47,7 +46,7 @@ using namespace testcommhelpers;
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -209,48 +208,6 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
 
         // Process job simulation
         loginRequestTokenJob->_userDbId = 1;
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
-#else
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testUserDbIdListJob() {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"userDbIdList":[1,2,3]}})"};
-#endif
-
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
-                         R"(,)"
-                         R"( "params": {)"
-                         R"( "userDbIdList": [ 1, 2, 3 ] },)"
-                         R"( "type": )" +
-                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto userDbIdListJob = std::dynamic_pointer_cast<UserDbIdListJob>(job);
-
-        userDbIdListJob->_userDbIdList = {1, 2, 3};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

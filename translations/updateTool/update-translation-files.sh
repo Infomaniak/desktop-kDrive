@@ -85,11 +85,12 @@ echo "Sources directory: '$sources_directory'"
 echo "Translations directory: '$translations_directory'"
 echo
 
-translation_files=`find "$translations_directory" -name "*\.ts" -type f`
-
-for file in "$translation_files"; do
-    lupdate "$sources_directory" -ts $file -noobsolete
+source_directories=()
+for directory in "$sources_directory"/*/; do
+    [[ "$directory" == "$sources_directory/gui4/" ]] || source_directories+=("$directory")
 done
+
+lupdate "${source_directories[@]}" -no-obsolete -ts "$translations_directory"/client_*.ts || exit 1
 
 echo
 echo "Update successfully completed."

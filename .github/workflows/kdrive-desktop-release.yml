@@ -8,9 +8,8 @@ on:
         description: Build Windows executables
         options:
           - Do not build
-          - Legacy client
-          - New client
-        default: Legacy client
+          - Build
+        default: Build
       use_ksp_cert:
         type: boolean
         description: Use release certificate
@@ -20,8 +19,8 @@ on:
         description: Build macOS executables
         options:
           - Do not build
-          - Legacy client
-        default: Legacy client
+          - Build
+        default: Build
       build_linux:
         type: choice
         description: Build Linux executables
@@ -218,7 +217,6 @@ jobs:
           debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
           use_ksp_cert: ${{ inputs.use_ksp_cert }}
           release_build: true
-          build_new_client: ${{ inputs.build_windows == 'New client' }}
 
   build-Linux-amd:
     if: ${{ inputs.build_linux == 'Build (all)' || inputs.build_linux == 'Build (amd64)' }}
@@ -318,12 +316,7 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-windows\kDrive.pdb 
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-windows\kDrive.src.zip
           
-          if ("${{ inputs.build_windows }}" -eq "New client") {
-            .\sentry-cli.exe debug-files upload --project kdrive-win-client .\build-windows\kDrive_client.pdb
-          } else {
-            .\sentry-cli.exe debug-files upload --project kdrive-client .\build-windows\kDrive_client.pdb
-            .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-windows\kDrive_client.src.zip          
-          }
+          .\sentry-cli.exe debug-files upload --project kdrive-win-client .\build-windows\kDrive_client.pdb
 
         shell: powershell
 
@@ -455,9 +448,9 @@ jobs:
       - name: Upload sentry artifacts - macOS
         run: |
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-macos\kDrive.dSYM
-          .\sentry-cli.exe debug-files upload --project kdrive-client .\build-macos\kDrive_client.dSYM
+          .\sentry-cli.exe debug-files upload --project kdrive-client4 .\build-macos\kDrive_client.dSYM
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-macos\kDrive.src.zip
-          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-macos\kDrive_client.src.zip
+          .\sentry-cli.exe debug-files upload --project kdrive-client4 --type sourcebundle .\build-macos\kDrive_client.src.zip
         shell: powershell
 
   display-version:

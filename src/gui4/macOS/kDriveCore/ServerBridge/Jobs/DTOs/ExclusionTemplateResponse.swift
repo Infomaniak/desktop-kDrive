@@ -18,14 +18,6 @@
 
 import Foundation
 
-struct ExclusionTemplateGetExcludedQuery: Codable, Sendable {
-    @Base64CodedString var name: String
-}
-
-struct ExclusionTemplateGetExcludedResponse: Codable, Sendable {
-    let isExcluded: Bool
-}
-
 struct ExclusionTemplateGetListQuery: Codable, Sendable {
     let `default`: Bool
 }

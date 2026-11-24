@@ -1,6 +1,6 @@
 ---
 name: update-translations
-description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server / legacy Qt GUI strings are refreshed with Qt lupdate from the Conan-managed Qt. By default the skill is scoped to the current PR: lupdate runs over every file, but only the strings the PR adds or changes are translated or imported, and out-of-scope unfinished entries are left unfinished; translating every entry runs only when explicitly requested. This skill is never triggered automatically: invoke it only when the user explicitly asks to use the translation skill (e.g. \"utilise le skill de traduction\" or \"use the update-translations skill\"). Use when the user explicitly requests it: update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, import only the Loco keys the GUI code actually references, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
+description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server strings are refreshed with Qt lupdate from the Conan-managed Qt. By default the skill is scoped to the current PR: lupdate runs over every file, but only the strings the PR adds or changes are translated or imported, and out-of-scope unfinished entries are left unfinished; translating every entry runs only when explicitly requested. This skill is never triggered automatically: invoke it only when the user explicitly asks to use the translation skill (e.g. \"utilise le skill de traduction\" or \"use the update-translations skill\"). Use when the user explicitly requests it: update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, import only the Loco keys the GUI code actually references, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
 ---
 
 # Update translations
@@ -19,7 +19,7 @@ both.
 | --- | --- | --- | --- |
 | GUI (macOS v4 redesign) | `src/gui4/macOS/` | `src/gui4/macOS/kDriveResources/Localizable/<lang>.lproj/Localizable.strings` (+ `.stringsdict`) | **import_loco** ([Infomaniak/importloco](https://github.com/Infomaniak/importloco)); mcp-loco MCP server only for Loco-side inspection and fixes |
 | GUI (Windows WinUI3 redesign) | `src/gui4/windows/` | `src/gui4/windows/kDrive client/kDrive client/Strings/<locale>/Resources.resw` | **import_loco**; mcp-loco MCP server only for Loco-side inspection and fixes |
-| Server + legacy Qt GUI | `src/server/`, `src/gui/`, common libs | `translations/client_<lang>.ts` | **lupdate** from the Conan-managed Qt |
+| Server | `src/server/`, common libs | `translations/client_<lang>.ts` | **lupdate** from the Conan-managed Qt |
 
 Do not mix the pipelines: Loco owns both GUI redesigns, Qt tooling owns the C++ strings. All Loco exports carry a
 header comment (`Loco ios export` / `Loco xml export`, project `kDrive Desktop`) and per-entry Loco asset IDs
@@ -178,7 +178,7 @@ Loco-locale work of full-run step 3 is part of the PR scope.
 4. Report, per GUI, what was imported, which translations were still missing in Loco, and what (if anything) was
    written to Loco.
 
-## Part 2 — Server + legacy Qt GUI: lupdate
+## Part 2 — Server: lupdate
 
 Locate `lupdate` from the Conan Qt package (it is usually not in `PATH`):
 
@@ -195,9 +195,9 @@ Update every checked-in Qt translation file (run from the repository root). Do t
 whichever files the PR touches, including PRs that only change `translations/client_*.ts`:
 ```bash
 LUPDATE="$(find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1)"
-for f in translations/client_*.ts; do "$LUPDATE" src -no-obsolete -ts "$f"; done
+PATH="$(dirname "$LUPDATE"):$PATH" bash translations/updateTool/update-translation-files.sh -d "$PWD"
 ```
-- `src` is scanned recursively and covers the server, the legacy Qt GUI and the common libraries.
+- The script scans native sources, including the server, common libraries and recovery updater. The v4 frontends maintain their own catalogs.
 - `-no-obsolete` drops entries for removed strings, matching `translations/updateTool/update-translation-files.sh`.
 - New strings appear as `<translation type="unfinished">`.
 - The pass refreshes the `<location>` line numbers in every file: that mechanical diff is expected and harmless, and

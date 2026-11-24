@@ -19,7 +19,6 @@
 #include "guijobfactory.h"
 #include "loginrequesttokenjob.h"
 #include "unknownrequestjob.h"
-#include "userdbidlistjob.h"
 #include "userinfolistjob.h"
 #include "userdeletejob.h"
 #include "useravailabledrivesjob.h"
@@ -39,11 +38,9 @@
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
 #include "syncgetprivatelinkurljob.h"
-#include "synctriggerprogressupdatejob.h"
 #include "syncsetsupportsvirtualfilesjob.h"
 #include "blacklistednodelistjob.h"
 #include "blacklistednodesetlistjob.h"
-#include "nodepathjob.h"
 #include "nodeinfojob.h"
 #include "nodesubfoldersjob.h"
 #include "nodesubfolders2job.h"
@@ -60,7 +57,6 @@
 #include "exclappsetlistjob.h"
 #include "exclappgetfetchingapplistjob.h"
 #endif
-#include "excltemplgetexcludedjob.h"
 #include "excltemplgetlistjob.h"
 #include "excltemplsetlistjob.h"
 #include "parametersinfojob.h"
@@ -71,15 +67,11 @@
 #include "utilitybestvfsavailablemodejob.h"
 #include "utilityispathvalidfornewsyncjob.h"
 #include "utilityactivateloadinfojob.h"
-#include "utilitycheckcommstatusjob.h"
-#include "utilityhassystemlaunchonstartupjob.h"
 #include "utilitysetappstatejob.h"
 #include "utilitygetappstatejob.h"
 #include "utilitysendlogtosupportjob.h"
 #include "utilitycancellogtosupportjob.h"
-#include "utilitygetlogestimatedsizejob.h"
 #include "utilityquitjob.h"
-#include "utilitysendappstarttracejob.h"
 #if defined(KD_MACOS)
 #include "utilityinstallmaclitesyncextjob.h"
 #include "utilitycheckmacospermissionsjob.h"
@@ -95,7 +87,6 @@ namespace KDC {
 
 GuiJobFactory::GuiJobFactory() {
     _makeMap = {{RequestNum::LOGIN_REQUESTTOKEN, makeShared<LoginRequestTokenJob>},
-                {RequestNum::USER_DBIDLIST, makeShared<UserDbIdListJob>},
                 {RequestNum::USER_INFOLIST, makeShared<UserInfoListJob>},
                 {RequestNum::USER_DELETE, makeShared<UserDeleteJob>},
                 {RequestNum::USER_AVAILABLEDRIVES, makeShared<UserAvailableDrivesJob>},
@@ -115,12 +106,10 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
                 {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
                 {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
-                {RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, makeShared<SyncTriggerProgressUpdateJob>},
                 {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
                 {RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES, makeShared<SyncAcknowledgeManyDeletesJob>},
                 {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
-                {RequestNum::NODE_PATH, makeShared<NodePathJob>},
                 {RequestNum::NODE_INFO_REMOTE, makeShared<NodeInfoJob>},
                 {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
                 {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
@@ -137,7 +126,6 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>},
                 {RequestNum::EXCLAPP_GET_FETCHING_APP_LIST, makeShared<ExclAppGetFetchingAppListJob>},
 #endif
-                {RequestNum::EXCLTEMPL_GETEXCLUDED, makeShared<ExclTemplGetExcludedJob>},
                 {RequestNum::EXCLTEMPL_GETLIST, makeShared<ExclTemplGetListJob>},
                 {RequestNum::EXCLTEMPL_SETUSERLIST, makeShared<ExclTemplSetUserListJob>},
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
@@ -146,15 +134,11 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, makeShared<UtilityFindGoodPathForNewSyncJob>},
                 {RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, makeShared<UtilityIsPathValidForNewSyncJob>},
                 {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
-                {RequestNum::UTILITY_CHECKCOMMSTATUS, makeShared<UtilityCheckCommStatusJob>},
-                {RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, makeShared<UtilityHasSystemLaunchOnStartupJob>},
                 {RequestNum::UTILITY_SET_APPSTATE, makeShared<UtilitySetAppStateJob>},
                 {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>},
                 {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
                 {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
-                {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, makeShared<UtilityGetLogEstimatedSizeJob>},
                 {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},
-                {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilitySendAppStartTraceJob>},
 #if defined(KD_MACOS)
                 {RequestNum::UTILITY_INSTALL_MAC_LITESYNC_EXT, makeShared<UtilityInstallMacLiteSyncExtJob>},
                 {RequestNum::UTILITY_CHECK_MACOS_PERMISSIONS, makeShared<UtilityCheckMacOsPermissionsJob>},

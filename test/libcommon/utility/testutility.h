@@ -31,7 +31,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(extractIntFromStrVersion);
         CPPUNIT_TEST(testIsVersionLower);
         CPPUNIT_TEST(testStringToAppStateValue);
-        CPPUNIT_TEST(testArgsWriter);
         CPPUNIT_TEST(testCompressFile);
         CPPUNIT_TEST(testCurrentVersion);
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
@@ -94,7 +93,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void extractIntFromStrVersion();
         void testIsVersionLower();
         void testStringToAppStateValue();
-        void testArgsWriter();
         void testCompressFile();
         void testCurrentVersion();
         void testGenerateRandomStringAlphaNum();

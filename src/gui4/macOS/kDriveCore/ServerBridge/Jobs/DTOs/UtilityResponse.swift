@@ -45,18 +45,6 @@ struct UtilityIsPathValidForNewSyncResponse: Codable, Sendable {
     let isValid: Bool
 }
 
-struct UtilityHasSystemLaunchOnStartupResponse: Codable, Sendable {
-    let enabled: Bool
-}
-
-struct UtilityHasLaunchOnStartupResponse: Codable, Sendable {
-    let enabled: Bool
-}
-
-struct UtilitySetLaunchOnStartupQuery: Codable, Sendable {
-    let enabled: Bool
-}
-
 struct UtilitySetAppStateQuery: Codable, Sendable {
     let key: KDC.AppStateKey
     @Base64CodedString var value: String

@@ -18,15 +18,6 @@
 
 import Foundation
 
-struct NodePathQuery: Codable, Sendable {
-    let syncDbId: Int32
-    @Base64CodedString var nodeId: String
-}
-
-struct NodePathResponse: Codable, Sendable {
-    @Base64CodedString var path: String
-}
-
 struct NodeQuery: Codable, Sendable {
     let userDbId: Int32
     let driveId: Int32

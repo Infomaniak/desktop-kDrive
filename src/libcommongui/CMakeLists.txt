@@ -7,10 +7,6 @@ set(CMAKE_AUTOMOC TRUE)
 set(libcommongui_SRCS
     utility/utility.h utility/utility.cpp
     logger.h logger.cpp
-    ../3rdparty/qt-piwik-tracker/piwiktracker.h
-    ../3rdparty/qt-piwik-tracker/piwiktracker.cpp
-    matomoclient.cpp
-    matomoclient.h
 )
 
 if(APPLE)
@@ -40,7 +36,7 @@ generate_export_header(${libcommongui_NAME}
     EXPORT_FILE_NAME libcommongui.h
 )
 
-target_include_directories(${libcommongui_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ../3rdparty/qt-piwik-tracker/)
+target_include_directories(${libcommongui_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 set_target_properties(${libcommongui_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}

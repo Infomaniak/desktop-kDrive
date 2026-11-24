@@ -21,7 +21,6 @@
 
 #include "comm/guijobs/blacklistednodelistjob.h"
 #include "comm/guijobs/blacklistednodesetlistjob.h"
-#include "comm/guijobs/nodepathjob.h"
 #include "comm/guijobs/nodeinfojob.h"
 #include "comm/guijobs/nodesubfoldersjob.h"
 #include "comm/guijobs/nodesubfolders2job.h"
@@ -120,53 +119,6 @@ void TestGuiCommChannel::testBlacklistedSyncNodeSetListJob() {
         CPPUNIT_ASSERT_EQUAL(size_t{2}, blacklistedNodeSetListJob->_nodeIdList.size());
         CPPUNIT_ASSERT_EQUAL(std::string{"x1"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
         CPPUNIT_ASSERT_EQUAL(std::string{"x2"}, blacklistedNodeSetListJob->_nodeIdList.at(1));
-    };
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testNodePathJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::NODE_PATH));
-
-    Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("syncDbId", 1);
-    (void) queryParamsObj.set("nodeId", toBase64(Str("1111")));
-
-    (void) queryObj.set("params", queryParamsObj);
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("path", toBase64(Str("/home/kDrive/Documents/presentation.doc")));
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_PATH));
-    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
-
-    // Job expected answer
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto nodePathJob = std::dynamic_pointer_cast<NodePathJob>(job);
-        CPPUNIT_ASSERT(nodePathJob);
-        CPPUNIT_ASSERT_EQUAL(1, nodePathJob->_syncDbId);
-        CPPUNIT_ASSERT_EQUAL(NodeId{"1111"}, nodePathJob->_nodeId);
-
-        nodePathJob->_path = CommString{Str("/home/kDrive/Documents/presentation.doc")};
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);

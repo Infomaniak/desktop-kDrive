@@ -11,7 +11,7 @@
 | Project | Application/process | Source area | Notes |
 |---|---|---|---|
 | `kdrive-server` | C++ background server/daemon (`kDrive`, `kDrive.exe`) | `src/server/`, `src/libsyncengine/`, server-side `src/libcommonserver/` | Owns sync state, API/network jobs, filesystem propagation, VFS integration, and server side of IPC. One project covers macOS, Windows, and Linux. |
-| `kdrive-client` | Legacy Qt Widgets GUI (`kDrive_client`) | `src/gui/`, `src/libcommongui/` | Native C++ events. Use OS and release metadata to distinguish platforms. |
+| `kdrive-client` | Legacy Qt Widgets GUI (`kDrive_client`) | Historical v3 releases | Native C++ events. Use OS and release metadata to distinguish platforms. |
 | `kdrive-win-client` | Windows WinUI3 GUI4 (`client/kDrive.exe`) | `src/gui4/windows/` | Sentry platform is `csharp`; releases resemble `kDrive@<version>+<build uuid>`. |
 | `kdrive-macos-client` | macOS Swift/SwiftUI GUI4 (`kDrive.gui`) | `src/gui4/macOS/` | Active Cocoa data exists here. Releases resemble `com.infomaniak.drive.desktopclient.gui@<version>+<build>`. |
 | `kdrive-client4` | macOS Swift/SwiftUI GUI4 during Sentry project migration | `src/gui4/macOS/` | Active and newer Cocoa releases also exist here. Search both macOS projects unless an exact issue/event identifies one. Do not assume duplicate issues correlate without matching metadata. |

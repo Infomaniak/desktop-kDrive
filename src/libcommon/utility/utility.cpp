@@ -599,21 +599,6 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
     return -1;
 }
 
-QByteArray CommonUtility::toQByteArray(const qint32 source) {
-    // Avoid use of cast, this is the Qt way to serialize objects
-    QByteArray temp;
-    QDataStream data(&temp, QIODevice::ReadWrite);
-    data << source;
-    return temp;
-}
-
-int CommonUtility::toInt(QByteArray source) {
-    int temp;
-    QDataStream data(&source, QIODevice::ReadWrite);
-    data >> temp;
-    return temp;
-}
-
 QString CommonUtility::escape(const QString &in) {
     return in.toHtmlEscaped();
 }
@@ -760,27 +745,14 @@ Language CommonUtility::strToLanguage(const QString &lang) {
 }
 
 QString applicationTrPath() {
-    const auto hasClientQmFiles = [](const QString &path) {
-        const QDir dir(path);
-        return dir.exists() && !dir.entryList(QStringList() << "client_*.qm", QDir::Files).isEmpty();
-    };
-
 #if defined(KD_MACOS)
-    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
-    if (const QString gui4DevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/");
-        hasClientQmFiles(gui4DevTrPath)) {
-        // might miss Qt etc.
-        qWarning() << "Running from build location! Translations may be incomplete!";
-        return gui4DevTrPath;
-    }
+    const auto buildTranslations = QCoreApplication::applicationDirPath() + QStringLiteral("/../../../../src/");
 #else
-    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
+    const auto buildTranslations = QCoreApplication::applicationDirPath() + QStringLiteral("/../src/");
 #endif
-
-    if (hasClientQmFiles(legacyDevTrPath)) {
-        // might miss Qt etc.
+    if (!QDir(buildTranslations).entryList({QStringLiteral("client_*.qm")}, QDir::Files).isEmpty()) {
         qWarning() << "Running from build location! Translations may be incomplete!";
-        return legacyDevTrPath;
+        return buildTranslations;
     }
 
 #if defined(KD_WINDOWS)

@@ -13,7 +13,7 @@ Before proposing code or review comments:
 - Logging: use `LOG_INFO/LOG_DEBUG/LOG_WARN/LOG_ERROR`, never `std::cout`.
 - Includes: use includes relative to `src/` conventions from `AGENTS.md`.
 - Keep platform-specific code split into `*_mac.mm`, `*_win.cpp`, `*_linux.cpp` when needed.
-- Respect existing architecture boundaries (GUI in `src/gui`, daemon in `src/server`, sync core in `src/libsyncengine`).
+- Respect existing architecture boundaries (GUI in `src/gui4`, daemon in `src/server`, sync core in `src/libsyncengine`).
 
 ## Code Suggestion Rules for Copilot
 - Prefer minimal, safe diffs that fit existing style and naming.

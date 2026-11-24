@@ -136,9 +136,6 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .UTILITY_ERROR_REMOVED:
             try await utilitySignalHandler.handleErrorRemoved(signal)
 
-        case .UTILITY_ERRORS_CLEARED: // Soon legacy Signal
-            try await utilitySignalHandler.handleErrorCleared()
-
         case .UTILITY_LOG_UPLOAD_STATUS_UPDATED:
             try await utilitySignalHandler.handleLogUploadStatusUpdated(signal)
 

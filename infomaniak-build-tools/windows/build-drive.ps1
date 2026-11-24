@@ -37,18 +37,11 @@ Param(
     # Ci: Build configured for CI
     [switch] $ci,
 
-    # Msi: Build MSI installer
-    [switch] $msi,
-
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
 
     # Unit tests: Flag to enable or disable the build of unit tests
     [switch] $unitTests,
-
-    # include new GUI: Flag to enable or disable the new GUI build. If included, any user in the internal release channel will be able to test it. 
-    # The legacy GUI will still be built and installed alongside and can be launched by clicking on kDrive logo on the top left corner of the new GUI.
-    [bool] $newGui,
 
     # Help: Displays the help message and exits
     [switch] $help
@@ -305,8 +298,7 @@ function CMake-Build-And-Install {
         [string] $repositoryRootPath,
         [string] $installPath,
         [string] $vfsDir,
-        [bool] $ci,
-        [bool] $newGui
+        [bool] $ci
     )
     Write-Host "1) Installing Conan dependencies…"
     $conanFolder = Join-Path $buildPath "conan"
@@ -376,13 +368,7 @@ function CMake-Build-And-Install {
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
     }
 
-    if($newGui) {
-        $flags += ("'-DBUILD_GUI:BOOL=TRUE'")
-        $flags += ("'-DBUILD_GUI_LEGACY:BOOL=FALSE'")
-    } else {
-        $flags += ("'-DBUILD_GUI:BOOL=FALSE'")
-        $flags += ("'-DBUILD_GUI_LEGACY:BOOL=TRUE'")
-    } 
+    $flags += ("'-DBUILD_GUI:BOOL=TRUE'")
 
     $args += $flags
 
@@ -411,16 +397,11 @@ function CMake-Build-And-Install {
 
 function Get-Icon-Path {
     param (
-        [string] $buildPath,
-        [bool] $newGui
+        [string] $buildPath
     )
 
     # NSIS needs the path to use backslash
-    if(-not $newGui) {
-        $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
-    } else {
-        $iconPath = "$buildPath\bin\client\Assets\kdrive.ico".Replace('/', '\')
-    }
+    $iconPath = "$buildPath\bin\client\Assets\kdrive.ico".Replace('/', '\')
 
     return $iconPath
 }
@@ -435,14 +416,13 @@ function Set-Up-NSIS {
         [string] $archivePath,
         [string] $archiveDataPath,
         [string] $thumbprint,
-        [bool] $ci,
-        [bool] $newGui
+        [bool] $ci
     )
 
     Write-Host "Setting up NSIS."
 
     # NSIS needs the path to use backslash
-    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $newGui
+    $iconPath = Get-Icon-Path -buildPath $buildPath
     $appName = Get-Package-Name -exe
    
     $installerPath = Get-Installer-Path -ContentPath $contentPath
@@ -509,8 +489,7 @@ function Prepare-Archive {
         [string] $buildType,
         [string] $buildPath,
         [string] $vfsDir,
-        [bool] $newGui,
-        [string] $newGuiDir,
+        [string] $clientDir,
         [string] $archivePath,
         [bool] $ci,
         [string] $thumbprint
@@ -574,10 +553,6 @@ function Prepare-Archive {
         "kDrive.exe"
     )
 
-    if(-not $newGui) {
-        $binaries += "kDrive_client.exe"
-    }
-
     # Move each executable to the bin folder
     foreach ($file in $binaries) {
         if (Test-Path -Path $buildPath/bin/$file) {
@@ -590,13 +565,7 @@ function Prepare-Archive {
     }
 
     Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Host "newGui is set to : $newGui"
-
-    if ($newGui) {
-        # Copy client files
-        Write-Host "Copying new client files ($newGuiDir) to the archive ..."
-        Copy-Item -Path "$newGuiDir/." -Destination "$archivePath/client" -Recurse -ErrorAction Stop
-    }
+    Copy-Item -Path "$clientDir/." -Destination "$archivePath/client" -Recurse -ErrorAction Stop
 
     # Sign all the .exe and .dll files of the archive (already signed files, e.g. Qt DLLs, are skipped by Sign-File)
     $filesToSign = Get-ChildItem -Path "$archivePath" -Recurse -Include *.exe, *.dll
@@ -653,6 +622,7 @@ function Create-Archive {
     Write-Host "Archive created."
 }
 
+# Keep the WiX packaging implementation for when the Windows v4 MSI is supported.
 function Create-MSI-Package {
     param (
         [string] $repositoryRootPath,
@@ -692,8 +662,7 @@ function Package-RecoveryUpdater {
     param (
         [string] $buildPath,
         [string] $contentPath,
-        [string] $thumbprint,
-        [bool] $newGui
+        [string] $thumbprint
     )
 
     $updaterExe = "$buildPath/bin/kDriveRecoveryUpdater.exe"
@@ -752,7 +721,7 @@ function Package-RecoveryUpdater {
     $sfxExe = "$contentPath/kDriveRecoveryUpdater-$version.exe"
     $nsiTemplate = "$repositoryRootPath/infomaniak-build-tools/windows/recovery-updater.nsi"
     $nsiFile = "$buildPath/recovery-updater.nsi"
-    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $newGui
+    $iconPath = Get-Icon-Path -buildPath $buildPath
 
     $nsiContent = Get-Content $nsiTemplate -Raw
     $nsiContent = $nsiContent -replace '@{output}', ($sfxExe -replace '/', '\')
@@ -961,7 +930,7 @@ try {
     #                                                                                               #
     #################################################################################################
 
-    CMake-Build-And-Install -RepositoryRootPath $repositoryRootPath -InstallPath $installPath -VfsDir $vfsDir -Ci $ci -NewGui $newGui
+    CMake-Build-And-Install -RepositoryRootPath $repositoryRootPath -InstallPath $installPath -VfsDir $vfsDir -Ci $ci
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "CMake build failed. Aborting." -f Red
@@ -974,7 +943,7 @@ try {
     #                                                                                               #
     #################################################################################################
 
-    Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Thumbprint $thumbprint -Ci $ci -NewGui $newGui
+    Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Thumbprint $thumbprint -Ci $ci
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "NSIS setup failed. Aborting." -f Red
@@ -987,7 +956,7 @@ try {
     #                                                                                               #
     #################################################################################################
 
-    Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui -Thumbprint $thumbprint
+    Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Ci $ci -ClientDir "$buildPath/bin/client" -Thumbprint $thumbprint
     if ($LASTEXITCODE -ne 0)
     {
         Write-Host "Archive preparation failed. Aborting." -f Red
@@ -1009,27 +978,12 @@ try {
 
     #################################################################################################
     #                                                                                               #
-    #                                     MSI PACKAGE CREATION                                      #
-    #                                                                                               #
-    #################################################################################################
-
-    if ($msi) {
-        Create-MSI-Package -RepositoryRootPath $repositoryRootPath -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
-            exit $LASTEXITCODE
-        }
-    }
-
-
-    #################################################################################################
-    #                                                                                               #
     #                                RECOVERY UPdater PACKAGING                                     #
     #                                                                                               #
     #################################################################################################
 
     if ($ci) {
-        Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint -NewGui $newGui
+        Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Recovery updater packaging failed ($LASTEXITCODE) . Aborting." -f Red
             exit $LASTEXITCODE

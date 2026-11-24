@@ -62,7 +62,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return requestNum switch
             {
                 RequestNum.LOGIN_REQUESTTOKEN => await LoginRequestToken(parameters),
-                RequestNum.USER_DBIDLIST => await UserDbIdsRequest(parameters),
                 RequestNum.USER_INFOLIST => await UserInfoListRequest(parameters),
                 RequestNum.ACCOUNT_INFOLIST => await AccountInfoListRequest(parameters),
                 RequestNum.DRIVE_INFOLIST => await DriveInfoListRequest(parameters),
@@ -70,7 +69,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 RequestNum.UPDATER_START_INSTALLER => await UpdateStartInstaller(parameters),
                 RequestNum.UPDATER_SKIP_VERSION => await UpdaterSkipVersion(parameters),
                 RequestNum.UPDATER_VERSION_INFO => await UpdaterVersionInfo(parameters),
-                RequestNum.UPDATER_CHANGE_CHANNEL => await UpdaterChangeChannel(parameters),
                 RequestNum.PARAMETERS_INFO => await ParametersInfo(parameters),
                 RequestNum.PARAMETERS_UPDATE => await ParametersUpdate(parameters),
                 RequestNum.ERROR_DELETE => await ErrorDelete(parameters),
@@ -107,21 +105,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Params = new JsonObject
                 {
                     { "userDbId", user.DbId }
-                }
-            });
-        }
-
-        private Task<CommData> UserDbIdsRequest(JsonObject parameters)
-        {
-            List<DbId> userDbIds = [.. _mockData.Users.Select(u => u.DbId)];
-            return Task.FromResult(new CommData
-            {
-                Type = CommMessageType.Request,
-                Id = (int)NextId,
-                RequestNum = RequestNum.USER_DBIDLIST,
-                Params = new JsonObject
-                {
-                    { JsonKeys.UserDbIds, JsonSerializer.SerializeToNode(userDbIds) }
                 }
             });
         }
@@ -312,28 +295,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Params = new JsonObject() { { JsonKeys.VersionInfo, versionInfo } }
             });
         }
-        private Task<CommData> UpdaterChangeChannel(JsonObject parameters)
-        {
-            Logger.LogDebug("Received UpdaterChangeChannel request.");
-            if (parameters.ContainsKey(JsonKeys.UpdateChannel) && parameters[JsonKeys.UpdateChannel] != null)
-            {
-                _mockData.Settings.DistributionChannel = (DistributionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
-            }
-            else
-            {
-                Logger.LogWarning("No channel specified in UpdaterChangeChannel request, using current channel.");
-
-            }
-            EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, []);
-            return Task.FromResult(new CommData
-            {
-                Type = CommMessageType.Request,
-                Id = (int)NextId,
-                RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
-                Params = new JsonObject()
-            });
-        }
-
         private Task<CommData> ParametersInfo(JsonObject parameters)
         {
             Logger.LogDebug("Received ParametersInfo request.");
@@ -347,7 +308,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
-                RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
+                RequestNum = RequestNum.PARAMETERS_INFO,
                 Params = new JsonObject
                 {
                     [JsonKeys.ParmsInfo] = JsonNode.Parse(parametersInfo)

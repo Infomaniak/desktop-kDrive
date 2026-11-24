@@ -243,7 +243,7 @@ struct LogServiceTests {
         service.log(
             level: .debug,
             category: "xpc",
-            message: "Snd rqst 12 ERROR_INFOLIST_LEGACY(35)",
+            message: "Snd rqst 12 ERROR_INFOLIST(35)",
             file: "commclient.cpp",
             line: 122
         )
@@ -251,7 +251,7 @@ struct LogServiceTests {
 
         let contents = try String(contentsOf: writer.fileURL, encoding: .utf8)
         #expect(writer.fileURL.lastPathComponent == "20260609_1200_kDrive_client.log")
-        #expect(contents == "2026-06-09 12:00:46:529 [D] (227895) commclient.cpp:122 - Snd rqst 12 ERROR_INFOLIST_LEGACY(35)\n")
+        #expect(contents == "2026-06-09 12:00:46:529 [D] (227895) commclient.cpp:122 - Snd rqst 12 ERROR_INFOLIST(35)\n")
     }
 
     @Test("File writer rotates oversized logs into compressed backups and trims old ones")

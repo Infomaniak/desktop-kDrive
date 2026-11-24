@@ -26,15 +26,6 @@ public struct NodeJobs: Sendable {
 
     public init() {}
 
-    public func getNodePath(syncDbId: Int32, nodeId: String) async throws -> String {
-        let query = NodePathQuery(syncDbId: syncDbId, nodeId: nodeId)
-        let request = await RequestMessage<NodePathQuery>(num: RequestNum.NODE_PATH, body: query)
-
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodePathResponse>.self)
-
-        return decodedMessage.body.path
-    }
-
     public func getNodeInfo(userDbId: Int32,
                             driveId: Int32,
                             nodeId: String,

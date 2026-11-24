@@ -39,7 +39,6 @@
 #include "libcommonserver/log/log.h"
 
 // TODO: To remove later
-#include "oldcommserver.h"
 
 #ifndef KD_LINUX
 #include "extcommserver.h"

@@ -363,7 +363,6 @@ void SyncPal::handlePropagatorJobsCompletion(const std::shared_ptr<AbstractJob> 
         } else if (std::dynamic_pointer_cast<ExcludeListPropagator>(jobPtr)) {
             _excludeListPropagator = nullptr;
         } else if (std::dynamic_pointer_cast<ConflictingFilesCorrector>(jobPtr)) {
-            fixConflictedFilesCompleted(syncDbId(), _conflictingFilesCorrector->nbErrors());
             _conflictingFilesCorrector = nullptr;
         }
     }
@@ -378,12 +377,6 @@ void SyncPal::addError(const Error &error) {
 void SyncPal::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item) {
     if (_addCompletedItem) {
         _addCompletedItem(syncDbId, item, syncHasFullyCompleted());
-    }
-}
-
-void SyncPal::fixConflictedFilesCompleted(const SyncDbId syncDbId, uint64_t nbErrors) {
-    if (_fixConflictedFilesCompleted) {
-        _fixConflictedFilesCompleted(syncDbId, nbErrors);
     }
 }
 

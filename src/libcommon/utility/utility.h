@@ -133,8 +133,6 @@ struct COMMON_EXPORT CommonUtility {
         static const std::string &versionTag();
         static uint64_t versionBuild();
 
-        static QByteArray toQByteArray(qint32 source);
-        static int toInt(QByteArray source);
         static QString escape(const QString &in);
         static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
         static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
@@ -679,47 +677,6 @@ struct COMMON_EXPORT QtLoggingThread : public QThread {
             QThread::run();
             log4cplus::threadCleanup();
         }
-};
-
-struct ArgsReader {
-        template<class... Args>
-        explicit ArgsReader(Args... args) :
-            stream(&params, QIODevice::WriteOnly) {
-            read(args...);
-        }
-
-        template<class T>
-        void read(const T p) {
-            stream << p;
-        }
-
-        template<class T, class... Args>
-        void read(const T p, Args... args) {
-            stream << p;
-            read(args...);
-        }
-
-        explicit operator QByteArray() const { return params; }
-        QByteArray params;
-        QDataStream stream;
-};
-
-struct ArgsWriter {
-        explicit ArgsWriter(const QByteArray &results) :
-            stream{QDataStream(results)} {};
-
-        template<class T>
-        void write(T &r) {
-            stream >> r;
-        }
-
-        template<class T, class... Args>
-        void write(T &r, Args &...args) {
-            stream >> r;
-            write(args...);
-        }
-
-        QDataStream stream;
 };
 
 template<class C>

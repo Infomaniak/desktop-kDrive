@@ -30,7 +30,6 @@
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
-#include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
 #include "appserver.h"
 #include "comm/guijobmanager.h"
@@ -539,27 +538,6 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testSyncTriggerProgressUpdateJob() {
-    const Poco::JSON::Object query = createSimpleQuery(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE);
-    const auto queryStr = stringifyQueryObj(query);
-
-    // Job expected answers
-    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE);
-    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        const auto syncTriggerProgressUpdateJob = std::dynamic_pointer_cast<SyncTriggerProgressUpdateJob>(job);
-        CPPUNIT_ASSERT(syncTriggerProgressUpdateJob);
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }

@@ -40,10 +40,6 @@ inputs:
     description: 'If true, run the release build script'
     required: false
     default: 'false'
-  build_new_client:
-    description: 'If true, build the Windows app with the new client'
-    required: false
-    default: 'false'
 
 runs:
     using: "composite"
@@ -141,12 +137,7 @@ runs:
 
           if ("${{ inputs.release_build }}" -eq "true") {
 
-            if ("${{ inputs.build_new_client }}" -eq "true") {
-              & $script -thumbprint $thumbprint -ci -ext -clean remake  -newGui $true # The new gui does not yet support msi generation, so we skip it for now
-            }
-            else {
-              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake
-            }
+            & $script -thumbprint $thumbprint -ci -ext -clean remake
           }
           else {
             & $script -thumbprint $thumbprint -ci -unitTests
@@ -339,14 +330,7 @@ runs:
         run: |
           mkdir ${{ github.workspace }}/build-windows/sentry-client-artifacts
 
-          if ("${{ inputs.build_new_client }}" -eq "true") {
-            Write-Host "New client build - source are embedded in the pdb, skipping source bundle creation."
-            Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/client/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
-          } else {
-            .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb
-            Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.src.zip
-            Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
-          }
+          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/client/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
         shell: powershell
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 

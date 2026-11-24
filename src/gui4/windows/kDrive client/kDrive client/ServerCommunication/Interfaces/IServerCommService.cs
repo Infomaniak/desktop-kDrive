@@ -35,7 +35,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         /* Returns the list of user DbIds known to the server.
          * Returns null on error.
          */
-        Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken);
 
         /* Adds a new user or re-authenticates an existing user using the provided OAuth2 code and code verifier.
          * The view model's Users collection is updated accordingly.

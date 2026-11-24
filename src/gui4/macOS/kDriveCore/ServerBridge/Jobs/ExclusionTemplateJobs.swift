@@ -25,21 +25,6 @@ public struct ExclusionTemplateJobs: Sendable {
 
     public init() {}
 
-    public func getNameExcluded(name: String) async throws -> Bool {
-        let query = ExclusionTemplateGetExcludedQuery(name: name)
-        let request = await RequestMessage<ExclusionTemplateGetExcludedQuery>(
-            num: RequestNum.EXCLTEMPL_GETEXCLUDED,
-            body: query
-        )
-
-        let decodedMessage = try await queryFetcher.query(
-            request,
-            responseType: CallbackMessage<ExclusionTemplateGetExcludedResponse>.self
-        )
-
-        return decodedMessage.body.isExcluded
-    }
-
     public func getExclusionTemplateList(default isDefault: Bool) async throws -> [ExclusionTemplateInfo] {
         let query = ExclusionTemplateGetListQuery(default: isDefault)
         let request = await RequestMessage<ExclusionTemplateGetListQuery>(

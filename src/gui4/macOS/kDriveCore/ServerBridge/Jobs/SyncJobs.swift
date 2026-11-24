@@ -193,13 +193,6 @@ public struct SyncJobs: Sendable {
         return decodedMessage.body.linkUrl
     }
 
-    public func triggerSyncProgressUpdate() async throws {
-        let query = EmptyQuery()
-        let request = await RequestMessage<EmptyQuery>(num: RequestNum.SYNC_TRIGGER_PROGRESS_UPDATE, body: query)
-
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-    }
-
     public func setSupportsVirtualFiles(syncDbId: Int32, value: Bool) async throws {
         IKLogger.general.info("[KD] Sync mode change requested syncDbId=\(syncDbId) supportVfs=\(value)")
         let token = await vfsConversionCache.beginConversion(synchroDbId: syncDbId)

@@ -28,8 +28,6 @@ extension SignalNum: @retroactive CustomStringConvertible {
             return "USER_ADDED"
         case .USER_UPDATED:
             return "USER_UPDATED"
-        case .USER_STATUSCHANGED:
-            return "USER_STATUSCHANGED"
         case .USER_REMOVED:
             return "USER_REMOVED"
         case .ACCOUNT_ADDED:
@@ -42,8 +40,6 @@ extension SignalNum: @retroactive CustomStringConvertible {
             return "DRIVE_ADDED"
         case .DRIVE_UPDATED:
             return "DRIVE_UPDATED"
-        case .DRIVE_QUOTAUPDATED_LEGACY:
-            return "DRIVE_QUOTAUPDATED_LEGACY"
         case .DRIVE_REMOVED:
             return "DRIVE_REMOVED"
         case .DRIVE_DELETE_FAILED:
@@ -58,30 +54,20 @@ extension SignalNum: @retroactive CustomStringConvertible {
             return "SYNC_PROGRESSINFO"
         case .SYNC_COMPLETEDITEM:
             return "SYNC_COMPLETEDITEM"
-        case .SYNC_VFS_CONVERSION_COMPLETED:
-            return "SYNC_VFS_CONVERSION_COMPLETED"
         case .SYNC_DELETE_FAILED:
             return "SYNC_DELETE_FAILED"
         case .SYNC_NOTIFY_MANY_DELETES:
             return "SYNC_NOTIFY_MANY_DELETES"
-        case .NODE_FOLDER_SIZE_COMPLETED:
-            return "NODE_FOLDER_SIZE_COMPLETED"
-        case .NODE_FIX_CONFLICTED_FILES_COMPLETED:
-            return "NODE_FIX_CONFLICTED_FILES_COMPLETED"
         case .UPDATER_SHOW_DIALOG:
             return "UPDATER_SHOW_DIALOG"
         case .UPDATER_STATE_CHANGED:
             return "UPDATER_STATE_CHANGED"
         case .UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION"
-        case .UTILITY_ERROR_ADDED_LEGACY:
-            return "UTILITY_ERROR_ADDED_LEGACY"
         case .UTILITY_ERROR_ADDED:
             return "UTILITY_ERROR_ADDED"
         case .UTILITY_ERROR_REMOVED:
             return "UTILITY_ERROR_REMOVED"
-        case .UTILITY_ERRORS_CLEARED:
-            return "UTILITY_ERRORS_CLEARED"
         case .UTILITY_SHOW_SETTINGS:
             return "UTILITY_SHOW_SETTINGS"
         case .UTILITY_SHOW_SYNTHESIS:

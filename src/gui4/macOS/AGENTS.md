@@ -1,7 +1,7 @@
 # macOS GUI Refonte — Swift Front-End
 
 ## Package Identity
-New macOS GUI written in Swift 6, replacing the Qt-based `src/gui/`. Hybrid SwiftUI + AppKit app.
+macOS GUI written in Swift 6. Hybrid SwiftUI + AppKit app.
 Three Xcode targets: `kDriveCore` (server bridge + cache), `kDriveCoreUI` (design system + shared UI), `kDrive` (main app).
 Communicates with the C++ server daemon exclusively over **XPC** — no sync logic here.
 
