@@ -21,7 +21,7 @@
 #include "utility/types.h"
 
 #include <QObject>
-#include <QHash>
+#include <QIcon>
 
 namespace KDC {
 
@@ -35,45 +35,23 @@ class Theme : public QObject {
         ~Theme();
 
         virtual std::string appName() const;
-        virtual std::string appClientName() const;
 
-        virtual QIcon syncStateIcon(KDC::SyncStatus status, bool sysTray = false, bool sysTrayMenuVisible = false,
-                                    bool alert = false) const;
-
-        virtual QIcon folderOfflineIcon(bool sysTray = false, bool sysTrayMenuVisible = false) const;
         virtual QIcon applicationIcon() const;
 
         virtual std::string version() const;
 
-        virtual QString helpUrl() const;
         static QString feedbackUrl(Language language);
 
-        virtual QString conflictHelpUrl() const;
-
-        void setSystrayUseMonoIcons(bool mono);
-        bool systrayUseMonoIcons() const;
-        virtual QString debugReporterUrl() const;
-
-        virtual bool linkSharing() const;
-        virtual bool userGroupSharing() const;
 
         virtual QString versionSwitchOutput() const;
 
     protected:
-        QIcon themeIcon(const QString &name, bool sysTray = false, bool sysTrayMenuVisible = false) const;
-        void updateIconWithText(QIcon &icon, QString text) const;
         Theme();
-
-    signals:
-        void systrayUseMonoIconsChanged(bool);
 
     private:
         Theme(Theme const &);
 
         static Theme _instance;
-
-        bool _mono{false};
-        mutable QHash<QString, QIcon> _iconCache;
 };
 
 inline Theme Theme::_instance;

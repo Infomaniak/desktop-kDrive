@@ -161,7 +161,7 @@ if(APPLE)
 elseif(WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/pipecommserver.h ${server_srcs_path}/comm/pipecommserver.cpp)
-    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
 endif()
 
 set(3rdparty_SRC

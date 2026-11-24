@@ -45,8 +45,8 @@
 - Keep the Linux frameless header and custom shadow on native Wayland without depending on `Qt6::GuiPrivate`. Accept
   that Wayland snapping includes the transparent shadow margin, so the visible surface may not touch the screen edge.
 - On a Linux host, validate natively: run `./infomaniak-build-tools/conan/build_dependencies.sh Debug`, configure with
-  the generated Conan/CMake Debug preset, then build `kDrive` and `kdrive_qml`. Do not build the legacy `kDrive_client`,
-  which is not buildable for version 4. Do not use the Podman release script for this local Linux validation path.
+  the generated Conan/CMake Debug preset, then build `kDrive` and `kdrive_qml`. Use the native toolchain
+  for local validation.
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Document C++ APIs with `/** */` blocks, not `///`.
 - Do not duplicate method documentation between headers and implementation files. Document public API contracts in
@@ -953,7 +953,7 @@ Compare each regenerated animation with the previous one in a real window, in bo
 
 # Configure the generated Debug preset, then build the relevant Linux targets
 cmake --preset conan-debug -S . -B build-linux/build/build/Debug
-cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive_qml -- -j 8
+cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
 ```
 
 ## Architecture Rules
@@ -1111,5 +1111,5 @@ rg -n "Q_LOGGING_CATEGORY|qC(Debug|Info|Warning|Critical)" src/gui4/linux -g "*.
 # Native Linux validation from repo root
 ./infomaniak-build-tools/conan/build_dependencies.sh Debug
 cmake --preset conan-debug -S . -B build-linux/build/build/Debug
-cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive_qml -- -j 8
+cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
 ```

@@ -84,15 +84,6 @@ SyncPath CommonUtility::getExtensionPath() {
     return extPath;
 }
 
-bool CommonUtility::hasDarkSystray() {
-    NSString *appearanceName = NSApp.effectiveAppearance.name;
-    if ([appearanceName rangeOfString:@"Dark"].location != NSNotFound) {
-        return true;
-    }
-
-    return false;
-}
-
 bool CommonUtility::setFolderCustomIcon(const SyncPath &folderPath, const IconType iconType) {
     const auto iconPath = getIconPath(iconType);
     NSString *iconPathStr = [NSString stringWithCString:iconPath.c_str() encoding:NSUTF8StringEncoding];

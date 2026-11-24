@@ -75,7 +75,6 @@ ENDIF ()
 
 set(libcommon_NAME "${APPLICATION_NAME}common")
 set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")
-set(libcommongui_NAME "${APPLICATION_NAME}commongui")
 set(libsyncengine_NAME "${APPLICATION_NAME}syncengine")
 set(libparms_NAME "${APPLICATION_NAME}parms")
 
@@ -138,11 +137,6 @@ else()
     set(BUILD_KDRIVE_OSX_BUNDLE OFF)
 endif()
 #####
-
-option(NO_MSG_HANDLER "Don't redirect QDebug outputs to the log window/file" OFF)
-if(NO_MSG_HANDLER)
-    add_definitions(-DNO_MSG_HANDLER=1)
-endif()
 
 # this option builds the shell integration
 option(BUILD_EXTENSIONS "BUILD_EXTENSIONS" ON)

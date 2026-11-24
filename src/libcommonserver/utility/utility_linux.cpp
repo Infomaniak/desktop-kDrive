@@ -253,7 +253,7 @@ bool Utility::hasLaunchOnStartup(const std::string &appName) {
     return std::filesystem::exists(desktopFileLocation, ec);
 }
 
-bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
+bool Utility::setLaunchOnStartup(const std::string &appName, bool enable) {
     if (enable) {
         // Outside an AppImage (development build, extracted AppImage) there is no file to launch: an entry with an empty
         // Exec would replace a valid one written by an installed AppImage.
@@ -263,7 +263,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             return false;
         }
 
-        return setLaunchOnStartup(appName, guiName, appImagePath);
+        return setLaunchOnStartup(appName, appImagePath);
     }
 
     const auto userAutoStartFilePath = getUserAutostartDir() / (appName + ".desktop");
@@ -277,7 +277,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     return true;
 }
 
-bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, const SyncPath &appImagePath) {
+bool Utility::setLaunchOnStartup(const std::string &appName, const SyncPath &appImagePath) {
     const auto userAutoStartDirPath = getUserAutostartDir();
     const auto userAutoStartFilePath = userAutoStartDirPath / (appName + ".desktop");
     std::error_code ec;
@@ -294,7 +294,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     }
     LOGW_DEBUG(logger(), L"Writing the autostart entry for " << Utility::formatSyncPath(appImagePath));
     autoStartFile << "[Desktop Entry]" << std::endl;
-    autoStartFile << "Name=" << guiName << std::endl;
+    autoStartFile << "Name=" << appName << std::endl;
     autoStartFile << "GenericName=File Synchronizer" << std::endl;
     autoStartFile << "Exec=" << "'" << appImagePath.native() << "'" << std::endl;
     autoStartFile << "Terminal=false" << std::endl;

@@ -177,10 +177,10 @@ struct COMMONSERVER_EXPORT Utility {
 
         static bool hasSystemLaunchOnStartup(const std::string &appName);
         static bool hasLaunchOnStartup(const std::string &appName);
-        static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
+        static bool setLaunchOnStartup(const std::string &appName, bool enable);
 #if defined(KD_LINUX)
         /** Writes the autostart entry for an explicit AppImage, such as the one installed by the updater. */
-        static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, const SyncPath &appImagePath);
+        static bool setLaunchOnStartup(const std::string &appName, const SyncPath &appImagePath);
 #endif
 
 #if defined(KD_WINDOWS)

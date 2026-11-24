@@ -18,11 +18,10 @@
 
 #pragma once
 
-#include "libcommongui/utility/utility.h"
+#include "libcommon/utility/cstypes.h"
 
-#include <QObject>
-#include <QDateTime>
 #include <QFile>
+#include <QScopedPointer>
 #include <QTextStream>
 #include <QMutex>
 
@@ -31,79 +30,39 @@
 
 namespace KDC {
 
-struct GuiLog {
-        QDateTime timeStamp;
-        QString message;
-};
-
-/**
- * @brief The Logger class
- * @ingroup libsync
- */
-class Logger : public QObject {
-        Q_OBJECT
-
+class Logger {
     public:
-        bool isNoop() const;
         bool isLoggingToFile() const;
 
-        void log(GuiLog log);
-        void doLog(const QString &log);
-
-        static void kdriveLog(const QString &message);
-
         static Logger *instance();
-        static void installMessagePattern();
         static void installEarlyMessageHandler();
-        static void setSentryBreadcrumbsEnabled(bool enabled);
-        static bool sentryBreadcrumbsEnabled() { return _sentryBreadcrumbsEnabled.load(std::memory_order_relaxed); }
 
-        void postNotification(const QString &title, const QString &message);
-
-        void setLogFile(const QString &name);
         void setLogExpire(std::chrono::days expire);
         /** Removes this logger's log files older than the configured expiration. Does nothing when expiration is 0. */
         void purgeExpiredLogFiles() const;
-        void setLogDir(const QString &dir);
-
-        bool logDebug() const { return _logDebug; }
-        void setLogDebug(bool debug);
 
         /** Returns where the automatic logdir would be */
         QString logDirectoryPath() const { return _logDirectoryPath; }
 
-        /** Sets up default dir log setup. */
-        void setupLogDir();
+        void enableLog();
 
-        /** For switching off via logwindow */
         void disableLog();
 
-        int minLogLevel() const;
-        void setMinLogLevel(int level);
-
-        bool compressSingleLog(const QString &sourceName, const QString &targetName);
-
-    signals:
-        void logWindowLog(const QString &);
-
-        void showNotification(const QString &, const QString &);
-
-    public slots:
-        void enterNextLogFile();
+        bool setMinLogLevel(LogLevel level);
 
     private:
-        Logger(QObject *parent = 0);
+        Logger();
+        static void handleMessage(QtMsgType type, const QMessageLogContext &context, const QString &message);
+        void enterNextLogFile();
+        void setLogFile(const QString &name);
         ~Logger();
         static QString logAppName();
         QFile _logFile;
         std::chrono::days _logExpire{0};
-        bool _logDebug{false};
         QScopedPointer<QTextStream> _logstream;
         mutable QMutex _mutex;
         QString _logDirectoryPath;
-        bool _logEnabled = false;
-        int _minLogLevel;
-        inline static std::atomic_bool _sentryBreadcrumbsEnabled{false};
+        std::atomic<LogLevel> _minLogLevel{LogLevel::Debug};
 };
 
 } // namespace KDC

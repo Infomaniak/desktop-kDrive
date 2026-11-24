@@ -29,7 +29,6 @@ endif()
 
 add_subdirectory(libcommon)
 add_subdirectory(libcommonserver)
-add_subdirectory(libcommongui)
 add_subdirectory(libsyncengine)
 add_subdirectory(libparms)
 

@@ -387,18 +387,17 @@ void AppServer::init() {
     // Setup auto start
 #ifdef NDEBUG
 #if defined(KD_WINDOWS)
-    (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(),
-                                       false); // Disable it first to make sure the path is updated in registry
+    (void) Utility::setLaunchOnStartup(_theme->appName(), false); // Disable it first to make sure the path is updated in registry
 #endif
 
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
-        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), true);
     }
 #else
     if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(_theme->appName())) {
-        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), true);
     }
 #endif
 #endif
@@ -894,7 +893,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &newPar
     // Propagate autostart change
     if (previousParameters.autoStart() != updatedParameters.autoStart()) {
         auto *theme = Theme::instance();
-        (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), updatedParameters.autoStart());
+        (void) Utility::setLaunchOnStartup(theme->appName(), updatedParameters.autoStart());
     }
 
     // Propagate Sentry activation change

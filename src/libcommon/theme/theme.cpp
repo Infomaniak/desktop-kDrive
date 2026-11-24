@@ -22,8 +22,6 @@
 #include "utility/utility.h"
 
 #include <QIcon>
-#include <QOperatingSystemVersion>
-#include <QPainter>
 #include <QSslSocket>
 
 namespace KDC {
@@ -38,97 +36,20 @@ std::string Theme::appName() const {
     return APPLICATION_NAME;
 }
 
-std::string Theme::appClientName() const {
-    return std::string(APPLICATION_NAME) + "_client";
-}
-
 std::string Theme::version() const {
     return KDRIVE_VERSION_STRING;
 }
 
 QIcon Theme::applicationIcon() const {
-    return themeIcon(QStringLiteral(APPLICATION_ICON_NAME "-icon"));
-}
-
-QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisible) const {
-    Q_UNUSED(sysTrayMenuVisible)
-    QString osType;
-    QString flavor;
-
-    osType = "windows";
-#if defined(KD_MACOS)
-    osType = "mac";
-#endif
-
-    if (sysTray) {
-        if (_mono) {
-            flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
-#if defined(KD_MACOS)
-            if (QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
-                flavor = QString("black");
-            }
-#endif
-        } else {
-            flavor = QString("colored");
-        }
-    } else {
-        flavor = QString("colored");
+    QIcon icon;
+    for (const auto size: {16, 32, 128, 256, 512}) {
+        icon.addFile(QStringLiteral(":/client/theme/colored/" APPLICATION_ICON_NAME "-icon-%1.png").arg(size), QSize(size, size));
     }
-
-    QString key = name + "," + flavor;
-    QIcon &cached = _iconCache[key];
-    if (cached.isNull()) {
-        QString pixmapName = QString(":/client/resources/icons/theme/%1/%2/%3.svg").arg(osType, flavor, name);
-        if (QFile::exists(pixmapName)) {
-            QList<int> sizes;
-            sizes << 16 << 22 << 32 << 48 << 64 << 128 << 256 << 512 << 1024;
-            foreach (int size, sizes) {
-                cached.addPixmap(QIcon(pixmapName).pixmap(QSize(size, size)));
-            }
-        }
-    }
-
-#ifdef Q_OS_MAC
-    // This defines the icon as a template and enables automatic macOS color handling
-    // See https://bugreports.qt.io/browse/QTBUG-42109
-    cached.setIsMask(_mono && sysTray);
-#endif
-
-    return cached;
-}
-
-void Theme::updateIconWithText(QIcon &icon, QString text) const {
-    const QList<QSize> &sizes = icon.availableSizes();
-    for (const QSize &size: sizes) {
-        QPixmap px = icon.pixmap(size);
-        QPainter painter(&px);
-        const int pictSize = size.width() / 2;
-        QRect rect(size.width() - pictSize, size.height() - pictSize, pictSize, pictSize);
-
-        // Draw red circle
-        painter.setPen(Qt::red);
-        painter.setBrush(Qt::red);
-        painter.drawEllipse(rect);
-
-        // Draw text
-        painter.setPen(Qt::white);
-        painter.setFont(QFont("Arial", pictSize - 2, QFont::Bold));
-        painter.drawText(rect, Qt::AlignCenter, text);
-
-        icon.addPixmap(px);
-    }
+    return icon;
 }
 
 Theme::Theme() :
     QObject(nullptr) {}
-
-QString Theme::helpUrl() const {
-#ifdef APPLICATION_HELP_URL
-    return QString::fromLatin1(APPLICATION_HELP_URL);
-#else
-    return QString();
-#endif
-}
 
 QString Theme::feedbackUrl(const Language language) {
     auto resolvedLanguage = language;
@@ -160,76 +81,6 @@ QString Theme::feedbackUrl(const Language language) {
             break;
     }
     return FEEDBACK_EN_URL;
-}
-
-QString Theme::conflictHelpUrl() const {
-#ifdef APPLICATION_CONFLICT_HELP_URL
-    return QString::fromLatin1(APPLICATION_CONFLICT_HELP_URL);
-#else
-    return QString();
-#endif
-}
-
-void Theme::setSystrayUseMonoIcons(bool mono) {
-    _mono = mono;
-    emit systrayUseMonoIconsChanged(mono);
-}
-
-bool Theme::systrayUseMonoIcons() const {
-    return _mono;
-}
-
-QString Theme::debugReporterUrl() const {
-    return DEBUGREPORTER_SUBMIT_URL;
-}
-
-QIcon Theme::syncStateIcon(KDC::SyncStatus status, bool sysTray, bool sysTrayMenuVisible, bool alert) const {
-    // FIXME: Mind the size!
-    QString statusIcon;
-
-    switch (status) {
-        case KDC::SyncStatus::Undefined:
-            // this can happen if no sync connections are configured.
-            statusIcon = QLatin1String("state-information");
-            break;
-        case KDC::SyncStatus::Starting:
-        case KDC::SyncStatus::Running:
-            statusIcon = QLatin1String("state-sync");
-            break;
-        case KDC::SyncStatus::Idle:
-            statusIcon = QLatin1String("state-ok");
-            break;
-        case KDC::SyncStatus::PauseAsked:
-        case KDC::SyncStatus::Paused:
-        case KDC::SyncStatus::StopAsked:
-        case KDC::SyncStatus::Stopped:
-            statusIcon = QLatin1String("state-pause");
-            break;
-        case KDC::SyncStatus::Error:
-            statusIcon = QLatin1String("state-error");
-            break;
-        default:
-            statusIcon = QLatin1String("state-error");
-    }
-
-    QIcon icon = themeIcon(statusIcon, sysTray, sysTrayMenuVisible);
-
-    if (sysTray && alert) updateIconWithText(icon, QString("!"));
-
-    return icon;
-}
-
-
-QIcon Theme::folderOfflineIcon(bool sysTray, bool sysTrayMenuVisible) const {
-    return themeIcon(QLatin1String("state-pause"), sysTray, sysTrayMenuVisible);
-}
-
-bool Theme::linkSharing() const {
-    return true;
-}
-
-bool Theme::userGroupSharing() const {
-    return false;
 }
 
 QString Theme::versionSwitchOutput() const {

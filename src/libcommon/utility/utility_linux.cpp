@@ -99,10 +99,6 @@ SyncPath CommonUtility::getAppDir() {
     return {};
 }
 
-bool CommonUtility::hasDarkSystray() {
-    return true;
-}
-
 /**
  * @brief On Linux, version information are extracted from the file /etc/os-release
  * Example of content:

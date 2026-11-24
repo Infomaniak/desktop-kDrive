@@ -1,7 +1,7 @@
 # libcommon — Foundation Library
 
 ## Package Identity
-Foundational shared library. **Everything depends on it** (`libcommonserver` → `libparms` → `libsyncengine` → `server`; `libcommongui` → `gui`). Defines all core enums, type aliases, IPC protocol, DTO classes, error propagation types, logging helpers, Sentry integration, and the app theme singleton. No platform-specific code except `utility_mac.mm` / `utility_win.cpp` / `utility_linux.cpp`. Export macro: `COMMON_EXPORT`.
+Foundational shared library. **Everything depends on it** (`libcommonserver` → `libparms` → `libsyncengine` → `server`; `gui4/linux`). Defines all core enums, type aliases, IPC protocol, DTO classes, error propagation types, logging helpers, Sentry integration, and the app theme singleton. No platform-specific code except `utility_mac.mm` / `utility_win.cpp` / `utility_linux.cpp`. Export macro: `COMMON_EXPORT`.
 
 ## Key Files
 
@@ -18,7 +18,7 @@ Foundational shared library. **Everything depends on it** (`libcommonserver` →
 | `log/customlogstreams.h` | `CustomLogStream` / `CustomLogWStream` — typed log stream wrappers |
 | `log/sentry/handler.h` | `sentry::Handler` singleton — init, captureMessage, PTrace management |
 | `log/sentry/ptraces.h` | All concrete performance trace types mirroring the sync pipeline |
-| `theme/theme.h` | `Theme` Qt singleton — icons, branding, systray state |
+| `theme/theme.h` | `Theme` Qt singleton — application icon and branding |
 
 ## Enum Conventions
 Every enum lives in `namespace KDC`, in `cstypes.h` or `types.h`.
@@ -78,7 +78,7 @@ Defines every request/signal between GUI and server:
 - Timeout constants: `commShortTimeout` (1s), `commAverageTimeout` (10s), `commLongTimeout` (60s)
 - `commjson.h` — small shared helper for parsing raw IPC JSON strings into `Poco::DynamicStruct`
 
-**Adding a new IPC call:** add to `RequestNum` here, then handle symmetrically in `src/server/comm/guicommserver.cpp` and `src/libcommongui/commclient.cpp`.
+**Adding a new IPC call:** add to `RequestNum` here, then handle symmetrically in `src/server/comm/guijobs/guijobfactory.cpp` and the corresponding v4 frontend.
 
 ## Type Aliases to Know
 ```cpp

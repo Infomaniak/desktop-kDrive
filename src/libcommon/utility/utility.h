@@ -82,7 +82,6 @@ struct COMMON_EXPORT CommonUtility {
         static std::string getIconPath(IconType iconType);
         static SyncPath _workingDirPath;
 
-        static bool hasDarkSystray();
         static bool setFolderCustomIcon(const SyncPath &folderPath, IconType iconType);
 
         static std::string generateRandomStringAlphaNum(int length = 10);
@@ -178,8 +177,6 @@ struct COMMON_EXPORT CommonUtility {
 #if defined(KD_MACOS)
         static SyncPath getExtensionPath();
 #endif
-
-        static QString getFileIconPathFromFileName(const QString &fileName, NodeType type);
 
         static QString getRelativePathFromHome(const QString &dirPath);
 

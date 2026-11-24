@@ -65,19 +65,6 @@
     </message>
 </context>
 <context>
-    <name>KDC::Logger</name>
-    <message>
-        <location filename="../src/libcommongui/logger.cpp" line="296"/>
-        <source>Error</source>
-        <translation>Fout</translation>
-    </message>
-    <message>
-        <location filename="../src/libcommongui/logger.cpp" line="296"/>
-        <source>&lt;nobr&gt;File &apos;%1&apos;&lt;br/&gt;cannot be opened for writing.&lt;br/&gt;&lt;br/&gt;The log output can &lt;b&gt;not&lt;/b&gt; be saved!&lt;/nobr&gt;</source>
-        <translation>&lt;nobr&gt;Bestand &apos;%1&apos;&lt;br/&gt;kan niet worden geopend om te schrijven.&lt;br/&gt;&lt;br/&gt;De loguitvoer kan &lt;b&gt;niet&lt;/b&gt; worden opgeslagen!&lt;/nobr&gt;</translation>
-    </message>
-</context>
-<context>
     <name>KDC::MainWindow</name>
     <message>
         <location filename="../src/manualupdater/mainwindow.cpp" line="48"/>
@@ -466,77 +453,6 @@
         <location filename="../src/server/appserver.cpp" line="151"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>kDrive-applicatie wordt afgesloten vanwege een fatale fout.</translation>
-    </message>
-</context>
-<context>
-    <name>Utility</name>
-    <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="97"/>
-        <source>%L1 GB</source>
-        <translation>%L1 GB</translation>
-    </message>
-    <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="101"/>
-        <source>%L1 MB</source>
-        <translation>%L1 MB</translation>
-    </message>
-    <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="105"/>
-        <source>%L1 KB</source>
-        <translation>%L1 KB</translation>
-    </message>
-    <message>
-        <location filename="../src/libcommongui/utility/utility.cpp" line="108"/>
-        <source>%L1 B</source>
-        <translation>%L1 B</translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="41"/>
-        <source>%n year(s)</source>
-        <translation>
-            <numerusform>%n jaar</numerusform>
-            <numerusform>%n jaar</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="42"/>
-        <source>%n month(s)</source>
-        <translation>
-            <numerusform>%n maand</numerusform>
-            <numerusform>%n maanden</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="43"/>
-        <source>%n day(s)</source>
-        <translation>
-            <numerusform>%n dag</numerusform>
-            <numerusform>%n dagen</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="44"/>
-        <source>%n hour(s)</source>
-        <translation>
-            <numerusform>%n uur</numerusform>
-            <numerusform>%n uur</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="45"/>
-        <source>%n minute(s)</source>
-        <translation>
-            <numerusform>%n minuut</numerusform>
-            <numerusform>%n minuten</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../src/libcommongui/utility/utility.cpp" line="46"/>
-        <source>%n second(s)</source>
-        <translation>
-            <numerusform>%n seconde</numerusform>
-            <numerusform>%n seconden</numerusform>
-        </translation>
     </message>
 </context>
 </TS>

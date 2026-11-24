@@ -115,7 +115,6 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 ### Source Libraries
 
 - Common types/utilities: `src/libcommon/` → [see AGENTS.md](src/libcommon/AGENTS.md)
-- Common GUI support (Qt utilities and logging): `src/libcommongui/` → no local `AGENTS.md`; use this root file
 - Server utilities + platform I/O: `src/libcommonserver/` → [see AGENTS.md](src/libcommonserver/AGENTS.md)
 - Parameters database: `src/libparms/` → [see AGENTS.md](src/libparms/AGENTS.md)
 - Sync engine (core): `src/libsyncengine/` → [see AGENTS.md](src/libsyncengine/AGENTS.md)

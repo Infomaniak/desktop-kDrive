@@ -1102,8 +1102,6 @@ void ExtensionJob::openPrivateLink(const std::string &link) {
 }
 
 void ExtensionJob::sendSharingContextMenuOptions(const FileData &fileData, std::shared_ptr<AbstractCommChannel> channel) {
-    auto theme = Theme::instance();
-    if (!(theme->userGroupSharing() || theme->linkSharing())) return;
     if (!fileData.syncDbId) return;
 
     // Find SyncPal associated to sync
@@ -1127,30 +1125,17 @@ void ExtensionJob::sendSharingContextMenuOptions(const FileData &fileData, std::
         return;
     }
 
-    // If sharing is globally disabled, do not show any sharing entries.
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
         buildAndSendMenuItemMessage(channel, Str("DISABLED"), false, resharingText(fileData.isDirectory));
     } else {
-        // Do we have public links?
-        bool publicLinksEnabled = theme->linkSharing();
-
-        // Is is possible to create a public link without user choices?
-        bool canCreateDefaultPublicLink = publicLinksEnabled;
-
-        if (canCreateDefaultPublicLink) {
-            buildAndSendMenuItemMessage(channel, Str("COPY_PUBLIC_LINK"), isOnTheServer, copyPublicShareLinkText());
-        } else if (publicLinksEnabled) {
-            buildAndSendMenuItemMessage(channel, Str("MANAGE_PUBLIC_LINKS"), isOnTheServer, copyPublicShareLinkText());
-        }
+        buildAndSendMenuItemMessage(channel, Str("COPY_PUBLIC_LINK"), isOnTheServer, copyPublicShareLinkText());
     }
 
     buildAndSendMenuItemMessage(channel, Str("COPY_PRIVATE_LINK"), isOnTheServer, copyPrivateShareLinkText());
 }
 
 void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommString &response) {
-    auto theme = Theme::instance();
-    if (!(theme->userGroupSharing() || theme->linkSharing())) return;
     if (!fileData.syncDbId) return;
 
     // Find SyncPal associated to sync
@@ -1175,7 +1160,6 @@ void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommSt
     }
 
 
-    // If sharing is globally disabled, do not show any sharing entries.
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
         response.append(responseToFinderArgSeparator);
@@ -1185,17 +1169,12 @@ void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommSt
         response.append(responseToFinderArgSeparator);
         response.append(resharingText(fileData.isDirectory));
     } else {
-        // Do we have public links?
-        bool publicLinksEnabled = theme->linkSharing();
-
-        if (publicLinksEnabled) {
-            response.append(responseToFinderArgSeparator);
-            response.append(Str("COPY_PUBLIC_LINK"));
-            response.append(responseToFinderArgSeparator);
-            response.append(isOnTheServer ? Str("") : Str("d"));
-            response.append(responseToFinderArgSeparator);
-            response.append(copyPublicShareLinkText());
-        }
+        response.append(responseToFinderArgSeparator);
+        response.append(Str("COPY_PUBLIC_LINK"));
+        response.append(responseToFinderArgSeparator);
+        response.append(isOnTheServer ? Str("") : Str("d"));
+        response.append(responseToFinderArgSeparator);
+        response.append(copyPublicShareLinkText());
     }
 
     response.append(responseToFinderArgSeparator);

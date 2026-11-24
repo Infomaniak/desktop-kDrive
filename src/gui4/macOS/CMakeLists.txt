@@ -61,7 +61,6 @@ install(DIRECTORY "${CLIENT_OUTPUT_DIRECTORY}/kDrive.app"
 add_dependencies(build_kDrive_client
     ${libcommon_NAME}
     ${libcommonserver_NAME}
-    ${libcommongui_NAME}
     ${libsyncengine_NAME}
     ${libparms_NAME}
     ${APPLICATION_EXECUTABLE}

@@ -99,7 +99,7 @@ std::int32_t init(int &argc, char **argv, std::unique_ptr<KDC::AppServer> &appPt
     KDC::sentry::Handler::init(KDC::AppType::Server);
     KDC::sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::sentry::ConfidentialityLevel::Authenticated);
 
-    Q_INIT_RESOURCE(client);
+    Q_INIT_RESOURCE(theme);
 
     try {
         appPtr = std::make_unique<KDC::AppServer>(argc, argv);
