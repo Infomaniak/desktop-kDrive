@@ -520,7 +520,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobWithLinkedParent() {
         GenericLocalDeleteJob deleteJob(temporaryDirectorySync.path(), linkedFilePath, _syncPal->cacheDirectory());
         deleteJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), deleteJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), deleteJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
     }
 
@@ -530,7 +530,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobWithLinkedParent() {
                                         GenericLocalDeleteJob::ForceHardDelete::Yes);
         deleteJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), deleteJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), deleteJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
     }
 
@@ -541,7 +541,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobWithLinkedParent() {
         GenericLocalDeleteJob deleteJob(temporaryDirectorySync.path(), linkedFilePath, _syncPal->cacheDirectory());
         deleteJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), deleteJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), deleteJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
     }
 }
