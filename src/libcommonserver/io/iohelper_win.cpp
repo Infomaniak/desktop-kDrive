@@ -1041,8 +1041,12 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
     }
 
     // SetFileTime will not update a FILETIME if the value is {0, 0}.
-    if (creationFileTime.QuadPart == 0) creationFileTime = {1, 0};
-    if (modificationFileTime.QuadPart == 0) modificationFileTime = {1, 0};
+    if (creationFileTime.dwLowDateTime == 0 && creationFileTime.dwHighDateTime == 0) {
+        creationFileTime = {1, 0};
+    }
+    if (modificationFileTime.dwLowDateTime == 0 && modificationFileTime.dwHighDateTime == 0) {
+        modificationFileTime = {1, 0};
+    }
 
     // !!! If the date falls outside the file system's limits, it will be adjusted to the value of the nearest boundary.
     if (!SetFileTime(hFile, &creationFileTime, nullptr, &modificationFileTime)) {
