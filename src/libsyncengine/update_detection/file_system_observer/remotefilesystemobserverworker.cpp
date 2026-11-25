@@ -1364,6 +1364,35 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     return ExitCode::Ok;
 }
 
+void RemoteFileSystemObserverWorker::blacklistSyncedItemTemporarily(const NodeId &remoteNodeId) {
+    // An item that is ignored here is missing from the remote snapshot. If it was already synchronized, this would be
+    // interpreted as a remote deletion and its local copy would be deleted. Blacklist both replicas, using the paths stored
+    // in the sync DB (the new remote name cannot be trusted), so that the item and its descendants are left untouched.
+    bool found = false;
+    DbNodeId dbNodeId = 0;
+    if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, remoteNodeId, dbNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << remoteNodeId);
+        return;
+    }
+    if (!found) return; // Not synchronized yet: there is nothing to protect.
+
+    SyncPath localPath;
+    SyncPath remotePath;
+    if (!_syncPal->syncDb()->path(dbNodeId, localPath, remotePath, found) || !found) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path for dbNodeId=" << dbNodeId);
+        return;
+    }
+
+    NodeId localNodeId;
+    if (!_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId for nodeId=" << remoteNodeId);
+        return;
+    }
+
+    if (found && !localNodeId.empty()) _syncPal->blacklistTemporarily(localNodeId, localPath, ReplicaSide::Local);
+    _syncPal->blacklistTemporarily(remoteNodeId, remotePath, ReplicaSide::Remote);
+}
+
 ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const SyncName &name, const NodeId &remoteNodeId,
                                                                        const NodeType type) {
     // Remote names are untrusted: reject, on all platforms, any name that cannot be safely appended to a local path
@@ -1373,6 +1402,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const Syn
                                                                 << CommonUtility::s2ws(remoteNodeId) << L". Item is ignored.");
         _syncPal->addError(
                 Error(_syncPal->syncDbId(), "", remoteNodeId, type, name, ConflictType::None, InconsistencyType::ForbiddenChar));
+        blacklistSyncedItemTemporarily(remoteNodeId);
         return {ExitCode::SystemError, ExitCause::InvalidName};
     }
 
@@ -1403,6 +1433,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const Syn
                                    << exitInfo << L", " << Utility::formatSyncName(name) << L". Item is ignored.");
         _syncPal->addError(Error(_syncPal->syncDbId(), "", remoteNodeId, type, name, ConflictType::None,
                                  InconsistencyType::NotYetSupportedChar));
+        blacklistSyncedItemTemporarily(remoteNodeId);
         exitInfo = {ExitCode::SystemError, ExitCause::InvalidName};
     }
 #endif

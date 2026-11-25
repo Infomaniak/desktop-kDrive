@@ -500,6 +500,78 @@ void TestRemoteFileSystemObserverWorker::testInsertItemWithUnsafeName() {
     _syncPal->setAddErrorCallback(nullptr);
 }
 
+void TestRemoteFileSystemObserverWorker::testInsertSyncedItemWithUnsafeName() {
+    // This test does not require any remote drive access.
+    const auto remoteFSObserverWorker =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(remoteFSObserverWorker);
+
+    LiveSnapshot &liveSnapshot = remoteFSObserverWorker->_liveSnapshot;
+    const NodeId rootId = liveSnapshot.rootFolderId();
+    CPPUNIT_ASSERT(!rootId.empty());
+    if (rootId != NodeId("1")) {
+        const SnapshotItem driveRootItem("1", rootId, Str("kDrive"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                         NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
+        CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
+    }
+
+    // A directory and its child are already synchronized.
+    const auto syncDb = _syncPal->syncDb();
+    DbNodeId dirDbId = 0;
+    bool constraintError = false;
+    const DbNode dirNode(0, syncDb->rootNode().nodeId(), Str("Docs"), Str("Docs"), "l_18", "18", testhelpers::defaultTime,
+                         testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
+    CPPUNIT_ASSERT(syncDb->insertNode(dirNode, dirDbId, constraintError));
+    const DbNode fileNode(0, dirDbId, Str("child.txt"), Str("child.txt"), "l_21", "21", testhelpers::defaultTime,
+                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
+                          std::nullopt);
+    CPPUNIT_ASSERT(syncDb->insertNode(fileNode));
+
+    _syncPal->setAddErrorCallback([](const Error &reportedError) {
+        CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, reportedError.inconsistencyType());
+    });
+
+    // The directory is renamed remotely with an unsafe name and a new item with an unsafe name is created.
+    std::stringstream ss;
+    ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+       << std::string("18,1,..") + '\0' + "x,dir,,1789735691,1789735698,1,\n"
+       << std::string("19,1,new") + '\0' + ",file,4,1789735691,1789735698,1,\n"
+       << endOfFileDelimiter;
+
+    RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
+    RemoteSnapshotItem item;
+    bool error = false;
+    bool ignore = false;
+    bool eof = false;
+    SyncNameSet existingFiles;
+    while (handler.getItem(item, ss, error, ignore, eof)) {
+        if (ignore) continue;
+        if (eof) break;
+        CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInRemoteSnapshot(item, existingFiles));
+    }
+    CPPUNIT_ASSERT(!error);
+    CPPUNIT_ASSERT(eof);
+    CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("18"));
+
+    // The directory is missing from the remote snapshot: the synchronized items must be blacklisted on both replicas, using
+    // their DB paths, so that they are not deleted locally.
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
+        CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(SyncPath("Docs"), side));
+        CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(SyncPath("Docs") / "child.txt", side));
+    }
+
+    NodeSet remoteTmpBlacklist;
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, remoteTmpBlacklist);
+    CPPUNIT_ASSERT(remoteTmpBlacklist.contains("18"));
+    CPPUNIT_ASSERT(!remoteTmpBlacklist.contains("19")); // Not synchronized: nothing to protect.
+
+    NodeSet localTmpBlacklist;
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist, localTmpBlacklist);
+    CPPUNIT_ASSERT(localTmpBlacklist.contains("l_18"));
+
+    _syncPal->setAddErrorCallback(nullptr);
+}
+
 void TestRemoteFileSystemObserverWorker::testProcessPathlessTrashAction() {
     // This test does not require any remote drive access.
     const auto remoteFSObserverWorker =
