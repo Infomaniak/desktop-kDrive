@@ -49,7 +49,6 @@
 #include <Poco/Dynamic/Struct.h>
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
-#include <sys/statvfs.h>
 #include <uuid/uuid.h>
 #endif
 
@@ -161,15 +160,6 @@ std::string CommonUtility::generateUUID() {
     return uuidStr;
 }
 #endif
-
-void CommonUtility::crash() {
-    volatile int *a = (int *) (NULL);
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnull-dereference"
-    *a = 1;
-#pragma clang diagnostic pop
-}
 
 QString CommonUtility::platformName() {
     return QSysInfo::prettyProductName();
@@ -576,27 +566,6 @@ std::string CommonUtility::getIconPath(const IconType iconType) {
     return {};
 }
 
-qint64 CommonUtility::freeDiskSpace(const QString &path) {
-#if defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_FREEBSD_KERNEL) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
-    struct statvfs stat;
-    if (statvfs(path.toLocal8Bit().data(), &stat) == 0) {
-        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
-    }
-#elif defined(Q_OS_UNIX)
-    struct statvfs64 stat;
-    if (statvfs64(path.toLocal8Bit().data(), &stat) == 0) {
-        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
-    }
-#elif defined(Q_OS_WIN)
-    ULARGE_INTEGER freeBytes;
-    freeBytes.QuadPart = 0L;
-    if (GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(path.utf16()), &freeBytes, NULL, NULL)) {
-        return freeBytes.QuadPart;
-    }
-#endif
-    return -1;
-}
-
 QString CommonUtility::escape(const QString &in) {
     return in.toHtmlEscaped();
 }
@@ -912,21 +881,6 @@ QString CommonUtility::applicationDirPath() {
     }
 #endif
     return QCoreApplication::applicationDirPath();
-}
-
-QString CommonUtility::getRelativePathFromHome(const QString &dirPath) {
-    QString home = QDir::homePath();
-    if (!home.endsWith('/')) {
-        home.append('/');
-    }
-    QString name(dirPath);
-    if (name.startsWith(home)) {
-        name = name.mid(home.length());
-    }
-    if (name.length() > 1 && name.endsWith('/')) {
-        name.chop(1);
-    }
-    return QDir::toNativeSeparators(name);
 }
 
 bool CommonUtility::isFileSizeMismatchDetectionEnabled() {

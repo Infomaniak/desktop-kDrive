@@ -13,7 +13,7 @@ Foundational shared library. **Everything depends on it** (`libcommonserver` →
 | `commjson.h` | Shared IPC JSON helpers for parsing the message envelope into `Poco::DynamicStruct` |
 | `info/*.h` | Remaining DTO classes (ErrorInfo, …) |
 | `data/*.h` | Unified entity classes (User, Account, Drive, DriveAvailable, Sync, Parameters, …) |
-| `utility/utility.h` | `CommonUtility` — static helpers (paths, strings, UUID, disk space, URL, …) |
+| `utility/utility.h` | `CommonUtility` — static helpers (paths, strings, UUID, filesystem types, URL, …) |
 | `utility/urlhelper.h` | `UrlHelper` — all Infomaniak API base URLs |
 | `log/customlogstreams.h` | `CustomLogStream` / `CustomLogWStream` — typed log stream wrappers |
 | `log/sentry/handler.h` | `sentry::Handler` singleton — init, captureMessage, PTrace management |

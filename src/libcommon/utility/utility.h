@@ -117,8 +117,6 @@ struct COMMON_EXPORT CommonUtility {
         static bool isSyncCompatible(const SyncPath &targetPath);
         static bool isLiteSyncCompatible(const SyncPath &targetPath);
 
-        static qint64 freeDiskSpace(const QString &path);
-        static void crash();
         static QString platformName();
         static std::string osVersion();
 #if defined(KD_LINUX)
@@ -177,8 +175,6 @@ struct COMMON_EXPORT CommonUtility {
 #if defined(KD_MACOS)
         static SyncPath getExtensionPath();
 #endif
-
-        static QString getRelativePathFromHome(const QString &dirPath);
 
         static bool isFileSizeMismatchDetectionEnabled();
         static size_t maxPathLength();
@@ -244,11 +240,6 @@ struct COMMON_EXPORT CommonUtility {
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
         static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
-
-#if defined(KD_WINDOWS)
-        // Converts a std::wstring to std::string assuming that it contains only mono byte chars
-        static std::string toUnsafeStr(const SyncName &name);
-#endif
 
         static QString truncateLongLogMessage(const QString &message);
 

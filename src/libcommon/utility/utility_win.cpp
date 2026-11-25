@@ -130,11 +130,6 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
     return true;
 }
 
-std::string CommonUtility::toUnsafeStr(const SyncName &name) {
-    std::string unsafeName(name.begin(), name.end());
-    return unsafeName;
-}
-
 std::string extractOsVersion() {
     // Use RtlGetVersion to get the real Windows version (works on Windows 10/11)
     typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
