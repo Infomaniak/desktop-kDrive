@@ -463,7 +463,7 @@ void TestRemoteFileSystemObserverWorker::testInsertItemWithUnsafeName() {
         CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
     }
 
-    int nbErrors = 0;
+    auto nbErrors = 0;
     _syncPal->setAddErrorCallback([&nbErrors](const Error &reportedError) {
         ++nbErrors;
         CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, reportedError.inconsistencyType());
@@ -601,7 +601,7 @@ void TestRemoteFileSystemObserverWorker::testProcessPathlessTrashAction() {
     (void) actionObject->set(pathKey, "");
 
     Poco::JSON::Array::Ptr actionArray = new Poco::JSON::Array();
-    actionArray->add(actionObject);
+    (void) actionArray->add(actionObject);
     const Poco::JSON::Array::Ptr actionsFilesArray = new Poco::JSON::Array();
 
     CPPUNIT_ASSERT(remoteFSObserverWorker->processActions(actionArray, actionsFilesArray));

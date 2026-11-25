@@ -560,9 +560,9 @@ bool CommonUtility::isStrictDescendant(const SyncPath &potentialDescendant, cons
 bool CommonUtility::isSafeItemName(const SyncName &name) {
     if (name.empty() || name == Str(".") || name == Str("..")) return false;
     for (const SyncChar c: name) {
-        if (c == SyncChar('\0') || c == SyncChar('/')) return false;
+        if (c == static_cast<SyncChar>('\0') || c == static_cast<SyncChar>('/')) return false;
 #if defined(KD_WINDOWS)
-        if (c == SyncChar('\\') || c == SyncChar(':')) return false;
+        if (c == static_cast<SyncChar>('\\') || c == static_cast<SyncChar>(':')) return false;
 #endif
     }
     return true;
