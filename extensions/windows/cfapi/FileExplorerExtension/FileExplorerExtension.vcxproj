@@ -222,4 +222,7 @@
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.3.0.260715.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.3.0.260715.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.3.0.260715.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.3.0.260715.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
+  <Target Name="SignFileExplorerExtension" AfterTargets="Link" Condition="'$(KDC_SIGNING_THUMBPRINT)' != ''">
+    <Exec Command="signtool.exe verify /pa &quot;$(TargetPath)&quot; &gt;nul 2&gt;&amp;1 || signtool.exe sign /sha1 &quot;$(KDC_SIGNING_THUMBPRINT)&quot; /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /d &quot;$(TargetName)&quot; &quot;$(TargetPath)&quot;" />
+  </Target>
 </Project>
