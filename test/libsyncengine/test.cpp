@@ -43,6 +43,7 @@
 #include "jobs/network/testnetworkjobs.h"
 #include "jobs/network/testabstractnetworkjob.h"
 #include "jobs/network/kDrive_API/testapitranslator.h"
+#include "jobs/network/kDrive_API/testdownloadjob.h"
 #include "jobs/network/kDrive_API/testloguploadjob.h"
 #include "jobs/network/kDrive_API/testsearchjob.h"
 #include "jobs/network/kDrive_API/testgetmysharedfilesjob.h"
@@ -72,6 +73,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractNetworkJob);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiTranslator);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestDownloadJob);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSearchJob);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGetFilesSharedWithMeJob);
 

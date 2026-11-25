@@ -71,12 +71,17 @@ runner_info() {
 }
 
 delete_runner() {
-    local id
-    id="$(runner_info "$1" | awk '{print $1}')" || return 1
-    if [[ -n "$id" ]]; then
+    local info id failed=0
+    info="$(runner_info "$1")" || return 1
+    while read -r id _; do
+        [[ -n "$id" ]] || continue
         log "Deleting GitHub runner $1 (id=$id)"
-        gh api -X DELETE "/repos/${REPO}/actions/runners/${id}" || return 1
-    fi
+        if ! gh api -X DELETE "/repos/${REPO}/actions/runners/${id}"; then
+            echo "::warning::Could not delete GitHub runner $1 (id=$id)" >&2
+            failed=1
+        fi
+    done <<<"$info"
+    return "$failed"
 }
 
 server_status() { os server show "$1" -f value -c status; }
@@ -133,6 +138,17 @@ conn = openstack.connect(cloud=os.environ["OS_CLOUD"])
 url = conn.session.get_endpoint(service_type="image", interface="public").rstrip("/")
 print(url[:-3] if url.endswith("/v2") else url)
 PY
+}
+
+# Resolve flavor names without the Nova name filter rejected by the public cloud.
+resolve_unique_flavor() {
+    local flavors ids
+    flavors="$(os flavor list --all -f json -c ID -c Name)" || die "Cannot list flavors"
+    ids="$(jq -r --arg name "$1" '.[] | select(.Name == $name) | .ID' <<<"$flavors")" || die "Cannot parse flavors"
+    [[ -n "$ids" ]] || die "No flavor named $1"
+    [[ "$(wc -l <<<"$ids")" -eq 1 ]] || die "Several flavors are named $1: $(tr '\n' ' ' <<<"$ids")"
+    [[ "$ids" != "null" ]] || die "Flavor $1 has no ID"
+    printf '%s' "$ids"
 }
 
 # Exact name of the image ID resolved for a name; fails unless exactly one image has this name.

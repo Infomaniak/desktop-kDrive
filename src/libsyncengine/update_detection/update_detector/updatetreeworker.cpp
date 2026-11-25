@@ -1575,8 +1575,8 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode, st
 
     mergedNode = nullptr;
 
-    SyncPath dbPath;
     // If it's a move, we need the previous path to be able to retrieve database data from path
+    SyncPath dbPath;
     if (const auto exitCode = getOriginPath(tmpNode, dbPath); exitCode != ExitCode::Ok) {
         return exitCode;
     }
