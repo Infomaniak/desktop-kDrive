@@ -160,15 +160,6 @@ struct COMMONSERVER_EXPORT Utility {
 
         static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                              const ItemType &itemType = ItemType());
-        /* Resource analyzer */
-        static bool totalRamAvailable(uint64_t &ram, int &errorCode);
-        static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
-        static bool ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode);
-        static bool cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
-                             double &percent);
-        static bool cpuUsage(uint64_t &previousTotalTicks, uint64_t &_previousIdleTicks, double &percent);
-        static bool cpuUsageByProcess(double &percent);
-
         static SyncName commonDocumentsFolderName();
         static SyncPath commonDocumentsFolderPath();
         static SyncName sharedFolderName();

@@ -24,8 +24,6 @@
 
 #include <config.h>
 #include <QFile>
-#include <array>
-#include <cstdint>
 #include <filesystem>
 #include <regex>
 #include <string>
@@ -33,7 +31,6 @@
 #include <spawn.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/sysinfo.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -51,41 +48,6 @@ namespace {
 constexpr auto applicationIconResourcePath = ":/assets/taskbar/logo_kdrive.svg";
 constexpr auto applicationIconName = "logo_kdrive";
 constexpr auto applicationIconFileName = "logo_kdrive.svg";
-
-int parseLineForRamStatus(char *line) {
-    int i = static_cast<int>(strlen(line));
-    const char *p = line;
-    while (*p < '0' || *p > '9') p++;
-    line[i - 3] = '\0';
-    i = atoi(p);
-    return i;
-}
-
-void initCpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle) {
-    FILE *file = fopen("/proc/stat", "r");
-    if (!file) {
-        return;
-    }
-    if (fscanf(file, "cpu %lu %lu %lu %lu", &lastTotalUser, &lastTotalUserLow, &lastTotalSys, &lastTotalIdle) != 4) {
-        fclose(file);
-        return;
-    }
-    fclose(file);
-}
-
-std::string executeCommand(const std::string &command) {
-    std::array<char, 128> buffer{};
-    std::string result;
-    FILE *pipe = popen(command.c_str(), "r");
-    if (!pipe) {
-        throw std::runtime_error("Erreur lors de l'exécution de la commande");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) {
-        result += buffer.data();
-    }
-    pclose(pipe);
-    return result;
-}
 
 SyncPath applicationIconPath(const SyncPath &homePath) {
     return homePath / ".local/share/icons/hicolor/scalable/apps" / applicationIconFileName;
@@ -126,110 +88,6 @@ bool installApplicationIcon(const SyncPath &homePath) {
     return true;
 }
 } // namespace
-
-bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
-    struct sysinfo memInfo;
-
-    if (sysinfo(&memInfo) == 0) {
-        ram = memInfo.totalram;
-        ram *= memInfo.mem_unit;
-        return true;
-    }
-    errorCode = errno;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
-    struct sysinfo memInfo;
-
-    if (sysinfo(&memInfo) == 0) {
-        ram = memInfo.totalram - memInfo.freeram;
-        ram *= memInfo.mem_unit;
-        return true;
-    }
-    errorCode = errno;
-    return false;
-}
-
-bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
-    FILE *file = fopen("/proc/self/status", "r");
-    if (!file) {
-        errorCode = errno;
-        return false;
-    }
-    char line[128];
-
-    while (fgets(line, 128, file) != nullptr) {
-        if (strncmp(line, "VmRSS:", 6) == 0) {
-            ram = static_cast<uint64_t>(parseLineForRamStatus(line));
-            break;
-        }
-    }
-    fclose(file);
-    return true;
-}
-
-bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
-                       double &percent) {
-    if (lastTotalUser == 0 && lastTotalUser == 0 && lastTotalSys == 0 && lastTotalIdle == 0) {
-        initCpuUsage(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle);
-    }
-
-    FILE *file;
-    uint64_t totalUser = 0;
-    uint64_t totalUserLow;
-    uint64_t totalSys;
-    uint64_t totalIdle;
-    uint64_t total;
-
-    file = fopen("/proc/stat", "r");
-    if (!file) {
-        return false;
-    }
-    int ret = fscanf(file, "cpu %lu %lu %lu %lu", &totalUser, &totalUserLow, &totalSys, &totalIdle);
-    fclose(file);
-
-    if (ret != 4) {
-        return false;
-    }
-
-    if (totalUser < lastTotalUser || totalUserLow < lastTotalUserLow || totalSys < lastTotalSys || totalIdle < lastTotalIdle) {
-        // Overflow detection. Just skip this value.
-        percent = -1.0;
-        return false;
-    } else {
-        total = (totalUser - lastTotalUser) + (totalUserLow - lastTotalUserLow) + (totalSys - lastTotalSys);
-        percent = static_cast<double>(total);
-        if (total > 0) {
-            total += (totalIdle - lastTotalIdle);
-            percent /= static_cast<double>(total);
-            percent *= 100;
-        } else {
-            percent = 0;
-        }
-    }
-
-    lastTotalUser = totalUser;
-    lastTotalUserLow = totalUserLow;
-    lastTotalSys = totalSys;
-    lastTotalIdle = totalIdle;
-
-    return true;
-}
-
-bool Utility::cpuUsageByProcess(double &percent) {
-    pid_t pid = getpid();
-    const std::string getCPUCommand = "top -b -n 1 -p " + std::to_string(pid) + " | tail -1 | awk '{print $9 }'";
-    std::string cpuUsageStr = executeCommand(getCPUCommand);
-
-    double cpuUsage;
-    std::istringstream iss(cpuUsageStr);
-    if (!(iss >> cpuUsage)) {
-        return false;
-    }
-    percent = cpuUsage;
-    return true;
-}
 
 std::string Utility::userName() {
     bool isSet = false;

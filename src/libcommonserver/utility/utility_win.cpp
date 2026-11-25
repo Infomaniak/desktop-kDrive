@@ -54,26 +54,6 @@ constexpr int userNameBufLen = 4096;
 
 namespace KDC {
 
-bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
-    return true;
-}
-
-bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
-    return true;
-}
-
-bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
-    return true;
-}
-
-bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
-    return true;
-}
-
-bool Utility::cpuUsageByProcess(double &percent) {
-    return true;
-}
-
 std::string Utility::userName() {
     DWORD len = userNameBufLen;
     wchar_t userName[userNameBufLen];
