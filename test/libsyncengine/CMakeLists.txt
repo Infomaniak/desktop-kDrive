@@ -42,6 +42,7 @@ set(testsyncengine_SRCS
         jobs/network/testnetworkjobs.h jobs/network/testnetworkjobs.cpp
         jobs/network/testabstractnetworkjob.h jobs/network/testabstractnetworkjob.cpp
         jobs/network/kDrive_API/testapitranslator.h jobs/network/kDrive_API/testapitranslator.cpp
+        jobs/network/kDrive_API/testdownloadjob.h jobs/network/kDrive_API/testdownloadjob.cpp
         jobs/network/kDrive_API/testloguploadjob.h jobs/network/kDrive_API/testloguploadjob.cpp
         jobs/network/kDrive_API/testsearchjob.h jobs/network/kDrive_API/testsearchjob.cpp
         jobs/network/kDrive_API/testgetmysharedfilesjob.h jobs/network/kDrive_API/testgetmysharedfilesjob.cpp

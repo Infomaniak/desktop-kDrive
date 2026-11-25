@@ -58,10 +58,10 @@ void User::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, userFirstNameKey, CommonUtility::str2CommString(firstName()));
     CommonUtility::writeValueToStruct(dstruct, userEmailKey, CommonUtility::str2CommString(_email));
 
-    if (_avatar) {
-        CommBLOB avatarBLOB(_avatar->begin(), _avatar->end());
-        CommonUtility::writeValueToStruct(dstruct, userAvatarKey, avatarBLOB);
-    }
+    // The avatar is a mandatory value: always write the key, even when there is no avatar, so that the receiving side
+    // never reads a struct with a missing mandatory field.
+    const CommBLOB avatarBLOB = _avatar ? CommBLOB(_avatar->begin(), _avatar->end()) : CommBLOB{};
+    CommonUtility::writeValueToStruct(dstruct, userAvatarKey, avatarBLOB);
 
     CommonUtility::writeValueToStruct(dstruct, userConnectedKey, _connected);
     CommonUtility::writeValueToStruct(dstruct, userIsStaffKey, _isStaff);

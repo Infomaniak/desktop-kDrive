@@ -230,7 +230,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName) {};
+            ExecutorWorker(syncPal, name, shortName){};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };
@@ -710,7 +710,7 @@ void TestExecutorWorker::testHandleOpsFileNotFound() {
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*child->id()));
 }
 
-void TestExecutorWorker::testHandleMoveThroughSymlinkError() {
+void TestExecutorWorker::testHandlePathContainsSymlinkError() {
     _syncPal->_syncOps->clear();
     _syncPal->setRestart(false);
 
@@ -755,7 +755,7 @@ void TestExecutorWorker::testHandleMoveThroughSymlinkError() {
     _executorWorker->_opList = _syncPal->_syncOps->opSortedList();
 
     const ExitInfo exitInfo =
-            _executorWorker->handleExecutorError(failedMoveOp, {ExitCode::SystemError, ExitCause::MoveThroughSymlink});
+            _executorWorker->handleExecutorError(failedMoveOp, {ExitCode::SystemError, ExitCause::PathContainsSymlink});
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
     CPPUNIT_ASSERT(_syncPal->restart());

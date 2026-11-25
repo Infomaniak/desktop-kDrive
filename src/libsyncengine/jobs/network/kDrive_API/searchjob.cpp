@@ -172,6 +172,31 @@ ExitInfo SearchJob::getLocalProperties(const SyncName &itemPath, LocalProperties
         }
     }
 
+    ItemType destinationType;
+    if (!IoHelper::getItemType(absolutePath, destinationType) ||
+        (destinationType.ioError != IoError::Success && destinationType.ioError != IoError::NoSuchFileOrDirectory &&
+         destinationType.ioError != IoError::AccessDenied)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, destinationType.ioError));
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return ExitCode::SystemError;
+    }
+    if (destinationType.ioError != IoError::Success || IoHelper::isLink(destinationType.linkType)) {
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        return ExitCode::Ok;
+    }
+
+    // An item reached through a link located inside the sync root is not part of the synchronized tree.
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(absolutePath, _syncRootPath); ioError != IoError::Success) {
+        localProperties.isAvailableLocally = false;
+        localProperties.isHydrated = false;
+        if (ioError != IoError::PathContainsSymlink) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absolutePath, ioError));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+    }
+
     return ExitCode::Ok;
 }
 
