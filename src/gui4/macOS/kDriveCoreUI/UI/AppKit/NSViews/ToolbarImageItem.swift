@@ -20,9 +20,10 @@ import AppKit
 
 /// Toolbar item displaying a non-symbol image (e.g. an asset catalog SVG).
 ///
-/// Before macOS 14, AppKit stretches non-symbol toolbar images to fill the legacy 32 pt item size.
+/// On systems without Liquid Glass (below macOS 26), AppKit stretches non-symbol toolbar images to fill the legacy 32 pt item
+/// size.
 /// On those systems the item hosts a toolbar-styled button that draws the image at symbol size instead.
-/// macOS 14 and later keep the native image-based item.
+/// macOS 26 and later keep the native image-based item.
 public final class ToolbarImageItem: NSToolbarItem {
     private nonisolated static let legacyImageSize = NSSize(width: 16, height: 16)
 
@@ -67,7 +68,7 @@ public final class ToolbarImageItem: NSToolbarItem {
     public init(itemIdentifier: NSToolbarItem.Identifier, label: String, target: AnyObject?, action: Selector) {
         super.init(itemIdentifier: itemIdentifier)
 
-        if #unavailable(macOS 14.0) {
+        if #unavailable(macOS 26.0) {
             let button = NSButton(title: "", target: target, action: action)
             button.bezelStyle = .texturedRounded
             button.showsBorderOnlyWhileMouseInside = true
