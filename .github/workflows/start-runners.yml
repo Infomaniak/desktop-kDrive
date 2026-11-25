@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install OpenStack CLI
-        run: pip install python-openstackclient --quiet
+        run: pip install python-openstackclient==10.5.0 openstacksdk==4.25.0 --quiet
 
       - name: Write clouds.yaml
         run: |
@@ -77,11 +77,24 @@ jobs:
 
       - name: Launch instances
         run: |
-          echo "::add-mask::$ADMIN_PASS"
-
           RUN_ID="${{ github.run_id }}"
           COUNT="${{ steps.params.outputs.count }}"
-          FLAVOR="${{ steps.params.outputs.flavor }}"
+          FLAVOR_NAME="${{ steps.params.outputs.flavor }}"
+
+          # Resolve the flavor ID ourselves: with a flavor name, openstacksdk >= 4.25 sends a `name` filter on
+          # /flavors/detail (Nova microversion 2.102), which the Infomaniak public cloud rejects with
+          # "Additional properties are not allowed ('name' was unexpected)". An ID is fetched directly.
+          FLAVOR=$(openstack flavor list --os-cloud "$OS_CLOUD" --all -f value -c ID -c Name \
+            | awk -v name="$FLAVOR_NAME" '$2 == name { print $1 }')
+          if [[ -z "$FLAVOR" ]]; then
+            echo "::error::Flavor '$FLAVOR_NAME' not found"
+            exit 1
+          fi
+          if [[ "$(wc -l <<< "$FLAVOR")" -ne 1 ]]; then
+            echo "::error::Several flavors are named '$FLAVOR_NAME'"
+            exit 1
+          fi
+          echo "Using flavor $FLAVOR_NAME ($FLAVOR)"
 
           pids=()
           rc=0
