@@ -306,7 +306,7 @@ void TestIo::testSetFileDates() {
 
 #if defined(KD_MACOS)
         // APFS limits: [≈1677, ≈2262]
-        const SyncTime macOSMinDate = -9223372037LL; // Sep 21, 1677
+        const SyncTime macOSMinDate = -9223372037LL; // ≈1677
         ioError = IoHelper::setFileDates(filepath, macOSMinDate, macOSMinDate, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -323,7 +323,7 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(macOSMinDate, filestat.modificationTime);
 #elif defined(KD_WINDOWS)
         // NTFS limits: [1601-01-01, ≈30828]
-        const SyncTime windowsMinDate = -11644473600LL; // January 1, 1601
+        const SyncTime windowsMinDate = -11644473600LL; // 1601-01-01
         ioError = IoHelper::setFileDates(filepath, windowsMinDate, windowsMinDate, false);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -332,11 +332,12 @@ void TestIo::testSetFileDates() {
         CPPUNIT_ASSERT_EQUAL(windowsMinDate, filestat.modificationTime);
 
         const SyncTime windowsOutOfBoundsDate = windowsMinDate - 1;
-        ioError = IoHelper::setFileDates(filepath, windowsOutOfBoundsDate, windowsMinDate, false);
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        ioError = IoHelper::setFileDates(filepath, windowsOutOfBoundsDate, windowsOutOfBoundsDate, false);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        ioError = IoHelper::setFileDates(filepath, windowsMinDate, windowsOutOfBoundsDate, false);
-        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        (void) IoHelper::getFileStat(filepath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive);
+        CPPUNIT_ASSERT_EQUAL(windowsMinDate, filestat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(windowsMinDate, filestat.modificationTime);
 #endif
     }
 
