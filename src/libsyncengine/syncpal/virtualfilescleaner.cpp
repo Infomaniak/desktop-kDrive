@@ -273,7 +273,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
 
         if (!isDehydrated) continue;
 
-        if (auto ioError = IoError::Success; !IoHelper::deleteItem(entry.path(), ioError)) {
+        if (auto ioError = IoError::Success; !IoHelper::deleteItem(entry.path(), ioError, _rootPath)) {
             LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(entry.path(), ioError));
             _exitInfo = IoHelper::toExitInfo(ioError);
             failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, entry.path()));
