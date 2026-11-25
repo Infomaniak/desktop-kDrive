@@ -165,11 +165,11 @@ The exact set of redistributed binaries can vary by platform:
 
 ### matomo-sdk-qt
 
-- **Version:** 1.1.0
+- **Version:** 1.1.1
 - **License:** Apache-2.0
 - **Copyright:** Copyright (C) 2026 Infomaniak Network SA
 - **Repository:** https://github.com/Infomaniak/matomo-sdk-qt
-- **Note:** Git submodule in `src/3rdparty/matomo-sdk-qt`, pinned to tag `v1.1.0`. Linux only: its `MatomoQt::Core`
+- **Note:** Git submodule in `src/3rdparty/matomo-sdk-qt`, pinned to tag `v1.1.1`. Linux only: its `MatomoQt::Core`
   static library is built and linked into the Linux v4 client.
 
 ### QProgressIndicator
