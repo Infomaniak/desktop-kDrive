@@ -18,15 +18,14 @@
 
 #include "testsyncpal.h"
 #include "syncpal/tmpblacklistmanager.h"
-#include "mocks/libcommonserver/db/mockdb.h"
-#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
-#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
-
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+
+#include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/mockkeychainstorage.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -73,8 +72,8 @@ void TestSyncPal::setUp() {
     (void) ParmsDb::instance()->insertSync(sync);
 
 
-    auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
-    _syncPal = std::make_shared<SyncPal>(vfs, sync.dbId(), KDRIVE_VERSION_STRING);
+    _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    _syncPal = std::make_shared<SyncPal>(_mockVfs, sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->setLocalPath(std::filesystem::weakly_canonical(_localPath));
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
