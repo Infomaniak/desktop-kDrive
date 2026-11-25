@@ -984,7 +984,7 @@ static bool unixTimeToFileTime(const SyncTime date, const LPFILETIME pft) {
     pft->dwLowDateTime = 0;
     pft->dwHighDateTime = 0;
 
-    LONGLONG ll = (secondsBetween1601And1970 + date) * nbrOf100NSecPerSec;
+    const LONGLONG ll = (secondsBetween1601And1970 + date) * nbrOf100NSecPerSec;
     if (ll < 0) {
         // Out of bounds.
         return false;
