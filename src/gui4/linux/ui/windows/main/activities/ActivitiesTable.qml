@@ -128,8 +128,10 @@ Item {
         Accessible.role: Accessible.List
         Accessible.name: qsTrId("tabTitleActivities")
 
+        // Only a focus entering the list itself (Tab) goes to the current row: a focus given back to a row control,
+        // such as the options button after a mouse-opened menu, stays there.
         onActiveFocusChanged: {
-            if (listView.activeFocus && !(listView.currentItem && listView.currentItem.activeFocus)) {
+            if (listView.activeFocus && listView.Window.activeFocusItem === listView) {
                 listView.moveCurrentTo(Math.max(0, listView.currentIndex));
             }
         }

@@ -51,7 +51,8 @@ Item {
     readonly property int status: rowModel.status
     readonly property int progress: rowModel.progress
     readonly property int availableActions: rowModel.availableActions
-    // Current row of the list while the list has the keyboard focus: a navigation cursor, tinted rather than outlined.
+    // Current row of the list while the list has the keyboard focus: a navigation cursor, drawn as a tint. The row
+    // itself only takes the focus from the keyboard, so it also draws the focus ring then.
     readonly property bool keyboardCurrent: ListView.isCurrentItem && ListView.view !== null && ListView.view.activeFocus
     readonly property string statusText: root.status === ActivityListModel.InProgress && root.progress >= 0
                                          ? qsTrId("syncInProgressTooltip") + ", " + statusIcon.tooltipText
@@ -106,6 +107,8 @@ Item {
         radius: IKActivities.rowRadius
         color: root.keyboardCurrent ? IKColors.activitiesRowCurrent
                                     : root.rowIndex % 2 === 0 ? IKColors.activitiesRowAlternateSurface : "transparent"
+        border.width: root.activeFocus ? IKActivities.rowFocusRingWidth : 0
+        border.color: IKColors.accentPrimary
     }
 
     Row {
@@ -275,6 +278,10 @@ Item {
                     hoverEnabled: visible
                     onClicked: {
                         UserActionLog.action(root.actionIdPrefix + ".options", { rowId: root.rowId });
+                        // The keyboard cursor follows the row last used, so the arrows resume from it.
+                        if (root.ListView.view) {
+                            root.ListView.view.currentIndex = root.rowIndex;
+                        }
                         root.optionsOpenedFromKeyboard = false;
                         root.openOptionsMenu();
                     }

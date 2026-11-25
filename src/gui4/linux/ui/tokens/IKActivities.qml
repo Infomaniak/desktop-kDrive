@@ -31,6 +31,7 @@ QtObject {
     readonly property real tableHeaderHeight: 28
     readonly property real rowHeight: 36
     readonly property real rowRadius: IKRadius.r8
+    readonly property real rowFocusRingWidth: 2
     readonly property real primaryTextLineHeight: 16
     readonly property real nameColumnMinWidth: 112
     readonly property real folderColumnMinWidth: 72

@@ -232,7 +232,9 @@
 - Expose Activities row capabilities through one `availableActions` flags role. Keep target ids and paths internal, and
   revalidate every action in `ActivitiesController` or `ActivityService` instead of duplicating guards in QML.
 - The Activities list is a single tab stop whose current row takes the focus, so that screen readers read the row: Up,
-  Down, Home and End move it, Return, the Menu key or Shift+F10 open its options (logged with the `key`). The row is
+  Down, Home and End move it, Return, the Menu key or Shift+F10 open its options (logged with the `key`). The current
+  row is tinted and, since only the keyboard focuses it, outlined by the focus ring while focused; clicking a row's
+  options makes it the current row, and a focus given back to a row control is not redirected. The row is
   one `ListItem` named after its file, subtitle, status, folder and size; while running, a transfer reads
   "Synchronization" instead of its instruction and time, and a finished download or upload both read "Added".
 - Present asynchronous share-link progress in the persistent bottom area of the main sidebar. Keep the notification
