@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install OpenStack CLI
-        run: pip install python-openstackclient --quiet
+        run: pip install python-openstackclient==10.5.0 openstacksdk==4.25.0 --quiet
 
       - name: Write clouds.yaml
         run: |
@@ -54,9 +54,13 @@ jobs:
             # Count self-hosted runners that are currently running a job.
             # `--slurp` cannot be combined with `--jq`, so we emit one line per
             # busy ci-runner and count the lines instead.
-            BUSY=$(gh api --paginate "/repos/${REPO}/actions/runners?per_page=100" \
-               --jq '.runners[] | select(.busy == true and (.name | startswith("ci-runner-"))) | .id' \
-               | grep -c . || true)
+            # Fetch first so that an API failure is retried instead of being read as "0 busy runners".
+            if ! BUSY_IDS=$(gh api --paginate "/repos/${REPO}/actions/runners?per_page=100" \
+               --jq '.runners[] | select(.busy == true and (.name | startswith("ci-runner-"))) | .id'); then
+              BUSY_IDS="unknown"
+              echo "::warning::Could not list runners, retrying."
+            fi
+            BUSY=$(grep -c . <<< "$BUSY_IDS" || true)
 
             if [ "$BUSY" -eq 0 ]; then
               echo "All runners are idle."
@@ -84,10 +88,16 @@ jobs:
           if [ -z "$IDS" ]; then
             echo "No matching runners registered."
           else
+            rc=0
             for ID in $IDS; do
               echo "Deleting runner id=$ID ..."
-              gh api -X DELETE "/repos/${REPO}/actions/runners/${ID}"
+              # A runner still busy after the timeout cannot be deleted: keep going with the others.
+              if ! gh api -X DELETE "/repos/${REPO}/actions/runners/${ID}"; then
+                echo "::warning::Could not delete runner id=$ID"
+                rc=1
+              fi
             done
+            exit "$rc"
           fi
 
       - name: Delete public cloud instances
@@ -95,7 +105,7 @@ jobs:
         run: |
           # Find every ci-runner instance. `openstack server list` does not
           # support filtering by --property, so we match on the instance name
-          # regex instead (instances are named "ci-runner-<run_id>-<i>").
+          # regex instead (instances are named "ci-runner-win-<run_id>-<i>").
           SERVERS=$(openstack server list \
             --os-cloud "$OS_CLOUD" \
             --name '^ci-runner-' \
@@ -104,8 +114,7 @@ jobs:
           if [ -z "$SERVERS" ]; then
             echo "No ci-runner instances found."
           else
-            for ID in $SERVERS; do
-              echo "Deleting instance $ID ..."
-              openstack server delete --os-cloud "$OS_CLOUD" --wait "$ID"
-            done
+            # Delete them all in one call so that one failure does not keep the others running (and billed).
+            echo "Deleting instances: $(tr '\n' ' ' <<< "$SERVERS")"
+            openstack server delete --os-cloud "$OS_CLOUD" --wait $SERVERS
           fi

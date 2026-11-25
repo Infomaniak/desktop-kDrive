@@ -638,13 +638,19 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
             return ExitCode::BackError;
         }
 
+        SyncName normalizedPath;
+        if (!Utility::normalizedSyncName(pathStr, normalizedPath)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(pathStr));
+            return ExitCode::BackError;
+        }
 
 #if defined(KD_WINDOWS)
-        pathStr = Utility::fixNameWithBackslash(pathStr);
+        normalizedPath = Utility::fixNameWithBackslash(normalizedPath);
 #endif
         // Use the QString overload of the translation: NodeInfo paths keep their leading separator, so that the
         // consumers can concatenate them directly onto the sync root.
-        QString path = QString::fromStdString(tmp);
+        QString path = SyncName2QStr(normalizedPath);
         ApiTranslator::translateV3ToV2(path);
         nodeInfo.setPath(path);
     }

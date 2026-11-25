@@ -180,7 +180,7 @@ struct FileTreeSelectionStateTests {
         #expect(state.displayState(of: root) == .mixed)
     }
 
-    @Test("Folder whose subfolders are all excluded is off")
+    @Test("Folder whose subfolders are all excluded is mixed")
     func folderWithAllSubfoldersExcludedIsMixed() {
         let root = makeFolder(id: "root", path: "root")
         let subA = makeFolder(id: "subA", path: "root/subA", parent: root)
@@ -190,7 +190,23 @@ struct FileTreeSelectionStateTests {
         let state = FileTreeSelectionState(initialBlacklist: ["subA", "subB"])
 
         #expect(state.displayState(of: subA) == .off)
-        #expect(state.displayState(of: root) == .off)
+        #expect(state.displayState(of: root) == .mixed)
+    }
+
+    @Test("Excluded folder with loaded descendants stays off")
+    func excludedFolderWithLoadedDescendantsStaysOff() {
+        let root = makeFolder(id: "root", path: "root")
+        let sub = makeFolder(id: "sub", path: "root/sub", parent: root)
+        let deep = makeFolder(id: "deep", path: "root/sub/deep", parent: sub)
+        sub.children = [deep]
+        root.children = [sub]
+
+        let state = FileTreeSelectionState(initialBlacklist: ["sub"])
+
+        // The whole subtree is excluded: it must display off and not flip to mixed on loading.
+        #expect(state.displayState(of: sub) == .off)
+        #expect(state.displayState(of: deep) == .off)
+        #expect(state.displayState(of: root) == .mixed)
     }
 
     @Test("Leaf folder is on")
@@ -284,6 +300,44 @@ struct FileTreeSelectionStateTests {
         #expect(state.displayState(of: root) == .mixed)
     }
 
+    @Test("Paths cached by user toggles survive the excluded paths resolution")
+    func userToggledPathsSurviveExcludedPathsResolution() {
+        let root = makeFolder(id: "root", path: "root")
+        let child = makeFolder(id: "child", path: "root/child", parent: root)
+        root.children = [child]
+
+        var state = FileTreeSelectionState(initialBlacklist: ["folder"], isResolvingExcludedPaths: true)
+        state.setSelected(false, for: child)
+        #expect(state.excludedNodePaths == ["child": "root/child"])
+
+        // The resolution only returns the paths of the initially blacklisted folders.
+        state.finishResolvingExcludedPaths(with: ["folder": "root/sub/folder"])
+
+        #expect(state.excludedNodePaths == ["child": "root/child", "folder": "root/sub/folder"])
+        #expect(state.blacklist == ["child", "folder"])
+    }
+
+    @Test("Deselected subfolder is still pruned when an ancestor is selected after the resolution")
+    func deselectedSubfolderIsPrunedWhenAncestorSelectedAfterResolution() {
+        let root = makeFolder(id: "root", path: "root")
+        let middle = makeFolder(id: "middle", path: "root/middle", parent: root)
+        middle.children = []
+        root.children = [middle]
+
+        var state = FileTreeSelectionState(initialBlacklist: [], isResolvingExcludedPaths: true)
+        state.setSelected(false, for: middle)
+        #expect(state.blacklist == ["middle"])
+
+        // The resolution does not know the path of the toggled node; it must not be lost.
+        state.finishResolvingExcludedPaths(with: [:])
+        #expect(state.excludedNodePaths == ["middle": "root/middle"])
+
+        // Re-selecting the parent must prune the deselected descendant from the blacklist.
+        state.setSelected(true, for: root)
+        #expect(state.blacklist.isEmpty)
+        #expect(state.displayState(of: root) == .on)
+    }
+
     // MARK: - Mutations
 
     @Test("Deselecting a node blacklists it and caches its path")
@@ -298,7 +352,62 @@ struct FileTreeSelectionStateTests {
         #expect(state.blacklist == ["child"])
         #expect(state.excludedNodePaths == ["child": "root/child"])
         #expect(state.displayState(of: child) == .off)
-        #expect(state.displayState(of: root) == .off)
+        #expect(state.displayState(of: root) == .mixed)
+    }
+
+    @Test("Deselecting a subfolder keeps every ancestor mixed up to the header")
+    func deselectingSubfolderKeepsAncestorsMixed() {
+        let root = makeFolder(id: "root", path: "root")
+        let middle = makeFolder(id: "middle", path: "root/middle", parent: root)
+        let leaf = makeFolder(id: "leaf", path: "root/middle/leaf", parent: middle)
+        let sibling = makeFolder(id: "sibling", path: "root/middle/sibling", parent: middle)
+        middle.children = [leaf, sibling]
+        root.children = [middle]
+
+        var state = FileTreeSelectionState(initialBlacklist: [])
+        state.setSelected(false, for: leaf)
+
+        #expect(state.blacklist == ["leaf"])
+        #expect(state.displayState(of: leaf) == .off)
+        #expect(state.displayState(of: sibling) == .on)
+        #expect(state.displayState(of: middle) == .mixed)
+        #expect(state.displayState(of: root) == .mixed)
+        #expect(state.headerState(for: [root]) == .mixed)
+    }
+
+    @Test("Deselecting a subfolder in a single chain only deselects its own subtree")
+    func deselectingSubfolderInSingleChainOnlyDeselectsItsSubtree() {
+        // User scenario: A > B > C > D > E, all expanded and checked; unchecking C must
+        // leave C, D and E unchecked while A and B stay mixed.
+        let root = makeFolder(id: "root", path: "root")
+        let a = makeFolder(id: "a", path: "root/a", parent: root)
+        let b = makeFolder(id: "b", path: "root/a/b", parent: a)
+        let c = makeFolder(id: "c", path: "root/a/b/c", parent: b)
+        let d = makeFolder(id: "d", path: "root/a/b/c/d", parent: c)
+        let e = makeFolder(id: "e", path: "root/a/b/c/d/e", parent: d)
+        d.children = [e]
+        c.children = [d]
+        b.children = [c]
+        a.children = [b]
+        root.children = [a]
+
+        var state = FileTreeSelectionState(initialBlacklist: [])
+        state.setSelected(false, for: c)
+
+        #expect(state.blacklist == ["c"])
+        #expect(state.displayState(of: c) == .off)
+        #expect(state.displayState(of: d) == .off)
+        #expect(state.displayState(of: e) == .off)
+        #expect(state.displayState(of: b) == .mixed)
+        #expect(state.displayState(of: a) == .mixed)
+        #expect(state.headerState(for: [root]) == .mixed)
+
+        // Clicking the mixed ancestor re-selects the deselected subtree.
+        state.setSelected(true, for: b)
+        #expect(state.blacklist.isEmpty)
+        #expect(state.displayState(of: c) == .on)
+        #expect(state.displayState(of: a) == .on)
+        #expect(state.headerState(for: [root]) == .on)
     }
 
     @Test("Selecting a folder prunes blacklisted descendants that are not loaded")

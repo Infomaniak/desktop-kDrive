@@ -49,8 +49,13 @@ struct FileTreeSelectionState {
     }
 
     /// Marks the excluded paths resolution as completed and adopts the resolved paths.
+    ///
+    /// The resolved paths are merged into the existing map instead of replacing it: while the
+    /// resolution was running, the user may have toggled folders whose paths were cached by
+    /// `cachePath(of:)`. Dropping those entries would break the mixed-state detection of their
+    /// unloaded ancestors and the pruning of blacklisted descendants when re-selecting an ancestor.
     mutating func finishResolvingExcludedPaths(with paths: [String: String]) {
-        excludedNodePaths = paths
+        excludedNodePaths.merge(paths) { _, resolved in resolved }
         isResolvingExcludedPaths = false
     }
 
@@ -137,17 +142,21 @@ struct FileTreeSelectionState {
 
         let selfExcluded = ancestorExcluded || blacklist.contains(node.item.id)
 
+        // The folder and all its descendants are excluded from the synchronization: the folder
+        // itself and every folder below it display as unchecked, whether they are loaded or not.
+        // Deciding this here keeps loaded excluded subtrees from falling back on the mixed state.
+        if selfExcluded {
+            return .off
+        }
+
         guard let children = node.children else {
             // Children have not been loaded yet: fall back on the excluded paths to detect a
             // blacklisted descendant, otherwise the folder is considered fully selected.
-            if selfExcluded {
-                return .off
-            }
             return hasExcludedDescendant(of: node) ? .mixed : .on
         }
 
         guard !children.isEmpty else {
-            return selfExcluded ? .off : .on
+            return .on
         }
 
         var sawOn = false
@@ -170,7 +179,11 @@ struct FileTreeSelectionState {
                 return .mixed
             }
         }
-        return sawOn ? .on : .off
+        // A folder that is not itself excluded is never fully off: its own files keep being
+        // synchronized even when all its subfolders are excluded (matches FolderTreeItemWidget).
+        // Returning `.off` here would make every ancestor of a deselected subfolder display as
+        // unchecked, up to the root of the tree.
+        return sawOn ? .on : (sawOff ? .mixed : .on)
     }
 
     // MARK: - Selection mutation
