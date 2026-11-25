@@ -20,6 +20,8 @@
 
 #include "syncpal/syncpal.h"
 
+#include <functional>
+
 namespace KDC {
 
 class SyncPalTest final : public SyncPal {
@@ -31,11 +33,20 @@ class SyncPalTest final : public SyncPal {
         SyncPalTest(int syncDbId, const std::string &version) :
             SyncPal(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), syncDbId, version) {}
 
+        using BlacklistTemporarilyCallback = std::function<void(const NodeId &, const SyncPath &, ReplicaSide)>;
+        void setBlacklistTemporarilyCallback(const BlacklistTemporarilyCallback &callback) {
+            _blacklistTemporarilyCallback = callback;
+        }
+
     private:
+        BlacklistTemporarilyCallback _blacklistTemporarilyCallback;
+
         // No implementation of the following methods in tests because `_tmpBlacklistManager` is not defined.
         void increaseErrorCount(const NodeId & /*nodeId*/, NodeType /*type*/, const SyncPath & /*relativePath*/,
                                 ReplicaSide /*side*/, ExitInfo /*exitInfo*/) override {}
-        void blacklistTemporarily(const NodeId & /*nodeId*/, const SyncPath & /*relativePath*/, ReplicaSide /*side*/) override {}
+        void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) override {
+            if (_blacklistTemporarilyCallback) _blacklistTemporarilyCallback(nodeId, relativePath, side);
+        }
         void refreshTmpBlacklist() override {}
         void removeItemFromTmpBlacklist(const NodeId & /*nodeId*/, ReplicaSide /*side*/) override {}
 };

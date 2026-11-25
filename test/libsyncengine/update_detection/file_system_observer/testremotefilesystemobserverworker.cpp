@@ -515,18 +515,19 @@ void TestRemoteFileSystemObserverWorker::testInsertSyncedItemWithUnsafeName() {
         CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
     }
 
-    // A directory and its child are already synchronized.
+    // A directory is already synchronized.
     const auto syncDb = _syncPal->syncDb();
     DbNodeId dirDbId = 0;
     bool constraintError = false;
     const DbNode dirNode(0, syncDb->rootNode().nodeId(), Str("Docs"), Str("Docs"), "l_18", "18", testhelpers::defaultTime,
                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0, std::nullopt);
     CPPUNIT_ASSERT(syncDb->insertNode(dirNode, dirDbId, constraintError));
-    const DbNode fileNode(0, dirDbId, Str("child.txt"), Str("child.txt"), "l_21", "21", testhelpers::defaultTime,
-                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize,
-                          std::nullopt);
-    CPPUNIT_ASSERT(syncDb->insertNode(fileNode));
 
+    std::vector<std::tuple<NodeId, SyncPath, ReplicaSide>> blacklistedItems;
+    _syncPal->setBlacklistTemporarilyCallback(
+            [&blacklistedItems](const NodeId &nodeId, const SyncPath &relativePath, const ReplicaSide side) {
+                blacklistedItems.emplace_back(nodeId, relativePath, side);
+            });
     _syncPal->setAddErrorCallback([](const Error &reportedError) {
         CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, reportedError.inconsistencyType());
     });
@@ -553,22 +554,13 @@ void TestRemoteFileSystemObserverWorker::testInsertSyncedItemWithUnsafeName() {
     CPPUNIT_ASSERT(eof);
     CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("18"));
 
-    // The directory is missing from the remote snapshot: the synchronized items must be blacklisted on both replicas, using
-    // their DB paths, so that they are not deleted locally.
-    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote}) {
-        CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(SyncPath("Docs"), side));
-        CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(SyncPath("Docs") / "child.txt", side));
-    }
+    // The directory is missing from the remote snapshot: it must be blacklisted on both replicas, using its DB paths (not
+    // the new remote name), so that it is not deleted locally. The new item is not synchronized: there is nothing to protect.
+    const std::vector<std::tuple<NodeId, SyncPath, ReplicaSide>> expectedItems{{"l_18", "Docs", ReplicaSide::Local},
+                                                                               {"18", "Docs", ReplicaSide::Remote}};
+    CPPUNIT_ASSERT(expectedItems == blacklistedItems);
 
-    NodeSet remoteTmpBlacklist;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, remoteTmpBlacklist);
-    CPPUNIT_ASSERT(remoteTmpBlacklist.contains("18"));
-    CPPUNIT_ASSERT(!remoteTmpBlacklist.contains("19")); // Not synchronized: nothing to protect.
-
-    NodeSet localTmpBlacklist;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist, localTmpBlacklist);
-    CPPUNIT_ASSERT(localTmpBlacklist.contains("l_18"));
-
+    _syncPal->setBlacklistTemporarilyCallback(nullptr);
     _syncPal->setAddErrorCallback(nullptr);
 }
 
