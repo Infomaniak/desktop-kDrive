@@ -378,7 +378,9 @@ runs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: win-release-artifacts-installer
-          path: ${{ github.workspace }}\build-windows\kDrive-* # kDrive-x.x.x.yyyymmdd.exe
+          path: |
+            ${{ github.workspace }}/build-windows/kDrive-*.exe
+            ${{ github.workspace }}/build-windows/kDrive-*.exe.sha256
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 

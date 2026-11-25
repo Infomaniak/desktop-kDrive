@@ -313,7 +313,8 @@ if ($os -eq "win") {
     $win_files = @(
         @("$app.exe", $true),
         @("$app.exe.sha256", $true),
-        @("$app.msi", $false),
+        # Restore MSI publication when the WiX installer supports the Windows v4 client.
+        # @("$app.msi", $false),
         @("kDrive.pdb", $true),
         @("kDrive_client.pdb", $true),
         @("kDrive.src.zip", $true),

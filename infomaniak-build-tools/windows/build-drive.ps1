@@ -37,6 +37,9 @@ Param(
     # Ci: Build configured for CI
     [switch] $ci,
 
+    # Msi: Build MSI installer
+    [switch] $msi,
+
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
 
@@ -46,6 +49,10 @@ Param(
     # Help: Displays the help message and exits
     [switch] $help
 )
+
+if ($msi) {
+    throw "MSI packaging is disabled until the WiX installer supports the Windows v4 client."
+}
 
 #################################################################################################
 #                                                                                               #
@@ -975,6 +982,14 @@ try {
         exit $LASTEXITCODE
     }
 
+
+    if ($msi) {
+        Create-MSI-Package -RepositoryRootPath $repositoryRootPath -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
+            exit $LASTEXITCODE
+        }
+    }
 
     #################################################################################################
     #                                                                                               #
