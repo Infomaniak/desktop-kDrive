@@ -30,7 +30,7 @@ struct UpsellBannerView: View {
     let offer: UpsellOffer
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: AppPadding.padding16) {
             offer.plan.logo
 
             Text(offer.plan.description)
