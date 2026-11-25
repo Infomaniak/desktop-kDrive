@@ -340,8 +340,10 @@ if ($os -eq "macos") {
         @("update-macos-$version.xml", $true), # Sparkle update xml
         @("kDrive.dSYM", $true),
         @("kDrive_client.dSYM", $true),
-        @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true),
+        @("kDrive.arm64.src.zip", $true),
+        @("kDrive.x86_64.src.zip", $true),
+        @("kDrive_client.arm64.src.zip", $true),
+        @("kDrive_client.x86_64.src.zip", $true),
         @("kDriveRecoveryUpdater-$version.zip", $true),
         @("kDriveRecoveryUpdater-$version.zip.sha256", $true)
     )

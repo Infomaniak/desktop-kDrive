@@ -163,22 +163,43 @@ runs:
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
-      - name : Create sentry server artifacts
+      - name: Prepare macOS debug symbols and source bundles
         run: |
-          sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM
-          mkdir ${{ github.workspace }}/build-macos/sentry-server-artifacts
-          cp -r ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.dSYM
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive.src.zip ${{ github.workspace }}/build-macos/sentry-server-artifacts/kDrive.src.zip
-        shell: bash
-        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+          cd "$GITHUB_WORKSPACE/build-macos"
 
-      - name : Create sentry client artifacts
-        run: |
-          sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM
-          mv ${{ github.workspace }}/build-macos/client/install/kDrive.gui.src.zip ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip
-          mkdir ${{ github.workspace }}/build-macos/sentry-client-artifacts
-          cp -r ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
-          cp ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
+          prepare_artifacts() {
+            local artifacts="$1" name="$2" executable="$3"
+            local dsym="client/install/$name.dSYM"
+            local sources
+            sources=$(mktemp -d)
+            sentry-cli debug-files bundle-sources --output "$sources" "$dsym/Contents/Resources/DWARF/$executable"
+
+            mkdir "$artifacts"
+            cp -R "$dsym" "$artifacts/"
+            local bundle arch
+            for bundle in "$sources"/*.src.zip; do
+              arch=$(unzip -p "$bundle" manifest.json | python3 -c 'import json, sys; print(json.load(sys.stdin)["arch"])')
+              case "$arch" in
+                arm64|x86_64) ;;
+                *) echo "Unexpected architecture '$arch' in $bundle" >&2; return 1 ;;
+              esac
+              if [[ -e "$artifacts/$name.$arch.src.zip" ]]; then
+                echo "Duplicate $arch source bundle for $name" >&2
+                return 1
+              fi
+              mv "$bundle" "$artifacts/$name.$arch.src.zip"
+            done
+            for arch in arm64 x86_64; do
+              if [[ ! -f "$artifacts/$name.$arch.src.zip" ]]; then
+                echo "Missing $arch source bundle for $name" >&2
+                return 1
+              fi
+            done
+            rmdir "$sources"
+          }
+
+          prepare_artifacts sentry-server-artifacts kDrive kDrive
+          prepare_artifacts sentry-client-artifacts kDrive_client kDrive.gui
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 

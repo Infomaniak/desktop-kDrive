@@ -451,9 +451,13 @@ jobs:
       - name: Upload sentry artifacts - macOS
         run: |
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-macos\kDrive.dSYM
-          .\sentry-cli.exe debug-files upload --project kdrive-client .\build-macos\kDrive_client.dSYM
-          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-macos\kDrive.src.zip
-          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-macos\kDrive_client.src.zip
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\sentry-cli.exe debug-files upload --project kdrive-client4 .\build-macos\kDrive_client.dSYM
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-macos\kDrive.arm64.src.zip .\build-macos\kDrive.x86_64.src.zip
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\sentry-cli.exe debug-files upload --project kdrive-client4 --type sourcebundle .\build-macos\kDrive_client.arm64.src.zip .\build-macos\kDrive_client.x86_64.src.zip
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         shell: powershell
 
   display-version:
