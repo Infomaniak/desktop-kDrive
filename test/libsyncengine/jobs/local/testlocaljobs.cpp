@@ -45,7 +45,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath){};
+            SyncLocalDeleteJob(syncPal, absolutePath) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -319,7 +319,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {
 
                 };
             void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }
@@ -398,7 +398,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {};
 
         protected:
             bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
@@ -410,9 +410,9 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
 
     _syncPal->_syncInfo.targetPath = SyncPath{}; // Standard synchronisation.
     // The deleted items must be located under the sync directory, as in production, so that the cache directory guards
-    // accept them.
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob", _localTempDir.path());
-    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
+    // accept them. Names are kept short so that the full path stays below the Windows MAX_PATH limit.
+    const LocalTemporaryDirectory temporaryDirectory("deleteDehydrated", _localTempDir.path());
+    const SyncPath localDirPath = temporaryDirectory.path() / "dir";
 
     _syncPal->setLocalPath(temporaryDirectory.path());
     (void) std::filesystem::create_directories(localDirPath);
@@ -424,6 +424,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     const auto excludedDehydratedPlaceholderName = Str("dehydrated_placeholder_blacklisted_20220913_130102_666.txt");
 
     { std::ofstream ofs(localDirPath / excludedDehydratedPlaceholderName); }
+    CPPUNIT_ASSERT(std::filesystem::exists(localDirPath / excludedDehydratedPlaceholderName));
     auto ioError = IoError::Success;
     CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(localDirPath / excludedDehydratedPlaceholderName, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -438,7 +439,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
 void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
     // The deleted items must be located under the sync directory, as in production, so that the cache directory guards
     // accept them.
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testGenericLocalDeleteJobHardDelete", _localTempDir.path());
+    const LocalTemporaryDirectory temporaryDirectory("genericHardDelete", _localTempDir.path());
     SyncPath cacheDirectoryPath;
     CPPUNIT_ASSERT(_syncPal->cacheDirectory()->path(cacheDirectoryPath));
 
