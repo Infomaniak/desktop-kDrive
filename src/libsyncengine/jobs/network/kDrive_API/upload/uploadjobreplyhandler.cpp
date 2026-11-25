@@ -48,6 +48,12 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTimeOut)) return false;
     if (!JsonParserUtility::extractValue(dataObj, sizeKey, _sizeOut)) return false;
 
+#if defined(KD_LINUX)
+    // Linux cannot set the creation time: keep the local one, so that only a modification time mismatch rewrites the dates
+    // (which drops the sub-second part of the local modification time).
+    _creationTimeOut = _creationTimeIn;
+#endif
+
     if (_creationTimeIn != _creationTimeOut || _modificationTimeIn != _modificationTimeOut) {
         // The backend refused the creation/modification time(s). To avoid further EDIT operations, we apply the backend's times
         // on the local file.
@@ -62,9 +68,6 @@ bool UploadJobReplyHandler::extractData(const Poco::JSON::Object::Ptr jsonRes) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::setFileDates: " << Utility::formatIoError(_absoluteFilePath, ioError));
         }
-#if defined(KD_LINUX)
-        _creationTimeOut = _creationTimeIn; // Unix systems do not support setting creation time, so we keep the original value.
-#endif
     }
     return true;
 }

@@ -96,7 +96,8 @@ set(testsyncengine_SRCS
 if(APPLE)
     list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp ../test_utility/testhelpers_mac.cpp)
 elseif(UNIX)
-    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp ../test_utility/testhelpers_linux.cpp)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp ../test_utility/testhelpers_linux.cpp
+        jobs/network/kDrive_API/testuploadjobreplyhandler_linux.h jobs/network/kDrive_API/testuploadjobreplyhandler_linux.cpp)
 elseif (WIN32)
     list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherwin.h update_detection/file_system_observer/testfolderwatcherwin.cpp ../test_utility/testhelpers_win.cpp)
 endif()
