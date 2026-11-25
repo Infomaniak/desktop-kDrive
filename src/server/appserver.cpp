@@ -970,10 +970,8 @@ void AppServer::handleClientCrash(bool &quit) {
 
 void AppServer::registerSync(std::shared_ptr<SyncPal> syncPal) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    if (CommonUtility::isMac() || (CommonUtility::isWindows() && syncPal->vfsMode() == VirtualFileMode::Off)) {
-        if (_commManager) {
-            _commManager->registerSync(syncPal->localPath().native());
-        }
+    if ((CommonUtility::isMac() || (CommonUtility::isWindows() && syncPal->vfsMode() == VirtualFileMode::Off)) && _commManager) {
+        _commManager->registerSync(syncPal->localPath().native());
     }
 #else
     (void) syncPal;
@@ -982,10 +980,8 @@ void AppServer::registerSync(std::shared_ptr<SyncPal> syncPal) {
 
 void AppServer::unregisterSync(std::shared_ptr<SyncPal> syncPal) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    if (CommonUtility::isMac() || (CommonUtility::isWindows() && syncPal->vfsMode() == VirtualFileMode::Off)) {
-        if (_commManager) {
-            _commManager->unregisterSync(syncPal->localPath().native());
-        }
+    if ((CommonUtility::isMac() || (CommonUtility::isWindows() && syncPal->vfsMode() == VirtualFileMode::Off)) && _commManager) {
+        _commManager->unregisterSync(syncPal->localPath().native());
     }
 #else
     (void) syncPal;

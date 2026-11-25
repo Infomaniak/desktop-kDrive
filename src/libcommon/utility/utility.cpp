@@ -712,12 +712,14 @@ Language CommonUtility::strToLanguage(const QString &lang) {
 }
 
 QString applicationTrPath() {
+    using namespace Qt::StringLiterals;
 #if defined(KD_MACOS)
-    const auto buildTranslations = QCoreApplication::applicationDirPath() + QStringLiteral("/../../../../src/");
+    constexpr auto buildTranslationsSuffix = "/../../../../src/"_L1;
 #else
-    const auto buildTranslations = QCoreApplication::applicationDirPath() + QStringLiteral("/../src/");
+    constexpr auto buildTranslationsSuffix = "/../src/"_L1;
 #endif
-    if (!QDir(buildTranslations).entryList({QStringLiteral("client_*.qm")}, QDir::Files).isEmpty()) {
+    if (const auto buildTranslations = QCoreApplication::applicationDirPath() + buildTranslationsSuffix;
+        !QDir(buildTranslations).entryList({QStringLiteral("client_*.qm")}, QDir::Files).isEmpty()) {
         qWarning() << "Running from build location! Translations may be incomplete!";
         return buildTranslations;
     }

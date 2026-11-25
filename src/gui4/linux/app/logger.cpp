@@ -79,8 +79,7 @@ static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessag
         const SyncPath filePath(ctx.file);
         fileName = filePath.filename();
     }
-    const char *fileNamePtr = fileName.c_str();
-    const QMessageLogContext ctxNew(fileNamePtr, ctx.line, ctx.function, ctx.category);
+    const QMessageLogContext ctxNew(fileName.c_str(), ctx.line, ctx.function, ctx.category);
     return qFormatLogMessage(type, ctxNew, message);
 }
 
@@ -154,7 +153,7 @@ Logger *Logger::instance() {
 void Logger::installEarlyMessageHandler() {
     qSetMessagePattern(QString::fromLatin1(logMessagePattern));
 #ifndef NO_MSG_HANDLER
-    qInstallMessageHandler(earlyLogCatcher);
+    (void) qInstallMessageHandler(earlyLogCatcher);
 #else
     Q_UNUSED(earlyLogCatcher)
 #endif
@@ -162,7 +161,7 @@ void Logger::installEarlyMessageHandler() {
 
 Logger::Logger() {
 #ifndef NO_MSG_HANDLER
-    qInstallMessageHandler(handleMessage);
+    (void) qInstallMessageHandler(handleMessage);
 #else
     Q_UNUSED(handleMessage)
 #endif
@@ -170,7 +169,7 @@ Logger::Logger() {
 
 Logger::~Logger() {
 #ifndef NO_MSG_HANDLER
-    qInstallMessageHandler(nullptr);
+    (void) qInstallMessageHandler(nullptr);
 #endif
 }
 
@@ -184,7 +183,7 @@ bool Logger::isLoggingToFile() const {
 }
 
 void Logger::setLogFile(const QString &name) {
-    QMutexLocker locker(&_mutex);
+    const QMutexLocker locker(&_mutex);
     if (_logstream) {
         _logstream.reset(0);
         _logFile.close();
