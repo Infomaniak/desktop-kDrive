@@ -595,6 +595,39 @@ void RemoteFolderTreeModel::requestFolderSize(const NodeId &nodeId) {
     sendSizeRequest(id);
 }
 
+// A folder whose path is unknown (e.g. no longer accessible) cannot be located: it is kept.
+std::vector<NodeId> RemoteFolderTreeModel::outermostExcludedFoldersInRoot() const {
+    std::vector<NodeId> result;
+
+    for (const QString &nodeId: _excludedNodeIds) {
+        const QString path = _excludedPaths.value(nodeId);
+        if (path.isEmpty()) {
+            result.push_back(QStr2Str(nodeId));
+            continue;
+        }
+
+        const bool insideRoot = std::ranges::any_of(
+                _root->children, [&path](const std::unique_ptr<TreeNode> &child) { return pathContains(child->path, path); });
+        if (!insideRoot) {
+            continue;
+        }
+
+        bool insideExcludedFolder = false;
+        for (auto excluded = _excludedPaths.cbegin(); excluded != _excludedPaths.cend(); ++excluded) {
+            if (excluded.key() != nodeId && excluded.value() != path && pathContains(excluded.value(), path)) {
+                insideExcludedFolder = true;
+                break;
+            }
+        }
+
+        if (!insideExcludedFolder) {
+            result.push_back(QStr2Str(nodeId));
+        }
+    }
+
+    return result;
+}
+
 bool RemoteFolderTreeModel::hasAncestorIn(const NodeId &nodeId, const std::vector<NodeId> &folderIds) const {
     const TreeNode *const node = _nodesById.value(QString::fromStdString(nodeId), nullptr);
     if (!node) {

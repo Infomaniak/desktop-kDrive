@@ -117,6 +117,12 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void requestFolderSize(const NodeId &nodeId);
         /** Whether one of the ancestors of a row is among the given folders. False for a folder that is not a row. */
         [[nodiscard]] bool hasAncestorIn(const NodeId &nodeId, const std::vector<NodeId> &folderIds) const;
+        /**
+         * Excluded folders whose content is missing from the synchronization: those inside the root and not inside another
+         * excluded folder. The blacklist can hold others, the server adding each created folder to every synchronization
+         * of its drive. Meaningful once the tree has loaded.
+         */
+        [[nodiscard]] std::vector<NodeId> outermostExcludedFoldersInRoot() const;
 
     signals:
         void stateChanged();

@@ -46,6 +46,9 @@ ExcludedFoldersController::ExcludedFoldersController(AppCache &appCache, CommSer
     (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::selectionChanged, this, &ExcludedFoldersController::stateChanged);
     (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::selectionChanged, this,
                    &ExcludedFoldersController::requestMissingFolderSizes);
+    // The excluded folders that count are known once the root listing has loaded.
+    (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::stateChanged, this,
+                   &ExcludedFoldersController::requestMissingFolderSizes);
     (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::folderSizeChanged, this, &ExcludedFoldersController::stateChanged);
 }
 
@@ -89,10 +92,9 @@ qsizetype ExcludedFoldersController::newlyExcludedFolderCount() const {
     });
 }
 
-// The synchronization root minus the excluded folders: an excluded folder is never inside another one, so none is
-// subtracted twice.
+// The synchronization root minus the outermost excluded folders inside it, so that no size is subtracted twice.
 QString ExcludedFoldersController::selectedSizeText() const {
-    if (!hasDraft()) {
+    if (!hasDraft() || _folderTreeModel.loading() || _folderTreeModel.loadFailed()) {
         return {};
     }
 
@@ -102,7 +104,7 @@ QString ExcludedFoldersController::selectedSizeText() const {
     }
 
     qint64 selectedSize = *rootSize;
-    for (const NodeId &nodeId: _folderTreeModel.blackList()) {
+    for (const NodeId &nodeId: _folderTreeModel.outermostExcludedFoldersInRoot()) {
         const std::optional<qint64> excludedSize = _folderTreeModel.loadedSize(nodeId);
         if (!excludedSize) {
             return {};
@@ -303,7 +305,11 @@ void ExcludedFoldersController::requestMissingFolderSizes() {
 
     _folderTreeModel.requestFolderSize(_rootNodeId);
 
-    for (const NodeId &nodeId: _folderTreeModel.blackList()) {
+    if (_folderTreeModel.loading() || _folderTreeModel.loadFailed()) {
+        return;
+    }
+
+    for (const NodeId &nodeId: _folderTreeModel.outermostExcludedFoldersInRoot()) {
         _folderTreeModel.requestFolderSize(nodeId);
     }
 }
