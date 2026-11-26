@@ -328,9 +328,10 @@
   falls back to the previous behavior when there is one, and its failure is logged once.
   - `notificationservice.*`: desktop notifications through `org.freedesktop.Notifications` on the session bus, with
     the application icon and desktop entry. A click emits the action the notification was shown with; each action
-    keeps one notification on screen, a new one replacing the previous one. Server notifications
-    (`UTILITY_SHOW_NOTIFICATION`, synchronization activity, already filtered by the notification settings) open the
-    activity list.
+    keeps one notification on screen, a new one replacing the previous one. The activation token sent before a click
+    (`ActivationToken`) goes to `XDG_ACTIVATION_TOKEN`, which Qt uses to bring the opened window to the front on
+    Wayland. Server notifications (`UTILITY_SHOW_NOTIFICATION`, synchronization activity, already filtered by the
+    notification settings) open the activity list.
 - `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
   enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), `inotify` (the inotify
   watches error alone), one blocking error (`asleep`, `wakingup`, `maintenance`, `notrenew`, `accessdenied`,

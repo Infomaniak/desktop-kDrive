@@ -52,6 +52,8 @@ NotificationService::NotificationService(QObject *const parent) :
                        SLOT(handleActionInvoked(uint, QString)));
     (void) bus.connect(notificationService, notificationPath, notificationInterface, u"NotificationClosed"_s, this,
                        SLOT(handleNotificationClosed(uint, uint)));
+    (void) bus.connect(notificationService, notificationPath, notificationInterface, u"ActivationToken"_s, this,
+                       SLOT(handleActivationToken(uint, QString)));
 
     // The body carries file names: escape it only for a server that interprets it as markup.
     const auto capabilities =
@@ -103,6 +105,17 @@ void NotificationService::show(const QString &summary, const QString &body, cons
                        self->_actionByNotification[notificationId] = action;
                        self->_notificationByAction[action] = notificationId;
                    });
+}
+
+// Sent just before `ActionInvoked` by the servers that implement version 1.2 of the specification. Qt activates the next
+// window shown or raised with the token of `XDG_ACTIVATION_TOKEN`, so the window opened by the click comes to the front
+// on Wayland.
+void NotificationService::handleActivationToken(const uint notificationId, const QString &activationToken) {
+    if (!_actionByNotification.contains(notificationId) || activationToken.isEmpty()) {
+        return;
+    }
+
+    (void) qputenv("XDG_ACTIVATION_TOKEN", activationToken.toUtf8());
 }
 
 void NotificationService::handleActionInvoked(const uint notificationId, const QString &actionKey) {

@@ -50,6 +50,7 @@ class NotificationService final : public QObject {
 
     private slots:
         // D-Bus `u` arguments: the signatures must use `uint` to match the notification server signals.
+        void handleActivationToken(uint notificationId, const QString &activationToken);
         void handleActionInvoked(uint notificationId, const QString &actionKey);
         void handleNotificationClosed(uint notificationId, uint reason);
 
