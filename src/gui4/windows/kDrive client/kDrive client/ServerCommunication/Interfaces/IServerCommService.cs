@@ -32,10 +32,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // User-related requests
 
-        /* Returns the list of user DbIds known to the server.
-         * Returns null on error.
-         */
-
         /* Adds a new user or re-authenticates an existing user using the provided OAuth2 code and code verifier.
          * The view model's Users collection is updated accordingly.
          * In the case of a new user, only DbId is set initially, other properties will be updated later by a userAdded signal.
