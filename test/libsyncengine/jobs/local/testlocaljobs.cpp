@@ -123,7 +123,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
     // Create
     const SyncName testDirName = Str("testLocalJobs");
     const SyncPath testDirPath = _localTempDir.path() / testDirName;
-    LocalCreateDirJob createJob(testDirPath);
+    LocalCreateDirJob createJob(_localTempDir.path(), testDirPath);
     createJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(testDirPath));
@@ -135,14 +135,14 @@ void KDC::TestLocalJobs::testLocalJobs() {
     // Copy
     const auto suffix = CommonUtility::generateRandomStringAlphaNum(10);
     const SyncPath copyDirPath = _localTempDir.path() / (testDirName + Str("_copy_") + Str2SyncName(suffix));
-    LocalCopyJob copyJob(testDirPath, copyDirPath);
+    LocalCopyJob copyJob(_localTempDir.path(), testDirPath, copyDirPath);
     copyJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath));
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_picture.jpg"));
 
     // Move
-    LocalMoveJob moveJob(testDirPath, copyDirPath / testDirName);
+    LocalMoveJob moveJob(_localTempDir.path(), testDirPath, copyDirPath / testDirName);
     moveJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName));
@@ -219,31 +219,31 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
     // A move whose source path traverses the symbolic link is forbidden.
     {
         const SyncPath destPath = temporaryDirectory.path() / "moved_file.txt";
-        LocalMoveJob moveJob(linkPath / "tmp_file.txt", destPath);
+        LocalMoveJob moveJob(temporaryDirectory.path(), linkPath / "tmp_file.txt", destPath);
         moveJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
         CPPUNIT_ASSERT(!std::filesystem::exists(destPath));
     }
 
     // A move whose destination path traverses the symbolic link is forbidden.
     {
-        LocalMoveJob moveJob(filePath, linkPath / "moved_file.txt");
+        LocalMoveJob moveJob(temporaryDirectory.path(), filePath, linkPath / "moved_file.txt");
         moveJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
         CPPUNIT_ASSERT(!std::filesystem::exists(realDirPath / "moved_file.txt"));
     }
 
     // The interdiction is not bypassable with bypassCheck().
     {
-        LocalMoveJob moveJob(linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt");
+        LocalMoveJob moveJob(temporaryDirectory.path(), linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt");
         moveJob.setBypassCheck(true);
         moveJob.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
     }
 }
@@ -251,7 +251,7 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     ParametersCache::instance()->parameters().setMoveToTrash(false);
 
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testDeleteFilesWithDuplicateNames");
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testDeleteFilesWithDuplicateNames", _syncPal->localPath());
     const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
 
     // Create two files with the same name but distinct encodings.
@@ -409,8 +409,10 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     };
 
     _syncPal->_syncInfo.targetPath = SyncPath{}; // Standard synchronisation.
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
-    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
+    // The deleted items must be located under the sync directory, as in production, so that the cache directory guards
+    // accept them. Names are kept short so that the full path stays below the Windows MAX_PATH limit.
+    const LocalTemporaryDirectory temporaryDirectory("deleteDehydrated", _localTempDir.path());
+    const SyncPath localDirPath = temporaryDirectory.path() / "dir";
 
     _syncPal->setLocalPath(temporaryDirectory.path());
     (void) std::filesystem::create_directories(localDirPath);
@@ -422,6 +424,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     const auto excludedDehydratedPlaceholderName = Str("dehydrated_placeholder_blacklisted_20220913_130102_666.txt");
 
     { std::ofstream ofs(localDirPath / excludedDehydratedPlaceholderName); }
+    CPPUNIT_ASSERT(std::filesystem::exists(localDirPath / excludedDehydratedPlaceholderName));
     auto ioError = IoError::Success;
     CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(localDirPath / excludedDehydratedPlaceholderName, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -434,14 +437,17 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
 #endif
 
 void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testGenericLocalDeleteJobHardDelete");
+    // The deleted items must be located under the sync directory, as in production, so that the cache directory guards
+    // accept them.
+    const LocalTemporaryDirectory temporaryDirectory("genericHardDelete", _localTempDir.path());
     SyncPath cacheDirectoryPath;
     CPPUNIT_ASSERT(_syncPal->cacheDirectory()->path(cacheDirectoryPath));
 
     // A regular file is first atomically moved to the cache directory by the delete job and is then deleted from it.
     const SyncPath filePath = temporaryDirectory.path() / "test_file.txt";
     { std::ofstream ofs(filePath); }
-    GenericLocalDeleteJob deleteJob(filePath, _syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes);
+    GenericLocalDeleteJob deleteJob(_syncPal->localPath(), filePath, _syncPal->cacheDirectory(),
+                                    GenericLocalDeleteJob::ForceHardDelete::Yes);
     deleteJob.runSynchronously();
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, deleteJob.exitInfo().code());
@@ -450,7 +456,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 
     // Non-existing items do not raise deletion errors.
     const SyncPath nonExistingPath = temporaryDirectory.path() / "non-existing-item.txt";
-    GenericLocalDeleteJob nonExistingItemDeleteJob(nonExistingPath, _syncPal->cacheDirectory(),
+    GenericLocalDeleteJob nonExistingItemDeleteJob(_syncPal->localPath(), nonExistingPath, _syncPal->cacheDirectory(),
                                                    GenericLocalDeleteJob::ForceHardDelete::Yes);
     nonExistingItemDeleteJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), nonExistingItemDeleteJob.exitInfo());
@@ -459,7 +465,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
     ParametersCache::instance()->parameters().setMoveToTrash(false);
     const SyncPath anotherFilePath = temporaryDirectory.path() / "another_test_file.txt";
     { std::ofstream ofs(anotherFilePath); }
-    GenericLocalDeleteJob moveToTrashDisabledDeleteJob(anotherFilePath, _syncPal->cacheDirectory());
+    GenericLocalDeleteJob moveToTrashDisabledDeleteJob(_syncPal->localPath(), anotherFilePath, _syncPal->cacheDirectory());
     moveToTrashDisabledDeleteJob.runSynchronously();
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, moveToTrashDisabledDeleteJob.exitInfo().code());
@@ -474,7 +480,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
     auto rightsError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, rightSet.read, rightSet.write, rightSet.execute, rightsError));
 
-    GenericLocalDeleteJob permissionLessDeleteJob(filePathInSubdir, _syncPal->cacheDirectory(),
+    GenericLocalDeleteJob permissionLessDeleteJob(_syncPal->localPath(), filePathInSubdir, _syncPal->cacheDirectory(),
                                                   GenericLocalDeleteJob::ForceHardDelete::Yes);
     permissionLessDeleteJob.runSynchronously();
 
@@ -492,6 +498,53 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
 #endif
+}
+
+void KDC::TestLocalJobs::testGenericLocalDeleteJobWithLinkedParent() {
+    // The item to delete is reached through a directory link located inside the sync directory and pointing outside of
+    // it. Whatever the deletion mode, the job must refuse the deletion instead of moving the item located outside of
+    // the sync directory into the cache directory and permanently deleting it.
+    const LocalTemporaryDirectory outsideDirectory("testLocalJobs_linkedParent_outsideDirectory");
+    const SyncPath victimFilePath = outsideDirectory.path() / "test_file.txt";
+    { std::ofstream ofs(victimFilePath); }
+
+    const LocalTemporaryDirectory temporaryDirectorySync("testLocalJobs_linkedParent_syncDir", _localTempDir.path());
+    IoError ioError = IoError::Success;
+    const SyncPath linkPath = temporaryDirectorySync.path() / "link";
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(outsideDirectory.path(), linkPath, true, ioError));
+    const SyncPath linkedFilePath = linkPath / "test_file.txt";
+
+    // With the "move to trash" parameter enabled, the trash operation is rejected and the fallback to hard delete is
+    // guarded as well.
+    ParametersCache::instance()->parameters().setMoveToTrash(true);
+    {
+        GenericLocalDeleteJob deleteJob(temporaryDirectorySync.path(), linkedFilePath, _syncPal->cacheDirectory());
+        deleteJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), deleteJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+    }
+
+    // Forced hard deletion is guarded as well.
+    {
+        GenericLocalDeleteJob deleteJob(temporaryDirectorySync.path(), linkedFilePath, _syncPal->cacheDirectory(),
+                                        GenericLocalDeleteJob::ForceHardDelete::Yes);
+        deleteJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), deleteJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+    }
+
+    // With the "move to trash" parameter disabled, the deletion also relies on GenericLocalDeleteJob::hardDelete and is
+    // guarded as well.
+    ParametersCache::instance()->parameters().setMoveToTrash(false);
+    {
+        GenericLocalDeleteJob deleteJob(temporaryDirectorySync.path(), linkedFilePath, _syncPal->cacheDirectory());
+        deleteJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), deleteJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
+    }
 }
 
 } // namespace KDC

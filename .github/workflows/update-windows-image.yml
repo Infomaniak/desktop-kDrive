@@ -125,7 +125,7 @@ jobs:
           [[ "$IMAGE_NAME" =~ ^[A-Za-z0-9._-]+$ ]] || die "Invalid image name: $IMAGE_NAME"
 
       - name: Install OpenStack CLI
-        run: pip install python-openstackclient --quiet
+        run: pip install python-openstackclient==10.5.0 openstacksdk==4.25.0 --quiet
 
       - name: Write clouds.yaml
         run: source "$LIB" && write_clouds_yaml
@@ -135,17 +135,33 @@ jobs:
         # Retained "<image>_old_*" images never match these patterns.
         run: |
           source "$LIB"
-          ids="$(gh api --paginate "/repos/${REPO}/actions/runners?per_page=100" \
-              --jq ".runners[] | select(.name | startswith(\"${REFRESH_PREFIX}\")) | .id")"
+          cleanup_failed=0
+          if ! ids="$(gh api --paginate "/repos/${REPO}/actions/runners?per_page=100" \
+              --jq ".runners[] | select(.name | startswith(\"${REFRESH_PREFIX}\")) | .id")"; then
+            echo "::warning::Cannot list orphan runners"
+            ids=""
+            cleanup_failed=1
+          fi
           for id in $ids; do
             log "Deleting orphan runner $id"
-            gh api -X DELETE "/repos/${REPO}/actions/runners/${id}"
+            if ! gh api -X DELETE "/repos/${REPO}/actions/runners/${id}"; then
+              echo "::warning::Could not delete orphan runner $id"
+              cleanup_failed=1
+            fi
           done
-          ids="$(os server list --name "^${REFRESH_PREFIX}" -f value -c ID)"
-          for id in $ids; do
-            log "Deleting orphan server $id"
-            os server delete --wait "$id"
-          done
+          if ! ids="$(os server list --name "^${REFRESH_PREFIX}" -f value -c ID)"; then
+            echo "::warning::Cannot list orphan servers"
+            ids=""
+            cleanup_failed=1
+          fi
+          if [[ -n "$ids" ]]; then
+            mapfile -t server_ids <<<"$ids"
+            log "Deleting orphan servers ${server_ids[*]}"
+            if ! os server delete --wait "${server_ids[@]}"; then
+              echo "::warning::Could not delete all orphan servers"
+              cleanup_failed=1
+            fi
+          fi
           ids="$(os volume list -f value -c ID -c Name | awk -v p="$REFRESH_PREFIX" 'index($2, p) == 1 {print $1}')"
           for id in $ids; do
             log "Deleting orphan volume $id"
@@ -162,6 +178,7 @@ jobs:
             log "Deleting orphan image $id"
             os image delete "$id"
           done
+          (( cleanup_failed == 0 ))
 
       - name: Resolve source image
         id: source
@@ -180,6 +197,7 @@ jobs:
         id: launch
         run: |
           source "$LIB"
+          FLAVOR_ID="$(resolve_unique_flavor "$WINDOWS_FLAVOR")"
           TOKEN="$(mint_registration_token)"
           echo "::add-mask::$TOKEN"
           ADMIN_PASS="$(random_admin_password)"
@@ -198,7 +216,7 @@ jobs:
 
           ID="$(os server create \
             --image "${{ steps.source.outputs.id }}" \
-            --flavor "$WINDOWS_FLAVOR" \
+            --flavor "$FLAVOR_ID" \
             --network "$NETWORK_NAME" \
             --user-data userdata.ps1 \
             --property "purpose=image-refresh" \
@@ -245,7 +263,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.2
       - name: Install OpenStack CLI
-        run: pip install python-openstackclient --quiet
+        run: pip install python-openstackclient==10.5.0 openstacksdk==4.25.0 --quiet
       - name: Wait for the maintenance runner
         # The runner is only started once Windows Update converged (or failed; warm-cache then reports it).
         run: |
@@ -373,7 +391,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
 
       - name: Install OpenStack CLI
-        run: pip install python-openstackclient --quiet
+        run: pip install python-openstackclient==10.5.0 openstacksdk==4.25.0 --quiet
 
       - name: Write clouds.yaml
         run: source "$LIB" && write_clouds_yaml
@@ -403,6 +421,7 @@ jobs:
         id: worker
         run: |
           source "$LIB"
+          FLAVOR_ID="$(resolve_unique_flavor "$LINUX_FLAVOR")"
           mkdir -p ~/.ssh
           ssh-keygen -q -t ed25519 -N "" -f ~/.ssh/refresh
           MY_IP="$(curl -fsS https://api.ipify.org)"
@@ -434,7 +453,7 @@ jobs:
 
           SERVER_ID="$(os server create \
             --image "$LINUX_IMAGE" \
-            --flavor "$LINUX_FLAVOR" \
+            --flavor "$FLAVOR_ID" \
             --network "$NETWORK_NAME" \
             --security-group "$SECGROUP_NAME" \
             --user-data worker.yaml \
@@ -599,7 +618,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
 
       - name: Install OpenStack CLI
-        run: pip install python-openstackclient --quiet
+        run: pip install python-openstackclient==10.5.0 openstacksdk==4.25.0 --quiet
 
       - name: Launch validation VM from the candidate image
         # Uses the normal runner bootstrap, so first boot of the generalized image is exercised as in CI,
@@ -607,6 +626,7 @@ jobs:
         run: |
           source "$LIB"
           write_clouds_yaml
+          FLAVOR_ID="$(resolve_unique_flavor "$WINDOWS_FLAVOR")"
           TOKEN="$(mint_registration_token)"
           echo "::add-mask::$TOKEN"
           ADMIN_PASS="$(random_admin_password)"
@@ -627,7 +647,7 @@ jobs:
 
           ID="$(os server create \
             --image "$CANDIDATE_ID" \
-            --flavor "$WINDOWS_FLAVOR" \
+            --flavor "$FLAVOR_ID" \
             --network "$NETWORK_NAME" \
             --user-data userdata.ps1 \
             --property "purpose=image-refresh" \
@@ -754,7 +774,7 @@ jobs:
           [[ "$RESULT" == "success $VALIDATE_NAME" ]] || { echo "::error::Validation was not completed by $VALIDATE_NAME"; exit 1; }
 
       - name: Install OpenStack CLI
-        run: pip install python-openstackclient --quiet
+        run: pip install python-openstackclient==10.5.0 openstacksdk==4.25.0 --quiet
 
       - name: Rename images
         run: |
@@ -826,7 +846,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
 
       - name: Install OpenStack CLI
-        run: pip install python-openstackclient --quiet
+        run: pip install python-openstackclient==10.5.0 openstacksdk==4.25.0 --quiet
 
       - name: Retain validated candidate without replacing the source image
         id: retain

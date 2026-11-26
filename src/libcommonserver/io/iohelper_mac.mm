@@ -113,8 +113,10 @@ bool IoHelper::_checkIfItemIsSymLinkOrAlias(const SyncPath &path, bool &isLink, 
     return true;
 }
 
-bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError,
+                           const SyncPath &syncRootPath /*= {}*/) noexcept {
+    ioError = IoHelper::checkIfPathTraversesLink(aliasPath, syncRootPath);
+    if (ioError != IoError::Success) return false;
 
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
@@ -267,8 +269,10 @@ bool IoHelper::checkForCorruptedAlias(const SyncPath &path, bool &isCorruptedAli
     return true;
 }
 
-bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError,
+                                   const SyncPath &syncRootPath /*= {}*/) noexcept {
+    ioError = IoHelper::checkIfPathTraversesLink(aliasPath, syncRootPath);
+    if (ioError != IoError::Success) return false;
 
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
@@ -327,6 +331,11 @@ void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
 
 IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
+    // NSDate stores an NSTimeInterval (Double) in seconds relative to the reference date: January 1, 2001, 00:00:00 UTC
+    // => NSDate can represent a date in ≈ [2001-01-01 - 1,8×10^308 sec, 2001-01-01 + 1,8×10^308 sec]
+    // SyncTime stores a int64_t number in seconds relative to the reference date: January 1, 1970, 00:00:00 UTC
+    // => SyncTime can represent a date in [1970-01-01 - 2^63 sec, 1970-01-01 + 2^63 - 1 sec], interval included within that of
+    // NSDate
     NSDate *_Nonnull cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
     NSDate *_Nonnull mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
     NSString *_Nonnull filePathStr = (NSString *_Nonnull) [NSString stringWithUTF8String:filePath.native().c_str()];
@@ -372,11 +381,13 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, 
     return IoError::Success;
 }
 
-bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath, const SyncPath &syncRootPath /*= {}*/) {
     if (itemPath.empty()) {
         LOG_WARN(logger(), "Path is empty");
         return false;
     }
+
+    if (IoHelper::checkIfPathTraversesLink(itemPath, syncRootPath) != IoError::Success) return false;
 
     NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
 

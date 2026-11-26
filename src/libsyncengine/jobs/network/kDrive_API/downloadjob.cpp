@@ -150,6 +150,17 @@ ExitInfo DownloadJob::resolveDownloadNeed() {
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
+    // Refuse to process an item that is not located under the sync directory or whose path traverses a symbolic link:
+    // dates or virtual file metadata updates, as well as content replacement, could otherwise be applied to an item
+    // located outside of the sync directory.
+    if (const auto checkIfPathTraversesLinkError =
+                IoHelper::checkIfPathTraversesLink(_fileDownloadInfo.localPath, _cacheDirectory->syncDirectoryPath());
+        checkIfPathTraversesLinkError != IoError::Success && checkIfPathTraversesLinkError != IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: "
+                                   << Utility::formatIoError(_fileDownloadInfo.localPath, checkIfPathTraversesLinkError));
+        return IoHelper::toExitInfo(checkIfPathTraversesLinkError, {ExitCode::SystemError, ExitCause::PathContainsSymlink});
+    }
+
     if (_fileDownloadInfo.isCreate) return AbstractTokenNetworkJob::runJob();
 
     computeHydrationStatus();
@@ -351,7 +362,7 @@ ExitInfo DownloadJob::setOutputParameters() {
 
 ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     // Delete in case it already exists (EDIT operation)
-    (void) IoHelper::deleteItem(_fileDownloadInfo.localPath);
+    (void) IoHelper::deleteItem(_fileDownloadInfo.localPath, _cacheDirectory->syncDirectoryPath());
 
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder) {
         // Create symlink
@@ -366,7 +377,8 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
         IoError ioError = IoError::Success;
-        if (!IoHelper::createSymlink(targetPath, _fileDownloadInfo.localPath, isFolder, ioError)) {
+        if (!IoHelper::createSymlink(targetPath, _fileDownloadInfo.localPath, isFolder, ioError,
+                                     _cacheDirectory->syncDirectoryPath())) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError));
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
@@ -398,7 +410,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         }
 
         IoError ioError = IoError::Success;
-        if (!IoHelper::createJunction(data, _fileDownloadInfo.localPath, ioError)) {
+        if (!IoHelper::createJunction(data, _fileDownloadInfo.localPath, ioError, _cacheDirectory->syncDirectoryPath())) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_fileDownloadInfo.localPath, ioError));
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
@@ -416,7 +428,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         LOGW_DEBUG(_logger, L"Create alias: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
 
         IoError ioError = IoError::Success;
-        if (!IoHelper::createAlias(data, _fileDownloadInfo.localPath, ioError)) {
+        if (!IoHelper::createAlias(data, _fileDownloadInfo.localPath, ioError, _cacheDirectory->syncDirectoryPath())) {
             LOGW_DEBUG(_logger,
                        L"Error in IoHelper::createAlias: " << Utility::formatIoError(_fileDownloadInfo.localPath, ioError));
             if (ioError == IoError::Unknown) {
@@ -457,7 +469,8 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 
                     assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 
-                    if (!IoHelper::createAlias(data2, _fileDownloadInfo.localPath, ioError)) {
+                    if (!IoHelper::createAlias(data2, _fileDownloadInfo.localPath, ioError,
+                                               _cacheDirectory->syncDirectoryPath())) {
                         LOGW_WARN(_logger, L"Error in IoHelper::createAlias: "
                                                    << Utility::formatIoError(_fileDownloadInfo.localPath, ioError));
                         return {ExitCode::SystemError, ExitCause::OperationCanceled};
@@ -506,7 +519,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 bool DownloadJob::removeTmpFile() {
     if (_tmpPath.empty()) return true;
 
-    if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_tmpPath, ioError)) {
+    if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_tmpPath, ioError, _cacheDirectory->syncDirectoryPath())) {
         LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatIoError(_tmpPath, ioError));
         return false;
     }
@@ -561,7 +574,7 @@ ExitInfo DownloadJob::moveTmpFile() {
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
             // Move file
-            (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localPath, ioError);
+            (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localPath, ioError, _cacheDirectory->syncDirectoryPath());
             crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
             if (ioError != IoError::Success && !crossDeviceLinkError) {
                 LOGW_WARN(_logger, L"Failed to move downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
@@ -573,7 +586,8 @@ ExitInfo DownloadJob::moveTmpFile() {
 
         if (!_fileDownloadInfo.isCreate || crossDeviceLinkError || forceCopy) {
             // Copy file content (i.e. when the target exists, do not change its node id).
-            if (!IoHelper::copyFileOrDirectory(_tmpPath, _fileDownloadInfo.localPath, ioError)) {
+            if (!IoHelper::copyFileOrDirectory(_tmpPath, _fileDownloadInfo.localPath, ioError,
+                                               _cacheDirectory->syncDirectoryPath())) {
                 LOGW_WARN(_logger, L"Failed to copy downloaded file " << Path2WStr(_tmpPath) << L" to "
                                                                       << Path2WStr(_fileDownloadInfo.localPath) << L", error="
                                                                       << Utility::formatIoError(ioError));
@@ -599,8 +613,8 @@ ExitInfo DownloadJob::moveTmpFile() {
 #else
             return {ExitCode::SystemError, ExitCause::FileAccessError};
 #endif
-            } else if (ioError == IoError::MoveThroughSymlink) {
-                return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
+            } else if (ioError == IoError::PathContainsSymlink) {
+                return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
             } else {
                 bool exists = false;
                 if (!IoHelper::checkIfPathExists(_fileDownloadInfo.localPath.parent_path(), exists, ioError,
