@@ -299,6 +299,8 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
 
     op->setType(OperationType::Move);
     op->setAffectedNode(currentNode);
+    op->setRelativeOriginPath(currentNode->moveOriginInfos().normalizedPath());
+    op->setRelativeDestinationPath(currentNode->getPath());
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
     op->setNewName(currentNode->name());

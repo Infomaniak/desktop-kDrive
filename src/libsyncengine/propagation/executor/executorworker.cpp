@@ -1559,13 +1559,34 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         }
         case OperationType::Move: {
             // Delete the item from local replica
-            const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
-            if (!remoteNodeId.empty()) {
-                SyncLocalDeleteJob deleteJob(_syncPal, relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
-                deleteJob.setBypassCheck(true);
-                deleteJob.runSynchronously();
-            }
 
+            if (!_syncPal->isLocalItemInSyncWithDb(absoluteLocalFilePath, SyncPal::InSyncWithDbOption::IgnoreMove)) {
+                // We first try to put the file back to its original location, if it fail we try to rescue it
+                const SyncPath originePath = _syncPal->localPath() / syncOp->affectedNode()->moveOriginInfos().normalizedPath();
+                LocalMoveJob moveJob(_syncPal->localPath(), absoluteLocalFilePath, originePath);
+                removeFromDb = false;
+
+                if (ExitInfo exitInfo = moveJob.runSynchronously(); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to move file back to its original location: "
+                                                       << Utility::formatSyncPath(absoluteLocalFilePath) << L" " << exitInfo);
+
+                    removeFromDb = true;
+                   FileRescuer fileRescuer(_syncPal);
+                    if (const auto exitInfo = fileRescuer.rescueItem(relativeLocalPath, syncOp->affectedNode()->type());
+                        !exitInfo) {
+                        LOGW_WARN(_logger,
+                                  L"Failed to rescue item: " << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
+                        return exitInfo;
+                    }
+                }
+            } else {
+                const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
+                if (!remoteNodeId.empty()) {
+                    SyncLocalDeleteJob deleteJob(_syncPal, relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
+                    deleteJob.setBypassCheck(true);
+                    deleteJob.runSynchronously();
+                }
+            }
             cancelType = CancelType::Move;
             break;
         }

@@ -390,8 +390,14 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
          * Returns false if the item is not in sync, or if an error occurred while trying to determine it
          * (e.g., file not found, I/O error, etc.).
          */
-        [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
-        [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath);
+        enum class InSyncWithDbOption {
+            None,
+            IgnoreMove
+        };
+        [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, InSyncWithDbOption options,
+                                                   std::optional<NodeId> &outLocalNodeId);
+        [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath,
+                                                   InSyncWithDbOption options = InSyncWithDbOption::None);
 
 
     protected:
