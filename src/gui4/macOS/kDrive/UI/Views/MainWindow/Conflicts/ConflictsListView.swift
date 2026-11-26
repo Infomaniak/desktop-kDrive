@@ -49,8 +49,8 @@ struct ConflictsListView: View {
     }
 
     var body: some View {
-        Form {
-            Section {} header: {
+        IKForm {
+            IKSection {} header: {
                 VStack(alignment: .leading) {
                     Text(KDriveLocalizable.labelManyConflictTitle(errors.count))
                         .font(.Tokens.body)
@@ -62,7 +62,7 @@ struct ConflictsListView: View {
                 .padding(.bottom, AppPadding.padding16)
             }
 
-            Section {
+            IKSection {
                 ForEach(filteredErrors) { error in
                     ConflictCellView(path: error.metadata.path) {
                         matomo.track(eventWithCategory: .individualConflictResolutionPage, name: "manageSingleConflict")
@@ -86,7 +86,6 @@ struct ConflictsListView: View {
                 }
             }
         }
-        .groupedFormatStyle()
         .sheet(item: $isShowingVersionSelectorSheet) { conflictsToResolve in
             ConflictVersionSelectorView(errors: conflictsToResolve.errors)
         }

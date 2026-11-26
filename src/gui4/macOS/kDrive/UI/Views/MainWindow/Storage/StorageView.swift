@@ -199,7 +199,7 @@ struct StorageView: View {
                     }
                 )
             } else {
-                Form {
+                IKForm {
                     StorageSectionView(
                         title: volumeName,
                         storageData: volumeStorageData,
@@ -207,7 +207,7 @@ struct StorageView: View {
                         byteCountFormatStyle: .file
                     )
 
-                    Section {
+                    IKSection {
                         InformationBlockContentView(
                             title: KDriveLocalizable.storageSyncBlockTitle,
                             subtitle: KDriveLocalizable.storageSyncBlockMacDescription,
@@ -222,7 +222,6 @@ struct StorageView: View {
                         byteCountFormatStyle: .memory
                     )
                 }
-                .groupedFormatStyle()
             }
         }
         .onReceive(storagePublisher.receive(on: RunLoop.main), perform: handleUpdatedStorageData)

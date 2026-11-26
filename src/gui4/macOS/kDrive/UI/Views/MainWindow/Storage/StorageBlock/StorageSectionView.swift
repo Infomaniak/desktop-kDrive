@@ -32,7 +32,7 @@ struct StorageSectionView: View {
     let byteCountFormatStyle: ByteCountFormatStyle.Style
 
     var body: some View {
-        Section {
+        IKSection {
             VStack {
                 HStack {
                     Text(title)
@@ -64,7 +64,7 @@ struct StorageSectionView: View {
 }
 
 #Preview {
-    Form {
+    IKForm {
         StorageSectionView(
             title: "Mac",
             storageData: .data(usedBytes: 63_000_000_000, availableBytes: 250_000_000_000),
@@ -75,5 +75,4 @@ struct StorageSectionView: View {
             byteCountFormatStyle: .file
         )
     }
-    .groupedFormatStyle()
 }

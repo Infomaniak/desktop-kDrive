@@ -90,6 +90,8 @@ Services are registered at app startup. Check `AppDelegate` or the DI setup file
 - Nibless AppKit controllers must inherit from `BaseViewController` (in `kDriveCoreUI/UI/AppKit/Controllers/`), which explicitly creates the root view: default `NSViewController.loadView()` can crash trying to load a nib on macOS 12/13. Use it for empty placeholders too; SwiftLint rejects direct `NSViewController` inheritance/construction. Genuine nib-backed exceptions require a narrowly scoped lint disable with an explanation.
 - Example ViewModel: `kDrive/UI/Controllers/MainWindow/MainView/MainViewModel.swift`
 - Create toolbars with `NSToolbar(identifier:)`; parameterless `NSToolbar()` can crash on macOS 12 and is rejected by SwiftLint. AppKit synchronizes toolbars sharing an identifier, so use distinct identifiers (e.g. a UUID per instance) for independent toolbars.
+- Use `ToolbarImageItem` for toolbar items showing asset catalog (non-symbol) images: below macOS 26 (no Liquid Glass), AppKit stretches them to 32 pt.
+- Use `IKForm` / `IKSection` instead of `Form` / `Section`: `.formStyle(.grouped)` needs macOS 13, and a plain `Form` renders as centered, unstyled rows on macOS 12. Wrap rows in an `IKSection` so they get a card on macOS 12.
 - Example VC: `kDrive/UI/Controllers/MainWindow/MainView/MainViewController.swift`
 
 ### Navigation / Router

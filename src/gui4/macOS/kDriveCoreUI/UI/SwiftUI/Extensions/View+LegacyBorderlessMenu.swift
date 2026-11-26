@@ -19,11 +19,18 @@
 import SwiftUI
 
 public extension View {
-    func groupedFormatStyle() -> some View {
+    /// Renders a `Menu` as a compact borderless button on macOS 12.
+    ///
+    /// On macOS 12, a `Menu` ignores `.buttonStyle(.plain)` and a borderless menu stretches to the available width,
+    /// which misplaces icon-only menus. Does nothing on macOS 13 and later.
+    @ViewBuilder
+    func legacyBorderlessMenu() -> some View {
         if #available(macOS 13.0, *) {
-            return formStyle(.grouped)
+            self
         } else {
-            return padding(AppPadding.page)
+            menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
         }
     }
 }
