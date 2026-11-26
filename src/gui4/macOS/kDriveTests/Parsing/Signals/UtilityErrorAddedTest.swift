@@ -58,7 +58,7 @@ struct UtilityErrorAddedTest {
         let signalData = Data("""
         {
           "id": 10,
-          "num": 26,
+          "num": 22,
           "params": {
             "errorInfo": {
               "path": "not-base64"
