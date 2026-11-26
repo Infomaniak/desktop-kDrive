@@ -30,6 +30,14 @@ ScrollView {
     signal releaseInformationRequested(var trigger)
     signal aboutRequested(var trigger)
     signal betaProgramRequested(var trigger)
+
+    // Gives the focus to the update button, for an update notification.
+    function focusUpdate() {
+        if (updateButton.visible) {
+            updateButton.forceActiveFocus(Qt.OtherFocusReason);
+        }
+    }
+
     contentWidth: availableWidth
     clip: true
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -58,6 +66,8 @@ ScrollView {
                 title: qsTrId("updateSettings")
                 description: root.controller.updateText
                 IKModalButton {
+                    id: updateButton
+
                     readonly property bool manual: !root.controller.updateDownloading && !root.controller.updateInstallable
                                                    && !root.controller.updateRestartable
 

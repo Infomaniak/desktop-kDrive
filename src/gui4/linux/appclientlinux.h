@@ -24,6 +24,7 @@
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/syncerrorsprojection.h"
 #include "app/cache/parametersstore.h"
+#include "app/desktop/notificationservice.h"
 #include "app/dialogs/manydeletescontroller.h"
 #include "app/mainwindow/activitiescontroller.h"
 #include "app/mainwindow/blockingerrorcontroller.h"
@@ -50,6 +51,7 @@
 #include "app/services/syncerrorservice.h"
 #include "app/services/syncservice.h"
 #include "app/services/translationservice.h"
+#include "app/services/updatenotifier.h"
 #include "app/services/updaterestartcoordinator.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
@@ -136,6 +138,7 @@ class AppClientLinux : public QApplication {
         void updateLoggerSettings();
         void requestQuit();
         void handleManyDeletesPresentationRequested();
+        void handleNotificationAction(NotificationService::Action action);
         void openMainWindow();
         void openOnboardingFromHome();
         void openOnboardingLoginFromSettings();
@@ -186,6 +189,8 @@ class AppClientLinux : public QApplication {
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
         UpdateRestartCoordinator _updateRestartCoordinator{_updateStatusService, this};
+        NotificationService _notificationService{this};
+        UpdateNotifier _updateNotifier{_updateStatusService, _parametersStore, _notificationService, this};
         GeneralSettingsController _generalSettingsController{_parametersStore,     _parametersService, _translationService,
                                                              _updateStatusService, _appCache,          this};
         AdvancedSettingsController _advancedSettingsController{_parametersStore,   _parametersService,  _sentryService,

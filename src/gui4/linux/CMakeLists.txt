@@ -6,7 +6,7 @@ project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
 find_package(Qt6 6.12 REQUIRED COMPONENTS
-        Core Concurrent Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
+        Core Concurrent DBus Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
 if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
@@ -52,6 +52,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/parametersstore.h
         app/cache/syncerrorsprojection.cpp
         app/cache/syncerrorsprojection.h
+        app/desktop/notificationservice.cpp
+        app/desktop/notificationservice.h
         app/dialogs/manydeletescontroller.cpp
         app/dialogs/manydeletescontroller.h
         app/errors/blockingerrorresolver.cpp
@@ -182,6 +184,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/syncservice.h
         app/services/translationservice.cpp
         app/services/translationservice.h
+        app/services/updatenotifier.cpp
+        app/services/updatenotifier.h
         app/services/updaterestartcoordinator.cpp
         app/services/updaterestartcoordinator.h
         app/services/updatestatusservice.cpp
@@ -580,6 +584,7 @@ qt_add_resources(${APPLICATION_CLIENTV4_EXECUTABLE} "linux_gui_assets"
 target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::Core
         Qt6::Concurrent
+        Qt6::DBus
         Qt6::Gui
         Qt6::Network
         Qt6::Qml

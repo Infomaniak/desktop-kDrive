@@ -322,6 +322,16 @@
 - `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
+- `app/desktop/`: integration with the desktop environment through D-Bus (`Qt6::DBus`), one file per feature, each
+  using QtDBus directly rather than a shared D-Bus wrapper. Calls are asynchronous and are sent without checking first
+  that the service is registered: a service started on demand by D-Bus only appears once called. A missing service
+  falls back to the previous behavior when there is one, and its failure is logged once.
+  - `notificationservice.*`: desktop notifications through `org.freedesktop.Notifications` on the session bus, with
+    the application icon and desktop entry. A click emits the action the notification was shown with; each action
+    keeps one notification on screen, a new one replacing the previous one. The activation token sent before a click
+    (`ActivationToken`) goes to `XDG_ACTIVATION_TOKEN`, which Qt uses to bring the opened window to the front on
+    Wayland. Server notifications (`UTILITY_SHOW_NOTIFICATION`, synchronization activity, already filtered by the
+    notification settings) open the activity list.
 - `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
   enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), `inotify` (the inotify
   watches error alone), one blocking error (`asleep`, `wakingup`, `maintenance`, `notrenew`, `accessdenied`,
@@ -772,6 +782,10 @@
   synchronizations do not delay it: they resume after the restart, and a drive that is always busy must still receive
   the update. It sends one request per `Ready` period; if a window stays open, the next launch uses the installed
   AppImage anyway.
+- `app/services/updatenotifier.*`: notifies an update available for download, or available while automatic updates
+  are off, once per state and version in a session, never while notifications are disabled. The restart that follows
+  an installation is silent. A click opens Settings on the update button (`SettingsWindowController::requestOpenUpdate`). The server
+  does not announce updates on Linux, so the client is the only source of these notifications.
 - `app/services/releasenotesservice.*`: downloads and parses the release notes of the announced version for the update
   details dialog. They are shown only when the client can apply the configured proxy itself.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
@@ -1023,8 +1037,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Use `QLoggingCategory` + `qCDebug/qCInfo/qCWarning/qCCritical`; no `std::cout`.
 - Log every user interaction from QML through `UserActionLog` (`action`, `screen`, `dialog`, `window`), never with a
   direct `console.*` call. Ids are stable lowerCamel segments (`<surface>.<zone>.<control>`, surfaces `main`, `dialog`,
-  `onboarding`, `syncConfig`, `settings`, `window`, `shortcut`, `tray`); a dialog's controls derive their ids from its
-  `dialogId` (`<dialogId>.cancel`), and a keyboard shortcut logs `shortcut.<name>`.
+  `onboarding`, `syncConfig`, `settings`, `window`, `shortcut`, `tray`, `notification`); a dialog's controls derive
+  their ids from its `dialogId` (`<dialogId>.cancel`), and a keyboard shortcut logs `shortcut.<name>`.
 - Write an id prefix used more than once in a file only once: a page builds its ids from its `screenId`, a dialog from
   its `dialogId`, any other file from a `readonly property string actionIdPrefix` declared at its root
   (`root.actionIdPrefix + ".options"`). A file with a single id keeps it whole. To find the code of a log line, search
