@@ -153,6 +153,7 @@ runs:
           }
 
       - name: Remove Windows certificate
+        if: always() 
         run: |
           if("${{ inputs.use_ksp_cert }}" -eq "true") {
             Get-ChildItem "Cert:\CurrentUser\My\${{ inputs.ksp_client_cert_thumbprint }}" | Remove-Item
@@ -424,5 +425,6 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Clean-up generated code
+        if: always() 
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
         shell: powershell
