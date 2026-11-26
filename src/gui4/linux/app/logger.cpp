@@ -123,7 +123,7 @@ void Logger::handleMessage(const QtMsgType type, const QMessageLogContext &ctx, 
     addSentryBreadcrumb(type, ctx, message);
     auto *const logger = instance();
     const auto level = logLevelForMessageType(type);
-    if (level < logger->_minLogLevel.load(std::memory_order_relaxed)) {
+    if (level < logger->_minLogLevel.load()) {
         return;
     }
 
@@ -174,7 +174,7 @@ Logger::~Logger() {
 }
 
 bool Logger::setMinLogLevel(const LogLevel level) {
-    return _minLogLevel.exchange(level, std::memory_order_relaxed) != level;
+    return _minLogLevel.exchange(level) != level;
 }
 
 bool Logger::isLoggingToFile() const {
