@@ -1045,7 +1045,9 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError, const SyncPath
             ec); // No error is raised if the path does not exist, see https://en.cppreference.com/w/cpp/filesystem/remove_all
     ioError = stdError2ioError(ec);
     if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::remove_all: " << Utility::formatStdError(path, ec));
+        LOGW_WARN(logger(), L"Error in std::filesystem::remove_all: " << Utility::formatStdError(path, ec));
+    } else {
+        LOGW_DEBUG(logger(), L"Item deleted: " << Utility::formatSyncPath(path));
     }
 
     return ioError == IoError::Success;
@@ -1077,6 +1079,7 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     const SyncPath &syncRootPath = cacheDirectory->syncDirectoryPath();
     auto ioError = IoError::Success;
     (void) IoHelper::renameItem(path, destPath, ioError, syncRootPath);
+    LOGW_DEBUG(logger(), L"Item deleted (moved outside the sync folder, deletion pending): " << Utility::formatSyncPath(path));
 
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(logger(), L"Error in IoHelper::renameItem: source " << Utility::formatSyncPath(path) << L", destination "
