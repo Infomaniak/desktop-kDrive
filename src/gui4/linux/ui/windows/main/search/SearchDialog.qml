@@ -220,6 +220,10 @@ Popup {
                         root.logOpenResult(resultRow, revealInFolder, "pointer");
                         root.controller.openResult(index, revealInFolder);
                     }
+                    // The list gives the current row the focus: handle Enter here, before the delegate turns it into a
+                    // click that loses the Ctrl modifier.
+                    Keys.onReturnPressed: event => root.openCurrentResult(event)
+                    Keys.onEnterPressed: event => root.openCurrentResult(event)
                 }
 
                 footer: Item {
@@ -255,8 +259,6 @@ Popup {
                     }
                 }
 
-                Keys.onReturnPressed: event => root.openCurrentResult(event)
-                Keys.onEnterPressed: event => root.openCurrentResult(event)
                 Keys.onUpPressed: event => {
                     if (currentIndex <= 0) {
                         searchField.focusInput();
