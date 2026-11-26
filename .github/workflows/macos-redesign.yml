@@ -119,6 +119,7 @@ jobs:
           xcodebuild \
             -scheme kDrive \
             -destination "platform=macOS,arch=arm64" \
+            -derivedDataPath "$RUNNER_TEMP/kdrive-gui4-tests" \
             KDRIVE_VERSION="${KDRIVE_VERSION_FULL%.*}" \
             KDRIVE_VERSION_BUILD="${KDRIVE_VERSION_FULL##*.}" \
             CODE_SIGNING_ALLOWED=NO \
@@ -133,6 +134,7 @@ jobs:
           xcodebuild \
             -scheme kDrive \
             -destination "platform=macOS,arch=arm64" \
+            -derivedDataPath "$RUNNER_TEMP/kdrive-gui4-tests" \
             test-without-building
 
   swiftlint:
