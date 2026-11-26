@@ -325,7 +325,8 @@
 - `app/desktop/`: integration with the desktop environment through D-Bus (`Qt6::DBus`), one file per feature, each
   using QtDBus directly rather than a shared D-Bus wrapper. Calls are asynchronous and are sent without checking first
   that the service is registered: a service started on demand by D-Bus only appears once called. A missing service
-  falls back to the previous behavior when there is one, and its failure is logged once.
+  falls back to the previous behavior when there is one, and its failure is logged (once per session for automatic
+  calls such as notifications).
   - `notificationservice.*`: desktop notifications through `org.freedesktop.Notifications` on the session bus, with
     the application icon and desktop entry. A click emits the action the notification was shown with; each action
     keeps one notification on screen, a new one replacing the previous one. The activation token sent before a click

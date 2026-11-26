@@ -38,9 +38,6 @@ constexpr auto fileManagerService = "org.freedesktop.FileManager1"_L1;
 constexpr auto fileManagerPath = "/org/freedesktop/FileManager1"_L1;
 constexpr auto fileManagerInterface = "org.freedesktop.FileManager1"_L1;
 
-// Without a file manager service, every call fails the same way: log it once.
-bool serviceUnavailableLogged = false;
-
 bool openContainingFolder(const SyncPath &path) {
     const SyncPath folder = path.parent_path();
     if (folder.empty() || !QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(folder)))) {
@@ -67,11 +64,8 @@ void revealInFileManager(const SyncPath &path, const QObject *const context, std
                                     return;
                                 }
 
-                                if (!serviceUnavailableLogged) {
-                                    serviceUnavailableLogged = true;
-                                    qCWarning(lcFileManager) << "File manager service unavailable, opening the folder instead"
-                                                             << "| error:" << reply.error().name() << reply.error().message();
-                                }
+                                qCWarning(lcFileManager) << "File manager service unavailable, opening the folder instead"
+                                                         << "| error:" << reply.error().name() << reply.error().message();
                                 if (openContainingFolder(path) || !onFailure) {
                                     return;
                                 }
