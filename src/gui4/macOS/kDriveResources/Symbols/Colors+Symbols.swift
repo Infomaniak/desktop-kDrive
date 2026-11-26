@@ -67,6 +67,14 @@ public enum KDriveColors {
   public static let orange400 = ColorAsset(name: "Orange400")
   public static let orange500 = ColorAsset(name: "Orange500")
   public static let orange800 = ColorAsset(name: "Orange800")
+  public static let upsellBackground = ColorAsset(name: "UpsellBackground")
+  public enum UpsellGradient {
+    public static let darkBlue = ColorAsset(name: "UpsellGradient/DarkBlue")
+    public static let lightBlue = ColorAsset(name: "UpsellGradient/LightBlue")
+    public static let orange = ColorAsset(name: "UpsellGradient/Orange")
+    public static let pink = ColorAsset(name: "UpsellGradient/Pink")
+    public static let purple = ColorAsset(name: "UpsellGradient/Purple")
+  }
   public static let kDrive500 = ColorAsset(name: "kDrive500")
   public static let kDrive600 = ColorAsset(name: "kDrive600")
 }
