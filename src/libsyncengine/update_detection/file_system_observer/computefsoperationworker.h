@@ -105,6 +105,15 @@ class ComputeFSOperationWorker : public ISyncWorker {
         // synchronization. So is the propagation of the creation of the descendants of those local items.
         void postponeOperationsOnReusedIds();
 
+        //! Adjust the modification date of an item so that it is no more than one year in the future.
+        /*!
+         \param nodeType is the type of the item.
+         \param creationTime is the creation date to set.
+         \param absolutePath is path of the item.
+         \param isLink is true for a link, false otherwise.
+         \param lastModifiedTime input value is the modification date to set, output value is the new modification date.
+         \return true if the process succeeds, false otherwise.
+         */
         bool checkAndFixLocalTimestamp(const NodeType nodeType, const SyncTime creationTime, const SyncPath &absolutePath,
                                        const bool isLink, SyncTime &modificationTime) const;
 

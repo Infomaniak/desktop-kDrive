@@ -193,11 +193,13 @@ extension MainViewController {
     // MARK: - Toolbar Item Factories
 
     private func makeSupportGroup() -> NSToolbarItemGroup {
-        let helpButton = NSToolbarItem(itemIdentifier: .init("HelpButton"))
+        let helpButton = ToolbarImageItem(
+            itemIdentifier: .init("HelpButton"),
+            label: "Help",
+            target: self,
+            action: #selector(openHelpURL)
+        )
         helpButton.image = KDriveResources.headphones.image
-        helpButton.label = "Help"
-        helpButton.target = self
-        helpButton.action = #selector(openHelpURL)
 
         let group = NSToolbarItemGroup(itemIdentifier: .supportGroup)
         group.subitems = [helpButton]
@@ -205,17 +207,22 @@ extension MainViewController {
     }
 
     private func makeSyncControlsGroup() -> NSToolbarItemGroup {
-        let pauseResumeButton = NSToolbarItem(itemIdentifier: .pauseResumeButton)
-        pauseResumeButton.target = self
-        pauseResumeButton.action = #selector(togglePauseResume)
+        let pauseResumeButton = ToolbarImageItem(
+            itemIdentifier: .pauseResumeButton,
+            label: KDriveLocalizable.buttonPause,
+            target: self,
+            action: #selector(togglePauseResume)
+        )
         pauseResumeButton.autovalidates = false
         updatePauseResumeButton(pauseResumeButton, state: synchroStateObserver.synchroState)
 
-        let settingsButton = NSToolbarItem(itemIdentifier: .init("SettingsButton"))
+        let settingsButton = ToolbarImageItem(
+            itemIdentifier: .init("SettingsButton"),
+            label: KDriveLocalizable.buttonSettings,
+            target: nil,
+            action: #selector(AppDelegate.openPreferencesWindow)
+        )
         settingsButton.image = KDriveResources.cog.image
-        settingsButton.label = KDriveLocalizable.buttonSettings
-        settingsButton.target = nil
-        settingsButton.action = #selector(AppDelegate.openPreferencesWindow)
 
         let group = NSToolbarItemGroup(itemIdentifier: .syncControlsGroup)
         group.subitems = [pauseResumeButton, settingsButton]
@@ -223,11 +230,13 @@ extension MainViewController {
     }
 
     private func makeSearchGroup() -> NSToolbarItemGroup {
-        let searchButton = NSToolbarItem(itemIdentifier: .init("SearchButton"))
+        let searchButton = ToolbarImageItem(
+            itemIdentifier: .init("SearchButton"),
+            label: KDriveLocalizable.buttonSearch,
+            target: self,
+            action: #selector(showSearchSheet)
+        )
         searchButton.image = KDriveResources.magnifyingGlass.image
-        searchButton.label = KDriveLocalizable.buttonSearch
-        searchButton.target = self
-        searchButton.action = #selector(showSearchSheet)
 
         let group = NSToolbarItemGroup(itemIdentifier: .searchGroup)
         group.subitems = [searchButton]
@@ -315,10 +324,9 @@ extension MainViewController {
         guard let toolbar = view.window?.toolbar else { return }
 
         for item in toolbar.items {
-            if item.itemIdentifier == .syncControlsGroup, let group = item as? NSToolbarItemGroup {
-                if let pauseResumeItem = group.subitems.first(where: { $0.itemIdentifier == .pauseResumeButton }) {
-                    updatePauseResumeButton(pauseResumeItem, state: state)
-                }
+            if item.itemIdentifier == .syncControlsGroup, let group = item as? NSToolbarItemGroup,
+               let pauseResumeItem = group.subitems.first(where: { $0.itemIdentifier == .pauseResumeButton }) {
+                updatePauseResumeButton(pauseResumeItem, state: state)
             }
         }
     }

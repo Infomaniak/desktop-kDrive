@@ -71,15 +71,16 @@ enum SynchroRulesItem: String, Identifiable, CaseIterable {
 
 struct SynchroRulesPreferencesView: View {
     var body: some View {
-        Form {
-            ForEach(SynchroRulesItem.allCases) { item in
-                FormNavigationCell(title: item.title, description: item.navigationDescription) {
-                    @InjectService var router: PreferencesViewRouter
-                    router.append(item.preferencesViewDetail)
+        IKForm {
+            IKSection {
+                ForEach(SynchroRulesItem.allCases) { item in
+                    FormNavigationCell(title: item.title, description: item.navigationDescription) {
+                        @InjectService var router: PreferencesViewRouter
+                        router.append(item.preferencesViewDetail)
+                    }
                 }
             }
         }
-        .groupedFormatStyle()
     }
 }
 

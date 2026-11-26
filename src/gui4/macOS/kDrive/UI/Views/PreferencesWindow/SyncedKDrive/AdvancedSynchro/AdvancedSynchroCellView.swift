@@ -51,7 +51,7 @@ struct AdvancedSynchroCellView: View {
     }
 
     var body: some View {
-        Section {
+        IKSection {
             HStack(spacing: AppPadding.padding8) {
                 BadgeView(image: KDriveResources.folder.swiftUIImage, color: .accentColor)
 
@@ -84,6 +84,7 @@ struct AdvancedSynchroCellView: View {
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
+                .legacyBorderlessMenu()
             }
             .task {
                 await fetchBlacklistedNodes()
@@ -182,7 +183,7 @@ struct AdvancedSynchroCellView: View {
 }
 
 #Preview {
-    Form {
+    IKForm {
         AdvancedSynchroCellView(
             synchro: UISynchro(
                 dbId: 1,
@@ -196,5 +197,4 @@ struct AdvancedSynchroCellView: View {
             driveId: 1
         ) { /* Empty on purpose */ }
     }
-    .groupedFormatStyle()
 }

@@ -51,8 +51,8 @@ struct AdvancedPreferencesNetworkView: View {
     }
 
     var body: some View {
-        Form {
-            Section {
+        IKForm {
+            IKSection {
                 AdvancedPreferencesNetworkHeaderView(selectedProxyType: $proxyType)
 
                 if proxyType == .http {
@@ -75,7 +75,6 @@ struct AdvancedPreferencesNetworkView: View {
                 }
             }
         }
-        .groupedFormatStyle()
         .onAppear(perform: getInitialValues)
         .onChange(of: proxyType) { newValue in
             updateProxyType(newValue: newValue)

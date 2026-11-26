@@ -29,8 +29,8 @@ struct SynchroConfigurationPickerView: View {
     @State private var isLoading = false
 
     var body: some View {
-        Form {
-            Section {} header: {
+        IKForm {
+            IKSection {} header: {
                 VStack(alignment: .leading, spacing: AppPadding.padding8) {
                     Text(KDriveLocalizable.onboardingAdvancedSettingsDriveSelectionTitle)
                         .font(.Tokens.headline)
@@ -41,12 +41,11 @@ struct SynchroConfigurationPickerView: View {
             }
 
             ForEach(Array(viewModel.configurations.values)) { configuration in
-                Section {
+                IKSection {
                     ConfigurableSynchroView(configuration: configuration)
                 }
             }
         }
-        .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isLoading) {
