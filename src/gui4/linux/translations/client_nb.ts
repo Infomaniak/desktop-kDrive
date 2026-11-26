@@ -355,6 +355,11 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</translation>
             <source>Custom location</source> 
             <translation>Tilpasset plassering</translation> 
         </message> 
+        <message id="buttonDeleteAndSave"> 
+            <source>Delete and save</source> 
+            <extracomment>Linux desktop app, Settings "Manage synchronization" page: confirm button of the confirmation shown on Save; deletes the unchecked folders from this computer and saves the selection.</extracomment> 
+            <translation>Slett og lagre</translation> 
+        </message> 
         <message id="buttonDisconnectAccount"> 
             <source>Disconnect this account</source> 
             <translation>Koble fra denne kontoen</translation> 
@@ -735,6 +740,22 @@ Denne mappen må ikke være inkludert i en annen synkroniseringsmappe og må ikk
         <message id="dialogDriveSetupInvalidFolderTitle"> 
             <source>This folder cannot be selected</source> 
             <translation>Denne mappen kan ikke velges</translation> 
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
+            <source>You can still access it online on kDrive, or sync it again later.</source> 
+            <extracomment>Linux desktop app, Settings "Manage synchronization" page: description of the confirmation shown on Save when unchecked folders will be deleted from this computer. The plural form follows the number of folders.</extracomment> 
+            <translation>
+                <numerusform>Du har fortsatt tilgang til den på nett i kDrive, og du kan synkronisere den igjen senere.</numerusform> 
+                <numerusform>Du har fortsatt tilgang til dem på nett i kDrive, og du kan synkronisere dem igjen senere.</numerusform> 
+            </translation>
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
+            <source>%n folder will be deleted from this computer</source> 
+            <extracomment>Linux desktop app, Settings "Manage synchronization" page: title of the confirmation shown on Save when unchecked folders will be deleted from this computer. %lld is the number of folders.</extracomment> 
+            <translation>
+                <numerusform>%n mappe slettes fra denne datamaskinen</numerusform> 
+                <numerusform>%n mapper slettes fra denne datamaskinen</numerusform> 
+            </translation>
         </message> 
         <message id="dialogNewExclusionRulePrimaryButton"> 
             <source>Add a rule</source> 
@@ -1931,6 +1952,11 @@ Kontroller og gi nytt navn til filer som inneholder uvanlige tegn, og prøv dere
         <message id="logsUploadErrorTooltip"> 
             <source>The last upload failed. Please check your internet connection and make sure at least one kDrive user is signed in. Uploads are limited to 10 per day.</source> 
             <translation>Den siste overføringen mislyktes. Kontroller internettforbindelsen din og sørg for at minst én kDrive-bruker er logget inn. Opplastinger er begrenset til 10 per dag.</translation> 
+        </message> 
+        <message id="manageSyncSelectedSize"> 
+            <source>%1 selected</source> 
+            <extracomment>Linux desktop app, Settings "Manage synchronization" page footer: total size of the folders selected for synchronization. %@ is a formatted size, e.g. "2.0 GB".</extracomment> 
+            <translation>%1 valgt</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 
             <source>Different versions of these files were detected.</source> 

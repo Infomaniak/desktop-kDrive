@@ -355,6 +355,11 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</translati
             <source>Custom location</source> 
             <translation>Emplacement personnalisé</translation> 
         </message> 
+        <message id="buttonDeleteAndSave"> 
+            <source>Delete and save</source> 
+            <extracomment>Linux desktop app, Settings "Manage synchronization" page: confirm button of the confirmation shown on Save; deletes the unchecked folders from this computer and saves the selection.</extracomment> 
+            <translation>Supprimer et enregistrer</translation> 
+        </message> 
         <message id="buttonDisconnectAccount"> 
             <source>Disconnect this account</source> 
             <translation>Déconnecter ce compte</translation> 
@@ -735,6 +740,22 @@ Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et 
         <message id="dialogDriveSetupInvalidFolderTitle"> 
             <source>This folder cannot be selected</source> 
             <translation>Ce dossier ne peut pas être sélectionné</translation> 
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
+            <source>You can still access it online on kDrive, or sync it again later.</source> 
+            <extracomment>Linux desktop app, Settings "Manage synchronization" page: description of the confirmation shown on Save when unchecked folders will be deleted from this computer. The plural form follows the number of folders.</extracomment> 
+            <translation>
+                <numerusform>Vous pourrez toujours y accéder en ligne sur kDrive, ou le synchroniser à nouveau plus tard.</numerusform> 
+                <numerusform>Vous pourrez toujours y accéder en ligne sur kDrive, ou les synchroniser à nouveau plus tard.</numerusform> 
+            </translation>
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
+            <source>%n folder will be deleted from this computer</source> 
+            <extracomment>Linux desktop app, Settings "Manage synchronization" page: title of the confirmation shown on Save when unchecked folders will be deleted from this computer. %lld is the number of folders.</extracomment> 
+            <translation>
+                <numerusform>%n dossier sera supprimé de cet ordinateur</numerusform> 
+                <numerusform>%n dossiers seront supprimés de cet ordinateur</numerusform> 
+            </translation>
         </message> 
         <message id="dialogNewExclusionRulePrimaryButton"> 
             <source>Add a rule</source> 
@@ -1931,6 +1952,11 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
         <message id="logsUploadErrorTooltip"> 
             <source>The last upload failed. Please check your internet connection and make sure at least one kDrive user is signed in. Uploads are limited to 10 per day.</source> 
             <translation>Le dernier transfert a échoué. Veuillez vérifier votre connexion Internet et vous assurer qu’au moins un utilisateur de kDrive est connecté. Les transferts sont limités à 10 par jour.</translation> 
+        </message> 
+        <message id="manageSyncSelectedSize"> 
+            <source>%1 selected</source> 
+            <extracomment>Linux desktop app, Settings "Manage synchronization" page footer: total size of the folders selected for synchronization. %@ is a formatted size, e.g. "2.0 GB".</extracomment> 
+            <translation>%1 sélectionnés</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 
             <source>Different versions of these files were detected.</source> 
