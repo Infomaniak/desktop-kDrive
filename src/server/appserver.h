@@ -29,7 +29,6 @@
 #include "config.h"
 #include "version.h"
 #include "requests/serverrequests.h"
-#include "comm/oldcommserver.h"
 #include "comm/commmanager.h"
 #include "syncpal/syncpal.h"
 #include "libcommon/data/user.h"
@@ -198,19 +197,16 @@ class AppServer : public SharedTools::QtSingleApplication {
                                           std::unordered_set<SyncDbId> &startedSyncDbIds);
         [[nodiscard]] ExitInfo stopSyncTask(SyncDbId syncDbId,
                                             const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
-        [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
         void setDistributionChannel(DistributionChannel versionChannel);
         VersionInfo getVersionInfo() const;
         UpdateState getUpdateState() const;
         void refreshUpdateState();
         void startInstaller();
-        [[nodiscard]] ExitInfo getNodePath(SyncDbId syncDbId, const NodeId &nodeId, CommString &path);
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
         [[nodiscard]] ExitInfo updateParametersAndPropagateChanges(const Parameters &newParameters);
-        [[nodiscard]] ExitInfo sendAppStartTrace();
 
         // Ask the Finder/File explorer Extension to register the folder
         void registerSync(std::shared_ptr<SyncPal> syncPal);
@@ -231,23 +227,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
 
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
-
-        static bool useOldCommServer() { return KDRIVE_VERSION_MAJOR < 4; }
-
-        static bool useCommManager([[maybe_unused]] bool checkIfInitialized = true) {
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
-            if (checkIfInitialized)
-                return _commManager != nullptr;
-            else
-                return true;
-#else
-            if constexpr (KDRIVE_VERSION_MAJOR < 4) return false;
-            if (checkIfInitialized)
-                return _commManager != nullptr;
-            else
-                return true;
-#endif
-        }
 
         [[nodiscard]] ExitInfo acknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
 
@@ -293,8 +272,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
         bool _noUpdate{false};
-        bool _appStartPTraceStopped{false};
-        bool _clientManuallyRestarted{false};
 #if defined(KD_LINUX)
         std::unique_ptr<SharedTools::QtLocalPeer> _fallbackLocalPeer;
 #endif
@@ -341,13 +318,11 @@ class AppServer : public SharedTools::QtSingleApplication {
                                                   Drive &drive, bool &driveUpdated);
         void resolveErrors(std::vector<Error> errorList) const;
 
-
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
-        [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value, bool asyncResponse);
 
         void startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &toIgnoreSyncDbIds = {});
         [[nodiscard]] ExitInfo startSyncs();
@@ -358,29 +333,22 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         virtual void sendUserAdded(const User &userInfo) const;
         virtual void sendUserUpdated(const User &userInfo) const;
-        virtual void sendUserStatusChanged(UserDbId userDbId, bool connected, const QString &connexionError) const;
         virtual void sendUserRemoved(UserDbId userDbId) const;
         virtual void sendAccountAdded(const Account &accountInfo) const;
         virtual void sendAccountUpdated(const Account &accountInfo) const;
         virtual void sendAccountRemoved(AccountDbId accountDbId) const;
         virtual void sendDriveAdded(const Drive &drive) const;
         virtual void sendDriveUpdated(const Drive &drive) const;
-        virtual void sendDriveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used) const;
         virtual void sendDriveRemoved(DriveDbId driveDbId) const;
-        virtual void sendDriveDeletionFailed(DriveDbId driveDbId) const;
         virtual void sendSyncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step,
                                           const SyncProgress &progress) const;
         virtual void sendSyncAdded(const Sync &sync) const;
         virtual void sendSyncUpdated(const Sync &sync) const;
         virtual void sendSyncRemoved(SyncDbId syncDbId) const;
-        virtual void sendSyncDeletionFailed(SyncDbId syncDbId) const;
         virtual void sendManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,
                                                  const Count nbDeletes, const std::vector<SyncPath> &filesPaths) const;
-        virtual void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) const;
-        virtual void sendErrorsCleared(SyncDbId syncDbId) const;
         virtual void sendQuit() const; // Ask client to quit
         virtual void sendLogUploadStatusUpdated(LogUploadState status, int percent) const;
-        virtual void sendNodeFixConflictedFilesCompleted(SyncDbId syncDbId, qint64 nbErrors) const;
 
         ExitInfo deleteAccount(AccountDbId accountDbId);
         void sendErrorAdded(const Error &error) const;
@@ -395,7 +363,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void exclusionAppList(QString &appList);
 #endif
         void sendSyncCompletedItem(SyncDbId syncDbId, const SyncFileItem &item) const;
-        void sendVfsConversionCompleted(SyncDbId syncDbId) const;
         ExitCode sendShowFileNotification(SyncDbId syncDbId, const QString &filename, const QString &renameTarget,
                                           SyncFileInstruction status, int count) const;
         void sendShowNotification(const QString &title, const QString &message) const;
@@ -413,10 +380,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         std::string appUID() const;
 
-        // For testing purpose
-        void crash() const;
-
-
         friend class TestAppServer;
 
     private slots:
@@ -429,7 +392,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onUpdateRequired();
         void onUpdateStateChanged(UpdateState state);
         void onCleanup();
-        void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onClientDisconnectedReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);

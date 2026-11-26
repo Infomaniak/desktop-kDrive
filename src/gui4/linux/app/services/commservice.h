@@ -107,7 +107,6 @@ class CommService : public QObject {
         using VoidCallback = std::function<void(const ExitInfo &)>;
         using BoolCallback = std::function<void(const ExitInfo &, bool)>;
         using LoginTokenCallback = std::function<void(const ExitInfo &, const LoginTokenResult &)>;
-        using UserDbIdListCallback = std::function<void(const ExitInfo &, const std::vector<UserDbId> &)>;
         using UserDisplayInfoListCallback = std::function<void(const ExitInfo &, const std::vector<UserDisplayInfo> &)>;
         using DriveAvailableListCallback = std::function<void(const ExitInfo &, const std::vector<DriveAvailable> &)>;
         using AccountInfoListCallback = std::function<void(const ExitInfo &, const std::vector<Account> &)>;
@@ -117,7 +116,6 @@ class CommService : public QObject {
         using SyncStatusCallback = std::function<void(const ExitInfo &, SyncStatus)>;
         using GoodPathCallback = std::function<void(const ExitInfo &, const GoodPathResult &)>;
         using AppStateCallback = std::function<void(const ExitInfo &, const QString &)>;
-        using LogSizeCallback = std::function<void(const ExitInfo &, uint64_t)>;
         using StringCallback = std::function<void(const ExitInfo &, const QString &)>;
         using NodeIdListCallback = std::function<void(const ExitInfo &, const std::vector<NodeId> &)>;
         using NodeInfoCallback = std::function<void(const ExitInfo &, const NodeInfo &)>;
@@ -146,7 +144,6 @@ class CommService : public QObject {
         void requestLoginToken(const QString &code, const QString &codeVerifier, const LoginTokenCallback &callback) const;
 
         // --- User ---
-        void requestUserDbIdList(const UserDbIdListCallback &callback) const;
         void requestUserDisplayInfoList(const UserDisplayInfoListCallback &callback) const;
         void requestUserAvailableDrives(UserDbId userDbId, const DriveAvailableListCallback &callback) const;
         void requestDeleteUser(UserDbId userDbId, const VoidCallback &callback) const;
@@ -173,7 +170,6 @@ class CommService : public QObject {
         void requestStartSyncsAfterLogin(UserDbId userDbId, const VoidCallback &callback) const;
         void requestAcknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice,
                                            const VoidCallback &callback) const;
-        void requestSyncTriggerProgressUpdate(SyncDbId syncDbId, const VoidCallback &callback) const;
         void requestSyncGetPrivateLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, const StringCallback &callback) const;
         void requestSyncGetPublicLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, const StringCallback &callback) const;
 
@@ -193,7 +189,6 @@ class CommService : public QObject {
                              const NodeInfoCallback &callback) const;
         void requestNodeConflictInfo(SyncDbId syncDbId, const SyncPath &relativePath, ReplicaSide replicaSide,
                                      const NodeConflictInfoCallback &callback) const;
-        void requestNodePath(SyncDbId syncDbId, const NodeId &nodeId, const StringCallback &callback) const;
         void requestNodeSubfolders(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, bool withPath,
                                    const NodeInfoListCallback &callback) const;
         void requestNodeSubfolders2(DriveDbId driveDbId, const NodeId &nodeId, bool withPath,
@@ -216,7 +211,6 @@ class CommService : public QObject {
         // --- Exclusion templates ---
         void requestExclTemplGetList(bool defaultTemplates, const ExclusionTemplateListCallback &callback) const;
         void requestExclTemplSetList(const std::vector<ExclusionTemplate> &templateList, const VoidCallback &callback) const;
-        void requestExclTemplGetExcluded(const QString &name, const BoolCallback &callback) const;
 
         // --- Updater ---
         void requestUpdaterState(const UpdateStateCallback &callback) const;
@@ -224,18 +218,14 @@ class CommService : public QObject {
         void requestUpdaterStartInstaller(const VoidCallback &callback) const;
 
         // --- Utility ---
-        void requestCheckCommStatus(const VoidCallback &callback) const;
         void requestFindGoodPathForNewSync(const SyncName &driveName, const GoodPathCallback &callback) const;
         void requestIsPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfiguration,
                                           const BoolCallback &callback) const;
         void requestGetAppState(AppStateKey key, const AppStateCallback &callback) const;
         void requestSetAppState(AppStateKey key, const QString &value, const VoidCallback &callback) const;
-        void requestHasSystemLaunchOnStartup(const BoolCallback &callback) const;
         void requestActivateLoadInfo(const VoidCallback &callback) const;
         void requestSendLogToSupport(bool includeArchivedLogs, const VoidCallback &callback) const;
         void requestCancelLogToSupport(const VoidCallback &callback) const;
-        void requestGetLogEstimatedSize(const LogSizeCallback &callback) const;
-        void requestSendAppStartTrace(const VoidCallback &callback) const;
         void requestQuit(const VoidCallback &callback) const;
 
     signals:

@@ -4,7 +4,7 @@ else()
     project(server LANGUAGES C CXX)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Network Svg)
+find_package(Qt6 REQUIRED COMPONENTS Network Svg Widgets)
 find_package(Poco 1.15.2 REQUIRED XML Net NetSSL Crypto)
 find_package(sentry REQUIRED)
 
@@ -31,18 +31,16 @@ if(WIN32)
 endif()
 
 # Sources
-set(KDRIVE_RC_SRC ../../client.qrc)
 if(EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
-    list(APPEND KDRIVE_RC_SRC ${KDRIVE_THEME_DIR}/theme.qrc)
+    set(KDRIVE_RC_SRC ${KDRIVE_THEME_DIR}/theme.qrc)
     set(theme_dir ${KDRIVE_THEME_DIR}/theme)
 else()
-    list(APPEND KDRIVE_RC_SRC ../../theme.qrc)
+    set(KDRIVE_RC_SRC ../../theme.qrc)
     set(theme_dir ${CMAKE_SOURCE_DIR}/theme)
 endif()
 
 set(server_SRCS
     appserver.h appserver.cpp
-    comm/oldcommserver.h comm/oldcommserver.cpp
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/abstractcommserver.h
     comm/commmanager.h comm/commmanager.cpp
@@ -51,9 +49,7 @@ set(server_SRCS
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
     comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
-    comm/guijobs/nodepathjob.h comm/guijobs/nodepathjob.cpp
     comm/guijobs/unknownrequestjob.h comm/guijobs/unknownrequestjob.cpp
-    comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
     comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp
     comm/guijobs/userdeletejob.h comm/guijobs/userdeletejob.cpp
     comm/guijobs/useravailabledrivesjob.h comm/guijobs/useravailabledrivesjob.cpp
@@ -75,7 +71,6 @@ set(server_SRCS
     comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
     comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
-    comm/guijobs/synctriggerprogressupdatejob.h comm/guijobs/synctriggerprogressupdatejob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     comm/guijobs/syncacknowledgemanydeletesjob.h comm/guijobs/syncacknowledgemanydeletesjob.cpp
 
@@ -95,7 +90,6 @@ set(server_SRCS
     comm/guijobs/errorresolveconflictsjob.h comm/guijobs/errorresolveconflictsjob.cpp
     comm/guijobs/errorresolveconflictsquickjob.h comm/guijobs/errorresolveconflictsquickjob.cpp
 
-    comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
     comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
     comm/guijobs/excltemplsetlistjob.h comm/guijobs/excltemplsetlistjob.cpp
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
@@ -105,15 +99,11 @@ set(server_SRCS
     comm/guijobs/utilityfindgoodpathfornewsyncjob.h comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
     comm/guijobs/utilityispathvalidfornewsyncjob.h comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
-    comm/guijobs/utilitycheckcommstatusjob.h comm/guijobs/utilitycheckcommstatusjob.cpp
-    comm/guijobs/utilityhassystemlaunchonstartupjob.h comm/guijobs/utilityhassystemlaunchonstartupjob.cpp
     comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
     comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
     comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
-    comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
     comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
-    comm/guijobs/utilitysendappstarttracejob.h comm/guijobs/utilitysendappstarttracejob.cpp
 
     comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
     comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp
@@ -198,7 +188,6 @@ if(APPLE)
     endif()
 elseif(WIN32)
     list(APPEND server_SRCS navigationpanehelper.h navigationpanehelper.cpp)
-    list(APPEND server_SRCS ../common/utility_win.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND server_SRCS comm/securecontextsingleton.h comm/securecontextsingleton.cpp)
     list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
@@ -211,7 +200,6 @@ else()
 endif()
 
 set(3rdparty_SRC
-    ../3rdparty/QProgressIndicator/QProgressIndicator.cpp
     ../3rdparty/qtlockedfile/qtlockedfile.cpp
     ../3rdparty/qtsingleapplication/qtlocalpeer.cpp
     ../3rdparty/qtsingleapplication/qtsingleapplication.cpp
@@ -336,7 +324,6 @@ endif()
 
 # Includes
 target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
     ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
     ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
     ${CMAKE_CURRENT_BINARY_DIR})
@@ -354,6 +341,7 @@ target_link_libraries(updater
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
     Qt6::Svg
+    Qt6::Widgets
     Poco::Net
     Poco::NetSSL
     Poco::Crypto

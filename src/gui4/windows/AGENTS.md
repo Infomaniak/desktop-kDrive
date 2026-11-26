@@ -1,7 +1,7 @@
 # gui4 — WinUI3 Windows GUI (v4 redesign)
 
 ## Package Identity
-WinUI3 / Windows App SDK application written in C# (.NET 9), replacing the Qt-based `src/gui/` on Windows.
+WinUI3 / Windows App SDK application written in C# (.NET 9).
 Single Visual Studio solution (`kDrive client.sln`) containing two projects:
 - `kDrive client` — the main WinUI3 app (this is the primary project you will edit)
 - `Bootstrapper` — A small C# project set up as a dependency of the kDrive client project. It is only used to update the version of the project with the one in `version.json` at the root of the repository.

@@ -70,10 +70,8 @@ else()
 endif()
 # Sentry
 set( SENTRY_SERVER_DSN "https://af2cd6793efb2b73683ff24abebed911@sentry-desktop.infomaniak.com/2" )
-set( SENTRY_CLIENT_DSN "https://1435053ba7740a09682093f424dfaf79@sentry-desktop.infomaniak.com/3" )
 set( SENTRY_TEST_DSN "https://cf9d36c1d2a50218b1a41c486fa7ab60@sentry-desktop.infomaniak.com/4" )
 set( SENTRY_SERVER_DB_PATH ".sentry-native_server" )
-set( SENTRY_CLIENT_DB_PATH ".sentry-native_client" )
 set( SENTRY_TEST_DB_PATH ".sentry-native_test" )
 if( UNIX AND NOT APPLE )
     set( SENTRY_CLIENT_LINUX_DSN "https://1ec698e7fdf7f4716b724d9201f3cd08@sentry-desktop.infomaniak.com/7" )
@@ -89,4 +87,3 @@ endif()
 
 # Analytics: Matomo
 set( MATOMO_URL "https://analytics.infomaniak.com" )
-set( MATOMO_SITE_ID 29 )

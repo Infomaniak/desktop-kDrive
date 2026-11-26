@@ -54,26 +54,6 @@ constexpr int userNameBufLen = 4096;
 
 namespace KDC {
 
-bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
-    return true;
-}
-
-bool Utility::ramCurrentlyUsed(uint64_t &ram, int &errorCode) {
-    return true;
-}
-
-bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
-    return true;
-}
-
-bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks, double &percent) {
-    return true;
-}
-
-bool Utility::cpuUsageByProcess(double &percent) {
-    return true;
-}
-
 std::string Utility::userName() {
     DWORD len = userNameBufLen;
     wchar_t userName[userNameBufLen];
@@ -220,7 +200,7 @@ bool Utility::hasLaunchOnStartup(const std::string &appName) {
     return map.contains(CommonUtility::s2ws(appName));
 }
 
-bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
+bool Utility::setLaunchOnStartup(const std::string &appName, bool enable) {
     if (enable) {
         SyncPath serverFilePath = KDC::CommonUtility::getAppWorkingDir() / (appName + ".exe");
         if (const auto result = setRegistryStringValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName),

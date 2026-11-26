@@ -52,7 +52,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCanReadMessage);
         CPPUNIT_TEST(testContainsCompleteMessage);
         CPPUNIT_TEST(testLoginRequestTokenJob);
-        CPPUNIT_TEST(testUserDbIdListJob);
         CPPUNIT_TEST(testUserInfoListJob);
         CPPUNIT_TEST(testUserDeleteJob);
         CPPUNIT_TEST(testUserAvailableDrivesJob);
@@ -75,12 +74,10 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncDeleteJob);
         CPPUNIT_TEST(testSyncGetPublicLinkUrlJob);
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
-        CPPUNIT_TEST(testSyncTriggerProgressUpdateJob);
         CPPUNIT_TEST(testSyncSetSupportsVirtualFilesJob);
         CPPUNIT_TEST(testBlacklistedSyncNodeListJob);
         CPPUNIT_TEST(testBlacklistedSyncNodeSetListJob);
         CPPUNIT_TEST(testNodeInfoJob);
-        CPPUNIT_TEST(testNodePathJob);
         CPPUNIT_TEST(testNodeSubFolderJob);
         CPPUNIT_TEST(testNodeSubFolders2Job);
         CPPUNIT_TEST(testNodeFolderSizeJob);
@@ -91,7 +88,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testErrorResolveConflictsJob);
         CPPUNIT_TEST(testErrorResolveConflictsQuickJob);
         CPPUNIT_TEST(testErrorSyncRefreshJob);
-        CPPUNIT_TEST(testExclTemplGetExcludedJob);
         CPPUNIT_TEST(testExclTemplGetListJob);
         CPPUNIT_TEST(testExclTemplSetUserListJob);
 
@@ -113,17 +109,13 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSignalUtilityLogUploadStateJob);
         CPPUNIT_TEST(testSignalUtilityQuitJob);
         CPPUNIT_TEST(testSignalLoginSendAuthorizationCodeJob);
-        CPPUNIT_TEST(testUtilityCheckCommStatusJob);
-        CPPUNIT_TEST(testUtilityHasSystemLaunchOnStartupJob);
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testUtilityCheckMacOsPermissionsJob);
 #endif
         CPPUNIT_TEST(testUtilityQuitJob);
-        CPPUNIT_TEST(testUtilitySendAppStartTraceJob);
         CPPUNIT_TEST(testUtilityGetAppStateJob);
         CPPUNIT_TEST(testUtilitySetAppStateJob);
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
-        CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
         CPPUNIT_TEST(testUtilitySendLogToSupportJob);
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testUtilityInstallMacLiteSyncExtJob);
@@ -147,7 +139,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testContainsCompleteMessage();
         void testCanReadMessage();
         void testLoginRequestTokenJob();
-        void testUserDbIdListJob();
         void testUserInfoListJob();
         void testUserDeleteJob();
         void testUserAvailableDrivesJob();
@@ -170,11 +161,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncDeleteJob();
         void testSyncGetPublicLinkUrlJob();
         void testSyncGetPrivateLinkUrlJob();
-        void testSyncTriggerProgressUpdateJob();
         void testSyncSetSupportsVirtualFilesJob();
         void testBlacklistedSyncNodeListJob();
         void testBlacklistedSyncNodeSetListJob();
-        void testNodePathJob();
         void testNodeInfoJob();
         void testNodeSubFolderJob();
         void testNodeSubFolders2Job();
@@ -186,7 +175,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testErrorResolveConflictsJob();
         void testErrorResolveConflictsQuickJob();
         void testErrorSyncRefreshJob();
-        void testExclTemplGetExcludedJob();
         void testExclTemplGetListJob();
         void testExclTemplSetUserListJob();
 #if defined(KD_MACOS)
@@ -201,17 +189,13 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityFindGoodPathForNewSyncJob();
         void testUtilityIsPathValidForNewSyncJob();
         void testUtilityActivateLoadInfoJob();
-        void testUtilityCheckCommStatusJob();
-        void testUtilityHasSystemLaunchOnStartupJob();
 #if defined(KD_MACOS)
         void testUtilityCheckMacOsPermissionsJob();
 #endif
         void testUtilityQuitJob();
-        void testUtilitySendAppStartTraceJob();
         void testUtilityGetAppStateJob();
         void testUtilitySetAppStateJob();
         void testUtilityCancelLogToSupportJob();
-        void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
 #if defined(KD_MACOS)
         void testUtilityInstallMacLiteSyncExtJob();

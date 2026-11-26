@@ -156,8 +156,6 @@ set(syncengine_SRCS
     requests/syncnodecache.h requests/syncnodecache.cpp
     requests/exclusiontemplatecache.h requests/exclusiontemplatecache.cpp
     requests/driveuserinfocache.h requests/driveuserinfocache.cpp
-    # Performance watcher
-    performance_watcher/performancewatcher.h performance_watcher/performancewatcher.cpp
 )
 
 if(WIN32)

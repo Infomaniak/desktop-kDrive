@@ -146,7 +146,6 @@ build_release() {
       -DBIN_INSTALL_DIR="$build_dir/build/bin" \
       -DBUILD_UNIT_TESTS="$build_unit_tests" \
       -DBUILD_GUI=ON \
-      -DBUILD_GUI_LEGACY=OFF \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
       -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \

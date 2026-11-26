@@ -12,6 +12,7 @@ while (-Not (Test-Path $lupdatePath)) {
 
 # Path to src folder (relative to script)
 $srcPath = Join-Path $scriptRoot "..\..\src"
+$sourceDirectories = (Get-ChildItem $srcPath -Directory | Where-Object Name -ne "gui4").FullName
 
 # Find all .ts files in the translations folder (relative to script)
 $translationsPath = Join-Path $scriptRoot ".."
@@ -22,7 +23,7 @@ $updatedCount = 0
 
 # Run lupdate.exe for each .ts file
 foreach ($file in $tsFiles) {
-    & $lupdatePath $srcPath -ts $file.FullName -noobsolete
+    & $lupdatePath @sourceDirectories -ts $file.FullName -noobsolete
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Error while running lupdate.exe for $($file.FullName) ($LASTEXITCODE)"

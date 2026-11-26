@@ -22,7 +22,6 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/log/log.h"
 
 #include <QtGlobal>
@@ -99,9 +98,8 @@ std::int32_t init(int &argc, char **argv, std::unique_ptr<KDC::AppServer> &appPt
 
     KDC::sentry::Handler::init(KDC::AppType::Server);
     KDC::sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::sentry::ConfidentialityLevel::Authenticated);
-    KDC::sentry::pTraces::basic::AppStart().start();
 
-    Q_INIT_RESOURCE(client);
+    Q_INIT_RESOURCE(theme);
 
     try {
         appPtr = std::make_unique<KDC::AppServer>(argc, argv);

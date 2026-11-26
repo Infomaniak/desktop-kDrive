@@ -50,12 +50,14 @@ rm -rf "$app_dir/usr/include/"
 
 cp "$base_dir/sync-exclude-linux.lst" "$app_dir/usr/bin/sync-exclude.lst"
 cp "$base_dir/sync-folder-rules-linux.csv" "$app_dir/usr/bin/sync-folder-rules.csv"
-cp "$app_dir/usr/share/icons/hicolor/512x512/apps/kdrive-win.png" "$app_dir"
+desktop_file="$app_dir/usr/share/applications/kDrive.desktop"
+icon_name="$(sed -n 's/^Icon=//p' "$desktop_file")"
+icon_file="$app_dir/usr/share/icons/hicolor/256x256/apps/$icon_name.png"
 
 cp -P -r /usr/lib/x86_64-linux-gnu/nss/ "$app_dir/usr/lib/"
 cp "$QTDIR/lib/libQt6SerialPort.so.6" "$app_dir/usr/lib/"
 
-"$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -i "$app_dir/kdrive-win.png" -d "$app_dir/usr/share/applications/kDrive_client.desktop" --plugin qt --output appimage -v0
+"$HOME/desktop-setup/linuxdeploy-x86_64.AppImage" --appdir "$app_dir" -e "$app_dir/usr/bin/kDrive" -e "$app_dir/usr/bin/kdrive_qml" -i "$icon_file" -d "$desktop_file" --plugin qt --output appimage -v0
 
 version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')
 app_name="kDrive-$version-amd64.AppImage"
@@ -67,7 +69,7 @@ cd "$build_dir"
 if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, AppImage will not be uploaded."
 else
-	to_upload_files=("$app_name" "kDrive-amd64.dbg" "kDrive_client-amd64.dbg")
+	to_upload_files=("$app_name" "kDrive-amd64.dbg" "kdrive_qml-amd64.dbg")
 	source "$base_dir/infomaniak-build-tools/upload_version.sh"
 
 	for FILE in ${to_upload_files[@]}; do

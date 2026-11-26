@@ -78,53 +78,6 @@ public struct UtilityJobs: Sendable {
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
     }
 
-    public func checkCommStatus() async throws {
-        let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CHECKCOMMSTATUS, body: EmptyQuery())
-
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-    }
-
-    public func hasSystemLaunchOnStartup() async throws -> Bool {
-        let request = await RequestMessage<EmptyQuery>(
-            num: RequestNum.UTILITY_HASSYSTEMLAUNCHONSTARTUP,
-            body: EmptyQuery()
-        )
-
-        let decodedMessage = try await queryFetcher.query(
-            request,
-            responseType: CallbackMessage<UtilityHasSystemLaunchOnStartupResponse>.self
-        )
-
-        return decodedMessage.body.enabled
-    }
-
-    public func hasLaunchOnStartup() async throws -> Bool {
-        let request = await RequestMessage<EmptyQuery>(
-            num: RequestNum.UTILITY_HASLAUNCHONSTARTUP,
-            body: EmptyQuery()
-        )
-
-        let decodedMessage = try await queryFetcher.query(
-            request,
-            responseType: CallbackMessage<UtilityHasLaunchOnStartupResponse>.self
-        )
-
-        return decodedMessage.body.enabled
-    }
-
-    public func setLaunchOnStartup(enabled: Bool) async throws {
-        let query = UtilitySetLaunchOnStartupQuery(enabled: enabled)
-        let request = await RequestMessage<UtilitySetLaunchOnStartupQuery>(
-            num: RequestNum.UTILITY_SETLAUNCHONSTARTUP,
-            body: query
-        )
-
-        try await queryFetcher.query(
-            request,
-            responseType: CallbackMessage<EmptyResponse>.self
-        )
-    }
-
     public func setAppState(key: KDC.AppStateKey, value: String) async throws {
         let query = UtilitySetAppStateQuery(key: key, value: value)
         let request = await RequestMessage<UtilitySetAppStateQuery>(
@@ -182,28 +135,10 @@ public struct UtilityJobs: Sendable {
         )
     }
 
-    public func crash() async throws {
-        let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_CRASH, body: EmptyQuery())
-
-        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-    }
-
     public func quit() async throws {
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.UTILITY_QUIT, body: EmptyQuery())
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-    }
-
-    public func sendAppStartTrace() async throws {
-        let request = await RequestMessage<EmptyQuery>(
-            num: RequestNum.UTILITY_SEND_APP_START_TRACE,
-            body: EmptyQuery()
-        )
-
-        try await queryFetcher.query(
-            request,
-            responseType: CallbackMessage<EmptyResponse>.self
-        )
     }
 
     public func installLiteSyncExtension() async throws {

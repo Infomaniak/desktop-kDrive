@@ -26,8 +26,6 @@ extension RequestNum: @retroactive CustomStringConvertible {
             return "Unknown"
         case .LOGIN_REQUESTTOKEN:
             return "LOGIN_REQUESTTOKEN"
-        case .USER_DBIDLIST:
-            return "USER_DBIDLIST"
         case .USER_INFOLIST:
             return "USER_INFOLIST"
         case .USER_DELETE:
@@ -66,8 +64,6 @@ extension RequestNum: @retroactive CustomStringConvertible {
             return "SYNC_GETPUBLICLINKURL"
         case .SYNC_GETPRIVATELINKURL:
             return "SYNC_GETPRIVATELINKURL"
-        case .SYNC_TRIGGER_PROGRESS_UPDATE:
-            return "SYNC_TRIGGER_PROGRESS_UPDATE"
         case .SYNC_SETSUPPORTSVIRTUALFILES:
             return "SYNC_SETSUPPORTSVIRTUALFILES"
         case .SYNC_ACKNOWLEDGE_MANY_DELETES:
@@ -76,8 +72,6 @@ extension RequestNum: @retroactive CustomStringConvertible {
             return "BLACKLISTED_NODE_LIST"
         case .BLACKLISTED_NODE_SETLIST:
             return "BLACKLISTED_NODE_SETLIST"
-        case .NODE_PATH:
-            return "NODE_PATH"
         case .NODE_INFO_REMOTE:
             return "NODE_INFO_REMOTE"
         case .NODE_SUBFOLDERS:
@@ -88,36 +82,18 @@ extension RequestNum: @retroactive CustomStringConvertible {
             return "NODE_FOLDER_SIZE"
         case .NODE_CREATEMISSINGFOLDERS:
             return "NODE_CREATEMISSINGFOLDERS"
-        case .NODE_CREATEMISSINGFOLDERS_LEGACY:
-            return "NODE_CREATEMISSINGFOLDERS_LEGACY"
         case .NODE_CONFLICT_INFO:
             return "NODE_CONFLICT_INFO"
         case .ERROR_INFOLIST:
             return "ERROR_INFOLIST"
-        case .ERROR_INFOLIST_LEGACY:
-            return "ERROR_INFOLIST_LEGACY"
-        case .ERROR_GET_CONFLICTS_LEGACY:
-            return "ERROR_GET_CONFLICTS_LEGACY"
-        case .ERROR_DELETE_SERVER:
-            return "ERROR_DELETE_SERVER"
-        case .ERROR_DELETE_SYNC:
-            return "ERROR_DELETE_SYNC"
-        case .ERROR_DELETE_INVALIDTOKEN:
-            return "ERROR_DELETE_INVALIDTOKEN"
         case .ERROR_DELETE:
             return "ERROR_DELETE"
         case .ERROR_SYNC_REFRESH:
             return "ERROR_SYNC_REFRESH"
-        case .ERROR_RESOLVE_CONFLICTS_LEGACY:
-            return "ERROR_RESOLVE_CONFLICTS_LEGACY"
         case .ERROR_RESOLVE_CONFLICTS:
             return "ERROR_RESOLVE_CONFLICTS"
         case .ERROR_RESOLVE_CONFLICTS_QUICK:
             return "ERROR_RESOLVE_CONFLICTS_QUICK"
-        case .ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY:
-            return "ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY"
-        case .EXCLTEMPL_GETEXCLUDED:
-            return "EXCLTEMPL_GETEXCLUDED"
         case .EXCLTEMPL_GETLIST:
             return "EXCLTEMPL_GETLIST"
         case .EXCLTEMPL_SETUSERLIST:
@@ -134,22 +110,12 @@ extension RequestNum: @retroactive CustomStringConvertible {
             return "PARAMETERS_UPDATE"
         case .UTILITY_BESTVFSAVAILABLEMODE:
             return "UTILITY_BESTVFSAVAILABLEMODE"
-        case .UTILITY_BESTVFSAVAILABLEMODE_LEGACY:
-            return "UTILITY_BESTVFSAVAILABLEMODE_LEGACY"
         case .UTILITY_FINDGOODPATHFORNEWSYNC:
             return "UTILITY_FINDGOODPATHFORNEWSYNC"
         case .UTILITY_ISPATHVALIDFORNEWSYNC:
             return "UTILITY_ISPATHVALIDFORNEWSYNC"
         case .UTILITY_ACTIVATELOADINFO:
             return "UTILITY_ACTIVATELOADINFO"
-        case .UTILITY_CHECKCOMMSTATUS:
-            return "UTILITY_CHECKCOMMSTATUS"
-        case .UTILITY_HASSYSTEMLAUNCHONSTARTUP:
-            return "UTILITY_HASSYSTEMLAUNCHONSTARTUP"
-        case .UTILITY_HASLAUNCHONSTARTUP:
-            return "UTILITY_HASLAUNCHONSTARTUP"
-        case .UTILITY_SETLAUNCHONSTARTUP:
-            return "UTILITY_SETLAUNCHONSTARTUP"
         case .UTILITY_SET_APPSTATE:
             return "UTILITY_SET_APPSTATE"
         case .UTILITY_GET_APPSTATE:
@@ -158,20 +124,12 @@ extension RequestNum: @retroactive CustomStringConvertible {
             return "UTILITY_SEND_LOG_TO_SUPPORT"
         case .UTILITY_CANCEL_LOG_TO_SUPPORT:
             return "UTILITY_CANCEL_LOG_TO_SUPPORT"
-        case .UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY:
-            return "UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY"
-        case .UTILITY_CRASH:
-            return "UTILITY_CRASH"
         case .UTILITY_QUIT:
             return "UTILITY_QUIT"
-        case .UTILITY_SEND_APP_START_TRACE:
-            return "UTILITY_SEND_APP_START_TRACE"
         case .UTILITY_INSTALL_MAC_LITESYNC_EXT:
             return "UTILITY_INSTALL_MAC_LITESYNC_EXT"
         case .UTILITY_CHECK_MACOS_PERMISSIONS:
             return "UTILITY_CHECK_MACOS_PERMISSIONS"
-        case .UPDATER_CHANGE_CHANNEL:
-            return "UPDATER_CHANGE_CHANNEL"
         case .UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO"
         case .UPDATER_STATE:

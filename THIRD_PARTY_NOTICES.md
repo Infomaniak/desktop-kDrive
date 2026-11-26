@@ -156,13 +156,6 @@ The exact set of redistributed binaries can vary by platform:
 - **Note:** Built from vendored source on Unix platforms. Also a Conan-transitive dependency pulled in by Poco 1.15.x
   (Foundation's Unicode support was unbundled onto utf8proc starting in Poco 1.15.x).
 
-### qt-piwik-tracker
-
-- **License:** MIT
-- **Copyright:** Copyright (c) 2014-2025 Patrizio Bekerle
-- **Repository:** https://github.com/pbek/qt-piwik-tracker
-- **Note:** Vendored in `src/3rdparty/` and built as part of `libcommongui`.
-
 ### matomo-sdk-qt
 
 - **Version:** 1.1.1
@@ -171,13 +164,6 @@ The exact set of redistributed binaries can vary by platform:
 - **Repository:** https://github.com/Infomaniak/matomo-sdk-qt
 - **Note:** Git submodule in `src/3rdparty/matomo-sdk-qt`, pinned to tag `v1.1.1`. Linux only: its `MatomoQt::Core`
   static library is built and linked into the Linux v4 client.
-
-### QProgressIndicator
-
-- **License:** MIT
-- **Copyright:** Copyright (c) 2011 Morgan Leborgne
-- **Note:** Vendored in `src/3rdparty/`. No public upstream repository URL is referenced here because the previously
-  used GitHub link is no longer available.
 
 ### SQLite
 

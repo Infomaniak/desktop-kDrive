@@ -29,6 +29,7 @@
 #include <source_location>
 
 #include <QObject>
+#include <QPixmap>
 
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>

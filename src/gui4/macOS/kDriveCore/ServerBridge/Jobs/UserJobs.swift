@@ -27,14 +27,6 @@ public struct UserJobs: Sendable {
 
     public init() {}
 
-    public func userDbIds() async throws -> [Int32] {
-        let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_DBIDLIST, body: EmptyQuery())
-
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserDbIdsListResponse>.self)
-
-        return decodedMessage.body.userDbIdList
-    }
-
     @discardableResult
     public func userInfoList() async throws -> [UserInfoResponse] {
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_INFOLIST, body: EmptyQuery())

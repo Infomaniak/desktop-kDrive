@@ -20,15 +20,11 @@
 #include "comm/guijobs/utilitybestvfsavailablemodejob.h"
 #include "comm/guijobs/utilityfindgoodpathfornewsyncjob.h"
 #include "comm/guijobs/utilityispathvalidfornewsyncjob.h"
-#include "comm/guijobs/utilitycheckcommstatusjob.h"
-#include "comm/guijobs/utilityhassystemlaunchonstartupjob.h"
 #include "comm/guijobs/utilitygetappstatejob.h"
 #include "comm/guijobs/utilitysetappstatejob.h"
 #include "comm/guijobs/utilitysendlogtosupportjob.h"
 #include "comm/guijobs/utilitycancellogtosupportjob.h"
-#include "comm/guijobs/utilitygetlogestimatedsizejob.h"
 #include "comm/guijobs/utilityquitjob.h"
-#include "comm/guijobs/utilitysendappstarttracejob.h"
 #if defined(KD_MACOS)
 #include "comm/guijobs/utilityinstallmaclitesyncextjob.h"
 #include "comm/guijobs/utilitycheckmacospermissionsjob.h"
@@ -190,63 +186,6 @@ void TestGuiCommChannel::testUtilityIsPathValidForNewSyncJob() {
         auto isPathValidForNewSyncJob = std::dynamic_pointer_cast<UtilityIsPathValidForNewSyncJob>(job);
         CPPUNIT_ASSERT(isPathValidForNewSyncJob);
         isPathValidForNewSyncJob->_isValid = true;
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testUtilityCheckCommStatusJob() {
-    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_CHECKCOMMSTATUS);
-    const auto queryStr = stringifyQueryObj(query);
-
-    // Job expected answers
-    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_CHECKCOMMSTATUS);
-    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        const auto utilityCheckCommStatusJob = std::dynamic_pointer_cast<UtilityCheckCommStatusJob>(job);
-        CPPUNIT_ASSERT(utilityCheckCommStatusJob);
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testUtilityHasSystemLaunchOnStartupJob() {
-    const auto query = createSimpleQuery(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP);
-    const auto queryStr = stringifyQueryObj(query);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("enabled", true);
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP));
-    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
-
-    // Job expected answers
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto utilityHasSystemLaunchOnStartupJob = std::dynamic_pointer_cast<UtilityHasSystemLaunchOnStartupJob>(job);
-        CPPUNIT_ASSERT(utilityHasSystemLaunchOnStartupJob);
-
-        utilityHasSystemLaunchOnStartupJob->_enabled = true;
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -467,48 +406,6 @@ void TestGuiCommChannel::testUtilityCancelLogToSupportJob() {
 #endif
 }
 
-void TestGuiCommChannel::testUtilityGetLogEstimatedSizeJob() {
-    // Query
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY));
-
-    Poco::JSON::Object queryParamsObj;
-    (void) queryObj.set("params", queryParamsObj);
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("logSize", 99999);
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY));
-    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
-
-    // Job expected answer
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto utilityGetLogEstimatedSizeJob = std::dynamic_pointer_cast<UtilityGetLogEstimatedSizeJob>(job);
-        utilityGetLogEstimatedSizeJob->_logSize = 99999;
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
 void TestGuiCommChannel::testUtilityQuitJob() {
     const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_QUIT);
     const auto queryStr = stringifyQueryObj(query);
@@ -520,27 +417,6 @@ void TestGuiCommChannel::testUtilityQuitJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         const auto utilityQuitJob = std::dynamic_pointer_cast<UtilityQuitJob>(job);
         CPPUNIT_ASSERT(utilityQuitJob);
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testUtilitySendAppStartTraceJob() {
-    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_SEND_APP_START_TRACE);
-    const auto queryStr = stringifyQueryObj(query);
-
-    // Job expected answers
-    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_SEND_APP_START_TRACE);
-    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        const auto utilityDisplayClientReportJob = std::dynamic_pointer_cast<UtilitySendAppStartTraceJob>(job);
-        CPPUNIT_ASSERT(utilityDisplayClientReportJob);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

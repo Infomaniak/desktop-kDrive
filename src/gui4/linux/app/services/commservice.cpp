@@ -317,17 +317,6 @@ void CommService::requestLoginToken(const QString &code, const QString &codeVeri
 
 // -- User ----------------------------------------------------------------
 
-void CommService::requestUserDbIdList(const UserDbIdListCallback &callback) const {
-    _ipcClient.sendRequest(RequestNum::USER_DBIDLIST, {},
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               std::vector<UserDbId> list;
-                               if (exitInfo) {
-                                   CommonUtility::readValuesFromStruct(result, msgParamUserDbIdList, list);
-                               }
-                               callback(exitInfo, list);
-                           });
-}
-
 void CommService::requestUserDisplayInfoList(const UserDisplayInfoListCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::USER_INFOLIST, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
@@ -535,13 +524,6 @@ void CommService::requestAcknowledgeManyDeletes(const SyncDbId syncDbId, const T
 
 // -- Sync advanced -------------------------------------------------------
 
-void CommService::requestSyncTriggerProgressUpdate(const SyncDbId syncDbId, const VoidCallback &callback) const {
-    Poco::DynamicStruct params;
-    CommonUtility::writeValueToStruct(params, msgParamSyncDbId, syncDbId);
-    _ipcClient.sendRequest(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, params,
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
-}
-
 void CommService::requestSyncGetPrivateLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId,
                                                const StringCallback &callback) const {
     Poco::DynamicStruct params;
@@ -657,22 +639,6 @@ void CommService::requestNodeConflictInfo(const SyncDbId syncDbId, const SyncPat
                                    info.fromDynamicStruct(result[msgParamNodeConflictInfo].extract<Poco::DynamicStruct>());
                                }
                                callback(exitInfo, info);
-                           });
-}
-
-void CommService::requestNodePath(const SyncDbId syncDbId, const NodeId &nodeId, const StringCallback &callback) const {
-    Poco::DynamicStruct params;
-    CommonUtility::writeValueToStruct(params, msgParamSyncDbId, syncDbId);
-    CommonUtility::writeValueToStruct(params, msgParamNodeId, nodeId);
-    _ipcClient.sendRequest(RequestNum::NODE_PATH, params,
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               QString path;
-                               if (exitInfo) {
-                                   CommString pathStr;
-                                   CommonUtility::readValueFromStruct(result, msgParamPath, pathStr);
-                                   path = CommonUtility::commString2QStr(pathStr);
-                               }
-                               callback(exitInfo, path);
                            });
 }
 
@@ -816,19 +782,6 @@ void CommService::requestExclTemplSetList(const std::vector<ExclusionTemplate> &
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void CommService::requestExclTemplGetExcluded(const QString &name, const BoolCallback &callback) const {
-    Poco::DynamicStruct params;
-    CommonUtility::writeValueToStruct(params, msgParamName, CommonUtility::qStr2CommString(name));
-    _ipcClient.sendRequest(RequestNum::EXCLTEMPL_GETEXCLUDED, params,
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               bool isExcluded = false;
-                               if (exitInfo) {
-                                   CommonUtility::readValueFromStruct(result, msgParamIsExcluded, isExcluded);
-                               }
-                               callback(exitInfo, isExcluded);
-                           });
-}
-
 // -- Updater ------------------------------------------------------------
 
 void CommService::requestUpdaterState(const UpdateStateCallback &callback) const {
@@ -861,11 +814,6 @@ void CommService::requestUpdaterStartInstaller(const VoidCallback &callback) con
 }
 
 // -- Utility ------------------------------------------------------------
-
-void CommService::requestCheckCommStatus(const VoidCallback &callback) const {
-    _ipcClient.sendRequest(RequestNum::UTILITY_CHECKCOMMSTATUS, {},
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
-}
 
 void CommService::requestFindGoodPathForNewSync(const SyncName &driveName, const GoodPathCallback &callback) const {
     Poco::DynamicStruct params;
@@ -926,17 +874,6 @@ void CommService::requestSetAppState(const AppStateKey key, const QString &value
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void CommService::requestHasSystemLaunchOnStartup(const BoolCallback &callback) const {
-    _ipcClient.sendRequest(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, {},
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               bool enabled = false;
-                               if (exitInfo) {
-                                   CommonUtility::readValueFromStruct(result, msgParamEnabled, enabled);
-                               }
-                               callback(exitInfo, enabled);
-                           });
-}
-
 void CommService::requestActivateLoadInfo(const VoidCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_ACTIVATELOADINFO, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
@@ -951,22 +888,6 @@ void CommService::requestSendLogToSupport(const bool includeArchivedLogs, const 
 
 void CommService::requestCancelLogToSupport(const VoidCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, {},
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
-}
-
-void CommService::requestGetLogEstimatedSize(const LogSizeCallback &callback) const {
-    _ipcClient.sendRequest(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE_LEGACY, {},
-                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               uint64_t logSize = 0;
-                               if (exitInfo) {
-                                   CommonUtility::readValueFromStruct(result, msgParamLogSize, logSize);
-                               }
-                               callback(exitInfo, logSize);
-                           });
-}
-
-void CommService::requestSendAppStartTrace(const VoidCallback &callback) const {
-    _ipcClient.sendRequest(RequestNum::UTILITY_SEND_APP_START_TRACE, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 

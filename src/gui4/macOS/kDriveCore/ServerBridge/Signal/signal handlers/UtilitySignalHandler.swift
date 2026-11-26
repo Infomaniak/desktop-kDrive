@@ -71,10 +71,6 @@ struct UtilitySignalHandler {
         try await coherentCache.removeError(errorDbId)
     }
 
-    func handleErrorCleared() async throws {
-        await coherentCache.clearErrors()
-    }
-
     func handleLogUploadStatusUpdated(_ signal: Data) async throws {
         guard let statusSignal = try? decoder.decode(SignalMessage<LogUploadStatusSignal>.self, from: signal) else {
             throw SignalError.unableToGetLogUploadStatusFromSignal

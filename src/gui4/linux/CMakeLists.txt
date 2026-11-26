@@ -26,7 +26,9 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         appclientlinux.h
         app/appconstants.h
         app/applicationidentity.cpp
+        app/logger.cpp
         app/applicationidentity.h
+        app/logger.h
         app/clientsettings.cpp
         app/clientsettings.h
         app/fileformat.cpp
@@ -558,7 +560,9 @@ qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
         ${GUI_QML_RESOURCE_FILES}
 )
 
+option(NO_MSG_HANDLER "Keep the default Qt message handler in the Linux client" OFF)
 target_compile_definitions(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
+        $<$<BOOL:${NO_MSG_HANDLER}>:NO_MSG_HANDLER=1>
         KDRIVE_QML_MODULE_URI="${KDRIVE_QML_MODULE_URI}"
 )
 
@@ -592,9 +596,8 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::QuickControls2
         Qt6::QuickEffects
         Qt6::Sql     # Added because libcommon depends on it; Qt will warn if it's not linked.
-        Qt6::Widgets # Added because libcommon depends on it; Qt will warn if it's not linked.
+        Qt6::Widgets
         ${libcommon_NAME}
-        ${libcommongui_NAME}
         keychain::keychain
         MatomoQt::Core
 )

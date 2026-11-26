@@ -4,7 +4,7 @@ else()
     project(testserver LANGUAGES C CXX)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Network Svg)
+find_package(Qt6 REQUIRED COMPONENTS Network Svg Widgets)
 find_package(Poco 1.15.2 REQUIRED XML Net NetSSL Crypto)
 
 set(CMAKE_AUTOMOC ON)
@@ -22,7 +22,6 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
-    ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
     ${server_srcs_path}/comm/securecontextsingleton.h ${server_srcs_path}/comm/securecontextsingleton.cpp
     ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp
@@ -35,8 +34,6 @@ set(server_SRCS
     # requests
     ${server_srcs_path}/comm/guijobs/unknownrequestjob.h ${server_srcs_path}/comm/guijobs/unknownrequestjob.cpp
     ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.h ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.cpp
-    ${server_srcs_path}/comm/guijobs/nodepathjob.h ${server_srcs_path}/comm/guijobs/nodepathjob.cpp
-    ${server_srcs_path}/comm/guijobs/userdbidlistjob.h ${server_srcs_path}/comm/guijobs/userdbidlistjob.cpp
     ${server_srcs_path}/comm/guijobs/userinfolistjob.h ${server_srcs_path}/comm/guijobs/userinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/userdeletejob.h ${server_srcs_path}/comm/guijobs/userdeletejob.cpp
     ${server_srcs_path}/comm/guijobs/useravailabledrivesjob.h ${server_srcs_path}/comm/guijobs/useravailabledrivesjob.cpp
@@ -57,7 +54,6 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncdeletejob.h ${server_srcs_path}/comm/guijobs/syncdeletejob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
-    ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.h ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.h ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     ${server_srcs_path}/comm/guijobs/syncacknowledgemanydeletesjob.h ${server_srcs_path}/comm/guijobs/syncacknowledgemanydeletesjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
@@ -74,7 +70,6 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.h ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.cpp
     ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.cpp
     ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.cpp
-    ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
@@ -83,16 +78,12 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
     ${server_srcs_path}/comm/guijobs/utilityispathvalidfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
-    ${server_srcs_path}/comm/guijobs/utilitycheckcommstatusjob.h ${server_srcs_path}/comm/guijobs/utilitycheckcommstatusjob.cpp
-    ${server_srcs_path}/comm/guijobs/utilityhassystemlaunchonstartupjob.h ${server_srcs_path}/comm/guijobs/utilityhassystemlaunchonstartupjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.cpp
-    ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp
     ${server_srcs_path}/comm/guijobs/updaterversioninfojob.h ${server_srcs_path}/comm/guijobs/updaterversioninfojob.cpp
     ${server_srcs_path}/comm/guijobs/utilityquitjob.h ${server_srcs_path}/comm/guijobs/utilityquitjob.cpp
-    ${server_srcs_path}/comm/guijobs/utilitysendappstarttracejob.h ${server_srcs_path}/comm/guijobs/utilitysendappstarttracejob.cpp
     ${server_srcs_path}/comm/guijobs/updaterstatejob.h ${server_srcs_path}/comm/guijobs/updaterstatejob.cpp
     ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.h ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.cpp
     ${server_srcs_path}/comm/guijobs/updaterskipversionjob.h ${server_srcs_path}/comm/guijobs/updaterskipversionjob.cpp
@@ -170,11 +161,10 @@ if(APPLE)
 elseif(WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/pipecommserver.h ${server_srcs_path}/comm/pipecommserver.cpp)
-    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
 endif()
 
 set(3rdparty_SRC
-    ../../src/3rdparty/QProgressIndicator/QProgressIndicator.cpp
     ../../src/3rdparty/qtlockedfile/qtlockedfile.cpp
     ../../src/3rdparty/qtsingleapplication/qtlocalpeer.cpp
     ../../src/3rdparty/qtsingleapplication/qtsingleapplication.cpp
@@ -293,7 +283,6 @@ set_target_properties(${testserver_NAME} PROPERTIES
 
 # Includes
 target_include_directories(${testserver_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
     ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
     ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
     ${CMAKE_CURRENT_BINARY_DIR})
@@ -301,6 +290,7 @@ target_include_directories(${testserver_NAME} PRIVATE
 # Link
 target_link_libraries(${testserver_NAME}
     updater
+    Qt6::Widgets
 )
 
 if(APPLE)

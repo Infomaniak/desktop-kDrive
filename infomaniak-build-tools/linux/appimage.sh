@@ -294,7 +294,7 @@ function appimage_check_appdir() (
         usr/qml/QtQuick/Controls/{Fusion,Basic}/qmldir
         usr/qml/Qt/labs/lottieqt/VectorImageHelpers/qmldir
         usr/translations/qt_fr.qm
-        usr/share/kDrive_client/i18n/client_fr.qm
+        usr/share/kDrive_server/i18n/client_fr.qm
         usr/share/applications/kDrive.desktop
         "usr/share/icons/hicolor/256x256/apps/$icon_name.png"
         "$icon_name.png"

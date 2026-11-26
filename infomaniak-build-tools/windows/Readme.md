@@ -51,7 +51,7 @@ If you want the shortest path to a working Debug build:
 3. Configure [Conan](#conan-required).
 4. Build/deploy the extension (`extensions/windows/cfapi/kDriveExt.sln`).
 5. Open the repository folder in Visual Studio and select the `conan-debug` CMake configuration.
-6. Run `Install` on `kDrive` and `kDrive_client` targets.
+6. Run `Install` on `kDrive`. With `BUILD_GUI=ON`, this also builds and installs the WinUI client.
 
 ---
 
@@ -178,11 +178,9 @@ os=Windows
 Create `%USERPROFILE%/.conan2/profiles/debug_vars.cmake`:
 
 ```cmake
-set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
 set(KDRIVE_THEME_DIR "C:/Projects/desktop-kDrive/infomaniak")
 set(BUILD_UNIT_TESTS "ON")
 set(BUILD_GUI "ON")
-set(BUILD_GUI_LEGACY "OFF")
 set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_INSTALL_PREFIX "C:/Projects/desktop-kDrive/build-dev-debug")
 set(ZLIB_INCLUDE_DIR "C:/Program Files (x86)/zlib-1.2.11/include")
@@ -330,7 +328,6 @@ For release extension artifacts, repeat with `Release x64`.
 
 1. In **Solution Explorer**, switch to **CMake targets view**.
 2. Run `Install` on `kDrive`.
-3. Run `Install` on `kDrive_client`.
 
 Reference image:
 
@@ -339,7 +336,7 @@ Reference image:
 #### Step D — Debug targets
 
 1. In CMake targets view, run `Debug > kDrive.exe`.
-2. Once running, run `Debug > kDrive_client.exe`.
+2. Once running, launch the WinUI client at `bin/client/kDrive.exe`.
 
 If you only need server-side debugging, set:
 
@@ -410,7 +407,7 @@ From repository root:
 
 ```powershell
 cd C:\Projects\desktop-kDrive
-powershell .\infomaniak-build-tools\windows\build-drive.ps1 -ext -thumbprint <cert_thumbprint> -newGui $true
+powershell .\infomaniak-build-tools\windows\build-drive.ps1 -ext -thumbprint <cert_thumbprint>
 ```
 
 Help:

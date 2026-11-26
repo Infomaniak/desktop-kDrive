@@ -160,15 +160,6 @@ struct COMMONSERVER_EXPORT Utility {
 
         static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                              const ItemType &itemType = ItemType());
-        /* Resource analyzer */
-        static bool totalRamAvailable(uint64_t &ram, int &errorCode);
-        static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
-        static bool ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode);
-        static bool cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
-                             double &percent);
-        static bool cpuUsage(uint64_t &previousTotalTicks, uint64_t &_previousIdleTicks, double &percent);
-        static bool cpuUsageByProcess(double &percent);
-
         static SyncName commonDocumentsFolderName();
         static SyncPath commonDocumentsFolderPath();
         static SyncName sharedFolderName();
@@ -177,10 +168,10 @@ struct COMMONSERVER_EXPORT Utility {
 
         static bool hasSystemLaunchOnStartup(const std::string &appName);
         static bool hasLaunchOnStartup(const std::string &appName);
-        static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
+        static bool setLaunchOnStartup(const std::string &appName, bool enable);
 #if defined(KD_LINUX)
         /** Writes the autostart entry for an explicit AppImage, such as the one installed by the updater. */
-        static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, const SyncPath &appImagePath);
+        static bool setLaunchOnStartup(const std::string &appName, const SyncPath &appImagePath);
 #endif
 
 #if defined(KD_WINDOWS)

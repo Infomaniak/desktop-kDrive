@@ -4,7 +4,7 @@ else()
     project(libcommon LANGUAGES C CXX)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
+find_package(Qt6 REQUIRED COMPONENTS Network Gui Sql)
 find_package(Poco 1.15.2 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.2 REQUIRED)
 find_package(sentry REQUIRED)
@@ -122,7 +122,7 @@ endif()
 
 # Link
 target_link_libraries(${libcommon_NAME}
-    Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Sql
+    Qt6::Core Qt6::Gui Qt6::Network Qt6::Sql
     Poco::Foundation Poco::JSON Poco::Util
     log4cplus::log4cplus
     sentry::sentry

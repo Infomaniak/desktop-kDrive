@@ -178,18 +178,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         // Requests
-        public async Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken)
-        {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, [], cancellationToken);
-            if (data.Params is null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
-            {
-                Logger.LogError($"{JsonKeys.UserDbIds} not found in response.",
-                    "ServerCommService: User database IDs missing from response");
-                return null;
-            }
-            return data.Params[JsonKeys.UserDbIds].Deserialize<List<DbId>>();
-        }
-
         public async Task<User?> AddOrRelogUser(string oAuthCode, string oAuthCodeVerifier, CancellationToken cancellationToken)
         {
             JsonObject parms = new()

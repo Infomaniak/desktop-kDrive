@@ -3,7 +3,7 @@
 ## Project Snapshot
 
 C++20 desktop sync client for Infomaniak kDrive. Single-product monolith built with CMake + Conan 2. The repository
-contains a background **server** daemon (`src/server/`), a legacy **Qt Widgets GUI** (`src/gui/`), and v4 frontends
+contains a background **server** daemon (`src/server/`) and v4 frontends
 under `src/gui4/`. All sync logic lives in `src/libsyncengine/`. Targets macOS, Windows, and Linux.
 
 All C++ code is in the `KDC` namespace.
@@ -99,6 +99,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 - For Linux v4 release work, package the recovery updater as a separate AppImage and never include its binary or
   AppImage in the main kDrive AppImage. Limit recovery updater changes to build and packaging fixes unless explicitly
   requested.
+- Keep the Windows MSI packaging implementation dormant until a v4 MSI is available.
 <!-- Add project-specific user corrections here -->
 - Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
@@ -114,11 +115,9 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 ### Source Libraries
 
 - Common types/utilities: `src/libcommon/` → [see AGENTS.md](src/libcommon/AGENTS.md)
-- Common GUI support (Qt network/logging/Matomo helpers): `src/libcommongui/` → no local `AGENTS.md`; use this root file
 - Server utilities + platform I/O: `src/libcommonserver/` → [see AGENTS.md](src/libcommonserver/AGENTS.md)
 - Parameters database: `src/libparms/` → [see AGENTS.md](src/libparms/AGENTS.md)
 - Sync engine (core): `src/libsyncengine/` → [see AGENTS.md](src/libsyncengine/AGENTS.md)
-- GUI (Qt Widgets, legacy): `src/gui/` → [see AGENTS.md](src/gui/AGENTS.md)
 - GUI (Linux Qt/QML redesign for v4): `src/gui4/linux/` → [see AGENTS.md](src/gui4/linux/AGENTS.md) (authoritative for
   Linux v4)
 - GUI (macOS Swift redesign for v4): `src/gui4/macOS/` → [see AGENTS.md](src/gui4/macOS/AGENTS.md)
@@ -153,7 +152,7 @@ rg -n "class ClassName" src/
 rg -n "TypeName" src/ -g "*.h" -g "*.cpp"
 
 # Find IPC job for a feature
-rg -n "class .*Job" src/server/comm/guijobs/ src/gui/ -g "*.h"
+rg -n "class .*Job" src/server/comm/guijobs/ -g "*.h"
 
 # Find platform-specific implementation
 rg -ln "platform" src/ -g "*_mac.mm" -g "*_win.cpp"

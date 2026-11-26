@@ -1,1115 +1,146 @@
-# gui4/linux — Linux v4 Qt/QML Frontend
+# gui4/linux: Linux v4 Qt/QML Frontend
 
-## Maintenance Cadence
+Linux-only v4 client (Qt 6.12.0, QML + C++). It handles the UI and the server communication; sync logic stays in
+`src/libsyncengine/` and the server.
 
-- This area changes frequently and often receives large feature additions.
-- Update this file very regularly; it must stay aligned with the current architecture and workflows.
-- Any significant change under `src/gui4/linux/` (new layer, new pattern, new build/run command) must include an
-  `AGENTS.md` update in the same PR.
+This file holds what the code does not say: user preferences, invariants and Qt pitfalls. Feature behavior lives in the
+code. When the user corrects a working rule, add it to the matching section in one or two lines.
 
-## User Preferences & Auto-Correction
+## Working Rules
 
-> New norm: if the user corrects a working rule, add it here immediately to avoid repeating the same mistake.
+- Prepare fixes and PRs in the current checkout; create another worktree only when explicitly requested.
+- Share diffs as a patch file or an editor diff; show a full diff in chat only on request.
+- Explain failure conditions with concrete prerequisites, not vague labels such as "normally configured".
+- Build only on request: `kdrive_qml` for model and UI checks, `kDrive` too when the server side is involved (see Build).
+- Keep tests of this frontend local: no committed tests and no test target under `test/gui4/linux/`.
+- Qt 6.12.0 is the reference: check the configured dependency before attributing a behavior to an older Qt.
+- The GUI and the server share one lifecycle: the server is never replaced while the GUI runs, so frontend caches need
+  no invalidation for a server upgrade.
+- Native Wayland is the default runtime and XCB/XWayland a compatibility path; window-shell changes cover both.
+- After a rebase that removes or renames a shared model or header, grep this frontend for stale includes and type names.
+- Link only to versioned `.md` files.
 
-### Local Norms (Linux v4)
+## Translations
 
-- Prepare Linux v4 fixes and PRs in the current checkout; create another worktree only when explicitly requested.
-- Keep full diffs out of chat unless explicitly asked to display them there; provide a patch file or an editor diff.
-- Explain failure conditions with concrete prerequisites; avoid vague labels such as "normally configured".
-- AppImage icons must use the Linux v4 application icon named by the installed `.desktop` file; derive `.DirIcon`
-  from that entry instead of hardcoding the legacy `kdrive-win` icon.
-- Keep new C++ readable: separate method definitions and logical steps with blank lines, use explicit names, and expand
-  conditional bodies with braces. Do not compact multiple operations onto one line or conflate readability cleanup with
-  architectural simplification.
-- Search existing Loco IDs and reuse equivalent translated labels before introducing Linux-specific wording or new keys.
-- Never modify an existing Loco translation unless the user explicitly requests that exact wording change. Creating a
-  new key or auditing generated catalogs does not authorize harmonizing other locale values.
-- Never run `import_loco -k`. Always run a complete Loco import, then audit the generated catalog diff and remove keys
-  that do not belong to the current change while preserving unrelated work.
-- Display language choices as capitalized native language names without regional qualifiers; keep the system-default
-  choice translated in the system language independently of the app language, with English as fallback.
+- Reuse an existing Loco id with an equivalent label before creating Linux-specific wording or a new key.
+- Change an existing Loco translation only when the user asks for that exact wording. Creating a key or auditing a
+  catalog does not extend to harmonizing other locales.
+- Run complete Loco imports only, never `import_loco -k`, then remove from the catalog diff the keys that do not belong
+  to the current change.
+- German translations use Swiss orthography: `ss` instead of `ß`.
+- Translate in QML with `qsTrId`: C++ exposes states, enums or translation ids, so the QML engine retranslates on a
+  language change. C++ translates only text QML cannot own (system tray menu); it then recomputes its cached strings
+  before notifying, and translated properties are never `CONSTANT`.
 
-- In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
-- Treat Qt 6.12.0 as the authoritative Qt version for Linux v4; verify the configured dependency before attributing
-  behavior
-  to an older Qt release.
-- Do not add links to `.md` files that are not versioned in git.
-- Use Swiss German orthography for German Linux v4 translations: write `ss` instead of `ß`.
-- Never launch a build unless explicitly asked by the user.
-- Treat the Linux v4 GUI and server as sharing one application lifecycle: the server cannot be replaced or upgraded
-  while the GUI remains open. Do not design frontend cache invalidation around a hot server-version replacement.
-- For the Activities PR stack, preparing a PR means isolating and staging its changes only. Leave commit, push, and PR
-  creation to the user unless they explicitly ask Codex to publish them.
-- Treat native Wayland as the default Linux runtime on current Ubuntu/GNOME systems. XCB/XWayland is a compatibility
-  path, not the primary platform; window-shell changes must cover both paths explicitly.
-- Keep the Linux frameless header and custom shadow on native Wayland without depending on `Qt6::GuiPrivate`. Accept
-  that Wayland snapping includes the transparent shadow margin, so the visible surface may not touch the screen edge.
-- On a Linux host, validate natively: run `./infomaniak-build-tools/conan/build_dependencies.sh Debug`, configure with
-  the generated Conan/CMake Debug preset, then build `kDrive` and `kdrive_qml`. Do not build the legacy `kDrive_client`,
-  which is not buildable for version 4. Do not use the Podman release script for this local Linux validation path.
-- Prefer documenting private implementation helpers in `.cpp` rather than headers.
-- Document C++ APIs with `/** */` blocks, not `///`.
-- Do not duplicate method documentation between headers and implementation files. Document public API contracts in
-  headers, private helpers in `.cpp` files, and keep implementation-specific comments next to the relevant code.
-- Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
-- In new Linux v4 C++ code, import `Qt::StringLiterals` in the implementation and use `u"..."_s` instead of
-  `QStringLiteral(...)`.
-- When adding a string literal within an existing uniformly styled block, preserve that block's convention, including
-  `QStringLiteral`. Do not convert an isolated entry to `u"..."_s`.
-- The `u"..."_s` rule is a preference, not an obligation: in an existing file that mostly uses `QStringLiteral`, keep
-  `QStringLiteral` instead of importing `Qt::StringLiterals` for a few new literals. Mention it in the PR and offer a
-  small tracking card to migrate the file later.
-- Use the domain aliases from `libcommon/utility/types.h` whenever they match the represented concept. Keep `int` and Qt
-  numeric types when required by an overridden Qt API or a QML boundary, and make that constraint explicit when unclear.
-- Do not run `clang-format` on `CMakeLists.txt` in this repository.
-- For shared infrastructure classes, document the class role explicitly in the header comment when relevant.
-- Keep `ParametersStore` as a server-confirmed parameters snapshot only. Do not add global draft/pending state there;
-  screen-specific drafts, such as proxy edition, belong to the owning UI/view model.
-- Let `ParametersService` serialize full-snapshot mutations and publish only server-confirmed results. Skip IPC requests
-  when a mutation leaves the confirmed snapshot unchanged. Consumers must also compare their relevant values before
-  reapplying side effects or logging; an unrelated parameter change must not reconfigure Sentry.
-- Present debug-log upload activity with the shared indeterminate loader, not a percentage progress bar. Keep the modal
-  open on terminal success, failure, or confirmed cancellation so the result remains readable until the user closes it
-  explicitly. Present confirmed cancellation with neutral text rather than success or warning colors.
-- Restore the persisted debug-log upload state (`AppStateKey::LogUploadState`, `LastSuccessfulLogUploadDate`) once on
-  `ipcConnected` in `AdvancedSettingsController`; live `logUploadStatusUpdated` signals take precedence over a pending
-  read. Only an upload still running becomes the dialog state; a finished outcome feeds the persistent Support-row
-  indicator and must not reopen the dialog on its result. `CommService::requestGetAppState` returns the decoded raw
-  database string for every key.
-- Share server update detection through `UpdateStatusService`; the system tray and Settings must not request or cache
-  independent updater states.
-- Keep Settings as an independent, single-instance `IKShadowedWindow` activated through
-  `AppClientLinux::openSettingsWindow`. Keep General preferences in `GeneralSettingsController`.
-- Keep Settings user cards anchored on `UserDbId`: `SettingsUserService` owns only per-user request state, while
-  `SettingsUsersModel` and `UserDrivesModel` project users, configured synchronizations, and available drives
-  directly from `AppCache`. Loading or retrying available drives must preserve the last cache-backed rows. A drive with
-  at least one synchronization of the user, advanced ones included, is shown as synchronized with Manage.
-- Identify a configured drive by its `DriveDbId`, never by the backend `DriveId`, which is shared between users. A drive
-  row belongs to one account of one user, and the server reuses it for every synchronization of that user drive, so
-  `AppCache::syncsForDrive` and `mainSync` never mix in another user's synchronizations. Keep `AvailableDriveKey` for
-  drives that are available or being activated. The main synchronization is the classic one with the lowest database id;
-  other classic synchronizations, which only a legacy migration can produce, are presented as advanced ones and are
-  returned, with the remote-folder ones, by `AppCache::advancedSyncs`.
-- Expose a process-long Settings feature service directly to QML when an intermediate controller would only forward its
-  properties and calls one-for-one; add a controller only when it owns view-specific state or orchestration. For example,
-  `SettingsUserService` is passed to `SettingsWindow` as its own `users` initial property, not through
-  `SettingsWindowController`.
-- Name presentation classes after the cache entity they project: `Account*` classes operate on backend `Account` nodes,
-  `User*` classes operate on users, and so on. Expose only model roles that current QML actually consumes; add future
-  identities, capabilities, or pending roles only with the QML feature that uses them.
-- Keep Settings user-drive rows aligned with the Accounts Figma: use the 43 px nested leading indent and a crisp 20 px
-  colored drive badge, place the synchronization status beside its action, and show the account name below the drive
-  name only when both differ. Show the complete drive name in an `IKToolTip` only when its label is truncated. Separate
-  the user header, each drive row, and the disconnection footer with a 1 px `settingsDivider` line across the card
-  content width. The avatar corner mask must follow the user-header hover surface. Render account disconnection as one
-  left-aligned destructive-secondary button, not as a label plus a trailing action. Render the additional-account entry
-  as one compact, left-aligned 24 px button in a 42 px row with a bottom divider; do not duplicate its label beside it.
-  The no-user state uses the single-user outline asset from the Manager Design System, recolored to `#666666`, inside a
-  26 px avatar. Render available-drive failures as a 42 px nested row with its two-line message at the 43 px indent and
-  Retry on the right. During an available-drive refresh, keep cached available drives visible without a loader; show the
-  loader centered in its row only when no available drive is cached yet.
-- Keep Settings information dialogs inside the Settings window and restore focus to their trigger. Closing Settings must
-  not quit kDrive. Show the download action only while an update is available.
-- The About dialog carries the license notices: Qt use (required by the LGPL), license and sources. It shows no
-  absence-of-warranty sentence, which would worry users and is not required for our own code. "Third-party licenses"
-  opens the notices folder the AppImage build writes (`AppConstants::Settings::thirdPartyLicensesRelativePath`) and is
-  hidden when that folder is missing, as in a development build.
-- Let `TranslationService` own the English fallback and selected locale. Language changes retranslate QML and notify C++
-  presentation models without resetting navigation or selections. New translated model properties must not be
-  `CONSTANT`.
-- Do not translate in C++ whenever QML can: expose states, enums, or translation ids and call `qsTrId` in QML, so the
-  QML engine retranslates on language changes without a `TranslationService` dependency or a `retranslate()` path in
-  the controller. Keep C++ translation for text QML cannot own, such as the system tray menu.
-- Recompute cached translated strings before notifying QML on language changes; emitting a property-change signal alone
-  does not retranslate a value stored by a controller.
-- Keep per-sync runtime status and progress exclusively in `AppCache`. Consumers such as the system tray and future UI
-  adapters must observe and query that shared state instead of maintaining private copies.
-- Design feature storage and presentation contracts for their intended final lifecycle. A temporarily unavailable UI or
-  action may remain inactive, but must not make the underlying model discard state needed by the completed feature.
-- For the bounded Activities projection, prefer the score-based linear error matcher over rebuilding temporary identity
-  indexes unless profiling demonstrates that matching is a bottleneck.
-- In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
-  bindings with an unused `_` element when only keys or only values are needed.
-- Declare file-local `Q_LOGGING_CATEGORY` entries in anonymous namespaces within the files touched by the current feature;
-  do not broaden that cleanup into a repository-wide refactor unless explicitly requested.
-- For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
-  explicitly needed.
-- After resolving a rebase conflict that removes or renames a shared model/header, grep Linux v4 for stale includes and
-  old type names, then validate at least the `kdrive_qml` target.
-- For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
-- To see sync errors in the UI, run a Debug build with `KDRIVE_SIMULATE_ERRORS=<scenario>` (see
-  `app/devtools/errorsimulator.*`). Give every new `SyncErrorKind` a simulator fixture.
-- Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
-- Give an in-app modal its hosting window's `effectiveShadowMargin` and `surfaceRadius` as `scrimInset`/`scrimRadius`.
-  The overlay spans the complete native window, so an un-inset scrim also dims the transparent custom-shadow margin.
-- Do not place a `Secondary` `IKModalButton` on a card surface: its outline is too close to that surface in both
-  themes. Use the `Tonal` role there, and keep `Secondary` for a plain modal or page background.
-- Set `external: true` on every `IKLinkButton` and `IKModalButton` whose action opens the web browser, so the trailing
-  `IKExternalLinkIcon` announces the context switch. The marker must be exhaustive across labelled controls: once some
-  carry it, its absence reads as a promise that the action stays in the app. Icon-only controls are the exception, as a
-  second glyph is unreadable at that size; state the external destination in their tooltip instead. Include the label's
-  independent text metrics plus the external glyph allowance in a link button's implicit width so the glyph cannot
-  cause otherwise unconstrained labels to elide.
-- Size Home Quick Access from the widest translated shortcut label or the drive name capped to the Windows-aligned
-  display width. Keep shortcut labels fully visible, while the drive name wraps to two lines before eliding. Let the
-  Home status panel consume the remaining horizontal space.
-- Keep raw color values in T1 primitives. T3 contextual color tokens must reference T1 or T2 tokens instead of embedding
-  hexadecimal or RGBA values.
-- Do not run `qmlformat --normalize` on structured token files: it reorders QML members independently of the intended
-  T1/T2/T3 hierarchy and detaches section comments from their tokens.
-- Render the main-sidebar synchronization selector with the bare drive glyph tinted by the drive color; do not place the
-  glyph on a colored tile.
-- Render advanced synchronizations with the outline `ui/assets/main/folder.svg` tinted by the owning drive color;
-  reserve the bare drive glyph for classic root synchronizations.
-- In the main-sidebar Figma variants, "no synchronization" means no advanced synchronization. The drive row is the
-  classic root synchronization and must retain its local-folder action; do not model it as a drive-only entry.
-- Use white source fills for monochrome SVGs tinted through `MultiEffect.colorization`; black source fills retain too
-  little luminance and remain dark when the theme color changes.
-- When the main-sidebar synchronization selector popup overflows its maximum height, cut it in the middle of a row so the
-  half-visible row shows that the list scrolls; never stop exactly between two rows.
-- Keep main-sidebar item states composable: selection, disabled state, notification count or dot, and a trailing
-  accessory must remain independent presentation inputs rather than a screen-specific state enum.
-- Route orange error dots progressively in the main sidebar: selected-sync errors appear on Activities, unselected-sync
-  errors appear on the closed selector, and per-sync dots appear inside the open selector. Normal activity has no dot.
-- Keep the shared error banner surface visibly distinct from the page background in both themes.
-- Match the Figma main-toolbar Pause/Resume and Settings group: one subtly outlined 68 x 36 capsule with 4 px padding
-  and spacing, containing two independent 28 x 28 circular hover surfaces.
-- Use the same resting surface for the main-toolbar Support and Pause/Settings controls, and the same stronger hover
-  surface for all three buttons.
-- Render the main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
-  and center its 16 px magnifier with 10 px between the SVG and each horizontal edge. Reuse the Support button component
-  so both outer circles remain identical.
-- Search has no Figma: copy the macOS gui4 search sheet (`src/gui4/macOS/kDrive/UI/Views/MainWindow/Search/`) for its
-  geometry, states, and wording. Keep the API result order (relevance); never re-sort results on the client.
-- In Search results, show the external-link glyph for results unavailable locally only while their row is hovered.
-  Keyboard selection alone must not reveal the glyph.
-- Render text that comes from the server or the filesystem (file, folder, drive, or user names, paths) with
-  `textFormat: Text.PlainText`: the default `AutoText` interprets a name such as `<b>x</b>` as markup. `IKToolTip`
-  already forces plain text.
-- Declare keyboard shortcuts as `Shortcut` items with `context: Qt.WindowShortcut` in the window root (`Main.qml`,
-  `SettingsWindow.qml`); Close (Ctrl+W) lives in `IKShadowedWindow` and calls `close()`, so it follows each window's
-  `onClosing` and the close button tooltip can show it. Prefer `StandardKey` in `sequences` so each desktop keeps its own bindings, and annotate it with
-  the usual key (`sequences: [ StandardKey.Close ] // Ctrl+W`). Add explicit sequences only where GNOME or KDE bind
-  nothing (`"Ctrl+,"` for Preferences). Show a shortcut in a tooltip through `Shortcut.nativeText`.
-  Use `"Ctrl+Shift+Tab"` instead of `StandardKey.PreviousChild` (Ctrl+Shift+Backtab never matches on Wayland), and give
-  a key press a single matching sequence: two matches on the same `Shortcut` make it ambiguous and it does not fire.
-- Use `IKToolTip` for every Linux v4 tooltip so controls share the rounded, theme-aware drive-name tooltip presentation;
-  do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
-- Let `IKToolTip` own `visible`: buttons set `targetButton` for its default hover/keyboard-focus trigger; other items
-  supply
-  `showRequested`.
-  Never use `activeFocus` to trigger a tooltip. Hide tooltips when their window is inactive, their anchor is hidden, or
-  their
-  button is pressed; clicking or restoring focus after Alt-Tab must not keep a tooltip open.
-- For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
-  `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
-- Keep Activities geometry in `IKActivities` and Activities-specific colors in the T3 section of `IKColors`. Store exact
-  exported Figma assets under `ui/assets/main/activities/`; never reference temporary Figma URLs from QML.
-- Preserve the visual aspect ratio of Activities menu icons and center differently sized glyphs in a fixed slot. Add a
-  small safety area to SVG view boxes whose paths touch or exceed their bounds, since Qt SVG clips that antialiasing
-  even when the asset declares `overflow="visible"`.
-- Preserve the padded view box of `ui/assets/main/folder.svg`; it prevents Qt SVG from clipping the right edge.
-  When aligning its outline to pixels, account for the padding instead of removing it.
-- Keep `IKTintedIcon` rasterization at 2x logical size; Qt applies the window DPR. Use `SvgInfo` for the intrinsic
-  aspect ratio, center the fitted glyph rectangle, and use `Image.Stretch` so `MultiEffect` can sample the image
-  directly. Keep only one `sourceSize` dimension constrained and leave mipmapping disabled.
-- Render every tinted SVG icon through `IKTintedIcon`; do not colorize an `Image` with its own `MultiEffect`.
-- Register C++ types for QML in `AppClientLinux::setupQmlEngine`, not with `QML_ELEMENT` / `QML_SINGLETON`: those
-  registrations run only when `kDrive.UI` holds no type yet, so Qt skips them after the manual ones. The only exception
-  is `UserActionLog`, provided before any manual registration (see `app/useractions/useractionlog.*`).
-- Wrap icons used as a `Control.contentItem` before assigning their intended size because the control owns the direct
-  content item's geometry.
-- Close an Activities row action menu when its delegate moves vertically. A popup must not follow a row displaced by
-  incoming activities, sorting, or filtering because it can become detached from the viewport and obscure another row.
-- Keep an Activities row action menu entirely inside the visible list viewport. Prefer opening it below its row, flip it
-  above when there is insufficient room, and clamp the result when neither side provides its full height.
-- On Activities, a retry in progress for an actively errored node shares the same projected row, and displayed Folder
-  values open that exact folder even when the activity target no longer exists.
-- On Activities, keep actual in-progress transfers of at least 1 KB above failed and synchronized rows, in their start
-  order (newest first): progress updates must never reorder them, and only completion moves a row, as on Windows.
-  Smaller transfers finish too fast to be pinned without flickering. Surface active errors separately without
-  displacing transfers that are still running.
-- Expose Activities row capabilities through one `availableActions` flags role. Keep target ids and paths internal, and
-  revalidate every action in `ActivitiesController` or `ActivityService` instead of duplicating guards in QML.
-- Present asynchronous share-link progress in the persistent bottom area of the main sidebar. Keep the notification
-  component generic, non-modal, and independent from the activity row lifetime.
-- Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
-  files under `test/gui4/linux/` until the user explicitly reopens that scope.
-- Keep Linux Storage usage local to the GUI: use `QStorageInfo`/Qt filesystem tools where they expose the required
-  semantics, supplement them with POSIX metadata only for device identity and allocated blocks, never descend onto a
-  different `st_dev`, and count sparse files by their physically allocated blocks rather than logical size.
-- Disable the Activities and Storage sidebar entries when no selected synchronization root exists; the unconfigured
-  route remains on Home.
-- Let Storage inherit the shared main-page surface, and use the same card surface as Home Quick Access. Keep the 12 px
-  clipped card radius, 24 px horizontal page margins, and 32 px top margin.
-- Mask the complete Storage graph with one rounded shape instead of rounding individual segments: `Rectangle.clip` is
-  rectangular in Qt Quick, and segment-level rounding breaks when the leading segment is zero or subpixel-sized.
-- Keep measured Storage segments visible with a nominal 1% minimum, but let free space and empty segments reach a true
-  zero width; an unmeasured kDrive segment takes no width, the other-syncs row is hidden once they measure 0 bytes, and the other-files segment is the used space not yet attributed, so
-  measures take their share from it. Normalize the displayed widths inside the single rounded graph mask.
-- Order the Storage cards as disk, insufficient disk space (below `AppConstants::Storage::diskAlmostFullThresholdBytes`),
-  subscription (hidden while the quota is unknown), synchronization. An unreadable disk replaces only the disk card. The
-  "Optimize computer space" card of the Figma relies on LiteSync and is not shown on Linux. Only drive admins get the
-  subscription upgrade action.
-- Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
-- Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
-  `NeutralBlue600` is `#1F242E`.
-- Store Linux v4 app-level non-translatable constants in `app/appconstants.h`; keep it header-only while constants stay
-  simple.
-- Keep simple onboarding external-link actions in `OnboardingFlowController` when they do not mutate app/backend state;
-  put multi-service onboarding backend effects in a dedicated onboarding coordinator.
-- When onboarding returns a synchronization to its default local folder, request a fresh server proposal instead of
-  reusing the cached `defaultLocalPath`; the filesystem and synchronization context may have changed meanwhile.
-- Keep only `OnboardingSessionManager` process-long. Onboarding state, flow, coordinators, and view models belong to an
-  ephemeral `OnboardingSession` and must not be exposed as root QML context properties.
-- Route tray and server main-window activation requests through `AppClientLinux::openMainWindow()`. It delegates to
-  `OnboardingSessionManager` only when no sync is configured; otherwise it activates `AppRouter` and shows the main
-  window shell.
-- When ending an onboarding session, unpublish it so QML unloads the onboarding `Loader`, then destroy it with
-  `deleteLater()`. Invalidate session-scoped asynchronous results before allowing a new session to consume them.
-- Keep `AppClientLinux` as an application composition root. Move multi-step feature workflows such as onboarding login
-  into dedicated coordinators instead of accumulating workflow lambdas in `AppClientLinux`.
-- `Qt.labs.lottieqt` renders Lottie JSON assets, not `.lottie` zip containers.
-- For Qt 6.11+ Lottie assets, prefer generated QML from `lottietoqml` over PNG spritesheets when the generated output
-  builds and visually matches the source animation.
-- Regenerate animation QML with the procedure of "Regenerate Lottie QML animations": normalized payload, `lottietoqml`
-  without the curve renderer, root visibility fix, license header, then `IKColors` bindings for theme-aware animations.
-- Never generate Lottie QML with the curve renderer (`lottietoqml -c`): it distorts dashed strokes and moving dots on
-  GPU (seen on Mesa Intel, native Wayland). The offscreen platform hides the defect, so check an animation in a real
-  window.
-- The geometry renderer draws paths without antialiasing: the container of a generated animation renders it in a
-  multisampled layer (`layer.enabled`, `layer.samples` from the tokens, `layer.smooth`).
-- Generated QML imports `QtQuick.Timeline`: the Qt package must provide `qtquicktimeline`, which the Qt online installer
-  does not pull in with `qtlottie` (Conan recipe, Linux). Every build type needs its Conan dependencies refreshed.
-- `LoaderStrokeAnimation` is intentionally used for the login loader in both light and dark themes. Do not restore or
-  generate separate light/dark loader variants unless the user explicitly requests them. Its front page is drawn as a
-  1.25 px outline: the source is filled, the Linux loader is a wireframe.
-- Version generated animation QML files in each window's `animations/` directory. Do not manually edit their geometry or
-  timing; regenerate them from the source asset and keep the generated-file header. Fix a generated defect in the
-  generation steps, not in the screens that host the animation.
-- When Light and Dark use the same animation geometry, keep one generated component and deterministically replace its
-  generated palette with theme-aware `IKColors` bindings instead of versioning separate Light and Dark QML files. Every
-  generated color except transparent gets a binding.
-- Derive a Lottie state's theme palette only from the matching Light/Dark state assets; do not reuse colors from a
-  similarly named or visually related animation state.
-- `lottietoqml` (Qt 6.12 included) leaves an animated path empty (`PathSvg { path: "M 0 0 " }`) when one of its
-  keyframes holds (`h`): drop these keyframes before generation and check that the output has no empty path. Never
-  restore missing paths by editing generated QML.
-- When a fill spans outer and inner contours, verify that `lottietoqml` preserves the holes. If it emits one filled
-  `ShapePath` per contour, combine each outer contour with its reversed inner contour in the normalized JSON before
-  regenerating.
+## C++ Conventions
 
-## Scope
+- Readability: blank lines between definitions and logical steps, explicit names, braces on every conditional body, one
+  operation per line. Keep readability cleanups separate from architectural simplification.
+- String literals: `u"..."_s` with `Qt::StringLiterals` in new code. In a file or block that mostly uses
+  `QStringLiteral`, keep `QStringLiteral`, say so in the PR and offer a small card to migrate the file.
+- Document with `/** */`: public contracts in the header, private helpers in the `.cpp`, each method in one place only.
+- Use the `libcommon/utility/types.h` aliases for their concepts; keep `int` or Qt numeric types only where a Qt override
+  or the QML boundary requires them.
+- Log with `QLoggingCategory` and `qC*`. Declare file-local categories in an anonymous namespace, in the touched files
+  only.
+- Iterate the keys or values of an associative container with `std::views::keys` / `std::views::values`.
+- App-level non-translatable constants go in the header-only `app/appconstants.h`.
+- Guard async callbacks with `QPointer` when the receiver's lifetime is uncertain.
 
-- Linux-only v4 frontend based on Qt 6.12.0 (QML + C++).
-- This package handles UI bootstrap and server communication only.
-- Sync business logic stays in `src/libsyncengine/` and server-side jobs.
+## Architecture Invariants
 
-## Current Structure
+- Layers: `communicationlayer/` is transport and protocol, `app/services/` the typed backend facade, `ui/` presentation.
+  QML never reaches `IpcClient`. A request is added to `CommService` and parsed into typed values there; a server push
+  is registered in `CommService::register*Handlers` and re-emitted as a typed Qt signal. Use the `libcommon` `msgParam*`
+  keys and enums.
+- `AppCache` mirrors the server. `CachePopulator` owns the full snapshots (bootstrap, reconnection, parent-first
+  reconciliation after a failed non-transactional mutation). `CachePipeline` is the only bridge from pushes to
+  `AppCache` and `ActivityStore`, and drops pushes received before the first snapshot. Services expose targeted actions
+  only: cache consistency is push-driven. Cache stores are mutated on the main thread.
+- Per-sync runtime status and progress live only in `AppCache`; consumers observe it and keep no copy. The main
+  selection lives in `MainSelectionStore`.
+- Identify a configured drive by its `DriveDbId`: the backend `DriveId` is shared between users.
+- `SyncService::addDriveSync` is the only sender of `SYNC_ADD`: its reservation keeps two windows from creating two
+  classic syncs for one drive.
+- `ParametersStore` holds the last server-confirmed parameters only. `ParametersService` publishes after
+  `PARAMETERS_UPDATE` succeeds and skips unchanged snapshots; drafts belong to the owning controller, and consumers
+  compare their own values before reapplying side effects.
+- Services report UI-facing failures on the shared `ServiceEventBus` and pending state in `ServiceActionTracker`.
+- Updater state comes from `UpdateStatusService` only. Sentry captures go through `SentryService` and tolerate an
+  uninitialized SDK (consent off).
+- The server does not announce updates on Linux: `UpdateNotifier` is the only source of update notifications.
+- `app/desktop/` calls D-Bus asynchronously without checking first that the service is registered: a service started
+  on demand only appears once called. A missing service falls back to the previous behavior when there is one, and its
+  failure is logged once.
+- `AppClientLinux` is a composition root: multi-step workflows go in coordinators. `AppRouter` holds navigation only and
+  reads neither the cache nor the services.
+- Only `OnboardingSessionManager` is process-long: session objects stay off the root QML context, and a finished session
+  is unpublished, then destroyed with `deleteLater()`.
+- QML receives app-owned controllers as initial properties, then explicit required properties. Expose a process-long
+  service directly when a controller would only forward it; add a controller for view state or orchestration. Expose
+  only the model roles current QML consumes.
+- A one-off transactional dialog gets a controller created per session by its page's controller, passed as an initial
+  property and released after the closing transition; late responses then reach a dead `QPointer`.
+- App-global modals live in `GlobalModalHost`; contextual modals instantiate `IKModal` in their own window.
+- Register C++ types for QML in `AppClientLinux::setupQmlEngine`: Qt skips `QML_ELEMENT` / `QML_SINGLETON` once
+  `kDrive.UI` holds manual registrations. The exception is `UserActionLog`, provided before any manual registration.
+- Design storage and presentation contracts for the final feature: an inactive UI keeps the model state it will need.
 
-- `main.cpp`: process entry point, single-instance lock file, Linux-v4 opt-in for forwarding Qt logs to Sentry
-  breadcrumbs, and XDG desktop portal selection for native file dialogs when the user has not selected another Qt
-  platform theme.
-- `CMakeLists.txt`: installs `kdrive_qml` and its desktop entry. With `KDRIVE_DEPLOY_QT_RUNTIME=ON`, it sets the
-  executable install RPATH to `$ORIGIN/../lib` and generates the Qt runtime deployment script used exclusively by
-  Linux v4 AppImage release builds; unused SQL driver plugins are excluded from that bundle.
-- `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
-  dispatcher/service/coordinator ownership).
-- `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
-  `AppConstants::Drive::upsellUri(drive)` holds the shop page rule per `PackInfo::upsellTarget()` (kSuite migration of a
-  standalone drive, kSuite upgrade, my kSuite, shop home otherwise). It also renews a drive that is not renewed, and is
-  shared by the blocking error screen, the errors page and the Storage page.
-- `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
-- `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
-  semantic document-icon asset names consumed by QML views.
-- `app/desktop/`: integration with the desktop environment through D-Bus (`Qt6::DBus`), one file per feature, each
-  using QtDBus directly rather than a shared D-Bus wrapper. Calls are asynchronous and are sent without checking first
-  that the service is registered: a service started on demand by D-Bus only appears once called. A missing service
-  falls back to the previous behavior when there is one, and its failure is logged once.
-  - `notificationservice.*`: desktop notifications through `org.freedesktop.Notifications` on the session bus, with
-    the application icon and desktop entry. A click emits the action the notification was shown with; each action
-    keeps one notification on screen, a new one replacing the previous one. The activation token sent before a click
-    (`ActivationToken`) goes to `XDG_ACTIVATION_TOKEN`, which Qt uses to bring the opened window to the front on
-    Wayland. Server notifications (`UTILITY_SHOW_NOTIFICATION`, synchronization activity, already filtered by the
-    notification settings) open the activity list.
-- `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
-  enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), `inotify` (the inotify
-  watches error alone), one blocking error (`asleep`, `wakingup`, `maintenance`, `notrenew`, `accessdenied`,
-  `loggedout`) or `update-required`. Once the cache is populated,
-  it dispatches fake `UTILITY_ERROR_ADDED` signals through `SignalDispatcher` on the selected sync, with negative
-  `ErrorDbId` values (real ones are SQLite rowids, always positive). Its fixtures assert that each kind is covered and
-  classified as expected. Requests on fake errors reach the server and fail; a cache reconciliation removes them.
-- `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
-  same-sync severity escalation, hard-warning acknowledgement, soft-warning opt-out (`AppStateKey::NotifyBeforeDelete`,
-  read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
-  Both warnings list the deleted paths the server sends (at most 500, relative to the root) in natural order. Each
-  shown path starts with the synchronization folder, since the warning can come from any synchronization; the tooltip
-  gives the `~` form and the icon follows the extension only. The count of items left out closes the list. A warning
-  received before the cache holds its synchronization keeps relative paths, rebuilt once the context is cached
-  (`contentChanged` alone, so the dialog keeps its state). The sync engine does not wait for a soft warning, so a second
-  soft warning of the same synchronization is another batch already deleted online: it merges into the queued one,
-  summing the counts and appending its paths up to 500 (`contentChanged` alone). The list is a single tab stop: Up and
-  Down move its current row, and the last row brings the count of the items left out into view.
-- `app/errors/*`: pure sync error domain, without QObject, IPC or cache access. `classifySyncError` maps a raw `Error` to
-  a `SyncErrorKind` through an ordered matcher table aligned with the macOS and Windows definitions (first match
-  wins), plus the Linux-only `NotEnoughINotifyWatches`; LiteSync and VFS kinds are absent and fall back to `Unknown`,
-  like the case clash and reserved name kinds, which the sync engine only detects on macOS and Windows.
-  `syncerrorcatalog.*` gives each kind its errors-page section, row variant, explanation dialog, system tray relevance
-  (Windows `ShowInSystemTray` list), action and texts, with admin variants resolved by `describeSyncError`. Texts are
-  translation ids with their node-label placeholder count, translated in QML with `qsTrId`, never in C++.
-  A user-resolvable conflict (node-level create/create or edit/edit) is always a version conflict. `resolveBlockingError`
-  keeps the oldest blocking error of a synchronization and reports `LoggedOut` for a disconnected user even without an
-  `InvalidToken` error; `isUpdateRequired` detects an `UpdateRequired` error of any level.
-  `BlockingErrorKind` and `SyncErrorRowVariant` live in the `BlockingErrors` and `SyncErrors` `Q_NAMESPACE`s (the only
-  Qt meta-objects of the domain), registered for QML as `BlockingErrors.Asleep`, `SyncErrors.CopyablePath`, ..., so no
-  layer mirrors them. `toString` returns a `std::string`, so `qCInfo() << kind` prints "Name(value)" through the
-  generic `libcommon` operator.
-- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
-  updater availability (the error state follows `SyncErrorsProjection::hasTrayRelevantError`, so only the error kinds
-  marked `showsInTray` turn the icon to error), GNOME-compatible tray menu actions (the Settings entry is disabled while
-  an update is required), fallback-to-window startup behavior, retry loop for late tray availability, and main QML
-  window show/hide behavior. Linux exposes no panel color, so it picks the white or black icon set from
-  `KDRIVE_TRAY_ICONS` (`white`/`black`), else white on GNOME, else the system color scheme, else white.
-  Its menu entries and icon activations are logged through `UserActionLog` (`tray.menu.*`, `tray.icon`).
-- `app/useractions/useractionlog.*`: single entry point of the user action log, a typed QML singleton (`QML_ELEMENT`,
-  `QML_SINGLETON`, `QML_UNCREATABLE`, provided by `QQmlEngine::setExternalSingletonInstance`) also called from C++ by
-  the tray. Provide it before any runtime `qmlRegister*` call on `kDrive.UI`: such a call made first invalidates the
-  declarative types of the module, and the provision fails (fatal at startup). It writes one line per interaction in
-  the `gui.v4.useraction` category (Info, also a `useraction` Sentry breadcrumb): `User action | <actionId>`,
-  `Screen shown | <screenId>`, `Dialog opened|closed | <dialogId>`, `Window shown|hidden | <windowId>`, followed by
-  `| key: value` details sorted by key. It then sends the matching Matomo page view or event when
-  `app/useractions/analyticscatalog.*` maps the id; an unmapped id is only logged.
-- `app/useractions/analyticscatalog.*`: Matomo taxonomy of the user action ids, with the categories and event names of
-  the kDrive v4 desktop application (`homePage`, `openSettings`, ...; action `click`). A `valueDetail` turns a boolean
-  detail into the event value (1 or 0). Error rows log `main.errors.row.<kindId>` (`ErrorListModel` `kindId` role), so
-  each error kind maps to its own `errors` event.
-- `app/services/matomoservice.*`: owner of the single `MatomoQt::Tracker` (`src/3rdparty/matomo-sdk-qt`, static
-  `MatomoQt::Core`), site `AppConstants::Matomo::siteId`, actions under `kdrive://<category>`. Requests carry the user
-  agent and the client hints (distribution version) built by the SDK, the app language, the logical size of the primary
-  screen at startup and the app version in the visit custom dimension `AppConstants::Matomo::appVersionDimensionId`.
-  Consent is the server-confirmed `matomoEnabled` of `ParametersStore` (privacy mode `RequiresConsent`): nothing is sent
-  before the parameters are loaded or after an opt-out, which also forgets the visitor id, kept in `ClientSettings`, and
-  aborts the requests still in flight through the `QNetworkAccessManager` the service gives the tracker. Debug builds
-  send like release builds when consent is granted. Network failures are logged once per failure streak.
-- `communicationlayer/ipcclient.*`: TLS-over-loopback JSON transport (`QSslSocket`), request/reply correlation,
-  reconnect-before-first-connect logic, and pinned self-signed certificate verification. The pinned CA certificate is
-  loaded once from the OS keychain via `CertReader` and set as the socket's only CA; the peer is verified against
-  `kDrive-localhost`. SSL errors are logged and never ignored.
-- `communicationlayer/certreader.*`: read-only accessor for the public TLS certificate stored in the OS keychain. Uses
-  the shared `package` / `service` constants from `libcommon/utility/utility.h` (`keychainConstant` namespace, same
-  slots as `KeyChainStorage`) and the `certKeychainKey` / `localHostName` constants from `libcommon/comm.h`; returns
-  `false` (not an error) when the entry is not present yet, so the IPC client can retry during startup.
-- `communicationlayer/serversignalsequencer.*`: internal `IpcClient` stage that restores the server-assigned order of
-  asynchronous push signals before exposing them to semantic dispatch; buffers bounded gaps. A gap still open after
-  10 s is skipped rather than fatal: the server assigns a signal id before queueing its job in a priority pool, where a
-  `PRIO_LOWEST` `SYNC_COMPLETEDITEM` can starve behind a burst of GUI requests. The skip is reported to Sentry, triggers a
-  `CachePopulator::reconcile()` once the bootstrap is done, and a skipped signal arriving late is dropped. Any other id
-  already passed, such as the id 0 the server can send during a burst of signals, is dropped the same way, reported to
-  Sentry and followed by a reconciliation. Negative ids, duplicates in the reorder buffer and buffer overflow remain
-  fatal IPC errors. It relies on the single GUI connection receiving a sequence starting at `firstGuiSignalId`; the
-  server does not allocate signal ids while no GUI channel is connected.
-- `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
-- `app/services/commservice.*`: typed request/signal facade above `IpcClient`.
-- `app/services/serviceactiontracker.*`: shared persistent state for in-flight service actions
-  (`begin/end/isActionPending/isServicePending`).
-- `app/services/serviceeventbus.*`: shared high-level service event hub (single UI subscription point for generic
-  cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
-- `app/clientsettings.*`: `kdrive-client.ini` in the application directory (`~/.config/kDrive`, next to
-  `kdrive-client.lock`), read with `QSettings::IniFormat`. It only holds what the client needs before the server
-  parameters are loaded, or what the server does not keep: the cached Sentry consent (`sentry/enabled`) and the Matomo
-  visitor id (`MatomoQt/clientId`). Every other setting belongs to the server parameters.
-- `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
-  linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
-  breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
-  Once IPC is connected, it tags events with the server `AppUid` as `appUUID`; earlier events have no such tag.
-- `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It references
-  category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
-  presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
-  `requestOpenFileExclusions()` opens Settings on Advanced > file exclusions, for the errors page.
-  `requestOpenUser`, `requestOpenDrive`, `requestOpenAdvancedSync` and `requestOpenSyncManagement` keep a typed pending
-  target that the window takes when it is created or on `targetPending()`, through one typed show signal per kind of target. The window shows that
-  page above the Accounts root, animated when Accounts is already displayed, and focuses the user or advanced
-  synchronization card. A page can then be created on the drive of the page it replaces before that one is destroyed,
-  so `DriveManagementController` and `AdvancedSyncsController` count the pages open on their target and release it on
-  the last `close()`. `StackView.pushItems` only creates the top page, so `SettingsNavigationPane.showAboveRoot` loads
-  the pages below it: the drive management page must exist to leave a drive that lost its last synchronization.
-- `app/settings/settingssyncactivationcontroller.*`: process-long transactional editor, owned by `AppClientLinux` and
-  exposed as `SettingsWindowController.syncActivation`, that activates one available drive from Accounts. A single
-  private `State` drives it: `Preparing` (server default folder requested, row busy) → `Editing` ⇄ `CheckingFolder` →
-  `Submitting` → `AwaitingConfirmation` or `Reconciling`. After a successful `SYNC_ADD`, the target stays busy until the
-  queued `SYNC_ADDED` push removes it from the available drives, so the row cannot submit twice. A failed `SYNC_ADD`
-  reconciles the cache, then returns to `Editing` with an error, or closes if the target is gone or the reconciliation
-  failed. Closing Settings calls `dismissFromHostWindow()`, which hides the modal without abandoning a submitted
-  synchronization.
-- Settings/onboarding handoff: adding an account from Settings goes through
-  `AppClientLinux::openOnboardingLoginFromSettings()`, which hides Settings and starts a forced Login onboarding
-  session. Completion or cancellation reopens Settings through `restoreSettingsAfterOnboarding()`, and Settings restores
-  focus to the account-connection trigger when it becomes visible again.
-- `app/settings/drivemanagementcontroller.*`: process-long state of the Settings "kDrive management" page, exposed as
-  `SettingsWindowController.driveManagement`. The page opens and closes its `DriveDbId` target; the controller
-  follows the drive's main synchronization in `AppCache`, keeps the last confirmed blacklist to present a custom
-  selection, opens the local folder, and deletes the main synchronization. It preloads the main synchronization in
-  `ExcludedFoldersController` (`preload()` / `releasePreload()`) as soon as it is resolved, so the folder tree is
-  ready when the user opens it. It emits `driveRemoved()` once the drive has no synchronization left, and Settings then
-  returns to the Accounts root.
-- `app/settings/advancedsyncscontroller.*`: process-long state of the Settings "Advanced sync" page, passed directly to
-  `SettingsWindow` as its `advancedSyncs` initial property and pushed from the drive management page. The page opens and
-  closes its `DriveDbId` target; the controller projects `AppCache::advancedSyncs` into `advancedsynclistmodel.*`,
-  loads each blacklist to present a custom selection, opens local folders and their web location
-  (`SYNC_GETPRIVATELINKURL`, or the web drive root for an extra classic synchronization), and deletes one
-  synchronization at a time. The model updates rows in place, so a card keeps its collapsed state when another
-  synchronization is added or removed. Leaving a drive that has no synchronization left stays the drive management
-  page's job, which remains below it in the navigation stack. "Manage" pushes the shared excluded folders page with the
-  advanced `SyncDbId`; closing it reloads that synchronization's summary. The controller also owns the "Sync a folder
-  with kDrive" session (`creation`, `openCreation()`, `releaseCreation()`), released with its target or once the drive
-  is gone.
-- `app/settings/advancedsynccreationcontroller.*`: transactional editor of the "Sync a folder with kDrive" dialog
-  (`ui/windows/settings/AddAdvancedSyncDialog.qml`), created for one session only. `AdvancedSyncsController` creates it
-  for its target drive; `SettingsWindow` then creates one dialog with the controller as an initial property, never a
-  binding. Cancelling or creating the synchronization turns `active` off: the dialog plays its closing transition, then
-  emits `released()` and Settings calls `releaseCreation()`, which destroys the dialog before its controller. Closing
-  Settings or losing the drive releases the session at once. A response received after the release reaches a destroyed
-  controller and is dropped by its `QPointer`, so there is no request generation. There is no default kDrive location:
-  Validate requires a local folder, accepted by `UTILITY_ISPATHVALIDFORNEWSYNC` with `SyncConfiguration::Advanced` (a
-  refused folder keeps the previous one), and a remote folder confirmed in the picker page of the same `IKModal`.
-  Cancelling the picker drops its selection. The picker tree (`RemoteFolderPickerModel` +
-  `ui/features/syncconfiguration/RemoteFolderPicker.qml`) is loaded on its first opening and kept for the session.
-  Choosing a row that cannot be selected, such as the drive root, clears the selection. The submission sends `SYNC_ADD`
-  with both `serverFolderPath` and `serverFolderNodeId`, then closes the dialog; the page lists the synchronization
-  once its `SYNC_ADDED` push arrives.
-  An inline folder creation starts from the row's button or Ctrl+Shift+N on the tree's current row, and is committed
-  with Enter only; Escape, choosing another folder, or starting another creation drops it, even while the parent's
-  children are still loading. The name is trimmed, an empty one cancels, a `/` is refused locally, and the created
-  folder is selected, scrolled into view, and stays on kDrive even if the dialog is cancelled. The typed name survives
-  the editing row being scrolled out.
-  `RemoteFolderPickerModel.folderCreationPreparing` exposes the wait for the parent's listing before the name field
-  exists. During that wait, the tree consumes Escape before the modal shortcut; the page's Cancel button still leaves
-  the picker page.
-- `ui/windows/settings/SyncSelectionRow.qml`: shared "Synchronization" row (custom-selection summary, Manage, Retry) of
-  the drive management page and of each advanced synchronization card. `DeleteSyncDialog.qml` is owner-agnostic: its
-  owner binds `busy`, deletes on `deleteConfirmed`, and closes it or sets `failed`.
-- `app/settings/excludedfolderscontroller.*`: process-long state of the Settings "Manage synchronization" page,
-  passed directly to `SettingsWindow` as its `excludedFolders` initial property. The page opens and closes its `SyncDbId` target; the
-  controller loads the confirmed blacklist into its own `RemoteFolderTreeModel` and sends the complete list with
-  `BLACKLISTED_NODE_SETLIST`. Save is refused above `AppConstants::SyncConfiguration::maxExcludedFolders` (3000), the
-  largest `without_ids` list the kDrive API accepts on listing requests. The draft is dropped on Cancel or back
-  navigation. Leaving the page reloads the blacklist
-  of the drive management page, so its custom-selection label reflects a saved change. `open()` reuses a preloaded
-  target instead of loading it again; `close()` reloads a target that is still preloaded, which drops an abandoned draft
-  and picks up a saved blacklist for the next opening. A target generation discards the responses of a previous target
-  that had the same `SyncDbId`.
-- `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
-  `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is
-  missing; later Settings visits reuse the snapshots. Successful user mutations refresh the user snapshot through a
-  readback. Full-list user replacements must remain serialized through `FileExclusionController`.
-- `app/settings/fileexclusioncontroller.*`: QML-facing exclusion validation, selection, rollback, and immediate-save
-  actions; `exclusionrulemodel.*` exposes only confirmed rules while keeping user selection local.
-- `app/settings/advancedsettingscontroller.*`: confirmed Matomo/Sentry consent presentation, page-scoped errors,
-  Advanced external actions, debug parameters, and process-long log-upload state. Sentry mutations continue to flow
-  through `SentryService`, including its post-confirmation SDK update. Client log expiration follows the confirmed
-  `purgeOldLogs` value in `AppClientLinux::updateLoggerSettings`; the server does not purge client logs.
-- `app/settings/networksettingscontroller.*`: Network Settings proxy draft, asynchronous TCP reachability check, and
-  confirmed full-snapshot persistence. Unsaved edits, credentials included, stay in the controller until saved; a
-  successful save publishes the full proxy configuration to `ParametersStore`. Credentials are never logged.
-- `ui/windows/settings/SettingsNavigation*.qml`: reusable Settings-local `StackView` navigation, dynamic page header,
-  keyboard back action, and focus restoration. Category roots own their route components; the pane remains generic.
-- `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
-  single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
-  and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
-    - Exception to the server-mirror rule: `isSyncCreationPending`/`setSyncCreationPending` hold the drives whose
-      classic (drive-root) `SYNC_ADD` is in flight. Only `SyncService` writes them; `clearAll()` keeps them. Onboarding shows a reserved drive like an
-      already synchronized one, Settings shows its Enable button as busy; pre-send checks treat it as unavailable.
-- `app/cache/activitystore.*`: process-local, per-sync file-activity history. It retains server status and direction,
-  updates valid operation ids in place while keeping their placement sequence until completion, removes failed entries
-  superseded by a successful or in-progress activity for the same node, clears interrupted in-progress entries when a
-  synchronization becomes inactive, preserves distinct anonymous operations, and bounds retention to 500 entries per
-  synchronization. It stays separate from the durable `AppCache` graph and is not exposed directly to QML.
-- `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache/ActivityStore` push signals.
-    - Routes entity, sync-runtime, and file-activity pushes after population; drops and logs earlier pushes as invariant
-      violations.
-    - Prunes activity history when the configured synchronization set changes.
-- `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
-  `SyncRuntimeInfo`, `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
-    - Configured-drive state uses the unified `libcommon/data/drive.h` `Drive` model; do not reintroduce the removed
-      `DriveInfo` type in Linux v4.
-- `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing. It
-  prefers a classic root synchronization, then any synchronization.
-    - Emits `currentContextChanged()` as a coarse invalidation signal when the selected ids stay unchanged but the
-      selected context changes. The cache signals after its update, so the store compares with a copy of the last
-      notified context.
-    - Exposes selected-sync runtime through its dedicated accessor and signals, including a status-only notification so
-      progress ticks do not invalidate presentation that only depends on the synchronization status.
-- `app/cache/syncerrorsprojection.*`: single source of classified sync errors for every error consumer. It classifies
-  each `AppCache` error with the `app/errors` domain, keeps the result by `ErrorDbId` and logs it once unless its kind
-  changes (category `gui.v4.syncerrors`, never file paths; unclassified errors as warnings with their raw fields). It
-  exposes the selected synchronization's errors (oldest first), its user-resolvable conflict ids, its blocking error
-  (including a disconnected user), whether any error is relevant to the tray, and whether an update is required.
-  Changes are coalesced by a 150 ms single-shot timer that is never pushed back: the server replaces an error it detects
-  again with `UTILITY_ERROR_REMOVED` then `UTILITY_ERROR_ADDED` (same `ErrorDbId`), and the pair must land in one
-  refresh. A change of the selected synchronization refreshes at once, so a newly selected synchronization never shows
-  the previous one's errors or blocking screen. Each signal is emitted only when its value changed.
-- `app/mainwindow/syncselectormodel.*`: QML adapter for the synchronization selector. It flattens each configured drive
-  into classic and advanced synchronization rows and exposes only the presentation data required by the selector.
-- `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
-  delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
-  It also exposes the `upsellOffer` of the selected drive: only an admin of a drive with a free pack gets one, my kSuite+
-  for the standalone and my kSuite packs, kSuite Pro for the kSuite packs.
-  `openUpsellPage()` opens `AppConstants::Drive::upsellUri`. `SidebarUpsellCard` shows the offer above the sidebar
-  notification and is hidden while the selected synchronization is blocked (`SidebarView.navigationEnabled`).
-- `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
-  active node errors. It omits failed activities after their active error is resolved, maps server status and direction
-  to the QML-facing presentation enums, keeps in-progress transfers of at least 1 KB first in start order, coalesces
-  bursty cache invalidations. An active error only marks the failed or in-progress activity it matches; an error
-  without one, for instance a conflict whose transfers succeeded or an evicted activity, has no row and is left to the
-  errors banner and page.
-- `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
-  presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
-  locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
-  transient feedback independent from projected row lifetime. The errors banner and the "fix errors" row action open the
-  errors page through `AppRouter::showErrors()`; the row action first emits `fixErrorsRequested` with the row's errors,
-  which `ErrorsPageController::reveal` brings into view.
-- `app/mainwindow/blockingerrorcontroller.*`: QML-facing state of the blocking error screen of the selected
-  synchronization (`SyncErrorsProjection::currentBlockingError`: drive asleep, waking up, not renewed, in maintenance,
-  access denied, or user logged out). Only that synchronization is blocked: the controller switches `AppRouter` to the
-  `BlockingError` tab, keeps it there while the error lasts, and returns to Home when it disappears or another
-  synchronization is selected; the sidebar selector and Settings stay usable. It exposes the variant (`kind`, texts
-  translated in QML), the drive name, color and admin status, and `triggerAction()`: open the drive on the web (asleep),
-  open the shop (not renewed and admin: `AppConstants::Drive::upsellUri`), restart the synchronization with
-  `SyncService::startSync` (not renewed for a non-admin, maintenance, access denied), or request an onboarding login
-  (logged out). The waking-up variant has no action, only a loader. The drive name shows a tooltip when truncated.
-- `app/mainwindow/errorlistmodel.*`: rows of the errors page for the selected synchronization, from
-  `SyncErrorsProjection`. Sections follow `SyncErrorCategory` order, then the error database id. Up to
-  `kMaxIndividualConflicts` conflicts are rows of the files to verify; beyond, one aggregated row stands for them in
-  the conflicts section. Texts are translation ids with their "file"/"folder" placeholder count, translated by the
-  `ErrorTexts` QML singleton; admin variants come from `describeSyncError`. Rows carry the item chip (name, path within
-  the synchronization, icon), the copyable path (`~` form, the controller copies the absolute one), and the technical
-  details of an unexpected error (support fields, paths relative to the root, app version and system, empty or unknown
-  values skipped). Destination paths go through `absoluteSyncPath`: the server sends some of them absolute. Updates are
-  applied in place by one merge pass over both sorted lists, so the view keeps its scroll and focus; a change of
-  synchronization resets the model.
-- `app/mainwindow/errorspagecontroller.*`: QML-facing state of the errors page (`errorCount`, `refreshPending`,
-  `refresh()`). Every row action is revalidated against the current errors before reaching `SyncErrorActionHandler`. It
-  copies a path or the technical details to the clipboard, and keeps a pending `reveal` request that the page consumes
-  when it is shown, to bring the error of an activity row into view; a change of synchronization drops it. It owns the
-  explanation dialog state (`explanation`), the version selection dialog state (`conflictVersion`) and the conflicts
-  pages state (`conflicts`). "Manage" of the aggregated conflicts row opens the conflicts pages.
-- `app/mainwindow/conflictspagecontroller.*`: QML-facing state of the version conflicts pages (`ConflictsQuick`,
-  `ConflictsList`). The grouped choice sends `resolveConflictsQuick` for every conflict present at the click; a failure
-  keeps the page with an error. It owns the navigation rules of these pages: after a grouped choice, or once no conflict
-  is left (not while its own request is pending, whose response decides), back to the errors page when other errors
-  remain, to the activity list otherwise; back to the errors page when the selected synchronization changes. Coming from
-  the errors page resets the strategy to the most recent versions; leaving the list clears its search. The list opens
-  `conflictVersion` on one conflict, or on all in list order.
-- `app/mainwindow/conflictlistmodel.*`: the conflicts of the selected synchronization, sorted by relative path
-  regardless of case and filtered by `searchText` on that path; rows are updated in place.
-- `app/mainwindow/conflictversioncontroller.*`: QML-facing state of the "Choose the version to keep" dialog. It walks
-  through a list of conflicts (one from an errors row), loads both versions of each in parallel, preselects the
-  strictly more recent one, and sends every choice in one request after the last conflict; a failure keeps the dialog
-  open. Closing midway sends the choices already validated. A generation counter drops the responses of a previous
-  conflict, dialog or request; it closes when the current conflict disappears (not while its resolution is pending)
-  or the selected synchronization changes.
-- `app/mainwindow/syncerrorexplanationcontroller.*`: QML-facing state of the "Understand the problem" dialog: the
-  explanation kind of one error, its item chip and copyable path (the item for a local access error, the
-  synchronization root otherwise). It closes when the error disappears or the selected synchronization changes; its
-  buttons are revalidated, then run through `SyncErrorActionHandler::run`.
-- `app/mainwindow/syncerroractionhandler.*`: the only place that knows what each error button does: rename or open the
-  item online, open a local folder below the synchronization root, open the volume (disk space), open the shop
-  (`upsellUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
-  (`loginRequested`, as on the blocking screen), or contact the support. `Explain` emits `explanationRequested`,
-  `ChooseVersion` emits `versionSelectionRequested`, and `openConflictVersion` opens a conflict version (the local copy
-  in its application, the remote one on kDrive web);
-  `OpenSyncParentFolder` opens the folder above the synchronization root, and `CreateNewSync` opens Settings on the
-  accounts. `trigger` runs the row action from the catalog, `run` any action (the dialog buttons).
-  Logs name the kind, the action and the opened URL.
-- `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
-  resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
-  construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
-  a pending pause or resume request drives the toolbar control (`SyncControlState::Pending`), never the central status.
-  The control is disabled while the selected synchronization has a blocking error, as on macOS. The errors banner
-  opens the errors page (`showErrors()`); the primary action still opens the Activities tab.
-  kDrive online opens the remote folder of an advanced synchronization (`itemRedirectUri`), the drive root otherwise;
-  the other web shortcuts stay at the drive level. The Home avatar opens the user's card in Settings, its badge the
-  drive management page, or the advanced synchronizations page focused on the selected advanced synchronization.
-  It reads `AppStateKey::ShowV4Onboarding` once on `ipcConnected`: the server sets it to `"1"` only when the database
-  comes from a version before 4. The "new kDrive app" banner shows while it is `"1"`, the Home is neither loading nor
-  unconfigured, and the errors banner is hidden: Home shows one banner at a time, so both cannot push the shortcuts card
-  out of a minimum-size window. Closing it hides it at once and writes `"0"`.
-- `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
-  independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
-  `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
-  server starts its synchronizations a few seconds after launch, is presented as up to date (offline without network),
-  as on macOS, instead of an empty loading state.
-- `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
-  reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
-- `app/mainwindow/searchcontroller.*`: QML-facing state of the search dialog for the drive of the selected
-  synchronization. Query edits immediately invalidate outstanding requests and pagination while preserving displayed
-  rows during the debounce delay. It drops every response whose request generation is outdated (an IPC request
-  cannot be cancelled), and pages with the cursor returned by `DRIVE_SEARCH`, repeating the frozen query of the first
-  page. A local result opens with the desktop services after `resolveExistingPathBelowSyncRoot`, or its parent folder
-  with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
-- `app/mainwindow/searchresultmodel.*`: search results, page after page. `appendPage` inserts rows without a reset and
-  skips nodes already listed; node ids and paths stay internal.
-- `app/mainwindow/storage/storagecontroller.*`: QML-facing Storage lifecycle. While Storage is visible, one cancellable
-  scan publishes the volume, then the selected synchronization, then the other synchronizations stored on the same
-  device (any user or drive, advanced ones included), so the gauge fills progressively. It also exposes the drive quota
-  from the selected `SyncContext`, polls the volume free space every 60 s outside the page (no log per poll) for the
-  sidebar `storageWarning`, and asks Settings to open "Manage synchronization" through
-  `SettingsWindowController::requestOpenSyncManagement`. The server does not poll the quota: opening the page sends
-  `UTILITY_ACTIVATELOADINFO`, at most once per minute because it reloads every user and drive; Retry and the refresh
-  shortcut always send it.
-- `app/mainwindow/storage/storagemeasurecache.*`: process-local per-synchronization measure cache, without QObject. A
-  measure is kept for its root and reused until its synchronization has been active again; the cache follows the
-  observed statuses to know it.
-- `app/mainwindow/storage/storagescanner.*`: Linux local-volume reader (`QStorageInfo`), synchronization-root measure
-  using an explicit Qt directory stack, and the scan job (`scanSyncs`) run outside the GUI thread. A measure stays on
-  the given device, skips links and special files, deduplicates hard links, and sums allocated blocks so sparse files
-  reflect their physical footprint.
-- `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive`, the selected main tab, and
-  the `ActivitiesNavigation` exposed as `activitiesNavigation`; `showErrors()` is the only shortcut that crosses both.
-  `navigateToMainTab`, called only by the sidebar, resets the Activities sub-page: the Activities entry always leads to
-  the activity list.
-  It must not read `AppCache`, call backend services, or decide whether onboarding is required.
-- `app/navigation/activitiesnavigation.*`: current sub-page of the Activities tab in a fixed chain (`List`, `Errors`,
-  `ConflictsQuick`, `ConflictsList`); `back()` goes to the parent page, with no history. Other tab changes keep the
-  sub-page; the sidebar Activities entry and the unconfigured Home (`AppClientLinux`) reset it. It holds no business
-  rule: a controller that must close a page (for example when the conflicts drop) calls it.
-- `app/navigation/mainwindowactivationdecision.*`: pure post-bootstrap choice between onboarding, the unconfigured Home,
-  and the configured Home. Closing onboarding or removing the last configured sync selects the unconfigured Home on the
-  next activation.
-- `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
-  configs. Advanced-settings validation replaces the complete selected-drive config map atomically so cancelling a
-  modal never leaks a partially edited drive.
-- `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`Parameters`). It is
-  populated during the bootstrap sequence next to the product graph snapshot, but remains separate from `AppCache`
-  because the server is still the persistence source of truth for application settings. It stores only the last
-  server-confirmed snapshot; update workflows publish a new value only after `PARAMETERS_UPDATE` succeeds.
-- `app/onboarding/availabledrivesmodel.*`: QML adapter for onboarding drive selection. It derives rows from
-  `AppCache::availableDriveContexts(selectedUserDbId)` and stores row selection through `OnboardingState`. It must not
-  own screen-level loading, user, or navigation state.
-- `app/onboarding/driveselectioncontroller.*`: QML-facing screen controller for user presentation, loading/error state,
-  counts, retry, and navigation actions. It owns the session's `AvailableDrivesModel`.
-- `app/onboarding/onboardingentrydecision.*`: pure post-bootstrap decision from `AppCache` to Inactive, Login, or
-  DriveSelection. If several users are connected and no drive is configured, it selects the connected user with the
-  lowest database id, preserving the stable ordering returned by `AppCache::users()`.
-- `app/onboarding/onboardingsession.*`: ephemeral owner of onboarding state, flow, login workflow, and drive-selection
-  controller/model.
-- `app/onboarding/onboardingsessionmanager.*`: process-long nullable-session owner and the only onboarding object
-  exposed at the root QML boundary. It creates a session after cache bootstrap and unpublishes it before deferred
-  destruction. It accepts activation requests while onboarding is required and rejects them with an explanatory log when
-  no onboarding route is displayable. On successful onboarding completion, `AppClientLinux` opens the main window route.
-- `app/onboarding/onboardingflowcontroller.*`: QML-facing onboarding flow controller aligned with the macOS flow
-  (`login -> drive selection -> synchronization -> ready`, with macOS permission steps omitted on Linux). It owns simple
-  onboarding UI actions such as opening account signup and drive-offer URLs, plus synchronization/ready presentation
-  state; OAuth launch, `LOGIN_REQUESTTOKEN`, available-drive loading, and sync creation stay outside QML-facing flow
-  state.
-- `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow
-  controller, OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not
-  accumulate login-specific workflow logic. A user who already has synchronizations and logs in again (for instance
-  from the blocking error screen) skips drive selection: `SyncService::startSyncsAfterLogin` sends
-  `SYNC_START_AFTER_LOGIN` and `OnboardingFlowController::completeReconnection` ends the session, as on macOS.
-- `app/onboarding/onboardingdefaultpathresolver.*`: resolves the default local folder of a drive as soon as it is
-  selected, so advanced settings never open on a blocking request. A drive whose folder cannot be resolved is
-  unselected, and drive selection cannot continue while a resolution is in flight.
-- `app/onboarding/onboardingsyncconfigurationcontroller.*`: session-scoped transactional editor for advanced onboarding
-  synchronization settings. It owns global and per-drive draft snapshots, validates custom paths against the server and
-  against the other drafts, and commits all selected-drive configs only from the final confirmation. A rejected commit
-  keeps the modal open, because closing would silently drop everything the user configured.
-- `app/onboarding/selectedsyncconfigurationsmodel.*`: flat presentation model for the multi-drive advanced-settings
-  summary. It exposes display values only; stable backend identifiers remain in the controller drafts.
-- `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It
-  derives collision-free local folders, creates selected-drive syncs sequentially with the validated remote blacklist,
-  stops at the first failure, reconciles the parent-first cache snapshot after a failed `SYNC_ADD`, and automatically
-  returns to drive selection after displaying the failure for three seconds. The failed execution queue is discarded;
-  the next run is rebuilt from the remaining selections after pruning drives that now own a classic synchronization.
-- `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
-  browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
-  Do not expose OAuth details to QML.
-- `app/syncconfiguration/remotefolderprovider.*`: injectable asynchronous boundary for remote folder metadata,
-  children, and sizes. The production adapter uses `CommService`; tests and future settings integration can provide the
-  same contract without onboarding dependencies.
-- `app/syncconfiguration/remotefolderorder.*`: `RemoteFolders` namespace holding the sibling order of both remote
-  folder trees: "Common documents" then "Shared" are pinned first, recognized by their drive path (`/Common documents`,
-  `/Shared`, in English whatever the drive language, as in `ApiTranslator::v3SpecialFolderNames`), so a tree rooted in
-  a sub-folder pins nothing; other folders follow in the system locale, numbers by value. `RemoteFolders.FolderKind` is
-  exposed to QML, and the `folderKind` role of each tree model picks the glyph in `RemoteFolderIcon.qml`.
-- `app/syncconfiguration/localpaths.*`: local synchronization-folder rules shared by onboarding and future settings
-  work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, the free-folder
-  derivation that appends the attempt count without a separator, as the server does, and
-  `resolveExistingPathBelowSyncRoot`, which every "open locally" action uses so that a path never escapes the
-  synchronization root.
-- `app/syncconfiguration/remotefoldertreemodel.*`: reusable lazy `QAbstractItemModel` for selective synchronization. It
-  owns canonical blacklist editing, tri-state propagation, access-denied rows, retryable child loads, and visible-row
-  size loading. It must remain independent from onboarding state and synchronization database ids. A folder is included
-  or excluded with its complete subtree, as on Windows; the partial state reports that a descendant is excluded and is
-  never a state the user selects, and the drive root itself can never be excluded. After a 150 ms quiet period without
-  visibility changes, a visible row loads its size and its immediate children, so its expand affordance reflects
-  whether the folder really has sub-folders, while folders that only pass through the viewport during a fast scroll
-  request nothing. This debounce is the only bound on these requests.
-  Rows report their visibility by node id (`setNodeVisible`) and resolve their model index only when acting: a view row
-  can show another folder after an expansion without being recreated, so a kept index would target the wrong one. A
-  blacklisted node whose path cannot be resolved (e.g. 403) stays blacklisted without a path and the page still
-  displays, with a warning (requested/resolved); its ancestors may look fully selected and re-checking them does not
-  remove it. A listing returning it later completes its path. A node the server no longer knows (`NotFound`) is dropped
-  from the blacklist. The root listing is requested alongside that path resolution and kept aside until every path
-  request is done. Paths are compared in NFC.
-- `app/syncconfiguration/remotefolderpickermodel.*`: lazy single-selection remote-folder tree used to choose the remote
-  destination of an advanced synchronization. The drive root is its only top-level row (node id
-  `AppConstants::SyncConfiguration::driveRootNodeId`, listed through the root listing request) and cannot be selected,
-  like folders the user cannot open and folders the caller marks as unavailable, such as the targets of the drive's
-  existing synchronizations; those cannot host a new folder either. It hosts the editing row of an inline folder
-  creation but never sends the request: its owner calls `SyncService::createRemoteFolder`, reports the pending state,
-  then inserts the created folder, which becomes the selection. Visible folders list their children after the same
-  150 ms quiet period as `RemoteFolderTreeModel`. Rows are tracked by node id, never by a kept index.
-- `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
-  branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
-  only after both branches succeed. A new run supersedes the previous one, whose late responses are ignored and which
-  emits no terminal signal, so a terminal signal always answers every earlier request. It is used at initial connection
-  and for explicit reconciliation after a non-transactional backend mutation may have persisted parents without emitting
-  their normal pushes; after each snapshot, it activates the server live-info refresh so only drive updates reach
-  `CachePipeline`.
-- `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
-  durable cache mutations stay signal-driven through `CachePipeline`.
-- `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`,
-  owns browser and clipboard side effects, and tracks concurrent actions without owning activity history.
-- `app/services/updatestatusservice.*`: process-wide updater state and announced version. The Update button sends
-  `UPDATER_START_INSTALLER`: the server downloads and installs the AppImage update, then restarts the application on it,
-  on the Settings window, without any client request. An automatic update (scheduled check, automatic updates enabled)
-  is installed without restart and stays `Ready`: Settings show Restart, and the same request restarts the application
-  on it in the background. A check that follows a change of channel never installs by itself, and enabling automatic
-  updates waits for the next scheduled check.
-- `app/services/updaterestartcoordinator.*`: requests the restart on an update in `Ready` once no window is visible
-  (main window, onboarding included, and Settings) for `AppConstants::Updater::restartQuietDelayMs`. Running
-  synchronizations do not delay it: they resume after the restart, and a drive that is always busy must still receive
-  the update. It sends one request per `Ready` period; if a window stays open, the next launch uses the installed
-  AppImage anyway.
-- `app/services/updatenotifier.*`: notifies an update available for download, or available while automatic updates
-  are off, once per state and version in a session, never while notifications are disabled. The restart that follows
-  an installation is silent. A click opens Settings on the update button (`SettingsWindowController::requestOpenUpdate`). The server
-  does not announce updates on Linux, so the client is the only source of these notifications.
-- `app/services/releasenotesservice.*`: downloads and parses the release notes of the announced version for the update
-  details dialog. They are shown only when the client can apply the configured proxy itself.
-- `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
-  `ParametersStore` snapshot, sends the full `PARAMETERS_UPDATE` payload, and updates the store only after server
-  confirmation.
-- `app/services/sentryservice.*`: Linux v4 Sentry coordinator. It reconciles cached and server-confirmed consent,
-  publishes normalized Linux/Qt runtime tags after the GUI application exists, and refreshes the distribution channel
-  from the confirmed `ParametersStore` snapshot.
-- `app/services/syncerrorservice.*`: sync error action facade driven by `ServiceActionTracker` + `ServiceEventBus`.
-  `refreshErrors` sends `ERROR_SYNC_REFRESH` once per synchronization at a time; the server deletes the errors and
-  replies after re-detecting the remaining ones (up to 30 s), which come back through push signals, so the cache is
-  never changed here. `fetchConflictInfo` reads one version of a conflict (`NODE_CONFLICT_INFO`): the local version is
-  the conflict copy (`destinationPath`), the remote one the original path (`path`). `resolveConflicts` sends
-  `ERROR_RESOLVE_CONFLICTS`; the server may remove the resolved errors before it replies. `resolveConflictsQuick` sends
-  `ERROR_RESOLVE_CONFLICTS_QUICK` (the server picks the most recent version itself) under the same pending action, so a
-  single resolution runs per synchronization; `OperationCanceled` (another user action running) is not reported.
-- `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
-  durable cache mutations stay signal-driven through `CachePipeline`. `addDriveSync` is the only sender of `SYNC_ADD`:
-  onboarding and Settings must never call `CommService::requestSyncAdd` directly, otherwise two windows can create two
-  classic syncs for the same drive while the first `SYNC_ADDED` push is still in flight. Advanced syncs (non-empty
-  `serverFolderNodeId`) bypass the check and the reservation; they must also set `serverFolderPath`, which the server
-  uses to validate them as advanced. `createRemoteFolder` sends `NODE_CREATEMISSINGFOLDERS` (`userDbId` + `driveId`);
-  the server adds the new folder to the blacklist of every synchronization of the backend drive. It matches them by
-  `DriveId` only, so another user who configured the same drive gets it blacklisted too; this is a known server
-  limitation, not handled on the client.
-- `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
-  onboarding Lottie animations.
-    - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main
-      routes and arbitrates presentation across global modal families; feature queueing remains in the owning C++
-      controller.
-    - `ui/windows/main/`: main-window shell, remaining temporary tab placeholders, and feature families grouped under
-      `activities/`, `errors/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`,
-      `states/`, and versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window
-      active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML
-      models.
-    - `ui/windows/main/blockingerror/`: blocking error screen built on `IKBlockingState`, in place of the page content
-      with the Storage page margins; `BlockingErrorDriveLabel` renders the drive with its status badge (macOS icons
-      recolored white for `IKTintedIcon`, status colors per variant). `SidebarView.navigationEnabled` disables Home,
-      Activities and Storage meanwhile; opening the synchronization folder stays available.
-    - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
-      presentation, and empty state. `ActivitiesView` hosts the sub-pages in a `StackView` that follows
-      `ActivitiesNavigation.currentPage` (one component per chain page, rebuilt without animation when the view is
-      recreated); the list itself is `ActivitiesListPage`. The toolbar shows the back button and the page title, and
-      Alt+Left or the mouse back button go back too. A page change requested by the user gives the focus to the new
-      page through its `focusDefault()`, which every chain page provides, so it never stays on a control that
-      disappeared. Size and status columns have fixed widths; only the name/folder boundary is draggable. It consumes
-      `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity history.
-    - `ui/windows/main/errors/`: "Errors to fix" sub-page of Activities (`ErrorsPage`), titled `errorPageTitle` in the
-      toolbar: header with the error count and Refresh, one card per error in sections (`ErrorRow`), empty state with
-      "View activities". "Manage" of the aggregated conflicts row opens the "Version conflicts" pages (titled
-      `conflictErrorTitle`): `ConflictsQuickPage`, three `ConflictStrategyCard`s forming a single tab stop (Up and Down
-      move the selection), then "Apply to N files" or the list; `ConflictsListPage`, an `IKSearchField` and one
-      `ConflictListRow` per conflict, in a list that is a single tab stop (Up and Down move its current row, kept in
-      sight; Enter or Space chooses its version). "Choose a version" opens `ConflictVersionDialog`, hosted once by
-      `ActivitiesView` since the errors page and the list live in the stack together, two `ConflictVersionCard`s
-      (online, local) with their details, the "Most recent" badge and the eye button. Each card is one radio button
-      (click or Space anywhere on it, only the eye button keeps its own action); its "Select" surface is an indicator,
-      not a control. The counter of the header (`IKModal.headerAccessoryData`) shows only for several conflicts.
-      "Understand the issue" opens `ErrorExplanationDialog` (an `IKModal`), whose texts, reason boxes and links are
-      chosen in QML from the explanation kind; a link inside a sentence is an `ErrorLinkText`, focusable as a whole. The
-      inotify watches row and dialog show the current limit (`inotifywatchlimit.h`, re-read on each refresh); "Raise the
-      limit" opens the dialog, whose `sysctl` command to copy is always above that limit: the app never raises it
-      itself. Variants: the item chip (`ErrorItemChip`, names with a leading or trailing space in quotes, path in the
-      tooltip), the information icon (first line of the description, advice in the tooltip), the copyable path, and the
-      folded technical details (two name and value pairs per row on wide cards, values elided on the left) with their
-      copy button (`ErrorCopyButton`, a check mark confirms the copy). The copyable field (`ErrorCopyablePath`, a path
-      or a command) is shared by the rows and the explanation dialog.
-    - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
-      the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
-      with Down on the last row. It consumes `SearchController`; it must not call IPC.
-    - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses (see "Regenerate Lottie
-      QML animations"). Instantiate finite status animations only while their state is active so that they start when
-      the status becomes visible.
-    - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
-      connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
-    - `ui/windows/updaterequired/`: update-required screen built on `IKBlockingState`, loaded by `Main.qml` above every
-      other route, onboarding included (the session is hidden, not cancelled), while
-      `SyncErrorsProjection.updateRequired`; the header keeps only the kDrive logo and title. "Download manually" calls
-      `GeneralSettingsController::openDownload` and "Quit" calls `SystemTrayController::requestApplicationQuit`. Settings cannot be
-      opened meanwhile: `AppClientLinux::openSettingsWindow` refuses, an open Settings window is closed, and the tray
-      entry is disabled.
-    - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
-      becomes reusable from another product window.
-    - `ui/features/syncconfiguration/`: reusable advanced-sync presentation. Model roles consumed by a `TableView` or
-      `TreeView` delegate must not reuse the view's own delegate properties (`selected`, `editing`, `current`, `row`,
-      `column`, `expanded`, ...): the view sets them from its own selection and editing state, so a same-named role
-      shows a second, unrelated state. The remote-folder tree is a single tab
-      stop that moves a current row internally, so tabbing never walks through every checkbox of a large folder list;
-      the current row is a navigation cursor drawn as a tint, kept distinct from the keyboard focus ring.
-    - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
-      primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
-      services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action
-      roles;
-      feature dialogs supply their own wording, state, and actions. Use `IKConfirmationDialog` for standard
-      cancel/confirm
-      prompts so consumers only provide copy, busy state, an optional retryable `errorText`, and the confirmed/dismissed
-      workflows. `IKLinkButton` is the
-      inline textual action for rows and cards that must not carry a button surface of their own. `IKInformationBlock`
-      is the main-window information block: optional icon tile, title, subtitle, primary action (with the external-link
-      marker when it opens the browser) and optional dismiss button below it; `IKErrorBanner` is its synchronization
-      errors variant, so both banners share one geometry. `IKCheckBox` is the renders the state it is given and only 
-      reports clicks, so a model owning the selection stays authoritative.
-      `IKBlockingState` is the shared card of full-page blocking states (update required, blocking synchronization
-      errors): visual, title, description and a row of actions; the owner places it and supplies the visual and the
-      actions. Its tokens live in `IKBlockingStateTokens`.
-      `IKSearchField` is the rounded search
-      field (magnifier, clear button); its owner keeps the query through `text`, `textEdited` and `cleared`.
-      `IKLinkButton` is the inline textual action for rows and cards that must not carry a button surface of their own.
-      `IKCheckBox` is the shared tri-state indicator: it
+## QML Conventions And Pitfalls
 
-    - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
-      Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
-      accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
-      and close behavior. `IKWindowResizeHandles` is the single owner of custom-frame resize hit areas and can be reused
-      by an interaction layer above a modal overlay without unblocking the underlying application content. Onboarding
-      uses `headerOverlaysContent` so window controls do not shift its fixed visual composition. The window decoration
-      controller limits input to the surface and resize handles without clipping the diffuse shadow. It publishes
-      `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible surface rather than the
-      transparent
-      shadow during snapping and maximization. Native Wayland intentionally uses public Qt APIs only and therefore snaps
-      the complete native window, including its transparent shadow margin.
-    - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie sources
-      (see "Regenerate Lottie QML animations"). Do not edit these files manually. They are excluded from `qmllint`;
-      validation belongs to the generator and the QML compilation step.
+- Name layout values in `ui/tokens/`. Raw colors belong to T1 primitives; T3 tokens reference T1 or T2. Format token
+  files without `qmlformat --normalize`, which reorders members across the T1/T2/T3 sections.
+- Text from the server or the filesystem (names, paths) uses `textFormat: Text.PlainText`.
+- Tooltips use `IKToolTip`, which owns `visible`: buttons set `targetButton`, other items `showRequested`, never
+  `activeFocus`.
+- Shortcuts are `Shortcut` items with `context: Qt.WindowShortcut` in the window root. Prefer a `StandardKey` annotated
+  with its usual key, explicit sequences only where desktops bind nothing (`"Ctrl+,"`), and `"Ctrl+Shift+Tab"` rather
+  than `StandardKey.PreviousChild` (Backtab never matches on Wayland). Give a key press one matching sequence: two make
+  the shortcut ambiguous and it never fires. Tooltips show it through `Shortcut.nativeText`.
+- `TableView` / `TreeView` model roles avoid delegate property names (`selected`, `editing`, `current`, `row`,
+  `column`, `expanded`, ...): the view sets those from its own state.
+- Tint icons with `IKTintedIcon` and white source fills. Pad an SVG `viewBox` whose paths touch its bounds: Qt SVG clips
+  their antialiasing even with `overflow="visible"`.
+- Wrap an icon used as a `Control.contentItem` before sizing it: the control owns its content item's geometry.
+- `Rectangle.clip` is rectangular: mask a rounded composite with one shape.
+- In-app modals take their window's `effectiveShadowMargin` and `surfaceRadius` as `scrimInset` and `scrimRadius`;
+  otherwise the scrim dims the transparent shadow margin.
+- On a card surface, an `IKModalButton` uses the `Tonal` role: the `Secondary` outline is too close to the card.
+- Every labelled `IKLinkButton` or `IKModalButton` that opens the browser sets `external: true`; icon-only controls
+  name the destination in their tooltip.
+- Size a fixed-width column from the widest localized strings the model exposes and from its header label
+  (`maxTextWidth`, `TextMetrics`).
+- Generated Lottie animations: read [`ui/LOTTIE_ANIMATIONS.md`](ui/LOTTIE_ANIMATIONS.md) before generating, regenerating
+  or fixing one.
 
-### Regenerate Lottie QML animations
+## User Action Log
 
-The Lottie sources are supplied locally and are not versioned; only the generated QML components are tracked. Use the
-`lottietoqml` of the Conan Qt package (`source build-linux/build/build/Debug/generators/conanrun.sh`).
+- Log every QML interaction through `UserActionLog` (`action`, `screen`, `dialog`, `window`).
+- Ids are lowerCamel segments `<surface>.<zone>.<control>`, with surfaces `main`, `dialog`, `onboarding`, `syncConfig`,
+  `settings`, `window`, `shortcut`, `tray` and `notification`. A prefix used more than once in a file is written once:
+  `screenId`, `dialogId`, or a root `readonly property string actionIdPrefix`.
+- Shared interactive components require their id (`actionId`, `dialogId`, `windowId`, `actionIdPrefix` for trees) and
+  log by themselves; an ad hoc control calls `UserActionLog.action(...)` first in its handler. qmllint misses instances
+  in an aliased default property (`SettingsRow`): check those by hand.
+- Log a screen while it and its window are visible, again on each new showing. Keyboard and assistive activations go
+  through the logged path, before the effect.
+- Details carry technical ids, booleans, enum names and row indexes only: no displayed or typed text, paths, patterns
+  or proxy settings.
+- A new Matomo event or page view gets an `AnalyticsCatalog` entry from the kDrive v4 taxonomy.
 
-Sources and palette bindings of the generated files, under `ui/windows/`:
-- `onboarding/animations/LoaderStrokeAnimation.qml`: `kDrive-LoaderStroke-LIGHT.lottie`, front page as outline.
-- `onboarding/animations/SyncFileLightAnimation.qml` and `SyncFileDarkAnimation.qml`: `kDrive-SyncroFile-LIGHT.lottie`
-  and `kDrive-SyncroFile-DARK.lottie`.
-- `main/home/animations/HomeIdleAnimation.qml`: `WIN_LINUX_kDrive-Check-LIGHT.json`; `#2A8F36` badge foreground,
-  `#E0F8E2` badge surface, `#446FDD` illustration stroke.
-- `main/home/animations/HomeSyncingAnimation.qml`: `kDrive-Sync-LIGHT.lottie`; `#446FDD` foreground, `#DEE7FD` surface.
-- `main/home/animations/HomePausedAnimation.qml`: `kDrive-Pause-LIGHT.lottie`; `#FF8500` foreground, `#FFE8D8` surface.
-- `main/home/animations/HomeOfflineAnimation.qml`: `kDrive-Offline-LIGHT.lottie`; `#446FDD` foreground, `#DEE7FD`
-  surface.
+## Debug Switches
 
-For each animation:
-1. Take the animation payload: the `.json` of a `.lottie` container other than `manifest.json`.
-2. Normalize it: remove `h` from the keyframes of animated shape paths (`ty == "sh"`, `ks.a == 1`). For the loader,
-   replace the `page-front` shapes with their first path plus their last item turned into a stroke (`ty: "st"`,
-   `w: 1.25`, `lc: 2`, `lj: 2`, `ml: 4`, without `r`).
-3. Run `lottietoqml <normalized>.json <output>.qml`, without `-c` / `-p`, and check that the output has no
-   `PathSvg { path: "M 0 0 " }`.
-4. Change the root `visible: frameCounter >= 0 && frameCounter < <end frame>` to `<=`: `lottietoqml` hides the root on
-   the last frame, so a finished animation would disappear and a looping one would blink once per loop.
-5. Prepend the repository QML license block, then `// Generated by lottietoqml. Do not edit geometry or timing
-   manually.` and `// Generated from Lottie file <normalized file name>`.
-6. For Home animations, replace each generated color with `IKColors.home<State>*` per the list above, add
-   `// Palette bindings use IKColors for automatic Light/Dark adaptation.` to the header and `import kDrive.UI`.
+- `KDRIVE_SIMULATE_ERRORS=<scenario>` (Debug only, `app/devtools/errorsimulator.*`) shows fake sync errors. Give every
+  new `SyncErrorKind` a fixture.
+- `KDRIVE_FORCE_NO_TRAY=1` (Debug only) keeps the tray disabled to test the window fallback.
+- `KDRIVE_TRAY_ICONS=white|black` forces the tray icon set.
 
-Compare each regenerated animation with the previous one in a real window, in both themes, before committing.
+## Build
 
-## Build And Validation
-
-`kdrive_qml` is configured to output into `${BIN_OUTPUT_DIRECTORY}`, next to the `kDrive` server executable.
+From the repository root; `kdrive_qml` is written next to the `kDrive` server in `${BIN_OUTPUT_DIRECTORY}`:
 
 ```bash
-# From repo root: install Debug dependencies and generate Conan / CMake presets
-./infomaniak-build-tools/conan/build_dependencies.sh Debug
-
-# Configure the generated Debug preset, then build the relevant Linux targets
-cmake --preset conan-debug -S . -B build-linux/build/build/Debug
-cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive_qml -- -j 8
-```
-
-## Architecture Rules
-
-- Keep layers strict:
-    - `communicationlayer/*` = transport/protocol mechanics only.
-    - `app/services/*` = typed backend facade for upper layers.
-    - `ui/*` = presentation and bindings; no protocol code.
-- QML must never call `IpcClient` directly.
-- New backend calls must be added in `CommService`, not in UI files.
-- Server-push events must be registered in `CommService::register*Handlers` and re-emitted as typed Qt signals.
-- When object lifetime is uncertain in async callbacks, guard with `QPointer<T>`.
-- For cross-service UI error notification, use a single shared `ServiceEventBus` instance and inject it by reference
-  into each service (`UserService`, `DriveService`, `SyncService`, ...).
-- Keep responsibilities split:
-  `ServiceEventBus` for transient events, `ServiceActionTracker` for durable pending-action state.
-- Do not create per-service formatted error-string state for UI display; services emit generic bus signals and keep
-  structured backend error information in request handlers/logs.
-- `DriveService` and `SyncService` use `ServiceActionTracker` for loading/pending state and `ServiceEventBus` for
-  transient failure notification; avoid reintroducing local `lastError` / ad hoc pending counters there.
-- `SyncService::startSync`/`stopSync` set the cached runtime status to `Starting`/`StopAsked` as soon as the request is
-  sent, as macOS does, because the server reports the new status only on its next progress tick after its reply. A
-  failed request restores the previous status unless the server has reported one since. A start or stop is ignored while
-  another one is pending for the same synchronization, so a rollback never restores the other request's status.
-- `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
-- `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
-- Main-sidebar drive/sync rows belong in `SyncSelectorModel`. Keep window state, tab navigation, desktop actions, and
-  future Home/Activities/Storage data out of that model.
-- Store available drives per user via `AppCache::replaceAvailableDrivesForUser(...)`; do not reintroduce a global
-  available-drives snapshot.
-- `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire
-  those pushes themselves.
-- `CachePipeline` must not let server pushes mutate `AppCache` before the initial `CachePopulator` snapshot has
-  completed.
-- Full graph snapshots (`USER_INFOLIST`, `ACCOUNT_INFOLIST`, `DRIVE_INFOLIST`, `SYNC_INFOLIST`, initial error list)
-  belong to `CachePopulator` for bootstrap/reconnect and explicit parent-first reconciliation after a non-transactional
-  mutation failure. Do not expose user/drive/sync full-refresh methods to QML services.
-- QML-facing services should provide targeted actions only; user/account/drive/sync cache consistency is
-  push-signal-driven.
-- Onboarding navigation belongs in `OnboardingFlowController`; keep long-running backend work in service facades and
-  durable selections in `OnboardingState`. The login screen must not advance optimistically: it advances only after the
-  server login-token request succeeds, the logged-in user appears in `AppCache`, and available-drive loading has been
-  requested. The drive-selection screen then owns the loading/empty/loaded presentation while the request completes.
-- Pass stable app-owned controllers such as `OnboardingSessionManager` and `MainSidebarController` to `Main.qml` as
-  initial properties. Pass controllers/models down through explicit required QML properties; do not add dynamic context
-  properties for window-owned composition.
-- Keep app-global modals in `GlobalModalHost` so they survive route loader changes. Contextual onboarding/settings
-  modals should instantiate `IKModal` in their owning window or view instead of moving their workflow into the global
-  host.
-- A one-off transactional dialog gets a controller created for its session by the controller of its page, as
-  `AdvancedSyncsController` does with `AdvancedSyncCreationController`, rather than a process-long member of
-  `AppClientLinux` reset on close. Pass that controller to the dialog as an initial property and release it after the
-  closing transition: a late async response then reaches a destroyed object, so no request generation is needed.
-
-## IPC And Error Handling
-
-- Transport is loopback TCP + JSON envelope shared with `libcommon/comm.h` / `libcommon/commjson.h`, wrapped in TLS via
-  `QSslSocket`. The server presents a self-signed certificate generated by `SelfSignedCert` and stored in the OS
-  keychain under `certKeychainKey` (`libcommon/comm.h`). The client pins that certificate as the only trusted CA
-  (`CertReader` loads it at startup) and verifies the peer name against `kDrive-localhost` (`localHostName` in
-  `libcommon/comm.h`); SSL errors are logged and never ignored. The shared keychain `package` / `service` constants live
-  in `libcommon/utility/utility.h` (`keychainConstant` namespace) and must stay in sync with `KeyChainStorage`
-  on the server side.
-- `IpcClient` treats post-connection socket failure as fatal (disconnect/error after first successful connection exits
-  process).
-- After processing incoming IPC data, `IpcClient` releases an empty receive buffer whose capacity reached 8 MiB and
-  calls `malloc_trim(0)` after receive and parsing temporaries have been destroyed. Keep incomplete messages intact and
-  retain small buffers for reuse. This reduces retained memory, not the peak during JSON parsing; cached data and
-  queued signals remain allocated while still needed.
-- Request methods should parse `Poco::DynamicStruct` into typed DTOs before exposing data upward.
-- Generic UI-facing request failures from high-level services should be emitted through `ServiceEventBus` so UI can
-  subscribe once (`genericErrorOccurred()`).
-- Sentry captures in Linux v4 should go through `SentryService`; capture helpers must tolerate Sentry being
-  uninitialized because consent can disable the native SDK.
-- Action-level and per-service loading state should come from `ServiceActionTracker`
-  (`isActionPending(...)`, `isServicePending(...)`).
-- Use shared `msgParam*` keys and enums from `libcommon`; avoid ad-hoc string keys.
-
-## Coding Conventions (Linux v4)
-
-- Use `QLoggingCategory` + `qCDebug/qCInfo/qCWarning/qCCritical`; no `std::cout`.
-- Log every user interaction from QML through `UserActionLog` (`action`, `screen`, `dialog`, `window`), never with a
-  direct `console.*` call. Ids are stable lowerCamel segments (`<surface>.<zone>.<control>`, surfaces `main`, `dialog`,
-  `onboarding`, `syncConfig`, `settings`, `window`, `shortcut`, `tray`, `notification`); a dialog's controls derive
-  their ids from its `dialogId` (`<dialogId>.cancel`), and a keyboard shortcut logs `shortcut.<name>`.
-- Write an id prefix used more than once in a file only once: a page builds its ids from its `screenId`, a dialog from
-  its `dialogId`, any other file from a `readonly property string actionIdPrefix` declared at its root
-  (`root.actionIdPrefix + ".options"`). A file with a single id keeps it whole. To find the code of a log line, search
-  its last segment (`".useLog"`), then check the prefix of the file.
-- Interactive shared components require their id: `actionId` (`IKModalButton`, `IKLinkButton`, `IKSwitch`,
-  `IKCheckBox`, `IKComboBox`, `IKSidebarItem`, `IKDriveSyncSelectorItem`, `IKInformationBlock`, `IKErrorBanner`,
-  `IKSearchField`, `SettingsInfoButton`, `SettingsNavigationRow`), `dialogId` (`IKModal`, `IKConfirmationDialog`) or
-  `windowId` (`IKShadowedWindow`); they log by themselves, before the handler of the instance. Feature-neutral trees
-  (`RemoteFolderTree`, `RemoteFolderPicker`) take an `actionIdPrefix`. A new interactive shared component follows the same
-  rule; an ad hoc control (`Button`, `ToolButton`, `TapHandler`, `MouseArea`, `Keys.on*Pressed`, `Shortcut`) calls
-  `UserActionLog.action(...)` first in its handler. qmllint does not see instances placed in an aliased default property
-  (`SettingsRow`), so check them by hand: a missing required id only fails when the component is created.
-- Log a screen only while it is really shown, the item and its window both visible, and again each time it is shown
-  anew: a view can be created while the window is in the tray, or kept hidden behind another route
-  (`MainWindowView`, `OnboardingWindow`, `UpdateRequiredView`). Route assistive and keyboard activations through the
-  same logged path as the pointer, and log before the effect. A key that activates a control outside a `Shortcut`
-  adds its origin to the details (`key: return` on `IKModalButton`).
-- Never put displayed or typed text, local paths, exclusion patterns, folder names or proxy settings in user action
-  details: only technical ids (`syncDbId`, `rowId`, `driveDbId`), booleans, enum names and row indexes. Window closing is
-  logged once in `IKShadowedWindow.onClosing` (`window.close`), whatever closed the window.
-- Give a new Matomo event or page view an entry in `AnalyticsCatalog` with a category and event name of the kDrive v4
-  taxonomy; never derive them from the log id.
-- Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
-- Prefer documenting private implementation helpers in `.cpp` rather than headers.
-- Do not run `clang-format` on `CMakeLists.txt` in this repository.
-- Size a fixed-width column from its content, never from a hard-coded constant. The model exposes the widest strings the
-  column can render in the active locale (e.g. `ActivityListModel::sizeTextSamples`) and measures them
-  with `maxTextWidth(texts, font)`; the view takes the max with the header label, measured separately via `TextMetrics`
-  because the header elides too. A constant tuned on one language truncates in the ones with longer wordings.
-
-## Change Playbooks
-
-### Add a new request in `CommService`
-
-1. Verify `RequestNum` and `msgParam*` exist in `libcommon`.
-2. Add callback typedef if needed.
-3. Add method declaration in `commservice.h`.
-4. Implement method in `commservice.cpp` using `_ipcClient.sendRequest(...)`.
-5. Convert IPC payload to typed result object before invoking callback.
-
-### Add a new server-push signal
-
-1. Verify `SignalNum` and payload keys in `libcommon`.
-2. Register handler in the appropriate `register*Handlers` method.
-3. Parse payload safely into typed fields/DTOs.
-4. Emit a typed Qt signal from `CommService`.
-
-## Quick Find
-
-```bash
-# Linux v4 files
-find src/gui4/linux -type f | sort
-
-# IPC request methods and callsites
-rg -n "request[A-Z].*\\(" src/gui4/linux/app/services/commservice.* -g "*.h" -g "*.cpp"
-
-# Signal registrations
-rg -n "registerHandler\\(" src/gui4/linux/app/services/commservice.cpp
-
-# Shared request/signal enums and JSON keys
-rg -n "enum class (RequestNum|SignalNum)|msgParam" src/libcommon/comm.h src/libcommon/commjson.h
-
-# Logging categories in Linux v4 frontend
-rg -n "Q_LOGGING_CATEGORY|qC(Debug|Info|Warning|Critical)" src/gui4/linux -g "*.cpp" -g "*.h"
-```
-
-## Pre-PR Checks
-
-```bash
-# Native Linux validation from repo root
 ./infomaniak-build-tools/conan/build_dependencies.sh Debug
 cmake --preset conan-debug -S . -B build-linux/build/build/Debug
-cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive_qml -- -j 8
+cmake --build build-linux/build/build/Debug --target kDrive kdrive_qml -- -j 8
 ```

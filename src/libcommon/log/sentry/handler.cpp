@@ -207,9 +207,6 @@ void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &
             case AppType::Server:
                 sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
                 break;
-            case AppType::Client:
-                sentry_options_set_dsn(options, SENTRY_CLIENT_DSN);
-                break;
             case AppType::Test:
                 sentry_options_set_dsn(options, SENTRY_TEST_DSN);
                 break;
@@ -229,9 +226,6 @@ void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &
         switch (_appType) {
             case AppType::Server:
                 appSupportPath /= SENTRY_SERVER_DB_PATH;
-                break;
-            case AppType::Client:
-                appSupportPath /= SENTRY_CLIENT_DB_PATH;
                 break;
             case AppType::Test:
                 appSupportPath /= SENTRY_TEST_DB_PATH;

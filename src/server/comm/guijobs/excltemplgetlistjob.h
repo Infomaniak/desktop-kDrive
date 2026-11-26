@@ -29,9 +29,6 @@ class ExclTemplGetListJob : public AbstractGuiJob {
         ExclTemplGetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                             std::shared_ptr<AbstractCommChannel> channel);
 
-        // Setters for compatibility with legacy comm layer
-        void setInParms(bool def) { _default = def; }
-        std::vector<ExclusionTemplate> getOutParmsExclusionTemplateList() const { return _exclusionTemplateList; }
         ExitInfo process() override;
 
     private:

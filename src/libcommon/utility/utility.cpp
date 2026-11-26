@@ -36,8 +36,6 @@
 #include <QFileInfo>
 #include <QTranslator>
 #include <QLibraryInfo>
-#include <QMimeDatabase>
-#include <QMimeType>
 #include <QStorageInfo>
 #include <QProcess>
 #include <QSqlDatabase>
@@ -51,7 +49,6 @@
 #include <Poco/Dynamic/Struct.h>
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
-#include <sys/statvfs.h>
 #include <uuid/uuid.h>
 #endif
 
@@ -163,15 +160,6 @@ std::string CommonUtility::generateUUID() {
     return uuidStr;
 }
 #endif
-
-void CommonUtility::crash() {
-    volatile int *a = (int *) (NULL);
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnull-dereference"
-    *a = 1;
-#pragma clang diagnostic pop
-}
 
 QString CommonUtility::platformName() {
     return QSysInfo::prettyProductName();
@@ -578,42 +566,6 @@ std::string CommonUtility::getIconPath(const IconType iconType) {
     return {};
 }
 
-qint64 CommonUtility::freeDiskSpace(const QString &path) {
-#if defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_FREEBSD_KERNEL) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
-    struct statvfs stat;
-    if (statvfs(path.toLocal8Bit().data(), &stat) == 0) {
-        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
-    }
-#elif defined(Q_OS_UNIX)
-    struct statvfs64 stat;
-    if (statvfs64(path.toLocal8Bit().data(), &stat) == 0) {
-        return static_cast<qint64>(stat.f_bavail * stat.f_frsize);
-    }
-#elif defined(Q_OS_WIN)
-    ULARGE_INTEGER freeBytes;
-    freeBytes.QuadPart = 0L;
-    if (GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(path.utf16()), &freeBytes, NULL, NULL)) {
-        return freeBytes.QuadPart;
-    }
-#endif
-    return -1;
-}
-
-QByteArray CommonUtility::toQByteArray(const qint32 source) {
-    // Avoid use of cast, this is the Qt way to serialize objects
-    QByteArray temp;
-    QDataStream data(&temp, QIODevice::ReadWrite);
-    data << source;
-    return temp;
-}
-
-int CommonUtility::toInt(QByteArray source) {
-    int temp;
-    QDataStream data(&source, QIODevice::ReadWrite);
-    data >> temp;
-    return temp;
-}
-
 QString CommonUtility::escape(const QString &in) {
     return in.toHtmlEscaped();
 }
@@ -760,27 +712,16 @@ Language CommonUtility::strToLanguage(const QString &lang) {
 }
 
 QString applicationTrPath() {
-    const auto hasClientQmFiles = [](const QString &path) {
-        const QDir dir(path);
-        return dir.exists() && !dir.entryList(QStringList() << "client_*.qm", QDir::Files).isEmpty();
-    };
-
+    using namespace Qt::StringLiterals;
 #if defined(KD_MACOS)
-    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
-    if (const QString gui4DevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/");
-        hasClientQmFiles(gui4DevTrPath)) {
-        // might miss Qt etc.
-        qWarning() << "Running from build location! Translations may be incomplete!";
-        return gui4DevTrPath;
-    }
+    constexpr auto buildTranslationsSuffix = "/../../../../src/"_L1;
 #else
-    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
+    constexpr auto buildTranslationsSuffix = "/../src/"_L1;
 #endif
-
-    if (hasClientQmFiles(legacyDevTrPath)) {
-        // might miss Qt etc.
+    if (const auto buildTranslations = QCoreApplication::applicationDirPath() + buildTranslationsSuffix;
+        !QDir(buildTranslations).entryList({QStringLiteral("client_*.qm")}, QDir::Files).isEmpty()) {
         qWarning() << "Running from build location! Translations may be incomplete!";
-        return legacyDevTrPath;
+        return buildTranslations;
     }
 
 #if defined(KD_WINDOWS)
@@ -794,7 +735,7 @@ QString applicationTrPath() {
 #endif
 
 #else
-    return CommonUtility::applicationDirPath() + QString::fromLatin1("/../" SHAREDIR "/" APPLICATION_CLIENT_EXECUTABLE "/i18n/");
+    return CommonUtility::applicationDirPath() + QString::fromLatin1("/../" SHAREDIR "/" APPLICATION_EXECUTABLE "_server/i18n/");
 #endif
 }
 
@@ -942,63 +883,6 @@ QString CommonUtility::applicationDirPath() {
     }
 #endif
     return QCoreApplication::applicationDirPath();
-}
-
-QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, const NodeType type) {
-    if (type == NodeType::Directory) {
-        return QString(":/client/resources/icons/document types/folder.svg");
-    } else if (type == NodeType::File) {
-        QMimeDatabase db;
-        QMimeType mime = db.mimeTypeForFile(fileName, QMimeDatabase::MatchExtension);
-        if (mime.name().startsWith("image/")) {
-            return QString(":/client/resources/icons/document types/file-image.svg");
-        } else if (mime.name().startsWith("audio/")) {
-            return QString(":/client/resources/icons/document types/file-audio.svg");
-        } else if (mime.name().startsWith("video/")) {
-            return QString(":/client/resources/icons/document types/file-video.svg");
-        } else if (mime.inherits("application/pdf")) {
-            return QString(":/client/resources/icons/document types/file-pdf.svg");
-        } else if (mime.name().startsWith("application/vnd.ms-powerpoint") ||
-                   mime.name().startsWith("application/vnd.openxmlformats-officedocument.presentationml") ||
-                   mime.inherits("application/vnd.oasis.opendocument.presentation")) {
-            return QString(":/client/resources/icons/document types/file-presentation.svg");
-        } else if (mime.name().startsWith("application/vnd.ms-excel") ||
-                   mime.name().startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml") ||
-                   mime.inherits("application/vnd.oasis.opendocument.spreadsheet")) {
-            return QString(":/client/resources/icons/document types/file-sheets.svg");
-        } else if (mime.inherits("application/zip") || mime.inherits("application/gzip") || mime.inherits("application/tar") ||
-                   mime.inherits("application/rar") || mime.inherits("application/x-bzip2")) {
-            return QString(":/client/resources/icons/document types/file-zip.svg");
-        } else if (mime.inherits("text/x-csrc") || mime.inherits("text/x-c++src") || mime.inherits("text/x-java") ||
-                   mime.inherits("text/x-objcsrc") || mime.inherits("text/x-python") || mime.inherits("text/asp") ||
-                   mime.inherits("text/html") || mime.inherits("text/javascript") || mime.inherits("application/x-php") ||
-                   mime.inherits("application/x-perl")) {
-            return QString(":/client/resources/icons/document types/file-code.svg");
-        } else if (mime.inherits("text/plain") || mime.inherits("text/xml")) {
-            return QString(":/client/resources/icons/document types/file-text.svg");
-        } else if (mime.inherits("application/x-msdos-program")) {
-            return QString(":/client/resources/icons/document types/file-application.svg");
-        }
-
-        return QString(":/client/resources/icons/document types/file-default.svg");
-    } else {
-        return QString(":/client/resources/icons/document types/file-default.svg");
-    }
-}
-
-QString CommonUtility::getRelativePathFromHome(const QString &dirPath) {
-    QString home = QDir::homePath();
-    if (!home.endsWith('/')) {
-        home.append('/');
-    }
-    QString name(dirPath);
-    if (name.startsWith(home)) {
-        name = name.mid(home.length());
-    }
-    if (name.length() > 1 && name.endsWith('/')) {
-        name.chop(1);
-    }
-    return QDir::toNativeSeparators(name);
 }
 
 bool CommonUtility::isFileSizeMismatchDetectionEnabled() {

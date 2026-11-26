@@ -36,7 +36,7 @@ function display_help {
   echo "--ccache"
   echo "  Use ccache as C/C++ compiler launcher when available. Disabled by default; measure hit rate before enabling in CI."
   echo "--extract-debug"
-  echo "  Extract debug symbols from kDrive and kDrive_client. Disabled by default in this CI build script."
+  echo "  Extract debug symbols from kDrive and kdrive_qml. Disabled by default in this CI build script."
 }
 
 
@@ -210,8 +210,8 @@ else
         if [ -f ./bin/kDrive ]; then
             extract_debug ./bin kDrive
         fi
-        if [ -f ./bin/kDrive_client ]; then
-            extract_debug ./bin kDrive_client
+        if [ -f ./bin/kdrive_qml ]; then
+            extract_debug ./bin kdrive_qml
         fi
     fi
 

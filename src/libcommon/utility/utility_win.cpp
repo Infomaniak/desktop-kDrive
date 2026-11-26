@@ -33,7 +33,6 @@
 #include <QLibrary>
 #include <QFile>
 #include <QDir>
-#include <QSettings>
 #include <QVariant>
 #include <QCoreApplication>
 #include <config.h>
@@ -41,8 +40,6 @@
 
 static const char systemRunPathC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 static const char runPathC[] = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-static const char themePathC[] = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
-static const char lightThemeKeyC[] = "SystemUsesLightTheme";
 
 namespace KDC {
 
@@ -85,13 +82,6 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
 
 SyncPath CommonUtility::getAppDir() {
     return "";
-}
-
-bool CommonUtility::hasDarkSystray() {
-    const QString themePath = QLatin1String(themePathC);
-    const QSettings settings(themePath, QSettings::NativeFormat);
-
-    return !settings.value(QLatin1String(lightThemeKeyC), true).toBool();
 }
 
 // Be careful, some characters have 2 different encodings in Unicode
@@ -138,11 +128,6 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
     (void) normalizedName.assign(strResult, iSizeEstimated - 1);
     (void) HeapFree(hHeap, 0, strResult);
     return true;
-}
-
-std::string CommonUtility::toUnsafeStr(const SyncName &name) {
-    std::string unsafeName(name.begin(), name.end());
-    return unsafeName;
 }
 
 std::string extractOsVersion() {

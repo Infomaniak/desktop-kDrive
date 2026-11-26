@@ -12,12 +12,12 @@
   - Linux: `$XDG_STATE_HOME/kDrive/logs/` or `~/.local/state/kDrive/logs/`
 - Logger implementation: `src/libcommonserver/log/`.
 
-### Legacy Qt Client
+### Linux GUI4
 
 - File: `yyyyMMdd_HHmm_kDrive_client.log.N`; archived files may be gzip-compressed.
-- Same platform directory as the C++ server.
+- Same Linux log directory as the C++ server.
 - Format includes local timestamp with milliseconds, Qt severity, thread, and source file/line.
-- Logger implementation: `src/libcommongui/logger.cpp`.
+- Logger implementation: `src/gui4/linux/app/logger.cpp`.
 
 ### Windows GUI4
 

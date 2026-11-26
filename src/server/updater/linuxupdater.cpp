@@ -491,7 +491,7 @@ void LinuxUpdater::installUpdate(const VersionInfo &info) {
 void LinuxUpdater::updateDesktopEntries(const SyncPath &targetPath) {
     if (ParametersCache::instance()->parameters().autoStart()) {
         const auto &appName = Theme::instance()->appName();
-        if (!Utility::setLaunchOnStartup(appName, appName, targetPath)) {
+        if (!Utility::setLaunchOnStartup(appName, targetPath)) {
             LOG_WARN(logger(), "Failed to point the autostart entry to the new AppImage");
         }
     }

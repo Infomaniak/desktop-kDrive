@@ -75,7 +75,6 @@ ENDIF ()
 
 set(libcommon_NAME "${APPLICATION_NAME}common")
 set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")
-set(libcommongui_NAME "${APPLICATION_NAME}commongui")
 set(libsyncengine_NAME "${APPLICATION_NAME}syncengine")
 set(libparms_NAME "${APPLICATION_NAME}parms")
 
@@ -139,11 +138,6 @@ else()
 endif()
 #####
 
-option(NO_MSG_HANDLER "Don't redirect QDebug outputs to the log window/file" OFF)
-if(NO_MSG_HANDLER)
-    add_definitions(-DNO_MSG_HANDLER=1)
-endif()
-
 # this option builds the shell integration
 option(BUILD_EXTENSIONS "BUILD_EXTENSIONS" ON)
 
@@ -160,11 +154,7 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
 # this option enables the v4 GUI from src/gui4 when building the src folder
-# (the legacy Qt GUI in src/gui requires BUILD_GUI=OFF and BUILD_GUI_LEGACY=ON)
 option(BUILD_GUI "BUILD_GUI" ON)
-
-# this option enables the legacy Qt GUI on Windows/macOS
-option(BUILD_GUI_LEGACY "BUILD_GUI_LEGACY" OFF)
 
 option(KDRIVE_DEPLOY_QT_RUNTIME
        "Linux AppImage: deploy Qt libraries, plugins, QML modules, qt.conf, Qt translations and Conan libraries at install time"

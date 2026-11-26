@@ -23,10 +23,6 @@ struct UserQuery: Codable, Sendable {
     let userDbId: Int32
 }
 
-struct UserDbIdsListResponse: Codable, Sendable {
-    let userDbIdList: [Int32]
-}
-
 public struct UserInfoResponse: Codable, Sendable {
     public let dbId: Int32
     public let userId: Int32

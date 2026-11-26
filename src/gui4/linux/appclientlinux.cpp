@@ -28,7 +28,7 @@
 #include "app/svginfo.h"
 #include "app/syncconfiguration/remotefolderorder.h"
 #include "libcommon/utility/utility.h"
-#include "libcommongui/logger.h"
+#include "app/logger.h"
 
 #include <Poco/Dynamic/Struct.h>
 
@@ -376,8 +376,7 @@ void AppClientLinux::updateLoggerSettings() {
     }
 
     if (parameters->useLog() && !logger->isLoggingToFile()) {
-        logger->setupLogDir();
-        logger->enterNextLogFile();
+        logger->enableLog();
     } else if (!parameters->useLog() && logger->isLoggingToFile()) {
         logger->disableLog();
     }
@@ -386,8 +385,7 @@ void AppClientLinux::updateLoggerSettings() {
         logger->purgeExpiredLogFiles();
     }
 
-    if (logger->minLogLevel() != toInt(parameters->logLevel())) {
-        logger->setMinLogLevel(toInt(parameters->logLevel()));
+    if (logger->setMinLogLevel(parameters->logLevel())) {
         qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
                                  << QString::fromStdString(toString(parameters->logLevel()));
     }
@@ -616,10 +614,7 @@ void AppClientLinux::setupLogging() {
 }
 
 void AppClientLinux::configureLogger() {
-    auto *const logger = Logger::instance();
-    logger->setLogDebug(true);
-    logger->setupLogDir();
-    logger->enterNextLogFile();
+    Logger::instance()->enableLog();
 }
 
 void AppClientLinux::logApplicationInformation() {

@@ -274,7 +274,7 @@ bool Utility::hasLaunchOnStartup(const std::string &) {
     return returnValue;
 }
 
-bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
+bool Utility::setLaunchOnStartup(const std::string &appName, bool enable) {
     SyncPath filePath = CommonUtility::applicationFilePath().parent_path().parent_path().parent_path();
     CFStringRef folderCFStr = CFStringCreateWithCString(0, filePath.c_str(), kCFStringEncodingUTF8);
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(0, folderCFStr, kCFURLPOSIXPathStyle, true);
