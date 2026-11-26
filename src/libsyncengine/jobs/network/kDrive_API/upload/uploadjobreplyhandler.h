@@ -16,6 +16,10 @@
 
 #pragma once
 
+#include "libcommon/utility/types.h"
+
+#include <Poco/JSON/Object.h>
+
 namespace KDC {
 
 class UploadJobReplyHandler {
