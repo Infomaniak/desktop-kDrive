@@ -236,28 +236,28 @@ ExitInfo UploadJob::readFile() {
     ostrm << file.rdbuf();
     if (ostrm.bad()) {
         // Read/writing error or logical error
-        LOGW_WARN(_logger, L"Failed to insert file content into string stream - path=" << Path2WStr(_absoluteFilePath));
+        LOGW_WARN(_logger, L"Failed to insert file content into string stream: " << Utility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     ostrm.flush();
     if (ostrm.bad()) {
         // Read/writing error or logical error
-        LOGW_WARN(_logger, L"Failed to flush string stream - path=" << Path2WStr(_absoluteFilePath));
+        LOGW_WARN(_logger, L"Failed to flush string stream: " << Utility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     file.close();
     if (file.bad()) {
         // Read/writing error or logical error
-        LOGW_WARN(_logger, L"Failed to close file - path=" << Path2WStr(_absoluteFilePath));
+        LOGW_WARN(_logger, L"Failed to close file: " << Utility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     try {
         _data = ostrm.str();
     } catch (const std::bad_alloc &) {
-        LOGW_WARN(_logger, L"Memory allocation error when setting data content - path=" << Path2WStr(_absoluteFilePath));
+        LOGW_WARN(_logger, L"Memory allocation error when setting data content: " << Utility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::NotEnoughMemory};
     }
 
@@ -276,13 +276,12 @@ ExitInfo UploadJob::readLink() {
             bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
 #endif
             if (!exists) {
-                LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_absoluteFilePath));
+                LOGW_DEBUG(_logger, L"File doesn't exist: " << Utility::formatSyncPath(_absoluteFilePath));
                 return {ExitCode::SystemError, ExitCause::NotFound};
             }
 
-            LOGW_WARN(_logger, L"Failed to read symlink - path=" << Path2WStr(_absoluteFilePath) << L": "
-                                                                 << CommonUtility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                 << L")");
+            LOGW_WARN(_logger, L"Failed to read symlink: " << Utility::formatSyncPath(_absoluteFilePath) << L": "
+                                                           << CommonUtility::s2ws(ec.message()) << L" (" << ec.value() << L")");
             return ExitCode::SystemError;
         }
 
@@ -313,15 +312,15 @@ ExitInfo UploadJob::readLink() {
 #if defined(KD_MACOS)
         IoError ioError = IoError::Success;
         if (!IoHelper::readAlias(_absoluteFilePath, _data, _linkTarget, ioError)) {
-            LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_absoluteFilePath));
+            LOGW_WARN(_logger, L"Failed to read alias: " << Utility::formatSyncPath(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::OperationCanceled};
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_absoluteFilePath));
+            LOGW_DEBUG(_logger, L"File doesn't exist: " << Utility::formatSyncPath(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::NotFound};
         } else if (ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_absoluteFilePath));
+            LOGW_DEBUG(_logger, L"File with insufficient access rights: " << Utility::formatSyncPath(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
@@ -330,6 +329,11 @@ ExitInfo UploadJob::readLink() {
     } else {
         LOG_WARN(_logger, "Link type not managed - type=" << _linkType);
         return ExitCode::SystemError;
+    }
+
+    if (_linkTarget.empty()) {
+        LOGW_WARN(_logger, L"Link target is empty or not resolvable: " << Utility::formatSyncPath(_absoluteFilePath));
+        return {ExitCode::SystemError, ExitCause::OperationCanceled};
     }
 
     return ExitCode::Ok;

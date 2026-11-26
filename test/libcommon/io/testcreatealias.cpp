@@ -189,6 +189,30 @@ void TestIo::testCreateAlias() {
         const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkType::FinderAlias, NodeType::File);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
+
+    // The target path is empty: failure
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "invalid_target_alias.jpg";
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createAliasFromPath("", path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Unknown, createAliasError);
+    }
+
+    // The target data is invalid: failure
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "invalid_target_alias.jpg";
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createAlias("", path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, createAliasError);
+
+        createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createAlias("1234", path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Unknown, createAliasError);
+    }
 }
 
 

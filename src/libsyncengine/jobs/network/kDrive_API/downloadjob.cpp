@@ -223,11 +223,14 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         (mimeType == mimeTypeJunction && CommonUtility::isWindows())) {
         // Read link data
         getStringFromStream(is, linkData);
+        if (linkData.empty()) {
+            LOGW_WARN(_logger, L"Link target data is empty: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
+            return {ExitCode::Ok, ExitCause::OperationCanceled};
+        }
         fileType = FileType::IsLink;
     }
 
     // Process download
-
     if (fileType == FileType::IsLink) {
         // Create link
         LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType);
@@ -361,6 +364,11 @@ ExitInfo DownloadJob::setOutputParameters() {
 }
 
 ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
+    if (data.empty()) {
+        LOG_WARN(_logger, "Invalid parameters");
+        return {ExitCode::LogicError, ExitCause::InvalidArgument};
+    }
+
     // Delete in case it already exists (EDIT operation)
     (void) IoHelper::deleteItem(_fileDownloadInfo.localPath, _cacheDirectory->syncDirectoryPath());
 
@@ -468,6 +476,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                     }
 
                     assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
+                    assert(!data2.empty());
 
                     if (!IoHelper::createAlias(data2, _fileDownloadInfo.localPath, ioError,
                                                _cacheDirectory->syncDirectoryPath())) {

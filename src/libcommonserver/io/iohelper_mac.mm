@@ -115,31 +115,50 @@ bool IoHelper::_checkIfItemIsSymLinkOrAlias(const SyncPath &path, bool &isLink, 
 
 bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError,
                            const SyncPath &syncRootPath /*= {}*/) noexcept {
+    if (data.empty()) {
+        LOG_WARN(logger(), "Invalid parameters");
+        ioError = IoError::InvalidArgument;
+        return false;
+    }
+
     ioError = IoHelper::checkIfPathTraversesLink(aliasPath, syncRootPath);
     if (ioError != IoError::Success) return false;
 
-    CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
-    CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
+    const auto bookmarkRef = CFDataCreate(nullptr, (const UInt8 *) data.data(), static_cast<CFIndex>(data.size()));
+    if (!bookmarkRef) {
+        LOGW_WARN(logger(), L"Error in CFDataCreate: " << Utility::formatSyncPath(aliasPath));
+        ioError = IoError::Unknown;
+        return false;
+    }
+
+    const auto aliasPathStr = CFStringCreateWithCString(NULL, aliasPath.native().c_str(), kCFStringEncodingUTF8);
+    if (!aliasPathStr) {
+        LOGW_WARN(logger(), L"Error in CFStringCreateWithCString: " << Utility::formatSyncPath(aliasPath));
+        ioError = IoError::InvalidFileName;
+        CFRelease(bookmarkRef);
+        return false;
+    }
+
+    const auto aliasUrl = CFURLCreateWithFileSystemPath(NULL, aliasPathStr, kCFURLPOSIXPathStyle, false);
     CFRelease(aliasPathStr);
+    if (!aliasUrl) {
+        LOGW_WARN(logger(), L"Error in CFURLCreateWithFileSystemPath: " << Utility::formatSyncPath(aliasPath));
+        ioError = IoError::InvalidFileName;
+        CFRelease(bookmarkRef);
+        return false;
+    }
 
-    CFDataRef bookmarkRef = CFDataCreate(nullptr, (const UInt8 *) data.data(), static_cast<CFIndex>(data.size()));
-
-    CFErrorRef error = nil;
-    bool ret = CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);
+    CFErrorRef error = NULL;
+    const auto ret = CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);
     CFRelease(bookmarkRef);
     CFRelease(aliasUrl);
     if (!ret) {
-        if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
-            LOGW_DEBUG(logger(), L"Error in CFURLWriteBookmarkDataToFile: "
-                                         << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
-                                                                         : Utility::formatIoError(aliasPath, ioError)));
-            CFRelease(error);
-        } else {
-            // Should not happen
-            assert(false);
-            ioError = IoError::Unknown;
-        }
+        assert(error);
+        ioError = nsError2ioError((__bridge NSError *) error);
+        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: "
+                                    << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                    : Utility::formatIoError(aliasPath, ioError)));
+        CFRelease(error);
         return isExpectedError(ioError);
     }
 
@@ -152,61 +171,72 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     ioError = IoError::Success;
 
     // Read data
-    CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
-    CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
-    CFRelease(aliasPathStr);
+    const auto aliasPathStr = CFStringCreateWithCString(NULL, aliasPath.native().c_str(), kCFStringEncodingUTF8);
+    if (!aliasPathStr) {
+        LOGW_WARN(logger(), L"Error in CFStringCreateWithCString: " << Utility::formatSyncPath(aliasPath));
+        ioError = IoError::InvalidFileName;
+        return false;
+    }
 
-    CFErrorRef error = nil;
-    CFDataRef bookmarkRef = CFURLCreateBookmarkDataFromFile(nil, aliasUrl, &error);
+    const auto aliasUrl = CFURLCreateWithFileSystemPath(NULL, aliasPathStr, kCFURLPOSIXPathStyle, false);
+    CFRelease(aliasPathStr);
+    if (!aliasUrl) {
+        LOGW_WARN(logger(), L"Error in CFURLCreateWithFileSystemPath: " << Utility::formatSyncPath(aliasPath));
+        ioError = IoError::InvalidFileName;
+        return false;
+    }
+
+    CFErrorRef error = NULL;
+    const auto bookmarkRef = CFURLCreateBookmarkDataFromFile(NULL, aliasUrl, &error);
     CFRelease(aliasUrl);
-    if (bookmarkRef == nil) {
-        if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
-            LOGW_DEBUG(logger(), L"Error in CFURLCreateBookmarkDataFromFile: "
-                                         << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
-                                                                         : Utility::formatIoError(aliasPath, ioError)));
-            CFRelease(error);
-        } else {
-            // Should not happen
-            assert(false);
-            ioError = IoError::Unknown;
-        }
+    if (!bookmarkRef) {
+        assert(error);
+        ioError = nsError2ioError((__bridge NSError *) error);
+        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: "
+                                    << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                    : Utility::formatIoError(aliasPath, ioError)));
+        CFRelease(error);
         return isExpectedError(ioError);
     }
 
-    const auto size = (uint32_t) CFDataGetLength(bookmarkRef);
-    auto *buffer = new unsigned char[size];
-    CFDataGetBytes(bookmarkRef, CFRangeMake(0, size), (UInt8 *) buffer);
-    data = std::string(reinterpret_cast<char const *>(buffer), size);
-    delete[] buffer;
+    data.assign(reinterpret_cast<const char *>(CFDataGetBytePtr(bookmarkRef)), CFDataGetLength(bookmarkRef));
 
-    // Read target
-    Boolean isStale;
-    CFURLRef targetUrl =
-            CFURLCreateByResolvingBookmarkData(nil, bookmarkRef, kCFBookmarkResolutionWithoutUIMask, nil, nil, &isStale, &error);
+    // Read target. If it is not resolvable, it's not an error for us, we just don't have a target path.
+    Boolean isStale = false;
+    error = NULL;
+    const auto targetUrl =
+            CFURLCreateByResolvingBookmarkData(NULL, bookmarkRef,
+                                               kCFBookmarkResolutionWithoutUIMask // No UI feedback
+                                                       | kCFBookmarkResolutionWithoutMountingMask, // No volume should be mounted,
+                                               NULL, NULL, &isStale, &error);
     CFRelease(bookmarkRef);
-    if (targetUrl == nil) {
-        auto targetIoError = IoError::Unknown;
-        if (error) {
-            targetIoError = nsError2ioError((__bridge NSError *) error);
-            LOGW_DEBUG(logger(),
-                       L"Error in CFURLCreateByResolvingBookmarkData: "
-                               << (targetIoError == IoError::Unknown ? formatCFError(aliasPath, error)
-                                                                     : Utility::formatIoError(aliasPath, targetIoError)));
-            CFRelease(error);
-        } else {
-            // Should not happen
-            assert(false);
-            targetIoError = IoError::Unknown;
-        }
-
-        if (!isExpectedError(targetIoError)) ioError = targetIoError;
-        return isExpectedError(targetIoError);
+    (void) isStale;
+    if (!targetUrl) {
+        // Target is not resolvable
+        assert(error);
+        const auto targetIoError = nsError2ioError((__bridge NSError *) error);
+        LOGW_WARN(logger(), L"Error in CFURLCreateByResolvingBookmarkData: "
+                                    << (targetIoError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                          : Utility::formatIoError(aliasPath, targetIoError)));
+        CFRelease(error);
+        return true;
     }
 
-    CFStringRef targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);
+    const auto targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);
     CFRelease(targetUrl);
-    targetPath = SyncPath(std::string([(__bridge NSString *) targetPathStr UTF8String]));
+    if (!targetPathStr) {
+        LOGW_WARN(logger(), L"Error in CFURLCopyFileSystemPath: " << Utility::formatSyncPath(aliasPath));
+        return true;
+    }
+
+    const char *targetPathUtf8Str = [(__bridge NSString *) targetPathStr UTF8String];
+    if (!targetPathUtf8Str) {
+        LOGW_WARN(logger(), L"Invalid target path: " << Utility::formatSyncPath(aliasPath));
+        CFRelease(targetPathStr);
+        return true;
+    }
+
+    targetPath = SyncPath(std::string(targetPathUtf8Str));
     CFRelease(targetPathStr);
 
     return true;
@@ -274,42 +304,35 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
     ioError = IoHelper::checkIfPathTraversesLink(aliasPath, syncRootPath);
     if (ioError != IoError::Success) return false;
 
-    CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
-    CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
-    CFRelease(aliasPathStr);
-
-    CFStringRef targetPathStr = CFStringCreateWithCString(nil, targetPath.native().c_str(), kCFStringEncodingUTF8);
-    CFURLRef targetUrl = CFURLCreateWithFileSystemPath(nil, targetPathStr, kCFURLPOSIXPathStyle, false);
+    const CFStringRef targetPathStr = CFStringCreateWithCString(NULL, targetPath.native().c_str(), kCFStringEncodingUTF8);
+    const CFURLRef targetUrl = CFURLCreateWithFileSystemPath(NULL, targetPathStr, kCFURLPOSIXPathStyle, false);
     CFRelease(targetPathStr);
 
-    CFErrorRef error = nil;
-    CFDataRef bookmarkRef = CFURLCreateBookmarkData(
+    CFErrorRef error = NULL;
+    const CFDataRef bookmarkRef = CFURLCreateBookmarkData(
             // The obj-c/swift doc: https://developer.apple.com/documentation/corefoundation/1542923-cfurlcreatebookmarkdata
-            nullptr, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, nil, &error);
-
-    if (bookmarkRef == nil) {
-        if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
-            CFRelease(error);
-        }
-        CFRelease(aliasUrl);
-        CFRelease(targetUrl);
+            nullptr, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, NULL, &error);
+    if (targetUrl) CFRelease(targetUrl);
+    if (!bookmarkRef) {
+        assert(error);
+        ioError = nsError2ioError((__bridge NSError *) error);
+        CFRelease(error);
         LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkData: " << Utility::formatSyncPath(targetPath));
         return false;
     }
 
+    const CFStringRef aliasPathStr = CFStringCreateWithCString(NULL, aliasPath.native().c_str(), kCFStringEncodingUTF8);
+    const CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(NULL, aliasPathStr, kCFURLPOSIXPathStyle, false);
+    CFRelease(aliasPathStr);
+
     const bool result =
             CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);
-
     CFRelease(bookmarkRef);
-    CFRelease(aliasUrl);
-    CFRelease(targetUrl);
-
+    if (aliasUrl) CFRelease(aliasUrl);
     if (!result) {
-        if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
-            CFRelease(error);
-        }
+        assert(error);
+        ioError = nsError2ioError((__bridge NSError *) error);
+        CFRelease(error);
         LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath));
         return false;
     }
