@@ -640,6 +640,10 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</translation>
             <extracomment>Storage page, subscription card: link shown when the kDrive subscription storage is full, and tooltip and accessible name of the cart icon button otherwise. Opens the Infomaniak shop for the drive, admins only.</extracomment> 
             <translation>Opgrader mit abonnement</translation> 
         </message> 
+        <message id="buttonUpgradeSubscriptionShort"> 
+            <source>Upgrade</source> 
+            <translation>Udvikle</translation> 
+        </message> 
         <message id="buttonValidate"> 
             <source>Confirm</source> 
             <translation>Bekræft</translation> 
@@ -1414,6 +1418,10 @@ Det åbnes i din browser.</translation>
             <source>https://www.infomaniak.com/en/ksuite</source> 
             <translation>https://www.infomaniak.com/en/ksuite</translation> 
         </message> 
+        <message id="ksuiteProBannerDescription"> 
+            <source>Create and collaborate without limits</source> 
+            <translation>Skab og samarbejd uden grænser</translation> 
+        </message> 
         <message id="labelAccessRightsModified"> 
             <source>Access rights modified</source> 
             <translation>Adgangsrettigheder ændret</translation> 
@@ -1991,7 +1999,7 @@ Analyse af disse data giver vores team mulighed for løbende at forbedre program
         </message> 
         <message id="myksuitePlusBannerDescription"> 
             <source>More storage, more features with my kSuite+</source> 
-            <translation>Mere lagerplads, flere funktioner med my kSuite+</translation> 
+            <translation>Mere lagerplads og flere funktioner med my kSuite+</translation> 
         </message> 
         <message id="needHelpSetting"> 
             <source>Need help?</source> 
