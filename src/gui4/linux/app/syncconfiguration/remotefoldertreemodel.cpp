@@ -164,6 +164,7 @@ void RemoteFolderTreeModel::configure(const UserDbId userDbId, const DriveId dri
     _nodesById.clear();
     _excludedNodeIds.clear();
     _excludedPaths.clear();
+    _detachedSizes.clear();
     _visibleNodeTimer.stop();
     _visibleNodeCandidates.clear();
     _pendingRootChildren.reset();
@@ -428,6 +429,11 @@ void RemoteFolderTreeModel::handleChildrenResult(TreeNode *const node, const uin
         child->kind = RemoteFolders::folderKind(child->path);
         child->parent = node;
         child->accessDenied = info.accessDenied();
+        // Its size may already be loaded or loading while it was not a row: it is not requested again.
+        if (const auto detachedSize = _detachedSizes.constFind(child->nodeId); detachedSize != _detachedSizes.cend()) {
+            child->sizeState = detachedSize->state;
+            child->size = detachedSize->size;
+        }
         sortedChildren.push_back(std::move(child));
     }
 
@@ -515,7 +521,10 @@ void RemoteFolderTreeModel::requestSize(TreeNode *const node) {
     }
 
     node->sizeState = SizeState::Loading;
-    const QString nodeId = node->nodeId;
+    sendSizeRequest(node->nodeId);
+}
+
+void RemoteFolderTreeModel::sendSizeRequest(const QString &nodeId) {
     const uint64_t generation = _generation;
     const QPointer self(this);
     _remoteFolderProvider.requestSize(_userDbId, _driveId, QStr2Str(nodeId),
@@ -534,11 +543,71 @@ void RemoteFolderTreeModel::handleSizeResult(const QString &nodeId, const uint64
         return;
     }
 
+    const SizeState sizeState = success ? SizeState::Loaded : SizeState::Failed;
+
+    // A folder requested before it became a row answers for both.
+    if (const auto detachedSize = _detachedSizes.find(nodeId); detachedSize != _detachedSizes.end()) {
+        detachedSize->state = sizeState;
+        detachedSize->size = size;
+    }
+
     if (TreeNode *const node = _nodesById.value(nodeId, nullptr)) {
-        node->sizeState = success ? SizeState::Loaded : SizeState::Failed;
+        node->sizeState = sizeState;
         node->size = size;
         emit dataChanged(indexForNode(node), indexForNode(node), {SizeTextRole});
     }
+
+    emit folderSizeChanged();
+}
+
+std::optional<qint64> RemoteFolderTreeModel::loadedSize(const NodeId &nodeId) const {
+    const QString id = QString::fromStdString(nodeId);
+
+    if (const TreeNode *const node = _nodesById.value(id, nullptr)) {
+        if (node->sizeState == SizeState::Loaded) {
+            return node->size;
+        }
+
+        return std::nullopt;
+    }
+
+    const auto detachedSize = _detachedSizes.constFind(id);
+    if (detachedSize == _detachedSizes.cend() || detachedSize->state != SizeState::Loaded) {
+        return std::nullopt;
+    }
+
+    return detachedSize->size;
+}
+
+void RemoteFolderTreeModel::requestFolderSize(const NodeId &nodeId) {
+    const QString id = QString::fromStdString(nodeId);
+
+    if (TreeNode *const node = _nodesById.value(id, nullptr)) {
+        requestSize(node);
+        return;
+    }
+
+    if (_detachedSizes.contains(id)) {
+        return;
+    }
+
+    (void) _detachedSizes.insert(id, FolderSize{SizeState::Loading, 0});
+    sendSizeRequest(id);
+}
+
+bool RemoteFolderTreeModel::hasAncestorIn(const NodeId &nodeId, const std::vector<NodeId> &folderIds) const {
+    const TreeNode *const node = _nodesById.value(QString::fromStdString(nodeId), nullptr);
+    if (!node) {
+        return false;
+    }
+
+    for (const TreeNode *ancestor = node->parent; ancestor && ancestor != _root.get(); ancestor = ancestor->parent) {
+        if (std::ranges::find(folderIds, QStr2Str(ancestor->nodeId)) != folderIds.cend()) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 } // namespace KDC
