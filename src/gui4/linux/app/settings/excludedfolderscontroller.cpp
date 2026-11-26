@@ -99,14 +99,14 @@ QString ExcludedFoldersController::selectedSizeText() const {
     }
 
     const std::optional<qint64> rootSize = _folderTreeModel.loadedSize(_rootNodeId);
-    if (!rootSize) {
+    if (!rootSize.has_value()) {
         return {};
     }
 
     qint64 selectedSize = *rootSize;
     for (const NodeId &nodeId: _folderTreeModel.outermostExcludedFoldersInRoot()) {
         const std::optional<qint64> excludedSize = _folderTreeModel.loadedSize(nodeId);
-        if (!excludedSize) {
+        if (!excludedSize.has_value()) {
             return {};
         }
 
