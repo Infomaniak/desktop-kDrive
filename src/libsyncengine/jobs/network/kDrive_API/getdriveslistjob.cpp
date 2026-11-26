@@ -97,7 +97,7 @@ ExitInfo GetDrivesListJob::handleJsonResponse(const std::string &replyBody) {
         }
 
 #if defined(KD_WINDOWS)
-        driveName = SyncName2Str(Utility::fixNameWithBackslash(Str2SyncName(driveName)));
+        driveName = SyncName2Str(Utility::fixUnsafeName(Str2SyncName(driveName)));
 #endif
 
         std::string colorHex;

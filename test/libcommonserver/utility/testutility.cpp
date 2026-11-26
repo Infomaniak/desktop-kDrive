@@ -574,6 +574,30 @@ void TestUtility::testTryCreateTmpItemWithUnsafeName() {
     }
 }
 
+void TestUtility::testFixUnsafeName() {
+    // Names without unsafe characters are left unchanged.
+    CPPUNIT_ASSERT_EQUAL(std::string("test.txt"), SyncName2Str(Utility::fixUnsafeName(Str("test.txt"))));
+    CPPUNIT_ASSERT_EQUAL(std::string(".."), SyncName2Str(Utility::fixUnsafeName(Str(".."))));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), SyncName2Str(Utility::fixUnsafeName(SyncName())));
+
+    // The NUL character is escaped to prevent truncation by native APIs, and the '/' character to prevent path
+    // traversal, so that "..\0x" cannot resolve to the sync root and "a/b" to a nested path.
+    CPPUNIT_ASSERT_EQUAL(std::string("..%0x"), SyncName2Str(Utility::fixUnsafeName(SyncName(Str("..\0x"), 4))));
+    CPPUNIT_ASSERT_EQUAL(std::string("Documents%0"), SyncName2Str(Utility::fixUnsafeName(SyncName(Str("Documents\0"), 10))));
+    CPPUNIT_ASSERT_EQUAL(std::string("a%2fb"), SyncName2Str(Utility::fixUnsafeName(Str("a/b"))));
+
+    // Regression test: every occurrence of an unsafe character is replaced.
+    CPPUNIT_ASSERT_EQUAL(std::string("a%2fb%2fc"), SyncName2Str(Utility::fixUnsafeName(Str("a/b/c"))));
+
+    // The '%' character is not escaped, so already escaped names are left unchanged.
+    CPPUNIT_ASSERT_EQUAL(std::string("a%2fb"), SyncName2Str(Utility::fixUnsafeName(Str("a%2fb"))));
+
+#if defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(std::string("a%5cb"), SyncName2Str(Utility::fixUnsafeName(Str("a\\b"))));
+    CPPUNIT_ASSERT_EQUAL(std::string("a%3ab"), SyncName2Str(Utility::fixUnsafeName(Str("a:b"))));
+#endif
+}
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
 void TestUtility::testEscapePath() {
     // Test simple path without special characters

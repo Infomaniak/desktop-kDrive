@@ -220,9 +220,7 @@ struct COMMONSERVER_EXPORT Utility {
 
         static SyncName charToHex(unsigned int c);
 
-#if defined(KD_WINDOWS)
-        static SyncName fixNameWithBackslash(const SyncName &name);
-#endif
+        static SyncName fixUnsafeName(const SyncName &name);
 
         static void msleep(int64_t msec);
 

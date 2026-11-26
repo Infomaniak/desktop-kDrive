@@ -622,7 +622,7 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
     }
 
 #if defined(KD_WINDOWS)
-    name = Utility::fixNameWithBackslash(name);
+    name = Utility::fixUnsafeName(name);
 #endif
     nodeInfo.setName(SyncName2QStr(name));
 
@@ -646,7 +646,7 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
         }
 
 #if defined(KD_WINDOWS)
-        normalizedPath = Utility::fixNameWithBackslash(normalizedPath);
+        normalizedPath = Utility::fixUnsafeName(normalizedPath);
 #endif
         // Use the QString overload of the translation: NodeInfo paths keep their leading separator, so that the
         // consumers can concatenate them directly onto the sync root.

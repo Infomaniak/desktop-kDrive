@@ -84,11 +84,8 @@ ExitInfo GetFilesInDirectoryJob::extractName(const Poco::JSON::Object::Ptr &obj,
     if (!Utility::normalizedSyncName(rawName, name)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
     }
-    
-#if defined(KD_WINDOWS)
-    name = Utility::fixNameWithBackslash(name);
-#endif
 
+    name = Utility::fixUnsafeName(name);
     return ExitCode::Ok;
 }
 
@@ -103,9 +100,8 @@ ExitInfo GetFilesInDirectoryJob::extractPath(const Poco::JSON::Object::Ptr &obj,
     }
 
 #if defined(KD_WINDOWS)
-    path = Utility::fixNameWithBackslash(path);
+    path = Utility::fixUnsafeName(path);
 #endif
-
     return ExitCode::Ok;
 }
 

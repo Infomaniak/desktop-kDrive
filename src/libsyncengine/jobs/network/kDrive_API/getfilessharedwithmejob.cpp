@@ -68,7 +68,7 @@ ExitInfo GetFilesSharedWithMeJob::deserializeDataArray() {
         }
 
 #if defined(KD_WINDOWS)
-        name = Utility::fixNameWithBackslash(name);
+        name = Utility::fixUnsafeName(name);
 #endif
 
         if (name.empty()) continue;

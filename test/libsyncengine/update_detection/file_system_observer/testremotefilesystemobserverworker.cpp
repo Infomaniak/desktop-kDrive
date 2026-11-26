@@ -470,12 +470,15 @@ void TestRemoteFileSystemObserverWorker::testInsertItemWithUnsafeName() {
     });
 
     // The kDrive API accepts and returns names with an embedded NUL character. Native APIs truncate "..\0x" to "..", which
-    // would make the sync engine act on the parent of the target directory (e.g. the sync root itself).
+    // would make the sync engine act on the parent of the target directory (e.g. the sync root itself). Such names are
+    // renamed with the unsafe characters replaced by their hexadecimal representation, and only reserved path elements such
+    // as ".." are rejected.
     const std::string unsafeLines = std::string("18,1,..") + '\0' + "x,dir,,1789735691,1789735698,1,\n" + "19,1,Documents" +
                                     '\0' + ",file,4,1789735691,1789735698,1,\n";
     std::stringstream ss;
     ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
-       << unsafeLines << "20,1,safe.txt,file,4,1789735691,1789735698,1,\n"
+       << unsafeLines << "20,1,..,dir,,1789735691,1789735698,1,\n"
+       << "21,1,safe.txt,file,4,1789735691,1789735698,1,\n"
        << endOfFileDelimiter;
 
     RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
@@ -492,10 +495,13 @@ void TestRemoteFileSystemObserverWorker::testInsertItemWithUnsafeName() {
     CPPUNIT_ASSERT(!error);
     CPPUNIT_ASSERT(eof);
 
-    CPPUNIT_ASSERT_EQUAL(2, nbErrors);
-    CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("18"));
-    CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("19"));
-    CPPUNIT_ASSERT(liveSnapshot.exists("20"));
+    CPPUNIT_ASSERT_EQUAL(1, nbErrors);
+    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, liveSnapshot.type("18"));
+    CPPUNIT_ASSERT_EQUAL(std::string("..%0x"), SyncName2Str(liveSnapshot.name("18")));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, liveSnapshot.type("19"));
+    CPPUNIT_ASSERT_EQUAL(std::string("Documents%0"), SyncName2Str(liveSnapshot.name("19")));
+    CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("20"));
+    CPPUNIT_ASSERT(liveSnapshot.exists("21"));
 
     _syncPal->setAddErrorCallback(nullptr);
 }
@@ -532,11 +538,13 @@ void TestRemoteFileSystemObserverWorker::testInsertSyncedItemWithUnsafeName() {
         CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, reportedError.inconsistencyType());
     });
 
-    // The directory is renamed remotely with an unsafe name and a new item with an unsafe name is created.
+    // The directory is renamed remotely with a reserved name that cannot be renamed, and items with unsafe names are
+    // created and renamed instead.
     std::stringstream ss;
     ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
-       << std::string("18,1,..") + '\0' + "x,dir,,1789735691,1789735698,1,\n"
+       << "18,1,..,dir,,1789735691,1789735698,1,\n"
        << std::string("19,1,new") + '\0' + ",file,4,1789735691,1789735698,1,\n"
+       << std::string("20,1,..") + '\0' + "x,dir,,1789735691,1789735698,1,\n"
        << endOfFileDelimiter;
 
     RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
@@ -555,7 +563,13 @@ void TestRemoteFileSystemObserverWorker::testInsertSyncedItemWithUnsafeName() {
     CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("18"));
 
     // The directory is missing from the remote snapshot: it must be blacklisted on both replicas, using its DB paths (not
-    // the new remote name), so that it is not deleted locally. The new item is not synchronized: there is nothing to protect.
+    // the new remote name), so that it is not deleted locally. The renamed items are present in the snapshot under their
+    // escaped names: there is nothing to protect.
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, liveSnapshot.type("19"));
+    CPPUNIT_ASSERT_EQUAL(std::string("new%0"), SyncName2Str(liveSnapshot.name("19")));
+    CPPUNIT_ASSERT_EQUAL(NodeType::Directory, liveSnapshot.type("20"));
+    CPPUNIT_ASSERT_EQUAL(std::string("..%0x"), SyncName2Str(liveSnapshot.name("20")));
+
     const std::vector<std::tuple<NodeId, SyncPath, ReplicaSide>> expectedItems{{"l_18", "Docs", ReplicaSide::Local},
                                                                                {"18", "Docs", ReplicaSide::Remote}};
     CPPUNIT_ASSERT(expectedItems == blacklistedItems);
@@ -668,6 +682,34 @@ void TestRemoteFileSystemObserverWorker::testExtractActionInfo() {
     actionObject->remove(createdAtKey);
     actionObject->remove(lastModifiedAtKey);
     CPPUNIT_ASSERT(rfso->extractActionInfo(actionObject, actionInfo));
+}
+
+void TestRemoteFileSystemObserverWorker::testCreateActionInfoListWithUnsafeName() {
+    // This test does not require any remote drive access.
+    const auto remoteFSObserverWorker =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(remoteFSObserverWorker);
+
+    // The kDrive API accepts and returns names with an embedded NUL character. The name extracted from a move action
+    // destination must be renamed with the unsafe characters replaced by their hexadecimal representation, so that native
+    // APIs cannot truncate it.
+    Poco::JSON::Object::Ptr actionObject = new Poco::JSON::Object();
+    (void) actionObject->set(actionKey, "file_move");
+    (void) actionObject->set(fileIdKey, 4242);
+    (void) actionObject->set(parentIdKey, 3);
+    (void) actionObject->set(destinationKey, std::string("/Common documents/folder/new") + '\0' + "file.txt");
+    (void) actionObject->set(pathKey, "/Common documents/folder/test_file.txt");
+    (void) actionObject->set(fileTypeKey, fileKey);
+    (void) actionObject->set(createdAtKey, SyncTime{1000});
+    (void) actionObject->set(lastModifiedAtKey, SyncTime{2000});
+
+    Poco::JSON::Array::Ptr actionArray = new Poco::JSON::Array();
+    (void) actionArray->add(actionObject);
+
+    RemoteFileSystemObserverWorker::ActionInfoList actionInfoList;
+    CPPUNIT_ASSERT(remoteFSObserverWorker->createActionInfoList(actionArray, actionInfoList));
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, actionInfoList.size());
+    CPPUNIT_ASSERT_EQUAL(std::string("new%0file.txt"), SyncName2Str(actionInfoList.front().snapshotItem.name()));
 }
 
 } // namespace KDC

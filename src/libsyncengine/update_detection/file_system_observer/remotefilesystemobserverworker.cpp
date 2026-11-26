@@ -931,9 +931,7 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         if (const auto exitInfo = handleExcludedItem(actionInfo, excluded); !exitInfo) return exitInfo;
         if (excluded) continue;
 
-#if defined(KD_WINDOWS)
-        actionInfo.snapshotItem.setName(Utility::fixNameWithBackslash(actionInfo.snapshotItem.name()));
-#endif
+        actionInfo.snapshotItem.setName(Utility::fixUnsafeName(actionInfo.snapshotItem.name()));
         actionInfoList.push_back(actionInfo);
     }
 

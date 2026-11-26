@@ -213,7 +213,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         }
 
 #if defined(KD_WINDOWS)
-        name = Utility::fixNameWithBackslash(name);
+        name = Utility::fixUnsafeName(name);
 #endif
 
         std::string type;
@@ -226,7 +226,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 #if defined(KD_WINDOWS)
-        pathStr = Utility::fixNameWithBackslash(pathStr);
+        pathStr = Utility::fixUnsafeName(pathStr);
 #endif
         SyncPath path(pathStr);
         SyncTime modifiedTime = 0;

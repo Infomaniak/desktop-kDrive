@@ -66,7 +66,7 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
     if (!JsonParserUtility::extractValue(dataObj, nameKey, name)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
 #if defined(KD_WINDOWS)
-    name = Utility::fixNameWithBackslash(name);
+    name = Utility::fixUnsafeName(name);
 #endif
     _name = SyncName2Str(name);
 
