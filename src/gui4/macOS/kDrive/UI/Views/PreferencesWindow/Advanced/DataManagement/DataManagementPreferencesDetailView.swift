@@ -30,22 +30,23 @@ struct DataManagementPreferencesDetailView: View {
     let repository: PreferencesRepository
 
     var body: some View {
-        Form {
-            VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                item.image
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 24)
-                    .padding(.vertical, AppPadding.padding4)
+        IKForm {
+            IKSection {
+                VStack(alignment: .leading, spacing: AppPadding.padding8) {
+                    item.image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 24)
+                        .padding(.vertical, AppPadding.padding4)
 
-                Text(item.description)
-                    .font(.Tokens.callout)
-                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                    Text(item.description)
+                        .font(.Tokens.callout)
+                        .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                }
+
+                Toggle(KDriveLocalizable.labelAllowTracking, isOn: $allowTracking)
             }
-
-            Toggle(KDriveLocalizable.labelAllowTracking, isOn: $allowTracking)
         }
-        .groupedFormatStyle()
         .onAppear {
             allowTracking = settings[keyPath: item.keyPath]
         }

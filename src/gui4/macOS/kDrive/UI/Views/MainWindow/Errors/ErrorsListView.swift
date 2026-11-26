@@ -33,9 +33,9 @@ struct ErrorsListView: View {
     @State private var categories: [UISynchroErrorCategory] = []
 
     var body: some View {
-        Form {
+        IKForm {
             ForEach(categories) { category in
-                Section {
+                IKSection {
                     if category == .conflicts {
                         ManyConflictsCellView(errors: computedErrors[category, default: []], manager: synchroErrorManager)
                     } else {
@@ -48,7 +48,6 @@ struct ErrorsListView: View {
                 }
             }
         }
-        .groupedFormatStyle()
         .sheet(item: $synchroErrorManager.isShowingLocalAccessSheet) { error in
             LocalAccessErrorSheet(synchroErrorManager: synchroErrorManager, error: error)
         }
@@ -75,7 +74,11 @@ struct ErrorsListView: View {
             KDriveLocalizable.driveLoggingErrorUserMismatchTitle,
             isPresented: Binding(
                 get: { synchroErrorManager.userMismatchEmail != nil },
-                set: { if !$0 { synchroErrorManager.userMismatchEmail = nil } }
+                set: {
+                    if !$0 {
+                        synchroErrorManager.userMismatchEmail = nil
+                    }
+                }
             )
         ) {} message: {
             Text(KDriveLocalizable.driveLoggingErrorUserMismatchDescription(synchroErrorManager.userMismatchEmail ?? ""))

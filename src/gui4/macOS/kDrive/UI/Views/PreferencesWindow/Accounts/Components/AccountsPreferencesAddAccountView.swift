@@ -22,7 +22,7 @@ import SwiftUI
 
 struct AccountsPreferencesAddAccountView: View {
     var body: some View {
-        Section {
+        IKSection {
             HStack(spacing: AppPadding.padding8) {
                 AnonymousAvatarView()
 

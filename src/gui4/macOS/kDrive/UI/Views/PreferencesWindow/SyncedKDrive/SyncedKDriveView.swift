@@ -60,8 +60,8 @@ struct SyncedKDriveView: View {
     }
 
     var body: some View {
-        Form {
-            Section { /* Empty on purpose */ } header: {
+        IKForm {
+            IKSection { /* Empty on purpose */ } header: {
                 HStack {
                     BadgeView(
                         image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
@@ -75,7 +75,7 @@ struct SyncedKDriveView: View {
             }
 
             if let mainSynchro {
-                Section {
+                IKSection {
                     IKLabeledContent(KDriveLocalizable.labelComputerLocation) {
                         Button(mainSynchro.localPath.path) {
                             matomo.track(eventWithCategory: .driveManagementPage, name: "openSyncDir")
@@ -108,7 +108,7 @@ struct SyncedKDriveView: View {
                     }
                 }
 
-                Section {
+                IKSection {
                     VStack(alignment: .leading, spacing: AppPadding.padding8) {
                         SynchroModePicker(
                             synchroDbId: mainSynchro.dbId,
@@ -134,11 +134,11 @@ struct SyncedKDriveView: View {
                     }
                 }
 
-                Section {
+                IKSection {
                     FormNavigationCell(title: KDriveLocalizable.advancedSyncTitle, navigate: navigateToAdvancedSynchro)
                 }
 
-                Section {
+                IKSection {
                     Button(role: .destructive) {
                         synchroToDelete = mainSynchro
                     } label: {
@@ -150,7 +150,7 @@ struct SyncedKDriveView: View {
                     .buttonStyle(.plain)
                 }
             } else {
-                Section {
+                IKSection {
                     HStack(spacing: AppPadding.padding8) {
                         Text(KDriveLocalizable.labelSynchronisation)
                             .foregroundStyle(.primary)
@@ -171,12 +171,11 @@ struct SyncedKDriveView: View {
                     }
                 }
 
-                Section {
+                IKSection {
                     FormNavigationCell(title: KDriveLocalizable.advancedSyncTitle, navigate: navigateToAdvancedSynchro)
                 }
             }
         }
-        .groupedFormatStyle()
         .task {
             await fetchSynchros()
         }

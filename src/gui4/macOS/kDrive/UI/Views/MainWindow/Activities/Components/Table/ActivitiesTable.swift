@@ -24,6 +24,23 @@ import OrderedCollections
 import SwiftUI
 
 struct ActivitiesTable: View {
+    /// Fixed width fitting both the icons of `ActivitiesTableStatusView` and the localized column title.
+    private static let statusColumnWidth: CGFloat = {
+        let iconsWidth = AppIconSize.iconSize12.width * 2 + AppIconSize.iconSize16.width + AppPadding.padding8 * 2
+        // Semibold system font: the widest style a table header title is drawn with.
+        let titleFont = NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .semibold)
+        let titleWidth = (KDriveLocalizable.labelStatus as NSString).size(withAttributes: [.font: titleFont]).width
+        return max(iconsWidth + AppPadding.padding8, titleWidth + AppPadding.padding16).rounded(.up)
+    }()
+
+    /// Before macOS 14, the fixed table row height clips the underline, which leaves stray pixels under the folder name.
+    private static var isFolderUnderlined: Bool {
+        if #available(macOS 14.0, *) {
+            return true
+        }
+        return false
+    }
+
     let contexts: [UISynchroNodeContext]
 
     private var orderedNodes: [UISynchroNodeContext] {
@@ -39,22 +56,19 @@ struct ActivitiesTable: View {
         Table(orderedNodes) {
             TableColumn(KDriveLocalizable.labelName) { context in
                 Label {
-                    VStack(alignment: .leading) {
-                        Text(context.node.relevantPath, format: .node)
-                            .foregroundStyle(ColorToken.Text.primary.asColor)
-                        if context.node.status == .syncing {
-                            Text(KDriveLocalizable.labelSynchronisation)
-                                .font(.Tokens.callout)
-                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                        } else if let instruction = context.node.instruction {
-                            HStack(alignment: .center, spacing: AppPadding.padding2) {
-                                Text(instruction.label)
-                                    .font(.Tokens.callout)
-                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                                Text(context.node.syncDate, format: .friendlyRelative)
-                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-                            }
+                    if #available(macOS 14.0, *) {
+                        VStack(alignment: .leading) {
+                            nameText(of: context)
+                            activityText(of: context)
                         }
+                    } else {
+                        // Table rows don't fit two lines of text before macOS 14: the activity follows the name.
+                        HStack(spacing: AppPadding.padding8) {
+                            nameText(of: context)
+                                .layoutPriority(1)
+                            activityText(of: context)
+                        }
+                        .lineLimit(1)
                     }
                 } icon: {
                     FileTypeView(fileTypeRepresentation: context.node.fileTypeRepresentation)
@@ -70,7 +84,7 @@ struct ActivitiesTable: View {
                         context.node.parentFolder,
                         format: .node(driveFolderName: context.synchro.localPath.lastPathComponent)
                     )
-                    .underline()
+                    .underline(Self.isFolderUnderlined)
                     .lineLimit(1)
                 }
                 .buttonStyle(.borderless)
@@ -86,7 +100,29 @@ struct ActivitiesTable: View {
             TableColumn(KDriveLocalizable.labelStatus) { context in
                 ActivitiesTableStatusView(context: context)
             }
-            .width(ideal: 30)
+            .width(Self.statusColumnWidth)
+        }
+    }
+
+    private func nameText(of context: UISynchroNodeContext) -> some View {
+        Text(context.node.relevantPath, format: .node)
+            .foregroundStyle(ColorToken.Text.primary.asColor)
+    }
+
+    @ViewBuilder
+    private func activityText(of context: UISynchroNodeContext) -> some View {
+        if context.node.status == .syncing {
+            Text(KDriveLocalizable.labelSynchronisation)
+                .font(.Tokens.callout)
+                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+        } else if let instruction = context.node.instruction {
+            HStack(alignment: .center, spacing: AppPadding.padding2) {
+                Text(instruction.label)
+                    .font(.Tokens.callout)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                Text(context.node.syncDate, format: .friendlyRelative)
+                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
+            }
         }
     }
 

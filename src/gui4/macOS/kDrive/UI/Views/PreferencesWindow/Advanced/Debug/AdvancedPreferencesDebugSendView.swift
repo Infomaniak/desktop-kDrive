@@ -196,7 +196,7 @@ struct AdvancedPreferencesDebugSendView: View {
     @State private var isShowingError = false
 
     var body: some View {
-        Section {
+        IKSection {
             HStack(spacing: 0) {
                 HStack(spacing: AppPadding.padding8) {
                     BadgeView(image: KDriveResources.headphones.swiftUIImage, color: ColorToken.Accent.primary.asColor)

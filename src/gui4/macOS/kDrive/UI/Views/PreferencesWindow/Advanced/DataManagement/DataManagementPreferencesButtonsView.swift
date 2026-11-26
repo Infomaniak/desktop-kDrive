@@ -22,7 +22,7 @@ import SwiftUI
 
 struct DataManagementPreferencesButtonsView: View {
     var body: some View {
-        Section {
+        IKSection {
             ForEach(DataManagementItem.allCases) { item in
                 FormNavigationCell(title: item.label) {
                     @InjectService var router: PreferencesViewRouter
