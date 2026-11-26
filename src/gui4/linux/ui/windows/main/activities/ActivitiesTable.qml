@@ -100,9 +100,65 @@ Item {
         anchors.right: parent.right
         anchors.top: tableHeader.bottom
         anchors.bottom: parent.bottom
+        // A single tab stop that moves a current row, like the folder tree. The current row takes the focus so that
+        // screen readers read it: Up, Down, Home and End move it, Return or the Menu key open its options.
+        function moveCurrentTo(targetIndex) {
+            if (listView.count === 0) {
+                return;
+            }
+            listView.currentIndex = Math.max(0, Math.min(listView.count - 1, targetIndex));
+            listView.positionViewAtIndex(listView.currentIndex, ListView.Contain);
+            if (listView.currentItem) {
+                listView.currentItem.forceActiveFocus();
+            }
+        }
+
+        function openCurrentOptions(key) {
+            const row = listView.currentItem as ActivityRow;
+            if (row) {
+                row.openOptionsFromKeyboard(key);
+            }
+        }
+
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         model: root.model
+        activeFocusOnTab: true
+        keyNavigationEnabled: false
+        Accessible.role: Accessible.List
+        Accessible.name: qsTrId("tabTitleActivities")
+
+        // Only a focus entering the list itself (Tab) goes to the current row: a focus given back to a row control,
+        // such as the options button after a mouse-opened menu, stays there.
+        onActiveFocusChanged: {
+            if (listView.activeFocus && listView.Window.activeFocusItem === listView) {
+                listView.moveCurrentTo(Math.max(0, listView.currentIndex));
+            }
+        }
+        // A row replaced under the cursor (filter change, incoming activities) hands the focus to the new current row.
+        onCurrentItemChanged: {
+            if (listView.activeFocus && listView.currentItem && !listView.currentItem.activeFocus) {
+                listView.currentItem.forceActiveFocus();
+            }
+        }
+        Keys.onUpPressed: listView.moveCurrentTo(listView.currentIndex - 1)
+        Keys.onDownPressed: listView.moveCurrentTo(listView.currentIndex + 1)
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Home) {
+                listView.moveCurrentTo(0);
+            } else if (event.key === Qt.Key_End) {
+                listView.moveCurrentTo(listView.count - 1);
+            } else if (event.key === Qt.Key_Menu) {
+                listView.openCurrentOptions("menu");
+            } else if (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier)) {
+                listView.openCurrentOptions("shiftF10");
+            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                listView.openCurrentOptions("return");
+            } else {
+                return;
+            }
+            event.accepted = true;
+        }
 
         delegate: ActivityRow {
             required property int index

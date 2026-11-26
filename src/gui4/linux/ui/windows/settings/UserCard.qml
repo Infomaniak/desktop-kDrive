@@ -73,8 +73,8 @@ Rectangle {
             hoverEnabled: true
             Accessible.name: root.name
             Accessible.description: root.email
-            Accessible.checkable: true
-            Accessible.checked: root.expanded
+            Accessible.expandable: true
+            Accessible.expanded: root.expanded
             Accessible.onToggleAction: headerButton.clicked()
             onClicked: {
                 UserActionLog.action(root.actionIdPrefix + "." + (root.expanded ? "collapse" : "expand"),

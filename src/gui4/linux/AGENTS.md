@@ -231,6 +231,12 @@
   displacing transfers that are still running.
 - Expose Activities row capabilities through one `availableActions` flags role. Keep target ids and paths internal, and
   revalidate every action in `ActivitiesController` or `ActivityService` instead of duplicating guards in QML.
+- The Activities list is a single tab stop whose current row takes the focus, so that screen readers read the row: Up,
+  Down, Home and End move it, Return, the Menu key or Shift+F10 open its options (logged with the `key`). The current
+  row is tinted and, since only the keyboard focuses it, outlined by the focus ring while focused; clicking a row's
+  options makes it the current row, and a focus given back to a row control is not redirected. The row is
+  one `ListItem` named after its file, subtitle, status, folder and size; while running, a transfer reads
+  "Synchronization" instead of its instruction and time, and a finished download or upload both read "Added".
 - Present asynchronous share-link progress in the persistent bottom area of the main sidebar. Keep the notification
   component generic, non-modal, and independent from the activity row lifetime.
 - Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
@@ -1047,6 +1053,17 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   logged once in `IKShadowedWindow.onClosing` (`window.close`), whatever closed the window.
 - Give a new Matomo event or page view an entry in `AnalyticsCatalog` with a category and event name of the kDrive v4
   taxonomy; never derive them from the log id.
+- Screen readers read the checked state of a button from the control itself: Qt overrides `Accessible.checkable` and
+  `Accessible.checked` on buttons. A checkbox or switch whose state belongs to its owner derives from `T.CheckBox`,
+  binds `checkState` and returns it from `nextCheckState`, so a click changes nothing by itself; keep `Accessible.checked`
+  bound too, since a check state change does not update it (`IKCheckBox`, `IKSwitch`). Other states that buttons do
+  not override go through `Accessible` directly: `expandable`/`expanded`, `selectable`/`selected`.
+- A modal derives from `T.Dialog` (`IKModal`, `SearchDialog`): screen readers read its `title` as the name of the
+  dialog. Never attach `Accessible` to a `Popup` (Qt logs a warning) nor give its content a second `Dialog` role.
+- Qt never exposes a `Text` to screen readers: one that carries information declares `Accessible.role:
+  Accessible.StaticText` and an `Accessible.name` in plain text, without the markup of a styled text. The texts of one
+  row form a single name on the row. Announce important state changes with `Accessible.announce`, only while the
+  window is active (`Window.active`), and never for a state that changes continuously.
 - Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.

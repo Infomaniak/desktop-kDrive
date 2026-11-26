@@ -19,16 +19,15 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Shapes
+import QtQuick.Templates as T
 import kDrive.UI
 
 // Tri-state checkbox indicator. It reports clicks and renders the state it is given; the owner decides how a click
 // advances the state, so a model-driven cycle stays authoritative.
-AbstractButton {
+T.CheckBox {
     id: root
 
-    property int checkState: Qt.Unchecked
     // Stable, language-independent id of the action in the user action log (see UserActionLog).
     required property string actionId
     // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
@@ -57,10 +56,14 @@ AbstractButton {
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
     opacity: enabled ? 1 : IKCheckBoxTokens.disabledOpacity
+    tristate: true
+    // A click keeps the state: the owner sets the next one.
+    nextCheckState: () => root.checkState
     Accessible.role: Accessible.CheckBox
-    Accessible.checkable: enabled
-    Accessible.checked: checkState === Qt.Checked
-    Accessible.checkStateMixed: checkState === Qt.PartiallyChecked
+    // Buttons copy their checked state into Accessible only when it is set through setChecked, which a check state
+    // change bypasses: the binding keeps screen readers in sync.
+    Accessible.checked: root.checkState === Qt.Checked
+    Accessible.checkStateMixed: root.checkState === Qt.PartiallyChecked
     // The state belongs to the owner, so an assistive activation reports a click like the pointer and the keyboard do.
     Accessible.onPressAction: root.clicked()
     Accessible.onToggleAction: root.clicked()

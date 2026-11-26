@@ -29,12 +29,14 @@ ToolButton {
     required property string actionId
     // Context appended to the log line: ids, booleans or enum values only, never displayed or typed text.
     property var actionDetails: ({})
+    // Setting the button explains, appended to the name read by screen readers so that the info buttons of a page differ.
+    property string subject: ""
     implicitWidth: IKSettings.iconButtonSize
     implicitHeight: IKSettings.iconButtonSize
     text: qsTrId("accessibilityMoreInformation")
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
-    Accessible.name: text
+    Accessible.name: subject.length > 0 ? text + ", " + subject : text
     onClicked: UserActionLog.action(actionId, actionDetails)
     contentItem: Item {
         IKTintedIcon {

@@ -30,6 +30,9 @@ Rectangle {
     property string title
     property string subtitle
     property int titleTextFormat: Text.PlainText
+    // The title as screen readers read it: without the markup of a styled title.
+    readonly property string plainTitle: root.titleTextFormat === Text.PlainText ? root.title
+                                                                                 : root.title.replace(/<[^>]*>/g, "")
     property color surfaceColor: IKColors.informationBlockSurface
     // The icon tile is shown only when a source is set.
     property url iconSource
@@ -107,6 +110,8 @@ Rectangle {
                     color: IKColors.textPrimary
                     font.pixelSize: IKFonts.bodySize
                     elide: Text.ElideRight
+                    Accessible.role: Accessible.StaticText
+                    Accessible.name: root.plainTitle
                 }
 
                 Text {
@@ -115,6 +120,8 @@ Rectangle {
                     color: IKColors.textSecondary
                     font.pixelSize: IKFonts.subheadlineSize
                     elide: Text.ElideRight
+                    Accessible.role: Accessible.StaticText
+                    Accessible.name: text
                 }
             }
         }
@@ -195,7 +202,7 @@ Rectangle {
                 focusPolicy: Qt.StrongFocus
                 hoverEnabled: true
                 // "Close" alone does not say what is closed: the title tells screen reader users.
-                Accessible.description: root.title
+                Accessible.description: root.plainTitle
                 onClicked: {
                     UserActionLog.action(root.actionId + ".dismiss");
                     root.dismissRequested();

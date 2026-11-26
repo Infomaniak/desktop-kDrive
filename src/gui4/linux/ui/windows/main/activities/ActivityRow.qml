@@ -51,11 +51,33 @@ Item {
     readonly property int status: rowModel.status
     readonly property int progress: rowModel.progress
     readonly property int availableActions: rowModel.availableActions
+    // Current row of the list while the list has the keyboard focus: a navigation cursor, drawn as a tint. The row
+    // itself only takes the focus from the keyboard, so it also draws the focus ring then.
+    readonly property bool keyboardCurrent: ListView.isCurrentItem && ListView.view !== null && ListView.view.activeFocus
+    readonly property string statusText: root.status === ActivityListModel.InProgress && root.progress >= 0
+                                         ? qsTrId("syncInProgressTooltip") + ", " + statusIcon.tooltipText
+                                         : statusIcon.tooltipText
+    // The options menu gives the focus back to the row when the keyboard opened it, to the button otherwise.
+    property bool optionsOpenedFromKeyboard: false
 
     function dismissOptionsMenu() {
         if (optionsMenu && optionsMenu.opened) {
             optionsMenu.close();
         }
+    }
+
+    function openOptionsFromKeyboard(key) {
+        if (root.availableActions === ActivityListModel.NoAvailableAction) {
+            return;
+        }
+        UserActionLog.action(root.actionIdPrefix + ".options", { rowId: root.rowId, key: key });
+        root.optionsOpenedFromKeyboard = true;
+        root.openOptionsMenu();
+    }
+
+    function openFolder() {
+        UserActionLog.action(root.actionIdPrefix + ".openFolder", { rowId: root.rowId });
+        root.controller.openFolder(root.rowId);
     }
 
     function openOptionsMenu() {
@@ -74,10 +96,19 @@ Item {
     onViewportOffsetChanged: dismissOptionsMenu()
     onYChanged: dismissOptionsMenu()
 
+    // The row is what screen readers read: its texts and icons are parts of it.
+    Accessible.role: Accessible.ListItem
+    Accessible.name: [root.name, root.subtitleText, root.statusText, root.folder, root.sizeText]
+                     .filter(part => part.length > 0).join(", ")
+    Accessible.focusable: true
+
     Rectangle {
         anchors.fill: parent
         radius: IKActivities.rowRadius
-        color: root.rowIndex % 2 === 0 ? IKColors.activitiesRowAlternateSurface : "transparent"
+        color: root.keyboardCurrent ? IKColors.activitiesRowCurrent
+                                    : root.rowIndex % 2 === 0 ? IKColors.activitiesRowAlternateSurface : "transparent"
+        border.width: root.activeFocus ? IKActivities.rowFocusRingWidth : 0
+        border.color: IKColors.accentPrimary
     }
 
     Row {
@@ -180,13 +211,13 @@ Item {
                 font.underline: true
                 elide: Text.ElideLeft
                 verticalAlignment: Text.AlignVCenter
+                Accessible.role: Accessible.Link
+                Accessible.name: root.folder
+                Accessible.onPressAction: root.openFolder()
 
                 TapHandler {
                     enabled: root.folder.length > 0
-                    onTapped: {
-                        UserActionLog.action(root.actionIdPrefix + ".openFolder", { rowId: root.rowId });
-                        root.controller.openFolder(root.rowId);
-                    }
+                    onTapped: root.openFolder()
                 }
 
                 HoverHandler {
@@ -224,6 +255,8 @@ Item {
                     sourceType: root.source
                 }
                 ActivityStatusIcon {
+                    id: statusIcon
+
                     anchors.verticalCenter: parent.verticalCenter
                     status: root.status
                     progress: root.progress
@@ -240,10 +273,16 @@ Item {
                     visible: root.availableActions !== ActivityListModel.NoAvailableAction
                     width: visible ? IKActivities.optionsButtonSize : 0
                     height: IKActivities.optionsButtonSize
-                    focusPolicy: visible ? Qt.StrongFocus : Qt.NoFocus
+                    // The list is a single tab stop: Return or the Menu key open the options of its current row.
+                    focusPolicy: Qt.NoFocus
                     hoverEnabled: visible
                     onClicked: {
                         UserActionLog.action(root.actionIdPrefix + ".options", { rowId: root.rowId });
+                        // The keyboard cursor follows the row last used, so the arrows resume from it.
+                        if (root.ListView.view) {
+                            root.ListView.view.currentIndex = root.rowIndex;
+                        }
+                        root.optionsOpenedFromKeyboard = false;
                         root.openOptionsMenu();
                     }
 
@@ -278,7 +317,7 @@ Item {
         controller: root.controller
         rowId: root.rowId
         availableActions: root.availableActions
-        returnFocusItem: optionsButton
+        returnFocusItem: root.optionsOpenedFromKeyboard ? root : optionsButton
     }
 
     component SecondaryCell: Item {

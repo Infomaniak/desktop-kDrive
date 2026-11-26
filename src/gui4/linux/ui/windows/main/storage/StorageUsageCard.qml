@@ -67,6 +67,8 @@ Rectangle {
             text: root.title
             textFormat: Text.PlainText
             visible: !root.loading
+            Accessible.role: Accessible.StaticText
+            Accessible.name: text
         }
 
         Row {
@@ -85,6 +87,8 @@ Rectangle {
                 font.weight: IKFonts.medium
                 text: root.usageText
                 visible: !root.loading && root.usageText.length > 0
+                Accessible.role: Accessible.StaticText
+                Accessible.name: text
             }
 
             IKLoadingSpinner {
@@ -209,6 +213,13 @@ Rectangle {
         required property StorageLegendEntry modelData
 
         readonly property bool hasChip: modelData.chipTitle.length > 0
+
+        // One line for screen readers: the category, its synchronization and its size once known.
+        Accessible.role: Accessible.StaticText
+        Accessible.name: [legendRow.modelData.label,
+                          legendRow.hasChip ? legendRow.modelData.chipTitle : "",
+                          legendRow.modelData.valueLoading ? "" : legendRow.modelData.value]
+                         .filter(part => part.length > 0).join(", ")
 
         Rectangle {
             anchors.bottom: parent.bottom

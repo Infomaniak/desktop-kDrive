@@ -93,6 +93,7 @@ ScrollView {
                 SettingsInfoButton {
                     id: releaseInfo
                     actionId: root.screenId + ".releaseInfo"
+                    subject: qsTrId("updateSettings")
                     onClicked: root.releaseInformationRequested(releaseInfo)
                 }
             }
@@ -122,6 +123,7 @@ ScrollView {
                 SettingsInfoButton {
                     id: betaProgramInfo
                     actionId: root.screenId + ".betaProgram"
+                    subject: qsTrId("releaseChannelBeta")
                     enabled: root.controller.ready
                     onClicked: root.betaProgramRequested(betaProgramInfo)
                 }
@@ -177,6 +179,7 @@ ScrollView {
                 separator: false
                 SettingsInfoButton {
                     actionId: root.screenId + ".trashHelp"
+                    subject: qsTrId("moveDeletedFilesToRecycleBinSetting")
                     onClicked: root.controller.openTrashHelp()
                 }
                 IKSwitch {
@@ -222,6 +225,7 @@ ScrollView {
                 SettingsInfoButton {
                     id: aboutInfo
                     actionId: root.screenId + ".about"
+                    subject: qsTrId("aboutKDrive")
                     onClicked: root.aboutRequested(aboutInfo)
                 }
             }
