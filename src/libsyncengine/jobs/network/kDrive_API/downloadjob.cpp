@@ -225,7 +225,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         getStringFromStream(is, linkData);
         if (linkData.empty()) {
             LOGW_WARN(_logger, L"Link target data is empty: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
-            return {ExitCode::Ok, ExitCause::OperationCanceled};
+            return {ExitCode::SystemError, ExitCause::OperationCanceled};
         }
         fileType = FileType::IsLink;
     }

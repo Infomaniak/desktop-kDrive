@@ -331,11 +331,7 @@ ExitInfo UploadJob::readLink() {
         return ExitCode::SystemError;
     }
 
-    if (_linkTarget.empty()) {
-        LOGW_WARN(_logger, L"Link target is empty or not resolvable: " << Utility::formatSyncPath(_absoluteFilePath));
-        return {ExitCode::SystemError, ExitCause::OperationCanceled};
-    }
-
+    assert(!_data.empty());
     return ExitCode::Ok;
 }
 
