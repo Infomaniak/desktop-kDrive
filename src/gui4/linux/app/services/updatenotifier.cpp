@@ -19,7 +19,7 @@
 #include "updatenotifier.h"
 
 #include "app/cache/parametersstore.h"
-#include "app/services/notificationservice.h"
+#include "app/desktop/notificationservice.h"
 #include "app/services/updatestatusservice.h"
 
 #include <QGuiApplication>

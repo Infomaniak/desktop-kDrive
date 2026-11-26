@@ -52,6 +52,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/parametersstore.h
         app/cache/syncerrorsprojection.cpp
         app/cache/syncerrorsprojection.h
+        app/desktop/notificationservice.cpp
+        app/desktop/notificationservice.h
         app/dialogs/manydeletescontroller.cpp
         app/dialogs/manydeletescontroller.h
         app/errors/blockingerrorresolver.cpp
@@ -164,8 +166,6 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/exclusiontemplateservice.cpp
         app/services/exclusiontemplateservice.h
         app/services/settingsservicebindings.cpp
-        app/services/notificationservice.cpp
-        app/services/notificationservice.h
         app/services/parametersservice.cpp
         app/services/parametersservice.h
         app/services/serviceactiontracker.cpp

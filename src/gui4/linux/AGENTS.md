@@ -322,6 +322,15 @@
 - `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
+- `app/desktop/`: integration with the desktop environment through D-Bus (`Qt6::DBus`), one file per feature, each
+  using QtDBus directly rather than a shared D-Bus wrapper. Calls are asynchronous and are sent without checking first
+  that the service is registered: a service started on demand by D-Bus only appears once called. A missing service
+  falls back to the previous behavior when there is one, and its failure is logged once.
+  - `notificationservice.*`: desktop notifications through `org.freedesktop.Notifications` on the session bus, with
+    the application icon and desktop entry. A click emits the action the notification was shown with; each action
+    keeps one notification on screen, a new one replacing the previous one. Server notifications
+    (`UTILITY_SHOW_NOTIFICATION`, synchronization activity, already filtered by the notification settings) open the
+    activity list.
 - `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
   enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), `inotify` (the inotify
   watches error alone), one blocking error (`asleep`, `wakingup`, `maintenance`, `notrenew`, `accessdenied`,
@@ -772,11 +781,6 @@
   synchronizations do not delay it: they resume after the restart, and a drive that is always busy must still receive
   the update. It sends one request per `Ready` period; if a window stays open, the next launch uses the installed
   AppImage anyway.
-- `app/services/notificationservice.*`: desktop notifications through `org.freedesktop.Notifications` on the session
-  bus (`Qt6::DBus`), with the application icon and desktop entry. A click emits the action the notification was shown
-  with; each action keeps one notification on screen, a new one replacing the previous one. Without a notification
-  server, the failure is logged once. Server notifications (`UTILITY_SHOW_NOTIFICATION`, synchronization activity,
-  already filtered by the notification settings) open the activity list.
 - `app/services/updatenotifier.*`: notifies an update available for download, or available while automatic updates
   are off, once per state and version in a session, never while notifications are disabled. The restart that follows
   an installation is silent. A click opens Settings on the update button (`SettingsWindowController::requestOpenUpdate`). The server
