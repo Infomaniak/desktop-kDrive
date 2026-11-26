@@ -81,11 +81,12 @@ ExitInfo GetFilesInDirectoryJob::extractName(const Poco::JSON::Object::Ptr &obj,
     SyncName rawName;
     if (!JsonParserUtility::extractValue(obj, nameKey, rawName)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
+    // Escape before normalizing: the normalization stops at the first NUL character and would truncate the name.
+    rawName = Utility::fixUnsafeName(rawName);
     if (!Utility::normalizedSyncName(rawName, name)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
     }
 
-    name = Utility::fixUnsafeName(name);
     return ExitCode::Ok;
 }
 
@@ -95,12 +96,12 @@ ExitInfo GetFilesInDirectoryJob::extractPath(const Poco::JSON::Object::Ptr &obj,
     SyncName rawPath;
     if (!JsonParserUtility::extractValue(obj, pathKey, rawPath)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    SyncName normalizedPath;
-    if (!Utility::normalizedSyncName(rawPath, normalizedPath)) {
+    // Escape before normalizing: the normalization stops at the first NUL character and would truncate the path.
+    rawPath = Utility::fixUnsafeNameFromPath(rawPath);
+    if (!Utility::normalizedSyncName(rawPath, path)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawPath));
     }
 
-    path = Utility::fixUnsafeNameFromPath(normalizedPath);
     return ExitCode::Ok;
 }
 

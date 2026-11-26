@@ -31,6 +31,7 @@ class TestGetFilesSharedWithMeJob : public CppUnit::TestFixture, public TestBase
     public:
         CPPUNIT_TEST_SUITE(TestGetFilesSharedWithMeJob);
         CPPUNIT_TEST(testHandleResponse);
+        CPPUNIT_TEST(testHandleResponseNameWithNul);
         CPPUNIT_TEST(testHandleResponseTwice);
         CPPUNIT_TEST(testHandleResponseMissingDataArray);
         CPPUNIT_TEST(testSetQueryParameters);
@@ -43,6 +44,7 @@ class TestGetFilesSharedWithMeJob : public CppUnit::TestFixture, public TestBase
 
     protected:
         void testHandleResponse();
+        void testHandleResponseNameWithNul();
         void testHandleResponseTwice();
         void testHandleResponseMissingDataArray();
         void testSetQueryParameters();

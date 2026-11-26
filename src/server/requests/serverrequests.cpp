@@ -635,13 +635,14 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
             return ExitCode::BackError;
         }
 
+        // Escape before normalizing: the normalization stops at the first NUL character and would truncate the path.
+        pathStr = Utility::fixUnsafeNameFromPath(pathStr);
         SyncName normalizedPath;
         if (!Utility::normalizedSyncName(pathStr, normalizedPath)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(pathStr));
             return ExitCode::BackError;
         }
-        normalizedPath = Utility::fixUnsafeNameFromPath(normalizedPath);
         // Use the QString overload of the translation: NodeInfo paths keep their leading separator, so that the
         // consumers can concatenate them directly onto the sync root.
         QString path = SyncName2QStr(normalizedPath);
