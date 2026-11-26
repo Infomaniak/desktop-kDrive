@@ -39,15 +39,18 @@ namespace Infomaniak.kDrive
 
             var authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(App.Constants.Login.OAuthClientId, App.Constants.Login.OAuthRedirectUri);
             authRequestParams.CodeChallengeMethod = CodeChallengeMethodKind.S256;
+            var authorizationEndpoint = App.ServiceProvider.GetRequiredService<IUriStore>().OAuthAuthorizationEndpoint();
+            Logger.LogInfo($"Requesting OAuth authorization: endpoint={authorizationEndpoint}, client_id={App.Constants.Login.OAuthClientId}, redirect_uri={App.Constants.Login.OAuthRedirectUri}.");
+
             try
             {
                 var authRequestResult = await OAuth2Manager
-                    .RequestAuthWithParamsAsync(parentWindowId, App.ServiceProvider.GetRequiredService<IUriStore>().OAuthAuthorizationEndpoint(), authRequestParams)
+                    .RequestAuthWithParamsAsync(parentWindowId, authorizationEndpoint, authRequestParams)
                     .AsTask(cancellationToken);
 
                 if (authRequestResult.Response is AuthResponse authResponse)
                 {
-                    Logger.LogInfo("OAuth authorization successful.");
+                    Logger.LogInfo($"OAuth authorization successful (received code, {authResponse.Code.Length} characters).");
                     TokenRequestParams tokenRequestParams = TokenRequestParams.CreateForAuthorizationCodeRequest(authResponse);
                     return new OAuthResult { Code = authResponse.Code, CodeVerifier = tokenRequestParams.CodeVerifier };
                 }
@@ -57,10 +60,15 @@ namespace Infomaniak.kDrive
                     Logger.LogError($"OAuth authorization failed: {authFailure.Error}, {authFailure.ErrorDescription}",
                         "OAuthHelper: OAuth authorization failed");
                 }
+                else if (authRequestResult.Response is null)
+                {
+                    Logger.LogError("OAuth authorization returned neither a response nor a failure.",
+                        "OAuthHelper: Empty OAuth authorization result");
+                }
             }
             catch (OperationCanceledException)
             {
-                Logger.LogInfo("OAuth authorization canceled by user.");
+                Logger.LogInfo("OAuth authorization wait canceled (restart requested or timeout reached).");
                 throw;
             }
             catch (Exception ex)

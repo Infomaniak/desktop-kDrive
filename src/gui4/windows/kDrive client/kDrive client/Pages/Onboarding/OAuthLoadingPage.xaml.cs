@@ -64,6 +64,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 _onboardingViewModel.PropertyChanged += OnOnboardingViewModelPropertyChanged;
 
                 _onBoardingTask = _onboardingViewModel.ConnectUser(_oauthCts.Token);
+                Logger.LogInfo($"OAuth authorization wait started (timeout: {_oauthTimeOut}).");
+                _ = _oauthCts.Token.Register(() => Logger.LogInfo("OAuth authorization wait ended (timeout reached or restart requested)."));
                 ScheduleRestartButtonEnableAsync();
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
                     await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
@@ -176,6 +178,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingConnectionFailedPage, Analytics.Keys.EventName.ReOpenLoginWeb);
             try
             {
+                Logger.LogInfo("OAuth restart requested by user; canceling the pending authorization.");
                 // Cancel any ongoing authentication attempt
                 await _oauthCts.CancelAsync();
                 if (_onBoardingTask is not null)

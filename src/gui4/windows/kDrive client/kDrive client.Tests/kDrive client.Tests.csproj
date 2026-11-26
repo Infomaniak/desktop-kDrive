@@ -29,5 +29,6 @@
     <Compile Include="..\kDrive client\ServerCommunication\Services\TcpServerCommClient.cs" Link="ServerCommunication\Services\TcpServerCommClient.cs" />
     <Compile Include="..\kDrive client\ServerCommunication\Services\CommSharedEnums.cs" Link="ServerCommunication\Services\CommSharedEnums.cs" />
     <Compile Include="..\kDrive client\ServerCommunication\JsonConverters\Base64StringJsonConverter.cs" Link="ServerCommunication\JsonConverters\Base64StringJsonConverter.cs" />
+    <Compile Include="..\kDrive client\Utility\OAuthCallbackDiagnostics.cs" Link="Utility\OAuthCallbackDiagnostics.cs" />
   </ItemGroup>
 </Project>

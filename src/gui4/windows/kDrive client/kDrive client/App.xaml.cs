@@ -41,6 +41,8 @@ namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
+        private const string OAuthProtocolPrefix = "kdrive://auth-desktop";
+
         private AppInstance _mainInstance = AppInstance.FindOrRegisterForKey("com.infomaniak.kdrive.client");
         private Window? _currentWindow;
         private UpdateWindow? _updateWindow;
@@ -99,25 +101,40 @@ namespace Infomaniak.kDrive
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
-            var isMainInstance = _mainInstance == AppInstance.GetCurrent();
+            // async void swallows exceptions: any failure during launch must be caught here,
+            // otherwise the client dies silently before its first loggable step.
+            try
+            {
+                await LaunchAsync(args);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogFatal($"Unhandled exception during launch: {ex}", "App: Unhandled exception during launch");
+                ExitApplication();
+            }
+        }
 
+        private async Task LaunchAsync(LaunchActivatedEventArgs args)
+        {
+            var isMainInstance = _mainInstance == AppInstance.GetCurrent();
             string[] arguments = Environment.GetCommandLineArgs();
+            Logger.LogInfo($"Launching startup sequence (main instance: {isMainInstance}, {arguments.Length} command line argument(s)).");
+
             if (arguments.Length > 1)
             {
-                var oauthArg = arguments.FirstOrDefault(arg => arg.StartsWith("kdrive://auth-desktop"), "");
+                // Windows is case-insensitive on protocol names, so accept any casing of the prefix.
+                var oauthArg = arguments.FirstOrDefault(arg => arg.StartsWith(OAuthProtocolPrefix, StringComparison.OrdinalIgnoreCase), "");
                 if (oauthArg != "")
                 {
-                    if (OAuth2Manager.CompleteAuthRequest(new Uri(oauthArg)))
-                    {
-                        // Terminate the Process
-                        Logger.LogInfo("OAuth process completed, response routed successfully. Terminating the process.");
-                    }
-                    else
-                    {
-                        Logger.LogWarning("OAuth process failed.");
-                    }
+                    HandleOAuthProtocolActivation(oauthArg);
                     ExitApplication();
                     return;
+                }
+
+                if (arguments.Any(arg => arg.Contains("kdrive", StringComparison.OrdinalIgnoreCase)))
+                {
+                    Logger.LogWarning($"A kdrive-like argument was received but did not match the '{OAuthProtocolPrefix}' prefix and was ignored.",
+                        "App: Unexpected OAuth activation argument");
                 }
 
                 if (!isMainInstance)
@@ -150,23 +167,30 @@ namespace Infomaniak.kDrive
 
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
+            Logger.LogInfo("OAuth protocol handler registered");
 
             // Initialize notifications
+            Logger.LogInfo("Initializing notification manager");
             ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
 
+            Logger.LogInfo("Connecting to server daemon");
             var serverCommService = ServiceProvider.GetRequiredService<IServerCommService>();
             using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
             {
                 if (!await serverCommService.Init(cts.Token))
                 {
+                    Logger.LogFatal("Failed to connect to the server daemon, exiting.");
                     ExitApplication();
                     return;
                 }
             }
+            Logger.LogInfo("Connected to server daemon");
 
+            Logger.LogInfo("Initializing tray icon");
             ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
+            Logger.LogInfo("Initializing application model");
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             if (!await appModel.InitializeAsync())
             {
@@ -181,6 +205,35 @@ namespace Infomaniak.kDrive
             {
                 StartOnboardingIfNeeded();
             });
+        }
+
+        private static void HandleOAuthProtocolActivation(string oauthArg)
+        {
+            Uri callbackUri;
+            try
+            {
+                callbackUri = new Uri(oauthArg);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"OAuth process failed: activation URI is unparseable ({OAuthCallbackDiagnostics.DescribeUnparseable(oauthArg, ex)}).",
+                    "App: Unparseable OAuth activation URI");
+                return;
+            }
+
+            Logger.LogInfo($"OAuth protocol activation received: {OAuthCallbackDiagnostics.Describe(callbackUri)}.");
+
+            if (OAuth2Manager.CompleteAuthRequest(callbackUri))
+            {
+                Logger.LogInfo("OAuth process completed, response routed successfully. Terminating the process.");
+            }
+            else
+            {
+                Logger.LogWarning("OAuth process failed.");
+                // Diagnostics discriminate between a callback URI without a usable 'state' (CompleteAuthRequest
+                // gives up before touching the inter-process pipe) and a pipe open/write failure.
+                Logger.LogInfo($"OAuth failure diagnostics: {OAuthCallbackDiagnostics.Diagnose(callbackUri)}");
+            }
         }
 
         public enum CreateWindowOptions
