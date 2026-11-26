@@ -18,7 +18,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Effects
 import kDrive.UI
 
 // Names a synchronization or a drive the way the synchronization selector does: the bare drive glyph for a drive or a
@@ -59,18 +58,11 @@ Rectangle {
                 driveColor: root.driveColor
             }
 
-            Image {
+            IKTintedIcon {
                 anchors.fill: parent
                 visible: root.advancedSync
                 source: "qrc:/assets/main/folder.svg"
-                sourceSize.width: Math.ceil(width * Math.max(3, Screen.devicePixelRatio))
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-                layer.enabled: visible
-                layer.effect: MultiEffect {
-                    colorization: 1
-                    colorizationColor: root.driveColor
-                }
+                color: root.driveColor
             }
         }
 

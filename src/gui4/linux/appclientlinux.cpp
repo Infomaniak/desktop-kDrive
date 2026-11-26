@@ -25,6 +25,7 @@
 #endif
 #include "app/navigation/mainwindowactivationdecision.h"
 #include "app/onboarding/onboardingsyncconfigurationcontroller.h"
+#include "app/svginfo.h"
 #include "app/syncconfiguration/remotefolderorder.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/logger.h"
@@ -134,6 +135,9 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                             QStringLiteral("SyncErrors only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(RemoteFolders::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "RemoteFolders",
                                             QStringLiteral("RemoteFolders only exposes enums."));
+    // Registered by hand like the other types: a QML_ELEMENT registration is skipped once kDrive.UI already holds types.
+    (void) qmlRegisterSingletonType<SvgInfo>(AppConstants::Qml::moduleUri, 1, 0, "SvgInfo",
+                                             [](QQmlEngine *, QJSEngine *) -> QObject * { return new SvgInfo; });
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
