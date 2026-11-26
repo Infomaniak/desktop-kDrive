@@ -36,6 +36,7 @@
 #include <QUrl>
 
 #include <algorithm>
+#include <vector>
 
 namespace KDC {
 
@@ -51,6 +52,21 @@ std::optional<AppConstants::WebDrive::Destination> toWebDriveDestination(const i
         return std::nullopt;
     }
     return static_cast<Destination>(destination);
+}
+
+bool isDriveFullError(const ClassifiedSyncError &error) {
+    return error.kind == SyncErrorKind::QuotaExceeded;
+}
+
+// A server error of the synchronization without a dedicated kind: the drive states (asleep, in maintenance, not
+// renewed, access denied) have their own blocking screen.
+bool isServerError(const ClassifiedSyncError &error) {
+    return error.kind == SyncErrorKind::Unknown && error.error.level() == ErrorLevel::SyncPal &&
+           error.error.exitCode() == ExitCode::BackError;
+}
+
+bool hasError(const std::vector<ClassifiedSyncError> &errors, bool (*const predicate)(const ClassifiedSyncError &)) {
+    return std::ranges::any_of(errors, predicate);
 }
 } // namespace
 
@@ -78,6 +94,14 @@ HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelec
         }
     });
     (void) connect(&_networkStatusObserver, &NetworkStatusObserver::offlineChanged, this, &HomeController::homeChanged);
+
+    (void) connect(this, &HomeController::homeChanged, this, &HomeController::bannerChanged);
+    (void) connect(this, &HomeController::v4OnboardingChanged, this, &HomeController::bannerChanged);
+    // The projection also refreshes at once when another synchronization is selected.
+    (void) connect(&_syncErrorsProjection, &SyncErrorsProjection::currentErrorsChanged, this, [this]() {
+        refreshDriveFullDismissal();
+        emit bannerChanged();
+    });
 }
 
 HomeController::HomeStatus HomeController::status() const {
@@ -189,6 +213,34 @@ bool HomeController::hasConnectedUser() const {
 
 bool HomeController::showV4Onboarding() const {
     return _showV4Onboarding;
+}
+
+HomeController::HomeBanner HomeController::banner() const {
+    const auto &errors = _syncErrorsProjection.currentErrors();
+
+    if (hasError(errors, isDriveFullError) && _driveFullDismissedSyncDbId != currentSyncDbId()) {
+        return HomeBanner::DriveFull;
+    }
+
+    if (hasError(errors, isServerError)) {
+        return HomeBanner::ServerError;
+    }
+
+    if (!errors.empty()) {
+        return HomeBanner::SyncErrors;
+    }
+
+    const auto homeStatus = status();
+    if (_showV4Onboarding && homeStatus != HomeStatus::SetupRequired && homeStatus != HomeStatus::Loading) {
+        return HomeBanner::V4Onboarding;
+    }
+
+    return HomeBanner::None;
+}
+
+bool HomeController::driveAdmin() const {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    return context.has_value() && context->drive.admin();
 }
 
 void HomeController::loadV4Onboarding() {
@@ -346,6 +398,56 @@ void HomeController::dismissV4Onboarding() {
         qCWarning(lcHomeController) << "Failed to save the dismissed new app banner | code:" << result.code()
                                     << "/ cause:" << result.cause();
     });
+}
+
+void HomeController::openDriveUpsell() const {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    if (!context.has_value() || !context->drive.admin()) {
+        qCWarning(lcHomeController) << "Drive upsell ignored: no selected drive administrated by the user";
+        return;
+    }
+
+    const auto url = AppConstants::Drive::upsellUri(context->drive);
+    qCInfo(lcHomeController) << "Opening the drive upsell page | driveDbId:" << context->drive.dbId() << "| url:" << url;
+    if (!QDesktopServices::openUrl(url)) {
+        qCWarning(lcHomeController) << "Failed to open the drive upsell page | url:" << url;
+    }
+}
+
+void HomeController::dismissDriveFull() {
+    const auto syncDbId = currentSyncDbId();
+    if (syncDbId == 0 || _driveFullDismissedSyncDbId == syncDbId) {
+        return;
+    }
+
+    qCInfo(lcHomeController) << "Drive full banner dismissed | syncDbId:" << syncDbId;
+    _driveFullDismissedSyncDbId = syncDbId;
+    emit bannerChanged();
+}
+
+void HomeController::retrySync() {
+    const auto syncDbId = currentSyncDbId();
+    if (syncDbId == 0) {
+        qCWarning(lcHomeController) << "Sync retry ignored: no synchronization is selected";
+        return;
+    }
+
+    qCInfo(lcHomeController) << "Restarting the synchronization from the Home banner | syncDbId:" << syncDbId;
+    _syncService.startSync(syncDbId);
+}
+
+// The dismissal lasts while the same synchronization stays selected with a quota error: another selection, or the
+// error clearing, brings the banner back on the next quota error.
+void HomeController::refreshDriveFullDismissal() {
+    if (_driveFullDismissedSyncDbId == 0) {
+        return;
+    }
+
+    if (_driveFullDismissedSyncDbId == currentSyncDbId() && hasError(_syncErrorsProjection.currentErrors(), isDriveFullError)) {
+        return;
+    }
+
+    _driveFullDismissedSyncDbId = 0;
 }
 
 std::optional<SyncStatus> HomeController::currentRuntimeStatus() const {

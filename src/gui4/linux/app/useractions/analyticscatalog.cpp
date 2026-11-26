@@ -71,6 +71,8 @@ void addMainWindowEvents(QHash<QString, Event> &events) {
                {u"shortcuts.onlineDrive"_s, u"openKDriveWeb"_s},
                {u"shortcuts.trash"_s, u"openTrashWeb"_s},
                {u"errorBanner.showErrors"_s, u"openErrors"_s},
+               {u"driveFullBanner.addStorage"_s, u"openStorage"_s},
+               {u"serverErrorBanner.retry"_s, u"retrySync"_s},
                {u"primaryAction.showActivities"_s, u"openActivity"_s},
                {u"primaryAction.resumeSync"_s, u"startSync"_s},
                {u"primaryAction.signIn"_s, u"openSignInWeb"_s},

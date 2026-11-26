@@ -57,6 +57,8 @@ QtObject {
     readonly property real informationBlockIconTileRadius: 5
     readonly property real informationBlockIconSize: 14
     readonly property real informationBlockExternalIconSpacing: IKSpacing.s8
+    // Error banners wrap their subtitle on two lines, as on Figma, and stay within the 80 px of a dismissible block.
+    readonly property int informationBlockSubtitleMaxLines: 2
     readonly property real homeAvatarSize: 44
     readonly property real homeAvatarSettingsIconSize: 16
     // The synchronization badge sits on the bottom-right of the avatar and overflows it.

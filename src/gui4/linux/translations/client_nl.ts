@@ -1301,6 +1301,14 @@ open macOS Voorkeuren om ze in te schakelen.</translation>
             <source>Infomaniak Support</source> 
             <translation>Infomaniak Ondersteuning</translation> 
         </message> 
+        <message id="informationBlockBackErrorSubtitle"> 
+            <source>Synchronization is temporarily interrupted. It will resume automatically as soon as possible.</source> 
+            <translation>De synchronisatie is tijdelijk onderbroken. Deze wordt zo snel mogelijk automatisch hervat.</translation> 
+        </message> 
+        <message id="informationBlockBackErrorTitle"> 
+            <source>An error occurred</source> 
+            <translation>Er is een fout opgetreden</translation> 
+        </message> 
         <message id="informationBlockKDriveFullSubtitle"> 
             <source>Free up space or upgrade your plan to continue syncing your files.</source> 
             <translation>Maak ruimte vrij of upgrade uw abonnement om uw bestanden te blijven synchroniseren.</translation> 
@@ -2387,11 +2395,6 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
         <message id="storageDeviceNameMac"> 
             <source>Macintosh</source> 
             <translation>Macintosh</translation> 
-        </message> 
-        <message id="storageDiskAlmostFullDescription"> 
-            <source>Your disk is almost full. Delete or move personal files from this disk to keep syncing your data.</source> 
-            <extracomment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</extracomment> 
-            <translation>Uw schijf is bijna vol. Verwijder of verplaats persoonlijke bestanden van deze schijf om uw gegevens te blijven synchroniseren.</translation> 
         </message> 
         <message id="storageLoadingHint"> 
             <source>Loading space usage…</source> 

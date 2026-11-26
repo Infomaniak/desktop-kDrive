@@ -1303,6 +1303,14 @@ otwórz Preferencje macOS, aby je włączyć.</translation>
             <source>Infomaniak Support</source> 
             <translation>Wsparcie Infomaniak</translation> 
         </message> 
+        <message id="informationBlockBackErrorSubtitle"> 
+            <source>Synchronization is temporarily interrupted. It will resume automatically as soon as possible.</source> 
+            <translation>Synchronizacja została tymczasowo przerwana. Zostanie wznowiona automatycznie, gdy tylko będzie to możliwe.</translation> 
+        </message> 
+        <message id="informationBlockBackErrorTitle"> 
+            <source>An error occurred</source> 
+            <translation>Wystąpił błąd</translation> 
+        </message> 
         <message id="informationBlockKDriveFullSubtitle"> 
             <source>Free up space or upgrade your plan to continue syncing your files.</source> 
             <translation>Zwolnij miejsce lub uaktualnij plan, aby nadal synchronizować pliki.</translation> 
@@ -2391,11 +2399,6 @@ Dane te pozwalają naszemu zespołowi na szybkie naprawianie i optymalizację ap
         <message id="storageDeviceNameMac"> 
             <source>Macintosh</source> 
             <translation>Macintosh</translation> 
-        </message> 
-        <message id="storageDiskAlmostFullDescription"> 
-            <source>Your disk is almost full. Delete or move personal files from this disk to keep syncing your data.</source> 
-            <extracomment>Storage page: description of the card shown when the disk holding the synchronized folder is almost full. The disk may be internal or external. Title is errNotEnoughDiskSpaceTitle, button is buttonManageDiskSpace.</extracomment> 
-            <translation>Dysk jest prawie pełny. Usuń lub przenieś pliki osobiste z tego dysku, aby nadal synchronizować swoje dane.</translation> 
         </message> 
         <message id="storageLoadingHint"> 
             <source>Loading space usage…</source> 

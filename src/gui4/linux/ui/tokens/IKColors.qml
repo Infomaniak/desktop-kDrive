@@ -255,8 +255,6 @@ QtObject {
     readonly property color storageFree: darkMode ? _p.gray400 : _p.gray600
     readonly property color storageBarSeparator: darkMode ? _p.neutralBlue700 : _p.gray100
     readonly property color storageActionSurface: surfaceSecondary
-    readonly property color storageActionIconTile: _p.kDrive500
-    readonly property color storageActionIcon: _p.white
     readonly property color storageChipSurface: darkMode ? _p.neutralBlue600 : _p.white
     readonly property color storageCartIcon: accentSecondary
     readonly property color blockingStateSurface: surfaceSecondary
