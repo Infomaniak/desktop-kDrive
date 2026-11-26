@@ -223,6 +223,15 @@ ExitInfo VfsMac::updateMetadata(const SyncPath &absoluteFilePath, time_t creatio
         return ExitCode::LogicError;
     }
 
+    // Refuse to process an item that is not located under the sync root or whose path traverses a symbolic link: metadata
+    // updates, including file truncation, could otherwise be applied to an item located outside of the sync root.
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(absoluteFilePath, _vfsSetupParams.localPath);
+        ioError != IoError::Success) {
+        LOGW_WARN(logger(),
+                  L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absoluteFilePath, ioError));
+        return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
+    }
+
     struct stat fileStat;
     fileStat.st_size = size;
     fileStat.st_mtimespec = {modtime, 0};

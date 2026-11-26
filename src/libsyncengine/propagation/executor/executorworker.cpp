@@ -637,6 +637,17 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                                                                          << L": " << exitInfoForceStatus);
             }
 
+            // Refuse to process an item that is not located under the sync root or whose path traverses a symbolic link:
+            // the content of an item located outside of the sync root could otherwise be uploaded.
+            if (const auto checkIfPathTraversesLinkError =
+                        IoHelper::checkIfPathTraversesLink(absoluteLocalFilePath, _syncPal->localPath());
+                checkIfPathTraversesLinkError != IoError::Success &&
+                checkIfPathTraversesLinkError != IoError::NoSuchFileOrDirectory) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(
+                                                   absoluteLocalFilePath, checkIfPathTraversesLinkError));
+                return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
+            }
+
             uint64_t filesize = 0;
             if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in ExecutorWorker::getFileSize for "
@@ -847,6 +858,17 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
     } else {
         relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
         absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
+
+        // Refuse to process an item that is not located under the sync root or whose path traverses a symbolic link: the
+        // content of an item located outside of the sync root could otherwise be uploaded.
+        if (const auto checkIfPathTraversesLinkError =
+                    IoHelper::checkIfPathTraversesLink(absoluteLocalFilePath, _syncPal->localPath());
+            checkIfPathTraversesLinkError != IoError::Success &&
+            checkIfPathTraversesLinkError != IoError::NoSuchFileOrDirectory) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: "
+                                               << Utility::formatIoError(absoluteLocalFilePath, checkIfPathTraversesLinkError));
+            return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
+        }
 
         uint64_t filesize;
         if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {

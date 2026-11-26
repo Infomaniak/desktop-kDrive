@@ -110,7 +110,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                                                                            << L" from file system");
             }
 
-            if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), tmpIoError)) {
+            if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), tmpIoError, _rootPath)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::deleteItem: " << Utility::formatIoError(absolutePath, tmpIoError));
                 _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
                 return false;

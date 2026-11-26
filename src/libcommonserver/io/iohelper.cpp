@@ -1121,10 +1121,12 @@ bool IoHelper::deleteItem(const SyncPath &path, const SyncPath &syncRootPath /*=
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError,
                                    const SyncPath &syncRootPath /*= {}*/) noexcept {
-    ioError = IoHelper::checkIfPathTraversesLink(destinationPath, syncRootPath);
-    if (ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(destinationPath, ioError));
-        return false;
+    for (const SyncPath &path: {sourcePath, destinationPath}) {
+        ioError = IoHelper::checkIfPathTraversesLink(path, syncRootPath);
+        if (ioError != IoError::Success) {
+            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
+            return false;
+        }
     }
 
     // Get the destination type.
