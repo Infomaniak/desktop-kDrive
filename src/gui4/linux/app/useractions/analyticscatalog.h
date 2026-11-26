@@ -18,7 +18,10 @@
 
 #pragma once
 
-#include <QString>
+#include <QList>
+#include <QVariant>
+
+#include <utility>
 
 #include <optional>
 
@@ -37,7 +40,9 @@ struct Event {
         QString valueDetail;
 };
 
-[[nodiscard]] std::optional<Event> eventForAction(const QString &actionId);
+using ActionDetails = QList<std::pair<QString, QVariant>>;
+
+[[nodiscard]] std::optional<Event> eventForAction(const QString &actionId, const ActionDetails &details = {});
 /** Page view category of a screen or dialog id. */
 [[nodiscard]] std::optional<QString> pageViewForScreen(const QString &screenId);
 

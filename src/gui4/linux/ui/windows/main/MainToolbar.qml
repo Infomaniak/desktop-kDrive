@@ -59,6 +59,18 @@ Rectangle {
         text: qsTrId("accessibilityBack")
         Accessible.description: qsTrId("tabTitleActivities")
         actionId: root.actionIdPrefix + ".back"
+        actionDetails: {
+            switch (root.activitiesNavigation.currentPage) {
+            case ActivitiesNavigation.Errors:
+                return { page: "errors" };
+            case ActivitiesNavigation.ConflictsQuick:
+                return { page: "conflictsQuick" };
+            case ActivitiesNavigation.ConflictsList:
+                return { page: "conflictsList" };
+            default:
+                return {};
+            }
+        }
         onClicked: root.activitiesNavigation.back()
     }
 

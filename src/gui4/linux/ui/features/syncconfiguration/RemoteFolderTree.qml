@@ -35,8 +35,12 @@ Rectangle {
     readonly property bool contentVisible: !treeModel.loading && !treeModel.loadFailed && !treeModel.empty
 
     function toggleCurrentFromKeyboard() {
-        UserActionLog.action(root.actionIdPrefix + ".toggleFolder", { source: "keyboard" })
-        root.treeModel.toggleSelection(treeSelection.currentIndex)
+        const row = treeView.itemAtCell(Qt.point(0, treeView.currentRow));
+        if (row && !row.accessDenied) {
+            UserActionLog.action(root.actionIdPrefix + ".toggleFolder",
+                                 { source: "keyboard", selection: row.selectionDirection });
+        }
+        root.treeModel.toggleSelection(treeSelection.currentIndex);
     }
 
     implicitHeight: IKSyncConfiguration.treeHeight
@@ -276,6 +280,7 @@ Rectangle {
                 required property int folderKind
                 required property bool current
 
+                readonly property string selectionDirection: folderRow.checkState === Qt.Unchecked ? "include" : "exclude"
                 readonly property bool disclosureVisible: folderRow.isTreeNode && folderRow.hasChildren
                 // Folder reported visible to the model, empty while the row is pooled.
                 property string registeredNodeId: ""
@@ -384,7 +389,7 @@ Rectangle {
                     focusPolicy: Qt.NoFocus
                     Accessible.ignored: true
                     actionId: root.actionIdPrefix + ".toggleFolder"
-                    actionDetails: ({ depth: folderRow.depth })
+                    actionDetails: ({ depth: folderRow.depth, selection: folderRow.selectionDirection })
                     onClicked: folderRow.requestToggle()
                 }
 

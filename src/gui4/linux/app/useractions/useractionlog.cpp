@@ -116,7 +116,7 @@ void UserActionLog::window(const QString &windowId, const bool shown, const QJSV
 void UserActionLog::recordAction(const QString &actionId, const Details &details) const {
     write(u"User action"_s, actionId, details);
 
-    if (const auto event = AnalyticsCatalog::eventForAction(actionId); event.has_value()) {
+    if (const auto event = AnalyticsCatalog::eventForAction(actionId, details); event.has_value()) {
         _matomoService.trackEvent(event->category, event->name, eventValue(*event, details));
     }
 }
