@@ -357,7 +357,6 @@ You can open them at any time, even without an internet connection.</source>
         </message> 
         <message id="buttonDeleteAndSave"> 
             <source>Delete and save</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: confirm button of the confirmation shown on Save; deletes the unchecked folders from this computer and saves the selection.</extracomment> 
             <translation>Διαγραφή και αποθήκευση</translation> 
         </message> 
         <message id="buttonDisconnectAccount"> 
@@ -743,7 +742,6 @@ This folder must not be included in another sync folder and must not contain a s
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
             <source>You can still access it online on kDrive, or sync it again later.</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: description of the confirmation shown on Save when unchecked folders will be deleted from this computer. The plural form follows the number of folders.</extracomment> 
             <translation>
                 <numerusform>Μπορείτε ακόμα να έχετε πρόσβαση σε αυτόν online στο kDrive ή να τον συγχρονίσετε ξανά αργότερα.</numerusform> 
                 <numerusform>Μπορείτε ακόμα να έχετε πρόσβαση σε αυτούς online στο kDrive ή να τους συγχρονίσετε ξανά αργότερα.</numerusform> 
@@ -751,7 +749,6 @@ This folder must not be included in another sync folder and must not contain a s
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
             <source>%n folder will be deleted from this computer</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: title of the confirmation shown on Save when unchecked folders will be deleted from this computer. %lld is the number of folders.</extracomment> 
             <translation>
                 <numerusform>%n φάκελος θα διαγραφεί από αυτόν τον υπολογιστή</numerusform> 
                 <numerusform>%n φάκελοι θα διαγραφούν από αυτόν τον υπολογιστή</numerusform> 
@@ -1955,7 +1952,6 @@ Please check and rename files containing unusual characters, then try again.</so
         </message> 
         <message id="manageSyncSelectedSize"> 
             <source>%1 selected</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page footer: total size of the folders selected for synchronization. %@ is a formatted size, e.g. "2.0 GB".</extracomment> 
             <translation>%1 επιλεγμένα</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 

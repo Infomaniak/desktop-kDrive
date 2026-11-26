@@ -357,7 +357,6 @@ Du kan öppna dem när som helst, även utan internetanslutning.</translation>
         </message> 
         <message id="buttonDeleteAndSave"> 
             <source>Delete and save</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: confirm button of the confirmation shown on Save; deletes the unchecked folders from this computer and saves the selection.</extracomment> 
             <translation>Radera och spara</translation> 
         </message> 
         <message id="buttonDisconnectAccount"> 
@@ -743,7 +742,6 @@ Den här mappen får inte ingå i en annan synkroniseringsmapp och får inte inn
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
             <source>You can still access it online on kDrive, or sync it again later.</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: description of the confirmation shown on Save when unchecked folders will be deleted from this computer. The plural form follows the number of folders.</extracomment> 
             <translation>
                 <numerusform>Du kan fortfarande komma åt den online på kDrive eller synkronisera den igen senare.</numerusform> 
                 <numerusform>Du kan fortfarande komma åt dem online på kDrive eller synkronisera dem igen senare.</numerusform> 
@@ -751,7 +749,6 @@ Den här mappen får inte ingå i en annan synkroniseringsmapp och får inte inn
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
             <source>%n folder will be deleted from this computer</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: title of the confirmation shown on Save when unchecked folders will be deleted from this computer. %lld is the number of folders.</extracomment> 
             <translation>
                 <numerusform>%n mapp raderas från den här datorn</numerusform> 
                 <numerusform>%n mappar raderas från den här datorn</numerusform> 
@@ -1955,7 +1952,6 @@ Kontrollera och byt namn på filer som innehåller ovanliga tecken och försök 
         </message> 
         <message id="manageSyncSelectedSize"> 
             <source>%1 selected</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page footer: total size of the folders selected for synchronization. %@ is a formatted size, e.g. "2.0 GB".</extracomment> 
             <translation>%1 valt</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 

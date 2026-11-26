@@ -357,7 +357,6 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</translati
         </message> 
         <message id="buttonDeleteAndSave"> 
             <source>Delete and save</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: confirm button of the confirmation shown on Save; deletes the unchecked folders from this computer and saves the selection.</extracomment> 
             <translation>Supprimer et enregistrer</translation> 
         </message> 
         <message id="buttonDisconnectAccount"> 
@@ -743,7 +742,6 @@ Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et 
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
             <source>You can still access it online on kDrive, or sync it again later.</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: description of the confirmation shown on Save when unchecked folders will be deleted from this computer. The plural form follows the number of folders.</extracomment> 
             <translation>
                 <numerusform>Vous pourrez toujours y accéder en ligne sur kDrive, ou le synchroniser à nouveau plus tard.</numerusform> 
                 <numerusform>Vous pourrez toujours y accéder en ligne sur kDrive, ou les synchroniser à nouveau plus tard.</numerusform> 
@@ -751,7 +749,6 @@ Ce dossier ne doit pas être inclus dans un autre dossier de synchronisation et 
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
             <source>%n folder will be deleted from this computer</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: title of the confirmation shown on Save when unchecked folders will be deleted from this computer. %lld is the number of folders.</extracomment> 
             <translation>
                 <numerusform>%n dossier sera supprimé de cet ordinateur</numerusform> 
                 <numerusform>%n dossiers seront supprimés de cet ordinateur</numerusform> 
@@ -1955,7 +1952,6 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
         </message> 
         <message id="manageSyncSelectedSize"> 
             <source>%1 selected</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page footer: total size of the folders selected for synchronization. %@ is a formatted size, e.g. "2.0 GB".</extracomment> 
             <translation>%1 sélectionnés</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 

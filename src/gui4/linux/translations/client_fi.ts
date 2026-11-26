@@ -357,7 +357,6 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
         </message> 
         <message id="buttonDeleteAndSave"> 
             <source>Delete and save</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: confirm button of the confirmation shown on Save; deletes the unchecked folders from this computer and saves the selection.</extracomment> 
             <translation>Poista ja tallenna</translation> 
         </message> 
         <message id="buttonDisconnectAccount"> 
@@ -743,7 +742,6 @@ Tämä kansio ei saa sisältyä toiseen synkronointikansioon eikä sisältää s
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
             <source>You can still access it online on kDrive, or sync it again later.</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: description of the confirmation shown on Save when unchecked folders will be deleted from this computer. The plural form follows the number of folders.</extracomment> 
             <translation>
                 <numerusform>Voit edelleen käyttää sitä verkossa kDrivessa tai synkronoida sen uudelleen myöhemmin.</numerusform> 
                 <numerusform>Voit edelleen käyttää niitä verkossa kDrivessa tai synkronoida ne uudelleen myöhemmin.</numerusform> 
@@ -751,7 +749,6 @@ Tämä kansio ei saa sisältyä toiseen synkronointikansioon eikä sisältää s
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
             <source>%n folder will be deleted from this computer</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: title of the confirmation shown on Save when unchecked folders will be deleted from this computer. %lld is the number of folders.</extracomment> 
             <translation>
                 <numerusform>%n kansio poistetaan tältä tietokoneelta</numerusform> 
                 <numerusform>%n kansiota poistetaan tältä tietokoneelta</numerusform> 
@@ -1955,7 +1952,6 @@ Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja y
         </message> 
         <message id="manageSyncSelectedSize"> 
             <source>%1 selected</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page footer: total size of the folders selected for synchronization. %@ is a formatted size, e.g. "2.0 GB".</extracomment> 
             <translation>%1 valittu</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 

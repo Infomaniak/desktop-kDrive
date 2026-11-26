@@ -357,7 +357,6 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</translation>
         </message> 
         <message id="buttonDeleteAndSave"> 
             <source>Delete and save</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: confirm button of the confirmation shown on Save; deletes the unchecked folders from this computer and saves the selection.</extracomment> 
             <translation>Slet og gem</translation> 
         </message> 
         <message id="buttonDisconnectAccount"> 
@@ -743,7 +742,6 @@ Denne mappe må ikke være inkluderet i en anden synkroniseringsmappe og må ikk
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
             <source>You can still access it online on kDrive, or sync it again later.</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: description of the confirmation shown on Save when unchecked folders will be deleted from this computer. The plural form follows the number of folders.</extracomment> 
             <translation>
                 <numerusform>Du kan stadig tilgå den online på kDrive eller synkronisere den igen senere.</numerusform> 
                 <numerusform>Du kan stadig tilgå dem online på kDrive eller synkronisere dem igen senere.</numerusform> 
@@ -751,7 +749,6 @@ Denne mappe må ikke være inkluderet i en anden synkroniseringsmappe og må ikk
         </message> 
         <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
             <source>%n folder will be deleted from this computer</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page: title of the confirmation shown on Save when unchecked folders will be deleted from this computer. %lld is the number of folders.</extracomment> 
             <translation>
                 <numerusform>%n mappe slettes fra denne computer</numerusform> 
                 <numerusform>%n mapper slettes fra denne computer</numerusform> 
@@ -1955,7 +1952,6 @@ Kontrollér venligst og omdøb filer med usædvanlige tegn, og prøv derefter ig
         </message> 
         <message id="manageSyncSelectedSize"> 
             <source>%1 selected</source> 
-            <extracomment>Linux desktop app, Settings "Manage synchronization" page footer: total size of the folders selected for synchronization. %@ is a formatted size, e.g. "2.0 GB".</extracomment> 
             <translation>%1 valgt</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 
