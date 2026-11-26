@@ -847,6 +847,7 @@
       the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
+      It shows only the onboarding `LoaderStrokeAnimation`, at its source size, without logo or spinner.
     - `ui/windows/updaterequired/`: update-required screen built on `IKBlockingState`, loaded by `Main.qml` above every
       other route, onboarding included (the session is hidden, not cancelled), while
       `SyncErrorsProjection.updateRequired`; the header keeps only the kDrive logo and title. "Download manually" calls
