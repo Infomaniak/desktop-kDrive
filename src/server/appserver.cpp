@@ -3584,6 +3584,9 @@ void AppServer::logUsefulInformation() {
     LOG_INFO(_logger, "version: " << _theme->version());
     LOG_INFO(_logger, "os: " << CommonUtility::platformName().toStdString());
     LOG_INFO(_logger, "os version: " << CommonUtility::osVersion());
+#if defined(KD_LINUX)
+    LOG_INFO(_logger, "glibc version: " << CommonUtility::glibcVersion());
+#endif
     LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
     LOG_INFO(_logger, "locale: " << QLocale::system().name().toStdString());

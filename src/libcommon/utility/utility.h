@@ -124,6 +124,7 @@ struct COMMON_EXPORT CommonUtility {
         static std::string osVersion();
 #if defined(KD_LINUX)
         static std::string distributionName();
+        static std::string glibcVersion();
 #endif
         static Platform platform();
         static QString platformArch();

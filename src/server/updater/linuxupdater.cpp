@@ -184,8 +184,13 @@ void LinuxUpdater::prepareAnnouncedUpdate(const RestartTiming restartTiming) {
 }
 
 bool LinuxUpdater::checkMinOsVersion(const std::string &minOsVersion) const {
-    if (CommonUtility::distributionName() != "Ubuntu") return true; // Do not check OS version for distributions other than Ubuntu
-    return AbstractUpdater::checkMinOsVersion(minOsVersion);
+    // On Linux, the minimum OS version published by the kStore is the minimum glibc version.
+    if (const auto glibcVersion = CommonUtility::glibcVersion(); CommonUtility::isVersionLower(glibcVersion, minOsVersion)) {
+        LOG_WARN(Log::instance()->getLogger(), "glibc version not supported, the update is ignored. Current glibc version: "
+                                                       << glibcVersion << ", min glibc version: " << minOsVersion);
+        return false;
+    }
+    return true;
 }
 
 SyncPath LinuxUpdater::installTargetPath(const SyncPath &appImagePath) {
