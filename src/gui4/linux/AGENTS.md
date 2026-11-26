@@ -487,7 +487,11 @@
   of the drive management page, so its custom-selection label reflects a saved change. `open()` reuses a preloaded
   target instead of loading it again; `close()` reloads a target that is still preloaded, which drops an abandoned draft
   and picks up a saved blacklist for the next opening. A target generation discards the responses of a previous target
-  that had the same `SyncDbId`.
+  that had the same `SyncDbId`. The footer shows the selected size, the sync root size minus the excluded folder
+  sizes, hidden while one of them is loading or failed. Every size comes from `RemoteFolderTreeModel`, which loads each
+  folder once, rows and non-rows alike (the root, an excluded folder in a collapsed branch). Save asks for
+  confirmation in `ExcludedFoldersDeletionDialog` only when the draft excludes a folder the confirmed blacklist
+  synchronizes, since saving deletes it locally.
 - `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
   `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is
   missing; later Settings visits reuse the snapshots. Successful user mutations refresh the user snapshot through a

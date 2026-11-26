@@ -296,6 +296,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/settings/SettingsSupportIcon.qml
         ui/windows/settings/SettingsWindow.qml
         ui/windows/settings/ExcludedFoldersView.qml
+        ui/windows/settings/ExcludedFoldersDeletionDialog.qml
         ui/windows/settings/SyncSelectionRow.qml
         ui/windows/settings/SendDebugLogsDialog.qml
         ui/windows/settings/BetaProgramDialog.qml

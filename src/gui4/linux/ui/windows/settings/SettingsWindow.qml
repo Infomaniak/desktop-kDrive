@@ -436,6 +436,8 @@ IKShadowedWindow {
             property bool advancedSync: false
 
             controller: root.excludedFolders
+            modalScrimInset: root.effectiveShadowMargin
+            modalScrimRadius: root.surfaceRadius
             // The page may have saved a new blacklist: the custom-selection label reads it again.
             Component.onDestruction: {
                 if (excludedFoldersView.advancedSync) {
