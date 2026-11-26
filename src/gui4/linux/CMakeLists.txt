@@ -52,6 +52,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/parametersstore.h
         app/cache/syncerrorsprojection.cpp
         app/cache/syncerrorsprojection.h
+        app/desktop/filemanager.cpp
+        app/desktop/filemanager.h
         app/desktop/notificationservice.cpp
         app/desktop/notificationservice.h
         app/dialogs/manydeletescontroller.cpp

@@ -17,6 +17,7 @@
  */
 
 #include "app/mainwindow/activitiescontroller.h"
+#include "app/desktop/filemanager.h"
 #include "app/navigation/approuter.h"
 #include "app/syncconfiguration/localpaths.h"
 
@@ -159,7 +160,7 @@ void ActivitiesController::retranslate() {
 }
 
 /**
- * Opens the file or folder represented by the activity target, or the parent folder if the target is a file.
+ * Opens the folder represented by the activity target, or shows the file target selected in its folder.
  * @param rowId the stable model row identifier for the activity or error
  */
 void ActivitiesController::openLocal(const QString &rowId) {
@@ -209,11 +210,14 @@ void ActivitiesController::openLocalPath(const QString &rowId, const bool openDi
     }
 
     const bool targetIsDir = QFileInfo{Path2QStr(canonicalTargetPath.value())}.isDir();
-    if (const SyncPath folderToOpen =
-                openDisplayedFolder || targetIsDir ? *canonicalTargetPath : canonicalTargetPath->parent_path();
-        folderToOpen.empty() || !QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(folderToOpen)))) {
+    if (!openDisplayedFolder && !targetIsDir) {
+        revealInFileManager(*canonicalTargetPath, this, [this, rowId] { emit actionFailed(rowId); });
+        return;
+    }
+
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(canonicalTargetPath.value())))) {
         qCWarning(lcActivitiesController) << "Desktop service failed to open local activity folder"
-                                          << "| rowId:" << rowId << "| folder:" << Path2QStr(folderToOpen);
+                                          << "| rowId:" << rowId << "| folder:" << Path2QStr(canonicalTargetPath.value());
         emit actionFailed(rowId);
     }
 }

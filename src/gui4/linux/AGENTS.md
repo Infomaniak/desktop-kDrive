@@ -332,6 +332,9 @@
     (`ActivationToken`) goes to `XDG_ACTIVATION_TOKEN`, which Qt uses to bring the opened window to the front on
     Wayland. Server notifications (`UTILITY_SHOW_NOTIFICATION`, synchronization activity, already filtered by the
     notification settings) open the activity list.
+  - `filemanager.*`: `revealInFileManager` shows an item selected in its folder through
+    `org.freedesktop.FileManager1.ShowItems` (Activities, Search with Ctrl, errors page), and falls back to opening that
+    folder without selection.
 - `app/devtools/errorsimulator.*`: Debug-only sync error simulator, compiled for the Debug configuration only and
   enabled by `KDRIVE_SIMULATE_ERRORS`: `all` (every non-blocking kind plus 3 conflicts), `inotify` (the inotify
   watches error alone), one blocking error (`asleep`, `wakingup`, `maintenance`, `notrenew`, `accessdenied`,
@@ -564,10 +567,11 @@
   errors banner and page.
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
-  locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
-  transient feedback independent from projected row lifetime. The errors banner and the "fix errors" row action open the
-  errors page through `AppRouter::showErrors()`; the row action first emits `fixErrorsRequested` with the row's errors,
-  which `ErrorsPageController::reveal` brings into view.
+  locations (a file target is shown selected in its folder, the displayed folder opens without selection), and
+  delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep transient
+  feedback independent from projected row lifetime. The errors banner and the "fix errors" row action open the errors
+  page through `AppRouter::showErrors()`; the row action first emits `fixErrorsRequested` with the row's errors, which
+  `ErrorsPageController::reveal` brings into view.
 - `app/mainwindow/blockingerrorcontroller.*`: QML-facing state of the blocking error screen of the selected
   synchronization (`SyncErrorsProjection::currentBlockingError`: drive asleep, waking up, not renewed, in maintenance,
   access denied, or user logged out). Only that synchronization is blocked: the controller switches `AppRouter` to the
@@ -613,9 +617,10 @@
   synchronization root otherwise). It closes when the error disappears or the selected synchronization changes; its
   buttons are revalidated, then run through `SyncErrorActionHandler::run`.
 - `app/mainwindow/syncerroractionhandler.*`: the only place that knows what each error button does: rename or open the
-  item online, open a local folder below the synchronization root, open the volume (disk space), open the shop
-  (`upsellUri`) or the web drive, open the file exclusions, restart the synchronization, refresh the errors, reconnect
-  (`loginRequested`, as on the blocking screen), or contact the support. `Explain` emits `explanationRequested`,
+  item online, show a local item selected in its folder below the synchronization root (its folder when the item is
+  gone), open the volume (disk space), open the shop (`upsellUri`) or the web drive, open the file exclusions, restart
+  the synchronization, refresh the errors, reconnect (`loginRequested`, as on the blocking screen), or contact the
+  support. `Explain` emits `explanationRequested`,
   `ChooseVersion` emits `versionSelectionRequested`, and `openConflictVersion` opens a conflict version (the local copy
   in its application, the remote one on kDrive web);
   `OpenSyncParentFolder` opens the folder above the synchronization root, and `CreateNewSync` opens Settings on the
@@ -645,8 +650,8 @@
   synchronization. Query edits immediately invalidate outstanding requests and pagination while preserving displayed
   rows during the debounce delay. It drops every response whose request generation is outdated (an IPC request
   cannot be cancelled), and pages with the cursor returned by `DRIVE_SEARCH`, repeating the frozen query of the first
-  page. A local result opens with the desktop services after `resolveExistingPathBelowSyncRoot`, or its parent folder
-  with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
+  page. A local result opens with the desktop services after `resolveExistingPathBelowSyncRoot`, or is shown selected
+  in its parent folder with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
 - `app/mainwindow/searchresultmodel.*`: search results, page after page. `appendPage` inserts rows without a reset and
   skips nodes already listed; node ids and paths stay internal.
 - `app/mainwindow/storage/storagecontroller.*`: QML-facing Storage lifecycle. While Storage is visible, one cancellable
