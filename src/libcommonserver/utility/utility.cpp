@@ -696,6 +696,23 @@ SyncName Utility::fixUnsafeName(const SyncName &name) {
     return modified ? newName : name;
 }
 
+SyncName Utility::fixUnsafeNameFromPath(const SyncName &path) {
+    SyncName fixedPath;
+    fixedPath.reserve(path.size());
+
+    SyncName::size_type begin = 0;
+    while (true) {
+        const auto end = path.find(static_cast<SyncChar>('/'), begin);
+        fixedPath += fixUnsafeName(path.substr(begin, end == SyncName::npos ? SyncName::npos : end - begin));
+        if (end == SyncName::npos) break;
+
+        fixedPath += static_cast<SyncChar>('/');
+        begin = end + 1;
+    }
+
+    return fixedPath;
+}
+
 void Utility::msleep(const int64_t msec) {
     const std::chrono::milliseconds dura(msec);
     std::this_thread::sleep_for(dura);

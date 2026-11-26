@@ -620,10 +620,7 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
     if (!JsonParserUtility::extractValue(dataObj, nameKey, name)) {
         return ExitCode::BackError;
     }
-
-#if defined(KD_WINDOWS)
     name = Utility::fixUnsafeName(name);
-#endif
     nodeInfo.setName(SyncName2QStr(name));
 
     std::string tmp;
@@ -644,10 +641,7 @@ ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveI
                       L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(pathStr));
             return ExitCode::BackError;
         }
-
-#if defined(KD_WINDOWS)
-        normalizedPath = Utility::fixUnsafeName(normalizedPath);
-#endif
+        normalizedPath = Utility::fixUnsafeNameFromPath(normalizedPath);
         // Use the QString overload of the translation: NodeInfo paths keep their leading separator, so that the
         // consumers can concatenate them directly onto the sync root.
         QString path = SyncName2QStr(normalizedPath);

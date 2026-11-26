@@ -54,6 +54,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testTryCreateTmpFile);
         CPPUNIT_TEST(testTryCreateTmpItemWithUnsafeName);
         CPPUNIT_TEST(testFixUnsafeName);
+        CPPUNIT_TEST(testFixUnsafeNameFromPath);
 #if defined(KD_MACOS) || defined(KD_LINUX)
         CPPUNIT_TEST(testEscapePath);
 #endif
@@ -94,6 +95,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testTryCreateTmpFile();
         void testTryCreateTmpItemWithUnsafeName();
         void testFixUnsafeName();
+        void testFixUnsafeNameFromPath();
 #if defined(KD_MACOS) || defined(KD_LINUX)
         void testEscapePath();
 #endif

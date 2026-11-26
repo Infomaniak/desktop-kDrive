@@ -221,6 +221,9 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncName charToHex(unsigned int c);
 
         static SyncName fixUnsafeName(const SyncName &name);
+        // Applies `fixUnsafeName` to each component of a '/'-separated remote path. The '/' separators are kept as is,
+        // including on Windows, where a '\' is part of a name and is escaped.
+        static SyncName fixUnsafeNameFromPath(const SyncName &path);
 
         static void msleep(int64_t msec);
 

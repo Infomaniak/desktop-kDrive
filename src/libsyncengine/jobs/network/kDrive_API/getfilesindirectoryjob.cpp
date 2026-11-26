@@ -95,13 +95,12 @@ ExitInfo GetFilesInDirectoryJob::extractPath(const Poco::JSON::Object::Ptr &obj,
     SyncName rawPath;
     if (!JsonParserUtility::extractValue(obj, pathKey, rawPath)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
-    if (!Utility::normalizedSyncName(rawPath, path)) {
+    SyncName normalizedPath;
+    if (!Utility::normalizedSyncName(rawPath, normalizedPath)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawPath));
     }
 
-#if defined(KD_WINDOWS)
-    path = Utility::fixUnsafeName(path);
-#endif
+    path = Utility::fixUnsafeNameFromPath(normalizedPath);
     return ExitCode::Ok;
 }
 

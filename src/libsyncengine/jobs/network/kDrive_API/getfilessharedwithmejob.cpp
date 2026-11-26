@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2026 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,11 +66,7 @@ ExitInfo GetFilesSharedWithMeJob::deserializeDataArray() {
         if (!Utility::normalizedSyncName(rawName, name)) {
             LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
         }
-
-#if defined(KD_WINDOWS)
         name = Utility::fixUnsafeName(name);
-#endif
-
         if (name.empty()) continue;
 
         RemoteNodeId parentId;

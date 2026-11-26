@@ -598,6 +598,29 @@ void TestUtility::testFixUnsafeName() {
 #endif
 }
 
+void TestUtility::testFixUnsafeNameFromPath() {
+    // Paths without unsafe characters are left unchanged, including their leading and trailing separators.
+    CPPUNIT_ASSERT_EQUAL(std::string(""), SyncName2Str(Utility::fixUnsafeNameFromPath(SyncName())));
+    CPPUNIT_ASSERT_EQUAL(std::string("/"), SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/"))));
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/Docs/file.txt"),
+                         SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/Private/Docs/file.txt"))));
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/Docs/"), SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/Private/Docs/"))));
+
+    // Regression test: the '/' separators are not escaped, so that the root translation of the API path still applies.
+    // Every component is escaped, not only the last one, because the remote observer escapes the directory names too.
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/Do%0cs/file%0.txt"),
+                         SyncName2Str(Utility::fixUnsafeNameFromPath(SyncName(Str("/Private/Do\0cs/file\0.txt"), 24))));
+
+#if defined(KD_WINDOWS)
+    // On Windows, '\' is part of a remote name, not a separator: it is escaped and the separators stay '/'.
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/a%3ab/c%5cd.txt"),
+                         SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/Private/a:b/c\\d.txt"))));
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/a:b/c\\d.txt"),
+                         SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/Private/a:b/c\\d.txt"))));
+#endif
+}
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
 void TestUtility::testEscapePath() {
     // Test simple path without special characters
