@@ -22,7 +22,7 @@ import InfomaniakDI
 struct FileOpeningSignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var fileOpeningStatusCache: FileOpeningStatusCache
-    @LazyInjectService private var fileOpeningDownloadStateCache: FileOpeningDownloadStateCache
+    @LazyInjectService private var fileOpeningDownloadStateCache: FileOpeningDownloadStateCaching
 
     func handleFileOpeningStatus(_ signal: Data) async throws {
         guard let fileOpeningStatusSignal = try? decoder.decode(SignalMessage<FileOpeningStatusSignal>.self, from: signal) else {
