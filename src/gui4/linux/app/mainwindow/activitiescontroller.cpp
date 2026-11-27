@@ -123,7 +123,8 @@ ActivitiesController::ActivitiesController(const ActivityStore &activityStore, c
     _networkStatusObserver(networkStatusObserver),
     _activityService(activityService),
     _appRouter(appRouter),
-    _model(activityStore, appCache, selectionStore, this) {
+    _model(activityStore, appCache, selectionStore, this),
+    _shareLink(appCache, selectionStore, activityService, this) {
     (void) connect(&_model, &ActivityListModel::filterChanged, this, &ActivitiesController::filterChanged);
     (void) connect(&_model, &ActivityListModel::projectionChanged, this, &ActivitiesController::refreshPageState);
     (void) connect(&_selectionStore, &MainSelectionStore::currentContextChanged, this, &ActivitiesController::refreshPageState);
@@ -223,6 +224,30 @@ void ActivitiesController::openOnline(const QString &rowId) {
     _activityService.openOnline(target->activityLocalId, context->drive.dbId(), target->remoteNodeId);
 }
 
+void ActivitiesController::openShareDialog(const QString &rowId) {
+    const auto target = _model.actionTarget(rowId);
+    if (!target.has_value() || target->remoteNodeId.empty()) {
+        qCWarning(lcActivitiesController) << "Share dialog rejected for unavailable node | rowId:" << rowId;
+        emit actionFailed(rowId);
+        return;
+    }
+
+    const auto context = actionSyncContext(*target, rowId);
+    if (!context.has_value()) {
+        emit actionFailed(rowId);
+        return;
+    }
+
+    const bool isDirectory = target->nodeType == NodeType::Directory;
+    // A folder icon comes from `isDirectory` alone: a file icon name would be loaded before the chip knows it is a folder.
+    _shareLink.open({.driveDbId = context->drive.dbId(),
+                     .remoteNodeId = target->remoteNodeId,
+                     .name = target->name,
+                     .iconName = isDirectory ? QString{} : target->fileIconName,
+                     .isDirectory = isDirectory});
+}
+
+// TODO: Remove once the activity menu opens the "Share" dialog.
 void ActivitiesController::copyShareLink(const QString &rowId) {
     const auto target = _model.actionTarget(rowId);
     if (!target.has_value() || target->remoteNodeId.empty()) {

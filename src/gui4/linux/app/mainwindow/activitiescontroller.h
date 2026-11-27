@@ -22,6 +22,7 @@
 #include "app/cache/mainselectionstore.h"
 #include "app/mainwindow/activitylistmodel.h"
 #include "app/mainwindow/networkstatusobserver.h"
+#include "app/mainwindow/sharelinkcontroller.h"
 #include "app/services/activityservice.h"
 
 #include <QObject>
@@ -46,6 +47,7 @@ class ActivitiesController final : public QObject {
         Q_PROPERTY(bool hasActivities READ hasActivities NOTIFY hasActivitiesChanged)
         Q_PROPERTY(qint32 errorCount READ errorCount NOTIFY errorCountChanged)
         Q_PROPERTY(bool hasErrors READ hasErrors NOTIFY errorCountChanged)
+        Q_PROPERTY(ShareLinkController *shareLink READ shareLink CONSTANT)
 
     public:
         explicit ActivitiesController(const ActivityStore &activityStore, const AppCache &appCache,
@@ -61,10 +63,14 @@ class ActivitiesController final : public QObject {
         [[nodiscard]] bool hasActivities() const { return _hasActivities; }
         [[nodiscard]] qint32 errorCount() const { return _errorCount; }
         [[nodiscard]] bool hasErrors() const { return _errorCount > 0; }
+        [[nodiscard]] ShareLinkController *shareLink() { return &_shareLink; }
 
         Q_INVOKABLE void openLocal(const QString &rowId);
         Q_INVOKABLE void openFolder(const QString &rowId);
         Q_INVOKABLE void openOnline(const QString &rowId);
+        /** Opens the "Share" dialog on the node of the row. */
+        Q_INVOKABLE void openShareDialog(const QString &rowId);
+        // TODO: Remove once the activity menu opens the "Share" dialog.
         Q_INVOKABLE void copyShareLink(const QString &rowId);
         Q_INVOKABLE void requestFixErrors(const QString &rowId);
         Q_INVOKABLE void requestFixAllErrors();
@@ -94,6 +100,7 @@ class ActivitiesController final : public QObject {
         ActivityService &_activityService;
         AppRouter &_appRouter;
         ActivityListModel _model;
+        ShareLinkController _shareLink;
         QString _title;
         bool _loading{true};
         bool _hasActivities{false};

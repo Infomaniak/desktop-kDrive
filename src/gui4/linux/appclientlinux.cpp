@@ -111,6 +111,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                             "ErrorsPageController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ConflictVersionController>(AppConstants::Qml::moduleUri, 1, 0, "ConflictVersionController",
                                                                  "ConflictVersionController is owned by ErrorsPageController.");
+    (void) qmlRegisterUncreatableType<ShareLinkController>(AppConstants::Qml::moduleUri, 1, 0, "ShareLinkController",
+                                                           "ShareLinkController is owned by ActivitiesController.");
     (void) qmlRegisterUncreatableType<ConflictsPageController>(AppConstants::Qml::moduleUri, 1, 0, "ConflictsPageController",
                                                                "ConflictsPageController is owned by ErrorsPageController.");
     (void) qmlRegisterUncreatableType<ConflictListModel>(AppConstants::Qml::moduleUri, 1, 0, "ConflictListModel",

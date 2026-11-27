@@ -25,6 +25,10 @@ namespace KDC::UpsellOffers {
 
 namespace {
 
+// Highest tiers of their range, see the pack ids of PackInfo::upsellTarget.
+constexpr uint64_t kSuiteEnterprisePackId = 14;
+constexpr uint64_t myKSuitePlusPackId = 19;
+
 Offer offerForTarget(const UpsellTarget target) {
     switch (target) {
         case UpsellTarget::StandAloneToMykSuitePlus:
@@ -44,6 +48,14 @@ Offer offerForTarget(const UpsellTarget target) {
 
 Offer offerFor(const Drive &drive) {
     if (!drive.admin() || !drive.packInfo().isFree()) {
+        return Offer::None;
+    }
+    return offerForTarget(drive.packInfo().upsellTarget());
+}
+
+Offer shareLinkLimitOfferFor(const Drive &drive) {
+    const uint64_t packId = drive.packInfo().id();
+    if (!drive.admin() || packId == kSuiteEnterprisePackId || packId == myKSuitePlusPackId) {
         return Offer::None;
     }
     return offerForTarget(drive.packInfo().upsellTarget());

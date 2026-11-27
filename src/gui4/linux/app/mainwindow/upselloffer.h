@@ -42,6 +42,9 @@ Q_ENUM_NS(Offer)
 /** Only the administrators of a drive with a free pack are offered an upgrade. */
 [[nodiscard]] Offer offerFor(const Drive &drive);
 
+/** Offer shown when the public link limit is reached: any pack below the highest tier, for its administrators only. */
+[[nodiscard]] Offer shareLinkLimitOfferFor(const Drive &drive);
+
 } // namespace UpsellOffers
 
 using UpsellOffers::Offer;

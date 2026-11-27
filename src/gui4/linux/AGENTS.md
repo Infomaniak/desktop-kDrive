@@ -557,7 +557,8 @@
   notification and is hidden while the selected synchronization is blocked (`SidebarView.navigationEnabled`).
 - `app/mainwindow/upselloffer.*`: `UpsellOffers::Offer`, the subscription offered to upgrade a drive, exposed to QML as
   `UpsellOffers`. `offerFor(drive)` gives one only to an admin of a drive with a free pack: my kSuite+ for the standalone
-  and my kSuite packs, kSuite Pro for the kSuite packs.
+  and my kSuite packs, kSuite Pro for the kSuite packs. `shareLinkLimitOfferFor(drive)` is the offer of the public link
+  limit notice: any admin below the highest tier (kSuite Entreprise, my kSuite+).
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
   active node errors. It omits failed activities after their active error is resolved, maps server status and direction
   to the QML-facing presentation enums, keeps in-progress transfers of at least 1 KB first in start order, coalesces
@@ -567,7 +568,8 @@
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
   locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
-  transient feedback independent from projected row lifetime. The errors banner and the "fix errors" row action open the
+  transient feedback independent from projected row lifetime. It owns the `ShareLinkController` of the "Share" dialog
+  (`openShareDialog(rowId)`). The errors banner and the "fix errors" row action open the
   errors page through `AppRouter::showErrors()`; the row action first emits `fixErrorsRequested` with the row's errors,
   which `ErrorsPageController::reveal` brings into view.
 - `app/mainwindow/blockingerrorcontroller.*`: QML-facing state of the blocking error screen of the selected
@@ -604,6 +606,10 @@
   `conflictVersion` on one conflict, or on all in list order.
 - `app/mainwindow/conflictlistmodel.*`: the conflicts of the selected synchronization, sorted by relative path
   regardless of case and filtered by `searchText` on that path; rows are updated in place.
+- `app/mainwindow/sharelinkcontroller.*`: QML-facing state of the "Share" dialog of an activity. The node is fixed at
+  opening; each link (restricted, public) has its own state from `ActivityService::copyLink`, and the public link limit
+  (`Drive::sharedLinkQuota`, 0 when unknown) and the upgrade offer follow the drive in `AppCache`. A generation counter
+  drops the responses of a previous opening; it closes when the selected synchronization changes.
 - `app/mainwindow/conflictversioncontroller.*`: QML-facing state of the "Choose the version to keep" dialog. It walks
   through a list of conflicts (one from an errors row), loads both versions of each in parallel, preselects the
   strictly more recent one, and sends every choice in one request after the last conflict; a failure keeps the dialog

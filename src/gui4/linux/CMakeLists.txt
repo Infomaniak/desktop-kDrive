@@ -95,6 +95,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/searchcontroller.h
         app/mainwindow/searchresultmodel.cpp
         app/mainwindow/searchresultmodel.h
+        app/mainwindow/sharelinkcontroller.cpp
+        app/mainwindow/sharelinkcontroller.h
         app/mainwindow/storage/storagecontroller.cpp
         app/mainwindow/storage/storagecontroller.h
         app/mainwindow/storage/storagemeasurecache.cpp

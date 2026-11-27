@@ -70,7 +70,7 @@ Popup {
                 separatorBefore: false
             });
         }
-        if (hasAction(ActivityListModel.CopyShareLinkAction)) {
+        if (hasAction(ActivityListModel.ShareAction)) {
             result.push({
                 action: ActivityOptionsMenu.CopyShareLink,
                 label: qsTrId("buttonCopyShareLink"),
