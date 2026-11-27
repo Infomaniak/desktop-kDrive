@@ -100,17 +100,15 @@ void FileOpeningHandler::queueOpenFileJob() {
     _job = job;
     _appServer->registerFileOpeningJob(_jobId, shared_from_this());
     const std::weak_ptr<FileOpeningHandler> weakThis = weak_from_this();
-    job->setFeedbackCallback(
-            [weakThis, appServer = _appServer](const FileOpeningPhase phase, const int8_t percent, const CommString &itemName,
-                                               const CommString &itemPath, const int64_t receivedBytes,
-                                               const int64_t totalBytes) {
-                // Job manager worker thread. A null lock means the flow has already been processed and its handler destroyed:
-                // discard the call. Hand the state over to the application thread otherwise.
-                if (const auto handler = weakThis.lock()) {
-                    appServer->dispatchFileOpeningStatus(handler, phase, percent, itemName, itemPath, receivedBytes,
-                                                         totalBytes);
-                }
-            });
+    job->setFeedbackCallback([weakThis, appServer = _appServer](const FileOpeningPhase phase, const int8_t percent,
+                                                                const CommString &itemName, const CommString &itemPath,
+                                                                const int64_t receivedBytes, const int64_t totalBytes) {
+        // Job manager worker thread. A null lock means the flow has already been processed and its handler destroyed:
+        // discard the call. Hand the state over to the application thread otherwise.
+        if (const auto handler = weakThis.lock()) {
+            appServer->dispatchFileOpeningStatus(handler, phase, percent, itemName, itemPath, receivedBytes, totalBytes);
+        }
+    });
     std::weak_ptr<OpenFileJob> weakJob = job;
     job->setAdditionalCallback([weakThis, appServer = _appServer, weakJob](UniqueId) {
         // Job manager worker thread. A null handler lock means the flow has already been processed and its handler
@@ -215,7 +213,7 @@ void FileOpeningHandler::handleFileOpeningFailure(const FileOpeningPhase failure
     OpenFileJob::Request request;
     const bool urlParsed = OpenFileJob::parseDeeplinkUrl(_url, request);
     DriveDbId driveDbId{0};
-    if (const auto job = _job.lock()) driveDbId = job->driveDbId();
+    if (_job) driveDbId = _job->driveDbId();
     _appServer->sendFileOpeningFailure(_jobId, failurePhase, failurePhase == FileOpeningPhase::Failed ? webUrl() : CommString{},
                                        urlParsed ? driveDbId : DriveDbId{0},
                                        urlParsed ? CommonUtility::str2CommString(request.remoteNodeId) : CommString{});
@@ -230,7 +228,7 @@ CommString FileOpeningHandler::webUrl() const {
     // The kDrive web application opens an item within its parent folder: resolve the parent node id of the item from
     // the file information API. Best effort: when the parent node id cannot be resolved, the failure window shows no
     // download button.
-    const auto job = _job.lock();
+    const auto job = _job;
     if (!job || job->driveDbId() == 0) return {};
 
     try {
@@ -263,8 +261,8 @@ void FileOpeningHandler::handleFileOpeningCanceled() {
 
 ExitInfo FileOpeningHandler::cancel() {
     LOG_INFO(Log::instance()->getLogger(), "Canceling the file opening job - url=" << _url);
-    if (const auto job = _job.lock()) {
-        job->cancel();
+    if (_job) {
+        _job->cancel();
 
         return ExitCode::Ok;
     }

@@ -99,7 +99,10 @@ class FileOpeningHandler : public std::enable_shared_from_this<FileOpeningHandle
         AppServer *_appServer{nullptr};
         std::string _url;
         UniqueId _jobId{0};
-        std::weak_ptr<OpenFileJob> _job;
+        //! The job is kept alive until the handler is destroyed: its identity (the drive database id) is read on the
+        //! application thread when the failure is reported, after the job manager has already released the job — a
+        //! weak pointer would let the job expire in between and the failure window would lose its download offer.
+        std::shared_ptr<OpenFileJob> _job;
 
         friend class AppServer;
 };
