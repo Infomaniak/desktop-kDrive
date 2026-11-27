@@ -37,6 +37,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         [[nodiscard]] bool isLocked() const { return _isLocked; }
         [[nodiscard]] int64_t usedSize() const { return _usedSize; }
         [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
+        [[nodiscard]] int64_t sharedLinkQuota() const { return _sharedLinkQuota; }
         [[nodiscard]] const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
 
     protected:
@@ -56,6 +57,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         int64_t _usedSize{0};
         MaintenanceInfo _maintenanceInfo;
         PackInfo _packInfo;
+        int64_t _sharedLinkQuota{0};
 };
 
 } // namespace KDC
