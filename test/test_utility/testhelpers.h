@@ -151,6 +151,7 @@ void showTrashInfo();
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType = NodeType::File);
 
 void setupLogging();
+SyncPath logDirectoryPath();
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 //! Sets the extended attribute corresponding to a dehydrated placeholder (LiteSync).

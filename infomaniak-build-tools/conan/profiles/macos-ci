@@ -1,0 +1,9 @@
+[settings]
+os=Macos
+os.version=12.4
+arch=armv8|x86_64
+compiler=apple-clang
+compiler.version=21
+compiler.cppstd=gnu20
+compiler.libcxx=libc++
+build_type=Release

@@ -180,9 +180,20 @@ void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, con
     std::filesystem::rename(tempDir.path() / filepath1.filename(), filepath1);
 }
 
-void setupLogging() {
+SyncPath logDirectoryPath() {
+    if (const auto path = loadEnvVariable("KDRIVE_TEST_LOG_DIR", false); !path.empty()) {
+        const SyncPath directoryPath = CommonUtility::s2ws(path);
+        std::filesystem::create_directories(directoryPath);
+        return directoryPath;
+    }
+
     SyncPath logDirPath;
     (void) CommonUtility::logDirectoryPath(logDirPath);
+    return logDirPath;
+}
+
+void setupLogging() {
+    const auto logDirPath = logDirectoryPath();
 
     // Setup log4cplus
     const std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();

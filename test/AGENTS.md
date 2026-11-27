@@ -6,6 +6,7 @@ matching test sub-directory that compiles into its own standalone binary. Tests 
 framework is used.
 
 Each test binary is built only when CMake is configured with `-DBUILD_UNIT_TESTS=ON`.
+On macOS, tests link the Conan-provided static `cppunit::cppunit` target; no system CppUnit installation is required.
 
 ## Test Binaries
 
@@ -50,6 +51,7 @@ KDRIVE_TEST_CI_EXTENDED_TEST=true ./build-linux/bin/kDrive_test_syncengine
 ```
 
 Log output goes to `$TMPDIR/kDrive-logdir/` — check there first when a test fails with no assertion message.
+The macOS extended-test job sets `KDRIVE_TEST_LOG_DIR` to collect test logs in a job-local directory; it requires no dedicated low-space partition (download tests inject free-space values).
 
 ## How to Add a New Test Case
 

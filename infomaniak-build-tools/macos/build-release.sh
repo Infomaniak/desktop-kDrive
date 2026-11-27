@@ -35,12 +35,14 @@ export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 src_dir="${1-$PWD}"
 app_name="kDrive"
 
-# Use the repository's Python environment and the operator-selected Xcode.
-if [ ! -f "$src_dir/.venv/bin/activate" ]; then
-	echo "Missing Python environment: $src_dir/.venv/bin/activate" >&2
+# CI provides Conan through Mise; preserve the existing local Python environment.
+if [ "${GITHUB_ACTIONS:-}" != "true" ] && [ -f "$src_dir/.venv/bin/activate" ]; then
+	source "$src_dir/.venv/bin/activate"
+fi
+if ! command -v conan >/dev/null 2>&1; then
+	echo 'Missing Conan. Run mise install, then build with mise exec -- <build-script>.' >&2
 	exit 1
 fi
-source "$src_dir/.venv/bin/activate"
 export CC="$(xcrun --find clang)"
 export CXX="$(xcrun --find clang++)"
 export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
@@ -50,9 +52,6 @@ conan --version
 
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
-
-# Path to Sparkle installation
-sparkle_dir="$HOME/Library/Frameworks"
 
 # Set build dir
 build_dir="$PWD/build-macos/client"
@@ -96,6 +95,7 @@ export PATH="$QTDIR/bin:$PATH"
 
 
 source "$conan_build_folder/conanbuild.sh"
+source "$conan_build_folder/conanrun.sh"
 
 # Configure
 pushd "$build_dir"
@@ -105,7 +105,6 @@ cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$install_dir" \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DSPARKLE_LIBRARY="$sparkle_dir/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
 	-DBUILD_GUI=ON \
 	-DBUILD_GUI_LEGACY=OFF \
