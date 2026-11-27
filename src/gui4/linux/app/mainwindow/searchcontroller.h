@@ -81,7 +81,7 @@ class SearchController final : public QObject {
         // Requests the next page. Ignored while a page loads or after a failed page, which only `retry()` requests again.
         Q_INVOKABLE void loadMore();
         // Opens a local result with the desktop services, any other result in the web app. With `revealInFolder`, a local
-        // result opens its parent folder instead; a remote result ignores it.
+        // result is shown selected in its parent folder instead; a remote result ignores it.
         Q_INVOKABLE void openResult(int32_t row, bool revealInFolder = false) const;
 
         void retranslate();

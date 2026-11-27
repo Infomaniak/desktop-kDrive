@@ -20,6 +20,7 @@
 
 #include "app/appconstants.h"
 #include "app/cache/syncerrorsprojection.h"
+#include "app/desktop/filemanager.h"
 #include "app/errors/syncerrorcatalog.h"
 #include "app/navigation/approuter.h"
 #include "app/services/syncerrorservice.h"
@@ -74,13 +75,25 @@ SyncPath parentFolder(const SyncPath &path) {
     return path.lexically_normal().parent_path();
 }
 
-// Opens the item on kDrive web when the server knows it, otherwise its local parent folder: the user renames it there.
+// Shows an item of the synchronization selected in its folder. An item that is gone, or the root, opens the folder that
+// contains it instead, under the same conditions as `openLocalFolder`.
+void revealLocalItem(const SyncContext &context, const SyncPath &path) {
+    const auto item = path.empty() ? std::nullopt : resolveExistingPathBelowSyncRoot(context.syncInfo.localPath(), path);
+    if (!item.has_value()) {
+        openLocalFolder(context, parentFolder(path));
+        return;
+    }
+
+    revealInFileManager(item.value());
+}
+
+// Opens the item on kDrive web when the server knows it, otherwise shows it in its local folder: the user renames it there.
 void openItem(const Error &error, const SyncContext &context) {
     if (!error.remoteNodeId().empty()) {
         openUrl(AppConstants::WebDrive::itemRedirectUri(context.drive.driveId(), error.remoteNodeId()));
         return;
     }
-    openLocalFolder(context, parentFolder(error.path()));
+    revealLocalItem(context, error.path());
 }
 
 // Opens the folder that contains the synchronization root, which may itself be gone (moved, deleted or on an unplugged
@@ -123,10 +136,10 @@ void SyncErrorActionHandler::run(const SyncErrorAction action, const ClassifiedS
             openItem(error, context);
             break;
         case SyncErrorAction::OpenParentFolder:
-            openLocalFolder(context, parentFolder(error.path()));
+            revealLocalItem(context, error.path());
             break;
         case SyncErrorAction::OpenRescueFolder:
-            openLocalFolder(context, parentFolder(error.destinationPath()));
+            revealLocalItem(context, error.destinationPath());
             break;
         case SyncErrorAction::ManageDiskSpace:
             // No disk usage tool is common to every desktop environment: open the volume of the synchronization.

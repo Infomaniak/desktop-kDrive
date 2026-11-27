@@ -20,6 +20,7 @@
 
 #include "app/appconstants.h"
 #include "app/cache/mainselectionstore.h"
+#include "app/desktop/filemanager.h"
 #include "app/services/commservice.h"
 #include "app/syncconfiguration/localpaths.h"
 
@@ -150,14 +151,18 @@ void SearchController::openResult(const int32_t row, const bool revealInFolder) 
         return;
     }
 
-    // Revealing the sync root itself opens it rather than its parent, which lies outside of the synchronization.
-    const bool revealParent = revealInFolder && !result->path().empty();
-    const SyncPath pathToOpen = revealParent ? localPath.value().parent_path() : localPath.value();
     qCInfo(lcSearchController) << "Opening search result locally | nodeId:" << QString::fromStdString(result->id())
                                << "| revealInFolder:" << revealInFolder;
-    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(pathToOpen)))) {
+
+    // Revealing the sync root itself opens it rather than its parent, which lies outside of the synchronization.
+    if (revealInFolder && !result->path().empty()) {
+        revealInFileManager(localPath.value());
+        return;
+    }
+
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(Path2QStr(localPath.value())))) {
         qCWarning(lcSearchController) << "Desktop service failed to open local search result"
-                                      << "| revealInFolder:" << revealInFolder << "| path:" << Path2QStr(pathToOpen);
+                                      << "| revealInFolder:" << revealInFolder << "| path:" << Path2QStr(localPath.value());
     }
 }
 
