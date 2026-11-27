@@ -28,7 +28,7 @@ Item {
     id: root
 
     required property int offer
-    readonly property bool kSuitePro: offer === MainSidebarController.KSuitePro
+    readonly property bool kSuitePro: offer === UpsellOffers.KSuitePro
     readonly property color foregroundColor: kSuitePro ? IKColors.upsellKSuiteProText : IKColors.upsellMyKSuiteText
     readonly property string actionIdPrefix: "main.sidebar.upsell"
 

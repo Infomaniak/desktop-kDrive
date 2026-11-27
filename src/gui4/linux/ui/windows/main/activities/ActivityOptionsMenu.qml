@@ -70,14 +70,14 @@ Popup {
                 separatorBefore: false
             });
         }
-        if (hasAction(ActivityListModel.CopyShareLinkAction)) {
+        if (hasAction(ActivityListModel.ShareAction)) {
             result.push({
                 action: ActivityOptionsMenu.CopyShareLink,
                 label: qsTrId("buttonCopyShareLink"),
                 icon: "qrc:/assets/main/activities/share.svg",
                 iconWidth: 16,
                 iconHeight: 15,
-                enabled: !root.controller.shareLinkCopyPending,
+                enabled: true,
                 separatorBefore: result.length > 0
             });
         }

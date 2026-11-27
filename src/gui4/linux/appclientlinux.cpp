@@ -23,6 +23,7 @@
 #ifdef QT_DEBUG
 #include "app/devtools/errorsimulator.h"
 #endif
+#include "app/mainwindow/upselloffer.h"
 #include "app/navigation/mainwindowactivationdecision.h"
 #include "app/onboarding/onboardingsyncconfigurationcontroller.h"
 #include "app/svginfo.h"
@@ -110,6 +111,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                             "ErrorsPageController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ConflictVersionController>(AppConstants::Qml::moduleUri, 1, 0, "ConflictVersionController",
                                                                  "ConflictVersionController is owned by ErrorsPageController.");
+    (void) qmlRegisterUncreatableType<ShareLinkController>(AppConstants::Qml::moduleUri, 1, 0, "ShareLinkController",
+                                                           "ShareLinkController is owned by ActivitiesController.");
     (void) qmlRegisterUncreatableType<ConflictsPageController>(AppConstants::Qml::moduleUri, 1, 0, "ConflictsPageController",
                                                                "ConflictsPageController is owned by ErrorsPageController.");
     (void) qmlRegisterUncreatableType<ConflictListModel>(AppConstants::Qml::moduleUri, 1, 0, "ConflictListModel",
@@ -131,6 +134,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                             "WebDrive", QStringLiteral("WebDrive only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(BlockingErrors::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0,
                                             "BlockingErrors", QStringLiteral("BlockingErrors only exposes enums."));
+    (void) qmlRegisterUncreatableMetaObject(UpsellOffers::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "UpsellOffers",
+                                            QStringLiteral("UpsellOffers only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(SyncErrors::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "SyncErrors",
                                             QStringLiteral("SyncErrors only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(RemoteFolders::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "RemoteFolders",

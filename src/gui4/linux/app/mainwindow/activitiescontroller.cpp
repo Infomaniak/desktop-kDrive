@@ -26,6 +26,7 @@
 #include <QDesktopServices>
 #include <QFileInfo>
 #include <QLoggingCategory>
+#include <QPointer>
 #include <QUrl>
 
 #include <algorithm>
@@ -122,7 +123,8 @@ ActivitiesController::ActivitiesController(const ActivityStore &activityStore, c
     _networkStatusObserver(networkStatusObserver),
     _activityService(activityService),
     _appRouter(appRouter),
-    _model(activityStore, appCache, selectionStore, this) {
+    _model(activityStore, appCache, selectionStore, this),
+    _shareLink(appCache, selectionStore, activityService, this) {
     (void) connect(&_model, &ActivityListModel::filterChanged, this, &ActivitiesController::filterChanged);
     (void) connect(&_model, &ActivityListModel::projectionChanged, this, &ActivitiesController::refreshPageState);
     (void) connect(&_selectionStore, &MainSelectionStore::currentContextChanged, this, &ActivitiesController::refreshPageState);
@@ -132,17 +134,6 @@ ActivitiesController::ActivitiesController(const ActivityStore &activityStore, c
                    &ActivitiesController::refreshPageState);
     (void) connect(&_networkStatusObserver, &NetworkStatusObserver::offlineChanged, this,
                    &ActivitiesController::refreshPageState);
-    (void) connect(&_activityService, &ActivityService::shareLinkCopyPendingChanged, this,
-                   &ActivitiesController::shareLinkCopyPendingChanged);
-    (void) connect(&_activityService, &ActivityService::shareLinkCopyStarted, this, [this](const GenericId activityLocalId) {
-        emit shareLinkCopyStarted(ActivityListModel::activityRowId(activityLocalId));
-    });
-    (void) connect(&_activityService, &ActivityService::shareLinkCopied, this, [this](const GenericId activityLocalId) {
-        emit shareLinkCopied(ActivityListModel::activityRowId(activityLocalId));
-    });
-    (void) connect(&_activityService, &ActivityService::shareLinkCopyFailed, this, [this](const GenericId activityLocalId) {
-        emit shareLinkCopyFailed(ActivityListModel::activityRowId(activityLocalId));
-    });
     (void) connect(&_activityService, &ActivityService::actionFailed, this, [this](const GenericId activityLocalId) {
         emit actionFailed(ActivityListModel::activityRowId(activityLocalId));
     });
@@ -233,6 +224,30 @@ void ActivitiesController::openOnline(const QString &rowId) {
     _activityService.openOnline(target->activityLocalId, context->drive.dbId(), target->remoteNodeId);
 }
 
+void ActivitiesController::openShareDialog(const QString &rowId) {
+    const auto target = _model.actionTarget(rowId);
+    if (!target.has_value() || target->remoteNodeId.empty()) {
+        qCWarning(lcActivitiesController) << "Share dialog rejected for unavailable node | rowId:" << rowId;
+        emit actionFailed(rowId);
+        return;
+    }
+
+    const auto context = actionSyncContext(*target, rowId);
+    if (!context.has_value()) {
+        emit actionFailed(rowId);
+        return;
+    }
+
+    const bool isDirectory = target->nodeType == NodeType::Directory;
+    // A folder icon comes from `isDirectory` alone: a file icon name would be loaded before the chip knows it is a folder.
+    _shareLink.open({.driveDbId = context->drive.dbId(),
+                     .remoteNodeId = target->remoteNodeId,
+                     .name = target->name,
+                     .iconName = isDirectory ? QString{} : target->fileIconName,
+                     .isDirectory = isDirectory});
+}
+
+// TODO: Remove once the activity menu opens the "Share" dialog.
 void ActivitiesController::copyShareLink(const QString &rowId) {
     const auto target = _model.actionTarget(rowId);
     if (!target.has_value() || target->remoteNodeId.empty()) {
@@ -241,13 +256,27 @@ void ActivitiesController::copyShareLink(const QString &rowId) {
         emit actionFailed(rowId);
         return;
     }
+
     const auto context = actionSyncContext(*target, rowId);
     if (!context.has_value()) {
         emit shareLinkCopyFailed(rowId);
         emit actionFailed(rowId);
         return;
     }
-    _activityService.copyShareLink(target->activityLocalId, context->drive.dbId(), target->remoteNodeId);
+
+    emit shareLinkCopyStarted(rowId);
+    const QPointer<ActivitiesController> guard{this};
+    _activityService.copyLink(ActivityService::LinkKind::Public, context->drive.dbId(), target->remoteNodeId,
+                              [guard, rowId](const ActivityService::LinkCopyResult result) {
+                                  if (guard.isNull()) {
+                                      return;
+                                  }
+                                  if (result == ActivityService::LinkCopyResult::Copied) {
+                                      emit guard->shareLinkCopied(rowId);
+                                  } else {
+                                      emit guard->shareLinkCopyFailed(rowId);
+                                  }
+                              });
 }
 
 void ActivitiesController::requestFixErrors(const QString &rowId) {

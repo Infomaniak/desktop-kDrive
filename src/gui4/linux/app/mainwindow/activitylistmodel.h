@@ -73,7 +73,7 @@ class ActivityListModel final : public QAbstractListModel {
             NoAvailableAction = 0,
             OpenLocalAction = 1 << 0,
             OpenOnlineAction = 1 << 1,
-            CopyShareLinkAction = 1 << 2,
+            ShareAction = 1 << 2,
             FixErrorsAction = 1 << 3,
         };
         Q_ENUM(AvailableActionFlag)
@@ -107,6 +107,9 @@ class ActivityListModel final : public QAbstractListModel {
                 SyncPath relativePath;
                 NodeId remoteNodeId;
                 std::vector<ErrorDbId> activeErrorDbIds;
+                QString name;
+                QString fileIconName;
+                NodeType nodeType{NodeType::Unknown};
         };
 
         void retranslate();

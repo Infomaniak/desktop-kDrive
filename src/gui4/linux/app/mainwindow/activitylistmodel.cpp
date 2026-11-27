@@ -349,6 +349,9 @@ std::optional<ActivityListModel::ActionTarget> ActivityListModel::actionTarget(c
             .relativePath = rowIt->relativePath,
             .remoteNodeId = rowIt->remoteNodeId,
             .activeErrorDbIds = rowIt->activeErrorDbIds,
+            .name = rowIt->name,
+            .fileIconName = rowIt->fileIconName,
+            .nodeType = rowIt->nodeType,
     };
 }
 
@@ -444,7 +447,7 @@ ActivityListModel::AvailableActions ActivityListModel::availableActions(const Ro
     if (row.status == Status::Synchronized && row.instruction != SyncFileInstruction::Remove) {
         actions |= OpenLocalAction;
         actions |= OpenOnlineAction;
-        actions |= CopyShareLinkAction;
+        actions |= ShareAction;
     }
     if (row.status == Status::Failed && !row.activeErrorDbIds.empty()) {
         actions |= FixErrorsAction;
