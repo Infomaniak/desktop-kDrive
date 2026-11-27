@@ -899,7 +899,9 @@
       inline textual action for rows and cards that must not carry a button surface of their own. `IKInformationBlock`
       is the main-window information block: optional icon tile, title, subtitle, primary action (with the external-link
       marker when it opens the browser) and optional dismiss button below it; `IKErrorBanner` is its synchronization
-      errors variant, so both banners share one geometry. `IKCheckBox` is the renders the state it is given and only 
+      errors variant, so both banners share one geometry. `IKUpsellBackground`, `IKUpsellLogo` and `IKUpsellButton`
+      draw an upsell card (my kSuite+ gradient ring, or dark kSuite Pro surface), shared by the sidebar card and the
+      public link limit banner. `IKCheckBox` is the renders the state it is given and only 
       reports clicks, so a model owning the selection stays authoritative.
       `IKBlockingState` is the shared card of full-page blocking states (update required, blocking synchronization
       errors): visual, title, description and a row of actions; the owner places it and supplies the visual and the
@@ -1058,7 +1060,7 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   its last segment (`".useLog"`), then check the prefix of the file.
 - Interactive shared components require their id: `actionId` (`IKModalButton`, `IKLinkButton`, `IKSwitch`,
   `IKCheckBox`, `IKComboBox`, `IKSidebarItem`, `IKDriveSyncSelectorItem`, `IKInformationBlock`, `IKErrorBanner`,
-  `IKSearchField`, `SettingsInfoButton`, `SettingsNavigationRow`), `dialogId` (`IKModal`, `IKConfirmationDialog`) or
+  `IKUpsellButton`, `IKSearchField`, `SettingsInfoButton`, `SettingsNavigationRow`), `dialogId` (`IKModal`, `IKConfirmationDialog`) or
   `windowId` (`IKShadowedWindow`); they log by themselves, before the handler of the instance. Feature-neutral trees
   (`RemoteFolderTree`, `RemoteFolderPicker`) take an `actionIdPrefix`. A new interactive shared component follows the same
   rule; an ad hoc control (`Button`, `ToolButton`, `TapHandler`, `MouseArea`, `Keys.on*Pressed`, `Shortcut`) calls
