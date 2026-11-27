@@ -17,28 +17,25 @@
  */
 
 import QtQuick
-import QtQuick.VectorImage
 import kDrive.UI
+import "../onboarding/animations"
 
 Item {
-    Column {
+    Item {
         anchors.centerIn: parent
-        spacing: IKWaiting.contentSpacing
+        width: IKWaiting.animationWidth * IKOnboarding.loaderStrokeRenderScale
+        height: IKWaiting.animationHeight * IKOnboarding.loaderStrokeRenderScale
+        // Render the vector animation oversized for crispness, then scale it back to its display size.
+        scale: 1 / IKOnboarding.loaderStrokeRenderScale
+        transformOrigin: Item.Center
+        // Antialiases the generated animation, drawn by the geometry renderer.
+        layer.enabled: true
+        layer.samples: IKOnboarding.illustrationAnimationSamples
+        layer.smooth: true
 
-        VectorImage {
-            width: IKWaiting.logoSize
-            height: IKWaiting.logoSize
-            source: "qrc:/assets/taskbar/logo_kdrive.svg"
-            fillMode: VectorImage.PreserveAspectFit
-            preferredRendererType: VectorImage.CurveRenderer
-        }
-
-        IKLoadingSpinner {
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: IKWaiting.spinnerSize
-            height: IKWaiting.spinnerSize
-            strokeWidth: IKWaiting.spinnerStrokeWidth
-            cycleDuration: IKWaiting.spinnerCycleDuration
+        LoaderStrokeAnimation {
+            anchors.fill: parent
+            animations.loops: Animation.Infinite
         }
     }
 }

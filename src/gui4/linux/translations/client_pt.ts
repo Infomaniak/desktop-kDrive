@@ -355,6 +355,10 @@ Pode abri-los em qualquer momento, mesmo sem ligação à Internet.</translation
             <source>Custom location</source> 
             <translation>Localização personalizada</translation> 
         </message> 
+        <message id="buttonDeleteAndSave"> 
+            <source>Delete and save</source> 
+            <translation>Apagar e guardar</translation> 
+        </message> 
         <message id="buttonDisconnectAccount"> 
             <source>Disconnect this account</source> 
             <translation>Desligar esta conta</translation> 
@@ -735,6 +739,20 @@ Esta pasta não deve estar incluída noutra pasta de sincronização nem conter 
         <message id="dialogDriveSetupInvalidFolderTitle"> 
             <source>This folder cannot be selected</source> 
             <translation>Não é possível selecionar esta pasta</translation> 
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
+            <source>You can still access it online on kDrive, or sync it again later.</source> 
+            <translation>
+                <numerusform>Poderá continuar a aceder online no kDrive ou voltar a sincronizá-la mais tarde.</numerusform> 
+                <numerusform>Poderá continuar a aceder online no kDrive ou voltar a sincronizá-las mais tarde.</numerusform> 
+            </translation>
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
+            <source>%n folder will be deleted from this computer</source> 
+            <translation>
+                <numerusform>%n pasta será apagada deste computador</numerusform> 
+                <numerusform>%n pastas serão apagadas deste computador</numerusform> 
+            </translation>
         </message> 
         <message id="dialogNewExclusionRulePrimaryButton"> 
             <source>Add a rule</source> 
@@ -1931,6 +1949,10 @@ Verifique e renomeie os ficheiros que contenham caracteres incomuns e tente nova
         <message id="logsUploadErrorTooltip"> 
             <source>The last upload failed. Please check your internet connection and make sure at least one kDrive user is signed in. Uploads are limited to 10 per day.</source> 
             <translation>A última transferência falhou. Verifique a sua ligação à Internet e certifique-se de que pelo menos um utilizador do kDrive está com sessão iniciada. As transferências estão limitadas a 10 por dia.</translation> 
+        </message> 
+        <message id="manageSyncSelectedSize"> 
+            <source>%1 selected</source> 
+            <translation>%1 selecionados</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 
             <source>Different versions of these files were detected.</source> 

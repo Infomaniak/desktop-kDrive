@@ -355,6 +355,10 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
             <source>Custom location</source> 
             <translation>Mukautettu sijainti</translation> 
         </message> 
+        <message id="buttonDeleteAndSave"> 
+            <source>Delete and save</source> 
+            <translation>Poista ja tallenna</translation> 
+        </message> 
         <message id="buttonDisconnectAccount"> 
             <source>Disconnect this account</source> 
             <translation>Katkaise yhteys tähän tiliin</translation> 
@@ -735,6 +739,20 @@ Tämä kansio ei saa sisältyä toiseen synkronointikansioon eikä sisältää s
         <message id="dialogDriveSetupInvalidFolderTitle"> 
             <source>This folder cannot be selected</source> 
             <translation>Tätä kansiota ei voi valita</translation> 
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
+            <source>You can still access it online on kDrive, or sync it again later.</source> 
+            <translation>
+                <numerusform>Voit edelleen käyttää sitä verkossa kDrivessa tai synkronoida sen uudelleen myöhemmin.</numerusform> 
+                <numerusform>Voit edelleen käyttää niitä verkossa kDrivessa tai synkronoida ne uudelleen myöhemmin.</numerusform> 
+            </translation>
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
+            <source>%n folder will be deleted from this computer</source> 
+            <translation>
+                <numerusform>%n kansio poistetaan tältä tietokoneelta</numerusform> 
+                <numerusform>%n kansiota poistetaan tältä tietokoneelta</numerusform> 
+            </translation>
         </message> 
         <message id="dialogNewExclusionRulePrimaryButton"> 
             <source>Add a rule</source> 
@@ -1931,6 +1949,10 @@ Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja y
         <message id="logsUploadErrorTooltip"> 
             <source>The last upload failed. Please check your internet connection and make sure at least one kDrive user is signed in. Uploads are limited to 10 per day.</source> 
             <translation>Viimeisin lähetys epäonnistui. Tarkista internet-yhteys ja varmista, että vähintään yksi kDrive-käyttäjä on kirjautunut sisään. Lähetyksiä on rajoitettu 10:een päivässä.</translation> 
+        </message> 
+        <message id="manageSyncSelectedSize"> 
+            <source>%1 selected</source> 
+            <translation>%1 valittu</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 
             <source>Different versions of these files were detected.</source> 

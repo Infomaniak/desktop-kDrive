@@ -355,6 +355,10 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</translation>
             <source>Custom location</source> 
             <translation>Aangepaste locatie</translation> 
         </message> 
+        <message id="buttonDeleteAndSave"> 
+            <source>Delete and save</source> 
+            <translation>Verwijderen en opslaan</translation> 
+        </message> 
         <message id="buttonDisconnectAccount"> 
             <source>Disconnect this account</source> 
             <translation>Dit account loskoppelen</translation> 
@@ -735,6 +739,20 @@ Deze map mag niet zijn opgenomen in een andere synchronisatiemap en mag geen syn
         <message id="dialogDriveSetupInvalidFolderTitle"> 
             <source>This folder cannot be selected</source> 
             <translation>Deze map kan niet worden geselecteerd</translation> 
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
+            <source>You can still access it online on kDrive, or sync it again later.</source> 
+            <translation>
+                <numerusform>U kunt de map nog steeds online openen in kDrive of later opnieuw synchroniseren.</numerusform> 
+                <numerusform>U kunt de mappen nog steeds online openen in kDrive of later opnieuw synchroniseren.</numerusform> 
+            </translation>
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
+            <source>%n folder will be deleted from this computer</source> 
+            <translation>
+                <numerusform>%n map wordt van deze computer verwijderd</numerusform> 
+                <numerusform>%n mappen worden van deze computer verwijderd</numerusform> 
+            </translation>
         </message> 
         <message id="dialogNewExclusionRulePrimaryButton"> 
             <source>Add a rule</source> 
@@ -1931,6 +1949,10 @@ Controleer en hernoem de bestanden met ongebruikelijke tekens en probeer het opn
         <message id="logsUploadErrorTooltip"> 
             <source>The last upload failed. Please check your internet connection and make sure at least one kDrive user is signed in. Uploads are limited to 10 per day.</source> 
             <translation>De laatste upload is mislukt. Controleer uw internetverbinding en zorg ervoor dat er ten minste één kDrive-gebruiker is ingelogd. Uploads zijn beperkt tot 10 per dag.</translation> 
+        </message> 
+        <message id="manageSyncSelectedSize"> 
+            <source>%1 selected</source> 
+            <translation>%1 geselecteerd</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 
             <source>Different versions of these files were detected.</source> 

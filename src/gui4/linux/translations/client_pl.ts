@@ -355,6 +355,10 @@ Możesz je otwierać w dowolnym momencie, nawet bez połączenia z Internetem.</
             <source>Custom location</source> 
             <translation>Niestandardowa lokalizacja</translation> 
         </message> 
+        <message id="buttonDeleteAndSave"> 
+            <source>Delete and save</source> 
+            <translation>Usuń i zapisz</translation> 
+        </message> 
         <message id="buttonDisconnectAccount"> 
             <source>Disconnect this account</source> 
             <translation>Odłącz to konto</translation> 
@@ -737,6 +741,24 @@ Ten folder nie może być zawarty w innym folderze synchronizacji i nie może za
         <message id="dialogDriveSetupInvalidFolderTitle"> 
             <source>This folder cannot be selected</source> 
             <translation>Nie można wybrać tego folderu</translation> 
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
+            <source>You can still access it online on kDrive, or sync it again later.</source> 
+            <translation>
+                <numerusform>Nadal możesz uzyskać do niego dostęp online w kDrive lub później ponownie go zsynchronizować.</numerusform> 
+                <numerusform>Nadal możesz uzyskać do nich dostęp online w kDrive lub później ponownie je zsynchronizować.</numerusform> 
+                <numerusform>Nadal możesz uzyskać do nich dostęp online w kDrive lub później ponownie je zsynchronizować.</numerusform> 
+                <numerusform>Nadal możesz uzyskać do nich dostęp online w kDrive lub później ponownie je zsynchronizować.</numerusform> 
+            </translation>
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
+            <source>%n folder will be deleted from this computer</source> 
+            <translation>
+                <numerusform>%n folder zostanie usunięty z tego komputera</numerusform> 
+                <numerusform>%n foldery zostaną usunięte z tego komputera</numerusform> 
+                <numerusform>%n folderów zostanie usuniętych z tego komputera</numerusform> 
+                <numerusform>%n folderów zostanie usuniętych z tego komputera</numerusform> 
+            </translation>
         </message> 
         <message id="dialogNewExclusionRulePrimaryButton"> 
             <source>Add a rule</source> 
@@ -1935,6 +1957,10 @@ Sprawdź i zmień nazwy plików zawierających nietypowe znaki, a następnie spr
         <message id="logsUploadErrorTooltip"> 
             <source>The last upload failed. Please check your internet connection and make sure at least one kDrive user is signed in. Uploads are limited to 10 per day.</source> 
             <translation>Ostatnie przesyłanie nie powiodło się. Sprawdź połączenie z Internetem i upewnij się, że co najmniej jeden użytkownik kDrive jest zalogowany. Przesyłanie jest ograniczone do 10 razy dziennie.</translation> 
+        </message> 
+        <message id="manageSyncSelectedSize"> 
+            <source>%1 selected</source> 
+            <translation>Wybrano %1</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 
             <source>Different versions of these files were detected.</source> 

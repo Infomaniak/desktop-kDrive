@@ -108,9 +108,26 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
          */
         Q_INVOKABLE void setNodeVisible(const QString &nodeId, bool visible);
 
+        /**
+         * Loaded size of a folder of the drive: a row of the tree, or a folder that is not one, such as the root or an
+         * excluded folder in a branch never expanded. Empty while the size is unknown, loading, or failed to load.
+         */
+        [[nodiscard]] std::optional<qint64> loadedSize(const NodeId &nodeId) const;
+        /** Requests the size of a folder unless it is already loaded or loading, row or not. */
+        void requestFolderSize(const NodeId &nodeId);
+        /** Whether one of the ancestors of a row is among the given folders. False for a folder that is not a row. */
+        [[nodiscard]] bool hasAncestorIn(const NodeId &nodeId, const std::vector<NodeId> &folderIds) const;
+        /**
+         * Excluded folders whose content is missing from the synchronization: those inside the root and not inside another
+         * excluded folder. The blacklist can hold others, the server adding each created folder to every synchronization
+         * of its drive. Meaningful once the tree has loaded.
+         */
+        [[nodiscard]] std::vector<NodeId> outermostExcludedFoldersInRoot() const;
+
     signals:
         void stateChanged();
         void selectionChanged();
+        void folderSizeChanged();
 
     private:
         enum class LoadState : uint8_t {
@@ -130,6 +147,11 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
             Loading,
             Loaded,
             Failed,
+        };
+
+        struct FolderSize {
+                SizeState state{SizeState::NotRequested};
+                qint64 size{0};
         };
 
         struct PendingRootChildren {
@@ -169,6 +191,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void notifySelectionDataChanged();
         void notifySelectionDataChanged(const TreeNode *parentNode);
         void requestSize(TreeNode *node);
+        void sendSizeRequest(const QString &nodeId);
         void handleSizeResult(const QString &nodeId, uint64_t generation, bool success, qint64 size);
 
         AbstractRemoteFolderProvider &_remoteFolderProvider;
@@ -176,6 +199,8 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         QHash<QString, TreeNode *> _nodesById;
         QSet<QString> _excludedNodeIds;
         QHash<QString, QString> _excludedPaths;
+        // Sizes of folders that are not rows of the tree; a row created later starts from its entry.
+        QHash<QString, FolderSize> _detachedSizes;
         // Root listing received before the initial exclusion paths were resolved, applied once they are.
         std::optional<PendingRootChildren> _pendingRootChildren;
         UserDbId _userDbId{0};

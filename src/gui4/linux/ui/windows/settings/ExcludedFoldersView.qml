@@ -31,6 +31,11 @@ Item {
     // Screen of the user action log (see UserActionLog).
     readonly property string screenId: "settings.accounts.excludedFolders"
     readonly property bool blackListReady: !root.controller.loading && !root.controller.loadFailed
+    readonly property bool footerErrorShown: root.controller.saveFailed || root.controller.excludedFolderLimitExceeded
+    readonly property bool selectedSizeShown: !root.footerErrorShown && root.controller.selectedSizeText.length > 0
+    // Scrim geometry of the settings window, for the deletion dialog.
+    property real modalScrimInset: 0
+    property real modalScrimRadius: 0
 
     // Cancel and the back chevron both drop the draft: only Save publishes it.
     signal closeRequested
@@ -58,7 +63,7 @@ Item {
 
             Text {
                 width: parent.width
-                text: qsTrId("selectFoldersToSyncDescription")
+                text: qsTrId("selectFoldersToSyncDescriptionShort")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.subheadlineSize
                 wrapMode: Text.WordWrap
@@ -121,50 +126,89 @@ Item {
             }
         }
 
-        RowLayout {
+        Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: IKSettings.rowHeight
-            spacing: IKSettings.rowSpacing
+            radius: IKRadius.r12
+            color: IKColors.settingsCardSurface
 
-            Text {
-                Layout.fillWidth: true
-                visible: root.controller.saveFailed || root.controller.excludedFolderLimitExceeded
-                text: root.controller.excludedFolderLimitExceeded
-                      ? qsTrId("excludedFoldersLimitReached").arg(root.controller.maxExcludedFolders)
-                      : qsTrId("unexpectedErrorTeachingTipContent")
-                textFormat: Text.PlainText
-                color: IKColors.statusStrongWarning
-                font.pixelSize: IKFonts.subheadlineSize
-                wrapMode: Text.WordWrap
-                maximumLineCount: 2
-                elide: Text.ElideRight
-                Accessible.role: Accessible.AlertMessage
-            }
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: IKSettings.groupPadding
+                anchors.rightMargin: IKSettings.groupPadding
+                spacing: IKSettings.rowSpacing
 
-            Item {
-                Layout.fillWidth: true
-                visible: !root.controller.saveFailed && !root.controller.excludedFolderLimitExceeded
-            }
+                Text {
+                    Layout.fillWidth: true
+                    visible: root.footerErrorShown
+                    text: root.controller.excludedFolderLimitExceeded
+                          ? qsTrId("excludedFoldersLimitReached").arg(root.controller.maxExcludedFolders)
+                          : qsTrId("unexpectedErrorTeachingTipContent")
+                    textFormat: Text.PlainText
+                    color: IKColors.statusStrongWarning
+                    font.pixelSize: IKFonts.subheadlineSize
+                    wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    elide: Text.ElideRight
+                    Accessible.role: Accessible.AlertMessage
+                }
 
-            IKModalButton {
-                role: IKModalButton.Tonal
-                text: qsTrId("buttonCancel")
-                actionEnabled: !root.controller.saving
-                actionId: root.screenId + ".cancel"
-                actionDetails: ({ syncDbId: root.syncDbId })
-                onClicked: root.closeRequested()
-            }
+                Text {
+                    Layout.fillWidth: true
+                    visible: root.selectedSizeShown
+                    text: qsTrId("manageSyncSelectedSize").arg(root.controller.selectedSizeText)
+                    textFormat: Text.PlainText
+                    color: IKColors.textPrimary
+                    font.pixelSize: IKFonts.bodySize
+                    font.weight: IKFonts.emphasized
+                    elide: Text.ElideRight
+                }
 
-            IKModalButton {
-                role: IKModalButton.Primary
-                text: qsTrId("buttonSave")
-                actionId: root.screenId + ".save"
-                actionDetails: ({ syncDbId: root.syncDbId })
-                actionEnabled: root.controller.canSave
-                busy: root.controller.saving
-                onClicked: root.controller.save()
+                Item {
+                    Layout.fillWidth: true
+                    visible: !root.footerErrorShown && !root.selectedSizeShown
+                }
+
+                IKModalButton {
+                    role: IKModalButton.Tonal
+                    text: qsTrId("buttonCancel")
+                    actionEnabled: !root.controller.saving
+                    actionId: root.screenId + ".cancel"
+                    actionDetails: ({ syncDbId: root.syncDbId })
+                    onClicked: root.closeRequested()
+                }
+
+                IKModalButton {
+                    id: saveButton
+
+                    role: IKModalButton.Primary
+                    text: qsTrId("buttonSave")
+                    actionId: root.screenId + ".save"
+                    actionDetails: ({ syncDbId: root.syncDbId })
+                    actionEnabled: root.controller.canSave
+                    busy: root.controller.saving
+                    onClicked: {
+                        // Unchecked folders are deleted from this computer: the user confirms it first.
+                        if (root.controller.newlyExcludedFolderCount > 0) {
+                            deletionDialog.showFrom(saveButton, root.controller.newlyExcludedFolderCount);
+                            return;
+                        }
+
+                        root.controller.save();
+                    }
+                }
             }
         }
+    }
+
+    ExcludedFoldersDeletionDialog {
+        id: deletionDialog
+
+        dialogId: root.screenId + ".deletionDialog"
+        dialogDetails: ({ syncDbId: root.syncDbId, folderCount: deletionDialog.folderCount })
+        scrimInset: root.modalScrimInset
+        scrimRadius: root.modalScrimRadius
+        onSaveConfirmed: root.controller.save()
     }
 
     Connections {

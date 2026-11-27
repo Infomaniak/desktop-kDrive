@@ -20,9 +20,7 @@ pragma Singleton
 import QtQuick
 
 QtObject {
-    readonly property real contentSpacing: IKSpacing.s24
-    readonly property real logoSize: 80
-    readonly property real spinnerSize: 32
-    readonly property real spinnerStrokeWidth: 3
-    readonly property int spinnerCycleDuration: 2400
+    // The splash shows the onboarding loader animation at its source size.
+    readonly property real animationWidth: IKOnboarding.loaderStrokeVectorSourceWidth
+    readonly property real animationHeight: IKOnboarding.loaderStrokeVectorSourceHeight
 }

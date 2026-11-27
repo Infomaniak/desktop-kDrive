@@ -22,11 +22,13 @@
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 
+#include <QLocale>
 #include <QLoggingCategory>
 #include <QPointer>
 
 #include <algorithm>
 #include <iterator>
+#include <optional>
 
 namespace KDC {
 
@@ -42,6 +44,12 @@ ExcludedFoldersController::ExcludedFoldersController(AppCache &appCache, CommSer
     _folderTreeModel(_folderProvider, this) {
     (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::stateChanged, this, &ExcludedFoldersController::stateChanged);
     (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::selectionChanged, this, &ExcludedFoldersController::stateChanged);
+    (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::selectionChanged, this,
+                   &ExcludedFoldersController::requestMissingFolderSizes);
+    // The excluded folders that count are known once the root listing has loaded.
+    (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::stateChanged, this,
+                   &ExcludedFoldersController::requestMissingFolderSizes);
+    (void) connect(&_folderTreeModel, &RemoteFolderTreeModel::folderSizeChanged, this, &ExcludedFoldersController::stateChanged);
 }
 
 bool ExcludedFoldersController::canSave() const {
@@ -66,6 +74,49 @@ bool ExcludedFoldersController::excludedFolderLimitExceeded() const {
 
 qsizetype ExcludedFoldersController::maxExcludedFolders() {
     return AppConstants::SyncConfiguration::maxExcludedFolders;
+}
+
+qsizetype ExcludedFoldersController::newlyExcludedFolderCount() const {
+    if (!hasDraft()) {
+        return 0;
+    }
+
+    // Both lists are sorted, and an excluded folder never contains another one.
+    const std::vector<NodeId> draftBlackList = _folderTreeModel.blackList();
+    std::vector<NodeId> newlyExcludedFolders;
+    (void) std::ranges::set_difference(draftBlackList, _confirmedBlackList, std::back_inserter(newlyExcludedFolders));
+
+    // A folder inside a confirmed excluded folder was never downloaded: excluding it again deletes nothing locally.
+    return std::ranges::count_if(newlyExcludedFolders, [this](const NodeId &nodeId) {
+        return !_folderTreeModel.hasAncestorIn(nodeId, _confirmedBlackList);
+    });
+}
+
+// The synchronization root minus the outermost excluded folders inside it, so that no size is subtracted twice.
+QString ExcludedFoldersController::selectedSizeText() const {
+    if (!hasDraft() || _folderTreeModel.loading() || _folderTreeModel.loadFailed()) {
+        return {};
+    }
+
+    const std::optional<qint64> rootSize = _folderTreeModel.loadedSize(_rootNodeId);
+    if (!rootSize.has_value()) {
+        return {};
+    }
+
+    qint64 selectedSize = *rootSize;
+    for (const NodeId &nodeId: _folderTreeModel.outermostExcludedFoldersInRoot()) {
+        const std::optional<qint64> excludedSize = _folderTreeModel.loadedSize(nodeId);
+        if (!excludedSize.has_value()) {
+            return {};
+        }
+
+        selectedSize -= *excludedSize;
+    }
+
+    // Sizes read at different times can disagree when the drive changes meanwhile.
+    selectedSize = std::max<qint64>(selectedSize, 0);
+
+    return QLocale{}.formattedDataSize(selectedSize, 1, QLocale::DataSizeSIFormat);
 }
 
 // An open page keeps its draft untouched: the target is only recorded, and `close()` loads it once the page leaves.
@@ -174,6 +225,8 @@ void ExcludedFoldersController::save() {
 
 void ExcludedFoldersController::retranslate() {
     _folderTreeModel.retranslate();
+    // The selected size is formatted with the current locale.
+    emit stateChanged();
 }
 
 // A failed load is never reused, so opening the page retries it.
@@ -212,7 +265,10 @@ void ExcludedFoldersController::loadBlackList() {
 
                 self->_confirmedBlackList = blackList;
                 (void) std::ranges::sort(self->_confirmedBlackList);
+                // The main synchronization has no target node: it synchronizes the drive root.
+                self->_rootNodeId = rootNodeId.empty() ? NodeId{AppConstants::SyncConfiguration::driveRootNodeId} : rootNodeId;
                 self->setState(State::Editing);
+                // Its selection change requests the sizes of the root and of the excluded folders.
                 self->_folderTreeModel.configure(userDbId, driveId, rootNodeId, blackList);
             });
 }
@@ -232,6 +288,30 @@ void ExcludedFoldersController::resetTarget() {
     _state = State::Idle;
     _confirmedBlackList.clear();
     _saveFailed = false;
+    _rootNodeId.clear();
+}
+
+// A draft exists once the blacklist is loaded, and stays while it is being saved.
+bool ExcludedFoldersController::hasDraft() const {
+    return _state == State::Editing || _state == State::Saving;
+}
+
+// The tree requests each size once and keeps it: a folder already displayed, or already requested, costs no request. A
+// failed size is not retried, so the selected size stays hidden rather than wrong.
+void ExcludedFoldersController::requestMissingFolderSizes() {
+    if (!hasDraft() || _rootNodeId.empty()) {
+        return;
+    }
+
+    _folderTreeModel.requestFolderSize(_rootNodeId);
+
+    if (_folderTreeModel.loading() || _folderTreeModel.loadFailed()) {
+        return;
+    }
+
+    for (const NodeId &nodeId: _folderTreeModel.outermostExcludedFoldersInRoot()) {
+        _folderTreeModel.requestFolderSize(nodeId);
+    }
 }
 
 } // namespace KDC

@@ -355,6 +355,10 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</translation>
             <source>Custom location</source> 
             <translation>Brugerdefineret placering</translation> 
         </message> 
+        <message id="buttonDeleteAndSave"> 
+            <source>Delete and save</source> 
+            <translation>Slet og gem</translation> 
+        </message> 
         <message id="buttonDisconnectAccount"> 
             <source>Disconnect this account</source> 
             <translation>Frakobl denne konto</translation> 
@@ -735,6 +739,20 @@ Denne mappe må ikke være inkluderet i en anden synkroniseringsmappe og må ikk
         <message id="dialogDriveSetupInvalidFolderTitle"> 
             <source>This folder cannot be selected</source> 
             <translation>Denne mappe kan ikke vælges</translation> 
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionDescription"> 
+            <source>You can still access it online on kDrive, or sync it again later.</source> 
+            <translation>
+                <numerusform>Du kan stadig tilgå den online på kDrive eller synkronisere den igen senere.</numerusform> 
+                <numerusform>Du kan stadig tilgå dem online på kDrive eller synkronisere dem igen senere.</numerusform> 
+            </translation>
+        </message> 
+        <message numerus="yes" id="dialogExcludedFoldersDeletionTitle"> 
+            <source>%n folder will be deleted from this computer</source> 
+            <translation>
+                <numerusform>%n mappe slettes fra denne computer</numerusform> 
+                <numerusform>%n mapper slettes fra denne computer</numerusform> 
+            </translation>
         </message> 
         <message id="dialogNewExclusionRulePrimaryButton"> 
             <source>Add a rule</source> 
@@ -1931,6 +1949,10 @@ Kontrollér venligst og omdøb filer med usædvanlige tegn, og prøv derefter ig
         <message id="logsUploadErrorTooltip"> 
             <source>The last upload failed. Please check your internet connection and make sure at least one kDrive user is signed in. Uploads are limited to 10 per day.</source> 
             <translation>Den seneste upload mislykkedes. Kontrollér venligst din internetforbindelse og sørg for, at mindst én kDrive-bruger er logget ind. Upload er begrænset til 10 om dagen.</translation> 
+        </message> 
+        <message id="manageSyncSelectedSize"> 
+            <source>%1 selected</source> 
+            <translation>%1 valgt</translation> 
         </message> 
         <message id="manyConflictErrorDescription"> 
             <source>Different versions of these files were detected.</source> 

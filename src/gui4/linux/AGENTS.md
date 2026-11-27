@@ -497,7 +497,13 @@
   of the drive management page, so its custom-selection label reflects a saved change. `open()` reuses a preloaded
   target instead of loading it again; `close()` reloads a target that is still preloaded, which drops an abandoned draft
   and picks up a saved blacklist for the next opening. A target generation discards the responses of a previous target
-  that had the same `SyncDbId`.
+  that had the same `SyncDbId`. The footer shows the selected size, the sync root size minus the sizes of the
+  outermost excluded folders inside the root (the server adds each created folder to the blacklist of every sync of
+  its drive, so a blacklist can hold folders outside the root or nested ones), hidden while one of them is loading or
+  failed. Every size comes from `RemoteFolderTreeModel`, which loads each
+  folder once, rows and non-rows alike (the root, an excluded folder in a collapsed branch). Save asks for
+  confirmation in `ExcludedFoldersDeletionDialog` only when the draft excludes a folder the confirmed blacklist
+  synchronizes, since saving deletes it locally.
 - `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
   `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is
   missing; later Settings visits reuse the snapshots. Successful user mutations refresh the user snapshot through a
@@ -863,6 +869,7 @@
       the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
+      It shows only the onboarding `LoaderStrokeAnimation`, at its source size, without logo or spinner.
     - `ui/windows/updaterequired/`: update-required screen built on `IKBlockingState`, loaded by `Main.qml` above every
       other route, onboarding included (the session is hidden, not cancelled), while
       `SyncErrorsProjection.updateRequired`; the header keeps only the kDrive logo and title. "Download manually" calls

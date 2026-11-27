@@ -47,6 +47,8 @@ class ExcludedFoldersController final : public QObject {
         Q_PROPERTY(bool canSave READ canSave NOTIFY stateChanged)
         Q_PROPERTY(bool excludedFolderLimitExceeded READ excludedFolderLimitExceeded NOTIFY stateChanged)
         Q_PROPERTY(qsizetype maxExcludedFolders READ maxExcludedFolders CONSTANT)
+        Q_PROPERTY(qsizetype newlyExcludedFolderCount READ newlyExcludedFolderCount NOTIFY stateChanged)
+        Q_PROPERTY(QString selectedSizeText READ selectedSizeText NOTIFY stateChanged)
 
     public:
         ExcludedFoldersController(AppCache &appCache, CommService &commService, QObject *parent = nullptr);
@@ -61,6 +63,10 @@ class ExcludedFoldersController final : public QObject {
         [[nodiscard]] bool canSave() const;
         [[nodiscard]] bool excludedFolderLimitExceeded() const;
         [[nodiscard]] static qsizetype maxExcludedFolders();
+        // Folders the draft excludes while the confirmed blacklist synchronizes them: saving deletes them locally.
+        [[nodiscard]] qsizetype newlyExcludedFolderCount() const;
+        // Size of the folders the draft synchronizes, empty until every size it depends on is known.
+        [[nodiscard]] QString selectedSizeText() const;
 
         /**
          * Starts loading the given synchronization before its page opens, so the page shows an already loaded tree.
@@ -97,15 +103,18 @@ class ExcludedFoldersController final : public QObject {
         };
 
         [[nodiscard]] bool isLoadedOrLoading(SyncDbId syncDbId) const;
+        [[nodiscard]] bool hasDraft() const;
         void loadBlackList();
         void setState(State state);
         void resetTarget();
+        void requestMissingFolderSizes();
 
         AppCache &_appCache;
         CommService &_commService;
         CommRemoteFolderProvider _folderProvider;
         RemoteFolderTreeModel _folderTreeModel;
         SyncDbId _syncDbId{0};
+        NodeId _rootNodeId;
         SyncDbId _preloadSyncDbId{0};
         // Invalidates the responses of a previous target, which a preload can give the same synchronization.
         uint64_t _targetGeneration{0};
