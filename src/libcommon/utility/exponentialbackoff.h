@@ -29,7 +29,7 @@ class ExponentialBackoff {
 		using Clock = std::chrono::steady_clock;
 		using Duration = std::chrono::milliseconds;
 
-		ExponentialBackoff(Duration initialBackoff, Duration maxBackoff, unsigned int multiplier = 2);
+		ExponentialBackoff(Duration initialBackoff, Duration maxBackoff, double multiplier = 2);
 
 		// Set the backoff to 0, the caller can proceed immediately.
 		void reset();
@@ -48,7 +48,7 @@ class ExponentialBackoff {
 
 		const Duration _initialBackoff;
 		const Duration _maxBackoff;
-		const unsigned int _multiplier;
+        const double _multiplier;
 
 		mutable std::mutex _mutex;
 		Duration _backoff{0};

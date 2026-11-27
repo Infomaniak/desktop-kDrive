@@ -23,63 +23,63 @@
 
 namespace KDC {
 
-ExponentialBackoff::ExponentialBackoff(const Duration initialBackoff, const Duration maxBackoff, const unsigned int multiplier) :
-	_initialBackoff(initialBackoff),
-	_maxBackoff(std::max(initialBackoff, maxBackoff)),
-	_multiplier(std::max(1u, multiplier)) {}
+ExponentialBackoff::ExponentialBackoff(const Duration initialBackoff, const Duration maxBackoff, const double multiplier) :
+    _initialBackoff(initialBackoff),
+    _maxBackoff(std::max(initialBackoff, maxBackoff)),
+    _multiplier(std::max(1.0, multiplier)) {}
 
 void ExponentialBackoff::reset() {
-	const std::scoped_lock lock(_mutex);
-	_backoff = Duration{0};
-	_start = Clock::now();
+    const std::scoped_lock lock(_mutex);
+    _backoff = Duration{0};
+    _start = Clock::now();
 }
 
 ExponentialBackoff::Duration ExponentialBackoff::increase() {
-	const std::scoped_lock lock(_mutex);
-	if (_backoff == Duration{0}) {
-		_backoff = _initialBackoff;
-	} else if (_backoff >= _maxBackoff / _multiplier) {
-		_backoff = _maxBackoff;
-	} else {
-		_backoff *= _multiplier;
-	}
-	_start = Clock::now();
-	return _backoff;
+    const std::scoped_lock lock(_mutex);
+    if (_backoff == Duration{0}) {
+        _backoff = _initialBackoff;
+    } else if (_backoff >= _maxBackoff / _multiplier) {
+        _backoff = _maxBackoff;
+    } else {
+        _backoff *= _multiplier;
+    }
+    _start = Clock::now();
+    return _backoff;
 }
 
 bool ExponentialBackoff::canProceed() const {
-	return remainingTime() == Duration{0};
+    return remainingTime() == Duration{0};
 }
 
 bool ExponentialBackoff::waitUntilCanProceed(const std::optional<Duration> timeout) const {
-	const auto waitStart = Clock::now();
-	while (true) {
-		const auto remaining = remainingTime();
-		if (remaining == Duration{0}) return true;
+    const auto waitStart = Clock::now();
+    while (true) {
+        const auto remaining = remainingTime();
+        if (remaining == Duration{0}) return true;
 
-		auto sleepDuration = remaining;
-		if (timeout) {
-			const auto elapsed = std::chrono::duration_cast<Duration>(Clock::now() - waitStart);
-			if (elapsed >= *timeout) return false;
-			sleepDuration = std::min(sleepDuration, *timeout - elapsed);
-		}
-		std::this_thread::sleep_for(sleepDuration);
-	}
+        auto sleepDuration = remaining;
+        if (timeout) {
+            const auto elapsed = std::chrono::duration_cast<Duration>(Clock::now() - waitStart);
+            if (elapsed >= *timeout) return false;
+            sleepDuration = std::min(sleepDuration, *timeout - elapsed);
+        }
+        std::this_thread::sleep_for(sleepDuration);
+    }
 }
 
 ExponentialBackoff::Duration ExponentialBackoff::backoff() const {
-	const std::scoped_lock lock(_mutex);
-	return _backoff;
+    const std::scoped_lock lock(_mutex);
+    return _backoff;
 }
 
 ExponentialBackoff::Duration ExponentialBackoff::remainingTime() const {
-	const std::scoped_lock lock(_mutex);
-	return remainingTimeNoLock();
+    const std::scoped_lock lock(_mutex);
+    return remainingTimeNoLock();
 }
 
 ExponentialBackoff::Duration ExponentialBackoff::remainingTimeNoLock() const {
-	const auto elapsed = std::chrono::duration_cast<Duration>(Clock::now() - _start);
-	return elapsed >= _backoff ? Duration{0} : _backoff - elapsed;
+    const auto elapsed = std::chrono::duration_cast<Duration>(Clock::now() - _start);
+    return elapsed >= _backoff ? Duration{0} : _backoff - elapsed;
 }
 
 } // namespace KDC
