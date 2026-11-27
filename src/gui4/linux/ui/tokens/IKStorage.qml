@@ -33,9 +33,8 @@ QtObject {
     readonly property real illustrationSize: 140
     readonly property real illustrationGraphicWidth: 112.13
     readonly property real illustrationGraphicHeight: 72.33
-    readonly property real errorContentSpacing: 32
     readonly property real errorTextSpacing: 8
-    readonly property real errorTextMaxWidth: 440
+    readonly property real errorDescriptionMaxWidth: 330
     readonly property real errorTitleSize: 15
     readonly property real errorLineHeight: 20
     readonly property real loadingSpinnerSize: 16
@@ -61,6 +60,6 @@ QtObject {
     readonly property real actionButtonHeight: 24
     readonly property real actionSubtitleLineHeight: 14
     readonly property real actionButtonSpacing: 16
-    readonly property real unavailableCardPadding: 32
+    readonly property real unavailableCardBottomPadding: 40
     readonly property int segmentAnimationDuration: 450
 }

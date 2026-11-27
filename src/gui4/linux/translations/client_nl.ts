@@ -1859,13 +1859,17 @@ Handig als u weet dat het belangrijke werk online staat op kDrive.</translation>
             <extracomment>Linux desktop app, explanation dialog "A change has been detected in your configuration" (the synchronized folder is no longer accessible on kDrive online): advice under the reason "Access rights modified". "This folder" is the synchronized folder on kDrive.</extracomment> 
             <translation>Mogelijk hebt u geen toegangsrechten meer tot deze map op kDrive.</translation> 
         </message> 
-        <message id="linuxStorageLocationUnavailableDescription"> 
-            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
-            <translation>kDrive heeft geen toegang tot de opslaglocatie voor deze synchronisatie. Zorg ervoor dat het apparaat is aangesloten en ontgrendeld en controleer vervolgens of kDrive toestemming heeft om toegang te krijgen tot deze locatie.</translation> 
+        <message id="linuxStorageLocalTitle"> 
+            <source>Local storage</source> 
+            <translation>Lokale opslag</translation> 
         </message> 
-        <message id="linuxStorageLocationUnavailableTitle"> 
-            <source>Storage location unavailable</source> 
-            <translation>Opslaglocatie niet beschikbaar</translation> 
+        <message id="linuxStorageMissingDiskDescription"> 
+            <source>Make sure it is connected, unlocked and accessible from your computer.</source> 
+            <translation>Zorg ervoor dat de schijf is aangesloten, ontgrendeld en toegankelijk is vanaf uw computer.</translation> 
+        </message> 
+        <message id="linuxStorageMissingDiskTitle"> 
+            <source>The storage disk is not accessible</source> 
+            <translation>De opslagschijf is niet toegankelijk</translation> 
         </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 

@@ -19,21 +19,34 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
 import kDrive.UI
 
+// Replaces the disk usage card when the disk of the synchronization cannot be read.
 Item {
     id: root
 
     required property var controller
 
-    implicitHeight: errorContent.implicitHeight + 2 * IKStorage.unavailableCardPadding
+    implicitHeight: IKStorage.rowHeight + errorContent.implicitHeight + IKStorage.unavailableCardBottomPadding
+
+    Text {
+        x: IKStorage.cardHorizontalPadding
+        y: IKStorage.headerTopPadding
+        width: parent.width - 2 * IKStorage.cardHorizontalPadding
+        color: IKColors.textPrimary
+        elide: Text.ElideRight
+        font.pixelSize: IKFonts.bodySize
+        font.weight: IKFonts.medium
+        text: qsTrId("linuxStorageLocalTitle")
+        textFormat: Text.PlainText
+    }
 
     Column {
         id: errorContent
 
-        anchors.centerIn: parent
-        spacing: IKStorage.errorContentSpacing
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: IKStorage.rowHeight
+        width: Math.max(0, parent.width - IKSpacing.s48)
 
         Item {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -54,7 +67,7 @@ Item {
         Column {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: IKStorage.errorTextSpacing
-            width: Math.min(IKStorage.errorTextMaxWidth, root.width - IKSpacing.s48)
+            width: parent.width
 
             Text {
                 color: IKColors.textPrimary
@@ -63,18 +76,20 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
                 lineHeight: IKStorage.errorLineHeight
                 lineHeightMode: Text.FixedHeight
-                text: qsTrId("linuxStorageLocationUnavailableTitle")
+                text: qsTrId("linuxStorageMissingDiskTitle")
                 width: parent.width
                 wrapMode: Text.WordWrap
             }
+            // Narrower than the title, so the description breaks into two balanced lines.
             Text {
+                anchors.horizontalCenter: parent.horizontalCenter
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.bodySize
                 horizontalAlignment: Text.AlignHCenter
                 lineHeight: IKStorage.errorLineHeight
                 lineHeightMode: Text.FixedHeight
-                text: qsTrId("linuxStorageLocationUnavailableDescription")
-                width: parent.width
+                text: qsTrId("linuxStorageMissingDiskDescription")
+                width: Math.min(IKStorage.errorDescriptionMaxWidth, parent.width)
                 wrapMode: Text.WordWrap
             }
             Item {
@@ -82,27 +97,15 @@ Item {
                 height: retryButton.implicitHeight
                 width: retryButton.implicitWidth
 
-                Button {
+                IKLinkButton {
                     id: retryButton
 
                     anchors.fill: parent
-                    flat: true
-                    focusPolicy: Qt.StrongFocus
+                    actionId: "main.storage.retry"
                     text: qsTrId("buttonRetry")
                     visible: !root.controller.retrying
 
-                    contentItem: Text {
-                        color: IKColors.actionPrimary
-                        font.pixelSize: IKFonts.bodySize
-                        horizontalAlignment: Text.AlignHCenter
-                        text: retryButton.text
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    onClicked: {
-                        UserActionLog.action("main.storage.retry");
-                        root.controller.retry();
-                    }
+                    onClicked: root.controller.retry()
                 }
                 IKLoadingSpinner {
                     Accessible.name: qsTrId("storageLoadingHint")
