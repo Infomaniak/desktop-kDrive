@@ -2861,7 +2861,7 @@ void AppServer::onOpenFileDeeplinkReceived(const QString &urlStr) {
 
     // The handler is owned by the file opening job registry; it unregisters itself once the request has been
     // processed, which releases the last owning reference and destroys it.
-    const auto handler = std::make_shared<FileOpeningHandler>(this, urlStr.toStdString(), this);
+    const auto handler = std::make_shared<FileOpeningHandler>(this, urlStr.toStdString());
     handler->queueOpenFileJob();
 }
 

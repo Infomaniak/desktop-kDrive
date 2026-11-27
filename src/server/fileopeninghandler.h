@@ -21,7 +21,6 @@
 #include "libcommon/utility/types.h"
 #include "libsyncengine/jobs/local/openfilejob.h"
 
-#include <QObject>
 #include <QString>
 
 #include <memory>
@@ -49,11 +48,9 @@ class AppServer;
   shared pointer, while the callbacks of the OpenFileJob only hold weak references and are discarded if the handler
   has already been destroyed.
 */
-class FileOpeningHandler : public QObject, public std::enable_shared_from_this<FileOpeningHandler> {
-        Q_OBJECT
-
+class FileOpeningHandler : public std::enable_shared_from_this<FileOpeningHandler> {
     public:
-        FileOpeningHandler(AppServer *const appServer, std::string url, QObject *const parent = nullptr);
+        FileOpeningHandler(AppServer *const appServer, std::string url);
 
         //! Parses the URL given to the constructor and queues an OpenFileJob performing the file opening flow.
         void queueOpenFileJob();
