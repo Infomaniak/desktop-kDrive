@@ -84,10 +84,13 @@ QtObject {
         readonly property color green950: "#0B2810"
 
         // Orange
+        readonly property color orange50: "#FFFAEC"
         readonly property color orange100: "#FFF5D3"
+        readonly property color orange200: "#FFE7A5"
         readonly property color orange300: "#FFD46D"
         readonly property color orange400: "#FFB632"
         readonly property color orange500: "#FF9D0A"
+        readonly property color orange700: "#CC6102"
         readonly property color orange800: "#A14B0B"
         readonly property color orangeDeep: "#FF8500"
         readonly property color orangePale: "#FFE8D8"
@@ -230,6 +233,14 @@ QtObject {
     readonly property color errorsConflictInfoLabel: textSecondary
     readonly property color errorsConflictCardIcon: textSecondary
     readonly property color errorsConflictOpenIcon: accentPrimary
+    readonly property color shareLinkCardSurface: surfacePrimary
+    readonly property color shareLinkIcon: darkMode ? _p.kDriveLight : _p.kDrive600
+    readonly property color shareLinkStatusText: textSecondary
+    readonly property color shareLinkNoticeSurface: darkMode ? _p.brown950 : _p.orange50
+    readonly property color shareLinkNoticeBorder: darkMode ? _p.orange800 : _p.orange200
+    readonly property color shareLinkNoticeIconTile: _p.orange700
+    readonly property color shareLinkNoticeGlyph: _p.white
+    readonly property color shareLinkUpsellSurface: modalSurface
     readonly property color errorsConflictMostRecentSurface: darkMode ? _p.green950 : _p.green100
     readonly property color errorsConflictMostRecentText: darkMode ? _p.green400 : _p.green800
     readonly property color errorsConflictCounterSurface: surfaceSecondary
@@ -263,8 +274,6 @@ QtObject {
     readonly property color blockingStateBorder: surfaceTertiary
     readonly property color blockingErrorDriveLabelSurface: darkMode ? _p.neutralBlue900 : _p.white
     readonly property color blockingErrorDriveLabelBorder: surfaceTertiary
-    readonly property color sidebarNotificationSurface: surfacePrimary
-    readonly property color sidebarNotificationBorder: surfaceTertiary
     // Sidebar upsell card: my kSuite+ follows the theme, kSuite Pro is always dark.
     readonly property color upsellGradientLightBlue: _p.kSuiteLightBlue
     readonly property color upsellGradientDarkBlue: _p.kSuiteDarkBlue

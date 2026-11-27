@@ -114,6 +114,27 @@ QtObject {
     readonly property real errorsConflictCounterHorizontalPadding: IKSpacing.s8
     readonly property real errorsConflictCounterVerticalPadding: 6
 
+    // "Share" dialog (Figma 14825-11351)
+    readonly property real shareDialogWidth: 490
+    readonly property real shareLinkCardSpacing: IKSpacing.s8
+    readonly property real shareLinkCardPadding: 10
+    readonly property real shareLinkCardRadius: IKRadius.r12
+    readonly property real shareLinkCardContentSpacing: IKSpacing.s8
+    readonly property real shareLinkRowMinHeight: 42
+    readonly property real shareLinkRowSpacing: IKSpacing.s16
+    readonly property real shareLinkIconSize: 14
+    readonly property real shareLinkIconSpacing: 6
+    readonly property real shareLinkTextSpacing: IKSpacing.s2
+    readonly property real shareLinkAccessorySpacing: IKSpacing.s8
+    readonly property real shareLinkButtonHeight: 24
+    readonly property real shareLinkNoticePadding: IKSpacing.s16
+    readonly property real shareLinkNoticeRadius: IKRadius.r12
+    readonly property real shareLinkNoticeSpacing: IKSpacing.s8
+    readonly property real shareLinkNoticeBorderWidth: 1
+    readonly property real shareLinkNoticeTileSize: 26
+    readonly property real shareLinkNoticeTileRadius: 5
+    readonly property real shareLinkNoticeGlyphSize: 14
+
     // Version conflicts pages: grouped choice (Figma 5409-9910) and list (Figma 5799-10808)
     readonly property real conflictsSectionSpacing: IKSpacing.s32
     readonly property real conflictsHeaderSpacing: IKSpacing.s2

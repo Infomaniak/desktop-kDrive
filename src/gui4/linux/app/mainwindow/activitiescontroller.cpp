@@ -26,7 +26,6 @@
 #include <QDesktopServices>
 #include <QFileInfo>
 #include <QLoggingCategory>
-#include <QPointer>
 #include <QUrl>
 
 #include <algorithm>
@@ -245,38 +244,6 @@ void ActivitiesController::openShareDialog(const QString &rowId) {
                      .name = target->name,
                      .iconName = isDirectory ? QString{} : target->fileIconName,
                      .isDirectory = isDirectory});
-}
-
-// TODO: Remove once the activity menu opens the "Share" dialog.
-void ActivitiesController::copyShareLink(const QString &rowId) {
-    const auto target = _model.actionTarget(rowId);
-    if (!target.has_value() || target->remoteNodeId.empty()) {
-        qCWarning(lcActivitiesController) << "Share-link activity action rejected for unavailable node | rowId:" << rowId;
-        emit shareLinkCopyFailed(rowId);
-        emit actionFailed(rowId);
-        return;
-    }
-
-    const auto context = actionSyncContext(*target, rowId);
-    if (!context.has_value()) {
-        emit shareLinkCopyFailed(rowId);
-        emit actionFailed(rowId);
-        return;
-    }
-
-    emit shareLinkCopyStarted(rowId);
-    const QPointer<ActivitiesController> guard{this};
-    _activityService.copyLink(ActivityService::LinkKind::Public, context->drive.dbId(), target->remoteNodeId,
-                              [guard, rowId](const ActivityService::LinkCopyResult result) {
-                                  if (guard.isNull()) {
-                                      return;
-                                  }
-                                  if (result == ActivityService::LinkCopyResult::Copied) {
-                                      emit guard->shareLinkCopied(rowId);
-                                  } else {
-                                      emit guard->shareLinkCopyFailed(rowId);
-                                  }
-                              });
 }
 
 void ActivitiesController::requestFixErrors(const QString &rowId) {

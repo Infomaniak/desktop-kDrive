@@ -231,8 +231,12 @@
   displacing transfers that are still running.
 - Expose Activities row capabilities through one `availableActions` flags role. Keep target ids and paths internal, and
   revalidate every action in `ActivitiesController` or `ActivityService` instead of duplicating guards in QML.
-- Present asynchronous share-link progress in the persistent bottom area of the main sidebar. Keep the notification
-  component generic, non-modal, and independent from the activity row lifetime.
+- The "Share" action of an activity opens `ShareLinkDialog` (Figma 14825-11351): one card per link. The restricted
+  link is instant and shows no progress; the public link shows a spinner in its Copy button while it is created, and
+  no status text, so its description never wraps. A refused public link
+  (permission, limit) keeps its button disabled until the dialog closes; a failure can be retried. When the limit is
+  reached, the banner offers an upgrade only to an administrator below the highest tier
+  (`UpsellOffers::shareLinkLimitOfferFor`).
 - Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
   files under `test/gui4/linux/` until the user explicitly reopens that scope.
 - Keep Linux Storage usage local to the GUI: use `QStorageInfo`/Qt filesystem tools where they expose the required
@@ -553,12 +557,11 @@
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
   It also exposes the `upsellOffer` of the selected drive (`UpsellOffers::offerFor`).
-  `openUpsellPage()` opens `AppConstants::Drive::upsellUri`. `SidebarUpsellCard` shows the offer above the sidebar
-  notification and is hidden while the selected synchronization is blocked (`SidebarView.navigationEnabled`).
+  `openUpsellPage()` opens `AppConstants::Drive::upsellUri`. `SidebarUpsellCard` shows the offer at the bottom of the
+  sidebar and is hidden while the selected synchronization is blocked (`SidebarView.navigationEnabled`).
 - `app/mainwindow/upselloffer.*`: `UpsellOffers::Offer`, the subscription offered to upgrade a drive, exposed to QML as
   `UpsellOffers`. `offerFor(drive)` gives one only to an admin of a drive with a free pack: my kSuite+ for the standalone
-  and my kSuite packs, kSuite Pro for the kSuite packs. `shareLinkLimitOfferFor(drive)` is the offer of the public link
-  limit notice: any admin below the highest tier (kSuite Entreprise, my kSuite+).
+  and my kSuite packs, kSuite Pro for the kSuite packs.
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
   active node errors. It omits failed activities after their active error is resolved, maps server status and direction
   to the QML-facing presentation enums, keeps in-progress transfers of at least 1 KB first in start order, coalesces
@@ -567,8 +570,7 @@
   errors banner and page.
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
-  locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
-  transient feedback independent from projected row lifetime. It owns the `ShareLinkController` of the "Share" dialog
+  locations, and delegates asynchronous link actions to `ActivityService`. It owns the `ShareLinkController` of the "Share" dialog
   (`openShareDialog(rowId)`). The errors banner and the "fix errors" row action open the
   errors page through `AppRouter::showErrors()`; the row action first emits `fixErrorsRequested` with the row's errors,
   which `ErrorsPageController::reveal` brings into view.
@@ -841,7 +843,8 @@
     - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
       presentation, and empty state. `ActivitiesView` hosts the sub-pages in a `StackView` that follows
       `ActivitiesNavigation.currentPage` (one component per chain page, rebuilt without animation when the view is
-      recreated); the list itself is `ActivitiesListPage`. The toolbar shows the back button and the page title, and
+      recreated); the list itself is `ActivitiesListPage`. It also hosts `ShareLinkDialog` (`ShareLinkRow`,
+      `ShareLinkNotice`, `ShareLinkUpsellBanner`), closed when the view is unloaded. The toolbar shows the back button and the page title, and
       Alt+Left or the mouse back button go back too. A page change requested by the user gives the focus to the new
       page through its `focusDefault()`, which every chain page provides, so it never stays on a control that
       disappeared. Size and status columns have fixed widths; only the name/folder boundary is draggable. It consumes

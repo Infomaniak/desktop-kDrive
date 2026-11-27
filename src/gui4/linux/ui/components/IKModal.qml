@@ -36,6 +36,8 @@ Popup {
     property var dialogDetails: ({})
     property url iconSource
     property color iconColor: IKColors.textPrimary
+    // False keeps the colors of the icon, such as the application icon.
+    property bool iconTinted: true
     property bool escapeDismissible: false
     property bool actionsStacked: false
     property int actionColumns: 2
@@ -142,7 +144,7 @@ Popup {
             width: parent.width
             implicitHeight: Math.max(headerIcon.height, titleText.implicitHeight, headerAccessory.implicitHeight)
 
-            IKTintedIcon {
+            Item {
                 id: headerIcon
 
                 width: visible ? IKModalTokens.iconSize : 0
@@ -150,8 +152,20 @@ Popup {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 visible: root.iconSource.toString().length > 0
-                source: root.iconSource
-                color: root.iconColor
+
+                IKTintedIcon {
+                    anchors.fill: parent
+                    visible: root.iconTinted
+                    source: root.iconSource
+                    color: root.iconColor
+                }
+                Image {
+                    anchors.fill: parent
+                    visible: !root.iconTinted
+                    source: root.iconTinted ? "" : root.iconSource
+                    sourceSize: Qt.size(2 * IKModalTokens.iconSize, 2 * IKModalTokens.iconSize)
+                    fillMode: Image.PreserveAspectFit
+                }
             }
 
             Text {

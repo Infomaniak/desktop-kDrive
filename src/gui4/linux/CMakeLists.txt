@@ -367,6 +367,10 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivityRow.qml
         ui/windows/main/activities/ActivitySourceIcon.qml
         ui/windows/main/activities/ActivityStatusIcon.qml
+        ui/windows/main/activities/ShareLinkDialog.qml
+        ui/windows/main/activities/ShareLinkNotice.qml
+        ui/windows/main/activities/ShareLinkRow.qml
+        ui/windows/main/activities/ShareLinkUpsellBanner.qml
         ui/windows/main/blockingerror/BlockingErrorDriveLabel.qml
         ui/windows/main/blockingerror/BlockingErrorView.qml
         ui/windows/main/errors/ConflictListRow.qml
@@ -402,7 +406,6 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/search/SearchResultRow.qml
         ui/windows/main/search/SearchStateView.qml
         ui/windows/main/sidebar/SidebarHeaderView.qml
-        ui/windows/main/sidebar/SidebarNotification.qml
         ui/windows/main/sidebar/SidebarUpsellCard.qml
         ui/windows/main/sidebar/SidebarView.qml
         ui/windows/main/sidebar/SyncSelectorView.qml
@@ -476,6 +479,9 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities/open-local.svg
         ui/assets/main/activities/open-online.svg
         ui/assets/main/activities/share.svg
+        ui/assets/main/activities/share/globe.svg
+        ui/assets/main/activities/share/lock.svg
+        ui/assets/main/activities/share/stop-hand.svg
         ui/assets/main/activities/source-computer.svg
         ui/assets/main/activities/source-web.svg
         ui/assets/main/activities/status-error.svg
