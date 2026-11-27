@@ -1079,8 +1079,6 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     const SyncPath &syncRootPath = cacheDirectory->syncDirectoryPath();
     auto ioError = IoError::Success;
     (void) IoHelper::renameItem(path, destPath, ioError, syncRootPath);
-    LOGW_DEBUG(logger(), L"Item deleted (moved outside the sync folder, deletion pending): " << Utility::formatSyncPath(path));
-
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(logger(), L"Error in IoHelper::renameItem: source " << Utility::formatSyncPath(path) << L", destination "
                                                                       << Utility::formatSyncPath(destPath) << L", error: "
@@ -1106,6 +1104,9 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     }
 
     if (ioError == IoError::Success) {
+        LOGW_DEBUG(logger(),
+                   L"Item deleted (moved outside the sync folder, deletion pending): " << Utility::formatSyncPath(path));
+
         if (!deleteItem(destPath, ioError, syncRootPath) || ioError != IoError::Success) {
             LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
                                          << Utility::formatIoError(destPath, ioError)
