@@ -311,7 +311,7 @@ void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
 
     const auto release = [state = state, path]() {
         const auto lock = std::scoped_lock(state->mutex);
-        state->inProgress.erase(path);
+        (void) state->inProgress.erase(path);
     };
 
     bool exists = false;
@@ -327,14 +327,18 @@ void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
         return;
     }
 
-    std::thread([path, release]() {
-        try {
-            (void) IoHelper::setFullAccess(path);
-        } catch (...) {
-            // Never let an exception escape a detached thread
-        }
+    try {
+        std::thread([path, release]() {
+            try {
+                (void) IoHelper::setFullAccess(path);
+            } catch (...) {
+                // Never let an exception escape a detached thread
+            }
+            release();
+        }).detach();
+    } catch (...) {
         release();
-    }).detach();
+    }
 }
 
 void SyncPalWorker::ensureMinimumPermission() {

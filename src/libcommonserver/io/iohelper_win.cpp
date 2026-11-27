@@ -170,7 +170,7 @@ int IoHelper::_getAndSetRightsMethod = -1; // -1: not initialized, 0: Windows AP
 bool IoHelper::_setRightsWindowsApiInheritance = false;
 std::unique_ptr<BYTE[]> IoHelper::_psid = nullptr;
 TRUSTEE IoHelper::_trustee = {nullptr};
-std::mutex IoHelper::_initRightsWindowsApiMutex;
+std::recursive_mutex IoHelper::_WindowsRightsApiMutex;
 
 IoError IoHelper::stdError2ioError(int error) noexcept {
     return dWordError2ioError(static_cast<DWORD>(error), logger());
@@ -434,7 +434,7 @@ TRUSTEE &IoHelper::getTrustee() {
 }
 
 void IoHelper::initRightsWindowsApi() {
-    std::lock_guard lock(_initRightsWindowsApiMutex);
+    const auto lock = std::scoped_lock(_WindowsRightsApiMutex);
     if (_getAndSetRightsMethod != -1) {
         return;
     }
@@ -517,8 +517,8 @@ void IoHelper::initRightsWindowsApi() {
 
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 10; i++) {
-        if (auto ioError = IoError::Unknown; !IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
+        if (auto ioError = IoError::Unknown; !IoHelper::getRightsWindowsApi(tmpDir, read, write, execute, ioError, logger())) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getRightsWindowsApi: " << Utility::formatIoError(tmpDir, ioError));
             _getAndSetRightsMethod = 1; // Fallback method
             return;
         }
@@ -540,8 +540,9 @@ void IoHelper::initRightsWindowsApi() {
 }
 
 // Always return false if ioError != IoError::Success, caller should call _isExpectedError
-static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
-                                log4cplus::Logger logger, bool inherit = false) noexcept {
+bool IoHelper::setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
+                                log4cplus::Logger logger, bool inherit) noexcept {
+    const auto lock = std::scoped_lock(_WindowsRightsApiMutex);
     PACL pACLold = nullptr; // Current ACL
     PACL pACLnew = nullptr; // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
@@ -623,8 +624,9 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     return true;
 }
 
-static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
+bool IoHelper::getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {
+    const auto lock = std::scoped_lock(_WindowsRightsApiMutex);
     ioError = IoError::Success;
     read = false;
     write = false;
