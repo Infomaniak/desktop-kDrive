@@ -2516,6 +2516,22 @@ Internettforbindelse kreves for å åpne dem.</translation>
             <source>Sync is running</source> 
             <translation>Synkronisering pågår</translation> 
         </message> 
+        <message id="syncStatusAnalysing"> 
+            <source>Searching for changes…</source> 
+            <translation>Søk etter endringer…</translation> 
+        </message> 
+        <message id="syncStatusExploring"> 
+            <source>Scanning files to synchronize…</source> 
+            <translation>Går gjennom filer som skal synkroniseres…</translation> 
+        </message> 
+        <message id="syncStatusPropagating"> 
+            <source>%1 item synchronized out of %2…</source> 
+            <translation>%1 av %2 elementer synkronisert…</translation> 
+        </message> 
+        <message id="syncStatusPropagating-plural"> 
+            <source>%1 items synchronized out of %2…</source> 
+            <translation>%1 av %2 elementer synkronisert…</translation> 
+        </message> 
         <message id="syncSuccessTooltip"> 
             <source>Synced</source> 
             <translation>Synkronisert</translation> 
@@ -2539,10 +2555,6 @@ Internettforbindelse kreves for å åpne dem.</translation>
         <message id="synchroPaused"> 
             <source>synchronization is paused</source> 
             <translation>synkroniseringen er satt på pause</translation> 
-        </message> 
-        <message id="synchroStatusInProgressDescription"> 
-            <source>Your recent files are being updated.</source> 
-            <translation>De siste filene dine oppdateres.</translation> 
         </message> 
         <message id="synchroStatusInProgressTitle"> 
             <source>Sync in progress</source> 

@@ -115,13 +115,15 @@ std::optional<SyncPath> safeRelativePath(const SyncPath &path) {
 
 ActivitiesController::ActivitiesController(const ActivityStore &activityStore, const AppCache &appCache,
                                            MainSelectionStore &selectionStore, const NetworkStatusObserver &networkStatusObserver,
-                                           ActivityService &activityService, AppRouter &appRouter, QObject *const parent) :
+                                           ActivityService &activityService, AppRouter &appRouter,
+                                           SyncProgressState &syncProgress, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _selectionStore(selectionStore),
     _networkStatusObserver(networkStatusObserver),
     _activityService(activityService),
     _appRouter(appRouter),
+    _syncProgress(syncProgress),
     _model(activityStore, appCache, selectionStore, this) {
     (void) connect(&_model, &ActivityListModel::filterChanged, this, &ActivitiesController::filterChanged);
     (void) connect(&_model, &ActivityListModel::projectionChanged, this, &ActivitiesController::refreshPageState);

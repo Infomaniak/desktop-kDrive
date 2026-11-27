@@ -23,6 +23,10 @@ QtObject {
     readonly property real pagePadding: IKSpacing.s24
     readonly property real sectionSpacing: IKSpacing.s32
     readonly property real headerHeight: 24
+    readonly property real headerProgressTitleHeight: 20
+    readonly property real headerProgressHeight: 16
+    readonly property real headerProgressSpacing: 6
+    readonly property real headerProgressLoaderSize: 14
     readonly property real filterButtonHeight: 24
     readonly property real filterIconSize: 12
     // Matches the default ItemDelegate padding of the Fusion style, now set explicitly so the menu can size itself.
