@@ -73,7 +73,7 @@ NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
             {"destination_already_exists", NetworkErrorCode::DestinationAlreadyExists},
             {"conflict_error", NetworkErrorCode::ConflictError},
             {"access_denied", NetworkErrorCode::AccessDenied},
-            {"limit_exceeded_error", NetworkErrorCode::FileTooBigError},
+            {"limit_exceeded_error", NetworkErrorCode::LimitExceededError},
             {"quota_exceeded_error", NetworkErrorCode::QuotaExceededError},
             {"lock_error", NetworkErrorCode::LockError}};
 
