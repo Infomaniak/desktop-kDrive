@@ -42,6 +42,7 @@ endif()
 
 set(server_SRCS
     appserver.h appserver.cpp
+    fileopeninghandler.h fileopeninghandler.cpp
     comm/oldcommserver.h comm/oldcommserver.cpp
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/abstractcommserver.h
@@ -78,6 +79,7 @@ set(server_SRCS
     comm/guijobs/synctriggerprogressupdatejob.h comm/guijobs/synctriggerprogressupdatejob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     comm/guijobs/syncacknowledgemanydeletesjob.h comm/guijobs/syncacknowledgemanydeletesjob.cpp
+    comm/guijobs/fileopeningcanceljob.h comm/guijobs/fileopeningcanceljob.cpp
 
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
@@ -135,6 +137,7 @@ set(server_SRCS
     comm/guijobs/signalsynccompleteditemjob.h comm/guijobs/signalsynccompleteditemjob.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
     comm/guijobs/signalsyncnotifymanydeletesjob.h comm/guijobs/signalsyncnotifymanydeletesjob.cpp
+    comm/guijobs/signalfileopeningstatusjob.h comm/guijobs/signalfileopeningstatusjob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     comm/guijobs/signalupdatershowdialogjob.h comm/guijobs/signalupdatershowdialogjob.cpp
@@ -273,11 +276,20 @@ else()
     add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
 
     get_target_property(_qmake Qt6::qmake LOCATION)
+    get_filename_component(_qt_bin_dir "${_qmake}" DIRECTORY)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
         OUTPUT_VARIABLE QT_TRANSLATIONS_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
+endif()
+
+if(APPLE)
+    # Export the server symbols so that the VFS plugin binds the libcommonserver symbols (Vfs, VfsWorker,
+    # IoHelper, ...) from the host at load time instead of embedding its own copy of the static library:
+    # two copies of the same classes in one process break Qt's cross-module type identity checks on the
+    # VFS worker connections (fatal in debug builds).
+    target_link_options(${APPLICATION_EXECUTABLE} PRIVATE -Wl,-export_dynamic)
 endif()
 
 if(WIN32 AND TARGET "${APPLICATION_EXECUTABLE}_vfs_win")
@@ -315,6 +327,14 @@ if(APPLE)
         RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
         MACOSX_BUNDLE TRUE
         INSTALL_RPATH "@executable_path/../Frameworks"
+    )
+elseif(UNIX)
+    # Linux: the application is the handler of the "kdrive" URL scheme, so the desktop environment
+    # may launch it without any development environment. The installed layout must therefore resolve
+    # its shared libraries on its own (e.g. an AppImage usr/lib directory).
+    set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib"
     )
 else()
     set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
@@ -429,7 +449,7 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
 
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
-            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+            execute_process(COMMAND ${_qt_bin_dir}/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
             " COMPONENT RUNTIME)
 
         cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)

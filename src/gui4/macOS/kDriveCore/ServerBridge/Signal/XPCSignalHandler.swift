@@ -39,6 +39,7 @@ enum SignalError: Error {
     case unableToGetSyncProgressFromSignal
     case unableToGetSyncFileItemFromSignal
     case unableToGetManyDeletesFromSignal
+    case unableToGetFileOpeningStatusFromSignal
     case unableToGetNotificationFromSignal
     case unableToGetErrorInfoFromSignal
     case unableToGetErrorRemovedFromSignal
@@ -56,6 +57,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private let synchroHandler = SynchroSignalHandler()
     private let utilitySignalHandler = UtilitySignalHandler()
     private let updaterSignalHandler = UpdaterSignalHandler()
+    private let fileOpeningSignalHandler = FileOpeningSignalHandler()
 
     @LazyInjectService private var cacheReconciler: CacheReconciling
 
@@ -126,6 +128,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .SYNC_NOTIFY_MANY_DELETES:
             try await synchroHandler.handleNotifyManyDeletes(signal)
+
+        case .FILE_OPENING_STATUS:
+            try await fileOpeningSignalHandler.handleFileOpeningStatus(signal)
 
         case .UTILITY_SHOW_NOTIFICATION:
             try await utilitySignalHandler.handleShowNotification(signal)

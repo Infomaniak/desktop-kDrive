@@ -23,6 +23,7 @@
 #include "parametersdialog.h"
 #include "adddrivewizard.h"
 #include "custommessagebox.h"
+#include "fileopeningdialog.h"
 #include "logindialog.h"
 #include "info/userinfoclient.h"
 #include "libcommon/data/account.h"
@@ -142,6 +143,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QTimer _refreshErrorListTimer;
         std::map<DriveDbId, QList<Error>> _errorMap;
         QMap<SyncDbId, CustomMessageBox *> _tooManyDeletesNotificationPopupMap;
+        QMap<UniqueId, FileOpeningDialog *> _fileOpeningPopupMap;
 
 #ifdef Q_OS_LINUX
         QAction *_actionSynthesis = nullptr;
@@ -208,6 +210,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onSyncRemoved(SyncDbId syncDbId);
         void onSyncDeletionFailed(SyncDbId syncDbId);
         void onTooManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles);
+        void onFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent, const QString &itemName);
         void onProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                             int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void onExecuteSyncAction(ActionType type, ActionTarget target, GenericId dbId);

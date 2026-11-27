@@ -62,6 +62,7 @@ set(client_SRCS
     buttonsbarwidget.h buttonsbarwidget.cpp
     clickablewidget.h clickablewidget.cpp
     confirmsynchronizationdialog.h confirmsynchronizationdialog.cpp
+    fileopeningdialog.h fileopeningdialog.cpp
     customdialog.h customdialog.cpp
     custommessagebox.h custommessagebox.cpp
     customproxystyle.h customproxystyle.cpp
@@ -324,6 +325,13 @@ if(APPLE)
     set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
         INSTALL_RPATH "@executable_path/../Frameworks"
+    )
+elseif(UNIX)
+    # Linux: same rationale as the server target; the client binary must also keep resolving its
+    # libraries without any launch environment.
+    set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        INSTALL_RPATH "$ORIGIN;$ORIGIN/../lib"
     )
 else()
     set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
