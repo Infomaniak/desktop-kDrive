@@ -50,12 +50,14 @@ std::function<int64_t(const SyncPath &)> DownloadJob::_getFreeDiskSpaceFn = [](c
 
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
-                         const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy) :
+                         const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy,
+                         const SyncPath &containmentRootPath) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, fileDownloadInfo.driveDbId, 0, false),
     _vfs(vfs),
     _cacheDirectory(cacheDirectory),
     _fileDownloadInfo(fileDownloadInfo),
-    _dateTimePolicy(dateTimePolicy) {
+    _dateTimePolicy(dateTimePolicy),
+    _containmentRootPath(containmentRootPath) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 2;
 
@@ -150,11 +152,13 @@ ExitInfo DownloadJob::resolveDownloadNeed() {
 }
 
 ExitInfo DownloadJob::runJob() noexcept {
-    // Refuse to process an item that is not located under the sync directory or whose path traverses a symbolic link:
+    // Refuse to process an item that is not located under its containment root (the sync directory, or the
+    // destination folder for the downloads that target no sync directory) or whose path traverses a symbolic link:
     // dates or virtual file metadata updates, as well as content replacement, could otherwise be applied to an item
-    // located outside of the sync directory.
-    if (const auto checkIfPathTraversesLinkError =
-                IoHelper::checkIfPathTraversesLink(_fileDownloadInfo.localPath, _cacheDirectory->syncDirectoryPath());
+    // located outside of that directory.
+    if (const auto checkIfPathTraversesLinkError = IoHelper::checkIfPathTraversesLink(
+                _fileDownloadInfo.localPath,
+                _containmentRootPath.empty() ? _cacheDirectory->syncDirectoryPath() : _containmentRootPath);
         checkIfPathTraversesLinkError != IoError::Success && checkIfPathTraversesLinkError != IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: "
                                    << Utility::formatIoError(_fileDownloadInfo.localPath, checkIfPathTraversesLinkError));
@@ -560,6 +564,9 @@ class HiddenStatusHolder {
 
 ExitInfo DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
+    // No containment root is passed to the move and copy helpers below: the source is this job's own temporary file,
+    // and the destination has already been validated against the containment root (the sync directory, or the
+    // destination folder for the downloads that target no sync directory) before the download started.
 #if defined(KD_WINDOWS)
     HiddenStatusHolder hiddenStatusHolder(_fileDownloadInfo.localPath);
     bool retry = true;
@@ -574,7 +581,7 @@ ExitInfo DownloadJob::moveTmpFile() {
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
             // Move file
-            (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localPath, ioError, _cacheDirectory->syncDirectoryPath());
+            (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localPath, ioError);
             crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
             if (ioError != IoError::Success && !crossDeviceLinkError) {
                 LOGW_WARN(_logger, L"Failed to move downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
@@ -586,8 +593,7 @@ ExitInfo DownloadJob::moveTmpFile() {
 
         if (!_fileDownloadInfo.isCreate || crossDeviceLinkError || forceCopy) {
             // Copy file content (i.e. when the target exists, do not change its node id).
-            if (!IoHelper::copyFileOrDirectory(_tmpPath, _fileDownloadInfo.localPath, ioError,
-                                               _cacheDirectory->syncDirectoryPath())) {
+            if (!IoHelper::copyFileOrDirectory(_tmpPath, _fileDownloadInfo.localPath, ioError)) {
                 LOGW_WARN(_logger, L"Failed to copy downloaded file " << Path2WStr(_tmpPath) << L" to "
                                                                       << Path2WStr(_fileDownloadInfo.localPath) << L", error="
                                                                       << Utility::formatIoError(ioError));

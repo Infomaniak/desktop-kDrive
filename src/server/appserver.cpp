@@ -3027,7 +3027,8 @@ ExitInfo AppServer::downloadFileOpeningItem(const DriveDbId driveDbId, const Com
                 DownloadJob::FileDownloadInfo{driveDbId, CommonUtility::commString2Str(remoteNodeId), finalItemPath,
                                               fileInfoJob->size(), 0, fileInfoJob->modificationTime(), true},
                 fileInfoJob->modificationTime() > 0 ? DownloadJob::DateTimePolicy::ApplyDateTime
-                                                    : DownloadJob::DateTimePolicy::IgnoreDateTime);
+                                                    : DownloadJob::DateTimePolicy::IgnoreDateTime,
+                destinationFolder);
         downloadJob->setProgressSizeCallback(std::bind_front(&AppServer::onFileOpeningDownloadProgress, this,
                                                              CommonUtility::syncPath2CommString(finalItemPath),
                                                              std::make_shared<FileOpeningDownloadThrottleState>()));

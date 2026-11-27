@@ -49,7 +49,8 @@ class DownloadJob : public AbstractTokenNetworkJob {
         };
 
         DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
-                    const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy);
+                    const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy,
+                    const SyncPath &containmentRootPath = {});
         ~DownloadJob() override;
 
         const RemoteNodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
@@ -104,6 +105,9 @@ class DownloadJob : public AbstractTokenNetworkJob {
         const std::shared_ptr<Vfs> _vfs;
         std::shared_ptr<CacheDirectory> _cacheDirectory;
         FileDownloadInfo _fileDownloadInfo;
+        //! The directory the downloaded item must stay inside: the sync directory for the sync-engine downloads, and
+        //! the destination folder for the downloads that target no sync directory (e.g. the file opening flow).
+        SyncPath _containmentRootPath;
         bool _shouldDownload = true;
 
         SyncPath _tmpPath;
