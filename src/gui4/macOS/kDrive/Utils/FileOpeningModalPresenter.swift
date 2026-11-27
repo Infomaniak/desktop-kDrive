@@ -156,7 +156,8 @@ final class FileOpeningModalPresenter {
         let itemPath = lastKnownStatus?.itemPath ?? ""
         let canDownload = status.driveDbId != 0 && !status.remoteNodeId.isEmpty
 
-        IKLogger.general.info("[KD] Presenting the file opening failure window jobId=\(jobId)")
+        IKLogger.general
+            .info("[KD] Presenting the file opening failure window jobId=\(jobId) canDownload=\(canDownload)")
         let hostingController = NSHostingController(
             rootView: FileOpeningFailureView(itemName: itemName, itemPath: itemPath, isNotFound: status.phase == .notFound,
                                              canDownload: canDownload, onDownload: { [weak self] in
