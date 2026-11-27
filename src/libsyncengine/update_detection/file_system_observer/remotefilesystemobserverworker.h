@@ -26,6 +26,7 @@
 #include <atomic>
 
 #include <optional>
+#include <utility/exponentialbackoff.h>
 
 namespace KDC {
 
@@ -45,6 +46,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         Count listingFullCount() const { return _listingFullCount.load(); };
         RemoteNodeIdSet blackList() const;
         [[nodiscard]] ExitInfo checkIfValidListingSyncFolderCursorExists(bool &validListingSyncFolderCursorExist) const;
+
+        void forceUpdate() override;
 
     protected:
         void execute() override;
@@ -132,6 +135,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         // Cache of the listing cursor of the sync folder.
         mutable std::optional<CursorData> _listingSyncFolderCursorCache;
         mutable std::mutex _listingSyncFolderCursorCacheMutex;
+        ExponentialBackoff _listingContinueBackoff{std::chrono::seconds(1), std::chrono::seconds(30), 2.0};
         [[nodiscard]] ExitInfo getSyncFolderListingCursor(CursorData &cursorData) const;
         [[nodiscard]] ExitInfo setSyncFolderListingCursor(const CursorData &cursorData);
 
