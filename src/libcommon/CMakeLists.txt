@@ -30,6 +30,7 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
+    utility/exponentialbackoff.h utility/exponentialbackoff.cpp
     data/account.h data/account.cpp
     data/drive.h data/drive.cpp
     data/driveavailable.h data/driveavailable.cpp
