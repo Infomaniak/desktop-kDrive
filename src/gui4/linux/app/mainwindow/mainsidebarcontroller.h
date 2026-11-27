@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/mainwindow/syncselectormodel.h"
+#include "app/mainwindow/upselloffer.h"
 
 #include <QColor>
 #include <QLoggingCategory>
@@ -49,17 +50,9 @@ class MainSidebarController final : public QObject {
         Q_PROPERTY(bool canOpenCurrentSyncFolder READ canOpenCurrentSyncFolder NOTIFY currentContextChanged)
         Q_PROPERTY(qint32 currentErrorCount READ currentErrorCount NOTIFY currentContextChanged)
         Q_PROPERTY(qint32 unselectedErrorCount READ unselectedErrorCount NOTIFY unselectedErrorCountChanged)
-        Q_PROPERTY(UpsellOffer upsellOffer READ upsellOffer NOTIFY upsellOfferChanged)
+        Q_PROPERTY(KDC::UpsellOffers::Offer upsellOffer READ upsellOffer NOTIFY upsellOfferChanged)
 
     public:
-        /** Subscription offered by the sidebar upsell card for the selected synchronization's drive. */
-        enum class UpsellOffer : uint8_t {
-            None,
-            MyKSuitePlus,
-            KSuitePro
-        };
-        Q_ENUM(UpsellOffer)
-
         explicit MainSidebarController(const AppCache &cache, MainSelectionStore &selectionStore, QObject *parent = nullptr);
 
         [[nodiscard]] QAbstractItemModel *selectorModel() { return &_syncSelectorModel; }
@@ -74,7 +67,8 @@ class MainSidebarController final : public QObject {
         [[nodiscard]] bool canOpenCurrentSyncFolder() const;
         [[nodiscard]] qint32 currentErrorCount() const;
         [[nodiscard]] qint32 unselectedErrorCount() const;
-        [[nodiscard]] UpsellOffer upsellOffer() const { return _upsellOffer; }
+        /** Subscription offered by the sidebar upsell card for the selected synchronization's drive. */
+        [[nodiscard]] Offer upsellOffer() const { return _upsellOffer; }
 
         Q_INVOKABLE void selectSync(qint64 syncDbId);
         Q_INVOKABLE bool openCurrentSyncFolder() const;
@@ -94,7 +88,7 @@ class MainSidebarController final : public QObject {
 
         MainSelectionStore &_selectionStore;
         SyncSelectorModel _syncSelectorModel;
-        UpsellOffer _upsellOffer{UpsellOffer::None};
+        Offer _upsellOffer{Offer::None};
 };
 
 } // namespace KDC

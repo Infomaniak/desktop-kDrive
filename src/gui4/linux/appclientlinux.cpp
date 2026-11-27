@@ -23,6 +23,7 @@
 #ifdef QT_DEBUG
 #include "app/devtools/errorsimulator.h"
 #endif
+#include "app/mainwindow/upselloffer.h"
 #include "app/navigation/mainwindowactivationdecision.h"
 #include "app/onboarding/onboardingsyncconfigurationcontroller.h"
 #include "app/svginfo.h"
@@ -131,6 +132,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                             "WebDrive", QStringLiteral("WebDrive only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(BlockingErrors::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0,
                                             "BlockingErrors", QStringLiteral("BlockingErrors only exposes enums."));
+    (void) qmlRegisterUncreatableMetaObject(UpsellOffers::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "UpsellOffers",
+                                            QStringLiteral("UpsellOffers only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(SyncErrors::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "SyncErrors",
                                             QStringLiteral("SyncErrors only exposes enums."));
     (void) qmlRegisterUncreatableMetaObject(RemoteFolders::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0, "RemoteFolders",

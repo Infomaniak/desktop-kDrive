@@ -29,30 +29,6 @@ Q_LOGGING_CATEGORY(lcMainSidebarController, "gui.v4.mainsidebarcontroller", QtIn
 
 namespace KDC {
 
-namespace {
-
-// Only the administrators of a drive with a free pack are offered an upgrade.
-MainSidebarController::UpsellOffer upsellOfferFor(const Drive &drive) {
-    if (!drive.admin() || !drive.packInfo().isFree()) {
-        return MainSidebarController::UpsellOffer::None;
-    }
-
-    switch (drive.packInfo().upsellTarget()) {
-        case UpsellTarget::StandAloneToMykSuitePlus:
-        case UpsellTarget::MykSuiteToMykSuitePlus:
-            return MainSidebarController::UpsellOffer::MyKSuitePlus;
-        case UpsellTarget::StandAloneTokSuitePro:
-        case UpsellTarget::kSuiteUpgrade:
-            return MainSidebarController::UpsellOffer::KSuitePro;
-        case UpsellTarget::Unknown:
-        case UpsellTarget::EnumEnd:
-            break;
-    }
-    return MainSidebarController::UpsellOffer::None;
-}
-
-} // namespace
-
 MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectionStore &selectionStore, QObject *const parent) :
     QObject(parent),
     _selectionStore(selectionStore),
@@ -153,7 +129,7 @@ void MainSidebarController::openUpsellPage() const {
         return;
     }
 
-    if (upsellOfferFor(context->drive) == UpsellOffer::None) {
+    if (UpsellOffers::offerFor(context->drive) == Offer::None) {
         qCWarning(lcMainSidebarController) << "Upgrade page ignored: no offer for the drive | driveId:"
                                            << context->drive.driveId();
         return;
@@ -168,7 +144,7 @@ void MainSidebarController::openUpsellPage() const {
 
 void MainSidebarController::refreshUpsellOffer() {
     const auto context = _selectionStore.currentSyncContext();
-    const UpsellOffer offer = context.has_value() ? upsellOfferFor(context->drive) : UpsellOffer::None;
+    const Offer offer = context.has_value() ? UpsellOffers::offerFor(context->drive) : Offer::None;
     if (offer == _upsellOffer) {
         return;
     }
