@@ -36,7 +36,7 @@ class TestExponentialBackoff final : public CppUnit::TestFixture, public TestBas
 		void setUp() override { TestBase::start(); }
 		void tearDown() override { TestBase::stop(); }
 
-	protected:
+	private:
 		void testInitialState();
 		void testIncrease();
 		void testReset();
