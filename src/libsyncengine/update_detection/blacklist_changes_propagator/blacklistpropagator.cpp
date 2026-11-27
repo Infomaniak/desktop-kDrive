@@ -166,8 +166,16 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
             continue;
         }
 
-        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancel hydration: " << Utility::formatSyncPath(absoluteLocalPath_));
-        _syncPal->vfs()->cancelHydrate(entry.path());
+        VfsStatus vfsStatus;
+        if (ExitInfo exitInfo = _syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(entry.path()) << L" " << exitInfo);
+            continue;
+        }
+        if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated) {
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                               L"Cancel hydration: " << Utility::formatSyncPath(absoluteLocalPath_));
+            _syncPal->vfs()->cancelHydrate(entry.path());
+        }
     }
 
     if (ioError != IoError::Success) {
