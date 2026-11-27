@@ -371,7 +371,7 @@ ExitInfo OpenFileJob::resolveDeeplink(bool &found) {
 
     bool pathTraversesLink = false;
     SyncPath linkPath;
-    if (const auto ioError = IoHelper::checkIfPathTraversesLink(bestSync.localPath(), _localPath, pathTraversesLink, linkPath);
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(_localPath, bestSync.localPath(), pathTraversesLink, linkPath);
         ioError != IoError::Success) {
         _outcome = Outcome::Failed;
 
