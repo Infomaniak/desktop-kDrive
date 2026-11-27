@@ -725,7 +725,8 @@
   the next run is rebuilt from the remaining selections after pruning drives that now own a classic synchronization.
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
-  Do not expose OAuth details to QML.
+  Do not expose OAuth details to QML. Draw OAuth secrets from OpenSSL `RAND_bytes` and abort the flow if it fails; never
+  use `CommonUtility::generateRandomString*`, which is not cryptographically secure.
 - `app/syncconfiguration/remotefolderprovider.*`: injectable asynchronous boundary for remote folder metadata,
   children, and sizes. The production adapter uses `CommService`; tests and future settings integration can provide the
   same contract without onboarding dependencies.
