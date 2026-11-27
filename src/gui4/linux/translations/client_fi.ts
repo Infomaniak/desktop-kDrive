@@ -334,10 +334,6 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
             <extracomment>Icon-only button next to a file path (Linux desktop app, "Errors to fix" page): copies the path to the clipboard. Used as tooltip and accessible name.</extracomment> 
             <translation>Kopioi polku</translation> 
         </message> 
-        <message id="buttonCopyShareLink"> 
-            <source>Copy share link</source> 
-            <translation>Kopioi jakolinkki</translation> 
-        </message> 
         <message id="buttonCopyTechnicalDetails"> 
             <source>Copy technical details</source> 
             <extracomment>Icon-only button next to the "Technical details" of an unexpected error (Linux desktop app, "Errors to fix" page): copies them to the clipboard, to send them to the support. Used as tooltip and accessible name.</extracomment> 
@@ -595,6 +591,10 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
             <source>Open settings</source> 
             <translation>Avaa asetukset</translation> 
         </message> 
+        <message id="buttonShare"> 
+            <source>Share</source> 
+            <translation>Jaa</translation> 
+        </message> 
         <message id="buttonShowOffers"> 
             <source>View offers</source> 
             <translation>Näytä tarjoukset</translation> 
@@ -675,10 +675,6 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
         <message id="copyingLink"> 
             <source>Copying Link…</source> 
             <translation>Kopioidaan linkkiä…</translation> 
-        </message> 
-        <message id="creatingShareLink"> 
-            <source>Creating share link…</source> 
-            <translation>Luodaan jakolinkkiä…</translation> 
         </message> 
         <message id="dataManagementDescription"> 
             <source>You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.
@@ -1815,10 +1811,6 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</translatio
             <source>LGPL v3 License - Git Sources</source> 
             <translation>LGPL v3 -lisenssi - Git-lähteet</translation> 
         </message> 
-        <message id="linkCopiedToClipboardTitle"> 
-            <source>Link copied to clipboard</source> 
-            <translation>Linkki kopioitu leikepöydälle</translation> 
-        </message> 
         <message id="linuxButtonCopyCommand"> 
             <source>Copy command</source> 
             <extracomment>Linux desktop app, explanation dialog of the inotify watches limit error: icon button (tooltip and accessible name) that copies the shell command raising the limit. Same style as "Copy path".</extracomment> 
@@ -1984,6 +1976,10 @@ Analyzing this data allows our team to continuously improve the application’s 
             <translation>Matomo on Infomaniakin yksinomaan isännöimä ja hallinnoima analytiikkatyökalu sovelluksen käytön ymmärtämiseksi.
 
 Näiden tietojen analysointi antaa tiimillemme mahdollisuuden jatkuvasti parantaa sovelluksen käyttöliittymää.</translation> 
+        </message> 
+        <message id="menuCopy"> 
+            <source>Copy</source> 
+            <translation>Kopioi</translation> 
         </message> 
         <message id="moveCancelErrorTitle"> 
             <source>Move canceled</source> 
@@ -2331,6 +2327,46 @@ Näiden tietojen avulla tiimimme voi nopeasti korjata ja optimoida sovellusta, m
         <message id="settingsTitle"> 
             <source>Settings</source> 
             <translation>Asetukset</translation> 
+        </message> 
+        <message id="shareLinkCopied"> 
+            <source>Link copied</source> 
+            <translation>Linkki kopioitu</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedDescription"> 
+            <source>Your plan includes %1 public links.</source> 
+            <translation>Tilaukseesi sisältyy %1 julkista linkkiä.</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedGenericDescription"> 
+            <source>Your plan has reached its maximum number of public links.</source> 
+            <translation>Tilauksesi on saavuttanut julkisten linkkien enimmäismäärän.</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedTitle"> 
+            <source>Public link limit reached</source> 
+            <translation>Julkisten linkkien raja saavutettu</translation> 
+        </message> 
+        <message id="shareLinkPermissionDeniedDescription"> 
+            <source>Request access from the owner or administrator.</source> 
+            <translation>Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</translation> 
+        </message> 
+        <message id="shareLinkPermissionDeniedTitle"> 
+            <source>Permission required to create a public link</source> 
+            <translation>Julkisen linkin luominen vaatii käyttöoikeudet</translation> 
+        </message> 
+        <message id="shareLinkPublicDescription"> 
+            <source>Anyone with the link</source> 
+            <translation>Kuka tahansa, jolla on linkki</translation> 
+        </message> 
+        <message id="shareLinkPublicTitle"> 
+            <source>Public link</source> 
+            <translation>Julkinen linkki</translation> 
+        </message> 
+        <message id="shareLinkRestrictedDescription"> 
+            <source>Only people with access</source> 
+            <translation>Vain henkilöt, joilla on käyttöoikeus</translation> 
+        </message> 
+        <message id="shareLinkRestrictedTitle"> 
+            <source>Restricted link</source> 
+            <translation>Rajoitettu linkki</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
             <source>Syncs</source> 

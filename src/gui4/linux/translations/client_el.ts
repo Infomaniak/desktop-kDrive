@@ -334,10 +334,6 @@ You can open them at any time, even without an internet connection.</source>
             <extracomment>Icon-only button next to a file path (Linux desktop app, "Errors to fix" page): copies the path to the clipboard. Used as tooltip and accessible name.</extracomment> 
             <translation>Αντιγραφή διαδρομής</translation> 
         </message> 
-        <message id="buttonCopyShareLink"> 
-            <source>Copy share link</source> 
-            <translation>Αντιγραφή συνδέσμου κοινής χρήσης</translation> 
-        </message> 
         <message id="buttonCopyTechnicalDetails"> 
             <source>Copy technical details</source> 
             <extracomment>Icon-only button next to the "Technical details" of an unexpected error (Linux desktop app, "Errors to fix" page): copies them to the clipboard, to send them to the support. Used as tooltip and accessible name.</extracomment> 
@@ -595,6 +591,10 @@ You can open them at any time, even without an internet connection.</source>
             <source>Open settings</source> 
             <translation>Άνοιγμα ρυθμίσεων</translation> 
         </message> 
+        <message id="buttonShare"> 
+            <source>Share</source> 
+            <translation>Κοινοποίηση</translation> 
+        </message> 
         <message id="buttonShowOffers"> 
             <source>View offers</source> 
             <translation>Προβολή προσφορών</translation> 
@@ -675,10 +675,6 @@ You can open them at any time, even without an internet connection.</source>
         <message id="copyingLink"> 
             <source>Copying Link…</source> 
             <translation>Αντιγραφή συνδέσμου…</translation> 
-        </message> 
-        <message id="creatingShareLink"> 
-            <source>Creating share link…</source> 
-            <translation>Δημιουργία συνδέσμου κοινής χρήσης…</translation> 
         </message> 
         <message id="dataManagementDescription"> 
             <source>You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.
@@ -1815,10 +1811,6 @@ Useful if you know the important work is online on kDrive.</source>
             <source>LGPL v3 License - Git Sources</source> 
             <translation>Άδεια LGPL v3 - Πηγές Git</translation> 
         </message> 
-        <message id="linkCopiedToClipboardTitle"> 
-            <source>Link copied to clipboard</source> 
-            <translation>Ο σύνδεσμος αντιγράφηκε στο πρόχειρο</translation> 
-        </message> 
         <message id="linuxButtonCopyCommand"> 
             <source>Copy command</source> 
             <extracomment>Linux desktop app, explanation dialog of the inotify watches limit error: icon button (tooltip and accessible name) that copies the shell command raising the limit. Same style as "Copy path".</extracomment> 
@@ -1984,6 +1976,10 @@ Analyzing this data allows our team to continuously improve the application’s 
             <translation>Το Matomo είναι ένα εργαλείο ανάλυσης που φιλοξενείται και διαχειρίζεται αποκλειστικά από την Infomaniak για να κατανοεί πώς χρησιμοποιείται η εφαρμογή.
 
 Η ανάλυση αυτών των δεδομένων επιτρέπει στην ομάδα μας να βελτιώνει συνεχώς τη διεπαφή της εφαρμογής.</translation> 
+        </message> 
+        <message id="menuCopy"> 
+            <source>Copy</source> 
+            <translation>Αντιγραφή</translation> 
         </message> 
         <message id="moveCancelErrorTitle"> 
             <source>Move canceled</source> 
@@ -2331,6 +2327,46 @@ This data allows our team to quickly fix and optimize the application, resulting
         <message id="settingsTitle"> 
             <source>Settings</source> 
             <translation>Ρυθμίσεις</translation> 
+        </message> 
+        <message id="shareLinkCopied"> 
+            <source>Link copied</source> 
+            <translation>Ο σύνδεσμος αντιγράφηκε</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedDescription"> 
+            <source>Your plan includes %1 public links.</source> 
+            <translation>Το πακέτο σας περιλαμβάνει %1 δημόσιους συνδέσμους.</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedGenericDescription"> 
+            <source>Your plan has reached its maximum number of public links.</source> 
+            <translation>Το πακέτο σας έχει φτάσει τον μέγιστο αριθμό δημόσιων συνδέσμων.</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedTitle"> 
+            <source>Public link limit reached</source> 
+            <translation>Συμπληρώθηκε το όριο δημόσιων συνδέσμων</translation> 
+        </message> 
+        <message id="shareLinkPermissionDeniedDescription"> 
+            <source>Request access from the owner or administrator.</source> 
+            <translation>Ζητήστε πρόσβαση από τον κάτοχο ή τον διαχειριστή.</translation> 
+        </message> 
+        <message id="shareLinkPermissionDeniedTitle"> 
+            <source>Permission required to create a public link</source> 
+            <translation>Απαιτούνται δικαιώματα για τη δημιουργία δημόσιου συνδέσμου</translation> 
+        </message> 
+        <message id="shareLinkPublicDescription"> 
+            <source>Anyone with the link</source> 
+            <translation>Οποιοσδήποτε έχει τον σύνδεσμο</translation> 
+        </message> 
+        <message id="shareLinkPublicTitle"> 
+            <source>Public link</source> 
+            <translation>Δημόσιος σύνδεσμος</translation> 
+        </message> 
+        <message id="shareLinkRestrictedDescription"> 
+            <source>Only people with access</source> 
+            <translation>Μόνο άτομα με πρόσβαση</translation> 
+        </message> 
+        <message id="shareLinkRestrictedTitle"> 
+            <source>Restricted link</source> 
+            <translation>Περιορισμένος σύνδεσμος</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
             <source>Syncs</source> 

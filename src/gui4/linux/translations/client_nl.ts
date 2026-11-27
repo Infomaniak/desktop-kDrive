@@ -334,10 +334,6 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</translation>
             <extracomment>Icon-only button next to a file path (Linux desktop app, "Errors to fix" page): copies the path to the clipboard. Used as tooltip and accessible name.</extracomment> 
             <translation>Pad kopiëren</translation> 
         </message> 
-        <message id="buttonCopyShareLink"> 
-            <source>Copy share link</source> 
-            <translation>Deellink kopiëren</translation> 
-        </message> 
         <message id="buttonCopyTechnicalDetails"> 
             <source>Copy technical details</source> 
             <extracomment>Icon-only button next to the "Technical details" of an unexpected error (Linux desktop app, "Errors to fix" page): copies them to the clipboard, to send them to the support. Used as tooltip and accessible name.</extracomment> 
@@ -595,6 +591,10 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</translation>
             <source>Open settings</source> 
             <translation>Instellingen openen</translation> 
         </message> 
+        <message id="buttonShare"> 
+            <source>Share</source> 
+            <translation>Delen</translation> 
+        </message> 
         <message id="buttonShowOffers"> 
             <source>View offers</source> 
             <translation>Aanbiedingen bekijken</translation> 
@@ -675,10 +675,6 @@ U kunt ze op elk moment openen, zelfs zonder internetverbinding.</translation>
         <message id="copyingLink"> 
             <source>Copying Link…</source> 
             <translation>Link kopiëren…</translation> 
-        </message> 
-        <message id="creatingShareLink"> 
-            <source>Creating share link…</source> 
-            <translation>Deellink aanmaken…</translation> 
         </message> 
         <message id="dataManagementDescription"> 
             <source>You can customize the usage and operational data collected by Infomaniak to fix bugs and improve the application. Both tools used are hosted and managed exclusively by us.
@@ -1815,10 +1811,6 @@ Handig als u weet dat het belangrijke werk online staat op kDrive.</translation>
             <source>LGPL v3 License - Git Sources</source> 
             <translation>LGPL v3-licentie - Git-bronnen</translation> 
         </message> 
-        <message id="linkCopiedToClipboardTitle"> 
-            <source>Link copied to clipboard</source> 
-            <translation>Link gekopieerd naar klembord</translation> 
-        </message> 
         <message id="linuxButtonCopyCommand"> 
             <source>Copy command</source> 
             <extracomment>Linux desktop app, explanation dialog of the inotify watches limit error: icon button (tooltip and accessible name) that copies the shell command raising the limit. Same style as "Copy path".</extracomment> 
@@ -1984,6 +1976,10 @@ Analyzing this data allows our team to continuously improve the application’s 
             <translation>Matomo is een analysetool die uitsluitend door Infomaniak wordt gehost en beheerd om te begrijpen hoe de applicatie wordt gebruikt.
 
 Het analyseren van deze gegevens stelt ons team in staat de interface van de applicatie voortdurend te verbeteren.</translation> 
+        </message> 
+        <message id="menuCopy"> 
+            <source>Copy</source> 
+            <translation>Kopieer</translation> 
         </message> 
         <message id="moveCancelErrorTitle"> 
             <source>Move canceled</source> 
@@ -2331,6 +2327,46 @@ Deze gegevens stellen ons team in staat de applicatie snel te corrigeren en te o
         <message id="settingsTitle"> 
             <source>Settings</source> 
             <translation>Instellingen</translation> 
+        </message> 
+        <message id="shareLinkCopied"> 
+            <source>Link copied</source> 
+            <translation>Link gekopieerd</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedDescription"> 
+            <source>Your plan includes %1 public links.</source> 
+            <translation>Uw abonnement omvat %1 openbare links.</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedGenericDescription"> 
+            <source>Your plan has reached its maximum number of public links.</source> 
+            <translation>Uw abonnement heeft het maximale aantal openbare links bereikt.</translation> 
+        </message> 
+        <message id="shareLinkLimitReachedTitle"> 
+            <source>Public link limit reached</source> 
+            <translation>Limiet voor openbare links bereikt</translation> 
+        </message> 
+        <message id="shareLinkPermissionDeniedDescription"> 
+            <source>Request access from the owner or administrator.</source> 
+            <translation>Vraag toegang aan bij de eigenaar of beheerder.</translation> 
+        </message> 
+        <message id="shareLinkPermissionDeniedTitle"> 
+            <source>Permission required to create a public link</source> 
+            <translation>Rechten vereist om een openbare link te maken</translation> 
+        </message> 
+        <message id="shareLinkPublicDescription"> 
+            <source>Anyone with the link</source> 
+            <translation>Iedereen met de link</translation> 
+        </message> 
+        <message id="shareLinkPublicTitle"> 
+            <source>Public link</source> 
+            <translation>Openbare link</translation> 
+        </message> 
+        <message id="shareLinkRestrictedDescription"> 
+            <source>Only people with access</source> 
+            <translation>Alleen personen met toegang</translation> 
+        </message> 
+        <message id="shareLinkRestrictedTitle"> 
+            <source>Restricted link</source> 
+            <translation>Beperkte link</translation> 
         </message> 
         <message id="sidebarItemAccounts"> 
             <source>Syncs</source> 
