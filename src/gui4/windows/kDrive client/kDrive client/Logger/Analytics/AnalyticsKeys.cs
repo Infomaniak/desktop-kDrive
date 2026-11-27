@@ -28,7 +28,7 @@
         UnexpectedErrorTeachingTip,
         AsleepErrorPage,
         DriveAccessDeniedPage,
-        LogginErrorPage,
+        LoginErrorPage,
         MaintenanceErrorPage,
         NotRenewErrorPage,
         UpdateDialog,

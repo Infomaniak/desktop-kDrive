@@ -52,7 +52,7 @@ struct WebFolder: Identifiable, Equatable {
         name: KDriveLocalizable.buttonKDriveOnline,
         icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
         path: "files",
-        matomo: "openkDriveWeb"
+        matomo: "openKDriveWeb"
     )
     static let trash = WebFolder(
         id: 3,
