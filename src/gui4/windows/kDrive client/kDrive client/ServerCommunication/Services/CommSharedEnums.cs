@@ -322,8 +322,9 @@ namespace Infomaniak.kDrive.Types
         InvalidLinkTarget,
         PathContainsSymlink, // The local operation is forbidden because an intermediate component of the path is a symbolic link
         FileNameTooLong,
-        HardlinkNotSupported // Some operations are not supported on hard links in Windows LiteSync when two hard links point to
-                             // different LiteSync roots.
+        HardlinkNotSupported, // Some operations are not supported on hard links in Windows LiteSync when two hard links point to
+                              // different LiteSync roots.
+        ShareLinkLimitReached
     };
 
 

@@ -215,7 +215,7 @@ void AbstractTokenNetworkJob::defaultBackErrorHandling(const NetworkErrorCode er
             {NetworkErrorCode::DestinationAlreadyExists, ExitHandler{ExitCause::FileExists, "Operation refused"}},
             {NetworkErrorCode::ConflictError, ExitHandler{ExitCause::FileExists, "Operation refused"}},
             {NetworkErrorCode::AccessDenied, ExitHandler{ExitCause::HttpErrForbidden, "Access denied"}},
-            {NetworkErrorCode::FileTooBigError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
+            {NetworkErrorCode::LimitExceededError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
             {NetworkErrorCode::QuotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}},
             {NetworkErrorCode::FileShareLinkAlreadyExists,
              ExitHandler{ExitCause::ShareLinkAlreadyExists, "Share link already exists"}},
