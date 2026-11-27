@@ -61,8 +61,12 @@ ExitInfo SyncGetPublicLinkUrlJob::serializeOutputParms() {
 
 ExitInfo SyncGetPublicLinkUrlJob::process() {
     if (const auto exitInfo = ServerRequests::getPublicLinkUrl(_driveDbId, _nodeId, _linkUrl); !exitInfo) {
-        LOG_WARN(_logger, "Error in ServerRequests::getPublicLinkUrl");
-        addError(Error(ERR_ID, exitInfo));
+        LOG_WARN(_logger, "Error in ServerRequests::getPublicLinkUrl: " << exitInfo);
+
+        // The GUI explains these refusals to the user itself.
+        const bool refusedByServer = exitInfo == ExitInfo{ExitCode::BackError, ExitCause::HttpErrForbidden} ||
+                                     exitInfo == ExitInfo{ExitCode::BackError, ExitCause::ShareLinkLimitReached};
+        if (!refusedByServer) addError(Error(ERR_ID, exitInfo));
 
         return exitInfo;
     }
