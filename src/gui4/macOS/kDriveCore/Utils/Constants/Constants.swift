@@ -46,4 +46,27 @@ public enum URLConstants {
     public static let faq = faqBase.appendingPathComponent("2923")
 
     public static let permissionsFaq = faqBase.appendingPathComponent("2935")
+
+    // MARK: - Shop
+
+    private static let shop = URL(string: "https://shop.infomaniak.com")!
+
+    private static let infomaniakSiteSupportedLanguageCodes: Set = ["en", "fr", "de", "es", "it", "pt", "nl"]
+
+    public static func standAloneDriveToKSuiteMigration(driveId: Int, languageCode: String) -> URL {
+        let siteLanguageCode = infomaniakSiteSupportedLanguageCodes.contains(languageCode) ? languageCode : "en"
+        var components = URLComponents(url: shop.appendingPathComponent("order/ksuite"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "migration", value: "drive"),
+            URLQueryItem(name: "drive_id", value: String(driveId)),
+            URLQueryItem(name: "lang", value: siteLanguageCode)
+        ]
+        return components.url!
+    }
+
+    public static func kSuiteUpgrade(kSuiteId: UInt64) -> URL {
+        return shop.appendingPathComponent("order2/ksuite/\(kSuiteId)")
+    }
+
+    public static let myKSuiteUpgrade = shop.appendingPathComponent("order/myksuite")
 }
