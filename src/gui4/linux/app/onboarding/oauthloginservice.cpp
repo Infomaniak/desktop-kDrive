@@ -21,15 +21,20 @@
 #include "app/services/sentryservice.h"
 #include "config.h"
 #include "libcommon/utility/urlhelper.h"
-#include "libcommon/utility/utility.h"
 
 #include <QByteArray>
+#include <QByteArrayView>
 #include <QCryptographicHash>
 #include <QDesktopServices>
 #include <QLoggingCategory>
 #include <QUrlQuery>
 
+#include <openssl/err.h>
+#include <openssl/rand.h>
+
+#include <array>
 #include <cstdint>
+#include <vector>
 
 namespace {
 constexpr char responseTypeKey[] = "response_type";
@@ -43,25 +48,48 @@ constexpr char skipAutoRedirectKey[] = "skipAutoRedirect";
 constexpr char hashMode[] = "S256";
 constexpr char responseType[] = "code";
 constexpr char authorizePath[] = "/authorize";
-constexpr uint8_t stateStringLength = 8;
-constexpr uint8_t codeVerifierRandomStringLength = 32;
+// 128 bits for the CSRF state, and 256 bits for the PKCE code_verifier, which gives the 43 characters recommended by RFC 7636.
+constexpr int32_t stateRandomByteCount = 16;
+constexpr int32_t codeVerifierRandomByteCount = 32;
 
 constexpr char browserOpenFailed[] = "browser_open_failed";
 constexpr char authorizationCallbackInvalid[] = "authorization_callback_invalid";
+constexpr char secureRandomGenerationFailed[] = "secure_random_generation_failed";
 } // namespace
 
 namespace KDC {
 
 namespace {
 Q_LOGGING_CATEGORY(lcOAuthLoginService, "gui.v4.oauthlogin", QtInfoMsg)
+
+/**
+ * Draws byteCount bytes from the OpenSSL CSPRNG and encodes them in base64url without padding.
+ * Returns false, after logging and reporting the OpenSSL error, if the generator fails.
+ */
+bool generateSecureRandomBase64Url(const int32_t byteCount, QString &value) {
+    std::vector<unsigned char> bytes(static_cast<size_t>(byteCount));
+    if (RAND_bytes(bytes.data(), byteCount) != 1) {
+        std::array<char, 256> reason{};
+        ERR_error_string_n(ERR_get_error(), reason.data(), reason.size());
+        qCWarning(lcOAuthLoginService) << "Failed to generate OAuth secure random value | reason:" << reason.data();
+        SentryService::reportError(QStringLiteral("Failed to generate OAuth secure random value"),
+                                   QStringLiteral("RAND_bytes failed: %1").arg(QString::fromLatin1(reason.data())));
+        return false;
+    }
+
+    value = QString::fromLatin1(
+            QByteArrayView(bytes).toByteArray().toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
+    return true;
+}
 } // namespace
 
 OAuthLoginService::OAuthLoginService(QObject *const parent) :
     QObject(parent) {}
 
 void OAuthLoginService::startAuthorization() {
-    if (!_authorizationActive) {
-        beginAuthorization();
+    if (!_authorizationActive && !beginAuthorization()) {
+        emit authorizationFailed(QString::fromLatin1(secureRandomGenerationFailed), QString());
+        return;
     }
 
     if (!QDesktopServices::openUrl(_authorizationUrl)) {
@@ -96,11 +124,19 @@ void OAuthLoginService::handleAuthorizationCode(const QString &code, const QStri
     emit authorizationCodeReady(code, codeVerifier);
 }
 
-void OAuthLoginService::beginAuthorization() {
-    _state = QString::fromStdString(CommonUtility::generateRandomStringAlphaNum(stateStringLength));
-    _codeVerifier = generateCodeVerifier();
+bool OAuthLoginService::beginAuthorization() {
+    QString state;
+    QString codeVerifier;
+    if (!generateSecureRandomBase64Url(stateRandomByteCount, state) ||
+        !generateSecureRandomBase64Url(codeVerifierRandomByteCount, codeVerifier)) {
+        return false;
+    }
+
+    _state = state;
+    _codeVerifier = codeVerifier;
     _authorizationUrl = generateAuthorizeUrl();
     _authorizationActive = true;
+    return true;
 }
 
 void OAuthLoginService::resetAuthorization() {
@@ -127,11 +163,6 @@ QUrl OAuthLoginService::generateAuthorizeUrl() const {
 
     url.setQuery(query);
     return url;
-}
-
-QString OAuthLoginService::generateCodeVerifier() const {
-    const std::string str = CommonUtility::generateRandomStringPKCE(codeVerifierRandomStringLength);
-    return QByteArray::fromStdString(str).toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
 }
 
 QString OAuthLoginService::generateCodeChallenge(const QString &codeVerifier) const {

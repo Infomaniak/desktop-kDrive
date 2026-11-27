@@ -42,10 +42,9 @@ class OAuthLoginService final : public QObject {
         void authorizationFailed(const QString &error, const QString &errorDescription);
 
     private:
-        void beginAuthorization();
+        [[nodiscard]] bool beginAuthorization();
         void resetAuthorization();
         [[nodiscard]] QUrl generateAuthorizeUrl() const;
-        [[nodiscard]] QString generateCodeVerifier() const;
         [[nodiscard]] QString generateCodeChallenge(const QString &codeVerifier) const;
 
         QUrl _authorizationUrl;
