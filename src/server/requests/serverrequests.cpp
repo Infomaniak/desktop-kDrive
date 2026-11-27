@@ -1886,6 +1886,12 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, const AccountId previousAcc
         updated = true;
     }
 
+    if (drive.sharedLinkQuota() != job->sharedLinkQuota()) {
+        // Not stored in DB either: notify the GUI.
+        drive.setSharedLinkQuota(job->sharedLinkQuota());
+        updated = true;
+    }
+
     return ExitCode::Ok;
 }
 
