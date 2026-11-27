@@ -1558,6 +1558,9 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             break;
         }
         case OperationType::Move: {
+            if (const auto exitInfo = handleForbiddenMove(syncOp, relativeLocalPath, removeFromDb); !exitInfo) {
+                return exitInfo;
+            }
             cancelType = CancelType::Move;
             break;
         }
@@ -1630,7 +1633,6 @@ ExitInfo ExecutorWorker::handleForbiddenMove(SyncOpPtr syncOp, const SyncPath &r
     removeFromDb = false;
 
     ExitInfo exitInfo = moveJob.runSynchronously();
-
     if (exitInfo.code() == ExitCode::Ok) {
         _syncPal->setRestart(true);
         if (const auto exitInfo = removeDependentOps(syncOp); !exitInfo) {
@@ -1649,9 +1651,11 @@ ExitInfo ExecutorWorker::handleForbiddenMove(SyncOpPtr syncOp, const SyncPath &r
 
     removeFromDb = true;
     FileRescuer fileRescuer(_syncPal);
-    if (const auto exitInfo = fileRescuer.rescueItem(relativeLocalPath, syncOp->affectedNode()->type()); !exitInfo) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to rescue item: " << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
-        return exitInfo;
+    if (const auto fileRescuerExitInfo = fileRescuer.rescueItem(relativeLocalPath, syncOp->affectedNode()->type());
+        !fileRescuerExitInfo) {
+        LOGW_SYNCPAL_WARN(
+                _logger, L"Failed to rescue item: " << Utility::formatSyncPath(relativeLocalPath) << L" " << fileRescuerExitInfo);
+        return fileRescuerExitInfo;
     }
 
     return ExitCode::Ok;
