@@ -30,10 +30,30 @@ set_target_properties("${APPLICATION_EXECUTABLE}_vfs_mac"
 # Link
 find_library(SYSTEM_EXTENSION_LIBRARY NAMES SystemExtensions)
 target_link_libraries("${APPLICATION_EXECUTABLE}_vfs_mac"
-        ${libcommonserver_NAME}
         ${SYSTEM_EXTENSION_LIBRARY}
         Qt6::Core
 )
+# types.h (libcommon) includes <QApplication> (a moc-ordering workaround for QTBUG-73263): derive the QtWidgets
+# module include directory from the Qt include root provided by Qt6::Core, without requiring the QtWidgets
+# CMake target (the plugin links no QtWidgets symbol).
+get_target_property(_vfs_mac_qt_dirs Qt6::Core INTERFACE_INCLUDE_DIRECTORIES)
+foreach(_vfs_mac_qt_dir IN LISTS _vfs_mac_qt_dirs)
+    if(_vfs_mac_qt_dir MATCHES "/include$")
+        target_include_directories("${APPLICATION_EXECUTABLE}_vfs_mac" PRIVATE "${_vfs_mac_qt_dir}/QtWidgets")
+    endif()
+endforeach()
+unset(_vfs_mac_qt_dirs)
+unset(_vfs_mac_qt_dir)
+# The plugin must not embed the static kDrivecommonserver library: the server binary links it too, and two copies
+# of the same classes (Vfs, VfsWorker, ...) in one process break the cross-module type identity checks that Qt
+# performs on the VFS worker connections (fatal in debug builds). The plugin instead binds the libcommonserver
+# symbols from the host executable at load time (the server is linked with -Wl,-export_dynamic).
+target_include_directories("${APPLICATION_EXECUTABLE}_vfs_mac" PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        $<TARGET_PROPERTY:${libcommonserver_NAME},INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:${libcommon_NAME},INTERFACE_INCLUDE_DIRECTORIES>
+)
+target_link_options("${APPLICATION_EXECUTABLE}_vfs_mac" PRIVATE "-Wl,-undefined,dynamic_lookup")
 
 # Install
 

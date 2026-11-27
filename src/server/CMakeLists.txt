@@ -276,11 +276,20 @@ else()
     add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
 
     get_target_property(_qmake Qt6::qmake LOCATION)
+    get_filename_component(_qt_bin_dir "${_qmake}" DIRECTORY)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
         OUTPUT_VARIABLE QT_TRANSLATIONS_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
+endif()
+
+if(APPLE)
+    # Export the server symbols so that the VFS plugin binds the libcommonserver symbols (Vfs, VfsWorker,
+    # IoHelper, ...) from the host at load time instead of embedding its own copy of the static library:
+    # two copies of the same classes in one process break Qt's cross-module type identity checks on the
+    # VFS worker connections (fatal in debug builds).
+    target_link_options(${APPLICATION_EXECUTABLE} PRIVATE -Wl,-export_dynamic)
 endif()
 
 if(WIN32 AND TARGET "${APPLICATION_EXECUTABLE}_vfs_win")
@@ -440,7 +449,7 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
 
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
-            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+            execute_process(COMMAND ${_qt_bin_dir}/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
             " COMPONENT RUNTIME)
 
         cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)
