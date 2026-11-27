@@ -11,6 +11,7 @@ if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
 find_package(keychain REQUIRED) # TLS certificate read by communicationlayer/tlscerthelper.cpp
+find_package(OpenSSL 3.6.2 REQUIRED COMPONENTS Crypto) # OAuth secure random values in app/onboarding/oauthloginservice.cpp
 
 # Matomo tracking SDK (git submodule), built as a static library (BUILD_SHARED_LIBS is FALSE) and only when linked.
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/3rdparty/matomo-sdk-qt ${CMAKE_BINARY_DIR}/3rdparty/matomo-sdk-qt EXCLUDE_FROM_ALL)
@@ -605,6 +606,7 @@ target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         ${libcommongui_NAME}
         keychain::keychain
         MatomoQt::Core
+        OpenSSL::Crypto
 )
 
 if (QT_FEATURE_xcb)
