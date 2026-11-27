@@ -140,6 +140,9 @@
 - To see sync errors in the UI, run a Debug build with `KDRIVE_SIMULATE_ERRORS=<scenario>` (see
   `app/devtools/errorsimulator.*`). Give every new `SyncErrorKind` a simulator fixture.
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
+- Keep an `Image` next to text on whole logical pixels: texture filtering blurs an image drawn between two pixels. In a
+  `Row`, give the preceding `Text` a `Math.ceil` width and round the image's vertical offset. Qt already rasterizes SVG
+  sources at the device pixel ratio: do not force `sourceSize` to sharpen them, it distorts them at fractional scales.
 - Give an in-app modal its hosting window's `effectiveShadowMargin` and `surfaceRadius` as `scrimInset`/`scrimRadius`.
   The overlay spans the complete native window, so an un-inset scrim also dims the transparent custom-shadow margin.
 - Do not place a `Secondary` `IKModalButton` on a card surface: its outline is too close to that surface in both

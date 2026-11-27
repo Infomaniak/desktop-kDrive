@@ -73,9 +73,10 @@ Rectangle {
             Text {
                 id: titleText
 
-                // The accessory keeps its width: only the title elides.
-                width: Math.max(0, Math.min(implicitWidth, headerLeading.availableWidth
-                                            - (titleAccessoryLoader.item ? titleAccessoryLoader.width + headerLeading.spacing : 0)))
+                // The accessory keeps its width: only the title elides. A whole width keeps the accessory on the pixel
+                // grid: an image drawn between two pixels is blurred by the texture filtering.
+                width: Math.max(0, Math.min(Math.ceil(implicitWidth), Math.floor(headerLeading.availableWidth
+                                            - (titleAccessoryLoader.item ? titleAccessoryLoader.width + headerLeading.spacing : 0))))
                 Accessible.name: root.titleAccessibleName
                 color: IKColors.textPrimary
                 elide: Text.ElideRight
@@ -89,7 +90,7 @@ Rectangle {
             Loader {
                 id: titleAccessoryLoader
 
-                anchors.verticalCenter: parent.verticalCenter
+                y: Math.round((headerLeading.height - height) / 2)
                 active: !!root.titleAccessory
                 visible: item !== null
                 sourceComponent: root.titleAccessory
