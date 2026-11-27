@@ -199,18 +199,21 @@ void FileOpeningHandler::notifyUser(const QString &message) const {
 }
 
 void FileOpeningHandler::handleFileOpeningSuccess() {
-    emit finished(true);
+    _appServer->unregisterFileOpeningJob(_jobId);
+    deleteLater();
 }
 
 void FileOpeningHandler::handleFileOpeningFailure(const QString &userMessage) {
     LOG_WARN(Log::instance()->getLogger(), "Failed to open item from deeplink URL - url=" << _url);
     notifyUser(userMessage);
-    emit finished(false);
+    _appServer->unregisterFileOpeningJob(_jobId);
+    deleteLater();
 }
 
 void FileOpeningHandler::handleFileOpeningCanceled() {
     LOG_INFO(Log::instance()->getLogger(), "File opening canceled on user request - url=" << _url);
-    emit finished(false);
+    _appServer->unregisterFileOpeningJob(_jobId);
+    deleteLater();
 }
 
 ExitInfo FileOpeningHandler::cancel() {

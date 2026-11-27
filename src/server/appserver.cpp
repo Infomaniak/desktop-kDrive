@@ -2859,11 +2859,9 @@ void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
 void AppServer::onOpenFileDeeplinkReceived(const QString &urlStr) {
     LOG_INFO(_logger, "File opening deeplink received: '" << urlStr.toStdString() << "'");
 
+    // The handler unregisters itself from the file opening jobs and schedules its own destruction once the request
+    // has been processed.
     auto *handler = new FileOpeningHandler(this, urlStr.toStdString(), this);
-    (void) connect(handler, &FileOpeningHandler::finished, this, [this, handler] {
-        unregisterFileOpeningJob(handler->jobId());
-        handler->deleteLater();
-    });
     handler->queueOpenFileJob();
 }
 

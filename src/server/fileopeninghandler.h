@@ -41,9 +41,8 @@ class AppServer;
 
   When the job completes, the handler opens the item on success, and notifies the user otherwise. While the job runs,
   the handler forwards its state to the client interface so that a pop-up window can inform the user of the progress
-  and offer to cancel the request. The `finished`
-  signal is emitted once the request has been processed; the caller is expected to destroy the handler afterwards
-  (e.g. by connecting the signal to QObject::deleteLater).
+  and offer to cancel the request. Once the request has been processed, the handler unregisters itself from the
+  application server and schedules its own destruction.
 */
 class FileOpeningHandler : public QObject {
         Q_OBJECT
@@ -74,12 +73,6 @@ class FileOpeningHandler : public QObject {
         [[nodiscard]] static Count maxConcurrentFileOpeningJobs(Count jobPoolCapacity, Count reservedWorkerCount);
         //! Same as above, computed from the current job-pool state of the sync job manager.
         [[nodiscard]] static Count maxConcurrentFileOpeningJobs();
-
-    signals:
-        //! Emitted once the file opening request has been processed, with true on success and false on failure. The
-        //! caller is expected to destroy the handler afterwards (e.g. by connecting this signal to
-        //! QObject::deleteLater).
-        void finished(bool success);
 
     private:
         //! Invoked on the application thread when the OpenFileJob has completed: opens the item on success, and
