@@ -62,7 +62,7 @@ struct SynchroFolderSelectionSection: View {
     }
 
     var body: some View {
-        Section {
+        IKSection {
             VStack(alignment: .leading, spacing: AppPadding.padding16) {
                 VStack(alignment: .leading, spacing: AppPadding.padding8) {
                     Text(KDriveLocalizable.labelSyncLocation)

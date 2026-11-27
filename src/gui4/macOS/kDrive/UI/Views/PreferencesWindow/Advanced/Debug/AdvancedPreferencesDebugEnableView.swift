@@ -29,7 +29,7 @@ struct AdvancedPreferencesDebugEnableView: View {
     @ObservedObject var repository: PreferencesRepository
 
     var body: some View {
-        Section {
+        IKSection {
             ToggleView(
                 title: KDriveLocalizable.enableDebugLogsSetting,
                 description: KDriveLocalizable.enableDebugLogDescription,

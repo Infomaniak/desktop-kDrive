@@ -87,14 +87,13 @@ struct DataManagementPreferencesView: View {
     static let githubURL = URL(string: "https://github.com/Infomaniak/desktop-kDrive")!
 
     var body: some View {
-        Form {
-            Section {} header: {
+        IKForm {
+            IKSection {} header: {
                 DataManagementPreferencesHeaderView()
             }
 
             DataManagementPreferencesButtonsView()
         }
-        .groupedFormatStyle()
     }
 }
 

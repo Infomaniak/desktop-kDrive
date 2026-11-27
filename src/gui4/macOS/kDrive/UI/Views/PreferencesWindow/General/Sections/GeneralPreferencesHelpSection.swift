@@ -29,7 +29,7 @@ struct GeneralPreferencesHelpSection: View {
     static let feedbackURL = URL(string: KDriveLocalizable.feedbackURL)!
 
     var body: some View {
-        Section {
+        IKSection {
             IKLabeledContent(KDriveLocalizable.needHelpSetting) {
                 Button(KDriveLocalizable.buttonHelpdesk) {
                     matomo.track(eventWithCategory: .generalSettingsPage, name: "openSupportWeb")

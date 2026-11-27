@@ -87,6 +87,22 @@ public struct ColorToken {
         }
     }
 
+    public enum UpsellGradient {
+        public static let lightBlue = ColorToken(
+            light: KDriveColors.UpsellGradient.lightBlue,
+            dark: KDriveColors.UpsellGradient.lightBlue
+        )
+        public static let darkBlue = ColorToken(
+            light: KDriveColors.UpsellGradient.darkBlue,
+            dark: KDriveColors.UpsellGradient.darkBlue
+        )
+        public static let purple = ColorToken(light: KDriveColors.UpsellGradient.purple, dark: KDriveColors.UpsellGradient.purple)
+        public static let pink = ColorToken(light: KDriveColors.UpsellGradient.pink, dark: KDriveColors.UpsellGradient.pink)
+        public static let orange = ColorToken(light: KDriveColors.UpsellGradient.orange, dark: KDriveColors.UpsellGradient.orange)
+    }
+
+    public static let upsellBackground = ColorToken(light: KDriveColors.upsellBackground, dark: KDriveColors.upsellBackground)
+
     // MARK: Contextual tokens (T3)
 
     public enum Drive {

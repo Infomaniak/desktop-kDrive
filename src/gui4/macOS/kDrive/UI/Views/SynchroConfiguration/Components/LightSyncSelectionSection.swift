@@ -32,7 +32,7 @@ struct LightSyncSelectionSection: View {
     let configuration: SynchroConfiguration
 
     var body: some View {
-        Section {
+        IKSection {
             VStack(alignment: .leading, spacing: AppPadding.padding8) {
                 Text(KDriveLocalizable.storedOnline)
                     .font(.Tokens.headline)

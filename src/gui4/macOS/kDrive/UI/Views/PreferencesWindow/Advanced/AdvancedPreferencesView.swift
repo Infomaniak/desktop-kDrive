@@ -60,14 +60,15 @@ enum AdvancedPreferencesItem: String, Identifiable, CaseIterable {
 
 struct AdvancedPreferencesView: View {
     var body: some View {
-        Form {
-            ForEach(AdvancedPreferencesItem.allCases) { item in
-                FormNavigationCell(title: item.label) {
-                    navigate(to: item)
+        IKForm {
+            IKSection {
+                ForEach(AdvancedPreferencesItem.allCases) { item in
+                    FormNavigationCell(title: item.label) {
+                        navigate(to: item)
+                    }
                 }
             }
         }
-        .groupedFormatStyle()
     }
 
     private func navigate(to item: AdvancedPreferencesItem) {

@@ -28,6 +28,8 @@ struct DistributionChannelView: View {
 
     @State private var betaOption = BetaOption.doNotJoin
 
+    private static let windowWidth: CGFloat = 460
+
     let containsStaffUser: Bool
 
     private var availableOptions: [BetaOption] {
@@ -44,6 +46,7 @@ struct DistributionChannelView: View {
             Text(KDriveLocalizable.betaProgramDescription)
                 .font(.Tokens.body)
                 .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                .fixedSize(horizontal: false, vertical: true)
 
             OptionPicker(KDriveLocalizable.accessibilityBetaProgramPicker, options: availableOptions, selection: $betaOption)
                 .labelsHidden()
@@ -52,6 +55,7 @@ struct DistributionChannelView: View {
             betaOption = BetaOption(repository.parametersInfo.distributionChannel)
         }
         .padding()
+        .frame(width: Self.windowWidth)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(KDriveLocalizable.buttonValidate) {
