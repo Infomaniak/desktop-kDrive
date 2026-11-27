@@ -26,6 +26,9 @@ class PostFileLinkJob : public AbstractTokenNetworkJob {
     public:
         PostFileLinkJob(DriveDbId driveDbId, RemoteNodeId nodeId);
 
+    protected:
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
+
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &uri) override;

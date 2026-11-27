@@ -77,6 +77,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
         CPPUNIT_TEST(testGetAllFilesInDirectory);
         CPPUNIT_TEST(testPostFileModificationDate);
         CPPUNIT_TEST(testLongPollJobWithoutToken);
+        CPPUNIT_TEST(testPostFileLinkErrorCauses);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -127,6 +128,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
         void testGetAllFilesInDirectory();
         void testPostFileModificationDate();
         void testLongPollJobWithoutToken();
+        void testPostFileLinkErrorCauses();
 
     private:
         bool createTestFiles();

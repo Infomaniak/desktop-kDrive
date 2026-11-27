@@ -177,6 +177,7 @@ enum class ExitCause {
     FileNameTooLong,
     HardlinkNotSupported, // Some operations are not supported on hard links in Windows LiteSync when two hard links point to
                           // different LiteSync roots.
+    ShareLinkLimitReached,
     EnumEnd
 };
 

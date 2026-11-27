@@ -144,6 +144,8 @@ extension KDC.ExitCause: CustomStringConvertible {
             return "FileNameTooLong"
         case .HardlinkNotSupported:
             return "HardlinkNotSupported"
+        case .ShareLinkLimitReached:
+            return "ShareLinkLimitReached"
         case .EnumEnd:
             return "EnumEnd"
         @unknown default:
