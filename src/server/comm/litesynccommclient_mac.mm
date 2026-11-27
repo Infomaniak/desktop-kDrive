@@ -1144,6 +1144,13 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
     (void) tmpFilePath;
     canceled = false;
 
+    // Refuse to update an item that is not located under the sync root or whose path traverses a symbolic link: the file
+    // content could otherwise be written to an item located outside of the sync root.
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(filePath, localSyncPath); ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Fetch status update rejected: " << Utility::formatIoError(filePath, ioError));
+        return false;
+    }
+
     @autoreleasepool {
         // Get file attributes
         assert(!filePath.empty());
@@ -1187,7 +1194,14 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
                 assert(!tmpFilePath.empty());
                 NSString *_Nonnull nsTmpPath = (NSString *_Nonnull) [NSString stringWithUTF8String:tmpFilePath.c_str()];
                 NSFileHandle *tmpFileHandle = [NSFileHandle fileHandleForReadingAtPath:nsTmpPath];
-                NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingAtPath:nsPath];
+
+                // O_NOFOLLOW: do not write through a link located at `filePath`.
+                int fd = open(filePath.c_str(), O_WRONLY | O_NOFOLLOW);
+                if (fd == -1) {
+                    LOGW_WARN(_logger, L"Call to open failed: " << Utility::formatErrno(filePath, errno));
+                    return false;
+                }
+                NSFileHandle *fileHandle = [[NSFileHandle alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
                 NSData *buffer = nil;
 
                 while (true) {
@@ -1212,7 +1226,6 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
                 }
 
                 [tmpFileHandle closeFile];
-                [fileHandle closeFile];
             } @catch (NSException *e) {
                 LOGW_WARN(_logger, L"Could not copy tmp file from " << Utility::formatSyncPath(tmpFilePath) << L" to "
                                                                     << Utility::formatSyncPath(filePath) << L" err="
@@ -1346,9 +1359,10 @@ bool LiteSyncCommClient::vfsUpdateMetadata(const SyncPath &absoluteFilePath, con
     }
 
     // Create sparse file with rights rw-r--r--
-    int fd = open(absoluteFilePath.c_str(), FWRITE);
+    // O_NOFOLLOW: do not write through a link located at `absoluteFilePath`.
+    int fd = open(absoluteFilePath.c_str(), FWRITE | O_NOFOLLOW);
     if (fd == -1) {
-        fd = open(absoluteFilePath.c_str(), FWRITE);
+        fd = open(absoluteFilePath.c_str(), FWRITE | O_NOFOLLOW);
         if (fd == -1) {
             LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatErrno(absoluteFilePath, errno));
             return false;
