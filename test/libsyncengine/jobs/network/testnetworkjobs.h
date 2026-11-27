@@ -51,6 +51,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
         CPPUNIT_TEST(testFullFileListWithCursorMissingEof);
         CPPUNIT_TEST(testGetInfoUser);
         CPPUNIT_TEST(testGetInfoDrive);
+        CPPUNIT_TEST(testGetInfoDriveSharedLinkQuota);
         CPPUNIT_TEST(testDuplicateRenameMove);
         CPPUNIT_TEST(testThumbnail);
         CPPUNIT_TEST(testRename);
@@ -102,6 +103,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
         void testFullFileListWithCursorMissingEof();
         void testGetInfoUser();
         void testGetInfoDrive();
+        void testGetInfoDriveSharedLinkQuota();
         void testDuplicateRenameMove();
         void testThumbnail();
         void testRename();

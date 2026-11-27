@@ -28,6 +28,9 @@ static const std::string usedSizeKey = "used_size";
 static const std::string packKey = "pack";
 static const std::string packDisplayNameKey = "display_name";
 static const std::string packIsFreeKey = "is_free";
+static const std::string quotaKey = "quota";
+static const std::string sharedLinkKey = "shared_link";
+static const std::string maxKey = "max";
 
 GetInfoDriveJob::GetInfoDriveJob(const UserDbId userDbId, const DriveId driveId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId) {
@@ -112,11 +115,18 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
         }
     }
 
+    // Not mandatory: 0 means that the quota is unknown.
+    if (Poco::JSON::Object::Ptr quotaObj = dataObj->getObject(quotaKey); quotaObj) {
+        if (Poco::JSON::Object::Ptr sharedLinkObj = quotaObj->getObject(sharedLinkKey); sharedLinkObj) {
+            (void) JsonParserUtility::extractValue(sharedLinkObj, maxKey, _sharedLinkQuota, false);
+        }
+    }
+
     return ExitCode::Ok;
 }
 
 void GetInfoDriveJob::setQueryParameters(Poco::URI &uri) {
-    uri.addQueryParameter("with", "preferences,pack,k_suite");
+    uri.addQueryParameter("with", "preferences,pack,k_suite,quota");
 }
 
 } // namespace KDC
