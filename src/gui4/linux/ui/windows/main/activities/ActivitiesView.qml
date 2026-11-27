@@ -118,6 +118,17 @@ Item {
         }
     }
 
+    ShareLinkDialog {
+        controller: root.controller.shareLink
+        scrimInset: root.modalScrimInset
+        scrimRadius: root.modalScrimRadius
+        onFallbackFocusRequested: {
+            if (stack.currentItem) {
+                stack.currentItem.focusDefault();
+            }
+        }
+    }
+
     // One dialog for the errors page and the conflicts list, which live in the stack at the same time: two dialogs on the
     // same controller would open together.
     ConflictVersionDialog {

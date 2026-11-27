@@ -36,7 +36,7 @@ Popup {
     enum ActionKind {
         OpenLocal,
         OpenOnline,
-        CopyShareLink,
+        Share,
         FixErrors
     }
 
@@ -72,8 +72,8 @@ Popup {
         }
         if (hasAction(ActivityListModel.ShareAction)) {
             result.push({
-                action: ActivityOptionsMenu.CopyShareLink,
-                label: qsTrId("buttonCopyShareLink"),
+                action: ActivityOptionsMenu.Share,
+                label: qsTrId("buttonShare"),
                 icon: "qrc:/assets/main/activities/share.svg",
                 iconWidth: 16,
                 iconHeight: 15,
@@ -106,9 +106,9 @@ Popup {
             UserActionLog.action(root.actionIdPrefix + ".openOnline", { rowId: root.rowId });
             root.controller.openOnline(root.rowId);
             break;
-        case ActivityOptionsMenu.CopyShareLink:
-            UserActionLog.action(root.actionIdPrefix + ".copyShareLink", { rowId: root.rowId });
-            root.controller.copyShareLink(root.rowId);
+        case ActivityOptionsMenu.Share:
+            UserActionLog.action(root.actionIdPrefix + ".share", { rowId: root.rowId });
+            root.controller.openShareDialog(root.rowId);
             break;
         case ActivityOptionsMenu.FixErrors:
             UserActionLog.action(root.actionIdPrefix + ".fixErrors", { rowId: root.rowId });

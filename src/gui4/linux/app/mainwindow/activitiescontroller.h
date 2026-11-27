@@ -70,8 +70,6 @@ class ActivitiesController final : public QObject {
         Q_INVOKABLE void openOnline(const QString &rowId);
         /** Opens the "Share" dialog on the node of the row. */
         Q_INVOKABLE void openShareDialog(const QString &rowId);
-        // TODO: Remove once the activity menu opens the "Share" dialog.
-        Q_INVOKABLE void copyShareLink(const QString &rowId);
         Q_INVOKABLE void requestFixErrors(const QString &rowId);
         Q_INVOKABLE void requestFixAllErrors();
 
@@ -81,9 +79,6 @@ class ActivitiesController final : public QObject {
         void loadingChanged();
         void hasActivitiesChanged();
         void errorCountChanged();
-        void shareLinkCopyStarted(const QString &rowId);
-        void shareLinkCopied(const QString &rowId);
-        void shareLinkCopyFailed(const QString &rowId);
         void actionFailed(const QString &rowId);
         // The errors page should bring one of these errors into view: emitted right before it opens.
         void fixErrorsRequested(const std::vector<ErrorDbId> &errorDbIds);

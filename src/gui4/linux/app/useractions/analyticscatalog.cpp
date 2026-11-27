@@ -85,8 +85,11 @@ void addMainWindowEvents(QHash<QString, Event> &events) {
                {u"row.openFolder"_s, u"openItemFolder"_s},
                {u"options.openLocal"_s, u"openItem"_s},
                {u"options.openOnline"_s, u"openItemWeb"_s},
-               {u"options.copyShareLink"_s, u"copyItemWebLink"_s},
-               {u"options.fixErrors"_s, u"openItemError"_s}});
+               {u"options.share"_s, u"openShareDialog"_s},
+               {u"options.fixErrors"_s, u"openItemError"_s},
+               {u"shareDialog.copyRestricted"_s, u"copyItemPrivateLink"_s},
+               {u"shareDialog.copyPublic"_s, u"copyItemWebLink"_s}});
+    addEvents(events, u"main.activities.shareDialog"_s, u"upsell"_s, {{u"upgrade"_s, u"shareLinkLimit"_s}});
 
     addEvents(events, u"main.search"_s, u"search"_s, {{u"openLocal"_s, u"openItem"_s}, {u"openOnline"_s, u"openItemWeb"_s}});
 }

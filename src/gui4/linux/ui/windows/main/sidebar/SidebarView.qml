@@ -37,7 +37,6 @@ Rectangle {
     readonly property int tabActivities: AppRouter.Activities
     readonly property int tabHome: AppRouter.Home
     readonly property int tabStorage: AppRouter.Storage
-    readonly property alias notification: sidebarNotification
 
     color: IKColors.surfaceSecondary
 
@@ -110,12 +109,6 @@ Rectangle {
             Layout.fillWidth: true
 
             onUpgradeRequested: root.controller.openUpsellPage()
-        }
-
-        SidebarNotification {
-            id: sidebarNotification
-
-            Layout.fillWidth: true
         }
     }
 }
