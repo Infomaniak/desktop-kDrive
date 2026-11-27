@@ -205,7 +205,7 @@ enum class NetworkErrorCode {
     ConflictError,
     AccessDenied,
     LockError,
-    FileTooBigError,
+    LimitExceededError,
     QuotaExceededError,
     UnknownError, // None of the handled errors
     EnumEnd
