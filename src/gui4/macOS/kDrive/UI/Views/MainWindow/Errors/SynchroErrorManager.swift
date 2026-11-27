@@ -139,6 +139,21 @@ final class SynchroErrorManager: ObservableObject {
         NSWorkspace.shared.open(shopURL)
     }
 
+    /// Opens the drive's upsell offer URL, falling back to the shop URL when the drive has no offer.
+    func openUpsellURL(_ error: SynchroError) async {
+        guard let drive = await getDrive(error) else {
+            return
+        }
+
+        guard let offer = UpsellOffer(drive: drive) else {
+            @InjectService var nodeURLGenerator: NodeURLGenerator
+            NSWorkspace.shared.open(nodeURLGenerator.shopURL(forDriveId: Int(drive.driveId)))
+            return
+        }
+
+        NSWorkspace.shared.open(offer.url)
+    }
+
     func openSupportURL() {
         NSWorkspace.shared.open(URLConstants.help)
     }

@@ -22,6 +22,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct SynchroConfigurationView: View {
+    private static let minimumSize = CGSize(width: 500, height: 350)
+
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
     @State private var isLoading = false
@@ -29,8 +31,8 @@ struct SynchroConfigurationView: View {
     let configuration: SynchroConfiguration
 
     var body: some View {
-        Form {
-            Section {
+        IKForm {
+            IKSection {
                 HStack {
                     BadgeView(
                         image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
@@ -53,7 +55,7 @@ struct SynchroConfigurationView: View {
 
             LightSyncSelectionSection(configuration: configuration)
         }
-        .groupedFormatStyle()
+        .frame(minWidth: Self.minimumSize.width, minHeight: Self.minimumSize.height)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isLoading, action: viewModel.saveConfiguration) {

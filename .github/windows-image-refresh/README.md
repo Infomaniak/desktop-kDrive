@@ -81,6 +81,8 @@ always perform the full refresh, even if Windows Update installs nothing.
   file given by `sysprep_unattend`.
 - The OpenStack project needs quota for two Windows VMs, one Linux VM, the work volume
   (`work_volume_size_gb`, default 200 GB, must hold the raw snapshot and the qcow2) and the extra images.
+- The configured Windows and Linux flavor names must each resolve to exactly one flavor. The workflow
+  uses their IDs to avoid the public cloud's unsupported flavor-name filter.
 - The conversion VM is reached over SSH from the GitHub-hosted runner; a per-run security group only
   allows port 22 from that runner's public IPv4. SSH trusts the host key on first use. Glance
   transfers use short-lived project-scoped tokens; a transfer exceeding the token lifetime will fail.

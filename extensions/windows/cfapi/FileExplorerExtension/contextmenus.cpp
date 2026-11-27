@@ -83,7 +83,7 @@ inline IFACEMETHODIMP ExplorerCommandHandler::EnumSubCommands(IEnumExplorerComma
 
 IFACEMETHODIMP ExplorerCommandHandler::Invoke(IShellItemArray *psiItemArray, IBindCtx *pbc) {
     HRESULT hr = S_OK;
-    if (!_contextMenuInfo._menuItem._command.empty()) {
+    if (!_contextMenuInfo._menuItem._command.empty() && psiItemArray) {
         DWORD dwNumItems;
         HRESULT hr = psiItemArray->GetCount(&dwNumItems);
         if (SUCCEEDED(hr) && dwNumItems > 0) {
@@ -127,7 +127,7 @@ ExplorerCommandHandler::ExplorerCommandHandler(const MenuItem *menuItem) {
 }
 
 void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
-    if (!_contextMenuInfo._loaded) {
+    if (!_contextMenuInfo._loaded && psiItemArray) {
         // Make file list
         std::wstring files;
         DWORD dwNumItems;

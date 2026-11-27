@@ -49,7 +49,9 @@ struct DriveMaintenanceParsingTest {
                     "id": 1,
                     "name": "c29sbw==",
                     "displayName": "a0RyaXZlIFNvbG8=",
-                    "isFree": true
+                    "isFree": true,
+                    "kSuiteId": 0,
+                    "upsellTarget": 1
                 }
             }
             """.utf8
@@ -85,7 +87,9 @@ struct DriveMaintenanceParsingTest {
                     "id": 1,
                     "name": "c29sbw==",
                     "displayName": "a0RyaXZlIFNvbG8=",
-                    "isFree": true
+                    "isFree": true,
+                    "kSuiteId": 0,
+                    "upsellTarget": 1
                 }
             }
             """.utf8

@@ -57,14 +57,14 @@ struct AddAdvancedSynchroView: View {
     let completion: () -> Void
 
     var body: some View {
-        Form {
-            Section {} header: {
+        IKForm {
+            IKSection {} header: {
                 Text(KDriveLocalizable.addAdvancedSyncDialogTitle)
                     .font(.Tokens.bodyEmphasized)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
-            Section {
+            IKSection {
                 VStack(alignment: .leading, spacing: AppPadding.padding16) {
                     VStack(alignment: .leading, spacing: AppPadding.padding8) {
                         Text(KDriveLocalizable.addAdvancedSyncLocalFolderTitle)
@@ -101,7 +101,7 @@ struct AddAdvancedSynchroView: View {
                 }
             }
 
-            Section {
+            IKSection {
                 VStack(alignment: .leading, spacing: AppPadding.padding16) {
                     VStack(alignment: .leading, spacing: AppPadding.padding8) {
                         Text(KDriveLocalizable.addAdvancedSyncRemoteFolderTitle)
@@ -123,7 +123,6 @@ struct AddAdvancedSynchroView: View {
                 }
             }
         }
-        .groupedFormatStyle()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isLoading, action: addSynchro) {
@@ -189,7 +188,7 @@ struct AddAdvancedSynchroView: View {
                 remoteFolder: remoteFolder,
                 localFolder: localFolder,
                 blackList: [],
-                useLightSync: true
+                useLightSync: false
             )
             try await SyncCreationService().create(from: syncCandidate)
 

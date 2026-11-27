@@ -37,7 +37,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDeleteOpNodes);
         CPPUNIT_TEST(testHandleOpsFileNotFound);
         CPPUNIT_TEST(testInitSyncFileItem);
-        CPPUNIT_TEST(testHandleMoveThroughSymlinkError);
+        CPPUNIT_TEST(testHandlePathContainsSymlinkError);
         CPPUNIT_TEST(testCheckAlreadyExcluded);
         CPPUNIT_TEST(testLateJobCallbacksAfterStop);
         CPPUNIT_TEST_SUITE_END();
@@ -57,7 +57,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         void testInitSyncFileItem();
         void testDeleteOpNodes();
         void testHandleOpsFileNotFound();
-        void testHandleMoveThroughSymlinkError();
+        void testHandlePathContainsSymlinkError();
         void testCheckAlreadyExcluded();
         void testLateJobCallbacksAfterStop();
 

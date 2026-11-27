@@ -24,14 +24,13 @@ struct AdvancedPreferencesDebugView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Form {
+            IKForm {
                 AdvancedPreferencesDebugEnableView(repository: repository)
                 if repository.parametersInfo.shouldUseLog {
                     AdvancedPreferencesDebugOptionsView(repository: repository)
                 }
                 AdvancedPreferencesDebugSendView()
             }
-            .groupedFormatStyle()
         }
     }
 }

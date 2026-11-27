@@ -88,7 +88,7 @@ struct GeneralPreferencesVersionSection: View {
     let containsStaffUser: Bool
 
     var body: some View {
-        Section {
+        IKSection {
             VersionManagementView(repository: repository)
 
             // TODO: Automatic update is not available yet, hidden until implemented

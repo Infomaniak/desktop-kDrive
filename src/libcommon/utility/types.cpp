@@ -251,12 +251,14 @@ std::string toString(const ExitCause e) {
             return "SyncDeletionFailed";
         case ExitCause::InvalidLinkTarget:
             return "InvalidLinkTarget";
-        case ExitCause::MoveThroughSymlink:
-            return "MoveThroughSymlink";
+        case ExitCause::PathContainsSymlink:
+            return "PathContainsSymlink";
         case ExitCause::FileNameTooLong:
             return "FileNameTooLong";
         case ExitCause::HardlinkNotSupported:
             return "HardlinkNotSupported";
+        case ExitCause::ShareLinkLimitReached:
+            return "ShareLinkLimitReached";
         default:
             return noConversionStr;
     }
@@ -749,8 +751,8 @@ std::string toString(const IoError e) {
             return "FileOrDirectoryCorrupted";
         case IoError::TooManySymbolicLinkLevels:
             return "TooManySymbolicLinkLevels";
-        case IoError::MoveThroughSymlink:
-            return "MoveThroughSymlink";
+        case IoError::PathContainsSymlink:
+            return "PathContainsSymlink";
         case IoError::HardlinkNotSupported:
             return "HardlinkNotSupported";
         case IoError::Unknown:

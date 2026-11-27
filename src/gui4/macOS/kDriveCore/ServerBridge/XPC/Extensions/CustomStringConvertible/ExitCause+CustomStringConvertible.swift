@@ -138,12 +138,14 @@ extension KDC.ExitCause: CustomStringConvertible {
             return "SyncDeletionFailed"
         case .InvalidLinkTarget:
             return "InvalidLinkTarget"
-        case .MoveThroughSymlink:
-            return "MoveThroughSymlink"
+        case .PathContainsSymlink:
+            return "PathContainsSymlink"
         case .FileNameTooLong:
             return "FileNameTooLong"
         case .HardlinkNotSupported:
             return "HardlinkNotSupported"
+        case .ShareLinkLimitReached:
+            return "ShareLinkLimitReached"
         case .EnumEnd:
             return "EnumEnd"
         @unknown default:
