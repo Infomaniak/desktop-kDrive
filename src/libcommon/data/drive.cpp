@@ -36,6 +36,7 @@ static const auto driveInfoLocked = "locked";
 static const auto driveInfoUsedSize = "usedSize";
 static const auto driveInfoAccessDenied = "accessDenied";
 static const auto driveInfoPackInfo = "packInfo";
+static const auto driveInfoSharedLinkQuota = "sharedLinkQuota";
 
 namespace KDC {
 
@@ -64,6 +65,7 @@ void Drive::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, driveInfoUsedSize, usedSize());
     CommonUtility::writeValueToStruct(dstruct, driveInfoAccessDenied, accessDenied());
     CommonUtility::writeValueToStruct(dstruct, driveInfoPackInfo, packInfo(), info2DynamicVar<PackInfo>);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoSharedLinkQuota, sharedLinkQuota());
 }
 
 void Drive::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -107,6 +109,7 @@ void Drive::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, driveInfoUsedSize, _usedSize);
     CommonUtility::readValueFromStruct(dstruct, driveInfoAccessDenied, _accessDenied);
     CommonUtility::readValueFromStruct(dstruct, driveInfoPackInfo, _packInfo, dynamicVar2Struct<PackInfo>);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoSharedLinkQuota, _sharedLinkQuota);
 }
 
 } // namespace KDC
