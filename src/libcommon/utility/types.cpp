@@ -257,6 +257,8 @@ std::string toString(const ExitCause e) {
             return "FileNameTooLong";
         case ExitCause::HardlinkNotSupported:
             return "HardlinkNotSupported";
+        case ExitCause::ShareLinkLimitReached:
+            return "ShareLinkLimitReached";
         default:
             return noConversionStr;
     }
