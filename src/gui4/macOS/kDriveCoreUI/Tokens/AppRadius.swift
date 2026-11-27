@@ -21,6 +21,7 @@ import Foundation
 public enum AppRadius {
     public static let radius16: CGFloat = 16
     public static let radius12: CGFloat = 12
+    public static let radius10: CGFloat = 10
     public static let radius8: CGFloat = 8
     public static let radius4: CGFloat = 4
 }
