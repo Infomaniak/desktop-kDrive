@@ -26,9 +26,14 @@
 #include <log4cplus/loggingmacros.h>
 
 #if defined(KD_WINDOWS)
+#include <Windows.h>
+#include <sddl.h>
+
 #include <stdio.h>
+#include <string>
 #include <tchar.h>
 #include <strsafe.h>
+#include <vector>
 #endif
 
 namespace KDC {
@@ -165,6 +170,38 @@ void PipeCommServer::executeFunc(PipeCommServer *const server) {
     server->execute();
 }
 
+#if defined(KD_WINDOWS)
+PSECURITY_DESCRIPTOR createCurrentUserSecurityDescriptor() {
+    HANDLE token = nullptr;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) return nullptr;
+
+    DWORD size = 0;
+    (void) GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+
+    std::vector<BYTE> buffer(size);
+    if (!GetTokenInformation(token, TokenUser, buffer.data(), size, &size)) {
+        (void) CloseHandle(token);
+        return nullptr;
+    }
+
+    (void) CloseHandle(token);
+
+    const auto * const tokenUser = reinterpret_cast<TOKEN_USER *>(buffer.data());
+
+    LPWSTR sid = nullptr;
+    if (!ConvertSidToStringSidW(tokenUser->User.Sid, &sid)) return nullptr;
+
+    const std::wstring sddl = L"D:P(A;;GA;;;" + std::wstring(sid) + L")";
+    (void) LocalFree(sid);
+
+    PSECURITY_DESCRIPTOR descriptor = nullptr;
+    if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, &descriptor, nullptr))
+        return nullptr;
+
+    return descriptor;
+}
+#endif
+
 void PipeCommServer::execute() {
 #if defined(KD_WINDOWS)
     HANDLE events[pipeInstances * toInt(PipeCommChannel::Action::EnumEnd)] = {nullptr};
@@ -197,6 +234,20 @@ void PipeCommServer::execute() {
             channel->_pendingIO[action] = FALSE;
         }
 
+        PSECURITY_DESCRIPTOR descriptor = createCurrentUserSecurityDescriptor();
+
+        if (!descriptor) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in createCurrentUserSecurityDescriptor: err=" << GetLastError());
+            sentry::Handler::captureMessage(sentry::Level::Error, "Unable to create security descriptor for named pipe",
+                                            "pipecommserver failure");
+            return;
+        }
+
+        SECURITY_ATTRIBUTES securityAttributes{};
+        securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
+        securityAttributes.lpSecurityDescriptor = descriptor;
+        securityAttributes.bInheritHandle = FALSE;
+
         channel->_pipeInst = CreateNamedPipe(_pipePath.native().c_str(), // pipe name
                                              PIPE_ACCESS_DUPLEX | // read/write access
                                                      FILE_FLAG_OVERLAPPED, // overlapped mode
@@ -207,10 +258,12 @@ void PipeCommServer::execute() {
                                              BUFSIZE * sizeof(TCHAR), // output buffer size
                                              BUFSIZE * sizeof(TCHAR), // input buffer size
                                              pipeTimeOut, // client time-out (ms)
-                                             nullptr); // default security attributes
+                                             &securityAttributes);
+        const DWORD pipeCreationError = GetLastError();
+        (void) LocalFree(descriptor);
 
         if (channel->_pipeInst == INVALID_HANDLE_VALUE) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << GetLastError());
+            LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << pipeCreationError);
             _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
             return;
         }

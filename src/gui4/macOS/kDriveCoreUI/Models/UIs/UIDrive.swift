@@ -113,6 +113,8 @@ public struct UIDrive: UIDriveRepresentation {
     public let name: String
     public let isAdmin: Bool
     public let hexColor: UIHexColor?
+    /// The upgrade offered to the user for this drive, `nil` when there is none.
+    public let upsellOffer: UpsellOffer?
 
     public var nsColor: NSColor? {
         guard let hexColor else {
@@ -128,12 +130,13 @@ public struct UIDrive: UIDriveRepresentation {
         return Color(nsColor: nsColor)
     }
 
-    public init(dbId: Int, driveId: Int, name: String, isAdmin: Bool, hexColor: UIHexColor?) {
+    public init(dbId: Int, driveId: Int, name: String, isAdmin: Bool, hexColor: UIHexColor?, upsellOffer: UpsellOffer? = nil) {
         self.dbId = dbId
         self.driveId = driveId
         self.name = name
         self.isAdmin = isAdmin
         self.hexColor = hexColor
+        self.upsellOffer = upsellOffer
     }
 }
 
@@ -149,7 +152,8 @@ public extension UIDrive {
             driveId: Int(drive.driveId),
             name: drive.name,
             isAdmin: drive.admin,
-            hexColor: hexColor
+            hexColor: hexColor,
+            upsellOffer: UpsellOffer(drive: drive)
         )
     }
 }

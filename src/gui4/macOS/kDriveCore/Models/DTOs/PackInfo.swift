@@ -24,4 +24,6 @@ public struct PackInfo: Codable, Hashable, Sendable {
     @Base64CodedString public var name: String
     @Base64CodedString public var displayName: String
     public let isFree: Bool
+    public let kSuiteId: UInt64
+    public let upsellTarget: KDC.UpsellTarget
 }
