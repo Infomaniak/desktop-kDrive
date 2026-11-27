@@ -48,6 +48,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] ExitInfo checkIfValidListingSyncFolderCursorExists(bool &validListingSyncFolderCursorExist) const;
 
         void forceUpdate() override;
+        void resetListingContinueBackoff() { _listingContinueBackoff.reset(); }
 
     protected:
         void execute() override;

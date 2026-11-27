@@ -56,6 +56,8 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         void setValid(bool newIsValid);
         SnapshotRevision revision() const override;
 
+        std::recursive_mutex &mutex() const { return _mutex; }
+
     private:
         std::shared_ptr<SnapshotRevisionHandler> _revisionHandler;
         bool removeItem(std::shared_ptr<SnapshotItem> &item);

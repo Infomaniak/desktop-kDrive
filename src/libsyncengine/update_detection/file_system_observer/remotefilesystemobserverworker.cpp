@@ -1046,7 +1046,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
                         << _driveDbId << " backing off listing continue for "
                         << std::chrono::duration_cast<std::chrono::seconds>(_listingContinueBackoff.remainingTime()).count()
                         << "s");
-    } else {
+    } else if (!initializing()) {
         _listingContinueBackoff.reset();
     }
 

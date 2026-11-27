@@ -2003,10 +2003,15 @@ void SyncPal::copySnapshots() {
     LOG_IF_FAIL(_localFSObserverWorker)
     LOG_IF_FAIL(_remoteFSObserverWorker)
 
-    _localSnapshot = std::make_shared<ConstSnapshot>(liveSnapshot(ReplicaSide::Local));
-    _remoteSnapshot = std::make_shared<ConstSnapshot>(liveSnapshot(ReplicaSide::Remote));
-    liveSnapshot(ReplicaSide::Local).startRead();
-    liveSnapshot(ReplicaSide::Remote).startRead();
+    auto &localSnapshot = liveSnapshot(ReplicaSide::Local);
+    auto &remoteSnapshot = liveSnapshot(ReplicaSide::Remote);
+
+    const auto lock = std::scoped_lock(localSnapshot.mutex(), remoteSnapshot.mutex());
+
+    _localSnapshot = std::make_shared<ConstSnapshot>(localSnapshot);
+    _remoteSnapshot = std::make_shared<ConstSnapshot>(remoteSnapshot);
+    localSnapshot.startRead();
+    remoteSnapshot.startRead();
 }
 
 void SyncPal::freeSnapshotsCopies() {

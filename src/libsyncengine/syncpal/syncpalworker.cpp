@@ -711,6 +711,16 @@ SyncStep SyncPalWorker::nextStep() const {
                 (areLiveSnapshotsUpdated || _syncPal->restart()))
                 return SyncStep::UpdateDetection1;
             else {
+                if (_syncPal->liveSnapshot(ReplicaSide::Local).updated() &&
+                    !_syncPal->liveSnapshot(ReplicaSide::Remote).updated() && _syncPal->_remoteFSObserverWorker->updating()) {
+                    // If the RFSO is backing off due to empty responses to previous listing continue requests,
+                    // reset the backoff to avoid delaying the processing of pending local changes.
+                    if (const auto rfso =
+                                std::static_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker)) {
+                        rfso->resetListingContinueBackoff();
+                    }
+                }
+
                 _syncPal->resetNbOfPropagatedLocalDeleteOps();
                 return SyncStep::Idle;
             }
