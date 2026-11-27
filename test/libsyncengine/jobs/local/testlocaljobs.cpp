@@ -501,7 +501,6 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 #endif
 }
 
-<<<<<<< HEAD
 void KDC::TestLocalJobs::testGenericLocalDeleteJobWithLinkedParent() {
     // The item to delete is reached through a directory link located inside the sync directory and pointing outside of
     // it. Whatever the deletion mode, the job must refuse the deletion instead of moving the item located outside of
@@ -547,7 +546,6 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobWithLinkedParent() {
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::PathContainsSymlink), deleteJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(victimFilePath));
     }
-
 }
 
 namespace {
@@ -628,7 +626,8 @@ void KDC::TestLocalJobs::testOpenFileJob() {
         job.setSyncWaitTimeout(std::chrono::milliseconds(1));
         job.runSynchronously();
 
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::Unknown), job.exitInfo());
+        // The job completes successfully: the resolve timeout is reported through the outcome only.
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.exitInfo());
         CPPUNIT_ASSERT(job.outcome() == OpenFileJob::Outcome::ResolveTimedOut);
     }
 }

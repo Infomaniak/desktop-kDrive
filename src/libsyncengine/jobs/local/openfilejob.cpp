@@ -371,7 +371,7 @@ ExitInfo OpenFileJob::resolveDeeplink(bool &found) {
 
     bool pathTraversesLink = false;
     SyncPath linkPath;
-    if (const auto ioError = IoHelper::checkIfPathTraversesLink(_localPath, pathTraversesLink, linkPath);
+    if (const auto ioError = IoHelper::checkIfPathTraversesLink(bestSync.localPath(), _localPath, pathTraversesLink, linkPath);
         ioError != IoError::Success) {
         _outcome = Outcome::Failed;
 
@@ -380,7 +380,7 @@ ExitInfo OpenFileJob::resolveDeeplink(bool &found) {
         LOGW_WARN(_logger, L"The local path traverses a symlink - " << Utility::formatSyncPath(_localPath));
         _outcome = Outcome::Failed;
 
-        return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
+        return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
     }
 
     return ExitCode::Ok;
