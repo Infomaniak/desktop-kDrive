@@ -508,6 +508,14 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/storage.svg
         ui/assets/main/storage/cart-add.svg
         ui/assets/main/storage/computer.svg
+        ui/assets/main/storage/subscription-kdrive.svg
+        ui/assets/main/storage/subscription-kdrive-dark.svg
+        ui/assets/main/storage/subscription-ksuite-pro.svg
+        ui/assets/main/storage/subscription-ksuite-pro-dark.svg
+        ui/assets/main/storage/subscription-myksuite.svg
+        ui/assets/main/storage/subscription-myksuite-dark.svg
+        ui/assets/main/storage/subscription-myksuite-plus.svg
+        ui/assets/main/storage/subscription-myksuite-plus-dark.svg
         ui/assets/main/storage/unavailable.svg
         ui/assets/main/triangle-alert.svg
         ui/assets/main/upsell/ksuite-plus-logo.svg

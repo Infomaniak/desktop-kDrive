@@ -656,7 +656,9 @@
   sidebar `storageWarning`, and asks Settings to open "Manage synchronization" through
   `SettingsWindowController::requestOpenSyncManagement`. The server does not poll the quota: opening the page sends
   `UTILITY_ACTIVATELOADINFO`, at most once per minute because it reloads every user and drive; Retry and the refresh
-  shortcut always send it.
+  shortcut always send it. The subscription card title is followed by the logo of the drive's product
+  (`subscriptionProduct`, from the pack id): kDrive, my kSuite, my kSuite+, and kSuite Pro for every other kSuite. An
+  unknown pack keeps the offer name as text; screen readers always get the offer name.
 - `app/mainwindow/storage/storagemeasurecache.*`: process-local per-synchronization measure cache, without QObject. A
   measure is kept for its root and reused until its synchronization has been active again; the cache follows the
   observed statuses to know it.

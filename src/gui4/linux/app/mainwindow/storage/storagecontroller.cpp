@@ -43,6 +43,36 @@ Q_LOGGING_CATEGORY(lcStorageController, "gui.v4.storagecontroller", QtInfoMsg)
 constexpr int32_t minimumRetryIndicatorDurationMs = 300;
 constexpr int64_t minimumQuotaRefreshIntervalMs = 60000;
 
+/**
+ * Product of a pack, from the pack ids of `libcommon/info/packinfo.cpp`. Every kSuite other than my kSuite is presented
+ * as kSuite Pro.
+ */
+StorageController::SubscriptionProduct subscriptionProductOf(const uint64_t packId) {
+    using Product = StorageController::SubscriptionProduct;
+
+    switch (packId) {
+        case 1: // Solo
+        case 2: // Team
+        case 3: // Pro
+        case 6: // Free
+        case 22: // Solo special offer
+            return Product::KDrive;
+        case 16: // my kSuite
+            return Product::MykSuite;
+        case 19: // my kSuite+
+            return Product::MykSuitePlus;
+        case 8: // kSuite standard
+        case 11: // kSuite pro
+        case 14: // kSuite enterprise
+        case 23: // kSuite special offer 1
+        case 26: // kSuite special offer 2
+        case 29: // kSuite essential
+            return Product::KSuitePro;
+        default:
+            return Product::Unknown;
+    }
+}
+
 } // namespace
 
 StorageController::StorageController(AppCache &appCache, MainSelectionStore &selectionStore, CommService &commService,
@@ -202,6 +232,15 @@ QString StorageController::subscriptionName() const {
 
     // The pack info already names the product ("kDrive Solo", "kSuite Pro").
     return QString::fromStdString(drive->packInfo().displayName());
+}
+
+StorageController::SubscriptionProduct StorageController::subscriptionProduct() const {
+    const auto drive = currentDrive();
+    if (!drive) {
+        return SubscriptionProduct::Unknown;
+    }
+
+    return subscriptionProductOf(drive->packInfo().id());
 }
 
 bool StorageController::storageWarning() const {
