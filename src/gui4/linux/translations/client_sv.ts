@@ -1859,13 +1859,17 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</translat
             <extracomment>Linux desktop app, explanation dialog "A change has been detected in your configuration" (the synchronized folder is no longer accessible on kDrive online): advice under the reason "Access rights modified". "This folder" is the synchronized folder on kDrive.</extracomment> 
             <translation>Du kanske inte längre har åtkomstbehörighet till den här mappen på kDrive.</translation> 
         </message> 
-        <message id="linuxStorageLocationUnavailableDescription"> 
-            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
-            <translation>kDrive kan inte komma åt lagringsplatsen för den här synkroniseringen. Se till att enheten är ansluten och olåst och kontrollera sedan att kDrive har behörighet att komma åt den.</translation> 
+        <message id="linuxStorageLocalTitle"> 
+            <source>Local storage</source> 
+            <translation>Lokal lagring</translation> 
         </message> 
-        <message id="linuxStorageLocationUnavailableTitle"> 
-            <source>Storage location unavailable</source> 
-            <translation>Lagringsplatsen är inte tillgänglig</translation> 
+        <message id="linuxStorageMissingDiskDescription"> 
+            <source>Make sure it is connected, unlocked and accessible from your computer.</source> 
+            <translation>Se till att den är ansluten, olåst och tillgänglig från din dator.</translation> 
+        </message> 
+        <message id="linuxStorageMissingDiskTitle"> 
+            <source>The storage disk is not accessible</source> 
+            <translation>Lagringsdisken är inte tillgänglig</translation> 
         </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 

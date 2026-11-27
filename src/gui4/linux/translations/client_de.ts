@@ -1859,13 +1859,17 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</tra
             <extracomment>Linux desktop app, explanation dialog "A change has been detected in your configuration" (the synchronized folder is no longer accessible on kDrive online): advice under the reason "Access rights modified". "This folder" is the synchronized folder on kDrive.</extracomment> 
             <translation>Möglicherweise haben Sie keine Zugriffsrechte mehr für diesen Ordner auf kDrive.</translation> 
         </message> 
-        <message id="linuxStorageLocationUnavailableDescription"> 
-            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
-            <translation>kDrive kann nicht auf den Speicherort dieser Synchronisierung zugreifen. Stellen Sie sicher, dass das Gerät angeschlossen und entsperrt ist, und überprüfen Sie anschliessend, ob kDrive die Berechtigung hat, darauf zuzugreifen.</translation> 
+        <message id="linuxStorageLocalTitle"> 
+            <source>Local storage</source> 
+            <translation>Lokaler Speicher</translation> 
         </message> 
-        <message id="linuxStorageLocationUnavailableTitle"> 
-            <source>Storage location unavailable</source> 
-            <translation>Speicherort nicht verfügbar</translation> 
+        <message id="linuxStorageMissingDiskDescription"> 
+            <source>Make sure it is connected, unlocked and accessible from your computer.</source> 
+            <translation>Vergewissern Sie sich, dass es angeschlossen, entsperrt und von Ihrem Computer aus zugänglich ist.</translation> 
+        </message> 
+        <message id="linuxStorageMissingDiskTitle"> 
+            <source>The storage disk is not accessible</source> 
+            <translation>Das Speicherlaufwerk ist nicht zugänglich</translation> 
         </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 

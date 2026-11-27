@@ -1863,13 +1863,17 @@ Przydatne, gdy wiesz, że ważna praca jest online w kDrive.</translation>
             <extracomment>Linux desktop app, explanation dialog "A change has been detected in your configuration" (the synchronized folder is no longer accessible on kDrive online): advice under the reason "Access rights modified". "This folder" is the synchronized folder on kDrive.</extracomment> 
             <translation>Być może nie masz już praw dostępu do tego folderu w kDrive.</translation> 
         </message> 
-        <message id="linuxStorageLocationUnavailableDescription"> 
-            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
-            <translation>kDrive nie może uzyskać dostępu do lokalizacji przechowywania dla tej synchronizacji. Upewnij się, że urządzenie jest podłączone i odblokowane, a następnie sprawdź, czy kDrive ma uprawnienia dostępu do tej lokalizacji.</translation> 
+        <message id="linuxStorageLocalTitle"> 
+            <source>Local storage</source> 
+            <translation>Pamięć lokalna</translation> 
         </message> 
-        <message id="linuxStorageLocationUnavailableTitle"> 
-            <source>Storage location unavailable</source> 
-            <translation>Lokalizacja przechowywania jest niedostępna</translation> 
+        <message id="linuxStorageMissingDiskDescription"> 
+            <source>Make sure it is connected, unlocked and accessible from your computer.</source> 
+            <translation>Upewnij się, że jest podłączony, odblokowany i dostępny z Twojego komputera.</translation> 
+        </message> 
+        <message id="linuxStorageMissingDiskTitle"> 
+            <source>The storage disk is not accessible</source> 
+            <translation>Dysk pamięci jest niedostępny</translation> 
         </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
