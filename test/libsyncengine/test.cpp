@@ -61,6 +61,7 @@
 #include "update_detection/file_system_observer/testfolderwatchermac.h"
 #elif defined(KD_LINUX)
 #include "update_detection/file_system_observer/testfolderwatcherlinux.h"
+#include "jobs/network/kDrive_API/testuploadjobreplyhandler_linux.h"
 #elif defined(KD_WINDOWS)
 #include "update_detection/file_system_observer/testfolderwatcherwin.h"
 #endif
@@ -92,6 +93,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
 #elif defined(KD_LINUX)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUploadJobReplyHandlerLinux);
 #elif defined(KD_WINDOWS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherWin);
 #endif
