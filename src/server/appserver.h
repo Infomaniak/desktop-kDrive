@@ -325,7 +325,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<int, NodeSet> _undecidedListCacheMap;
         QProcess *_clientProcess = nullptr;
         mutable std::mutex _fileOpeningJobsMutex;
-        std::unordered_map<UniqueId, FileOpeningHandler *> _fileOpeningJobs;
+        std::unordered_map<UniqueId, std::shared_ptr<FileOpeningHandler>> _fileOpeningJobs;
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
@@ -423,11 +423,22 @@ class AppServer : public SharedTools::QtSingleApplication {
         //! Reports the state of a file opening request, and the name of the item being opened, to the client interface.
         virtual void sendFileOpeningStatus(UniqueId jobId, FileOpeningPhase phase, int8_t percent,
                                            const CommString &itemName) const;
-        void registerFileOpeningJob(UniqueId jobId, FileOpeningHandler *handler);
+        void registerFileOpeningJob(UniqueId jobId, std::shared_ptr<FileOpeningHandler> handler);
         void unregisterFileOpeningJob(UniqueId jobId);
         //! Returns the number of file-opening flows currently active: their job is queued or running and their
         //! outcome has not been reported yet.
         [[nodiscard]] Count fileOpeningJobCount() const;
+        //! Hands a state reported by a file opening job over to the application thread, where the handler forwards it
+        //! to the client interface. Invoked on a job manager worker thread; the call is discarded if the flow has
+        //! already been processed and its handler destroyed.
+        void dispatchFileOpeningStatus(const std::shared_ptr<FileOpeningHandler> &handler, FileOpeningPhase phase, int8_t percent,
+                                       const CommString &itemName);
+        //! Hands the outcome of a file opening job over to the application thread, where the handler opens the item or
+        //! notifies the user of the failure. Invoked on a job manager worker thread; the handler stays alive while it
+        //! processes the outcome — during which it unregisters itself from the registry — and is destroyed right
+        //! after, on the application thread.
+        void dispatchFileOpeningOutcome(const std::shared_ptr<FileOpeningHandler> &handler, const OpenFileJob::Outcome outcome,
+                                        const SyncPath &localPath, const SyncDbId syncDbId);
 
         void showSettings();
         void showSynthesis();

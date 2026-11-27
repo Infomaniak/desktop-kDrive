@@ -95,26 +95,28 @@ void FileOpeningHandler::queueOpenFileJob() {
     const auto job = std::make_shared<OpenFileJob>(_url, std::move(getSyncPal), std::move(getVfs));
     _jobId = job->jobId();
     _job = job;
-    _appServer->registerFileOpeningJob(_jobId, this);
-    job->setFeedbackCallback([this](const FileOpeningPhase phase, const int8_t percent, const CommString &itemName) {
-        // Job manager worker thread. Hand the state over to the application thread. `this` is used as the context
-        // object: if the handler has been destroyed in the meantime, the call is simply discarded.
-        (void) QMetaObject::invokeMethod(
-                this, [this, phase, percent, itemName] { onFileOpeningStatus(phase, percent, itemName); }, Qt::QueuedConnection);
-    });
+    _appServer->registerFileOpeningJob(_jobId, shared_from_this());
+    const std::weak_ptr<FileOpeningHandler> weakThis = weak_from_this();
+    job->setFeedbackCallback(
+            [weakThis, appServer = _appServer](const FileOpeningPhase phase, const int8_t percent, const CommString &itemName) {
+                // Job manager worker thread. A null lock means the flow has already been processed and its handler destroyed:
+                // discard the call. Hand the state over to the application thread otherwise.
+                if (const auto handler = weakThis.lock()) {
+                    appServer->dispatchFileOpeningStatus(handler, phase, percent, itemName);
+                }
+            });
     std::weak_ptr<OpenFileJob> weakJob = job;
-    job->setAdditionalCallback([this, weakJob](UniqueId) {
+    job->setAdditionalCallback([weakThis, appServer = _appServer, weakJob](UniqueId) {
+        // Job manager worker thread. A null handler lock means the flow has already been processed and its handler
+        // destroyed: discard the call. A null job lock means the job has been destroyed after completion: nothing
+        // left to report. Hand the outcome over to the application thread otherwise.
+        const auto handler = weakThis.lock();
+        if (!handler) return;
+
         const auto job = weakJob.lock();
         if (!job) return;
 
-        // Job manager worker thread. Hand the outcome over to the application thread. `this` is used as the context
-        // object: if the handler has been destroyed in the meantime, the call is simply discarded.
-        (void) QMetaObject::invokeMethod(
-                this,
-                [this, outcome = job->outcome(), localPath = job->localPath(), syncDbId = job->syncDbId()] {
-                    onOpenFileJobFinished(outcome, localPath, syncDbId);
-                },
-                Qt::QueuedConnection);
+        appServer->dispatchFileOpeningOutcome(handler, job->outcome(), job->localPath(), job->syncDbId());
     });
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
@@ -200,20 +202,17 @@ void FileOpeningHandler::notifyUser(const QString &message) const {
 
 void FileOpeningHandler::handleFileOpeningSuccess() {
     _appServer->unregisterFileOpeningJob(_jobId);
-    deleteLater();
 }
 
 void FileOpeningHandler::handleFileOpeningFailure(const QString &userMessage) {
     LOG_WARN(Log::instance()->getLogger(), "Failed to open item from deeplink URL - url=" << _url);
     notifyUser(userMessage);
     _appServer->unregisterFileOpeningJob(_jobId);
-    deleteLater();
 }
 
 void FileOpeningHandler::handleFileOpeningCanceled() {
     LOG_INFO(Log::instance()->getLogger(), "File opening canceled on user request - url=" << _url);
     _appServer->unregisterFileOpeningJob(_jobId);
-    deleteLater();
 }
 
 ExitInfo FileOpeningHandler::cancel() {

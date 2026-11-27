@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QString>
 
+#include <memory>
 #include <string>
 
 namespace KDC {
@@ -42,9 +43,13 @@ class AppServer;
   When the job completes, the handler opens the item on success, and notifies the user otherwise. While the job runs,
   the handler forwards its state to the client interface so that a pop-up window can inform the user of the progress
   and offer to cancel the request. Once the request has been processed, the handler unregisters itself from the
-  application server and schedules its own destruction.
+  application server, which releases its last owning reference and destroys it on the application thread.
+
+  The handler must be created through std::make_shared: the registry of the application server owns it through a
+  shared pointer, while the callbacks of the OpenFileJob only hold weak references and are discarded if the handler
+  has already been destroyed.
 */
-class FileOpeningHandler : public QObject {
+class FileOpeningHandler : public QObject, public std::enable_shared_from_this<FileOpeningHandler> {
         Q_OBJECT
 
     public:
@@ -92,6 +97,8 @@ class FileOpeningHandler : public QObject {
         std::string _url;
         UniqueId _jobId{0};
         std::weak_ptr<OpenFileJob> _job;
+
+        friend class AppServer;
 };
 
 } // namespace KDC

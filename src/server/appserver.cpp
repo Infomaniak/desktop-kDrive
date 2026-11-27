@@ -2859,9 +2859,9 @@ void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
 void AppServer::onOpenFileDeeplinkReceived(const QString &urlStr) {
     LOG_INFO(_logger, "File opening deeplink received: '" << urlStr.toStdString() << "'");
 
-    // The handler unregisters itself from the file opening jobs and schedules its own destruction once the request
-    // has been processed.
-    auto *handler = new FileOpeningHandler(this, urlStr.toStdString(), this);
+    // The handler is owned by the file opening job registry; it unregisters itself once the request has been
+    // processed, which releases the last owning reference and destroys it.
+    const auto handler = std::make_shared<FileOpeningHandler>(this, urlStr.toStdString(), this);
     handler->queueOpenFileJob();
 }
 
@@ -2925,9 +2925,9 @@ ExitInfo AppServer::cancelFileOpeningJob(const UniqueId jobId) {
     return {ExitCode::DataError, ExitCause::NotFound};
 }
 
-void AppServer::registerFileOpeningJob(const UniqueId jobId, FileOpeningHandler *const handler) {
+void AppServer::registerFileOpeningJob(const UniqueId jobId, std::shared_ptr<FileOpeningHandler> handler) {
     const std::scoped_lock lock(_fileOpeningJobsMutex);
-    _fileOpeningJobs[jobId] = handler;
+    _fileOpeningJobs[jobId] = std::move(handler);
 }
 
 void AppServer::unregisterFileOpeningJob(const UniqueId jobId) {
@@ -2938,6 +2938,38 @@ void AppServer::unregisterFileOpeningJob(const UniqueId jobId) {
 Count AppServer::fileOpeningJobCount() const {
     const std::scoped_lock lock(_fileOpeningJobsMutex);
     return static_cast<Count>(_fileOpeningJobs.size());
+}
+
+void AppServer::dispatchFileOpeningStatus(const std::shared_ptr<FileOpeningHandler> &handler, const FileOpeningPhase phase,
+                                          const int8_t percent, const CommString &itemName) {
+    // Invoked on a job manager worker thread: hand the state over to the application thread. The weak reference lets
+    // the queued call be discarded if the flow has been processed and its handler destroyed in the meantime.
+    const std::weak_ptr<FileOpeningHandler> weakHandler = handler;
+    (void) QMetaObject::invokeMethod(
+            this,
+            [weakHandler, phase, percent, itemName] {
+                if (const auto handler = weakHandler.lock()) {
+                    handler->onFileOpeningStatus(phase, percent, itemName);
+                }
+            },
+            Qt::QueuedConnection);
+}
+
+void AppServer::dispatchFileOpeningOutcome(const std::shared_ptr<FileOpeningHandler> &handler, const OpenFileJob::Outcome outcome,
+                                           const SyncPath &localPath, const SyncDbId syncDbId) {
+    // Invoked on a job manager worker thread: hand the outcome over to the application thread. The weak reference
+    // lets the queued call be discarded if the flow has been processed and its handler destroyed in the meantime;
+    // otherwise the handler stays alive while it processes the outcome — during which it unregisters itself from the
+    // registry — and is destroyed when this dispatching call ends, on the application thread.
+    const std::weak_ptr<FileOpeningHandler> weakHandler = handler;
+    (void) QMetaObject::invokeMethod(
+            this,
+            [weakHandler, outcome, localPath, syncDbId] {
+                if (const auto handler = weakHandler.lock()) {
+                    handler->onOpenFileJobFinished(outcome, localPath, syncDbId);
+                }
+            },
+            Qt::QueuedConnection);
 }
 
 void AppServer::sendErrorAdded(const Error &error) const {
