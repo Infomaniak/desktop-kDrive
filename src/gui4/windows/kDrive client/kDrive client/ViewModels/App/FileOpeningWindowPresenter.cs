@@ -33,6 +33,9 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly FileOpeningController _controller = App.ServiceProvider.GetRequiredService<AppModel>().FileOpeningController;
         private readonly Dictionary<ulong, FileOpeningWindow> _windowsByJobId = new();
         private readonly Dictionary<ulong, FileOpeningFailureWindow> _failureWindowsByJobId = new();
+        /// The requests whose failure window has been dismissed by the user: their failure window must never be
+        /// presented again.
+        private readonly HashSet<ulong> _dismissedFailureJobIds = new();
 
         /// Subscribes to the controller and replays the requests it already tracks, so that pop-up windows
         /// appear for the requests reported by the server before this presenter was started. Must be called
@@ -78,14 +81,18 @@ namespace Infomaniak.kDrive.ViewModels
                 progressWindow.Close();
             }
 
-            if (_failureWindowsByJobId.ContainsKey(request.JobId))
+            if (_failureWindowsByJobId.ContainsKey(request.JobId) || _dismissedFailureJobIds.Contains(request.JobId))
             {
                 return;
             }
 
             Logger.LogInfo($"Presenting the file opening failure window. JobId: {request.JobId}");
-            var window = new FileOpeningFailureWindow(request);
-            window.Closed += (_, _) => _failureWindowsByJobId.Remove(request.JobId);
+            var window = new FileOpeningFailureWindow(request, _failureWindowsByJobId.Count);
+            window.Closed += (_, _) =>
+            {
+                _failureWindowsByJobId.Remove(request.JobId);
+                _dismissedFailureJobIds.Add(request.JobId);
+            };
             _failureWindowsByJobId[request.JobId] = window;
             window.Activate();
         }

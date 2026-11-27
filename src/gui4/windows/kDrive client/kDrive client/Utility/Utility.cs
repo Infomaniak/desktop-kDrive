@@ -328,6 +328,17 @@ namespace Infomaniak.kDrive
             }
         }
 
+        public static void OffsetWindow(Window window, int offset)
+        {
+            IntPtr hWnd = WindowNative.GetWindowHandle(window);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+
+            if (AppWindow.GetFromWindowId(windowId) is AppWindow appWindow)
+            {
+                appWindow.Move(new PointInt32(appWindow.Position.X + offset, appWindow.Position.Y + offset));
+            }
+        }
+
         public static void SetWindowCurrentSize(Window window, int width, int height)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);

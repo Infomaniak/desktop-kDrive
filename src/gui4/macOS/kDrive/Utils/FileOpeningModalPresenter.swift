@@ -58,6 +58,9 @@ final class FileOpeningModalPresenter {
     private var failureWindowJobIdsByDownloadId = [Int64: Int64]()
     private var lastStatusByJobId = [Int64: FileOpeningStatus]()
     private var dismissedJobIds = Set<Int64>()
+    /// The requests whose failure window has been dismissed by the user: their failure window must never be
+    /// presented again.
+    private var failureWindowDismissedJobIds = Set<Int64>()
 
     init() {
         fileOpeningStatusCacheObservable.fileOpeningStatusPublisher
@@ -144,7 +147,10 @@ final class FileOpeningModalPresenter {
     /// remote node id) comes from the failure status itself.
     private func presentFailureWindow(status: FileOpeningStatus, lastKnownStatus: FileOpeningStatus?) {
         let jobId = status.jobId
-        guard failureWindowEntriesByJobId[jobId] == nil else { return }
+        // The failure pop-up windows are visually identical for the same failure: a window dismissed by the user is
+        // never presented again, and a new window is presented with a cascade offset relative to the failure windows
+        // already open, so that the user can tell them apart.
+        guard failureWindowEntriesByJobId[jobId] == nil, !failureWindowDismissedJobIds.contains(jobId) else { return }
 
         let itemName = lastKnownStatus?.itemName ?? ""
         let itemPath = lastKnownStatus?.itemPath ?? ""
@@ -161,6 +167,7 @@ final class FileOpeningModalPresenter {
         )
         let window = makeWindow(contentViewController: hostingController, standardTitleBar: status.phase == .notFound)
         configure(window, width: 392, height: failureWindowHeight(phase: status.phase, itemName: itemName))
+        cascadeFailureWindow(window)
 
         let entry = FailureWindowEntry(window: window, hostingController: hostingController, jobId: jobId,
                                        phase: status.phase, itemName: itemName, itemPath: itemPath,
@@ -258,11 +265,27 @@ final class FileOpeningModalPresenter {
     }
 
     private func closeFailureWindow(for jobId: Int64) {
-        guard let entry = failureWindowEntriesByJobId.removeValue(forKey: jobId) else { return }
+        guard let entry = failureWindowEntriesByJobId.removeValue(forKey: jobId) else {
+            IKLogger.general.error("[KD] No failure window to close for jobId=\(jobId)")
+            return
+        }
+        IKLogger.general.info("[KD] Closing the file opening failure window jobId=\(jobId)")
+        failureWindowDismissedJobIds.insert(jobId)
         if let downloadId = entry.downloadId {
             failureWindowJobIdsByDownloadId.removeValue(forKey: downloadId)
         }
         entry.window.orderOut(nil)
+    }
+
+    /// Offsets the failure window from the screen center by one cascade step per failure window already open, so
+    /// that simultaneous failure windows remain distinguishable: stacked at the exact same position, the identical
+    /// window underneath would take the place of the one the user closes, making the Close button appear
+    /// ineffective. The offset wraps around to keep the windows on screen.
+    private func cascadeFailureWindow(_ window: NSWindow) {
+        let cascadeStep: CGFloat = 24
+        let offset = CGFloat(failureWindowEntriesByJobId.count % 6) * cascadeStep
+        guard offset > 0 else { return }
+        window.setFrameTopLeftPoint(NSPoint(x: window.frame.maxX + offset, y: window.frame.maxY - offset))
     }
 
     // MARK: - Window management

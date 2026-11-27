@@ -38,11 +38,17 @@ namespace Infomaniak.kDrive.CustomControls
         private const int _heightDownloadFailed = 336;
 
         private readonly FileOpeningRequest _request;
+        /// Index of the window in the cascade of the failure windows currently presented: 0 for the only or first
+        /// one, 1 for the second, etc. The failure windows are centered on the work area and visually identical for
+        /// the same failure: without the offset, the identical window underneath would take the place of the one the
+        /// user closes, making the Close button appear ineffective.
+        private readonly int _cascadeOffsetIndex;
 
-        public FileOpeningFailureWindow(FileOpeningRequest request)
+        public FileOpeningFailureWindow(FileOpeningRequest request, int cascadeOffsetIndex)
         {
             InitializeComponent();
             _request = request;
+            _cascadeOffsetIndex = cascadeOffsetIndex;
             RootPanel.DataContext = request;
             _request.PropertyChanged += Request_PropertyChanged;
             if (request.IsNotFound)
@@ -80,6 +86,11 @@ namespace Infomaniak.kDrive.CustomControls
         private void FileOpeningFailureWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             Utility.CenterWindow(this);
+            if (_cascadeOffsetIndex > 0)
+            {
+                Utility.OffsetWindow(this, (_cascadeOffsetIndex % 6) * 24);
+            }
+
             Activated -= FileOpeningFailureWindow_Activated;
         }
 
