@@ -66,6 +66,10 @@ class Drive {
         [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
         void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
 
+        // Maximum number of public links of the drive offer, 0 when unknown.
+        [[nodiscard]] int64_t sharedLinkQuota() const { return _sharedLinkQuota; }
+        void setSharedLinkQuota(const int64_t sharedLinkQuota) { _sharedLinkQuota = sharedLinkQuota; }
+
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
@@ -143,6 +147,7 @@ class Drive {
         bool _accessDenied{false};
 
         PackInfo _packInfo;
+        int64_t _sharedLinkQuota{0};
 };
 
 using DriveList = std::vector<Drive>;
