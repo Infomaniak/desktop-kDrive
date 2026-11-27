@@ -116,6 +116,8 @@ struct FileOpeningStatusView: View {
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(ColorToken.Surface.primary.asColor)
                 .frame(width: 24, height: 24)
+                // Same as the failure window's buttons: the hit area must cover the whole circle, not the glyph only.
+                .contentShape(Circle())
                 .background(Circle().fill(ColorToken.Text.primary.asColor))
         }
         .buttonStyle(.plain)

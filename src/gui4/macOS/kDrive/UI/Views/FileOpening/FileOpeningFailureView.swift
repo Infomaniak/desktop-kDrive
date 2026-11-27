@@ -191,6 +191,11 @@ struct FileOpeningFailureView: View {
                 .foregroundStyle(foreground)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
+                // The hit area of a button styled with the plain style is the content shape of its label, which for
+                // a Text is the rendered text only: extend it to the capsule, else the clicks landing on the capsule
+                // around the text are ignored — or start a window drag, the failure window being movable by its
+                // background.
+                .contentShape(Capsule())
         }
         .background(Capsule().fill(background))
         .buttonStyle(.plain)
