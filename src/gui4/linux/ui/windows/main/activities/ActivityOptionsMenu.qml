@@ -77,7 +77,7 @@ Popup {
                 icon: "qrc:/assets/main/activities/share.svg",
                 iconWidth: 16,
                 iconHeight: 15,
-                enabled: !root.controller.shareLinkCopyPending,
+                enabled: true,
                 separatorBefore: result.length > 0
             });
         }

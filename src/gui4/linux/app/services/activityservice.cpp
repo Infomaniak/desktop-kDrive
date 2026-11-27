@@ -28,8 +28,6 @@
 namespace {
 constexpr char serviceKeyActivity[] = "activity";
 constexpr char actionOpenOnline[] = "openOnline";
-constexpr char actionCopyShareLink[] = "copyShareLink";
-constexpr KDC::ServiceActionTracker::ScopeId globalShareLinkScope = 0;
 
 bool isSupportedWebUrl(const QUrl &url) {
     return url.isValid() && !url.isEmpty() && !url.host().isEmpty() &&
@@ -52,6 +50,23 @@ bool validateActivityTarget(const ServiceActionTracker::ActionKey &actionKey, co
                                  << "| driveDbId:" << driveDbId << "| remoteNodeId:" << QString::fromStdString(remoteNodeId);
     return false;
 }
+
+const char *linkKindName(const ActivityService::LinkKind kind) {
+    return kind == ActivityService::LinkKind::Public ? "public" : "restricted";
+}
+
+ActivityService::LinkCopyResult linkFailureResult(const ExitInfo &exitInfo) {
+    if (exitInfo.code() != ExitCode::BackError) {
+        return ActivityService::LinkCopyResult::Failed;
+    }
+    if (exitInfo.cause() == ExitCause::HttpErrForbidden) {
+        return ActivityService::LinkCopyResult::PermissionDenied;
+    }
+    if (exitInfo.cause() == ExitCause::ShareLinkLimitReached) {
+        return ActivityService::LinkCopyResult::LimitReached;
+    }
+    return ActivityService::LinkCopyResult::Failed;
+}
 } // namespace
 
 ActivityService::ActivityService(CommService &commService, ServiceActionTracker &serviceActionTracker,
@@ -66,22 +81,10 @@ ActivityService::ActivityService(CommService &commService, ServiceActionTracker 
                            emit loadingChanged();
                        }
                    });
-    (void) connect(
-            &_serviceActionTracker, &ServiceActionTracker::actionPendingChanged, this,
-            [this](const ServiceActionTracker::ServiceKey &serviceKey, const ServiceActionTracker::ActionKey &actionKey,
-                   const ServiceActionTracker::ScopeId scopeId, const bool) {
-                if (serviceKey == serviceKeyActivity && actionKey == actionCopyShareLink && scopeId == globalShareLinkScope) {
-                    emit shareLinkCopyPendingChanged();
-                }
-            });
 }
 
 bool ActivityService::loading() const {
     return _serviceActionTracker.isServicePending(serviceKeyActivity);
-}
-
-bool ActivityService::shareLinkCopyPending() const {
-    return _serviceActionTracker.isActionPending(serviceKeyActivity, actionCopyShareLink, globalShareLinkScope);
 }
 
 void ActivityService::openOnline(const GenericId activityLocalId, const DriveDbId driveDbId, const NodeId &remoteNodeId) {
@@ -103,25 +106,27 @@ void ActivityService::openOnline(const GenericId activityLocalId, const DriveDbI
                                               });
 }
 
-void ActivityService::copyShareLink(const GenericId activityLocalId, const DriveDbId driveDbId, const NodeId &remoteNodeId) {
-    if (!validateActivityTarget(actionCopyShareLink, activityLocalId, driveDbId, remoteNodeId)) {
-        emit shareLinkCopyFailed(activityLocalId);
-        emit actionFailed(activityLocalId);
+void ActivityService::copyLink(const LinkKind kind, const DriveDbId driveDbId, const NodeId &remoteNodeId,
+                               const LinkCopyCallback &callback) {
+    if (driveDbId <= 0 || remoteNodeId.empty()) {
+        qCWarning(lcActivityService) << "Link copy rejected because its target is incomplete | kind:" << linkKindName(kind)
+                                     << "| driveDbId:" << driveDbId << "| remoteNodeId:" << QString::fromStdString(remoteNodeId);
+        callback(LinkCopyResult::Failed);
         return;
     }
-    if (!beginAction(actionCopyShareLink, globalShareLinkScope)) {
-        return;
-    }
-    emit shareLinkCopyStarted(activityLocalId);
 
     const QPointer<ActivityService> guard{this};
-    _commService.requestSyncGetPublicLinkUrl(driveDbId, remoteNodeId,
-                                             [guard, activityLocalId](const ExitInfo &exitInfo, const QString &urlText) {
-                                                 if (guard.isNull()) {
-                                                     return;
-                                                 }
-                                                 guard->handlePublicLinkUrl(exitInfo, urlText, activityLocalId);
-                                             });
+    const auto onReply = [guard, kind, callback](const ExitInfo &exitInfo, const QString &urlText) {
+        if (guard.isNull()) {
+            return;
+        }
+        handleLinkUrl(kind, exitInfo, urlText, callback);
+    };
+    if (kind == LinkKind::Public) {
+        _commService.requestSyncGetPublicLinkUrl(driveDbId, remoteNodeId, onReply);
+    } else {
+        _commService.requestSyncGetPrivateLinkUrl(driveDbId, remoteNodeId, onReply);
+    }
 }
 
 void ActivityService::handlePrivateLinkUrl(const ExitInfo &exitInfo, const QString &urlText, const GenericId activityLocalId) {
@@ -145,32 +150,29 @@ void ActivityService::handlePrivateLinkUrl(const ExitInfo &exitInfo, const QStri
     }
 }
 
-void ActivityService::handlePublicLinkUrl(const ExitInfo &exitInfo, const QString &urlText, const GenericId activityLocalId) {
-    endAction(actionCopyShareLink, globalShareLinkScope);
+void ActivityService::handleLinkUrl(const LinkKind kind, const ExitInfo &exitInfo, const QString &urlText,
+                                    const LinkCopyCallback &callback) {
     if (!exitInfo) {
-        notifyRequestFailure(exitInfo, RequestNum::SYNC_GETPUBLICLINKURL, activityLocalId);
-        emit shareLinkCopyFailed(activityLocalId);
+        qCWarning(lcActivityService) << "Link request failed | kind:" << linkKindName(kind) << "| code:" << exitInfo.code()
+                                     << "| cause:" << exitInfo.cause();
+        callback(linkFailureResult(exitInfo));
         return;
     }
 
     const QUrl url{urlText};
     if (!isSupportedWebUrl(url)) {
-        qCWarning(lcActivityService) << "Public activity URL is empty or invalid"
-                                     << "| activityLocalId:" << activityLocalId;
-        emit shareLinkCopyFailed(activityLocalId);
-        emit actionFailed(activityLocalId);
+        qCWarning(lcActivityService) << "Link URL is empty or invalid | kind:" << linkKindName(kind);
+        callback(LinkCopyResult::Failed);
         return;
     }
     auto *const clipboard = QGuiApplication::clipboard();
     if (clipboard == nullptr) {
-        qCWarning(lcActivityService) << "Clipboard unavailable for activity share link"
-                                     << "| activityLocalId:" << activityLocalId;
-        emit shareLinkCopyFailed(activityLocalId);
-        emit actionFailed(activityLocalId);
+        qCWarning(lcActivityService) << "Clipboard unavailable for the link | kind:" << linkKindName(kind);
+        callback(LinkCopyResult::Failed);
         return;
     }
     clipboard->setText(url.toString());
-    emit shareLinkCopied(activityLocalId);
+    callback(LinkCopyResult::Copied);
 }
 
 bool ActivityService::beginAction(const ServiceActionTracker::ActionKey &actionKey,

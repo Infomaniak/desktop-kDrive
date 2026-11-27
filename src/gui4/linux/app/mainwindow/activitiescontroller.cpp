@@ -26,6 +26,7 @@
 #include <QDesktopServices>
 #include <QFileInfo>
 #include <QLoggingCategory>
+#include <QPointer>
 #include <QUrl>
 
 #include <algorithm>
@@ -132,17 +133,6 @@ ActivitiesController::ActivitiesController(const ActivityStore &activityStore, c
                    &ActivitiesController::refreshPageState);
     (void) connect(&_networkStatusObserver, &NetworkStatusObserver::offlineChanged, this,
                    &ActivitiesController::refreshPageState);
-    (void) connect(&_activityService, &ActivityService::shareLinkCopyPendingChanged, this,
-                   &ActivitiesController::shareLinkCopyPendingChanged);
-    (void) connect(&_activityService, &ActivityService::shareLinkCopyStarted, this, [this](const GenericId activityLocalId) {
-        emit shareLinkCopyStarted(ActivityListModel::activityRowId(activityLocalId));
-    });
-    (void) connect(&_activityService, &ActivityService::shareLinkCopied, this, [this](const GenericId activityLocalId) {
-        emit shareLinkCopied(ActivityListModel::activityRowId(activityLocalId));
-    });
-    (void) connect(&_activityService, &ActivityService::shareLinkCopyFailed, this, [this](const GenericId activityLocalId) {
-        emit shareLinkCopyFailed(ActivityListModel::activityRowId(activityLocalId));
-    });
     (void) connect(&_activityService, &ActivityService::actionFailed, this, [this](const GenericId activityLocalId) {
         emit actionFailed(ActivityListModel::activityRowId(activityLocalId));
     });
@@ -241,13 +231,27 @@ void ActivitiesController::copyShareLink(const QString &rowId) {
         emit actionFailed(rowId);
         return;
     }
+
     const auto context = actionSyncContext(*target, rowId);
     if (!context.has_value()) {
         emit shareLinkCopyFailed(rowId);
         emit actionFailed(rowId);
         return;
     }
-    _activityService.copyShareLink(target->activityLocalId, context->drive.dbId(), target->remoteNodeId);
+
+    emit shareLinkCopyStarted(rowId);
+    const QPointer<ActivitiesController> guard{this};
+    _activityService.copyLink(ActivityService::LinkKind::Public, context->drive.dbId(), target->remoteNodeId,
+                              [guard, rowId](const ActivityService::LinkCopyResult result) {
+                                  if (guard.isNull()) {
+                                      return;
+                                  }
+                                  if (result == ActivityService::LinkCopyResult::Copied) {
+                                      emit guard->shareLinkCopied(rowId);
+                                  } else {
+                                      emit guard->shareLinkCopyFailed(rowId);
+                                  }
+                              });
 }
 
 void ActivitiesController::requestFixErrors(const QString &rowId) {

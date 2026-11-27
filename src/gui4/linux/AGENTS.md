@@ -775,6 +775,9 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`,
   owns browser and clipboard side effects, and tracks concurrent actions without owning activity history.
+  `copyLink(kind, ...)` copies the restricted or public link and returns a typed result (`Copied`, `PermissionDenied`
+  for `HttpErrForbidden`, `LimitReached` for `ShareLinkLimitReached`, `Failed` otherwise) instead of notifying a generic
+  error: the caller shows it.
 - `app/services/updatestatusservice.*`: process-wide updater state and announced version. The Update button sends
   `UPDATER_START_INSTALLER`: the server downloads and installs the AppImage update, then restarts the application on it,
   on the Settings window, without any client request. An automatic update (scheduled check, automatic updates enabled)
