@@ -616,6 +616,18 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                 return ExitCode::DataError;
             }
         } else {
+            // Refuse to process an item that is not located under the sync root or whose path traverses a symbolic link:
+            // the content of an item located outside of the sync root could otherwise be uploaded. This check must be done
+            // before any modification of the item or of its metadata, e.g. by convertToPlaceholder or forceStatus.
+            if (const auto checkIfPathTraversesLinkError =
+                        IoHelper::checkIfPathTraversesLink(absoluteLocalFilePath, _syncPal->localPath());
+                checkIfPathTraversesLinkError != IoError::Success &&
+                checkIfPathTraversesLinkError != IoError::NoSuchFileOrDirectory) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(
+                                                   absoluteLocalFilePath, checkIfPathTraversesLinkError));
+                return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
+            }
+
 #if defined(KD_WINDOWS)
             // Don't do this on macOS as status and pin state are set at the end of the upload
             if (ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, true); !exitInfo) {
@@ -635,17 +647,6 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                 !exitInfoForceStatus) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath)
                                                                          << L": " << exitInfoForceStatus);
-            }
-
-            // Refuse to process an item that is not located under the sync root or whose path traverses a symbolic link:
-            // the content of an item located outside of the sync root could otherwise be uploaded.
-            if (const auto checkIfPathTraversesLinkError =
-                        IoHelper::checkIfPathTraversesLink(absoluteLocalFilePath, _syncPal->localPath());
-                checkIfPathTraversesLinkError != IoError::Success &&
-                checkIfPathTraversesLinkError != IoError::NoSuchFileOrDirectory) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(
-                                                   absoluteLocalFilePath, checkIfPathTraversesLinkError));
-                return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
             }
 
             uint64_t filesize = 0;
