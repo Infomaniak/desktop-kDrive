@@ -207,6 +207,7 @@ enum class NetworkErrorCode {
     LockError,
     LimitExceededError,
     QuotaExceededError,
+    PermissionDenied,
     UnknownError, // None of the handled errors
     EnumEnd
 };

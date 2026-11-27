@@ -75,7 +75,8 @@ NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
             {"access_denied", NetworkErrorCode::AccessDenied},
             {"limit_exceeded_error", NetworkErrorCode::LimitExceededError},
             {"quota_exceeded_error", NetworkErrorCode::QuotaExceededError},
-            {"lock_error", NetworkErrorCode::LockError}};
+            {"lock_error", NetworkErrorCode::LockError},
+            {"permission_denied", NetworkErrorCode::PermissionDenied}};
 
     if (const auto it = errorCodeMap.find(errorCode); it != errorCodeMap.cend()) return it->second;
 
