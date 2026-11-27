@@ -1922,7 +1922,7 @@ ExitInfo SyncPal::handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath
     return ExitCode::Ok;
 }
 
-bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, InSyncWithDbOption options) {
+bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, const InSyncWithDbOption options) {
     std::optional<NodeId> localNodeId;
     return isLocalItemInSyncWithDb(localAbsolutePath, options, localNodeId);
 }

@@ -1558,35 +1558,6 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             break;
         }
         case OperationType::Move: {
-            // Delete the item from local replica
-
-            if (!_syncPal->isLocalItemInSyncWithDb(absoluteLocalFilePath, SyncPal::InSyncWithDbOption::IgnoreMove)) {
-                // We first try to put the file back to its original location, if it fail we try to rescue it
-                const SyncPath originePath = _syncPal->localPath() / syncOp->affectedNode()->moveOriginInfos().normalizedPath();
-                LocalMoveJob moveJob(_syncPal->localPath(), absoluteLocalFilePath, originePath);
-                removeFromDb = false;
-
-                if (ExitInfo exitInfo = moveJob.runSynchronously(); !exitInfo) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Failed to move file back to its original location: "
-                                                       << Utility::formatSyncPath(absoluteLocalFilePath) << L" " << exitInfo);
-
-                    removeFromDb = true;
-                   FileRescuer fileRescuer(_syncPal);
-                    if (const auto exitInfo = fileRescuer.rescueItem(relativeLocalPath, syncOp->affectedNode()->type());
-                        !exitInfo) {
-                        LOGW_WARN(_logger,
-                                  L"Failed to rescue item: " << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
-                        return exitInfo;
-                    }
-                }
-            } else {
-                const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
-                if (!remoteNodeId.empty()) {
-                    SyncLocalDeleteJob deleteJob(_syncPal, relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
-                    deleteJob.setBypassCheck(true);
-                    deleteJob.runSynchronously();
-                }
-            }
             cancelType = CancelType::Move;
             break;
         }
@@ -1634,6 +1605,55 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             return exitInfo;
         }
     }
+    return ExitCode::Ok;
+}
+
+ExitInfo ExecutorWorker::handleForbiddenMove(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &removeFromDb) {
+    const SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalPath;
+
+    if (syncOp->affectedNode()->type() == NodeType::File &&
+        _syncPal->isLocalItemInSyncWithDb(absoluteLocalFilePath, SyncPal::InSyncWithDbOption::IgnoreMove)) {
+        const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
+        if (remoteNodeId.empty()) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve node ID for " << Utility::formatSyncPath(relativeLocalPath));
+            return ExitCode::DataError;
+        }
+
+        SyncLocalDeleteJob deleteJob(_syncPal, relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
+        deleteJob.setBypassCheck(true);
+        deleteJob.runSynchronously();
+        return ExitCode::Ok;
+    }
+
+    const SyncPath originePath = _syncPal->localPath() / syncOp->affectedNode()->moveOriginInfos().path();
+    LocalMoveJob moveJob(_syncPal->localPath(), absoluteLocalFilePath, originePath);
+    removeFromDb = false;
+
+    ExitInfo exitInfo = moveJob.runSynchronously();
+
+    if (exitInfo.code() == ExitCode::Ok) {
+        _syncPal->setRestart(true);
+        if (const auto exitInfo = removeDependentOps(syncOp); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::removeDependentOps");
+            return exitInfo;
+        }
+        if (!deleteOpNodes(syncOp)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::deleteOpNodes");
+            return ExitCode::DataError;
+        }
+        return ExitCode::Ok;
+    }
+
+    LOGW_SYNCPAL_WARN(_logger, L"Failed to move file back to its original location: "
+                                       << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
+
+    removeFromDb = true;
+    FileRescuer fileRescuer(_syncPal);
+    if (const auto exitInfo = fileRescuer.rescueItem(relativeLocalPath, syncOp->affectedNode()->type()); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to rescue item: " << Utility::formatSyncPath(relativeLocalPath) << L" " << exitInfo);
+        return exitInfo;
+    }
+
     return ExitCode::Ok;
 }
 
