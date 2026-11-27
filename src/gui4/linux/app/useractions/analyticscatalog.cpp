@@ -61,6 +61,11 @@ void addMainWindowEvents(QHash<QString, Event> &events) {
     addEvents(events, u"main.toolbar"_s, u"navBar"_s, {{u"settings"_s, u"openSettings"_s}, {u"support"_s, u"openSupportWeb"_s}});
     addEvents(events, u"main.toolbar"_s, u"startPauseButton"_s,
               {{u"pauseSync"_s, u"pauseSync"_s}, {u"resumeSync"_s, u"startSync"_s}});
+    addEvents(events, u"main.toolbar.syncMenu"_s, u"startPauseButton"_s,
+              {{u"pauseSync"_s, u"pauseSync"_s},
+               {u"resumeSync"_s, u"startSync"_s},
+               {u"pauseAll"_s, u"pauseAllSyncs"_s},
+               {u"resumeAll"_s, u"startAllSyncs"_s}});
     addEvents(events, u"main.sidebar.upsell"_s, u"upsell"_s,
               {{u"myKsuitePlus"_s, u"myKsuitePlus"_s}, {u"kSuitePro"_s, u"kSuitePro"_s}});
     addEvents(events, u"main.sidebar.syncSelector"_s, u"syncSelector"_s, {{u"select"_s, u"syncSelected"_s}});

@@ -113,7 +113,7 @@ Button {
     }
 
     contentItem: Item {
-        Item {
+        IKSyncIcon {
             id: leadingIcon
 
             anchors.left: parent.left
@@ -121,19 +121,8 @@ Button {
             anchors.verticalCenter: parent.verticalCenter
             width: IKMainWindow.syncSelectorIconSize
             height: IKMainWindow.syncSelectorIconSize
-
-            IKDriveIcon {
-                anchors.fill: parent
-                visible: !root.advancedSync
-                driveColor: root.driveColor
-            }
-
-            IKTintedIcon {
-                anchors.fill: parent
-                visible: root.advancedSync
-                source: "qrc:/assets/main/folder.svg"
-                color: root.driveColor
-            }
+            advancedSync: root.advancedSync
+            driveColor: root.driveColor
         }
 
         Column {
