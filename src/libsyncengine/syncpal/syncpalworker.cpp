@@ -331,18 +331,18 @@ void SyncPalWorker::startFSOWorker(Worker &fsoWorker) {
 
 void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncStep step) {
     LOG_IF_FAIL(rfsoWorker.worker && rfsoWorker.side == ReplicaSide::Remote)
-
     switch (step) {
-        case SyncStep::Idle: {
+        case SyncStep::Idle:
+        case SyncStep::UpdateDetection1: {
             if (rfsoWorker.isInProgress) return;
 
-            LOG_DEBUG(_logger, "Resuming RFSO until the synchronization leaves the Idle state.");
+            LOG_DEBUG(_logger, "Resuming RFSO until the synchronization leaves the Idle/UpdateDetection1 state.");
             rfsoWorker.worker->start();
             rfsoWorker.isInProgress = true;
 
             break;
         }
-        case SyncStep::UpdateDetection1: {
+        case SyncStep::UpdateDetection2: {
             if (!rfsoWorker.isInProgress) return;
 
             LOG_DEBUG(_logger, "Stopping RFSO as long as the synchronization does not reach the Done or Idle state.");
