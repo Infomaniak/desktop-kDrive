@@ -40,6 +40,7 @@
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/checkhashmatchjob.h"
 #include "jobs/network/kDrive_API/itemsexistjob.h"
+#include "jobs/network/kDrive_API/postfilelinkjob.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
@@ -2104,5 +2105,42 @@ void TestNetworkJobs::testLongPollJobWithoutToken() {
 
     CPPUNIT_ASSERT_THROW_MESSAGE("LongPollJob did not throw as expected", LongPollJob(_driveDbId, "dummy_cursor_content"),
                                  EmptyTokenError);
+}
+
+void TestNetworkJobs::testPostFileLinkErrorCauses() {
+    using Response = Poco::Net::HTTPResponse;
+
+    class PostFileLinkJobMock final : public PostFileLinkJob {
+        public:
+            PostFileLinkJobMock(const DriveDbId driveDbId, const Response::HTTPStatus status) :
+                PostFileLinkJob(driveDbId, "dummy_node_id"),
+                _status(status) {}
+
+            [[nodiscard]] Response httpResponse() const override { return Response(_status); }
+
+            ExitInfo handleErrorCode(const std::string &errorCode) {
+                return handleError(R"({"result":"error","error":{"code":")" + errorCode + R"("}})", Poco::URI());
+            }
+
+        private:
+            Response::HTTPStatus _status;
+    };
+
+    const auto checkCause = [this](const Response::HTTPStatus status, const std::string &errorCode,
+                                   const ExitCause expectedCause) {
+        PostFileLinkJobMock job(_driveDbId, status);
+        const auto exitInfo = job.handleErrorCode(errorCode);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(errorCode, ExitInfo(ExitCode::BackError, expectedCause), exitInfo);
+    };
+
+    checkCause(Response::HTTP_BAD_REQUEST, "limit_exceeded_error", ExitCause::ShareLinkLimitReached);
+    checkCause(Response::HTTP_BAD_REQUEST, "permission_denied", ExitCause::HttpErrForbidden);
+    checkCause(Response::HTTP_FORBIDDEN, "forbidden_error", ExitCause::HttpErrForbidden);
+    checkCause(Response::HTTP_FORBIDDEN, "access_denied", ExitCause::HttpErrForbidden);
+    // Used to fetch the existing link instead of creating a new one.
+    checkCause(Response::HTTP_BAD_REQUEST, "file_share_link_already_exists", ExitCause::ShareLinkAlreadyExists);
+    checkCause(Response::HTTP_BAD_REQUEST, "unknown_error_code", ExitCause::HttpErr);
+    // A 404 keeps the cause given by the base class, whatever the error code.
+    checkCause(Response::HTTP_NOT_FOUND, "forbidden_error", ExitCause::NotFound);
 }
 } // namespace KDC

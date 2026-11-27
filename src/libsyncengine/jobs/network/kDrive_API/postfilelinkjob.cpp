@@ -17,8 +17,10 @@
  */
 
 #include "postfilelinkjob.h"
+#include "jobs/network/networkjobsparams.h"
 
 #include <Poco/Net/HTTPRequest.h>
+#include <Poco/Net/HTTPResponse.h>
 
 namespace KDC {
 
@@ -40,6 +42,32 @@ std::string PostFileLinkJob::getSpecificUrl() {
 
 void KDC::PostFileLinkJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("right", "public");
+}
+
+// Refines the generic causes so that the GUI can explain why the link could not be created.
+ExitInfo PostFileLinkJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+    auto exitInfo = AbstractTokenNetworkJob::handleError(replyBody, uri);
+    if (exitInfo.code() != ExitCode::BackError) return exitInfo;
+
+    // 401 and 404 responses are fully handled by the base class, whatever the error code.
+    if (const auto status = httpResponse().getStatus();
+        status == Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED || status == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+        return exitInfo;
+    }
+
+    switch (getNetworkErrorCode(backError().code())) {
+        case NetworkErrorCode::LimitExceededError:
+            exitInfo.setCause(ExitCause::ShareLinkLimitReached);
+            break;
+        case NetworkErrorCode::ForbiddenError:
+        case NetworkErrorCode::PermissionDenied:
+            exitInfo.setCause(ExitCause::HttpErrForbidden);
+            break;
+        default:
+            break;
+    }
+
+    return exitInfo;
 }
 
 } // namespace KDC
