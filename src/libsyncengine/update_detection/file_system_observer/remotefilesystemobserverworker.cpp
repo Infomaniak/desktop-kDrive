@@ -1497,6 +1497,9 @@ ExitInfo RemoteFileSystemObserverWorker::setSyncFolderListingCursor(const Cursor
 
 void RemoteFileSystemObserverWorker::init() {
     ISyncWorker::init();
+
+    // We force a `listing/continue` every time the worker is resumed, to ensure that we do not miss any remote change.
+    setInitFlagValue(true);
 }
 
 ExitInfo RemoteFileSystemObserverWorker::setBlackList(bool &blacklistHasChanged) {
