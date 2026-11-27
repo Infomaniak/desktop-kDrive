@@ -331,18 +331,18 @@ void SyncPalWorker::startFSOWorker(Worker &fsoWorker) {
 
 void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncStep step) {
     LOG_IF_FAIL(rfsoWorker.worker && rfsoWorker.side == ReplicaSide::Remote)
-
     switch (step) {
-        case SyncStep::Idle: {
+        case SyncStep::Idle:
+        case SyncStep::UpdateDetection1: {
             if (rfsoWorker.isInProgress) return;
 
-            LOG_DEBUG(_logger, "Resuming RFSO until the synchronization leaves the Idle state.");
+            LOG_DEBUG(_logger, "Resuming RFSO until the synchronization leaves the Idle/UpdateDetection1 state.");
             rfsoWorker.worker->start();
             rfsoWorker.isInProgress = true;
 
             break;
         }
-        case SyncStep::UpdateDetection1: {
+        case SyncStep::UpdateDetection2: {
             if (!rfsoWorker.isInProgress) return;
 
             LOG_DEBUG(_logger, "Stopping RFSO as long as the synchronization does not reach the Done or Idle state.");
@@ -711,6 +711,16 @@ SyncStep SyncPalWorker::nextStep() const {
                 (areLiveSnapshotsUpdated || _syncPal->restart()))
                 return SyncStep::UpdateDetection1;
             else {
+                if (_syncPal->liveSnapshot(ReplicaSide::Local).updated() &&
+                    !_syncPal->liveSnapshot(ReplicaSide::Remote).updated() && _syncPal->_remoteFSObserverWorker->updating()) {
+                    // If the RFSO is backing off due to empty responses to previous listing continue requests,
+                    // reset the backoff to avoid delaying the processing of pending local changes.
+                    if (const auto rfso =
+                                std::static_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker)) {
+                        rfso->resetListingContinueBackoff();
+                    }
+                }
+
                 _syncPal->resetNbOfPropagatedLocalDeleteOps();
                 return SyncStep::Idle;
             }

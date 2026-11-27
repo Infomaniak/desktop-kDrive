@@ -29,6 +29,7 @@
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/utility/exponentialbackoff.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
@@ -199,6 +200,7 @@ void RemoteFileSystemObserverWorker::execute() {
         }
 
         if (!_liveSnapshot.isValid()) {
+            _listingContinueBackoff.reset();
             exitInfo = generateInitialSnapshot();
             if (!exitInfo) {
                 LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot: " << exitInfo);
@@ -265,6 +267,11 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidListingSyncFolderCursorExis
     validListingCursorsExist = true;
 
     return ExitCode::Ok;
+}
+
+void RemoteFileSystemObserverWorker::forceUpdate() {
+    FileSystemObserverWorker::forceUpdate();
+    _listingContinueBackoff.reset();
 }
 
 ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotValidity(bool &remoteSnapshotCanBeReused) {
@@ -537,7 +544,13 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
     setUpdateFlagValue(true);
 
+    while (!_listingContinueBackoff.waitUntilCanProceed(std::chrono::seconds(1))) {
+        if (stopAsked()) return ExitCode::Ok;
+    }
+
     while (hasMore && pageCount < maxListingPageCount) {
+        if (stopAsked()) return ExitCode::Ok;
+
         hasMore = false;
 
         exitInfo = mainProcessingTask(remoteDirId, cursorData, hasMore);
@@ -1024,6 +1037,19 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
     if (const auto exitInfo = createActionInfoList(actionArray, actionInfoList); !exitInfo) return exitInfo;
     if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoList); !exitInfo) return exitInfo;
 
+    if (!initializing() && actionInfoList.empty()) {
+        (void) _listingContinueBackoff.increase();
+
+        LOG_SYNCPAL_DEBUG(
+                _logger,
+                "No actions to process for driveDbId="
+                        << _driveDbId << " backing off listing continue for "
+                        << std::chrono::duration_cast<std::chrono::seconds>(_listingContinueBackoff.remainingTime()).count()
+                        << "s");
+    } else if (!initializing()) {
+        _listingContinueBackoff.reset();
+    }
+
     // Filter out items
     // - whose actions should be ignored, or
     // - whose names contain unsupported characters.
@@ -1473,7 +1499,7 @@ void RemoteFileSystemObserverWorker::init() {
     ISyncWorker::init();
 
     // We force a `listing/continue` every time the worker is resumed, to ensure that we do not miss any remote change.
-    setUpdateFlagValue(true);
+    setInitFlagValue(true);
 }
 
 ExitInfo RemoteFileSystemObserverWorker::setBlackList(bool &blacklistHasChanged) {
