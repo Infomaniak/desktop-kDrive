@@ -41,7 +41,7 @@ ExponentialBackoff::Duration ExponentialBackoff::increase() {
     } else if (_backoff >= _maxBackoff / _multiplier) {
         _backoff = _maxBackoff;
     } else {
-        _backoff *= _multiplier;
+        _backoff = std::chrono::ceil<Duration>(_backoff * _multiplier);
     }
     _start = Clock::now();
     return _backoff;
@@ -62,6 +62,8 @@ bool ExponentialBackoff::waitUntilCanProceed(const std::optional<Duration> timeo
             const auto elapsed = std::chrono::duration_cast<Duration>(Clock::now() - waitStart);
             if (elapsed >= *timeout) return false;
             sleepDuration = std::min(sleepDuration, *timeout - elapsed);
+            sleepDuration = std::min(sleepDuration,
+                                     Duration(5000)); // Sleep at most 5 seconds to check for reset() or increase() calls
         }
         std::this_thread::sleep_for(sleepDuration);
     }

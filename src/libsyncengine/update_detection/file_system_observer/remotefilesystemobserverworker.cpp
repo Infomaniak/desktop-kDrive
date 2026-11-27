@@ -1038,7 +1038,7 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
     if (const auto exitInfo = fillActionsFilesInfo(actionsFilesArray, actionInfoList); !exitInfo) return exitInfo;
 
     if (!initializing() && actionInfoList.empty()) {
-        _listingContinueBackoff.increase();
+        (void) _listingContinueBackoff.increase();
 
         LOG_SYNCPAL_DEBUG(
                 _logger,

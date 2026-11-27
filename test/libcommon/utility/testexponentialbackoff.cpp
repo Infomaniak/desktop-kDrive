@@ -67,8 +67,8 @@ void TestExponentialBackoff::testCanProceedAfterBackoff() {
 
 void TestExponentialBackoff::testWaitUntilCanProceed() {
 	ExponentialBackoff backoff(50ms, 1s);
+    const auto start = std::chrono::steady_clock::now();
 	(void) backoff.increase();
-	const auto start = std::chrono::steady_clock::now();
 	CPPUNIT_ASSERT(backoff.waitUntilCanProceed());
 	CPPUNIT_ASSERT(std::chrono::steady_clock::now() - start >= 50ms);
 	CPPUNIT_ASSERT(backoff.canProceed());
