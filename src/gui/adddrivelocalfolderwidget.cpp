@@ -231,20 +231,7 @@ void AddDriveLocalFolderWidget::initUI() {
     _endButton->setObjectName("defaultbutton");
     _endButton->setFlat(true);
 
-    bool skipExtSetup = true;
-#ifdef Q_OS_MAC
-    // Check LiteSync ext authorizations
-    std::string liteSyncExtErrorDescr;
-    bool liteSyncExtOk =
-            CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
-    if (!liteSyncExtErrorDescr.empty()) {
-        qCWarning(lcAddDriveLocalFolderWidget)
-                << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescr.c_str();
-    }
-    skipExtSetup = liteSyncExtOk;
-#endif
-
-    _endButton->setText(skipExtSetup ? tr("END") : tr("CONTINUE"));
+    _endButton->setText(tr("END"));
     buttonsHBox->addWidget(_endButton);
 
     connect(updateButton, &CustomToolButton::clicked, this, &AddDriveLocalFolderWidget::onUpdateFolderButtonTriggered);

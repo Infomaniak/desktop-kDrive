@@ -469,25 +469,6 @@ void CustomExtensionSetupWidget::onFinishedButtonTriggered(bool checked) {
 void CustomExtensionSetupWidget::onUpdateProgress() const {
     int progress = 0;
 
-#ifdef Q_OS_MAC
-    // Check LiteSync ext authorizations
-    std::string liteSyncExtErrorDescr;
-    const bool liteSyncExtStep1Ok = CommonUtility::isLiteSyncExtEnabled();
-    const bool liteSyncExtStep2Ok = CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
-    if (!liteSyncExtErrorDescr.empty()) {
-        qCWarning(lcCustomExtensionSetupWidget)
-                << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescr.c_str();
-    }
-
-    if (liteSyncExtStep1Ok) {
-        progress = 1;
-
-        if (liteSyncExtStep2Ok) {
-            progress = 2;
-        }
-    }
-#endif
-
     _step1Label->setText(QString("%1 %2").arg(tr("STEP 1"), progress > 0 ? tr("(Done)") : QString()));
     _step2Label->setText(QString("%1 %2").arg(tr("STEP 2"), progress > 1 ? tr("(Done)") : QString()));
 
