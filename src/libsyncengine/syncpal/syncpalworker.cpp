@@ -886,7 +886,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
         if (isDirectory) {
 #ifdef KD_WINDOWS
-            if (std::optional<NodeId> localNodeId; _syncPal->isLocalItemInSyncWithDb(entry.path(), localNodeId)) {
+            if (std::optional<NodeId> localNodeId;
+                _syncPal->isLocalItemInSyncWithDb(entry.path(), SyncPal::InSyncWithDbOption::None, localNodeId)) {
                 // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
                 VfsStatus status;
                 status.isSyncing = false;
@@ -944,7 +945,8 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
             SyncFileItem syncItem;
             if (std::optional<NodeId> localNodeId;
-                !isSymlink && _syncPal->isLocalItemInSyncWithDb(entry.path(), localNodeId) && localNodeId.has_value()) {
+                !isSymlink && _syncPal->isLocalItemInSyncWithDb(entry.path(), SyncPal::InSyncWithDbOption::None, localNodeId) &&
+                localNodeId.has_value()) {
                 syncItem.setLocalNodeId(localNodeId.value());
                 if (ExitInfo exitInfo = _syncPal->vfs()->convertToPlaceholder(entry.path(), syncItem); !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsConvertToPlaceholder : " << Utility::formatSyncPath(entry.path())

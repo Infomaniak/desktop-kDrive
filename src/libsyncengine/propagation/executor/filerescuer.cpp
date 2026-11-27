@@ -47,6 +47,30 @@ ExitInfo FileRescuer::executeRescueMoveJob(const SyncOpPtr syncOp) {
     return ExitCode::Ok;
 }
 
+ExitInfo FileRescuer::rescueItem(SyncPath relativeItemPath, NodeType type) {
+    if (const auto exitInfo = createRescueFolderIfNeeded(); !exitInfo) {
+        return exitInfo;
+    }
+
+    NodeId localNodeId;
+    if (!IoHelper::getNodeId(_syncPal->localPath() / relativeItemPath, localNodeId)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                 L"Failed to get node ID for " << Utility::formatSyncPath(_syncPal->localPath() / relativeItemPath));
+    }
+
+    SyncPath relativeDestinationPath;
+    if (const auto exitInfo = moveToRescueFolder(relativeItemPath, relativeDestinationPath); !exitInfo) {
+        return exitInfo;
+    }
+
+
+    const Error error(_syncPal->syncDbId(), localNodeId, {}, type, relativeItemPath, ConflictType::None, InconsistencyType::None,
+                      CancelType::FileRescued, relativeDestinationPath);
+    _syncPal->addError(error);
+
+    return ExitCode::Ok;
+}
+
 ExitInfo FileRescuer::createRescueFolderIfNeeded() const {
     const auto rescueFolderPath = _syncPal->localPath() / _rescueFolderName;
 

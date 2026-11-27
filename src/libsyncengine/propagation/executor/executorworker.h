@@ -104,6 +104,7 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
         ExitInfo handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath,
                                    bool &ignored, bool &bypassProgressComplete);
         ExitInfo handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored);
+        ExitInfo handleForbiddenMove(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &removeFromDb);
 
         bool isValidDestination(SyncOpPtr syncOp);
         bool enoughLocalSpace(SyncOpPtr syncOp);

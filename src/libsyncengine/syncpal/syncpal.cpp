@@ -1922,12 +1922,13 @@ ExitInfo SyncPal::handleAccessUnknownErrorItem(const SyncPath &relativeLocalPath
     return ExitCode::Ok;
 }
 
-bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath) {
+bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, const InSyncWithDbOption options) {
     std::optional<NodeId> localNodeId;
-    return isLocalItemInSyncWithDb(localAbsolutePath, localNodeId);
+    return isLocalItemInSyncWithDb(localAbsolutePath, options, localNodeId);
 }
 
-bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId) {
+bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, InSyncWithDbOption options,
+                                      std::optional<NodeId> &outLocalNodeId) {
     // Ideally, this logic should be shared with ComputeFSOperationWorker::inferChangeFromDbNode,
     // but for now it would require some refactoring to make it reusable, so we duplicate it here.
     outLocalNodeId.reset();
@@ -1966,22 +1967,24 @@ bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::op
         return false;
     }
 
-    SyncPath localDbRelativePath;
-    SyncPath remoteDbRelativePath;
-    if (!syncDb()->path(dbNode.nodeId(), localDbRelativePath, remoteDbRelativePath, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::path for DbNodeID " << dbNode.nodeId());
-        return false;
-    }
+    if (options != InSyncWithDbOption::IgnoreMove) {
+        SyncPath localDbRelativePath;
+        SyncPath remoteDbRelativePath;
+        if (!syncDb()->path(dbNode.nodeId(), localDbRelativePath, remoteDbRelativePath, found)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::path for DbNodeID " << dbNode.nodeId());
+            return false;
+        }
 
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "dbNodeId " << dbNode.nodeId() << " not found in SyncDb");
-        return false;
-    }
+        if (!found) {
+            LOG_SYNCPAL_WARN(_logger, "dbNodeId " << dbNode.nodeId() << " not found in SyncDb");
+            return false;
+        }
 
-    const SyncPath localRelativePath = CommonUtility::relativePath(localPath(), localAbsolutePath);
+        const SyncPath localRelativePath = CommonUtility::relativePath(localPath(), localAbsolutePath);
 
-    if (localDbRelativePath.lexically_normal() != localRelativePath.lexically_normal()) {
-        return false;
+        if (localDbRelativePath.lexically_normal() != localRelativePath.lexically_normal()) {
+            return false;
+        }
     }
 
     if (fileStat.nodeType == NodeType::Directory) {

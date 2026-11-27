@@ -27,6 +27,7 @@ class FileRescuer {
             _syncPal(syncPal) {}
 
         ExitInfo executeRescueMoveJob(SyncOpPtr syncOp);
+        ExitInfo rescueItem(SyncPath relativeItemPath, NodeType type);
 
         static SyncPath rescueFolderName() { return _rescueFolderName; }
 
