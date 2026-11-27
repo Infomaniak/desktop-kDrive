@@ -7,12 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B6DDA4E130CE020000000001 /* ApplicationShutdownTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE020000000002 /* ApplicationShutdownTests.swift */; };
-		B6DDA4E130CE020000000003 /* XPCShutdownTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE020000000004 /* XPCShutdownTests.swift */; };
-		B6DDA4E130CE020000000005 /* InheritedOutputStreamsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE020000000006 /* InheritedOutputStreamsTests.swift */; };
-		B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */; };
-		B6DDA4E130CE010000000003 /* UIAppLanguageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000004 /* UIAppLanguageTests.swift */; };
-		D4A1F2509E4B478BBA5A1631 /* DriveMaintenanceParsingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A1F2509E4B478BBA5A1632 /* DriveMaintenanceParsingTest.swift */; };
 		37A1C4452E546A9600596DBB /* kDriveCoreUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; };
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
@@ -29,6 +23,10 @@
 		A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */; };
 		B6DDA4E130CE010000000001 /* kDriveTests/UI/PreferencesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */; };
 		B6DDA4E130CE010000000003 /* kDriveTests/UI/UIAppLanguageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000004 /* kDriveTests/UI/UIAppLanguageTests.swift */; };
+		B6DDA4E130CE020000000001 /* kDriveTests/UI/ApplicationShutdownTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE020000000002 /* kDriveTests/UI/ApplicationShutdownTests.swift */; };
+		B6DDA4E130CE020000000003 /* kDriveTests/XPC/XPCShutdownTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE020000000004 /* kDriveTests/XPC/XPCShutdownTests.swift */; };
+		B6DDA4E130CE020000000005 /* kDriveTests/UI/InheritedOutputStreamsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE020000000006 /* kDriveTests/UI/InheritedOutputStreamsTests.swift */; };
+		D4A1F2509E4B478BBA5A1631 /* kDriveTests/Parsing/Jobs/DriveMaintenanceParsingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A1F2509E4B478BBA5A1632 /* kDriveTests/Parsing/Jobs/DriveMaintenanceParsingTest.swift */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
@@ -114,12 +112,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		B6DDA4E130CE020000000002 /* ApplicationShutdownTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/ApplicationShutdownTests.swift; sourceTree = SOURCE_ROOT; };
-		B6DDA4E130CE020000000004 /* XPCShutdownTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/XPC/XPCShutdownTests.swift; sourceTree = SOURCE_ROOT; };
-		B6DDA4E130CE020000000006 /* InheritedOutputStreamsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/InheritedOutputStreamsTests.swift; sourceTree = SOURCE_ROOT; };
-		B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/PreferencesRepositoryTests.swift; sourceTree = SOURCE_ROOT; };
-		B6DDA4E130CE010000000004 /* UIAppLanguageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/UIAppLanguageTests.swift; sourceTree = SOURCE_ROOT; };
-		D4A1F2509E4B478BBA5A1632 /* DriveMaintenanceParsingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/Parsing/Jobs/DriveMaintenanceParsingTest.swift; sourceTree = SOURCE_ROOT; };
 		37A1C4262E546A5200596DBB /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCoreUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C45A2E546CB600596DBB /* kDriveCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -127,10 +119,14 @@
 		7A3127522FED6AED0053CDDE /* libz.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.tbd; path = usr/lib/libz.1.tbd; sourceTree = SDKROOT; };
 		7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A21DC5C3300EDEED00D5257F /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		A9C0FFEE2F00000000000001 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/PreferencesRepositoryTests.swift; sourceTree = SOURCE_ROOT; };
 		B6DDA4E130CE010000000004 /* kDriveTests/UI/UIAppLanguageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/UIAppLanguageTests.swift; sourceTree = SOURCE_ROOT; };
+		B6DDA4E130CE020000000002 /* kDriveTests/UI/ApplicationShutdownTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/ApplicationShutdownTests.swift; sourceTree = SOURCE_ROOT; };
+		B6DDA4E130CE020000000004 /* kDriveTests/XPC/XPCShutdownTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/XPC/XPCShutdownTests.swift; sourceTree = SOURCE_ROOT; };
+		B6DDA4E130CE020000000006 /* kDriveTests/UI/InheritedOutputStreamsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/InheritedOutputStreamsTests.swift; sourceTree = SOURCE_ROOT; };
+		D4A1F2509E4B478BBA5A1632 /* kDriveTests/Parsing/Jobs/DriveMaintenanceParsingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/Parsing/Jobs/DriveMaintenanceParsingTest.swift; sourceTree = SOURCE_ROOT; };
 		F967009E2E95352C00EDD4D7 /* kDriveResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A9C0FFEE2F00000000000001 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		F9ACC5372E5DF50B0081E80B /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -148,7 +144,6 @@
 				Cache/DTOs/SynchroTests.swift,
 				Cache/DTOs/UserUpdateTests.swift,
 				Cache/LogUploadStatusCacheTests.swift,
-				Cache/Observation/ObservableCoherentCacheTests.swift,
 				Cache/Observation/helpers/ObservableData.swift,
 				Cache/Observation/helpers/ObservedAccount.swift,
 				Cache/Observation/helpers/ObservedAvailableDrives.swift,
@@ -159,6 +154,7 @@
 				Cache/Observation/helpers/ObservedSynchros.swift,
 				Cache/Observation/helpers/ObservedUpdater.swift,
 				Cache/Observation/helpers/ObservedUser.swift,
+				Cache/Observation/ObservableCoherentCacheTests.swift,
 				Cache/SettingsCacheTests.swift,
 				Cache/VFSConversionCacheTests.swift,
 				Jobs/LoginJobTests.swift,
@@ -267,6 +263,7 @@
 				Utils/FinderSidebarFavoritesTests.swift,
 				Utils/MacOSPermissionHandlerTests.swift,
 				Utils/NodeURLGeneratorTests.swift,
+				Utils/UpsellOfferTests.swift,
 				XPC/JSON/AnyValidJobResponse.json,
 				XPC/JSON/ParsingError.json,
 				XPC/XPCContinuationTests.swift,
@@ -443,6 +440,10 @@
 			children = (
 				B6DDA4E130CE010000000002 /* kDriveTests/UI/PreferencesRepositoryTests.swift */,
 				B6DDA4E130CE010000000004 /* kDriveTests/UI/UIAppLanguageTests.swift */,
+				B6DDA4E130CE020000000002 /* kDriveTests/UI/ApplicationShutdownTests.swift */,
+				B6DDA4E130CE020000000004 /* kDriveTests/XPC/XPCShutdownTests.swift */,
+				B6DDA4E130CE020000000006 /* kDriveTests/UI/InheritedOutputStreamsTests.swift */,
+				D4A1F2509E4B478BBA5A1632 /* kDriveTests/Parsing/Jobs/DriveMaintenanceParsingTest.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -777,12 +778,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B6DDA4E130CE020000000001 /* ApplicationShutdownTests.swift in Sources */,
-				B6DDA4E130CE020000000003 /* XPCShutdownTests.swift in Sources */,
-				B6DDA4E130CE020000000005 /* InheritedOutputStreamsTests.swift in Sources */,
-				B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */,
-				B6DDA4E130CE010000000003 /* UIAppLanguageTests.swift in Sources */,
-				D4A1F2509E4B478BBA5A1631 /* DriveMaintenanceParsingTest.swift in Sources */,
+				B6DDA4E130CE020000000001 /* kDriveTests/UI/ApplicationShutdownTests.swift in Sources */,
+				B6DDA4E130CE020000000003 /* kDriveTests/XPC/XPCShutdownTests.swift in Sources */,
+				B6DDA4E130CE020000000005 /* kDriveTests/UI/InheritedOutputStreamsTests.swift in Sources */,
+				B6DDA4E130CE010000000001 /* kDriveTests/UI/PreferencesRepositoryTests.swift in Sources */,
+				B6DDA4E130CE010000000003 /* kDriveTests/UI/UIAppLanguageTests.swift in Sources */,
+				D4A1F2509E4B478BBA5A1631 /* kDriveTests/Parsing/Jobs/DriveMaintenanceParsingTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -44,6 +44,7 @@ extension KDC.ConflictResolutionStrategy: Codable {}
 extension KDC.AppStateKey: Codable {}
 extension KDC.TooManyDeletesNotificationType: Codable {}
 extension KDC.TooManyDeletesUserChoice: Codable {}
+extension KDC.UpsellTarget: Codable {}
 extension MsgType: @retroactive Codable {}
 extension SignalNum: @retroactive Codable {}
 extension RequestNum: @retroactive Codable {}

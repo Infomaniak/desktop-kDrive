@@ -99,6 +99,25 @@ final class MainSidebarViewController: BaseViewController {
         return view
     }()
 
+    private lazy var upsellBannerHostingView: WidthAdaptiveHostingView<UpsellBannerView?> = {
+        let hostingView = WidthAdaptiveHostingView<UpsellBannerView?>(rootView: nil)
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        hostingView.setContentCompressionResistancePriority(.required, for: .vertical)
+        hostingView.isHidden = true
+        return hostingView
+    }()
+
+    private lazy var sidebarNotificationBelowUpsellBannerConstraint = sidebarNotificationView.topAnchor.constraint(
+        equalTo: upsellBannerHostingView.bottomAnchor,
+        constant: AppPadding.padding16
+    )
+
+    private lazy var sidebarNotificationBelowScrollViewConstraint = sidebarNotificationView.topAnchor.constraint(
+        equalTo: scrollView.bottomAnchor,
+        constant: AppPadding.padding16
+    )
+
     private lazy var scrollView: NSScrollView = {
         let scrollView = NSScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -197,6 +216,7 @@ final class MainSidebarViewController: BaseViewController {
                 self?.currentSynchroId = synchroContext?.synchro.id
                 self?.updateActivitiesBadge()
                 self?.updateSidebarIfNecessary()
+                self?.updateUpsellBanner(synchroContext)
             }
     }
 
@@ -219,6 +239,7 @@ final class MainSidebarViewController: BaseViewController {
         }
         view.addSubview(synchroSelectorView)
         setupScrollAndOutlineView()
+        view.addSubview(upsellBannerHostingView)
         view.addSubview(sidebarNotificationView)
 
         NSLayoutConstraint.activate([
@@ -243,7 +264,17 @@ final class MainSidebarViewController: BaseViewController {
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
 
-            sidebarNotificationView.topAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: AppPadding.padding16),
+            upsellBannerHostingView.topAnchor.constraint(equalTo: scrollView.bottomAnchor, constant: AppPadding.padding16),
+            upsellBannerHostingView.leadingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+                constant: AppPadding.padding16
+            ),
+            upsellBannerHostingView.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -AppPadding.padding16
+            ),
+
+            sidebarNotificationBelowScrollViewConstraint,
             sidebarNotificationView.leadingAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                 constant: AppPadding.padding16
@@ -308,6 +339,25 @@ final class MainSidebarViewController: BaseViewController {
         }
 
         cell.showsBadge = hasError
+    }
+
+    private func updateUpsellBanner(_ synchroContext: UISynchroContext?) {
+        let offer = synchroContext?.blockingError == nil ? synchroContext?.drive.upsellOffer : nil
+        guard upsellBannerHostingView.rootView?.offer != offer else { return }
+
+        upsellBannerHostingView.rootView = offer.map { UpsellBannerView(offer: $0) }
+        upsellBannerHostingView.invalidateIntrinsicContentSize()
+
+        let showsBanner = offer != nil
+        upsellBannerHostingView.isHidden = !showsBanner
+        // Deactivate before activating so that both constraints are never active at the same time.
+        if showsBanner {
+            sidebarNotificationBelowScrollViewConstraint.isActive = false
+            sidebarNotificationBelowUpsellBannerConstraint.isActive = true
+        } else {
+            sidebarNotificationBelowUpsellBannerConstraint.isActive = false
+            sidebarNotificationBelowScrollViewConstraint.isActive = true
+        }
     }
 
     private func updateSidebarIfNecessary() {

@@ -355,6 +355,9 @@
 /* loco:6989da5609f5a74cc30826c2 */
 "buttonUpgradeOffer" = "Atualizar";
 
+/* loco:6af2db6c55197681a509f7d2 */
+"buttonUpgradeSubscriptionShort" = "Fazer evoluir";
+
 /* loco:69a69d71b2261fc281078712 */
 "buttonValidate" = "Confirmar";
 
@@ -913,6 +916,8 @@
 
 /* loco:6a16da43bc4d91f15c0416e2 */
 "kSuiteOfferUrl" = "https://www.infomaniak.com/en/ksuite";
+
+"ksuiteProBannerDescription" = "Criar e colaborar sem limites";
 
 /* loco:69a0079a3f0464f2af0a25d3 */
 "labelAccessRightsModified" = "Direitos de acesso modificados";
