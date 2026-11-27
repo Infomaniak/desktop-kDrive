@@ -707,8 +707,12 @@ struct IoHelper {
         static int _getAndSetRightsMethod;
         static std::unique_ptr<BYTE[]> _psid;
         static TRUSTEE _trustee;
-        static std::mutex _initRightsWindowsApiMutex;
+        static std::recursive_mutex _windowsRightsApiMutex;
         static void initRightsWindowsApi();
+        static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
+                                        log4cplus::Logger logger, bool inherit = false) noexcept;
+        static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
+                                        log4cplus::Logger logger) noexcept;
 #endif
 
         friend class TestIo;

@@ -294,25 +294,50 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int16_t trial) {
     return ExitCode::Ok;
 }
 
+
+namespace {
+struct FullAccessState {
+        std::mutex mutex;
+        std::set<SyncPath> inProgress;
+};
+} // namespace
+
 void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
+    static const auto state = std::make_shared<FullAccessState>();
+    {
+        const auto lock = std::scoped_lock(state->mutex);
+        if (!state->inProgress.insert(path).second) return;
+    }
+
+    const auto release = [state = state, path]() {
+        const auto lock = std::scoped_lock(state->mutex);
+        (void) state->inProgress.erase(path);
+    };
+
     bool exists = false;
     if (auto checkIfPathExistsError = IoError::Success;
         !IoHelper::checkIfPathExists(path, exists, checkIfPathExistsError, IoHelper::getDefaultPathCheckOption())) {
         LOGW_WARN(_logger, L"Failed to check if path exists - " << Utility::formatIoError(path, checkIfPathExistsError));
+        release();
         return;
     }
 
-    if (!exists) return;
+    if (!exists) {
+        release();
+        return;
+    }
 
-    if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
-        const auto errorMsg = L"Failed to set full access rights - " + Utility::formatIoError(path, ioError);
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(_logger, errorMsg);
-        } else {
-            LOGW_WARN(_logger, errorMsg);
-        }
-    } else {
-        LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
+    try {
+        std::thread([path, release]() {
+            try {
+                (void) IoHelper::setFullAccess(path);
+            } catch (...) {
+                // Never let an exception escape a detached thread
+            }
+            release();
+        }).detach();
+    } catch (...) {
+        release();
     }
 }
 
