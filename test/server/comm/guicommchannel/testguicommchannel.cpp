@@ -536,6 +536,7 @@ std::vector<Drive> createDriveInfoList() {
     d1.setSize(1000000000);
     d1.setUsedSize(50000000);
     d1.setPackInfo(PackInfo(1, "pack_free", "PackFree", true));
+    d1.setSharedLinkQuota(100);
 
     Drive d2;
     d2.setDbId(2);
@@ -585,6 +586,7 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) packInfoObj1.set("kSuiteId", 0);
     (void) packInfoObj1.set("upsellTarget", toInt(UpsellTarget::StandAloneToMykSuitePlus));
     (void) driveInfoObj1.set("packInfo", packInfoObj1);
+    (void) driveInfoObj1.set("sharedLinkQuota", 100);
 
     Poco::JSON::Object driveInfoObj2;
     (void) driveInfoObj2.set("accessDenied", true);
@@ -613,6 +615,7 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) packInfoObj2.set("kSuiteId", 0);
     (void) packInfoObj2.set("upsellTarget", toInt(UpsellTarget::StandAloneTokSuitePro));
     (void) driveInfoObj2.set("packInfo", packInfoObj2);
+    (void) driveInfoObj2.set("sharedLinkQuota", 0);
 
     Poco::JSON::Array driveInfoObjList;
 

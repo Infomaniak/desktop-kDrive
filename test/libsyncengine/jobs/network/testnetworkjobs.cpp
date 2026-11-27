@@ -1082,6 +1082,34 @@ void TestNetworkJobs::testGetInfoDrive() {
     CPPUNIT_ASSERT_EQUAL(std::string("kDrive Desktop Team"), job.name());
     CPPUNIT_ASSERT_EQUAL(std::string("pro"), job.packInfo().name());
     CPPUNIT_ASSERT(!job.packInfo().isFree());
+    // The API documents this quota as text: check the real shape.
+    CPPUNIT_ASSERT(job.sharedLinkQuota() > 0);
+}
+
+void TestNetworkJobs::testGetInfoDriveSharedLinkQuota() {
+    class GetInfoDriveJobMock final : public GetInfoDriveJob {
+        public:
+            using GetInfoDriveJob::GetInfoDriveJob;
+            using GetInfoDriveJob::handleJsonResponse;
+    };
+
+    const auto replyBody = [](const std::string &quotaJson) {
+        return R"({"result":"success","data":{"name":"drive","size":1000,"account_admin":true,"account_id":1,)"
+               R"("is_locked":false,"used_size":10)" +
+               quotaJson + "}}";
+    };
+
+    {
+        GetInfoDriveJobMock job(_driveDbId);
+        CPPUNIT_ASSERT(job.handleJsonResponse(replyBody(R"(,"quota":{"shared_link":{"current":3,"max":1000}})")));
+        CPPUNIT_ASSERT_EQUAL(int64_t{1000}, job.sharedLinkQuota());
+    }
+    // The quota is optional: the drive info must still load without it.
+    {
+        GetInfoDriveJobMock job(_driveDbId);
+        CPPUNIT_ASSERT(job.handleJsonResponse(replyBody("")));
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, job.sharedLinkQuota());
+    }
 }
 
 void TestNetworkJobs::testThumbnail() {
