@@ -229,7 +229,7 @@ ExitInfo VfsMac::updateMetadata(const SyncPath &absoluteFilePath, time_t creatio
         ioError != IoError::Success) {
         LOGW_WARN(logger(),
                   L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(absoluteFilePath, ioError));
-        return {ExitCode::SystemError, ExitCause::PathContainsSymlink};
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::PathContainsSymlink});
     }
 
     struct stat fileStat;
