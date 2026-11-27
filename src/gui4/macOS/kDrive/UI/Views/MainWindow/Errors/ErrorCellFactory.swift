@@ -192,7 +192,7 @@ struct ErrorCellFactory {
                 description: KDriveLocalizable.errQuotaExceededDescription(error.nodeLabel),
                 action: !isAdmin ? nil : .init(title: KDriveLocalizable.buttonManageStorage) {
                     matomo.track(eventWithCategory: .errors, name: "manageQuotaExceeded")
-                    await manager.openShopURL(error)
+                    await manager.openUpsellURL(error)
                 }
             )
         case .reservedName:

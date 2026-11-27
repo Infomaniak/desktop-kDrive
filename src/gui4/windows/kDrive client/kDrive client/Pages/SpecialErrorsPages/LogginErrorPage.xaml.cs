@@ -57,12 +57,12 @@ namespace Infomaniak.kDrive.Pages
         {
             base.OnNavigatedTo(e);
             _navigationParams = e.Parameter as NavigationParams?;
-            _analyticsService.TrackPageView(Analytics.Keys.Category.LogginErrorPage);
+            _analyticsService.TrackPageView(Analytics.Keys.Category.LoginErrorPage);
         }
 
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
         {
-            _analyticsService.TrackClick(Analytics.Keys.Category.LogginErrorPage, Analytics.Keys.EventName.OpenSignInWeb);
+            _analyticsService.TrackClick(Analytics.Keys.Category.LoginErrorPage, Analytics.Keys.EventName.OpenSignInWeb);
             await StartConnection();
         }
 
