@@ -27,7 +27,7 @@ class SignalSyncProgressInfoJob : public AbstractGuiJob {
     public:
         SignalSyncProgressInfoJob() = default;
         explicit SignalSyncProgressInfoJob(int syncDbId, SyncStatus syncStatus, SyncStep syncStep,
-                                           const SyncProgress &syncProgress);
+                                           const SyncProgress &syncProgress, uint64_t nbItems);
 
     private:
         // Output parameters
@@ -35,6 +35,7 @@ class SignalSyncProgressInfoJob : public AbstractGuiJob {
         SyncStatus _syncStatus = SyncStatus::Idle;
         SyncStep _syncStep = SyncStep::None;
         SyncProgress _syncProgress;
+        uint64_t _nbItems = 0;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

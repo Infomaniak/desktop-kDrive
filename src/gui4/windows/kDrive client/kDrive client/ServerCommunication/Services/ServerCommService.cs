@@ -1840,8 +1840,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
+            if (!signalData.ContainsKey(JsonKeys.SyncStep) || !signalData.ContainsKey(JsonKeys.SyncProgress))
+            {
+                Logger.LogError($"SyncProgress data is incomplete: {signalData}",
+                    "SyncProgress data is incomplete");
+                return;
+            }
+            if (!signalData.ContainsKey(JsonKeys.NbItems))
+            {
+                Logger.LogError($"{JsonKeys.NbItems} not found in parameters.",
+                    "SyncProgress data is incomplete");
+                return;
+            }
+
             DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
             SyncStatus? syncStatus = signalData[JsonKeys.SyncStatus]?.Deserialize<SyncStatus>();
+            SyncStep? syncStep = signalData[JsonKeys.SyncStep]?.Deserialize<SyncStep>();
+            ulong? nbItems = signalData[JsonKeys.NbItems]?.AsValue().GetValue<ulong>();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            SyncProgressInfo? syncProgressInfo = signalData[JsonKeys.SyncProgress]?.Deserialize<SyncProgressInfo>(options);
 
             if (syncDbID is null)
             {
@@ -1863,6 +1883,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             updatedSync.SyncStatus = syncStatus ?? SyncStatus.Undefined;
+            updatedSync.SyncStep = syncStep ?? SyncStep.None;
+            updatedSync.NbItems = nbItems ?? 0;
+            if (syncProgressInfo is not null)
+                ConversionHelper.CopyToSyncProgress(syncProgressInfo, updatedSync.SyncProgress);
             return;
         }
 

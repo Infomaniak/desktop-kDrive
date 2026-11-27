@@ -101,9 +101,11 @@ class AppServer : public SharedTools::QtSingleApplication {
                 SyncStatus _status;
                 SyncStep _step;
                 SyncProgress _progress;
+                uint64_t _nbItems{0};
 
                 bool operator==(const SyncCache &other) const {
-                    return _status == other._status && _step == other._step && _progress == other._progress;
+                    return _status == other._status && _step == other._step && _progress == other._progress &&
+                           _nbItems == other._nbItems;
                 }
                 bool operator!=(const SyncCache &other) const { return !(*this == other); }
         };
@@ -370,8 +372,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendDriveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used) const;
         virtual void sendDriveRemoved(DriveDbId driveDbId) const;
         virtual void sendDriveDeletionFailed(DriveDbId driveDbId) const;
-        virtual void sendSyncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step,
-                                          const SyncProgress &progress) const;
+        virtual void sendSyncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress,
+                                          uint64_t nbItems) const;
         virtual void sendSyncAdded(const Sync &sync) const;
         virtual void sendSyncUpdated(const Sync &sync) const;
         virtual void sendSyncRemoved(SyncDbId syncDbId) const;
