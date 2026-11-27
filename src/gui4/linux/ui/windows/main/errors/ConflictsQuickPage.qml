@@ -157,8 +157,10 @@ FocusScope {
                             selected: root.controller.strategy === strategyCard.modelData.strategy
                             focus: strategyCard.selected
                             onSelectRequested: {
-                                UserActionLog.action(root.actionIdPrefix + ".strategy",
-                                                     { strategy: strategyCard.modelData.logName });
+                                if (!strategyCard.selected) {
+                                    UserActionLog.action(root.actionIdPrefix + ".strategy",
+                                                         { strategy: strategyCard.modelData.logName });
+                                }
                                 root.controller.selectStrategy(strategyCard.modelData.strategy);
                                 strategyGroup.forceActiveFocus();
                             }

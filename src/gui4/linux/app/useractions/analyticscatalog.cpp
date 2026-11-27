@@ -172,6 +172,8 @@ void addSettingsEvents(QHash<QString, Event> &events) {
                {u"support"_s, u"openSupportWeb"_s},
                {u"feedback"_s, u"openFeedbackWeb"_s}});
 
+    addEvents(events, u"settings.general.aboutDialog"_s, u"generalSettingsPage"_s,
+              {{u"thirdPartyLicenses"_s, u"openThirdPartyLicenses"_s}});
     addEvents(events, u"settings.accounts"_s, u"accountsSettingsPage"_s,
               {{u"connectAccount"_s, u"openOnboarding"_s},
                {u"user.disconnect"_s, u"disconnect"_s},
@@ -189,6 +191,8 @@ void addSettingsEvents(QHash<QString, Event> &events) {
                {u"card.deleteSync"_s, u"delete"_s},
                {u"card.openLocalFolder"_s, u"openSyncDir"_s},
                {u"card.manageSelection"_s, u"showItemExclusion"_s}});
+    addEvents(events, u"settings.accounts.excludedFolders"_s, u"exclusionSelector"_s,
+              {{u"cancel"_s, u"cancel"_s}, {u"save"_s, u"confirm"_s}});
     addDriveSetupDialogEvents(events, u"settings.syncActivation"_s);
 
     addEvents(events, u"settings.advanced"_s, u"advancedSettingsPage"_s,
@@ -206,6 +210,49 @@ void addSettingsEvents(QHash<QString, Event> &events) {
                {u"debug.openFolder"_s, u"openLogFolder"_s},
                {u"debug.sendLogsDialog.send"_s, u"sendLogToSupport"_s},
                {u"debug.sendLogsDialog.cancelUpload"_s, u"cancelLogToSupport"_s}});
+}
+
+struct ActionVariants {
+        QString detail;
+        QHash<QString, Event> events;
+};
+
+// These controls keep one stable log ID. Only the technical detail selects the Matomo event.
+std::optional<Event> eventForActionVariant(const QString &actionId, const ActionDetails &details) {
+    static const QHash<QString, ActionVariants> variants{
+            {u"main.conflicts.quick.strategy"_s,
+             {u"strategy"_s,
+              {{u"mostRecent"_s, {u"batchConflictResolutionPage"_s, u"keepMostRecent"_s, {}}},
+               {u"local"_s, {u"batchConflictResolutionPage"_s, u"keepLocal"_s, {}}},
+               {u"online"_s, {u"batchConflictResolutionPage"_s, u"keepRemote"_s, {}}}}}},
+            {u"main.errors.explanationDialog.mainAction"_s,
+             {u"kind"_s,
+              {{u"localAccess"_s, {u"errors"_s, u"fileAccessErrorOpenFolder"_s, {}}},
+               {u"syncDirNotFound"_s, {u"errors"_s, u"syncDirAccessErrorOpenFolder"_s, {}}},
+               {u"syncDirDiskMissing"_s, {u"errors"_s, u"syncDirDiskMissingRestartSync"_s, {}}},
+               {u"syncDirChangedLocally"_s, {u"errors"_s, u"syncDirChangedRecreate"_s, {}}},
+               {u"syncDirChangedRemotely"_s, {u"errors"_s, u"syncDirChangedRecreate"_s, {}}}}}},
+            {u"main.toolbar.back"_s,
+             {u"page"_s,
+              {{u"errors"_s, {u"errorPage"_s, u"activityBreadcrumb"_s, {}}},
+               {u"conflictsQuick"_s, {u"batchConflictResolutionPage"_s, u"errorBreadcrumb"_s, {}}},
+               {u"conflictsList"_s, {u"individualConflictResolutionPage"_s, u"batchConflictResolutionBreadcrumb"_s, {}}}}}},
+            {u"settings.accounts.excludedFolders.tree.toggleFolder"_s,
+             {u"selection"_s,
+              {{u"include"_s, {u"exclusionSelector"_s, u"selectDir"_s, {}}},
+               {u"exclude"_s, {u"exclusionSelector"_s, u"unselectDir"_s, {}}}}}},
+    };
+
+    const auto action = variants.constFind(actionId);
+    if (action == variants.cend()) return std::nullopt;
+
+    for (const auto &[name, value]: details) {
+        if (name != action->detail) continue;
+        const auto event = action->events.constFind(value.toString());
+        if (event != action->events.cend()) return *event;
+        break;
+    }
+    return std::nullopt;
 }
 
 QHash<QString, Event> buildEvents() {
@@ -249,13 +296,13 @@ QHash<QString, QString> buildPageViews() {
 
 } // namespace
 
-std::optional<Event> eventForAction(const QString &actionId) {
+std::optional<Event> eventForAction(const QString &actionId, const ActionDetails &details) {
     static const QHash<QString, Event> events = buildEvents();
     if (const auto it = events.constFind(actionId); it != events.cend()) {
         return *it;
     }
 
-    return std::nullopt;
+    return eventForActionVariant(actionId, details);
 }
 
 std::optional<QString> pageViewForScreen(const QString &screenId) {
