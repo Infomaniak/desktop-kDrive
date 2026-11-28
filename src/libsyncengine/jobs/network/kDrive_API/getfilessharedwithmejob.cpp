@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2026 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,15 +62,12 @@ ExitInfo GetFilesSharedWithMeJob::deserializeDataArray() {
         SyncName rawName;
         if (!JsonParserUtility::extractValue(obj, nameKey, rawName)) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
+        // Escape before normalizing: the normalization stops at the first NUL character and would truncate the name.
+        rawName = Utility::fixUnsafeName(rawName);
         SyncName name;
         if (!Utility::normalizedSyncName(rawName, name)) {
             LOGW_DEBUG(_logger, L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(rawName));
         }
-
-#if defined(KD_WINDOWS)
-        name = Utility::fixNameWithBackslash(name);
-#endif
-
         if (name.empty()) continue;
 
         RemoteNodeId parentId;

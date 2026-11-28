@@ -517,6 +517,11 @@ static constexpr uint64_t maxNbCreationTmpFolderRetries = 3;
 ExitInfo Utility::tryCreateTmpDir([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
                                   const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
+    if (!CommonUtility::isSafeItemName(name)) {
+        LOGW_WARN(logger(), L"Unsafe name for a tmp directory: " << Utility::formatSyncName(name));
+        return {ExitCode::SystemError, ExitCause::InvalidName};
+    }
+
     if (!cacheDirectory) {
         LOG_WARN(logger(), "Cache directory not provided!");
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
@@ -548,6 +553,12 @@ ExitInfo Utility::tryCreateTmpDir([[maybe_unused]] const std::shared_ptr<CacheDi
                 IoHelper::stdError2ioError(ec) == IoError::AccessDenied ? ExitCause::TmpDirAccessError : ExitCause::Unknown};
     }
 
+    if (!directoryCreated) {
+        // Never delete a directory that this function did not create.
+        LOGW_WARN(logger(), L"Failed to create a tmp directory with " << Utility::formatSyncName(name));
+        return {ExitCode::SystemError, ExitCause::InvalidName};
+    }
+
     auto ioError = IoError::Unknown;
     (void) IoHelper::deleteItem(tmpPath, ioError, cacheDirectory->syncDirectoryPath());
 #else
@@ -573,6 +584,11 @@ ExitInfo checkTmpDirectoryRights(const SyncPath &path) {
 
 ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDirectory,
                                    const SyncName &name /*= Str("testFile")*/) {
+    if (!CommonUtility::isSafeItemName(name)) {
+        LOGW_WARN(logger(), L"Unsafe name for a tmp file: " << Utility::formatSyncName(name));
+        return {ExitCode::SystemError, ExitCause::InvalidName};
+    }
+
     if (!cacheDirectory) {
         LOG_WARN(logger(), "Cache directory not provided!");
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
@@ -659,23 +675,43 @@ SyncName Utility::charToHex(unsigned int c) {
     return stm.str();
 }
 
-#if defined(KD_WINDOWS)
-SyncName Utility::fixNameWithBackslash(const SyncName &name) {
+SyncName Utility::fixUnsafeName(const SyncName &name) {
+    bool modified = false;
     SyncName newName;
-    size_t pos = name.find('\\');
-    while (pos != std::string::npos) {
-        if (newName.empty()) {
-            newName = name; // Copy filename to newName only if necessary
-        }
+    newName.reserve(name.size());
 
-        newName.replace(pos, 1, charToHex(newName[pos]));
-        pos = newName.find('\\', pos);
+    for (const SyncChar c: name) {
+        if (c == static_cast<SyncChar>('\0') || c == static_cast<SyncChar>('/')
+#if defined(KD_WINDOWS)
+            || c == static_cast<SyncChar>('\\') || c == static_cast<SyncChar>(':')
+#endif
+        ) {
+            newName += charToHex(static_cast<unsigned int>(c));
+            modified = true;
+        } else {
+            newName += c;
+        }
     }
 
-    // Return the original name if no backslash was found, otherwise return the modified name
-    return newName.empty() ? name : newName;
+    return modified ? newName : name;
 }
-#endif
+
+SyncName Utility::fixUnsafeNameFromPath(const SyncName &path) {
+    SyncName fixedPath;
+    fixedPath.reserve(path.size());
+
+    SyncName::size_type begin = 0;
+    while (true) {
+        const auto end = path.find(static_cast<SyncChar>('/'), begin);
+        fixedPath += fixUnsafeName(path.substr(begin, end == SyncName::npos ? SyncName::npos : end - begin));
+        if (end == SyncName::npos) break;
+
+        fixedPath += static_cast<SyncChar>('/');
+        begin = end + 1;
+    }
+
+    return fixedPath;
+}
 
 void Utility::msleep(const int64_t msec) {
     const std::chrono::milliseconds dura(msec);

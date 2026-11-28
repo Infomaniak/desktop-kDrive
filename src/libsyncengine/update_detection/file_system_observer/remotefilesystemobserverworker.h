@@ -123,6 +123,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
         ExitInfo checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
+        void blacklistSyncedItemTemporarily(const NodeId &remoteNodeId);
 
         void countListingRequests();
         [[nodiscard]] ExitInfo deleteOrphans();

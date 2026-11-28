@@ -97,6 +97,21 @@ void TestGetFilesSharedWithMeJob::testHandleResponse() {
     CPPUNIT_ASSERT(fileInfo.path().isEmpty());
 }
 
+void TestGetFilesSharedWithMeJob::testHandleResponseNameWithNul() {
+    // Regression test: the name is escaped before its normalization, which stops at the first NUL character. Otherwise
+    // "new\0file.txt" would be truncated to "new" instead of matching the "new%0file.txt" name of the remote snapshot.
+    GetFilesSharedWithMeJob job(_driveDbId);
+
+    std::istringstream is(
+            R"({"cursor":"c1","has_more":false,"data":[)"
+            R"({"id":95756,"name":"new\u0000file.txt","type":"file","parent_id":51006,"last_modified_at":1700000001})"
+            R"(]})");
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, job.v3RemoteNodeInfoList().size());
+    CPPUNIT_ASSERT_EQUAL(std::string("new%0file.txt"), job.v3RemoteNodeInfoList().at(0).name().toStdString());
+}
+
 void TestGetFilesSharedWithMeJob::testHandleResponseTwice() {
     // A retried request handles a second response: its results replace those of the first one instead of piling up.
     GetFilesSharedWithMeJob job(_driveDbId);

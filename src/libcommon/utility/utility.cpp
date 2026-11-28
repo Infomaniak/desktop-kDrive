@@ -23,6 +23,7 @@
 #include "version.h"
 
 #include <QBuffer>
+#include <algorithm>
 #include <system_error>
 #include <sys/types.h>
 
@@ -562,6 +563,20 @@ bool CommonUtility::isDescendantOrEqual(const SyncPath &potentialDescendant, con
 bool CommonUtility::isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path) {
     if (trimTrailingSeparator(path) == trimTrailingSeparator(potentialDescendant)) return false;
     return isDescendantOrEqual(potentialDescendant, path);
+}
+
+bool CommonUtility::isSafeItemName(const SyncName &name) {
+    if (name.empty() || name == Str(".") || name == Str("..")) return false;
+
+    // Security belt: those characters should already have been replaced by now
+    const auto isUnsafeChar = [](const SyncChar c) {
+        if (c == static_cast<SyncChar>('\0') || c == static_cast<SyncChar>('/')) return true;
+#if defined(KD_WINDOWS)
+        if (c == static_cast<SyncChar>('\\') || c == static_cast<SyncChar>(':')) return true;
+#endif
+        return false;
+    };
+    return std::ranges::none_of(name, isUnsafeChar);
 }
 
 std::string CommonUtility::getIconPath(const IconType iconType) {

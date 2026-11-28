@@ -549,6 +549,78 @@ void TestUtility::testTryCreateTmpFile() {
     }
 }
 
+void TestUtility::testTryCreateTmpItemWithUnsafeName() {
+    // A remote name such as "..\0x" is truncated at the NUL character by native APIs and would resolve to the sync root.
+    const LocalTemporaryDirectory syncDir;
+    const auto cacheDirectory = std::make_shared<CacheDirectory>(syncDir.path());
+    const SyncPath canaryPath = syncDir.path() / Str("canary.txt");
+    testhelpers::generateTestFile(canaryPath);
+
+    const std::vector<SyncName> unsafeNames = {SyncName(Str("..\0x"), 4),
+                                               SyncName(Str("..\0"), 3),
+                                               SyncName(Str(".\0x"), 3),
+                                               SyncName(Str("a\0b"), 3),
+                                               Str(".."),
+                                               Str("."),
+                                               Str("../x")};
+    for (const auto &name: unsafeNames) {
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::InvalidName),
+                             Utility::tryCreateTmpFile(cacheDirectory, name));
+#if defined(KD_MACOS)
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::InvalidName),
+                             Utility::tryCreateTmpDir(cacheDirectory, name));
+#endif
+        CPPUNIT_ASSERT(std::filesystem::exists(canaryPath));
+    }
+}
+
+void TestUtility::testFixUnsafeName() {
+    // Names without unsafe characters are left unchanged.
+    CPPUNIT_ASSERT_EQUAL(std::string("test.txt"), SyncName2Str(Utility::fixUnsafeName(Str("test.txt"))));
+    CPPUNIT_ASSERT_EQUAL(std::string(".."), SyncName2Str(Utility::fixUnsafeName(Str(".."))));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), SyncName2Str(Utility::fixUnsafeName(SyncName())));
+
+    // The NUL character is escaped to prevent truncation by native APIs, and the '/' character to prevent path
+    // traversal, so that "..\0x" cannot resolve to the sync root and "a/b" to a nested path.
+    CPPUNIT_ASSERT_EQUAL(std::string("..%0x"), SyncName2Str(Utility::fixUnsafeName(SyncName(Str("..\0x"), 4))));
+    CPPUNIT_ASSERT_EQUAL(std::string("Documents%0"), SyncName2Str(Utility::fixUnsafeName(SyncName(Str("Documents\0"), 10))));
+    CPPUNIT_ASSERT_EQUAL(std::string("a%2fb"), SyncName2Str(Utility::fixUnsafeName(Str("a/b"))));
+
+    // Regression test: every occurrence of an unsafe character is replaced.
+    CPPUNIT_ASSERT_EQUAL(std::string("a%2fb%2fc"), SyncName2Str(Utility::fixUnsafeName(Str("a/b/c"))));
+
+    // The '%' character is not escaped, so already escaped names are left unchanged.
+    CPPUNIT_ASSERT_EQUAL(std::string("a%2fb"), SyncName2Str(Utility::fixUnsafeName(Str("a%2fb"))));
+
+#if defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(std::string("a%5cb"), SyncName2Str(Utility::fixUnsafeName(Str("a\\b"))));
+    CPPUNIT_ASSERT_EQUAL(std::string("a%3ab"), SyncName2Str(Utility::fixUnsafeName(Str("a:b"))));
+#endif
+}
+
+void TestUtility::testFixUnsafeNameFromPath() {
+    // Paths without unsafe characters are left unchanged, including their leading and trailing separators.
+    CPPUNIT_ASSERT_EQUAL(std::string(""), SyncName2Str(Utility::fixUnsafeNameFromPath(SyncName())));
+    CPPUNIT_ASSERT_EQUAL(std::string("/"), SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/"))));
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/Docs/file.txt"),
+                         SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/Private/Docs/file.txt"))));
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/Docs/"), SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/Private/Docs/"))));
+
+    // Regression test: the '/' separators are not escaped, so that the root translation of the API path still applies.
+    // Every component is escaped, not only the last one, because the remote observer escapes the directory names too.
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/Do%0cs/file%0.txt"),
+                         SyncName2Str(Utility::fixUnsafeNameFromPath(SyncName(Str("/Private/Do\0cs/file\0.txt"), 24))));
+
+#if defined(KD_WINDOWS)
+    // On Windows, '\' is part of a remote name, not a separator: it is escaped and the separators stay '/'.
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/a%3ab/c%5cd.txt"),
+                         SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/Private/a:b/c\\d.txt"))));
+#else
+    CPPUNIT_ASSERT_EQUAL(std::string("/Private/a:b/c\\d.txt"),
+                         SyncName2Str(Utility::fixUnsafeNameFromPath(Str("/Private/a:b/c\\d.txt"))));
+#endif
+}
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
 void TestUtility::testEscapePath() {
     // Test simple path without special characters

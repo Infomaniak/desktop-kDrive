@@ -95,10 +95,7 @@ ExitInfo GetDrivesListJob::handleJsonResponse(const std::string &replyBody) {
         if (!JsonParserUtility::extractValue(dataObj, driveNameKey, driveName)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
-
-#if defined(KD_WINDOWS)
-        driveName = SyncName2Str(Utility::fixNameWithBackslash(Str2SyncName(driveName)));
-#endif
+        driveName = SyncName2Str(Utility::fixUnsafeName(Str2SyncName(driveName)));
 
         std::string colorHex;
         if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferenceKey)) {

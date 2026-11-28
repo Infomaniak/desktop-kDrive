@@ -890,6 +890,22 @@ bool shouldContainPath(const ActionCode actionCode) {
             return true;
     }
 }
+
+bool isRemovalAction(const ActionCode actionCode) {
+    // These actions only remove the item from the snapshot by its ID: the item name is not used and may be empty (see
+    // `shouldContainPath`).
+    switch (actionCode) {
+        case ActionCode::ActionCodeTrash:
+        case ActionCode::ActionCodeAccessRightRemove:
+        case ActionCode::ActionCodeAccessRightUserRemove:
+        case ActionCode::ActionCodeAccessRightTeamRemove:
+        case ActionCode::ActionCodeAccessRightMainUsersRemove:
+        case ActionCode::ActionCodeRestoreFileShareDelete:
+            return true;
+        default:
+            return false;
+    }
+}
 } // namespace
 
 
@@ -915,9 +931,7 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
         if (const auto exitInfo = handleExcludedItem(actionInfo, excluded); !exitInfo) return exitInfo;
         if (excluded) continue;
 
-#if defined(KD_WINDOWS)
-        actionInfo.snapshotItem.setName(Utility::fixNameWithBackslash(actionInfo.snapshotItem.name()));
-#endif
+        actionInfo.snapshotItem.setName(Utility::fixUnsafeName(actionInfo.snapshotItem.name()));
         actionInfoList.push_back(actionInfo);
     }
 
@@ -1026,11 +1040,13 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(const Poco::JSON::Array:
 
     // Filter out items
     // - whose actions should be ignored, or
-    // - whose names contain unsupported characters.
+    // - whose names contain unsupported characters, unless the action only removes the item.
     for (auto it = actionInfoList.begin(); it != actionInfoList.end();) {
         const auto &actionInfo = *it;
         if (shouldBeIgnored(actionInfo.actionCode)) {
             it = actionInfoList.erase(it);
+        } else if (isRemovalAction(actionInfo.actionCode)) {
+            ++it;
         } else if (const auto exitInfo = checkForUnsupportedCharacters(
                            actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(), actionInfo.snapshotItem.type());
                    !exitInfo) {
@@ -1346,9 +1362,48 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_unused]] const SyncName &name,
-                                                                       [[maybe_unused]] const NodeId &remoteNodeId,
-                                                                       [[maybe_unused]] const NodeType type) {
+void RemoteFileSystemObserverWorker::blacklistSyncedItemTemporarily(const NodeId &remoteNodeId) {
+    // An item that is ignored here is missing from the remote snapshot. If it was already synchronized, this would be
+    // interpreted as a remote deletion and its local copy would be deleted. Blacklist both replicas, using the paths stored
+    // in the sync DB (the new remote name cannot be trusted), so that the item and its descendants are left untouched.
+    bool found = false;
+    DbNodeId dbNodeId = 0;
+    if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, remoteNodeId, dbNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << remoteNodeId);
+        return;
+    }
+    if (!found) return; // Not synchronized yet: there is nothing to protect.
+
+    SyncPath localPath;
+    SyncPath remotePath;
+    if (!_syncPal->syncDb()->path(dbNodeId, localPath, remotePath, found) || !found) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path for dbNodeId=" << dbNodeId);
+        return;
+    }
+
+    NodeId localNodeId;
+    if (!_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId for nodeId=" << remoteNodeId);
+        return;
+    }
+
+    if (found && !localNodeId.empty()) _syncPal->blacklistTemporarily(localNodeId, localPath, ReplicaSide::Local);
+    _syncPal->blacklistTemporarily(remoteNodeId, remotePath, ReplicaSide::Remote);
+}
+
+ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const SyncName &name, const NodeId &remoteNodeId,
+                                                                       const NodeType type) {
+    // Remote names are untrusted: reject, on all platforms, any name that cannot be safely appended to a local path
+    // (e.g. "..\0x" is truncated at the NUL character by native APIs and resolves to the parent directory).
+    if (!CommonUtility::isSafeItemName(name)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Unsafe remote item name: " << Utility::formatSyncName(name) << L", nodeId="
+                                                                << CommonUtility::s2ws(remoteNodeId) << L". Item is ignored.");
+        _syncPal->addError(
+                Error(_syncPal->syncDbId(), "", remoteNodeId, type, name, ConflictType::None, InconsistencyType::ForbiddenChar));
+        blacklistSyncedItemTemporarily(remoteNodeId);
+        return {ExitCode::SystemError, ExitCause::InvalidName};
+    }
+
     ExitInfo exitInfo = ExitCode::Ok;
 
 #if defined(KD_MACOS)
@@ -1376,6 +1431,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_u
                                    << exitInfo << L", " << Utility::formatSyncName(name) << L". Item is ignored.");
         _syncPal->addError(Error(_syncPal->syncDbId(), "", remoteNodeId, type, name, ConflictType::None,
                                  InconsistencyType::NotYetSupportedChar));
+        blacklistSyncedItemTemporarily(remoteNodeId);
         exitInfo = {ExitCode::SystemError, ExitCause::InvalidName};
     }
 #endif
