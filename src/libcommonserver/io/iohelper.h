@@ -300,7 +300,7 @@ struct IoHelper {
         /*!
          \param aliasPath is the file system location of the alias file to read.
          \param data is set with the alias data read from the alias file.
-         \param targetPath is set with the file system path of the target item.
+         \param targetPath is set with the file system path of the target item. Empty if the alias target is not resolvable.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
